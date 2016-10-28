@@ -9,7 +9,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -61,7 +61,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		FieldList                         externalFields  = new FieldList(this, Location.INVALID);
 		TypeList<StaticBlock>             staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
 		VTableList                        vtables         = new VTableList(this, Location.INVALID);
-		GenericTypeParameterDeclaration   declaration     = new GenericTypeParameterDeclaration(this, Location.INVALID);
+		GenericTypeParameterList declaration     = new GenericTypeParameterList(this, Location.INVALID);
 		TypeList<InterfaceImplementation> interfaces      = new TypeList<InterfaceImplementation>(this, locationIn);
 		TypeList<ExternalCodeBlock>       blocks          = new TypeList<>(this, locationIn);
 		
@@ -241,12 +241,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		return (VTableList)getChild(super.getNumDefaultChildren() + 10);
 	}
 	
-	private GenericTypeParameterDeclaration getGenericTypeParameterDeclarationNode()
+	private GenericTypeParameterList getGenericTypeParameterDeclarationNode()
 	{
-		return (GenericTypeParameterDeclaration)getChild(super.getNumDefaultChildren() + 11);
+		return (GenericTypeParameterList)getChild(super.getNumDefaultChildren() + 11);
 	}
 	
-	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
+	public GenericTypeParameterList getGenericTypeParameterDeclaration()
 	{
 		return getGenericTypeParameterDeclarationNode();
 	}
@@ -1526,7 +1526,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			getStaticBlockList().addChild(child);
 		}
-		else if (child instanceof GenericTypeParameterDeclaration)
+		else if (child instanceof GenericTypeParameterList)
 		{
 			super.addChild(child);
 		}
@@ -1806,7 +1806,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			ClassDeclaration n = new ClassDeclaration(parent, location);
 			n.setVisibility(PUBLIC);
 			
-			GenericTypeParameterDeclaration.searchGenerics(statement, data);
+			GenericTypeParameterList.searchGenerics(statement, data);
 			
 			n.iterateWords(statement, data, require);
 			

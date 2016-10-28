@@ -6,7 +6,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
@@ -58,7 +58,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		replace(super.getParameterList(), parameters);
 		
-		GenericTypeParameterDeclaration methodParams = new GenericTypeParameterDeclaration(this, locationIn.asNew());
+		GenericTypeParameterList methodParams = new GenericTypeParameterList(this, locationIn.asNew());
 		addChild(methodParams, this);
 	}
 	
@@ -102,11 +102,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return super.getNumDefaultChildren() + 1;
 	}
 	
-	public GenericTypeParameterDeclaration getMethodGenericTypeParameterDeclaration()
+	public GenericTypeParameterList getMethodGenericTypeParameterDeclaration()
 	{
-		if (getNumChildren() > super.getNumDefaultChildren())// && super.getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeParameterDeclaration)
+		if (getNumChildren() > super.getNumDefaultChildren())// && super.getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeParameterList)
 		{
-			return (GenericTypeParameterDeclaration)super.getChild(super.getNumDefaultChildren() + 0);
+			return (GenericTypeParameterList)super.getChild(super.getNumDefaultChildren() + 0);
 		}
 		
 		return null;
@@ -119,7 +119,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public GenericTypeParameter getGenericTypeParameter(String name)
 	{
-		GenericTypeParameterDeclaration decl = getMethodGenericTypeParameterDeclaration();
+		GenericTypeParameterList decl = getMethodGenericTypeParameterDeclaration();
 		
 		if (decl != null)
 		{
@@ -673,7 +673,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		String signature = findMethodSignature(statement);
 		MethodData data  = new MethodData(signature);
 		
-		GenericTypeParameterDeclaration.searchGenerics(signature, data);
+		GenericTypeParameterList.searchGenerics(signature, data);
 		
 		iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		

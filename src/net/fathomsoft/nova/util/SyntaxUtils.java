@@ -2851,7 +2851,7 @@ public class SyntaxUtils
 		
 		/*DeclarationData data = new DeclarationData();
 		
-		GenericTypeParameterDeclaration.searchGenerics(parameterName, data);
+		GenericTypeParameterList.searchGenerics(parameterName, data);
 		type.iterateWords(parameterName, data, true);
 		
 		if (data.containsSkipBounds())

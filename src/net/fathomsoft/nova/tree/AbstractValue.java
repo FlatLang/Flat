@@ -1,6 +1,6 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -43,7 +43,7 @@ public interface AbstractValue extends GenericCompatible
 		
 		DeclarationData data = new DeclarationData();
 		
-		GenericTypeParameterDeclaration.searchGenerics(type, data);
+		GenericTypeParameterList.searchGenerics(type, data);
 		
 		while (data.getGenericsRemaining() > 0)
 		{

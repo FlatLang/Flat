@@ -8,7 +8,7 @@ import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -458,7 +458,7 @@ public class VariableDeclaration extends IIdentifier
 		if (getTypeClass() != null && !isGenericType())
 		{
 			GenericTypeArgumentList args = getGenericTypeArgumentList();
-			GenericTypeParameterDeclaration decl = getTypeClass().getGenericTypeParameterDeclaration();
+			GenericTypeParameterList decl = getTypeClass().getGenericTypeParameterDeclaration();
 
 			if (clearChildren && args.getNumVisibleChildren() > 0)
 			{

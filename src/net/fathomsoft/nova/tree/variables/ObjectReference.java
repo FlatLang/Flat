@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -51,7 +51,7 @@ public class ObjectReference extends Variable
 			return null;
 		}
 		
-		GenericTypeParameterDeclaration params = getParentClass().getGenericTypeParameterDeclaration();
+		GenericTypeParameterList params = getParentClass().getGenericTypeParameterDeclaration();
 		
 		for (int i = 0; i < params.getNumVisibleChildren(); i++)
 		{

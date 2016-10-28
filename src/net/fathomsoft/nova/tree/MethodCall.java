@@ -8,7 +8,7 @@ import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.Variable;
@@ -507,7 +507,7 @@ public class MethodCall extends Variable
 	}
 	
 	@Override
-	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
+	public GenericTypeParameterList getGenericTypeParameterDeclaration()
 	{
 		GenericCompatible gen = getGenericCompatibleDeclaration(false);
 		
@@ -853,7 +853,7 @@ public class MethodCall extends Variable
 	{
 		if (getNovaMethod() != null)
 		{
-			GenericTypeParameterDeclaration params = getNovaMethod().getMethodGenericTypeParameterDeclaration();
+			GenericTypeParameterList params = getNovaMethod().getMethodGenericTypeParameterDeclaration();
 			
 			int index = params.getParameterIndex(type.getName());
 			
@@ -871,7 +871,7 @@ public class MethodCall extends Variable
 	{
 		if (getNovaMethod() != null)
 		{
-			GenericTypeParameterDeclaration params = getNovaMethod().getMethodGenericTypeParameterDeclaration();
+			GenericTypeParameterList params = getNovaMethod().getMethodGenericTypeParameterDeclaration();
 			
 			if (params.containsParameter(getType()))
 			{
@@ -1179,7 +1179,7 @@ public class MethodCall extends Variable
 		{
 			NovaMethodDeclaration decl = getNovaMethod();
 			
-			GenericTypeParameterDeclaration params = decl.getMethodGenericTypeParameterDeclaration();
+			GenericTypeParameterList params = decl.getMethodGenericTypeParameterDeclaration();
 			GenericTypeArgumentList args = getMethodGenericTypeArgumentList();
 			
 			for (int i = args.getNumVisibleChildren(); i < params.getNumVisibleChildren(); i++)

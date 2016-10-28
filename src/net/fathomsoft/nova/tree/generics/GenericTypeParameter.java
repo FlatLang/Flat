@@ -49,9 +49,9 @@ public class GenericTypeParameter extends IValue
 		this.defaultType = type;
 	}
 	
-	public GenericTypeParameterDeclaration getGenericDeclaration()
+	public GenericTypeParameterList getGenericDeclaration()
 	{
-		return (GenericTypeParameterDeclaration)getParent();
+		return (GenericTypeParameterList)getParent();
 	}
 	
 	@Override
@@ -76,7 +76,7 @@ public class GenericTypeParameter extends IValue
 		}
 		
 		/*GenericTypeArgumentList args = getGenericTypeArgumentList();
-		GenericTypeParameterDeclaration decl = getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getDefaultType())).getGenericTypeParameterDeclaration();
+		GenericTypeParameterList decl = getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getDefaultType())).getGenericTypeParameterDeclaration();
 		
 		for (int i = args.getNumVisibleChildren(); i < decl.getNumParameters(); i++)
 		{

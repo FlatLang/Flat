@@ -3,7 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -125,7 +125,7 @@ public interface Accessible
 			typeClass = value.getTypeClass();
 		}
 		
-		GenericTypeParameterDeclaration params = type.getParentClass().getGenericTypeParameterDeclaration();
+		GenericTypeParameterList params = type.getParentClass().getGenericTypeParameterDeclaration();
 		
 		if (params == null)
 		{

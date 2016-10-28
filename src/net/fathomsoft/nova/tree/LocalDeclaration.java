@@ -4,7 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
 
@@ -178,7 +178,7 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			data.checkType = checkType;
 			
-			GenericTypeParameterDeclaration.searchGenerics(statement, data);
+			GenericTypeParameterList.searchGenerics(statement, data);
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 		

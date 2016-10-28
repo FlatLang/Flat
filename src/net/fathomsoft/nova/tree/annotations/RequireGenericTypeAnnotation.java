@@ -3,12 +3,10 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Identifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterDeclaration;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -28,7 +26,7 @@ public class RequireGenericTypeAnnotation extends Annotation
 	{
 		super(temporaryParent, locationIn);
 		
-		addChild(new GenericTypeParameterDeclaration(this, locationIn));
+		addChild(new GenericTypeParameterList(this, locationIn));
 	}
 	
 	@Override
@@ -37,9 +35,9 @@ public class RequireGenericTypeAnnotation extends Annotation
 		return super.getNumDefaultChildren() + 1;
 	}
 	
-	public GenericTypeParameterDeclaration getGenericTypeParameterDeclaration()
+	public GenericTypeParameterList getGenericTypeParameterDeclaration()
 	{
-		return (GenericTypeParameterDeclaration)getChild(super.getNumDefaultChildren() + 0);
+		return (GenericTypeParameterList)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**
