@@ -97,7 +97,12 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 			expressions.add(!value.contains("\n"));
 			
 			//value = replaceExternalInterpolations(value);
-			addChild(SyntaxTree.decodeScopeContents(getParent(), value.trim(), getLocationIn()), this);
+			
+			Node content = SyntaxTree.decodeScopeContents(getParent(), value.trim(), getLocationIn());
+			
+			addChild(content, this);
+			
+			content.onAfterDecoded();
 			
 			index = SyntaxUtils.findStringOutsideOfQuotes(contents, "#{", end);
 		}
