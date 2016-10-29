@@ -1048,12 +1048,26 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (compatible.size() > 1)
 		{
-			checkCompatible(methods, arguments);
-			SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", (Node)context);
+			for (int i = compatible.size() - 1; i >= 0; i--)
+			{
+				final int index = i;
+				
+				if (compatible.stream().anyMatch(x -> x instanceof NovaMethodDeclaration && ((NovaMethodDeclaration)x).getOverriddenMethod() == compatible.get(index)))
+				{
+					compatible.remove(index);
+				}
+			}
 			
-			return null;
+			if (compatible.size() > 1)
+			{
+				checkCompatible(methods, arguments);
+				SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", (Node)context);
+				
+				return null;
+			}
 		}
-		else if (compatible.size() == 1)
+		
+		if (compatible.size() == 1)
 		{
 			return compatible.get(0);
 		}
