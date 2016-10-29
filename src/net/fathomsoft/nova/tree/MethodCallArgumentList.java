@@ -289,7 +289,7 @@ public class MethodCallArgumentList extends ArgumentList
 					param = method.getParameterList().getParameter(i);
 				}
 				
-				if (value.getReturnedNode().isPrimitive() && !param.isPrimitiveType() && !call.getReferenceNode().toValue().isPrimitiveGenericTypeWrapper())
+				if (value instanceof DefaultArgument == false && value.getReturnedNode().isPrimitive() && !param.isPrimitiveType() && !call.getReferenceNode().toValue().isPrimitiveGenericTypeWrapper())
 				{
 					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
 					
