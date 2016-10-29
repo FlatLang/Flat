@@ -157,11 +157,14 @@ public class Until extends IfStatement
 				clone = newClone;
 			}
 			
-			scope.addChild(clone);
-			
-			getParent().replace(this, clone);
-			
-			result.returnedNode = clone;
+			if (clone != null)
+			{
+				scope.addChild(clone);
+				
+				getParent().replace(this, clone);
+				
+				result.returnedNode = clone;
+			}
 		}
 		
 		return result;
