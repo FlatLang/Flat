@@ -262,6 +262,8 @@ public class MethodCall extends Variable
 		
 		for (ClassDeclaration clazz : classes)
 		{
+			SyntaxMessage.queryError("Could not find declaring class", this, clazz == null);
+			
 			MethodDeclaration method = clazz.getMethod(getContext(), name, getArgumentList());
 			
 			if (method != null)
