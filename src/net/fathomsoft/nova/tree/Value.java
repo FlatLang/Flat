@@ -650,6 +650,10 @@ public abstract class Value extends Node implements AbstractValue
 					return type.getFileDeclaration();
 				}
 				
+				if (this instanceof MethodCall)
+				{
+					return ((MethodCall)this).getDeclaration().getFileDeclaration();
+				}
 				//Nova.debuggingBreakpoint(id instanceof Variable && ((Variable)id).getName().equals("hypotheses"));
 				ClassDeclaration type = ((Accessible)this).getDeclaringClass();
 				
