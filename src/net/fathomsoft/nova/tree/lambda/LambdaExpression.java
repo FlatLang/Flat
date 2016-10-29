@@ -194,12 +194,12 @@ public class LambdaExpression extends Value
 						}
 					}
 					
-					NovaMethodDeclaration validMethod = validMethods[maxI];
-					
-					call.setDeclaration(validMethod);
-					
 					if (validMethods.length > 0)
 					{
+						NovaMethodDeclaration validMethod = validMethods[maxI];
+						
+						call.setDeclaration(validMethod);
+						
 						final int[] i = new int[] { 0 };
 						
 						ClosureDeclaration closure = (ClosureDeclaration)((NovaMethodDeclaration)call.getDeclaration()).getParameter(index);
