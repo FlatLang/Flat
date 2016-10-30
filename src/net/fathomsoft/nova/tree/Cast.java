@@ -182,11 +182,18 @@ public class Cast extends IValue
 			return false;
 		}
 		
-		if (!getTypeClass().isRelatedTo(node.getReturnedNode().getTypeClass()) && !node.getReturnedNode().getTypeClass().containsArrayBracketOverload())
+		ClassDeclaration type = node.getReturnedNode().getTypeClass();
+		
+		if (type instanceof Interface)
+		{
+			type = getProgram().getClassDeclaration("nova/Object");
+		}
+		
+		if (!getTypeClass().isRelatedTo(type) && !type.containsArrayBracketOverload())
 		{
 			if (!getProgram().getController().isTesting)
 			{
-				getTypeClass().isRelatedTo(node.getReturnedNode().getTypeClass());
+				getTypeClass().isRelatedTo(type);
 			}
 			
 			SyntaxMessage.error("Cannot cast from type '" + node.getReturnedNode().getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
