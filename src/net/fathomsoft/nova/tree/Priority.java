@@ -131,6 +131,12 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
+	public FileDeclaration getReferenceFile()
+	{
+		return getReturnedContents().getReferenceFile();
+	}
+	
+	@Override
 	public String getType(boolean checkCast)
 	{
 		return getReturnedContents().getType(checkCast);
