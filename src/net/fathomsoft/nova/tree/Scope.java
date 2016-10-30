@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import javafx.util.Pair;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
@@ -218,8 +219,23 @@ public class Scope extends Node
 		
 		String type = returned.generateNovaType(returned).toString();
 		
+		Scope scope = null;
+		
+		if (getParentMethod() != null)
+		{
+			scope = getParentMethod().getScope();
+		}
+		else if (getAncestorOfType(StaticBlock.class) != null)
+		{
+			scope = getAncestorOfType(StaticBlock.class).getScope();
+		}
+		else
+		{
+			SyntaxMessage.error("Error trying to create local variable", this);
+		}
+		
 		//Nova.debuggingBreakpoint(addBefore.getParentClass().getName().equals("Node") && getParentMethod().getName().equals("inorder"));
-		String     decl   = type + " nova_local_" + getParentMethod().getScope().localVariableID++ + " = null";
+		String     decl   = type + " nova_local_" + scope.localVariableID++ + " = null";
 		Assignment assign = Assignment.decodeStatement(addBefore.getParent(), decl, getLocationIn(), require, true, null, virtual, false);
 		
 		if (assign == null)
