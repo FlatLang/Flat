@@ -247,10 +247,14 @@ public class LambdaExpression extends Value
 							int scopeId = bodyMethod.getScope().getID();
 							bodyMethod.cloneTo(method);
 							method.getScope().id = scopeId;
-							method.isInstance = parentMethod.isInstance();//parentMethod.isStatic();
-							method.objectReference = parentMethod.objectReference;
+							method.isInstance = parentMethod != null && parentMethod.isInstance();//parentMethod.isStatic();
+							method.objectReference = parentMethod != null ? parentMethod.objectReference : null;
 							method.methodCall = call;
-							method.getParameterList().getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+							
+							if (parentMethod != null)
+							{
+								method.getParameterList().getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+							}
 							
 							method.getParentClass().addChild(method);
 							
