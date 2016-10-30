@@ -1051,7 +1051,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isVirtualTypeKnown()
 	{
-		return false;
+		return getParent() instanceof Super;
 	}
 	
 	public String getInstanceType()
