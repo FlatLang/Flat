@@ -429,19 +429,17 @@ public class Closure extends Variable
 			ClassDeclaration class1 = value1.getNovaTypeValue(getMethodCall()).getTypeClass();
 			ClassDeclaration class2 = value2.getNovaTypeValue(getMethodCall()).getTypeClass();
 			
-			if (!class1.isOfType(class2))
+			if (class1 == null || !class1.isOfType(class2))
 			{
 				boolean valid = false;
 				
 				if (value1.isGenericType())
 				{
-					GenericCompatible context = getMethodCall().getReferenceNode().getContext();
-					
-					GenericTypeParameter param = ((Value)context).getTypeClass().getGenericTypeParameter(value1.getType(), context);
+					GenericTypeParameter param = value1.getGenericTypeParameter();
 					
 					if (param != null)
 					{
-						GenericTypeArgument arg = param.getCorrespondingArgument(context);
+						GenericTypeArgument arg = param.getCorrespondingArgument(getMethodCall());
 						
 						SyntaxMessage.queryError("Unable to find generic argument", this, arg == null);
 						
