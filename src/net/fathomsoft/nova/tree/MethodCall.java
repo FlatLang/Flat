@@ -11,6 +11,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.Array;
+import net.fathomsoft.nova.tree.variables.Super;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
@@ -201,11 +202,14 @@ public class MethodCall extends Variable
 		
 		if (method != null && method.isVirtual() && !isVirtualTypeKnown())
 		{
-			VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
-			
-			if (virtual != null)
+			if (!isAccessed() || getAccessingNode() instanceof Super == false)
 			{
-				return virtual;
+				VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)method).getVirtualMethod();
+				
+				if (virtual != null)
+				{
+					return virtual;
+				}
 			}
 		}
 		
@@ -251,6 +255,10 @@ public class MethodCall extends Variable
 			setName(getFileDeclaration().getImportedClass(getDeclaringClass(), name).getName());
 			
 			return getDeclaringClass().getMethod(getContext(), name, getArgumentList());
+		}
+		if (getParent() instanceof Super)
+		{
+			return getParentClass().getExtendedClassDeclaration().getMethod((GenericCompatible)null, name, getArgumentList().getTypes());
 		}
 		
 		ClassDeclaration[] classes = getDeclaringClasses();
