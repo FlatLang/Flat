@@ -1,7 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.regex.Matcher;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.Message;
@@ -9,11 +7,9 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
+
+import java.util.regex.Matcher;
  
 /**
  * Node extension that represents the use of a binary operator.
@@ -881,7 +877,7 @@ public class BinaryOperation extends IValue
 		}
 		else */if (value instanceof Literal && Literal.isNullLiteral(value))
 		{
-			newVal = (Literal)Literal.decodeStatement(this, "\"null\"", value.getLocationIn(), true);
+			newVal = Literal.decodeStatement(this, "\"null\"", value.getLocationIn(), true);
 		}
 		
 		if (newVal != null)
