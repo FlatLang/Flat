@@ -107,9 +107,10 @@ public class RequireGenericTypeAnnotation extends Annotation
 				
 				for (GenericTypeParameter required : getGenericTypeParameterDeclaration())
 				{
-					int index = v.getDeclaration().getTypeClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
+					int index = decl.getParentClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
 					
-					GenericTypeArgument given = v.getIntelligentGenericTypeArgument(index);
+					// FIXME:
+					GenericTypeArgument given = v.getGenericTypeArgument(index);
 					
 					if (!SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass()))
 					{
