@@ -173,7 +173,12 @@ public class Literal extends IValue implements Accessible
 	
 	public static boolean isNullLiteral(Node node)
 	{
-		return node instanceof Literal && ((Literal)node).value.equals(NULL_IDENTIFIER);
+		return node instanceof Literal && ((Literal)node).isNullLiteral();
+	}
+	
+	public boolean isNullLiteral()
+	{
+		return value.equals(NULL_IDENTIFIER);
 	}
 	
 	public static Literal generateDefaultValue(Node parent, Location location, Value value)
@@ -442,36 +447,13 @@ public class Literal extends IValue implements Accessible
 			}
 		}
 		
-		if (value.equals(NULL_IDENTIFIER))
+		if (isNullLiteral())
 		{
-			if (getParent() instanceof BinaryOperation)
+			Value operand = getOppositeBinaryOperand();
+			
+			if (operand != null)
 			{
-				BinaryOperation node = (BinaryOperation)getParent();
-				
-				Value side = null;
-				
-				if (!node.isComparison())
-				{
-					if (node.getParent() instanceof BinaryOperation)
-					{
-						node = (BinaryOperation)node.getParent();
-						
-						side = node.getLeftOperand();
-					}
-				}
-				else
-				{
-					if (node.getLeftOperand() == this)
-					{
-						side = node.getRightOperand();
-					}
-					else
-					{
-						side = node.getLeftOperand();
-					}
-				}
-				
-				setType(side.getReturnedNode().getNovaTypeValue(side.getReturnedNode()));
+				setType(operand.getReturnedNode().getNovaTypeValue(operand.getReturnedNode()));
 			}
 			else if (getAncestorOfType(Return.class) != null)
 			{
@@ -479,9 +461,60 @@ public class Literal extends IValue implements Accessible
 			}
 		}
 		
-		result.returnedNode = (Node)checkSafeNavigation();
+		result.returnedNode = checkSafeNavigation();
 		
 		return result;
+	}
+	
+	public Value getOppositeBinaryOperand()
+	{
+		if (getParent() instanceof BinaryOperation)
+		{
+			BinaryOperation node = (BinaryOperation)getParent();
+			
+			Value side = null;
+			
+			if (!node.isComparison())
+			{
+				if (node.getParent() instanceof BinaryOperation)
+				{
+					node = (BinaryOperation)node.getParent();
+					
+					side = node.getLeftOperand();
+				}
+			}
+			else
+			{
+				if (node.getLeftOperand() == this)
+				{
+					side = node.getRightOperand();
+				}
+				else
+				{
+					side = node.getLeftOperand();
+				}
+			}
+			
+			return side;
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public FileDeclaration getReferenceFile()
+	{
+		if (isNullLiteral())
+		{
+			Value operand = getOppositeBinaryOperand();
+			
+			if (operand != null && !isNullLiteral(operand))
+			{
+				return operand.getReturnedNode().getReferenceFile();
+			}
+		}
+		
+		return super.getReferenceFile();
 	}
 	
 	/**
