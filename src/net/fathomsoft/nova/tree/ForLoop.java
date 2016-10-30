@@ -207,6 +207,7 @@ public class ForLoop extends Loop
 			return false;
 		}
 		
+		initialization.onAfterDecoded();
 		getArgumentList().addChild(initialization);
 		
 		return true;
@@ -285,7 +286,12 @@ public class ForLoop extends Loop
 		}
 		else
 		{
-			Assignment update = Assignment.decodeStatement(getArgumentList(), argument, location, require, false);
+			Value update = SyntaxTree.decodeValue(getArgumentList(), argument, location, require);
+			
+			if (update == null || (update instanceof Assignment == false && (update instanceof BinaryOperation == false || !((BinaryOperation)update).getOperator().isShorthand())))
+			{
+				return false;
+			}
 			
 			getArgumentList().addChild(update);
 		}
