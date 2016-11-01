@@ -441,9 +441,19 @@ public class Closure extends Variable
 					{
 						GenericTypeArgument arg = param.getCorrespondingArgument(getMethodCall());
 						
-						SyntaxMessage.queryError("Unable to find generic argument", this, arg == null);
-						
-						valid = arg.getTypeClass().isOfType(value2.getTypeClass());
+						if (arg == null)
+						{
+							SyntaxMessage.error("Unable to find generic argument", this);
+						}
+						else
+						{
+							ClassDeclaration type = arg.getTypeClass();
+							
+							if (type != null)
+							{
+								valid = type.isOfType(value2.getTypeClass());
+							}
+						}
 					}
 				}
 				
