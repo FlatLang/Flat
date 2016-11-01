@@ -302,9 +302,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public NovaMethodDeclaration[] getInterfaceVirtualMethods()
 	{
+		return getInterfaceVirtualMethods(true);
+	}
+	
+	public NovaMethodDeclaration[] getInterfaceVirtualMethods(boolean checkAncestors)
+	{
 		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
 		
-		addInterfaceVirtualMethods(methods, this);
+		addInterfaceVirtualMethods(methods, this, checkAncestors);
 		
 		return methods.toArray(new NovaMethodDeclaration[0]);
 	}
@@ -319,9 +324,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public NovaMethodDeclaration[] getExtensionVirtualMethods()
 	{
+		return getExtensionVirtualMethods(true);
+	}
+	
+	public NovaMethodDeclaration[] getExtensionVirtualMethods(boolean checkAncestors)
+	{
 		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
 		
-		addExtensionVirtualMethods(methods, this);
+		addExtensionVirtualMethods(methods, this, checkAncestors);
 		
 		return methods.toArray(new NovaMethodDeclaration[0]);
 	}
@@ -335,14 +345,22 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void addInterfaceVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
-		if (getExtendedClassDeclaration() != null)
+		addInterfaceVirtualMethods(methods, context, true);
+	}
+	
+	private void addInterfaceVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context, boolean checkAncestors)
+	{
+		if (checkAncestors && getExtendedClassDeclaration() != null)
 		{
 			getExtendedClassDeclaration().addInterfaceVirtualMethods(methods, this);
 		}
 		
-		getInterfacesImplementationList().forEachVisibleChild(x -> {
-			((Value)x).getTypeClass().addInterfaceVirtualMethods(methods, context);
-		});
+		if (checkAncestors)
+		{
+			getInterfacesImplementationList().forEachVisibleChild(x -> {
+				((Value)x).getTypeClass().addInterfaceVirtualMethods(methods, context);
+			});
+		}
 		
 		addVirtualMethods(methods, getMethodList(), true, true);
 		addVirtualMethods(methods, getPropertyMethodList(), true, true);
@@ -357,7 +375,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void addExtensionVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context)
 	{
-		if (getExtendedClassDeclaration() != null)
+		addExtensionVirtualMethods(methods, context, true);
+	}
+	
+	private void addExtensionVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context, boolean checkAncestors)
+	{
+		if (checkAncestors && getExtendedClassDeclaration() != null)
 		{
 			getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
 		}
@@ -368,6 +391,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list, boolean interfaceOnly, boolean implementation)
 	{
+		SearchFilter filter = new SearchFilter();
+		filter.allowMoreParameters = false;
+		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
 			MethodDeclaration m = list.getChild(i);
@@ -385,7 +411,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Interface)
 					{
-						NovaMethodDeclaration existing = getMethod(method, methods);
+						NovaMethodDeclaration existing = getMethod(method, methods, filter);
 						
 						if (existing != null)
 						{
@@ -419,10 +445,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private NovaMethodDeclaration getMethod(NovaMethodDeclaration method, ArrayList<NovaMethodDeclaration> methods)
 	{
+		return getMethod(method, methods, null);
+	}
+	
+	private NovaMethodDeclaration getMethod(NovaMethodDeclaration method, ArrayList<NovaMethodDeclaration> methods, SearchFilter filter)
+	{
 		for (NovaMethodDeclaration m : methods)
 		{
 			// TODO: need to make this more strict.
-			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(null, false, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
+			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(null, false, filter, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
 			{
 				return m;
 			}
