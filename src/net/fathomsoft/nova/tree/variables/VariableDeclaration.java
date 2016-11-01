@@ -429,7 +429,7 @@ public class VariableDeclaration extends IIdentifier
 		{
 			if (!isTangible())
 			{
-				getParent().removeChild(this);
+				detach();
 				
 				result.skipCycle = true;
 				result.nextIncrement = 0;
