@@ -2,12 +2,7 @@ package net.fathomsoft.nova.util;
 
 import net.fathomsoft.nova.Nova;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 
 /**
  * Utility methods for File operations, such as: reading, writing, and
@@ -77,13 +72,23 @@ public class FileUtils
 	{
 		File file = new File(parentDir, fileName);
 		
-		PrintWriter writer = new PrintWriter(new FileWriter(file));
+		PrintWriter writer = getFileWriter(file);
 		
 		writer.print(source);
 		
 		writer.close();
 		
 		return file;
+	}
+	
+	public static PrintWriter getFileWriter(File file) throws IOException
+	{
+		return new PrintWriter(new FileWriter(file));
+	}
+	
+	public static PrintWriter getFileWriter(String fileName, File parentDir) throws IOException
+	{
+		return getFileWriter(new File(parentDir, fileName));
 	}
 	
 	public static String getFileExtension(String filename)
