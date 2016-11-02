@@ -624,7 +624,7 @@ public class Variable extends Identifier
 				
 				if (accessor != null && !accessor.isDisabled() && (isAccessed() || getParentMethod() != accessor))
 				{
-					if (!field.isTangible() || getParentMethod() != field.getMutatorMethod())
+					if (field.allowsPropertyMethods() && (!field.isTangible() || getParentMethod() != field.getMutatorMethod()))
 					{
 						MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()", getLocationIn(), true, false, accessor);
 						
@@ -641,6 +641,17 @@ public class Variable extends Identifier
 		}
 		
 		return result;
+	}
+	
+	@Override
+	public String getNovaType(Value context, boolean checkArray)
+	{
+		if (declaration instanceof ClassInstanceDeclaration)
+		{
+			return declaration.getType();
+		}
+		
+		return super.getNovaType(context, checkArray);
 	}
 	
 	/**
