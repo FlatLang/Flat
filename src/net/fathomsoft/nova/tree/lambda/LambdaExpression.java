@@ -5,7 +5,6 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -259,13 +258,6 @@ public class LambdaExpression extends Value
 							
 							method.getParentClass().addChild(method);
 							
-							boolean requiresReturn = method.getType() != null && (!block || !operation.contains("\n")) && SyntaxUtils.findCharInBaseScope(operation, ';') < 0;
-							
-							if (requiresReturn)
-							{
-								operation = "return " + operation;
-							}
-							
 							if (block)
 							{
 								TreeGenerator generator = new TreeGenerator(null, operation, parent.getProgram().getTree());
@@ -276,6 +268,17 @@ public class LambdaExpression extends Value
 							{
 								Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
 								method.addChild(node);
+							}
+							
+							if (method.getType() != null && method.getScope().getNumVisibleChildren() == 1)
+							{
+								Node returned = method.getScope().getLastChild();
+								
+								Return r = new Return(method, returned.getLocationIn());
+								
+								r.getReturnValues().addChild(returned);
+								
+								method.getScope().addChild(r);
 							}
 							
 							ClosureContextDeclaration declaration = new ClosureContextDeclaration(parent, location, method.context);
