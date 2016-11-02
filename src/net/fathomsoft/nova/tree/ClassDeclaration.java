@@ -32,6 +32,8 @@ public class ClassDeclaration extends InstanceDeclaration
 {
 	private boolean abstractValue;
 	
+	public ClassInstanceDeclaration classInstanceDeclaration;
+	
 	private ExtendedClass	extendedClass;
 	
 	public ArrayBracketOverload arrayBracketOverload;
@@ -528,9 +530,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public Interface[] getImplementedInterfaces()
 	{
+		return getImplementedInterfaces(true);
+	}
+	
+	public Interface[] getImplementedInterfaces(boolean checkAncestors)
+	{
 		TypeList<InterfaceImplementation> list = getInterfacesImplementationList();
 		
-		ArrayList<Interface> array = new ArrayList<Interface>();
+		ArrayList<Interface> array = new ArrayList<>();
 		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
@@ -548,11 +555,14 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 		}
 		
-		for (int i = array.size() - 1; i >= 0; i--)
+		if (checkAncestors)
 		{
-			for (Interface inter : array.get(i).getImplementedInterfaces())
+			for (int i = array.size() - 1; i >= 0; i--)
 			{
-				array.add(inter);
+				for (Interface inter : array.get(i).getImplementedInterfaces())
+				{
+					array.add(inter);
+				}
 			}
 		}
 		
@@ -2147,6 +2157,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
+			classInstanceDeclaration = new ClassInstanceDeclaration(this, Location.INVALID);
+			getFieldList().addChild(classInstanceDeclaration);
+			
 			getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
 			
 			validateDeclaration(phase);
