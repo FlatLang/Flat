@@ -1269,6 +1269,18 @@ public class SyntaxTree
 				return method.getNextUnnamedParameter();
 			}
 		}
+		if (statement.equals("class"))
+		{
+			if (!(parent instanceof Accessible) || !((Accessible)parent).canAccess())
+			{
+				ClassDeclaration clazz = ((Value)parent).getTypeClass();
+				
+				if (clazz != null)
+				{
+					return clazz.classInstanceDeclaration;
+				}
+			}
+		}
 		if (SyntaxUtils.isValidIdentifier(statement))
 		{
 			node = checkForVariableAccess(parent, statement, validateAccess);
