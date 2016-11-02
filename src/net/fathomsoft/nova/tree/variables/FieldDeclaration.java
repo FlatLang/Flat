@@ -91,6 +91,11 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		return (!containsAccessorMethod() || containsInstance(getAccessorMethod())) && super.isTangible();
 	}
 	
+	public boolean allowsPropertyMethods()
+	{
+		return true;
+	}
+	
 	private boolean containsInstance(Node parent)
 	{
 		for (int i = 0; i < parent.getNumChildren(); i++)
