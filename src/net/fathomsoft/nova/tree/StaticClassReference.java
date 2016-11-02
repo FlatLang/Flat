@@ -57,6 +57,22 @@ public class StaticClassReference extends IIdentifier
 		return null;
 	}
 	
+	public ClassDeclaration getStaticTypeClass()
+	{
+		return super.getTypeClass(false, false);
+	}
+	
+	@Override
+	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
+	{
+		if (!isDecoding() && !doesAccess())
+		{
+			return getProgram().getClassDeclaration("nova/Class");
+		}
+		
+		return super.getTypeClass(checkCast, defaultGenericType);
+	}
+	
 	@Override
 	public ClassDeclaration getDeclaringClass()
 	{
