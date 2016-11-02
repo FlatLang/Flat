@@ -1870,7 +1870,7 @@ public class SyntaxUtils
 		
 		while (clazz != null)
 		{
-			if (clazz.getName().equals(type))
+			if (clazz.getName() != null && clazz.getName().equals(type))
 			{
 				return type;
 			}
