@@ -318,6 +318,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		
 		if (methods.length > 1)
 		{
+			getParentClass().getMethods(getName());
 			SyntaxMessage.error("Non-external method with name '" + alias + "' already exists", this, false);
 			
 			return result.errorOccurred();
