@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import java.util.ArrayList;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -42,7 +43,7 @@ public class InterfaceVTable extends VTable
 	@Override
 	public NovaMethodDeclaration[] getVirtualMethods()
 	{
-		ArrayList<NovaMethodDeclaration> methods = new ArrayList<NovaMethodDeclaration>();
+		ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
 		
 		NovaMethodDeclaration[] interfaceMethods = getParentClass().getInterfaceVirtualMethods();
 		
