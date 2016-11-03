@@ -97,6 +97,43 @@ public class Interface extends ClassDeclaration
 	}
 	
 	@Override
+	public MethodDeclaration[] getMethods(String methodName, MethodList.SearchFilter filter)
+	{
+		MethodDeclaration[] methods = super.getMethods(methodName, filter);
+		
+		ClassDeclaration obj = getExtendedClass().getTypeClass();//getProgram().getClassDeclaration("nova/Object");
+		
+		for (Interface i : obj.getImplementedInterfaces())
+		{
+			if (i == this)
+			{
+				return methods;
+			}
+		}
+		
+		MethodDeclaration[] extra = obj.getMethods(methodName, filter);
+		
+		if (extra.length > 0)
+		{
+			ArrayList<MethodDeclaration> list = new ArrayList<>();
+			
+			for (MethodDeclaration method : methods)
+			{
+				list.add(method);
+			}
+			
+			for (MethodDeclaration method : extra)
+			{
+				list.add(method);
+			}
+			
+			return list.toArray(new MethodDeclaration[0]);
+		}
+		
+		return methods;
+	}
+	
+	@Override
 	public void addDefaultConstructor()
 	{
 		
