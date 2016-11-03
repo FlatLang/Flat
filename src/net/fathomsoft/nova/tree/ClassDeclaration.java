@@ -364,8 +364,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			});
 		}
 		
-		addVirtualMethods(methods, getMethodList(), true, true);
-		addVirtualMethods(methods, getPropertyMethodList(), true, true);
+		addVirtualMethods(methods, getMethodList(), true, true, false);
+		addVirtualMethods(methods, getPropertyMethodList(), true, true, false);
 	}
 	
 	/**
@@ -387,11 +387,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
 		}
 		
-		addVirtualMethods(methods, getMethodList(), false, false);
-		addVirtualMethods(methods, getPropertyMethodList(), false, false);
+		addVirtualMethods(methods, getMethodList(), false, false, true);
+		addVirtualMethods(methods, getPropertyMethodList(), false, false, true);
 	}
 	
-	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list, boolean interfaceOnly, boolean implementation)
+	private void addVirtualMethods(ArrayList<NovaMethodDeclaration> methods, MethodList list, boolean interfaceOnly, boolean implementation, boolean excludeInterfaces)
 	{
 		SearchFilter filter = new SearchFilter();
 		filter.allowMoreParameters = false;
@@ -411,19 +411,22 @@ public class ClassDeclaration extends InstanceDeclaration
 						method = method.getVirtualMethod();
 					}*/
 					
-					if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Interface)
+					if (!excludeInterfaces || method.getRootDeclaration().getParentClass() instanceof Interface == false)
 					{
-						NovaMethodDeclaration existing = getMethod(method, methods, filter);
-						
-						if (existing != null)
+						if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Interface)
 						{
-							int index = methods.indexOf(existing);
+							NovaMethodDeclaration existing = getMethod(method, methods, filter);
 							
-							methods.set(index, method);
-						}
-						else
-						{
-							methods.add(method);
+							if (existing != null)
+							{
+								int index = methods.indexOf(existing);
+								
+								methods.set(index, method);
+							}
+							else
+							{
+								methods.add(method);
+							}
 						}
 					}
 				}
@@ -1759,7 +1762,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (!method.isExternal() && !(method instanceof AssignmentMethod) &&
 						!(method instanceof InitializationMethod) &&
-						method.getVisibility() == PUBLIC)
+						method.getVisibility() == PUBLIC && method.getRootDeclaration().getParentClass() == this)
 				{
 					methods.add(method);
 				}
