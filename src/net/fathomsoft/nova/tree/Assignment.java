@@ -481,7 +481,7 @@ public class Assignment extends Value
 				//declaration.setType(assignmentType.getType(), true, false, false);
 				declaration.correspondingImplicit = assignment;
 				
-				if (assignment.isPrimitive() && assignment.getType().equals("Byte") || assignment.getType().equals("Short"))
+				if (assignment.getType() != null && (assignment.isPrimitive() && assignment.getType().equals("Byte") || assignment.getType().equals("Short")))
 				{
 					declaration.setType("Int");
 				}
