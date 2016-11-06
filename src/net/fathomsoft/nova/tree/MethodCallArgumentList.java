@@ -178,17 +178,20 @@ public class MethodCallArgumentList extends ArgumentList
 		{
 			Parameter param = method.getParameterList().getParameter(i);
 			
-			if (containsNamedArgument(param.getName()))
+			if (param != null)
 			{
-				Value value = ((Value)getVisibleChild(getNamedArgumentIndex(param.getName())));
-				
-				types.add(value);
-			}
-			else
-			{
-				types.add(new DefaultArgument(this, Location.INVALID));
-				
-				offset++;
+				if (containsNamedArgument(param.getName()))
+				{
+					Value value = ((Value)getVisibleChild(getNamedArgumentIndex(param.getName())));
+					
+					types.add(value);
+				}
+				else
+				{
+					types.add(new DefaultArgument(this, Location.INVALID));
+					
+					offset++;
+				}
 			}
 		}
 		
