@@ -1047,7 +1047,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 		if the field is not found.
 	 * @return
 	 */
-	private FieldDeclaration getField(String fieldName, boolean checkAncestor)
+	public FieldDeclaration getField(String fieldName, boolean checkAncestor)
 	{
 		FieldDeclaration field = getFieldList().getField(fieldName);
 		
@@ -1058,6 +1058,19 @@ public class ClassDeclaration extends InstanceDeclaration
 			if (field == null && checkAncestor && getExtendedClassDeclaration() != null)
 			{
 				field = getExtendedClassDeclaration().getField(fieldName);
+			}
+			
+			if (field == null)
+			{
+				for (Interface i : getImplementedInterfaces(false))
+				{
+					field = i.getField(fieldName, false);
+					
+					if (field != null)
+					{
+						return field;
+					}
+				}
 			}
 		}
 		
