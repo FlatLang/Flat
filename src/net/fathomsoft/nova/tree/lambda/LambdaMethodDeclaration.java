@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree.lambda;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -100,6 +101,31 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 *
+	 * @param phase The phase that the node is being validated in.
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (methodCall == null)
+		{
+			detach();
+			
+			result.skipCycle = true;
+		}
+		
+		return result;
 	}
 	
 	/**
