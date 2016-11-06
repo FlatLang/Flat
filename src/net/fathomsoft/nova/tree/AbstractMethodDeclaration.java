@@ -38,6 +38,12 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	}
 	
 	@Override
+	public boolean isVirtual()
+	{
+		return true;
+	}
+	
+	@Override
 	public boolean isVirtualMethodDeclaration()
 	{
 		return true;
