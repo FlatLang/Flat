@@ -801,6 +801,11 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public void addChild(int index, Node node, Node toNode, boolean detach)
 	{
+		if (node == null)
+		{
+			return;
+		}
+		
 		if (detach)
 		{
 			// If the node already belongs to a parent, remove it from its old parent.
