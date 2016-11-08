@@ -1026,11 +1026,11 @@ public class SyntaxTree
 			
 			if (index > 0)
 			{
-				current = statement.substring(offset, index);
+				current = statement.substring(offset, index).trim();
 			}
 			else
 			{
-				current = statement.substring(offset, statement.length());
+				current = statement.substring(offset, statement.length()).trim();
 			}
 			
 			safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
