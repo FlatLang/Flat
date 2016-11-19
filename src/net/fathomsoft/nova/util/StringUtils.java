@@ -1228,8 +1228,7 @@ public class StringUtils
 					{
 						break;
 					}
-					
-					if (i == str.length() - 1)
+					else if (i == str.length() - 1)
 					{
 						Bounds bounds = new Bounds(start, start + str.length());
 						
