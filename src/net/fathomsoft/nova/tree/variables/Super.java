@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.ParameterList;
 import net.fathomsoft.nova.tree.Priority;
+import net.fathomsoft.nova.tree.StaticClassReference;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -46,7 +47,16 @@ public class Super extends Priority
 	{
 		if (statement.equals(IDENTIFIER))
 		{
-			String type = parent.getParentClass().getExtendedClassName();
+			String type = null;
+			
+			if (parent instanceof StaticClassReference)
+			{
+				type = ((StaticClassReference)parent).getType();
+			}
+			else
+			{
+				type = parent.getParentClass().getExtendedClassName();
+			}
 			
 			Super    n = new Super(parent, location);
 			Priority p = Priority.decodeStatement(parent, "((" + type + ")" + ParameterList.OBJECT_REFERENCE_IDENTIFIER + ")", location, require);
