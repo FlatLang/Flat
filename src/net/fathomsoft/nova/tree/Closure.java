@@ -168,7 +168,14 @@ public class Closure extends Variable
 			}
 		}
 		
-		return (NovaMethodDeclaration)declaringClass.getMethod(contexts, name, filter, getClosureDeclaration().getParameterList().getTypes());
+		ClosureDeclaration closure = getClosureDeclaration();
+		
+		if (closure != null)
+		{
+			return (NovaMethodDeclaration)declaringClass.getMethod(contexts, name, filter, closure.getParameterList().getTypes());
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -271,7 +278,9 @@ public class Closure extends Variable
 			}
 		}
 		
-		return (ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
+		Parameter param = (Parameter)getMethodCall().getCorrespondingParameter((Value)getRootNode());
+		
+		return param instanceof ClosureDeclaration ? (ClosureDeclaration)param : null;
 	}
 	
 	@Override
