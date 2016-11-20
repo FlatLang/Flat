@@ -258,7 +258,7 @@ public class MethodCall extends Variable
 		}
 		if (getParent() instanceof Super)
 		{
-			return getParentClass().getExtendedClassDeclaration().getMethod((GenericCompatible)null, name, getArgumentList().getTypes());
+			return ((Super)getParent()).getTypeClass().getMethod((GenericCompatible)null, name, getArgumentList().getTypes());
 		}
 		
 		ClassDeclaration[] classes = getDeclaringClasses();
