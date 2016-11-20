@@ -244,7 +244,7 @@ public class Return extends IValue
 		
 		if (expected == null)
 		{
-			return SyntaxMessage.queryError("Method '" + name + "' cannot return a value", this, require);
+			return SyntaxMessage.queryError("Method '" + name + "' does not have a return type, and therefore cannot return a value", this, require);
 		}
 		else
 		{
