@@ -1011,7 +1011,24 @@ public class SyntaxTree
 			}
 			else
 			{
-				parent.addChild((Node)node);
+				if (parent instanceof StaticClassReference && node instanceof Super)
+				{
+					if (root == parent)
+					{
+						parent = root.getParent();
+						root = node;
+					}
+					else
+					{
+						parent.replaceWith((Node)node);
+						parent = (Node)node;
+						//parent.addChild((Node)node);
+					}
+				}
+				else
+				{
+					parent.addChild((Node)node);
+				}
 				
 				if (index < 0)
 				{
