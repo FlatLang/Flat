@@ -507,6 +507,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public ClassDeclaration getCommonAncestor(ClassDeclaration node)
 	{
+		if (node == null) return null;
+		
 		ClassDeclaration current = this;
 		
 		while (current != null)
