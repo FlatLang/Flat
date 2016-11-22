@@ -134,6 +134,12 @@ public class Interface extends ClassDeclaration
 	}
 	
 	@Override
+	public boolean isRelatedTo(ClassDeclaration node)
+	{
+		return true;
+	}
+	
+	@Override
 	public void addDefaultConstructor()
 	{
 		
