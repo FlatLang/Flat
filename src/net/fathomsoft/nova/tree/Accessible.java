@@ -773,7 +773,7 @@ public interface Accessible
 				return true;
 			}
 			
-			current = current.getAccessingNode();
+			current = current.getAccessingNode(true);
 		}
 		
 		return false;
