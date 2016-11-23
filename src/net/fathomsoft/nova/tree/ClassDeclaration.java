@@ -1119,10 +1119,46 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (compatible.size() > 1)
 			{
-				checkCompatible(methods, arguments);
-				SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", (Node)context);
+				boolean searching = true;
 				
-				return null;
+				while (searching)
+				{
+					searching = false;
+					
+					outer:
+					for (int i = compatible.size() - 1; i >= 0; i--)
+					{
+						for (int j = compatible.size() - 1; j >= 0; j--)
+						{
+							MethodDeclaration method1 = compatible.get(i);
+							MethodDeclaration method2 = compatible.get(j);
+							
+							if (method1.getDeclaringClass() != method2.getDeclaringClass())
+							{
+								if (method1.getDeclaringClass().isOfType(method2.getDeclaringClass()))
+								{
+									compatible.remove(j);
+								}
+								else
+								{
+									compatible.remove(i);
+								}
+								
+								searching = true;
+								
+								break outer;
+							}
+						}
+					}
+				}
+				
+				if (compatible.size() > 1)
+				{
+					checkCompatible(methods, arguments);
+					SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", this);//(Node)context);
+					
+					return null;
+				}
 			}
 		}
 		
