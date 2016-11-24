@@ -209,9 +209,9 @@ public class Catch extends ExceptionHandler
 	private boolean decodeException(Location location, boolean require)
 	{
 		Exception exception = new Exception(this, location);
-		exception.setType(getExceptionDeclaration().getType());
+		exception.setType(getExceptionDeclaration().getTypeClass());
 		
-		if (exception.getID() <= 0)
+		if (exception.type == null)
 		{
 			SyntaxMessage.error("Unknown exception type", exception);
 		}
@@ -243,7 +243,7 @@ public class Catch extends ExceptionHandler
 //		
 //		while (exception != null && exception.doesExtendClass(object))
 //		{
-			tryNode.addExceptionCode(Exception.getExceptionCode(exception.getType()));
+			tryNode.addCaughtException(exception);
 //			
 //			exception = exception.getTypeClass().getExtendedClassDeclaration();
 //		}

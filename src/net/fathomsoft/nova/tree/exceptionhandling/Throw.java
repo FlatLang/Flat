@@ -159,7 +159,7 @@ public class Throw extends ExceptionHandler
 		
 		Identifier node      = (Identifier)thrownNode;
 		Exception  exception = new Exception(this, location);
-		exception.setType(node.getName());
+		exception.setType(node.getTypeClass());
 		
 		addChild(exception, this);
 		addChild(node, this);

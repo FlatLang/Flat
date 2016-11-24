@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
@@ -19,7 +20,7 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Try extends ExceptionHandler
 {
-	public ArrayList<Integer>	codes;
+	public ArrayList<ClassDeclaration>	exceptions;
 	
 	public static final String IDENTIFIER = "try";
 	
@@ -32,20 +33,20 @@ public class Try extends ExceptionHandler
 	{
 		super(temporaryParent, locationIn);
 		
-		codes = new ArrayList<Integer>();
+		exceptions = new ArrayList<>();
 	}
 	
 	/**
 	 * Add the specified exception code to the list of exceptions that
 	 * this try exception handling block catches.
 	 * 
-	 * @param code The type of exception code that is caught.
+	 * @param caught The type of exception code that is caught.
 	 */
-	public void addExceptionCode(int code)
+	public void addCaughtException(ClassDeclaration caught)
 	{
-		if (!codes.contains(code))
+		if (!exceptions.contains(caught))
 		{
-			codes.add(code);
+			exceptions.add(caught);
 		}
 	}
 	
@@ -164,11 +165,11 @@ public class Try extends ExceptionHandler
 	{
 		super.cloneTo(node, cloneChildren);
 		
-		node.codes = new ArrayList<Integer>();
+		node.exceptions = new ArrayList<ClassDeclaration>();
 		
-		for (Integer c : codes)
+		for (ClassDeclaration c : exceptions)
 		{
-			node.codes.add(c);
+			node.exceptions.add(c);
 		}
 		
 		return node;

@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.Assignment;
+import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.LocalDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -28,11 +29,7 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Exception extends Node
 {
-	private int			id;
-	
-	private static int	exceptionId	= 1;
-	
-	private static final HashMap<String, Integer>	ids;
+	public ClassDeclaration type;
 	
 	/**
 	 * Identifier for the exception data passed to a method.
@@ -40,37 +37,11 @@ public class Exception extends Node
 	public static final String	EXCEPTION_DATA_IDENTIFIER = "exceptionData";
 	
 	/**
-	 * Initialize static data.
-	 */
-	static
-	{
-		ids = new HashMap<String, Integer>();
-		
-		ids.put("Exception", exceptionId++);
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Exception(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	public static int getExceptionCode(String type)
-	{
-		return ids.get(type);
-	}
-	
-	/**
-	 * Get the ID of the Exception. The ID is needed for implementing
-	 * the c version of the exception handling.
-	 * 
-	 * @return The ID of the Exception.
-	 */
-	public int getID()
-	{
-		return id;
 	}
 	
 	/**
@@ -83,18 +54,9 @@ public class Exception extends Node
 	 * @param type The name (type) of the Exception that is being
 	 * 		generated.
 	 */
-	public void setType(String type)
+	public void setType(ClassDeclaration type)
 	{
-		if (ids.containsKey(type))
-		{
-			id = ids.get(type);
-		}
-		else
-		{
-			id = exceptionId++;
-			
-			ids.put(type, id);
-		}
+		this.type = type;
 	}
 	
 	/**
@@ -127,7 +89,7 @@ public class Exception extends Node
 	{
 		super.cloneTo(node, cloneChildren);
 		
-		node.id = id;
+		node.type = type;
 		
 		return node;
 	}
