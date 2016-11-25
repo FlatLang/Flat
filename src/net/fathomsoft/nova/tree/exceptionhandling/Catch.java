@@ -20,6 +20,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Catch extends ExceptionHandler
 {
+	public boolean soft = false;
+	
 	public static final String IDENTIFIER = "catch";
 	
 	/**
@@ -115,6 +117,15 @@ public class Catch extends ExceptionHandler
 			Catch    n        = new Catch(parent, location);
 			Location newLoc   = location.asNew();
 			
+			statement = statement.substring(IDENTIFIER.length()).trim();
+			
+			if (StringUtils.startsWithWord(statement, "soft"))
+			{
+				n.soft = true;
+				
+				statement = statement.substring("soft".length()).trim();
+			}
+			
 			Bounds   bounds   = n.calculateCatchContents(statement);
 			String   contents = statement.substring(bounds.getStart(), bounds.getEnd());
 			
@@ -209,6 +220,7 @@ public class Catch extends ExceptionHandler
 	private boolean decodeException(Location location, boolean require)
 	{
 		Exception exception = new Exception(this, location);
+		exception.soft = soft;
 		exception.setType(getExceptionDeclaration().getTypeClass());
 		
 		if (exception.type == null)
@@ -243,7 +255,7 @@ public class Catch extends ExceptionHandler
 //		
 //		while (exception != null && exception.doesExtendClass(object))
 //		{
-			tryNode.addCaughtException(exception);
+			tryNode.addCaughtException(getException());
 //			
 //			exception = exception.getTypeClass().getExtendedClassDeclaration();
 //		}
