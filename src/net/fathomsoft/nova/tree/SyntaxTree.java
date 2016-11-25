@@ -1142,6 +1142,11 @@ public class SyntaxTree
 				if (node == null)
 				{
 					node = (Accessible)decodeStatementOfType(parent, statement, location, require, Priority.class);
+					
+					if (node == null)
+					{
+						node = (Accessible)Array.decodeStatement(parent, statement, location, false);
+					}
 				}
 			}
 		}
