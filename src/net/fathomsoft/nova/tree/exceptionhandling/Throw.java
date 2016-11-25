@@ -21,6 +21,8 @@ import net.fathomsoft.nova.util.StringUtils;
  */
 public class Throw extends ExceptionHandler
 {
+	public boolean soft = false;
+	
 	public static final String IDENTIFIER = "throw";
 	
 	/**
@@ -99,13 +101,22 @@ public class Throw extends ExceptionHandler
 	 */
 	public static Throw decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		boolean soft = StringUtils.startsWithWord(statement, "softly");
+		
+		if (soft)
+		{
+			statement = statement.substring("softly ".length()).trim();
+		}
+		
 		if (StringUtils.startsWithWord(statement, IDENTIFIER))
 		{
-			Throw    n      = new Throw(parent, location);
+			Throw n = new Throw(parent, location);
+			n.soft = soft;
+			
 			Location newLoc = location.asNew();
 			
-			Bounds   bounds = n.calculateThrowContents(statement);
-			String   thrown = statement.substring(bounds.getStart(), bounds.getEnd());
+			Bounds bounds = n.calculateThrowContents(statement);
+			String thrown = statement.substring(bounds.getStart(), bounds.getEnd());
 			
 			newLoc.addBounds(bounds.getStart(), bounds.getEnd());
 			
