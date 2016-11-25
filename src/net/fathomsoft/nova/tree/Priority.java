@@ -127,6 +127,11 @@ public class Priority extends Value implements Accessible
 	
 	public Value getReturnedContents()
 	{
+		if (getContents() instanceof Assignment)
+		{
+			return ((Assignment)getContents()).getAssignedNode();
+		}
+		
 		return getContents().getReturnedNode();
 	}
 	
