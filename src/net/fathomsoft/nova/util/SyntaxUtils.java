@@ -1606,9 +1606,10 @@ public class SyntaxUtils
 		
 		while (formatMatcher.find())
 		{
-			char c = text.charAt(formatMatcher.start());
+			int index = formatMatcher.start();
+			char c = text.charAt(index);
 			
-			if (c == '{' || c == '(')
+			if ((c == '{' || c == '(') && (index == 0 || text.charAt(index - 1) != '\''))
 			{
 				tabs.append('\t');
 				
