@@ -590,7 +590,7 @@ public class SyntaxUtils
 	 */
 	public static boolean isString(Node node)
 	{
-		if (node instanceof Literal)
+		if (node instanceof Literal && !((Literal)node).doesAccess())
 		{
 			Literal literal = (Literal)node;
 			
