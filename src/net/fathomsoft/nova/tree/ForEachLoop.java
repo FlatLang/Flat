@@ -150,7 +150,7 @@ public class ForEachLoop extends Loop
 	 */
 	public static Loop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
+		if (statement.startsWith(IDENTIFIER) && StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			ForEachLoop n      = new ForEachLoop(parent, location);
 			Bounds      bounds = SyntaxUtils.findParenthesesBounds(n, statement);

@@ -117,7 +117,7 @@ public class ForLoop extends Loop
 	 */
 	public static ForLoop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
+		if (statement.startsWith(IDENTIFIER) && StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			ForLoop n      = new ForLoop(parent, location);
 			Bounds  bounds = SyntaxUtils.findParenthesesBounds(n, statement);
