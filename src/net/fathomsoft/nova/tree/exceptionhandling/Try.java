@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
@@ -20,7 +21,7 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Try extends ExceptionHandler
 {
-	public ArrayList<ClassDeclaration>	exceptions;
+	public ArrayList<Exception>	exceptions;
 	
 	public static final String IDENTIFIER = "try";
 	
@@ -42,11 +43,15 @@ public class Try extends ExceptionHandler
 	 * 
 	 * @param caught The type of exception code that is caught.
 	 */
-	public void addCaughtException(ClassDeclaration caught)
+	public void addCaughtException(Exception caught)
 	{
 		if (!exceptions.contains(caught))
 		{
 			exceptions.add(caught);
+		}
+		else
+		{
+			SyntaxMessage.error("Exception of type '" + caught.type.getName() + "' already caught", this);
 		}
 	}
 	
@@ -165,9 +170,9 @@ public class Try extends ExceptionHandler
 	{
 		super.cloneTo(node, cloneChildren);
 		
-		node.exceptions = new ArrayList<ClassDeclaration>();
+		node.exceptions = new ArrayList<Exception>();
 		
-		for (ClassDeclaration c : exceptions)
+		for (Exception c : exceptions)
 		{
 			node.exceptions.add(c);
 		}
