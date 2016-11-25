@@ -119,11 +119,11 @@ public class Catch extends ExceptionHandler
 			
 			statement = statement.substring(IDENTIFIER.length()).trim();
 			
-			if (StringUtils.startsWithWord(statement, "soft"))
+			if (StringUtils.startsWithWord(statement, "all"))
 			{
 				n.soft = true;
 				
-				statement = statement.substring("soft".length()).trim();
+				statement = statement.substring("all".length()).trim();
 			}
 			
 			Bounds   bounds   = n.calculateCatchContents(statement);
