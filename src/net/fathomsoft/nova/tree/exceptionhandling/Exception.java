@@ -29,6 +29,8 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Exception extends Node
 {
+	public boolean soft = false;
+	
 	public ClassDeclaration type;
 	
 	/**
