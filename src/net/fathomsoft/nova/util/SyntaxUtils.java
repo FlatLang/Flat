@@ -2456,6 +2456,8 @@ public class SyntaxUtils
 					{
 						if (!value.getProgram().getController().isTesting)
 						{
+							required.getGenericTypeParameter();
+							param.getCorrespondingArgument(context);
 							isTypeCompatible(context, value, given, false);
 							param.getCorrespondingArgument(context);
 						}
