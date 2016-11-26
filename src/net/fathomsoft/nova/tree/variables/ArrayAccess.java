@@ -95,6 +95,11 @@ public class ArrayAccess extends Node implements ArrayCompatible
 					
 					ClassDeclaration clazz = reference.getTypeClass(false);
 					
+					if (clazz == null)
+					{
+						return null;
+					}
+					
 					if (!clazz.containsArrayBracketOverload())
 					{
 						reference.getTypeClass(false);
