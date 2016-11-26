@@ -71,7 +71,7 @@ public class WhileLoop extends Loop
 	 */
 	public static WhileLoop decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
+		if (statement.startsWith(IDENTIFIER) && StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			WhileLoop n      = new WhileLoop(parent, location);
 			Bounds    bounds = SyntaxUtils.findParenthesesBounds(n, statement);
