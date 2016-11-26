@@ -68,7 +68,12 @@ public class Variable extends Identifier
 	@Override
 	public String getGenericReturnType()
 	{
-		if (isGenericType())
+		return getGenericReturnType(true);
+	}
+	
+	public String getGenericReturnType(boolean checkCast)
+	{
+		if (isGenericType(checkCast))
 		{
 			GenericTypeParameter param = getGenericTypeParameter();
 			GenericTypeArgument arg = param.getCorrespondingArgument(this);
@@ -483,6 +488,11 @@ public class Variable extends Identifier
 	@Override
 	public GenericTypeParameter getGenericTypeParameter()
 	{
+		return getGenericTypeParameter(true);
+	}
+	
+	public GenericTypeParameter getGenericTypeParameter(boolean checkCast)
+	{
 		if (declaration == null)
 		{
 			return null;
@@ -496,7 +506,7 @@ public class Variable extends Identifier
 			
 			if (type != null && type.isOfType(getReferenceDeclaration().getParentClass()))
 			{
-				GenericTypeParameter param = type.getGenericTypeParameter(getType(), this);
+				GenericTypeParameter param = type.getGenericTypeParameter(getType(checkCast), this);
 				
 				if (param != null)
 				{

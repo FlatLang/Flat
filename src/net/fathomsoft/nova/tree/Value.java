@@ -570,9 +570,9 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
 	{
-		if (defaultGenericType && isGenericType())
+		if (defaultGenericType && isGenericType(false, checkCast))
 		{
-			return getFileDeclaration().getImport(getGenericReturnType(), false).getClassDeclaration();
+			return getFileDeclaration().getImport(getGenericReturnType(checkCast), false).getClassDeclaration();
 		}
 		
 		return getProgram().getClassDeclaration(getTypeClassLocation(checkCast));
@@ -618,9 +618,9 @@ public abstract class Value extends Node implements AbstractValue
 		
 		String type = null;
 		
-		if (isGenericType() && getGenericReturnType() != null)//getParentClass(true).containsGenericTypeParameter(getType()))
+		if (isGenericType(false, checkCast) && getGenericReturnType(checkCast) != null)//getParentClass(true).containsGenericTypeParameter(getType()))
 		{
-			type = getGenericReturnType();//getParentClass().getGenericTypeParameter(getType()).getDefaultType();
+			type = getGenericReturnType(checkCast);//getParentClass().getGenericTypeParameter(getType()).getDefaultType();
 		}
 		else
 		{
@@ -1078,9 +1078,14 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public GenericTypeParameter getGenericTypeParameter()
 	{
+		return getGenericTypeParameter(true);
+	}
+	
+	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
+	{
 		if (getParentMethod(true) != null)
 		{
-			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType());
+			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType(checkArray));
 			
 			if (param != null)
 			{
@@ -1095,7 +1100,7 @@ public abstract class Value extends Node implements AbstractValue
 			
 			if (clazz != null)
 			{
-				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(), this);
+				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
 				
 				if (param != null)
 				{
@@ -1108,7 +1113,7 @@ public abstract class Value extends Node implements AbstractValue
 			return null;
 		}
 		
-		return getParentClass().getGenericTypeParameter(getType(), this);
+		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
 	}
     
 	public final boolean isGenericType()
@@ -1118,13 +1123,18 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public final boolean isGenericType(boolean checkArray)
 	{
-		if (getGenericTypeParameter() != null)
+		return isGenericType(checkArray, true);
+	}
+	
+	public final boolean isGenericType(boolean checkArray, boolean checkCast)
+	{
+		if (getGenericTypeParameter(checkCast) != null)
 		{
 			return true;
 		}
 		if (checkArray)
 		{
-			if (getTypeClass() == getProgram().getClassDeclaration("nova/datastruct/list/Array"))
+			if (getTypeClass(checkCast) == getProgram().getClassDeclaration("nova/datastruct/list/Array"))
 			{
 				GenericTypeArgumentList list = getGenericTypeArgumentList();
 				
@@ -1147,7 +1157,12 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getGenericReturnType()
 	{
-		GenericTypeParameter param = getParentClass().getGenericTypeParameter(getType(), this);
+		return getGenericReturnType(true);
+	}
+	
+	public String getGenericReturnType(boolean checkCast)
+	{
+		GenericTypeParameter param = getGenericTypeParameter(checkCast);//getParentClass().getGenericTypeParameter(getType(checkCast), this);
 		
 		if (param != null)
 		{
