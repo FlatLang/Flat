@@ -136,6 +136,12 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
+	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
+	{
+		return getContents().getReturnedNode().getTypeClass(checkCast, defaultGenericType);
+	}
+	
+	@Override
 	public FileDeclaration getReferenceFile()
 	{
 		return getReturnedContents().getReferenceFile();
