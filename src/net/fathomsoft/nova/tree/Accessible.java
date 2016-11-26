@@ -110,15 +110,7 @@ public interface Accessible
 		
 		if (value.isGenericType())
 		{
-			//GenericTypeArgument arg = value.getNovaTypeClass().getGenericTypeParameter(value.getType()).getCorrespondingArgument(value);
-			GenericTypeArgument arg = getReferenceNode().getGenericTypeArgumentFromParameter(type); 
-			
-			if (arg.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
-			{
-				return arg.getGenericTypeArgumentList().getVisibleChild(0);
-			}
-			
-			return arg;
+			return value.getTypeClass().getGenericTypeArgumentFromParameter(type);
 		}
 		else
 		{
