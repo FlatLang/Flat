@@ -66,6 +66,10 @@ public class Repeat extends Loop
 	 */
 	public static Repeat decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		if (true)
+		{
+			return null;
+		}
 		String word = StringUtils.findNextWord(statement);
 		
 		Bounds end = new Bounds(0, word.length());
