@@ -108,9 +108,11 @@ public interface Accessible
 			value = (Value)getReferenceNode();
 		}
 		
-		if (value.isGenericType())
+		Value novaType = value.getNovaTypeValue((Value)this);
+		
+		if (novaType.isGenericType())
 		{
-			return value.getTypeClass().getGenericTypeArgumentFromParameter(type);
+			return ((Accessible)value).getGenericTypeArgumentFromParameter(type);
 		}
 		else
 		{
@@ -187,13 +189,15 @@ public interface Accessible
 			{
 				return ((Variable)getReferenceNode()).getDeclaration().getGenericTypeArgument(index);
 			}
-			else */if (index >= 0 && !value.isGenericType())
+			else */
+			
+			if (index >= 0 && !novaType.isGenericType())
 			{
-				GenericTypeArgumentList args = value.getGenericTypeArgumentList();
+				GenericTypeArgumentList args = novaType.getGenericTypeArgumentList();
 				
 				if (args != null && args.getNumVisibleChildren() > index)
 				{
-					return value.getGenericTypeArgument(index);
+					return novaType.getGenericTypeArgument(index);
 				}
 				
 				Node ref = value.getParent();
