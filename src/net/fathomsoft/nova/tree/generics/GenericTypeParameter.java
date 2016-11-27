@@ -93,9 +93,9 @@ public class GenericTypeParameter extends IValue
 	
 	public GenericTypeArgument getCorrespondingArgument(GenericCompatible context)
 	{
-		if (context instanceof Identifier)
+		if (context instanceof Accessible)
 		{
-			return ((Identifier)context).getGenericTypeArgumentFromParameter(this);
+			return ((Accessible)context).getGenericTypeArgumentFromParameter(this);
 		}
 		
 		return null;
