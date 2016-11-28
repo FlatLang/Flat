@@ -82,23 +82,48 @@ public class Annotation extends Node
 					
 					if (n == null)
 					{
-						n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+						n = PublicAnnotation.decodeStatement(parent, name, arguments, location, require);
 						
 						if (n == null)
 						{
-							n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+							n = VisibleAnnotation.decodeStatement(parent, name, arguments, location, require);
 							
 							if (n == null)
 							{
-								n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
-
+								n = PrivateAnnotation.decodeStatement(parent, name, arguments, location, require);
+								
 								if (n == null)
 								{
-									n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
+									n = StaticAnnotation.decodeStatement(parent, name, arguments, location, require);
 									
 									if (n == null)
 									{
-										n = PrimitiveArrayAnnotation.decodeStatement(parent, name, arguments, location, require);
+										n = AbstractAnnotation.decodeStatement(parent, name, arguments, location, require);
+										
+										if (n == null)
+										{
+											n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
+											
+											if (n == null)
+											{
+												n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+												
+												if (n == null)
+												{
+													n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+													
+													if (n == null)
+													{
+														n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+														
+														if (n == null)
+														{
+															n = PrimitiveArrayAnnotation.decodeStatement(parent, name, arguments, location, require);
+														}
+													}
+												}
+											}
+										}
 									}
 								}
 							}
@@ -158,7 +183,17 @@ public class Annotation extends Node
 	@Override
 	public void onAdded(Node parent)
 	{
+		if (parent instanceof Annotation == false)
+		{
+			onApplied(parent);
+		}
+		
 		super.onAdded(parent);
+	}
+	
+	public boolean onApplied(Node appliedTo)
+	{
+		return true;
 	}
 	
 	@Override
@@ -179,9 +214,9 @@ public class Annotation extends Node
 		return super.onNextStatementDecoded(next);
 	}
 	
-	public static boolean invalidExpression(Annotation node, boolean require)
+	public boolean invalidAppliedTo(Node node, boolean require)
 	{
-		return SyntaxMessage.queryError("Annotation is applied to an invalid expression", node, require);
+		return SyntaxMessage.queryError(getClass().getSimpleName() + " is applied to an invalid type '" + node.getClass().getSimpleName() + "'", node, require);
 	}
 	
 	public static boolean missingExpression(Annotation node, boolean require)
