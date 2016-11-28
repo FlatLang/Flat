@@ -23,6 +23,24 @@ public class Annotation extends Node
 		super(temporaryParent, locationIn);
 	}
 	
+	public Annotation getAnnotationOfType(Class type)
+	{
+		if (getAnnotations() != null)
+		{
+			for (Annotation a : getAnnotations())
+			{
+				if (type.isAssignableFrom(a.getClass()))
+				{
+					return a;
+				}
+				
+				return a.getAnnotationOfType(type);
+			}
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public boolean isDecoding()
 	{
