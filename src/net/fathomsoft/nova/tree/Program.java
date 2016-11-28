@@ -48,6 +48,11 @@ public class Program extends TypeList<FileDeclaration>
 		pendingAnnotations.remove(annotation);
 	}
 	
+	public boolean containsPendingAnnotationOfType(Class type)
+	{
+		return getPendingAnnotationOfType(type) != null;
+	}
+	
 	public Annotation getPendingAnnotationOfType(Class type)
 	{
 		for (Annotation a : pendingAnnotations)
