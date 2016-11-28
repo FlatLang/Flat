@@ -88,7 +88,10 @@ public class Annotation extends Node
 			{
 				statement = statement.substring(1, index).trim();
 				
-				String name = StringUtils.findNextWord(statement);
+				int whitespaceIndex = StringUtils.findNextWhitespaceIndex(statement, 1);
+				whitespaceIndex = whitespaceIndex < 0 ? statement.length() : whitespaceIndex;
+				
+				String name = statement.substring(0, whitespaceIndex);
 				
 				if (name != null)
 				{
