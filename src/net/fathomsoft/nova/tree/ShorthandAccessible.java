@@ -34,6 +34,7 @@ public interface ShorthandAccessible
 	
 	boolean containsAccessorMethod();
 	boolean containsMutatorMethod();
+	void addDisabledMutator();
 	void addChild(Node n);
 	Location getLocationIn();
 	
@@ -109,7 +110,7 @@ public interface ShorthandAccessible
 			{
 				if (!containsMutatorMethod())
 				{
-					addChild(MutatorMethod.decodeStatement((Node)this, "no set", getLocationIn(), true));
+					addDisabledMutator();
 				}
 			}
 		}
