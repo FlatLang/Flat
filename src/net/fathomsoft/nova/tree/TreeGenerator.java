@@ -416,25 +416,29 @@ public class TreeGenerator implements Runnable
 			
 			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 			
-			if (node instanceof Annotation)
+			while (node instanceof Annotation)
 			{
 				Annotation a = (Annotation)node;
 				
 				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation && !((TargetAnnotation)a).containsTarget());
 				
-				String frag = Annotation.getFragment(statement);
+				statement = Annotation.getFragment(statement);
 				
-				if (frag.length() > 0)
+				if (statement.length() > 0)
 				{
 					boolean skipped = skipNextStatement;
 					
-					node = decodeStatementAndCheck(frag, location, scope, searchTypes, skipScopes);
+					node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 					
 					if (!skipped && node != null)
 					{
 						node.addAnnotation(a);
 						a.onNextStatementDecoded(node);
 					}
+				}
+				else
+				{
+					break;
 				}
 			}
 			
