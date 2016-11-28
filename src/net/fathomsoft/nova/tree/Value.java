@@ -2,7 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
-import net.fathomsoft.nova.tree.annotations.PrimitiveArrayAnnotation;
+import net.fathomsoft.nova.tree.annotations.NativeAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -188,7 +188,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public void convertArrays()
 	{
-		if (!isWithinExternalContext() && getArrayDimensions() > 0 && !containsAnnotationOfType(PrimitiveArrayAnnotation.class))
+		if (!isWithinExternalContext() && getArrayDimensions() > 0 && !containsAnnotationOfType(NativeAnnotation.class))
 		{
 			String type = "";
 			

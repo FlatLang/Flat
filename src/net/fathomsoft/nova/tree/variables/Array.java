@@ -4,7 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.annotations.PrimitiveArrayAnnotation;
+import net.fathomsoft.nova.tree.annotations.NativeAnnotation;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -187,7 +187,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			if (n.decodeDimensions(statement, index, newLoc, require))
 			{
-				if (!parent.containsAnnotationOfType(PrimitiveArrayAnnotation.class, true, true))
+				if (!parent.containsAnnotationOfType(NativeAnnotation.class, true, true))
 				{
 					Value value = SyntaxTree.decodeValue(parent, n.mapDimension(0), location, require);
 					
@@ -388,7 +388,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			String type = generateNovaType(new StringBuilder(), null, false).toString();
 			
-			PrimitiveArrayAnnotation annotation = new PrimitiveArrayAnnotation(getParent(), getParent().getLocationIn());
+			NativeAnnotation annotation = new NativeAnnotation(getParent(), getParent().getLocationIn());
 			annotation.onAfterDecoded();
 			
 			Assignment array = Assignment.decodeStatement(func, type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
