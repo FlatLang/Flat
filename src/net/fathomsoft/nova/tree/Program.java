@@ -61,6 +61,13 @@ public class Program extends TypeList<FileDeclaration>
 			{
 				return a;
 			}
+			
+			Annotation b = a.getAnnotationOfType(type);
+			
+			if (b != null)
+			{
+				return b;
+			}
 		}
 		
 		return null;
