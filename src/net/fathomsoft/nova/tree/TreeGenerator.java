@@ -433,6 +433,7 @@ public class TreeGenerator implements Runnable
 					if (!skipped && node != null)
 					{
 						node.addAnnotation(a);
+						a.onNextStatementDecoded(node);
 					}
 				}
 			}
@@ -663,7 +664,7 @@ public class TreeGenerator implements Runnable
 			skipScope();
 		}
 		
-		if (!parentStack.isEmpty())
+		if (!parentStack.isEmpty() && node instanceof Annotation == false)
 		{
 			parentStack.peek().addChild(node);
 		}
