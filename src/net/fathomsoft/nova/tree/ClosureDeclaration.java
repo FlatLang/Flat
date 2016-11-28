@@ -60,6 +60,16 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		id = getFileDeclaration().registerClosure(this);
 	}
 	
+	public void unregister()
+	{
+		unregister(getFileDeclaration());
+	}
+	
+	public void unregister(FileDeclaration file)
+	{
+		file.unregisterClosure(this);
+	}
+	
 	public boolean isPublic()
 	{
 		NovaMethodDeclaration method = (NovaMethodDeclaration)this.getAncestorOfType(NovaMethodDeclaration.class);
