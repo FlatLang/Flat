@@ -61,6 +61,12 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		this.twoWayBinding = twoWayBinding;
 	}
 	
+	@Override
+	public void addDisabledMutator()
+	{
+		addChild(MutatorMethod.decodeStatement(this, "no set", getLocationIn(), true));
+	}
+	
 	public String getShorthandAccessor()
 	{
 		return accessorValue;
