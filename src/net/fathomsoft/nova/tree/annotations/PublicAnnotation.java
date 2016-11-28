@@ -14,7 +14,7 @@ public class PublicAnnotation extends ApplicableAnnotationBase
 	
 	public static PublicAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
 	{
-		if (name.equals("Public"))
+		if (name.equals("Public") || name.equals("+"))
 		{
 			PublicAnnotation n = new PublicAnnotation(parent, location);
 			

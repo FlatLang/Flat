@@ -14,7 +14,7 @@ public class PrivateAnnotation extends ApplicableAnnotationBase
 	
 	public static PrivateAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
 	{
-		if (name.equals("Private"))
+		if (name.equals("Private") || name.equals("-"))
 		{
 			PrivateAnnotation n = new PrivateAnnotation(parent, location);
 			
