@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.PublicAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
@@ -504,6 +505,13 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					}
 					
 					n.setVisibility(PUBLIC);*/
+				}
+				
+				// Temporary workaround for crappy closure declaration implementation
+				// Won't make this mistake in the rewrite.
+				if (parent.getProgram().containsPendingAnnotationOfType(PublicAnnotation.class))
+				{
+					n.setVisibility(PUBLIC);
 				}
 				
 				return n;
