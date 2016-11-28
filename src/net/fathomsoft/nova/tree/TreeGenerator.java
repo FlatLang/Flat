@@ -273,7 +273,8 @@ public class TreeGenerator implements Runnable
 				{
 					if (requiresScope && node instanceof AbstractMethodDeclaration == false)
 					{
-						if (!(node instanceof PropertyMethod) || !((PropertyMethod) node).isDisabled())
+						if ((node instanceof PropertyMethod == false || !((PropertyMethod)node).isDisabled()) &&
+							(node instanceof ArrayOverloadMethod == false || !((ArrayOverloadMethod)node).isDisabled()))
 						{
 							if (node.getScope() == null || node.getScope().getNumVisibleChildren() <= 0)
 							{
