@@ -14,7 +14,7 @@ public class VisibleAnnotation extends ApplicableAnnotationBase
 	
 	public static VisibleAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
 	{
-		if (name.equals("Visible") || name.equals("~"))
+		if (name.equals("Visible") || name.equals("*"))
 		{
 			VisibleAnnotation n = new VisibleAnnotation(parent, location);
 			
