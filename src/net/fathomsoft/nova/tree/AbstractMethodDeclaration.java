@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.AbstractAnnotation;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -73,17 +74,21 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	{
 		if (SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER) >= 0)
 		{
-			String methodSignature = findMethodSignature(statement, StringUtils.findWordBounds(statement, IDENTIFIER));
+			statement = findMethodSignature(statement, StringUtils.findWordBounds(statement, IDENTIFIER));
+		}
+		else if (!parent.getProgram().containsPendingAnnotationOfType(AbstractAnnotation.class))
+		{
+			return null;
+		}
+		
+		if (statement != null && statement.length() > 0)
+		{
+			AbstractMethodDeclaration n = new AbstractMethodDeclaration(parent, location);
+			NovaMethodDeclaration method = NovaMethodDeclaration.decodeStatement(n, statement, location.asNew(), require);
 			
-			if (methodSignature != null && methodSignature.length() > 0)
+			if (method != null)
 			{
-				AbstractMethodDeclaration n = new AbstractMethodDeclaration(parent, location);
-				NovaMethodDeclaration method = NovaMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
-				
-				if (method != null)
-				{
-					return n.createFrom(method);
-				}
+				return n.createFrom(method);
 			}
 		}
 		
