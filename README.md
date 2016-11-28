@@ -1,10 +1,6 @@
 Nova Programming Language
 ===========================
 
-> Programming is really simple, but we insist on making it complicated.
-> 
-> &mdash; <cite>Novafucius (Confucius's inconspicuous brother)</cite>
-
 Nova is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
 
 The Nova programming language is a C-based language that compiles into portable C code. The Java-like syntax makes Nova a great choice for those who are not looking to spend countless hours learning new concepts. The main idea behind Nova is to make high level cross-platform code run natively on a multitude of devices.
