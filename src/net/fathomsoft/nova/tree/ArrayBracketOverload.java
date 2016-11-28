@@ -144,6 +144,19 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	}
 	
 	@Override
+	public void addDisabledMutator()
+	{
+		ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "no set", getLocationIn(), true);
+		
+		Value type = getArrayAccessorMethod();
+		
+		method.setType(type);
+		method.getParameter(1).setType(type);
+		
+		addChild(method);
+	}
+	
+	@Override
 	public boolean containsAccessorMethod()
 	{
 		return getArrayAccessorMethod() != null;
