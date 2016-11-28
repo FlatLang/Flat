@@ -1,0 +1,72 @@
+package net.fathomsoft.nova.tree.annotations;
+
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.InstanceDeclaration;
+import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.util.Location;
+
+public class PrivateAnnotation extends ApplicableAnnotationBase
+{
+	public PrivateAnnotation(Node temporaryParent, Location locationIn)
+	{
+		super(temporaryParent, locationIn);
+	}
+	
+	public static PrivateAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
+	{
+		if (name.equals("Private"))
+		{
+			PrivateAnnotation n = new PrivateAnnotation(parent, location);
+			
+			return n;
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		return result;
+	}
+	
+	@Override
+	public boolean onApplied(Node next)
+	{
+		if (next instanceof InstanceDeclaration)
+		{
+			((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
+			
+			return true;
+		}
+		
+		return super.onApplied(next);
+	}
+	
+	@Override
+	public PrivateAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	{
+		PrivateAnnotation node = new PrivateAnnotation(temporaryParent, locationIn);
+		
+		return cloneTo(node, cloneChildren);
+	}
+	
+	public PrivateAnnotation cloneTo(PrivateAnnotation node)
+	{
+		return cloneTo(node, true);
+	}
+	
+	public PrivateAnnotation cloneTo(PrivateAnnotation node, boolean cloneChildren)
+	{
+		super.cloneTo(node, cloneChildren);
+		
+		return node;
+	}
+}
