@@ -61,6 +61,9 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 				n.setType(n.getArrayBracketOverload());
 				n.setDisabled(true);
 				
+				n.addIndexParameter();
+				n.addDefaultParameter();
+				
 				return n;
 			}
 		}
