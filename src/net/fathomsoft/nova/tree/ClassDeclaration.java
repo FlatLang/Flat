@@ -30,7 +30,7 @@ import java.util.Arrays;
  */
 public class ClassDeclaration extends InstanceDeclaration
 {
-	private boolean abstractValue;
+	public boolean abstractValue;
 	
 	public ClassInstanceDeclaration classInstanceDeclaration;
 	
