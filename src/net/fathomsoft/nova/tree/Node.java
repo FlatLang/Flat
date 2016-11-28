@@ -1673,6 +1673,25 @@ public abstract class Node implements Listenable, Annotatable
 		return this instanceof Program ? (Program)this : null;
 	}
 	
+	public boolean isInTree()
+	{
+		Node current = parent;
+		
+		while (current != null && current instanceof Program == false)
+		{
+			if (!current.isDecoding())
+			{
+				current = current.getParent();
+			}
+			else
+			{
+				return false;
+			}
+		}
+		
+		return current instanceof Program;
+	}
+	
 	public FileDeclaration getReferenceFile()
 	{
 		return getFileDeclaration();
