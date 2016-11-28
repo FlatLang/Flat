@@ -420,7 +420,7 @@ public class TreeGenerator implements Runnable
 			{
 				Annotation a = (Annotation)node;
 				
-				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation && !((TargetAnnotation)a).containsTarget());
+				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation && !((TargetAnnotation)a).currentTarget());
 				
 				statement = Annotation.getFragment(statement);
 				
