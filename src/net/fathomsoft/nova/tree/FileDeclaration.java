@@ -137,8 +137,10 @@ public class FileDeclaration extends Node
 	{
 		ArrayList<ClosureDeclaration> closures = new ArrayList<>();
 		
-		for (ClosureDeclaration c : this.closures)
+		for (int i =  0; i < this.closures.size(); i++)
 		{
+			ClosureDeclaration c = this.closures.get(i);
+			
 			if (c.isPublic())
 			{
 				closures.add(c);
@@ -167,6 +169,16 @@ public class FileDeclaration extends Node
 		contexts.add(context);
 		
 		return contexts.size();
+	}
+	
+	public void unregisterClosure(ClosureDeclaration closure)
+	{
+		int index = closures.indexOf(closure);
+		
+		if (index >= 0)
+		{
+			closures.set(index, null);
+		}
 	}
 	
 	/**
