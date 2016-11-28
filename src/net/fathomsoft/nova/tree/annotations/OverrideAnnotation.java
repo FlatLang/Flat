@@ -3,15 +3,11 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Literal;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.StringUtils;
 
 import java.util.Arrays;
 
@@ -82,7 +78,7 @@ public class OverrideAnnotation extends Annotation
 			}
 			else
 			{
-				invalidExpression(this, true);
+				invalidAppliedTo(node, true);
 			}
 			
 			if (Arrays.stream(methods).anyMatch(x -> x != null && !x.doesOverride()))
