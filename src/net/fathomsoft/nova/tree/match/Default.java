@@ -52,7 +52,7 @@ public class Default extends MatchCase
 	 */
 	public static Default decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
+		if (parent.getAncestorOfType(Match.class, true) != null && StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			Default n = new Default(parent, location);
 			
