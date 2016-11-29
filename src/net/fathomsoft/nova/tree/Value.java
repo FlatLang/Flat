@@ -697,7 +697,7 @@ public abstract class Value extends Node implements AbstractValue
 						return getFileDeclaration();
 					}
 					
-					return lambda.methodCall.getDeclaringClass().getFileDeclaration();
+					return lambda.getContextDeclaringClass().getFileDeclaration();
 				}
 			}
 			if (this instanceof VirtualLocalDeclaration)
