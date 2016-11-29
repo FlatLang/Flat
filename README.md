@@ -5,17 +5,18 @@ Nova is a light-weight general purpose programming language that cross-compiles 
 
 __Aim__
 
-  * Increase code reusability.
-  * Ensure a smooth transition between running code on various operating systems.
-  * Deliver a uniform exception handling environment.
-  * Simplify common tasks and concepts.
+  * Generate fancy code analytics with the [Nova Reactor](https://github.com/NovaFoundation/Nova-Reactor)
+  * Increase code reusability
+  * Ensure a smooth transition between running code on various operating systems
+  * Deliver a uniform exception handling environment
+  * Simplify common tasks and concepts
 
 Getting Started
 ===============
 
 __Pre-requisites__
 
-  * The early version of the compiler uses Java 1.8 or later.
+  * The early version of the compiler uses Java 1.8 or later
   * A windows/mac/linux machine
 
 __Installation for compiling to C__
@@ -37,9 +38,9 @@ __Instructions for makefile__
 
 __Instructions of Use for the Jar__
 
-  * To run the compiler, first locate the Nova.jar file.
-  * In command line or terminal run the jar file with the required arguments.
-  * The required arguments include: The input files and the output destination.
+  * To run the compiler, first locate the Nova.jar file
+  * In command line or terminal run the jar file with the required arguments
+  * The required arguments include: The input files and the output destination
 
 __An Example command to compile a source from the Jar__
 
