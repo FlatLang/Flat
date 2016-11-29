@@ -39,6 +39,11 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		context.id = getFileDeclaration().registerClosureContext(context);
 	}
 	
+	public ClassDeclaration getContextDeclaringClass()
+	{
+		return methodCall != null ? methodCall.getDeclaringClass() : getParentClass();
+	}
+	
 	public ClosureDeclaration getCorrespondingClosureDeclaration()
 	{
 		if (isDecodingContents())
@@ -46,7 +51,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 			return (ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getNumVisibleChildren());
 		}
 		
-		return (ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
+		return closure.closureDeclaration;//(ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
 	}
 	
 	@Override
@@ -120,7 +125,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		
 		if (methodCall == null)
 		{
-			detach();
+//			detach();
 			
 			result.skipCycle = true;
 		}
