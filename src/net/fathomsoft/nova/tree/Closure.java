@@ -278,6 +278,11 @@ public class Closure extends Variable
 			}
 		}
 		
+		if (getMethodCall() == null)
+		{
+			return null;
+		}
+		
 		Parameter param = (Parameter)getMethodCall().getCorrespondingParameter((Value)getRootNode());
 		
 		return param instanceof ClosureDeclaration ? (ClosureDeclaration)param : null;
