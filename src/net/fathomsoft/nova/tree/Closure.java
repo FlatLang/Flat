@@ -296,6 +296,8 @@ public class Closure extends Variable
 	
 	public boolean findDeclaration(ClassDeclaration declaringClass)
 	{
+		boolean skipValidation = closureDeclaration != null;
+		
 		if (closureDeclaration == null)
 		{
 			closureDeclaration = searchClosureDeclaration();
@@ -317,11 +319,15 @@ public class Closure extends Variable
 		}
 		
 		setDeclaration(declaration);
-		validateType(declaration);
 		
-		if (declaration.isInstance())
+		if (!skipValidation)
 		{
-			SyntaxUtils.validateMethodAccess(getReferenceNode(), declaration, this);
+			validateType(declaration);
+			
+			if (declaration.isInstance())
+			{
+				SyntaxUtils.validateMethodAccess(getReferenceNode(), declaration, this);
+			}
 		}
 		
 		return true;
