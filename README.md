@@ -3,14 +3,9 @@ Nova Programming Language
 
 Nova is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
 
-The Nova programming language is a C-based language that compiles into portable C code. The Java-like syntax makes Nova a great choice for those who are not looking to spend countless hours learning new concepts. The main idea behind Nova is to make high level cross-platform code run natively on a multitude of devices.
-
 __Aim__
 
-  * Restore the intuitive nature of Object Oriented Programming by reducing need for conventions.
-  * Include support for clear and concise documentation of code.
   * Increase code reusability.
-  * Manage abstraction at a high level without a performance hit.
   * Ensure a smooth transition between running code on various operating systems.
   * Deliver a uniform exception handling environment.
   * Simplify common tasks and concepts.
@@ -22,19 +17,23 @@ __Pre-requisites__
 
   * The early version of the compiler uses Java 1.8 or later.
   * A windows/mac/linux machine
-  * A GCC compiler installed
 
-__Installation__
+__Installation for compiling to C__
 
-* Install GCC from https://gcc.gnu.org/install
-* Add GCC to system path http://stackoverflow.com/questions/5733220/how-to-add-mingw-bin-directory-to-my-system-path
-* Restart your IDE and/or terminal to make path changes take place
+  * If not already, install GCC from https://gcc.gnu.org/install
+  * Add GCC to system path http://stackoverflow.com/questions/5733220/how-to-add-mingw-bin-directory-to-my-system-path
+  * Restart your IDE and/or terminal to make path changes take place
 
 __Instructions of Use for IDE__
 
-* Open this repository as a project
-* Run it
-* Hope for the best
+  * Open this repository as a project
+  * Run it
+  * Hope for the best
+
+__Instructions for makefile__
+  * Open terminal
+  * Navigate to repository directory
+  * Run `make` command
 
 __Instructions of Use for the Jar__
 
@@ -64,8 +63,4 @@ __Optional arguments to the Compiler Include__
   * `-small` Generate the smallest possible executable output.
   * `-single-thread` Compile the program with only a single thread.
 
-The default C compiler for Windows is GCC because it is more stable.
-
-verbosity is the devil
-
-© 2014-2016 Fathomsoft
+© 2014-2016 Nova
