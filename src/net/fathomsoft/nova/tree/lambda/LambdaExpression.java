@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree.lambda;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
@@ -54,6 +56,11 @@ public class LambdaExpression extends Value
 	 * 		into a {@link LambdaExpression}.
 	 */
 	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
+	{
+		return decodeStatement(parent, statement, location, require, null, null);
+	}
+	
+	public static Value decodeStatement(Node parent, String statement, Location location, boolean require, ClosureDeclaration closure, Value context)
 	{
 		String[] variables = null;
 		int endingIndex = 0;
@@ -107,213 +114,242 @@ public class LambdaExpression extends Value
 					operation = operation.substring(1, operation.length() - 1).trim();
 				}
 				
-				MethodCall call = (MethodCall)parent.getAncestorOfType(MethodCall.class);
-				
-				ClassDeclaration[] classes = call.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
-				
-				if (classes == null || classes.length == 0)
+				if (closure != null || (context = findContext(parent)) != null && (closure = findDeclaration(context, variables)) != null)
 				{
-					return null;
-				}
-				
-				ArrayList<MethodDeclaration> temp = new ArrayList<>();
-				
-				for (ClassDeclaration c : classes)
-				{
-					MethodDeclaration[] methods = c.getMethods(call.getName());
-					
-					for (MethodDeclaration m : methods)
-					{
-						temp.add(m);
-					}
-				}
-				
-				MethodDeclaration[] methods = temp.toArray(new MethodDeclaration[0]);
-				
-				if (methods.length > 0)
-				{
+					final ClosureDeclaration finalClosure = closure;
+					final Value finalContext = context;
 					final String[] finalVars = variables;
-					final int index = call.getArgumentList().getNumVisibleChildren();
 					
-					ArrayList<NovaMethodDeclaration> tempMethods = new ArrayList<>();
+					final int[] i = new int[] { 0 };
 					
-					Arrays.stream(methods)
-							.filter(x -> {
-								if (x instanceof NovaMethodDeclaration &&
-										x.getParameterList().getNumVisibleChildren() > index &&
-										x.getParameter(index) instanceof ClosureDeclaration)
-								{
-									ClosureDeclaration closure = (ClosureDeclaration)x.getParameter(index);
-									
-									if (closure.getParameterList().getNumVisibleChildren() >= finalVars.length)
-									{
-										return true;
-									}
-								}
-								
-								return false;
-							})
-							.forEach(x -> tempMethods.add((NovaMethodDeclaration)x));
+					final StringBuilder builder = new StringBuilder();
 					
-					ArrayList<NovaMethodDeclaration> clone = new ArrayList<>();
-					
-					for (NovaMethodDeclaration m : tempMethods)
+					closure.getParameterList().forEach(x ->
 					{
-						clone.add(m);
-					}
-					for (NovaMethodDeclaration x : clone)
-					{
-						if (x.doesOverride() && tempMethods.contains(x.getOverriddenMethod()))
+						int id = i[0]++;
+						
+						Value value = finalClosure.getParameterList().getParameter(id).getNovaTypeValue(finalContext);
+						
+						String type = value.getNovaType();
+						String name = "";
+						
+						if (finalVars.length > id)
 						{
-							tempMethods.remove(x.getOverriddenMethod());
+							name = finalVars[id];
 						}
-					}
-					
-					NovaMethodDeclaration[] validMethods = tempMethods.toArray(new NovaMethodDeclaration[0]);
-					
-					int maxD = 0;
-					int maxI = 0;
-					
-					for (int i = 0; i < validMethods.length; i++)
-					{
-						for (int j = 0; j < validMethods.length; j++)
+						else
 						{
-							if (i != j)
-							{
-								int[] distances = validMethods[i].getDistancesFrom(validMethods[j].getParameterList());
-								
-								int distance = Arrays.stream(distances).sum();
-								
-								if (distance > maxD)
-								{
-									maxI = i;
-									maxD = distance;
-								}
-							}
-						}
-					}
-					
-					if (validMethods.length > 0)
-					{
-						NovaMethodDeclaration validMethod = validMethods[maxI];
-						
-						call.setDeclaration(validMethod);
-						
-						final int[] i = new int[] { 0 };
-						
-						ClosureDeclaration closure = (ClosureDeclaration)((NovaMethodDeclaration)call.getDeclaration()).getParameter(index);
-						
-						final StringBuilder builder = new StringBuilder();
-						
-						closure.getParameterList().forEach(x ->
-						{
-							int id = i[0]++;
-							
-							Value value = closure.getParameterList().getParameter(id).getNovaTypeValue(call);
-							
-							String type = value.getNovaType();
-							String name = "";
-							
-							if (finalVars.length > id)
-							{
-								name = finalVars[id];
-							}
-							else
-							{
-								name = "_" + (id + 1);
-							}
-							
-							builder.append(builder.length() > 0 ? ", " : "").append(type).append(" ").append(name);
-						});
-						
-						String parameters = builder.toString();
-						
-						String methodDeclaration = "static testLambda" + id++ + "(" + parameters + ")";
-						
-						if (closure.getType() != null)
-						{
-							methodDeclaration += " -> " + closure.getNovaTypeValue(call).getNovaType(call);
+							name = "_" + (id + 1);
 						}
 						
-						BodyMethodDeclaration bodyMethod = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require);
+						builder.append(builder.length() > 0 ? ", " : "").append(type).append(" ").append(name);
+					});
+					
+					String parameters = builder.toString();
+					
+					String methodDeclaration = "static testLambda" + id++ + "(" + parameters + ")";
+					
+					if (closure.getType() != null)
+					{
+						methodDeclaration += " -> " + closure.getNovaTypeValue(context).getNovaType(context);
+					}
+					
+					BodyMethodDeclaration bodyMethod = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, location.asNew(), require);
+					
+					if (bodyMethod != null)
+					{
+						LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
 						
-						if (bodyMethod != null)
+						NovaMethodDeclaration parentMethod = parent.getParentMethod();
+						
+						int scopeId = parent.getAncestorWithScope().getScope().getID();
+						bodyMethod.cloneTo(method);
+						method.getScope().slaughterEveryLastVisibleChild();
+						method.getScope().id = scopeId;
+						method.uniqueID = scopeId;
+						method.isInstance = parentMethod != null && parentMethod.isInstance();//parentMethod.isStatic();
+						method.objectReference = parentMethod != null ? parentMethod.objectReference : null;
+						
+						if (context instanceof MethodCall)
 						{
-							LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
+							method.methodCall = (MethodCall)context;
+						}
+						
+						if (parentMethod != null)
+						{
+							method.getParameterList().getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+						}
+						
+						method.getParentClass().addChild(method);
+						
+						if (block)
+						{
+							TreeGenerator generator = new TreeGenerator(null, operation, parent.getProgram().getTree());
 							
-							NovaMethodDeclaration parentMethod = parent.getParentMethod();
+							generator.traverseCode(method, 0, null, false);
+						}
+						else
+						{
+							Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
+							method.addChild(node);
+						}
+						
+						if (method.getType() != null && method.getScope().getNumVisibleChildren() == 1)
+						{
+							Node returned = method.getScope().getLastChild();
 							
-							int scopeId = parent.getAncestorWithScope().getScope().getID();
-							bodyMethod.cloneTo(method);
-							method.getScope().id = scopeId;
-							method.uniqueID = scopeId;
-							method.isInstance = parentMethod != null && parentMethod.isInstance();//parentMethod.isStatic();
-							method.objectReference = parentMethod != null ? parentMethod.objectReference : null;
-							method.methodCall = call;
+							Return r = new Return(method, returned.getLocationIn());
 							
-							if (parentMethod != null)
+							r.getReturnValues().addChild(returned);
+							
+							method.getScope().addChild(r);
+						}
+						
+						ClosureContextDeclaration c = new ClosureContextDeclaration(parent, location, method.context);
+						
+						if (method.getScope().getLastChild() instanceof Return && ((Return)method.getScope().getLastChild()).getValueNode() != null)
+						{
+							//if (call.isGenericType())
 							{
-								method.getParameterList().getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+								method.setType(((Return)method.getScope().getLastChild()).getReturnedNode());
 							}
+						}
+						
+						Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require, method.getParentClass());
+						
+						if (methodReference != null)
+						{
+							methodReference.closureDeclaration = closure;
+							methodReference.findDeclaration(method.getParentClass());
 							
-							method.getParentClass().addChild(method);
+							method.contextDeclaration = c;
+							method.closure = methodReference;
 							
-							if (block)
+							Node root = parent.getStatementRootNode();
+							
+							parent.getStatementRootNode();
+							
+							if (root != null)
 							{
-								TreeGenerator generator = new TreeGenerator(null, operation, parent.getProgram().getTree());
+								root.getNearestScopeAncestor().addChild(c);
 								
-								generator.traverseCode(method, 0, null, false);
-							}
-							else
-							{
-								Node node = SyntaxTree.decodeScopeContents(method, operation, location.asNew());
-								method.addChild(node);
-							}
-							
-							if (method.getType() != null && method.getScope().getNumVisibleChildren() == 1)
-							{
-								Node returned = method.getScope().getLastChild();
-								
-								Return r = new Return(method, returned.getLocationIn());
-								
-								r.getReturnValues().addChild(returned);
-								
-								method.getScope().addChild(r);
-							}
-							
-							ClosureContextDeclaration declaration = new ClosureContextDeclaration(parent, location, method.context);
-							
-							if (method.getScope().getLastChild() instanceof Return)
-							{
-								//if (call.isGenericType())
-								{
-									method.setType(((Return)method.getScope().getLastChild()).getReturnedNode());
-								}
-							}
-							
-							Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require, method.getParentClass());
-							
-							if (methodReference != null)
-							{
-								methodReference.findDeclaration(method.getParentClass());
-								
-								method.contextDeclaration = declaration;
-								method.closure = methodReference;
-								
-								Node root = parent.getStatementRootNode();
-								
-								parent.getStatementRootNode();
-								
-								if (root != null)
-								{
-									root.getNearestScopeAncestor().addChild(declaration);
-									
-									return methodReference;
-								}
+								return methodReference;
 							}
 						}
 					}
 				}
+			}
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public Node detach()
+	{
+		Nova.debuggingBreakpoint(getParent() instanceof ClosureDeclaration);
+		
+		return super.detach();
+	}
+	
+	private static Value findContext(Node parent)
+	{
+		return (MethodCall)parent.getAncestorOfType(MethodCall.class);
+	}
+	
+	private static ClosureDeclaration findDeclaration(Value context, final String[] variables)
+	{
+		MethodCall call = (MethodCall)context;
+		
+		ClassDeclaration[] classes = call.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
+		
+		if (classes == null || classes.length == 0)
+		{
+			return null;
+		}
+		
+		ArrayList<MethodDeclaration> temp = new ArrayList<>();
+		
+		for (ClassDeclaration c : classes)
+		{
+			MethodDeclaration[] methods = c.getMethods(call.getName());
+			
+			for (MethodDeclaration m : methods)
+			{
+				temp.add(m);
+			}
+		}
+		
+		MethodDeclaration[] methods = temp.toArray(new MethodDeclaration[0]);
+		
+		if (methods.length > 0)
+		{
+			final int index = call.getArgumentList().getNumVisibleChildren();
+			
+			ArrayList<NovaMethodDeclaration> tempMethods = new ArrayList<>();
+			
+			Arrays.stream(methods)
+				.filter(x ->
+				{
+					if (x instanceof NovaMethodDeclaration &&
+						x.getParameterList().getNumVisibleChildren() > index &&
+						x.getParameter(index) instanceof ClosureDeclaration)
+					{
+						ClosureDeclaration closure = (ClosureDeclaration)x.getParameter(index);
+						
+						if (closure.getParameterList().getNumVisibleChildren() >= variables.length)
+						{
+							return true;
+						}
+					}
+					
+					return false;
+				})
+				.forEach(x -> tempMethods.add((NovaMethodDeclaration)x));
+			
+			ArrayList<NovaMethodDeclaration> clone = new ArrayList<>();
+			
+			for (NovaMethodDeclaration m : tempMethods)
+			{
+				clone.add(m);
+			}
+			for (NovaMethodDeclaration x : clone)
+			{
+				if (x.doesOverride() && tempMethods.contains(x.getOverriddenMethod()))
+				{
+					tempMethods.remove(x.getOverriddenMethod());
+				}
+			}
+			
+			NovaMethodDeclaration[] validMethods = tempMethods.toArray(new NovaMethodDeclaration[0]);
+			
+			int maxD = 0;
+			int maxI = 0;
+			
+			for (int i = 0; i < validMethods.length; i++)
+			{
+				for (int j = 0; j < validMethods.length; j++)
+				{
+					if (i != j)
+					{
+						int[] distances = validMethods[i].getDistancesFrom(validMethods[j].getParameterList());
+						
+						int distance = Arrays.stream(distances).sum();
+						
+						if (distance > maxD)
+						{
+							maxI = i;
+							maxD = distance;
+						}
+					}
+				}
+			}
+			
+			if (validMethods.length > maxI)
+			{
+				call.setDeclaration(validMethods[maxI]);
+				
+				return (ClosureDeclaration)((NovaMethodDeclaration)call.getDeclaration()).getParameter(index);
 			}
 		}
 		
