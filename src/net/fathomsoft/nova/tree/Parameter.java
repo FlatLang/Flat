@@ -18,8 +18,8 @@ import net.fathomsoft.nova.util.Location;
  */
 public class Parameter extends LocalDeclaration
 {
-	private String  defaultValueString;
-	private Value	defaultValue;
+	public String  defaultValueString;
+	public Value	defaultValue;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -268,6 +268,11 @@ public class Parameter extends LocalDeclaration
 	{
 		ValidationResult result = super.validate(phase);
 		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && defaultValueString != null)
 		{
 			defaultValue = SyntaxTree.decodeValue(this, defaultValueString, getLocationIn(), true);
@@ -275,11 +280,6 @@ public class Parameter extends LocalDeclaration
 			defaultValue.onAdded(this);
 			
 			defaultValueString = null;
-		}
-		
-		if (result.skipValidation())
-		{
-			return result;
 		}
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
