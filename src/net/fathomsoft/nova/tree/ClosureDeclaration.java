@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -322,6 +324,35 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 				return;
 			}
 		}
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && defaultValueString != null)
+		{
+			defaultValue = LambdaExpression.decodeStatement(this, defaultValueString, getLocationIn(), true, this, null);
+			
+			if (defaultValue != null)
+			{
+				defaultValue.onAfterDecoded();
+				defaultValue.onAdded(this);
+				
+				defaultValueString = null;
+			}
+		}
+		
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		return result;
 	}
 	
 	/**
