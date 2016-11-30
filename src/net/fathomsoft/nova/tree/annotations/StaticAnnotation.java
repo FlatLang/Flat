@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
-public class StaticAnnotation extends Annotation
+public class StaticAnnotation extends Annotation implements ModifierAnnotation
 {
 	public StaticAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -38,7 +38,7 @@ public class StaticAnnotation extends Annotation
 	}
 	
 	@Override
-	public boolean onApplied(Node next)
+	public boolean onApplied(Node next, boolean throwError)
 	{
 		if (next instanceof InstanceDeclaration)
 		{
@@ -49,7 +49,7 @@ public class StaticAnnotation extends Annotation
 			invalidAppliedTo(next, true);
 		}
 		
-		return super.onApplied(next);
+		return super.onApplied(next, throwError);
 	}
 	
 	@Override
@@ -70,5 +70,11 @@ public class StaticAnnotation extends Annotation
 		super.cloneTo(node, cloneChildren);
 		
 		return node;
+	}
+	
+	@Override
+	public String[] getAliases()
+	{
+		return new String[] { "static" };
 	}
 }

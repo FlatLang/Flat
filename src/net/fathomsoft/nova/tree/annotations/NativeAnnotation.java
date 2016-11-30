@@ -3,9 +3,10 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
-public class NativeAnnotation extends Annotation
+public class NativeAnnotation extends Annotation implements ModifierAnnotation
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -19,6 +20,18 @@ public class NativeAnnotation extends Annotation
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		return builder.append("[Native]");
+	}
+	
+	@Override
+	public boolean onApplied(Node appliedTo, boolean throwError)
+	{
+		return appliedTo instanceof VariableDeclaration || appliedTo instanceof Assignment || super.onApplied(appliedTo, throwError);
+	}
+	
+	@Override
+	public String[] getAliases()
+	{
+		return new String[] { "native" };
 	}
 	
 	/**

@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 
-public class VisibleAnnotation extends ApplicableAnnotationBase
+public class VisibleAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation
 {
 	public VisibleAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -38,7 +38,7 @@ public class VisibleAnnotation extends ApplicableAnnotationBase
 	}
 	
 	@Override
-	public boolean onApplied(Node next)
+	public boolean onApplied(Node next, boolean throwError)
 	{
 		if (next instanceof FieldDeclaration)
 		{
@@ -47,7 +47,7 @@ public class VisibleAnnotation extends ApplicableAnnotationBase
 			return true;
 		}
 		
-		return super.onApplied(next);
+		return super.onApplied(next, throwError);
 	}
 	
 	@Override
@@ -68,5 +68,11 @@ public class VisibleAnnotation extends ApplicableAnnotationBase
 		super.cloneTo(node, cloneChildren);
 		
 		return node;
+	}
+	
+	@Override
+	public String[] getAliases()
+	{
+		return new String[] { "visible", "*" };
 	}
 }

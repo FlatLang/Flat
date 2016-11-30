@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
-public class PrivateAnnotation extends ApplicableAnnotationBase
+public class PrivateAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation
 {
 	public PrivateAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -38,7 +38,7 @@ public class PrivateAnnotation extends ApplicableAnnotationBase
 	}
 	
 	@Override
-	public boolean onApplied(Node next)
+	public boolean onApplied(Node next, boolean throwError)
 	{
 		if (next instanceof InstanceDeclaration)
 		{
@@ -47,7 +47,7 @@ public class PrivateAnnotation extends ApplicableAnnotationBase
 			return true;
 		}
 		
-		return super.onApplied(next);
+		return super.onApplied(next, throwError);
 	}
 	
 	@Override
@@ -68,5 +68,11 @@ public class PrivateAnnotation extends ApplicableAnnotationBase
 		super.cloneTo(node, cloneChildren);
 		
 		return node;
+	}
+	
+	@Override
+	public String[] getAliases()
+	{
+		return new String[] { "private" };
 	}
 }

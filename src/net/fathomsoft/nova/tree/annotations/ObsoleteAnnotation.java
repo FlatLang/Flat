@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * 
  * @author	Braden Steffaniak
  */
-public class ObsoleteAnnotation extends Annotation
+public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 {
 	public boolean fail;
 	
@@ -217,5 +217,11 @@ public class ObsoleteAnnotation extends Annotation
 		
 		
 		return null;
+	}
+	
+	@Override
+	public String[] getAliases()
+	{
+		return new String[] { "obsolete" };
 	}
 }

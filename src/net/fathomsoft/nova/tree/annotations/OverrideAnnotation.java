@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.SyntaxTree;
@@ -11,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
 
 import java.util.Arrays;
 
-public class OverrideAnnotation extends Annotation
+public class OverrideAnnotation extends Annotation implements ModifierAnnotation
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -155,5 +156,17 @@ public class OverrideAnnotation extends Annotation
 		
 		
 		return null;
+	}
+	
+	@Override
+	public boolean onApplied(Node appliedTo, boolean throwError)
+	{
+		return appliedTo instanceof InstanceDeclaration || super.onApplied(appliedTo, throwError);
+	}
+	
+	@Override
+	public String[] getAliases()
+	{
+		return new String[] { "override" };
 	}
 }

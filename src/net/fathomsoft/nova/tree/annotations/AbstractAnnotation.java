@@ -6,7 +6,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.util.Location;
 
-public class AbstractAnnotation extends ApplicableAnnotationBase
+public class AbstractAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation
 {
 	public AbstractAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -39,7 +39,7 @@ public class AbstractAnnotation extends ApplicableAnnotationBase
 	}
 	
 	@Override
-	public boolean onApplied(Node next)
+	public boolean onApplied(Node next, boolean throwError)
 	{
 		if (next instanceof ClassDeclaration)
 		{
@@ -51,7 +51,7 @@ public class AbstractAnnotation extends ApplicableAnnotationBase
 		}
 		else
 		{
-			return super.onApplied(next);
+			return super.onApplied(next, throwError);
 		}
 		
 		return true;
@@ -75,5 +75,11 @@ public class AbstractAnnotation extends ApplicableAnnotationBase
 		super.cloneTo(node, cloneChildren);
 		
 		return node;
+	}
+	
+	@Override
+	public String[] getAliases()
+	{
+		return new String[] { "abstract" };
 	}
 }
