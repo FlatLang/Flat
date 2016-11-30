@@ -25,11 +25,11 @@ public class ApplicableAnnotationBase extends Annotation
 	}
 	
 	@Override
-	public boolean onApplied(Node next)
+	public boolean onApplied(Node next, boolean throwError)
 	{
 		if (next instanceof Annotation == false)
 		{
-			invalidAppliedTo(next, true);
+			return invalidAppliedTo(next, throwError);
 		}
 		
 		return super.onApplied(next);

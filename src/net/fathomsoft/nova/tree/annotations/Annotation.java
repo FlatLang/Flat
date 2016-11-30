@@ -212,7 +212,12 @@ public class Annotation extends Node
 		super.onAdded(parent);
 	}
 	
-	public boolean onApplied(Node appliedTo)
+	public final boolean onApplied(Node appliedTo)
+	{
+		return onApplied(appliedTo, true);
+	}
+	
+	public boolean onApplied(Node appliedTo, boolean throwError)
 	{
 		return true;
 	}
