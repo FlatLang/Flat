@@ -2,8 +2,10 @@ package net.fathomsoft.nova;
 
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.annotations.*;
 import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.util.FileUtils;
+import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
 import java.io.File;
@@ -12,9 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;
@@ -91,6 +91,8 @@ public class Nova
 	public static final String	LANGUAGE_NAME = "Nova";
 	public static final String	VERSION       = "v0.2.44";
 	
+	public static final HashMap<String, java.lang.reflect.Constructor> MODIFIERS = new HashMap<>();
+	
 	/**
 	 * Find out which operating system the compiler is running on.
 	 */
@@ -133,11 +135,59 @@ public class Nova
 	 */
 	public static void main(String args[])
 	{
+		loadModifiers();
+		
 		Nova nova = new Nova();
 		
 		nova.compile(args, true);
 		
 		nova.compileEngine.compile();
+	}
+	
+	private static void loadModifiers()
+	{
+		Class<?>[] classes = new Class<?>[] {
+			AbstractAnnotation.class,
+			NativeAnnotation.class,
+			ObsoleteAnnotation.class,
+			OverrideAnnotation.class,
+			PrivateAnnotation.class,
+			PublicAnnotation.class,
+			StaticAnnotation.class,
+			VisibleAnnotation.class,
+		};
+		
+		Arrays.stream(classes).forEach(c -> {
+			try
+			{
+				java.lang.reflect.Constructor constructor = c.getConstructor(Node.class, Location.class);
+				
+				ModifierAnnotation a = (ModifierAnnotation)constructor.newInstance(null, null);
+				
+				String[] aliases = a.getAliases();
+				
+				for (String alias : aliases)
+				{
+					MODIFIERS.put(alias, constructor);
+				}
+			}
+			catch (NoSuchMethodException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IllegalAccessException e)
+			{
+				e.printStackTrace();
+			}
+			catch (InstantiationException e)
+			{
+				e.printStackTrace();
+			}
+			catch (InvocationTargetException e)
+			{
+				e.printStackTrace();
+			}
+		});
 	}
 	
 	/**
@@ -258,10 +308,11 @@ public class Nova
 			args = new String[]
 			{
 				"../Compiler",
-				"../Misc/example",
-				"../Misc/stabilitytest", 
+//				"../Nova.c",
+//				"../Misc/example",
+//				"../Misc/stabilitytest", 
 				"-output-directory", "../NovaCompilerOutput/" + target,
-				"-package-output-directory", "nova", "../StandardLibrary/" + target,
+//				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
 //				"-run",
@@ -276,13 +327,14 @@ public class Nova
 //				"-keepc",
 				"-single-thread",
 				"-single-file",
+				"-line-numbers",
 				"-main",
 //				"example/Lab",
-				"stabilitytest/StabilityTest",
+//				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
-//				"compiler/Compiler",
+				"compiler/Compiler",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
