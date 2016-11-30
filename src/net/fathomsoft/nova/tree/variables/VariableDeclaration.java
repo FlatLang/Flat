@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -7,6 +8,7 @@ import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Bounds;
@@ -14,6 +16,8 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 /**
@@ -299,6 +303,30 @@ public class VariableDeclaration extends IIdentifier
 	 */
 	public boolean setAttribute(String attribute, int argNum)
 	{
+		Constructor c = Nova.MODIFIERS.get(attribute);
+		
+		if (c != null)
+		{
+			try
+			{
+				ModifierAnnotation modifier = (ModifierAnnotation)c.newInstance(null, null);
+				
+				return modifier.apply(this);
+			}
+			catch (InstantiationException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IllegalAccessException e)
+			{
+				e.printStackTrace();
+			}
+			catch (InvocationTargetException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
 		return false;
 	}
 	

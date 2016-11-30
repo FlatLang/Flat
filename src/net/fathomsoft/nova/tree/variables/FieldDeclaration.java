@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
@@ -174,36 +175,6 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		}
 		
 		return super.getVisibilityText();
-	}
-	
-	/**
-	 * @see net.fathomsoft.nova.tree.InstanceDeclaration#setAttribute(java.lang.String, int)
-	 */
-	@Override
-	public boolean setAttribute(String attribute, int argNum)
-	{
-		if (super.setAttribute(attribute, argNum))
-		{
-			return true;
-		}
-		
-		if (argNum == 0)
-		{
-			if (attribute.equals("visible"))
-			{
-				setVisibility(VISIBLE);
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			return false;
-		}
-		
-		return true;
 	}
 	
 	@Override

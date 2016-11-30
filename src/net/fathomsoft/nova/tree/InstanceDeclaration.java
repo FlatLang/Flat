@@ -197,23 +197,11 @@ public class InstanceDeclaration extends VariableDeclaration
 			return true;
 		}
 		
-		if (attribute.equals("static"))
+		if (argNum == 0)
 		{
-			setStatic(true);
-		}
-		else if (argNum == 0)
-		{
-			if (attribute.equals("private"))
-			{
-				setVisibility(PRIVATE);
-			}
-			else if (attribute.equals("protected"))
+			if (attribute.equals("protected"))
 			{
 				setVisibility(PROTECTED);
-			}
-			else if (attribute.equals("public"))
-			{
-				setVisibility(PUBLIC);
 			}
 			else if (attribute.equals("external"))
 			{
