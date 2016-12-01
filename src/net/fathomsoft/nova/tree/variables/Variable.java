@@ -174,7 +174,7 @@ public class Variable extends Identifier
 	
 	public GenericCompatible getContext()
 	{
-		return getDeclaration().getContext();
+		return getDeclaration() != null ? getDeclaration().getContext() : null;
 	}
 	
 	/**
