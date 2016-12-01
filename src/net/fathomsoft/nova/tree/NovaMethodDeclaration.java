@@ -276,6 +276,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public NovaMethodDeclaration getOverriddenMethod(SearchFilter filter)
 	{
+		if (getVisibility() == PRIVATE)
+		{
+			return null;
+		}
+		
 		ClassDeclaration extension = getParentClass().getExtendedClassDeclaration();
 		
 		if (extension != null)
