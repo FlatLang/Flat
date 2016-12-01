@@ -533,7 +533,10 @@ public class Assignment extends Value
 						!returnedLeft.isPrimitive() && !right.isOfType(left))) &&
 						!(left instanceof Interface && right.getClassLocation().equals("nova/Object")))
 				{
-					right.isOfType(left);
+					if (right != null)
+					{
+						right.isOfType(left);
+					}
 					SyntaxUtils.arePrimitiveTypesCompatible(leftType, rightType);
 					returnedLeft.getNovaType();
 					returnedRight.getNovaType();
