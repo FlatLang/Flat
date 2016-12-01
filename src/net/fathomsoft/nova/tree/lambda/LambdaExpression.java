@@ -136,7 +136,7 @@ public class LambdaExpression extends Value
 						if (finalVars.length > id)
 						{
 							name = finalVars[id];
-						}
+					}
 						else
 						{
 							name = "_" + (id + 1);
@@ -147,7 +147,7 @@ public class LambdaExpression extends Value
 					
 					String parameters = builder.toString();
 					
-					String methodDeclaration = "static testLambda" + id++ + "(" + parameters + ")";
+					String methodDeclaration = "static lambda" + id++ + "(" + parameters + ")";
 					
 					if (closure.getType() != null)
 					{
