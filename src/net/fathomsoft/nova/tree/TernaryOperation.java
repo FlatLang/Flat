@@ -173,6 +173,11 @@ public class TernaryOperation extends IValue implements Accessible
 				}
 				else
 				{
+					if (trueValue.getReturnedNode().getTypeClass() == null || falseValue.getReturnedNode().getTypeClass() == null)
+					{
+						return null;
+					}
+					
 					commonClass = trueValue.getReturnedNode().getTypeClass().getCommonAncestor(falseValue.getReturnedNode().getTypeClass());
 				}
 				
