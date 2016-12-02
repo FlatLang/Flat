@@ -474,10 +474,20 @@ public class SyntaxUtils
 			else if (c == '"')
 			{
 				start = StringUtils.findEndingQuote(haystack, start) + 1;
+				
+				if (start <= 0)
+				{
+					return -1;
+				}
 			}
 			else if (c == '\'')
 			{
 				start = StringUtils.findEndingChar(haystack, c, start, 1) + 1;
+				
+				if (start <= 0)
+				{
+					return -1;
+				}
 			}
 			else if (c == '(')
 			{
@@ -2724,14 +2734,9 @@ public class SyntaxUtils
 	
 	public static Bounds findValueBounds(String source, int start)
 	{
-		Bounds bounds = findIdentifierBounds(source, start, true, true);
-		
-		if (bounds != null)
-		{
-			return bounds;
-		}
-		
 		char c = source.charAt(start);
+		
+		Bounds bounds;
 		
 		switch (c)
 		{
@@ -2744,9 +2749,16 @@ public class SyntaxUtils
 				bounds = new Bounds(start, start);
 				bounds.setEnd(StringUtils.findNextWhitespaceIndex(source, start + 1));
 				return bounds;
-			default:
-				return Bounds.EMPTY;
 		}
+		
+		bounds = findIdentifierBounds(source, start, true, true);
+		
+		if (bounds != null)
+		{
+			return bounds;
+		}
+		
+		return Bounds.EMPTY;
 	}
 	
 	public static Bounds findIdentifierBounds(String source, int start)
