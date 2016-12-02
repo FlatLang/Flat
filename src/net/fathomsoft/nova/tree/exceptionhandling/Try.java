@@ -1,14 +1,13 @@
 package net.fathomsoft.nova.tree.exceptionhandling;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
+
+import java.util.ArrayList;
 
 /**
  * ExceptionHandler extension that represents the declaration of a

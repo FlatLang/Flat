@@ -2,9 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.ClassDeclaration.ClassData;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 

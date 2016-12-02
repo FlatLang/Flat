@@ -1,9 +1,9 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
+
+import java.util.ArrayList;
 
 /**
  * Node extension that keeps track of a set of arguments that

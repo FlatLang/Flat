@@ -5,11 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 /**
  * Loop extension that represents the declaration of a "foreach loop"

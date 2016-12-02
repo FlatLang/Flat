@@ -1,15 +1,14 @@
 package net.fathomsoft.nova;
 
-import static java.lang.Math.sin;
+import net.fathomsoft.nova.util.Bounds;
+import net.fathomsoft.nova.util.Patterns;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
-import java.io.Console;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import static java.lang.Math.sin;
 
 public class Test
 {

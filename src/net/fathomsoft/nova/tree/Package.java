@@ -1,12 +1,12 @@
 package net.fathomsoft.nova.tree;
 
-import java.io.File;
-
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+
+import java.io.File;
 
 /**
  * {@link Node} extension that represents

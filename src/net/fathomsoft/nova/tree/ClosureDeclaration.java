@@ -6,11 +6,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.Patterns;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 /**
  * Identifier extension that represents the use of a variable

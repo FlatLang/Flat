@@ -2,7 +2,8 @@ package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.Assignment;
+import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 

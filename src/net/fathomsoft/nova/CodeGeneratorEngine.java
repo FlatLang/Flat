@@ -1,16 +1,13 @@
 package net.fathomsoft.nova;
 
-import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.FileDeclaration;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.FileUtils;
-import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 public abstract class CodeGeneratorEngine
 {

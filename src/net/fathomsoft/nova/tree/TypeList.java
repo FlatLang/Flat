@@ -1,12 +1,12 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.util.Location;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.util.Location;
 
 /**
  * {@link List} extension that abstracts a general list type that can only

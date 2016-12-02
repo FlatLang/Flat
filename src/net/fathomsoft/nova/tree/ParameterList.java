@@ -1,13 +1,13 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.ArrayList;
-
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.exceptionhandling.Exception;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.util.Location;
+
+import java.util.ArrayList;
 
 /**
  * Node extension that represents a list of parameters for a method.

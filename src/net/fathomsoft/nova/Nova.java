@@ -2,10 +2,8 @@ package net.fathomsoft.nova;
 
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.annotations.*;
 import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.util.FileUtils;
-import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
 import java.io.File;
@@ -14,7 +12,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;

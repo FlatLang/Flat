@@ -1,10 +1,10 @@
 package net.fathomsoft.nova.tree;
 
-import java.util.HashMap;
-
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
+
+import java.util.HashMap;
 
 /**
  * {@link Node} extension that represents
