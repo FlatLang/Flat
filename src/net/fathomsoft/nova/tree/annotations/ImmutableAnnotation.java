@@ -13,6 +13,8 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 {
 	public ClassDeclaration mutableClass;
 	
+	public NovaMethodDeclaration toImmutable;
+	
 	public ImmutableAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
@@ -81,6 +83,29 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 					immutableClass = getImmutableClass();
 					this.mutableClass = mutableClass;
 					
+					MethodDeclaration[] methods = mutableClass.getMethods("toImmutable");
+					
+					Optional<MethodDeclaration> method = Arrays.stream(methods).filter(x -> {
+						for (Parameter p : x.getParameterList())
+						{
+							if (!p.isOptional())
+							{
+								return false;
+							}
+						}
+						
+						return true;
+					}).findFirst();
+					
+					if (method.isPresent())
+					{
+						toImmutable = (NovaMethodDeclaration)method.get();
+					}
+					else if (parameters.containsKey("className"))
+					{
+						SyntaxMessage.error("Immutable class '" + immutableClass.getClassLocation() + "' must contain a toImmutable function with 0 required arguments", this);
+					}
+					
 					if (immutableClass != null)
 					{
 						declaration.setType(immutableClass.getName());
@@ -117,32 +142,13 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	
 	public void convertAssignment(Value assignment)
 	{
-		if (mutableClass != null)
+		if (toImmutable != null)
 		{
-			MethodDeclaration[] methods = mutableClass.getMethods("toImmutable");
+			MethodCall call = MethodCall.decodeStatement(assignment.getReturnedNode(), "toImmutable()", assignment.getLocationIn(), true, true, toImmutable);
 			
-			Optional<MethodDeclaration> method = Arrays.stream(methods).filter(x -> {
-				for (Parameter p : x.getParameterList())
-				{
-					if (!p.isOptional())
-					{
-						return false;
-					}
-				}
-				
-				return true;
-			}).findFirst();
-			
-			if (method.isPresent())
+			if (call != null)
 			{
-				NovaMethodDeclaration toImmutable = (NovaMethodDeclaration)method.get();
-				
-				MethodCall call = MethodCall.decodeStatement(assignment.getReturnedNode(), "toImmutable()", assignment.getLocationIn(), true, true, toImmutable);
-				
-				if (call != null)
-				{
-					((Accessible)assignment.getReturnedNode()).setAccessedNode(call);
-				}
+				((Accessible)assignment.getReturnedNode()).setAccessedNode(call);
 			}
 		}
 	}
