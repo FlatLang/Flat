@@ -206,7 +206,7 @@ public class TernaryOperation extends IValue implements Accessible
 			return result;
 		}
 		
-		result.returnedNode = (Node)checkSafeNavigation();
+		result.returnedNode = checkSafeNavigation();
 		
 		return result;
 	}
