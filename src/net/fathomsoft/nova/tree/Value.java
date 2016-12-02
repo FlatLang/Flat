@@ -471,7 +471,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isExternalType()
 	{
-		return getType() != null && getParentClass().containsExternalType(getType());
+		return getType() != null && getParentClass() != null && getParentClass().containsExternalType(getType());
 	}
 	
 	public Value getTypeValue()
@@ -1213,6 +1213,11 @@ public abstract class Value extends Node implements AbstractValue
 		setDataType(novaType.getDataType());
 	}
 	
+	public boolean isImmutable()
+	{
+		return getTypeClass().isImmutable();
+	}
+	
 	public Value getRealValue()
 	{
 		return this;
@@ -1225,14 +1230,14 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Value cloneTo(Value node, boolean cloneChildren)
+	public Value cloneTo(Value node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		return cloneTo(node, cloneChildren, false);
+		return cloneTo(node, cloneChildren, cloneAnnotations, false);
 	}
 	
-	public Value cloneTo(Value node, boolean cloneChildren, boolean copyFacadeValues)
+	public Value cloneTo(Value node, boolean cloneChildren, boolean cloneAnnotations, boolean copyFacadeValues)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		if (copyFacadeValues)
 		{
