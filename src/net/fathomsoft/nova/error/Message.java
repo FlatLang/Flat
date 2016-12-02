@@ -88,7 +88,11 @@ public class Message
 			}
 			
 			info += " - in file \"" + file.getFile().getName() + '"';
-			info += " on line number " + lineNumber + " at offset " + loc.getOffset() + " [" + loc.getStart() + ", " + loc.getEnd() + "]";
+			
+			if (loc != null)
+			{
+				info += " on line number " + lineNumber + " at offset " + loc.getOffset() + " [" + loc.getStart() + ", " + loc.getEnd() + "]";
+			}
 		}
 		
 		if (type == MESSAGE)
