@@ -25,19 +25,19 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 			
 			n.parseParameters(parameters);
 			
-			Object classLocation = n.parameters.get("classLocation");
+			Object className = n.parameters.get("className");
 			
-			if (classLocation != null)
+			if (className != null)
 			{
-				if (classLocation instanceof Literal)
+				if (className instanceof Literal)
 				{
-					String value = ((Literal)classLocation).value;
+					String value = ((Literal)className).value;
 					
-					n.parameters.put("classLocation", value.substring(1, value.length() - 1).trim());
+					n.parameters.put("className", value.substring(1, value.length() - 1).trim());
 				}
 				else
 				{
-					n.invalidArgument("classLocation", true);
+					n.invalidArgument("className", true);
 				}
 			}
 			
@@ -50,7 +50,7 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	@Override
 	public String[] defaultParameterNames()
 	{
-		return new String[] { "classLocation" };
+		return new String[] { "className" };
 	}
 	
 	@Override
@@ -114,7 +114,7 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 			
 			if (reference != null)
 			{
-				return mutableClass.getFileDeclaration().getImportedClass(mutableClass, (String)reference.parameters.get("classLocation"));
+				return mutableClass.getFileDeclaration().getImportedClass(mutableClass, (String)reference.parameters.get("className"));
 			}
 		}
 		
