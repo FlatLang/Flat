@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.Arrays;
@@ -50,20 +51,13 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	@Override
 	public String[] defaultParameterNames()
 	{
-		return new String[] { "className" };
+		return new String[] { "className", "deep" };
 	}
 	
 	@Override
-	public ValidationResult validate(int phase)
+	public String[][] defaultParameterTypes()
 	{
-		ValidationResult result = super.validate(phase);
-		
-		if (result.skipValidation())
-		{
-			return result;
-		}
-		
-		return result;
+		return new String[][] { { "String", "Bool" } };
 	}
 	
 	@Override
@@ -175,6 +169,59 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 		}
 		
 		return super.onApplied(next, throwError);
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			Node node = getParent();
+			
+			if (!parameters.containsKey("className"))
+			{
+				if (node instanceof ClassDeclaration)
+				{
+					ClassDeclaration clazz = (ClassDeclaration)node;
+					
+					clazz.getFieldList().getPublicFieldList().forEachVisibleChild(f -> {
+						FieldDeclaration field = (FieldDeclaration)f;
+						
+						if (field.isTangible() && field.getVisibility() == InstanceDeclaration.PUBLIC)
+						{
+							SyntaxMessage.error("Immutable class '" + clazz.getClassLocation() + "' cannot have public fields", field, false);
+							
+							result.errorOccurred = true;
+						}
+						else
+						{
+							field.references.forEach(variable -> {
+								if (variable.getParentMethod() instanceof Constructor == false &&
+									variable.getParentMethod() instanceof AssignmentMethod == false &&
+									variable.getParentMethod() instanceof MutatorMethod == false)
+								{
+									if (variable.isInTree() && variable.isBeingModified())
+									{
+										SyntaxMessage.error("Field '" + field.getName() + "' of immutable class '" + clazz.getClassLocation() + "' cannot be modified outside of a constructor", variable, false);
+										
+										result.errorOccurred = true;
+									}
+								}
+							});
+						}
+					});
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	@Override
