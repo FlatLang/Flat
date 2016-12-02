@@ -472,6 +472,26 @@ public class Variable extends Identifier
 		return getDeclaration() != null && getDeclaration().isImmutable();
 	}
 	
+	public boolean isBeingModified()
+	{
+		if (getParent() instanceof UnaryOperation)
+		{
+			return true;
+		}
+		
+		Assignment a = (Assignment)getAncestorOfType(Assignment.class);
+		
+		if (a != null)
+		{
+			if (a.getAssignedNode() == this)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	@Override
 	public void onAdded(Node parent)
 	{
