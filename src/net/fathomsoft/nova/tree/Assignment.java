@@ -332,7 +332,7 @@ public class Assignment extends Value
 		{
 			assignment = n.decodeRightHandSide(n, rhs, newLoc, require);
 			
-			if (n.getAssignedNodeValue().isImmutable())
+			if (n.getAssignedNodeValue().isImmutable() && n.getAssignedNodeValue() instanceof Variable)
 			{
 				n.getAssignedNode().getImmutableAnnotation().convertAssignment((Value)assignment);
 			}
