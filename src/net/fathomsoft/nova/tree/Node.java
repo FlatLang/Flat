@@ -1543,6 +1543,15 @@ public abstract class Node implements Listenable, Annotatable
 				return false;
 			}
 		}
+		if (annotations != null)
+		{
+			for (int i = annotations.size() - 1; i >= 0; i--)
+			{
+				Annotation annotation = annotations.get(i);
+				
+				annotation.onNextStatementDecoded(this);
+			}
+		}
 		
 		return true;
 	}
@@ -1917,6 +1926,11 @@ public abstract class Node implements Listenable, Annotatable
 		return clone(temporaryParent, locationIn, true); 
 	}
 	
+	public final Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	{
+		return clone(temporaryParent, locationIn, cloneChildren, true);
+	}
+	
 	/**
 	 * Return a new Node containing a copy of the values of the
 	 * specified node, including clones of the children.
@@ -1928,7 +1942,7 @@ public abstract class Node implements Listenable, Annotatable
 	 * 		Node as well.
 	 * @return A clone of the specified Node.
 	 */
-	public abstract Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren);
+	public abstract Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations);
 	
 	/**
 	 * Fill the given {@link Node} with the data that is in the
@@ -1953,7 +1967,12 @@ public abstract class Node implements Listenable, Annotatable
 	 * 		Node as well.
 	 * @return The cloned node.
 	 */
-	public Node cloneTo(Node node, boolean cloneChildren)
+	public final Node cloneTo(Node node, boolean cloneChildren)
+	{
+		return cloneTo(node, cloneChildren, true);
+	}
+	
+	public Node cloneTo(Node node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		if (getNumDefaultChildren() > 0 && cloneChildren)
 		{
@@ -1972,13 +1991,13 @@ public abstract class Node implements Listenable, Annotatable
 			cloneChildrenTo(node);
 		}
 		
-		if (annotations != null)
+		if (cloneAnnotations && annotations != null)
 		{
 			ArrayList<Annotation> cloned = new ArrayList<>(annotations.size());
 			
 			for (Annotation a : annotations)
 			{
-				cloned.add(a.clone(node, node.getLocationIn(), true));
+				cloned.add(a.clone(node, node.getLocationIn(), cloneAnnotations, true));
 			}
 			
 			node.annotations = cloned;
@@ -2022,7 +2041,7 @@ public abstract class Node implements Listenable, Annotatable
 		return new Node(null, null)
 		{
 			@Override
-			public Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+			public Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 			{
 				return null;
 			}
