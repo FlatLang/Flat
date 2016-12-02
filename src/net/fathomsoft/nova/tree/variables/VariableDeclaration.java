@@ -8,6 +8,8 @@ import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.ImmutableAnnotation;
 import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
@@ -58,6 +60,32 @@ public class VariableDeclaration extends IIdentifier
 		addChild(implementation, this);
 		
 		extraDeclarations = new String[0];
+	}
+	
+	public boolean isImmutable()
+	{
+		return getImmutableAnnotation() != null;
+	}
+	
+	public ImmutableAnnotation getImmutableAnnotation()
+	{
+		if (getAnnotations() != null)
+		{
+			for (Annotation a : getAnnotations())
+			{
+				if (a instanceof ImmutableAnnotation)
+				{
+					ImmutableAnnotation i = (ImmutableAnnotation)a;
+					
+					if (i.parameters.size() == 0)
+					{
+						return i;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	@Override
@@ -303,7 +331,7 @@ public class VariableDeclaration extends IIdentifier
 	 */
 	public boolean setAttribute(String attribute, int argNum)
 	{
-		Constructor c = Nova.MODIFIERS.get(attribute);
+		Constructor c = Annotation.MODIFIERS.get(attribute);
 		
 		if (c != null)
 		{
@@ -519,11 +547,11 @@ public class VariableDeclaration extends IIdentifier
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public VariableDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public VariableDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		VariableDeclaration node = new VariableDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -531,7 +559,7 @@ public class VariableDeclaration extends IIdentifier
 	 */
 	public VariableDeclaration cloneTo(VariableDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -541,9 +569,9 @@ public class VariableDeclaration extends IIdentifier
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VariableDeclaration cloneTo(VariableDeclaration node, boolean cloneChildren)
+	public VariableDeclaration cloneTo(VariableDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.external     = external;
 		node.volatileVal  = volatileVal;

@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.annotations.ImmutableAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -450,7 +451,7 @@ public class Variable extends Identifier
 				
 				if (extractedType != null)
 				{
-					GenericTypeArgument value = extractedType.clone(extractedType.getParent(), extractedType.getLocationIn(), true);
+					GenericTypeArgument value = extractedType.clone(extractedType.getParent(), extractedType.getLocationIn(), true, true);
 					value.setArrayDimensions(getArrayDimensions());
 					
 					return extractedType;
@@ -459,6 +460,16 @@ public class Variable extends Identifier
 		}
 		
 		return super.getNovaTypeValue(context);
+	}
+	
+	public ImmutableAnnotation getImmutableAnnotation()
+	{
+		return getDeclaration() != null ? getDeclaration().getImmutableAnnotation() : null;
+	}
+	
+	public boolean isImmutable()
+	{
+		return getDeclaration() != null && getDeclaration().isImmutable();
 	}
 	
 	@Override
@@ -668,11 +679,11 @@ public class Variable extends Identifier
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Variable clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Variable clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Variable node = new Variable(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -680,7 +691,7 @@ public class Variable extends Identifier
 	 */
 	public Variable cloneTo(Variable node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -690,11 +701,11 @@ public class Variable extends Identifier
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Variable cloneTo(Variable node, boolean cloneChildren)
+	public Variable cloneTo(Variable node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		node.declaration = declaration;
 		
-		//super.cloneTo(node, cloneChildren);
+		//super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		if (cloneChildren)
 		{
