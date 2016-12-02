@@ -91,8 +91,6 @@ public class Nova
 	public static final String	LANGUAGE_NAME = "Nova";
 	public static final String	VERSION       = "v0.2.44";
 	
-	public static final HashMap<String, java.lang.reflect.Constructor> MODIFIERS = new HashMap<>();
-	
 	/**
 	 * Find out which operating system the compiler is running on.
 	 */
@@ -135,59 +133,11 @@ public class Nova
 	 */
 	public static void main(String args[])
 	{
-		loadModifiers();
-		
 		Nova nova = new Nova();
 		
 		nova.compile(args, true);
 		
 		nova.compileEngine.compile();
-	}
-	
-	private static void loadModifiers()
-	{
-		Class<?>[] classes = new Class<?>[] {
-			AbstractAnnotation.class,
-			NativeAnnotation.class,
-			ObsoleteAnnotation.class,
-			OverrideAnnotation.class,
-			PrivateAnnotation.class,
-			PublicAnnotation.class,
-			StaticAnnotation.class,
-			VisibleAnnotation.class,
-		};
-		
-		Arrays.stream(classes).forEach(c -> {
-			try
-			{
-				java.lang.reflect.Constructor constructor = c.getConstructor(Node.class, Location.class);
-				
-				ModifierAnnotation a = (ModifierAnnotation)constructor.newInstance(null, null);
-				
-				String[] aliases = a.getAliases();
-				
-				for (String alias : aliases)
-				{
-					MODIFIERS.put(alias, constructor);
-				}
-			}
-			catch (NoSuchMethodException e)
-			{
-				e.printStackTrace();
-			}
-			catch (IllegalAccessException e)
-			{
-				e.printStackTrace();
-			}
-			catch (InstantiationException e)
-			{
-				e.printStackTrace();
-			}
-			catch (InvocationTargetException e)
-			{
-				e.printStackTrace();
-			}
-		});
 	}
 	
 	/**
