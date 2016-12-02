@@ -331,6 +331,11 @@ public class Assignment extends Value
 		if (assignment == null)
 		{
 			assignment = n.decodeRightHandSide(n, rhs, newLoc, require);
+			
+			if (n.getAssignedNodeValue().isImmutable())
+			{
+				n.getAssignedNode().getImmutableAnnotation().convertAssignment((Value)assignment);
+			}
 		}
 		
 		if (assignment == null)
@@ -829,11 +834,11 @@ public class Assignment extends Value
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Assignment clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Assignment clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Assignment node = new Assignment(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -841,7 +846,7 @@ public class Assignment extends Value
 	 */
 	public Assignment cloneTo(Assignment node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -851,9 +856,9 @@ public class Assignment extends Value
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Assignment cloneTo(Assignment node, boolean cloneChildren)
+	public Assignment cloneTo(Assignment node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}
