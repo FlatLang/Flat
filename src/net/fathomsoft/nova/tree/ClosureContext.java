@@ -33,7 +33,7 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 		
 		ClosureVariableDeclaration var = new ClosureVariableDeclaration(this, getLocationIn(), declaration);
 		
-		declaration.cloneTo(var, true);
+		declaration.cloneTo(var, true, true);
 		var.setIsValueReference(true);
 		
 		addChild(var);
@@ -50,11 +50,11 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ClosureContext clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ClosureContext clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ClosureContext node = new ClosureContext(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -62,7 +62,7 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 	 */
 	public ClosureContext cloneTo(ClosureContext node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -72,9 +72,9 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClosureContext cloneTo(ClosureContext node, boolean cloneChildren)
+	public ClosureContext cloneTo(ClosureContext node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

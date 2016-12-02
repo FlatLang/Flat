@@ -76,11 +76,11 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ClassInstanceDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ClassInstanceDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ClassInstanceDeclaration node = new ClassInstanceDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -88,7 +88,7 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 	 */
 	public ClassInstanceDeclaration cloneTo(ClassInstanceDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -98,9 +98,9 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClassInstanceDeclaration cloneTo(ClassInstanceDeclaration node, boolean cloneChildren)
+	public ClassInstanceDeclaration cloneTo(ClassInstanceDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

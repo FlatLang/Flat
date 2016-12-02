@@ -78,11 +78,11 @@ public class Default extends MatchCase
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Default clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Default clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Default node = new Default(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -90,7 +90,7 @@ public class Default extends MatchCase
 	 */
 	public Default cloneTo(Default node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -100,9 +100,9 @@ public class Default extends MatchCase
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Default cloneTo(Default node, boolean cloneChildren)
+	public Default cloneTo(Default node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

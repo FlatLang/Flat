@@ -119,11 +119,11 @@ public class NovaParameterList extends ParameterList<Parameter>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public NovaParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public NovaParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		NovaParameterList node = new NovaParameterList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -131,7 +131,7 @@ public class NovaParameterList extends ParameterList<Parameter>
 	 */
 	public NovaParameterList cloneTo(NovaParameterList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -141,11 +141,11 @@ public class NovaParameterList extends ParameterList<Parameter>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public NovaParameterList cloneTo(NovaParameterList node, boolean cloneChildren)
+	public NovaParameterList cloneTo(NovaParameterList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
-		node.returnParameters = returnParameters.clone(node, getLocationIn().asNew(), true);
+		node.returnParameters = returnParameters.clone(node, getLocationIn().asNew(), true, true);
 		
 		return node;
 	}
@@ -191,11 +191,11 @@ public class NovaParameterList extends ParameterList<Parameter>
 		 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 		 */
 		@Override
-		public ReturnParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+		public ReturnParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 		{
 			ReturnParameterList node = new ReturnParameterList(temporaryParent, locationIn);
 			
-			return cloneTo(node, cloneChildren);
+			return cloneTo(node, cloneChildren, cloneAnnotations);
 		}
 		
 		/**
@@ -203,7 +203,7 @@ public class NovaParameterList extends ParameterList<Parameter>
 		 */
 		public ReturnParameterList cloneTo(ReturnParameterList node)
 		{
-			return cloneTo(node, true);
+			return cloneTo(node, true, true);
 		}
 		
 		/**
@@ -213,9 +213,9 @@ public class NovaParameterList extends ParameterList<Parameter>
 		 * @param node The node to copy the data into.
 		 * @return The cloned node.
 		 */
-		public ReturnParameterList cloneTo(ReturnParameterList node, boolean cloneChildren)
+		public ReturnParameterList cloneTo(ReturnParameterList node, boolean cloneChildren, boolean cloneAnnotations)
 		{
-			super.cloneTo(node, cloneChildren);
+			super.cloneTo(node, cloneChildren, cloneAnnotations);
 			
 			return node;
 		}

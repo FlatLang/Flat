@@ -226,7 +226,7 @@ public abstract class Identifier extends Value implements Accessible
 	 */
 	public Identifier cloneTo(Identifier node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -236,9 +236,9 @@ public abstract class Identifier extends Value implements Accessible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Identifier cloneTo(Identifier node, boolean cloneChildren)
+	public Identifier cloneTo(Identifier node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.setName(getName());
 		node.setForceOriginalName(doesForceOriginalName());

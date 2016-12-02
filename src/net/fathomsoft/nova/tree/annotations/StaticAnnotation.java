@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.ArrayOverloadMethod;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.PropertyMethod;
 import net.fathomsoft.nova.util.Location;
 
 public class StaticAnnotation extends Annotation implements ModifierAnnotation
@@ -40,7 +42,11 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof InstanceDeclaration)
+		if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+		{
+			return true;
+		}
+		else if (next instanceof InstanceDeclaration)
 		{
 			((InstanceDeclaration)next).setStatic(true);
 		}
@@ -53,21 +59,21 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation
 	}
 	
 	@Override
-	public StaticAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public StaticAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		StaticAnnotation node = new StaticAnnotation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	public StaticAnnotation cloneTo(StaticAnnotation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
-	public StaticAnnotation cloneTo(StaticAnnotation node, boolean cloneChildren)
+	public StaticAnnotation cloneTo(StaticAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

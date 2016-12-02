@@ -324,11 +324,11 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Instantiation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Instantiation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Instantiation node = new Instantiation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -336,7 +336,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 */
 	public Instantiation cloneTo(Instantiation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -346,9 +346,9 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Instantiation cloneTo(Instantiation node, boolean cloneChildren)
+	public Instantiation cloneTo(Instantiation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

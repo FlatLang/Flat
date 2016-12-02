@@ -151,11 +151,11 @@ public class IIdentifier extends Identifier
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public IIdentifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public IIdentifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		IIdentifier node = new IIdentifier(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -163,7 +163,7 @@ public class IIdentifier extends Identifier
 	 */
 	public IIdentifier cloneTo(IIdentifier node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -173,9 +173,9 @@ public class IIdentifier extends Identifier
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public IIdentifier cloneTo(IIdentifier node, boolean cloneChildren)
+	public IIdentifier cloneTo(IIdentifier node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.name            = name;
 		node.forceOriginal   = forceOriginal;

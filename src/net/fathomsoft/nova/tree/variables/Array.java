@@ -597,11 +597,11 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Array clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Array clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Array node = new Array(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -609,7 +609,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 */
 	public Array cloneTo(Array node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -619,9 +619,9 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Array cloneTo(Array node, boolean cloneChildren)
+	public Array cloneTo(Array node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.setArrayDimensions(getArrayDimensions());
 		

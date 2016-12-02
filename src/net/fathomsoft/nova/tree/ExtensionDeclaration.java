@@ -82,11 +82,11 @@ public class ExtensionDeclaration extends ClassDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExtensionDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExtensionDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExtensionDeclaration node = new ExtensionDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -94,7 +94,7 @@ public class ExtensionDeclaration extends ClassDeclaration
 	 */
 	public ExtensionDeclaration cloneTo(ExtensionDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -104,9 +104,9 @@ public class ExtensionDeclaration extends ClassDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExtensionDeclaration cloneTo(ExtensionDeclaration node, boolean cloneChildren)
+	public ExtensionDeclaration cloneTo(ExtensionDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

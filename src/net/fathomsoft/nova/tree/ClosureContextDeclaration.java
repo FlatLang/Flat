@@ -36,11 +36,11 @@ public class ClosureContextDeclaration extends LocalDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ClosureContextDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ClosureContextDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ClosureContextDeclaration node = new ClosureContextDeclaration(temporaryParent, locationIn, context);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -48,7 +48,7 @@ public class ClosureContextDeclaration extends LocalDeclaration
 	 */
 	public ClosureContextDeclaration cloneTo(ClosureContextDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -58,9 +58,9 @@ public class ClosureContextDeclaration extends LocalDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClosureContextDeclaration cloneTo(ClosureContextDeclaration node, boolean cloneChildren)
+	public ClosureContextDeclaration cloneTo(ClosureContextDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

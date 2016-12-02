@@ -104,7 +104,7 @@ public class Literal extends IValue implements Accessible
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		if (!isWithinExternalContext() && isStringInstantiation())
+		if (false && !isWithinExternalContext() && isStringInstantiation())
 		{
 			builder.append("new String(").append(value).append(')');
 		}
@@ -457,7 +457,7 @@ public class Literal extends IValue implements Accessible
 			}
 			else if (getAncestorOfType(Return.class) != null)
 			{
-				getParentMethod().cloneTo(this, false);
+				getParentMethod().cloneTo(this, false, true);
 			}
 		}
 		
@@ -521,11 +521,11 @@ public class Literal extends IValue implements Accessible
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Literal clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Literal clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Literal node = new Literal(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -533,7 +533,7 @@ public class Literal extends IValue implements Accessible
 	 */
 	public Literal cloneTo(Literal node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -543,9 +543,9 @@ public class Literal extends IValue implements Accessible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Literal cloneTo(Literal node, boolean cloneChildren)
+	public Literal cloneTo(Literal node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.value = value;
 		

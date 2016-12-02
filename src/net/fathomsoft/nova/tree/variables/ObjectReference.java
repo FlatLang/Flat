@@ -110,11 +110,11 @@ public class ObjectReference extends Variable
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ObjectReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ObjectReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ObjectReference node = new ObjectReference(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -122,7 +122,7 @@ public class ObjectReference extends Variable
 	 */
 	public ObjectReference cloneTo(ObjectReference node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -132,9 +132,9 @@ public class ObjectReference extends Variable
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ObjectReference cloneTo(ObjectReference node, boolean cloneChildren)
+	public ObjectReference cloneTo(ObjectReference node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

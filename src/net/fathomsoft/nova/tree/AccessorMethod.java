@@ -81,11 +81,11 @@ public class AccessorMethod extends PropertyMethod
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public AccessorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public AccessorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		AccessorMethod node = new AccessorMethod(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -93,7 +93,7 @@ public class AccessorMethod extends PropertyMethod
 	 */
 	public AccessorMethod cloneTo(AccessorMethod node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -103,9 +103,9 @@ public class AccessorMethod extends PropertyMethod
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public AccessorMethod cloneTo(AccessorMethod node, boolean cloneChildren)
+	public AccessorMethod cloneTo(AccessorMethod node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

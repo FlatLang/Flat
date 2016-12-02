@@ -55,11 +55,11 @@ public class MethodGenericTypeParameter extends GenericTypeParameter
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public MethodGenericTypeParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public MethodGenericTypeParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		MethodGenericTypeParameter node = new MethodGenericTypeParameter(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -67,7 +67,7 @@ public class MethodGenericTypeParameter extends GenericTypeParameter
 	 */
 	public MethodGenericTypeParameter cloneTo(MethodGenericTypeParameter node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -77,9 +77,9 @@ public class MethodGenericTypeParameter extends GenericTypeParameter
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodGenericTypeParameter cloneTo(MethodGenericTypeParameter node, boolean cloneChildren)
+	public MethodGenericTypeParameter cloneTo(MethodGenericTypeParameter node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

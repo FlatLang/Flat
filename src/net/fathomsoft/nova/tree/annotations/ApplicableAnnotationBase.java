@@ -36,21 +36,21 @@ public class ApplicableAnnotationBase extends Annotation
 	}
 	
 	@Override
-	public ApplicableAnnotationBase clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ApplicableAnnotationBase clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ApplicableAnnotationBase node = new ApplicableAnnotationBase(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	public ApplicableAnnotationBase cloneTo(ApplicableAnnotationBase node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
-	public ApplicableAnnotationBase cloneTo(ApplicableAnnotationBase node, boolean cloneChildren)
+	public ApplicableAnnotationBase cloneTo(ApplicableAnnotationBase node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

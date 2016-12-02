@@ -6,6 +6,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.ImmutableAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -2656,11 +2657,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ClassDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ClassDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ClassDeclaration node = new ClassDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -2668,7 +2669,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public ClassDeclaration cloneTo(ClassDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -2678,9 +2679,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClassDeclaration cloneTo(ClassDeclaration node, boolean cloneChildren)
+	public ClassDeclaration cloneTo(ClassDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.extendedClass = extendedClass;
 		node.abstractValue = abstractValue;

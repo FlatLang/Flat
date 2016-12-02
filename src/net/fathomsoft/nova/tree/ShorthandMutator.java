@@ -28,11 +28,11 @@ public class ShorthandMutator extends MutatorMethod
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ShorthandMutator clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ShorthandMutator clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ShorthandMutator node = new ShorthandMutator(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -40,7 +40,7 @@ public class ShorthandMutator extends MutatorMethod
 	 */
 	public ShorthandMutator cloneTo(ShorthandMutator node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -50,9 +50,9 @@ public class ShorthandMutator extends MutatorMethod
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ShorthandMutator cloneTo(ShorthandMutator node, boolean cloneChildren)
+	public ShorthandMutator cloneTo(ShorthandMutator node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

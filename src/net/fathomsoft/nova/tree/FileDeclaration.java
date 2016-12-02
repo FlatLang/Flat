@@ -606,11 +606,11 @@ public class FileDeclaration extends Node
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public FileDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public FileDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		FileDeclaration node = new FileDeclaration(temporaryParent, locationIn, null);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -618,7 +618,7 @@ public class FileDeclaration extends Node
 	 */
 	public FileDeclaration cloneTo(FileDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -628,9 +628,9 @@ public class FileDeclaration extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public FileDeclaration cloneTo(FileDeclaration node, boolean cloneChildren)
+	public FileDeclaration cloneTo(FileDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.file     = new File(file.getAbsolutePath());
 		node.closures = new ArrayList<ClosureDeclaration>();

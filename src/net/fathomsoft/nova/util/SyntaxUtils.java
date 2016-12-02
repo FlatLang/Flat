@@ -1817,7 +1817,7 @@ public class SyntaxUtils
 			return true;
 		}
 		
-		return value.getParentClass(true).containsGenericTypeParameter(type);
+		return value.getParentClass(true) == null ? true : value.getParentClass(true).containsGenericTypeParameter(type);
 	}
 	
 	private static Value getValidValue(Value value)
@@ -2449,7 +2449,7 @@ public class SyntaxUtils
 				
 				if (arg != null)
 				{
-					Value value = arg.cloneTo(new IValue(arg.getParent(), arg.getLocationIn()), false);
+					Value value = arg.cloneTo(new IValue(arg.getParent(), arg.getLocationIn()), false, true);
 					value.setArrayDimensions(required.getArrayDimensions());
 					
 					if (!isTypeCompatible(context, value, given, false))

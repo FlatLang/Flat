@@ -27,11 +27,11 @@ public class InstanceFieldList extends List
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public InstanceFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public InstanceFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		InstanceFieldList node = new InstanceFieldList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -39,7 +39,7 @@ public class InstanceFieldList extends List
 	 */
 	public InstanceFieldList cloneTo(InstanceFieldList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -49,9 +49,9 @@ public class InstanceFieldList extends List
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InstanceFieldList cloneTo(InstanceFieldList node, boolean cloneChildren)
+	public InstanceFieldList cloneTo(InstanceFieldList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

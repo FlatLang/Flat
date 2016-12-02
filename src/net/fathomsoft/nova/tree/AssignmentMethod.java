@@ -57,11 +57,11 @@ public class AssignmentMethod extends BodyMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public AssignmentMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public AssignmentMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		AssignmentMethod node = new AssignmentMethod(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -69,7 +69,7 @@ public class AssignmentMethod extends BodyMethodDeclaration
 	 */
 	public AssignmentMethod cloneTo(AssignmentMethod node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -79,9 +79,9 @@ public class AssignmentMethod extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public AssignmentMethod cloneTo(AssignmentMethod node, boolean cloneChildren)
+	public AssignmentMethod cloneTo(AssignmentMethod node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

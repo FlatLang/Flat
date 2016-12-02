@@ -137,11 +137,11 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public LambdaMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public LambdaMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		LambdaMethodDeclaration node = new LambdaMethodDeclaration(temporaryParent, locationIn, scope);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -149,7 +149,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	 */
 	public LambdaMethodDeclaration cloneTo(LambdaMethodDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -159,9 +159,9 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public LambdaMethodDeclaration cloneTo(LambdaMethodDeclaration node, boolean cloneChildren)
+	public LambdaMethodDeclaration cloneTo(LambdaMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.methodCall = methodCall;
 		node.isInstance = isInstance;

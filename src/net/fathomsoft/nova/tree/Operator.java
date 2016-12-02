@@ -310,11 +310,11 @@ public class Operator extends IValue
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Operator clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Operator clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Operator node = new Operator(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -322,7 +322,7 @@ public class Operator extends IValue
 	 */
 	public Operator cloneTo(Operator node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -332,9 +332,9 @@ public class Operator extends IValue
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Operator cloneTo(Operator node, boolean cloneChildren)
+	public Operator cloneTo(Operator node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.operator = operator;
 		

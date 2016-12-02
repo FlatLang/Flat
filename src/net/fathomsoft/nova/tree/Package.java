@@ -188,11 +188,11 @@ public class Package extends Node
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Package clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Package clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Package node = new Package(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -200,7 +200,7 @@ public class Package extends Node
 	 */
 	public Package cloneTo(Package node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -210,9 +210,9 @@ public class Package extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Package cloneTo(Package node, boolean cloneChildren)
+	public Package cloneTo(Package node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

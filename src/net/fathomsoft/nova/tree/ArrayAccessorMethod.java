@@ -53,7 +53,7 @@ public class ArrayAccessorMethod extends ArrayOverloadMethod
 				ArrayAccessorMethod n = new ArrayAccessorMethod(parent, location);
 				
 				n.setName(IDENTIFIER);
-				n.getArrayBracketOverload().cloneTo(n, false);
+				n.getArrayBracketOverload().cloneTo(n, false, true);
 				n.setLocationIn(location);
 				n.setType(n.getArrayBracketOverload());
 				n.setDisabled(true);
@@ -68,7 +68,7 @@ public class ArrayAccessorMethod extends ArrayOverloadMethod
 			ArrayAccessorMethod n = new ArrayAccessorMethod(parent, location);
 			
 			n.setName(IDENTIFIER);
-			n.getArrayBracketOverload().cloneTo(n, false);
+			n.getArrayBracketOverload().cloneTo(n, false, true);
 			n.setLocationIn(location);
 			n.setType(n.getArrayBracketOverload());
 			n.setLocationIn(location);
@@ -85,11 +85,11 @@ public class ArrayAccessorMethod extends ArrayOverloadMethod
 	 * @see Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ArrayAccessorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ArrayAccessorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ArrayAccessorMethod node = new ArrayAccessorMethod(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -97,7 +97,7 @@ public class ArrayAccessorMethod extends ArrayOverloadMethod
 	 */
 	public ArrayAccessorMethod cloneTo(ArrayAccessorMethod node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -107,9 +107,9 @@ public class ArrayAccessorMethod extends ArrayOverloadMethod
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArrayAccessorMethod cloneTo(ArrayAccessorMethod node, boolean cloneChildren)
+	public ArrayAccessorMethod cloneTo(ArrayAccessorMethod node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

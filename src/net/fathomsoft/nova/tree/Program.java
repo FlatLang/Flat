@@ -357,11 +357,11 @@ public class Program extends TypeList<FileDeclaration>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Program clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Program clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Program node = new Program(controller, tree);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -369,7 +369,7 @@ public class Program extends TypeList<FileDeclaration>
 	 */
 	public Program cloneTo(Program node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -379,9 +379,9 @@ public class Program extends TypeList<FileDeclaration>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Program cloneTo(Program node, boolean cloneChildren)
+	public Program cloneTo(Program node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.controller = controller;
 		

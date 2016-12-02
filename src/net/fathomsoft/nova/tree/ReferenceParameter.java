@@ -40,11 +40,11 @@ public class ReferenceParameter extends Parameter
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ReferenceParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ReferenceParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ReferenceParameter node = new ReferenceParameter(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -52,7 +52,7 @@ public class ReferenceParameter extends Parameter
 	 */
 	public ReferenceParameter cloneTo(ReferenceParameter node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -62,9 +62,9 @@ public class ReferenceParameter extends Parameter
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ReferenceParameter cloneTo(ReferenceParameter node, boolean cloneChildren)
+	public ReferenceParameter cloneTo(ReferenceParameter node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

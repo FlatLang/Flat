@@ -72,7 +72,7 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 				{
 					ExtensionFieldDeclaration n = new ExtensionFieldDeclaration(parent, location);
 					
-					field.cloneTo(n, true);
+					field.cloneTo(n, true, true);
 					
 					/*Parameter type = (Parameter)n.getParameterList().getParameter(0).detach();
 					
@@ -118,11 +118,11 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 	 * @see Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExtensionFieldDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExtensionFieldDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExtensionFieldDeclaration node = new ExtensionFieldDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -130,7 +130,7 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 	 */
 	public ExtensionFieldDeclaration cloneTo(ExtensionFieldDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -140,9 +140,9 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExtensionFieldDeclaration cloneTo(ExtensionFieldDeclaration node, boolean cloneChildren)
+	public ExtensionFieldDeclaration cloneTo(ExtensionFieldDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

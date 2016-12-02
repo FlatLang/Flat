@@ -83,11 +83,11 @@ public class StaticClassReference extends IIdentifier
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public StaticClassReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public StaticClassReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		StaticClassReference node = new StaticClassReference(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -95,7 +95,7 @@ public class StaticClassReference extends IIdentifier
 	 */
 	public StaticClassReference cloneTo(StaticClassReference node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -105,9 +105,9 @@ public class StaticClassReference extends IIdentifier
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public StaticClassReference cloneTo(StaticClassReference node, boolean cloneChildren)
+	public StaticClassReference cloneTo(StaticClassReference node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

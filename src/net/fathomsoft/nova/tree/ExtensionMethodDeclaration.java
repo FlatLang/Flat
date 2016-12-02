@@ -62,7 +62,7 @@ public class ExtensionMethodDeclaration extends BodyMethodDeclaration
 			{
 				ExtensionMethodDeclaration n = new ExtensionMethodDeclaration(parent, location);
 				
-				method.cloneTo(n, true);
+				method.cloneTo(n, true, true);
 				
 				Parameter type = n.getParameterList().getParameter(0);
 				
@@ -94,11 +94,11 @@ public class ExtensionMethodDeclaration extends BodyMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExtensionMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExtensionMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExtensionMethodDeclaration node = new ExtensionMethodDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -106,7 +106,7 @@ public class ExtensionMethodDeclaration extends BodyMethodDeclaration
 	 */
 	public ExtensionMethodDeclaration cloneTo(ExtensionMethodDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -116,9 +116,9 @@ public class ExtensionMethodDeclaration extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExtensionMethodDeclaration cloneTo(ExtensionMethodDeclaration node, boolean cloneChildren)
+	public ExtensionMethodDeclaration cloneTo(ExtensionMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

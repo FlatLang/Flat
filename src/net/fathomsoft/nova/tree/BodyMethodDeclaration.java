@@ -154,9 +154,9 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		}
 	}
 	
-	public BodyMethodDeclaration cloneTo(BodyMethodDeclaration node, boolean cloneChildren)
+	public BodyMethodDeclaration cloneTo(BodyMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		for (DefaultParameterInitialization param : node.getScope().getDefaultParameterInitializations())
 		{

@@ -174,11 +174,11 @@ public class Until extends IfStatement
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Until clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Until clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Until node = new Until(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -186,7 +186,7 @@ public class Until extends IfStatement
 	 */
 	public Until cloneTo(Until node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -196,9 +196,9 @@ public class Until extends IfStatement
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Until cloneTo(Until node, boolean cloneChildren)
+	public Until cloneTo(Until node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

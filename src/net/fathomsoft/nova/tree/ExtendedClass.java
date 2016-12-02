@@ -83,11 +83,11 @@ public class ExtendedClass extends IValue implements GenericCompatible
 	 * @see Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExtendedClass clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExtendedClass clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExtendedClass node = new ExtendedClass(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -95,7 +95,7 @@ public class ExtendedClass extends IValue implements GenericCompatible
 	 */
 	public ExtendedClass cloneTo(ExtendedClass node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -105,9 +105,9 @@ public class ExtendedClass extends IValue implements GenericCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExtendedClass cloneTo(ExtendedClass node, boolean cloneChildren)
+	public ExtendedClass cloneTo(ExtendedClass node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

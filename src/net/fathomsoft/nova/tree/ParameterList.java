@@ -391,11 +391,11 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ParameterList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ParameterList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ParameterList<E> node = new ParameterList<E>(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -403,7 +403,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 */
 	public ParameterList<E> cloneTo(ParameterList<E> node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -413,9 +413,9 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ParameterList<E> cloneTo(ParameterList<E> node, boolean cloneChildren)
+	public ParameterList<E> cloneTo(ParameterList<E> node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

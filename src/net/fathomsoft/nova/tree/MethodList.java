@@ -121,11 +121,11 @@ public class MethodList extends TypeList<MethodDeclaration>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public MethodList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public MethodList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		MethodList node = new MethodList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -133,7 +133,7 @@ public class MethodList extends TypeList<MethodDeclaration>
 	 */
 	public MethodList cloneTo(MethodList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -143,9 +143,9 @@ public class MethodList extends TypeList<MethodDeclaration>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodList cloneTo(MethodList node, boolean cloneChildren)
+	public MethodList cloneTo(MethodList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

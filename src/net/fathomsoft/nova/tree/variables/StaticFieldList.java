@@ -27,11 +27,11 @@ public class StaticFieldList extends List
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public StaticFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public StaticFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		StaticFieldList node = new StaticFieldList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -39,7 +39,7 @@ public class StaticFieldList extends List
 	 */
 	public StaticFieldList cloneTo(StaticFieldList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -49,9 +49,9 @@ public class StaticFieldList extends List
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public StaticFieldList cloneTo(StaticFieldList node, boolean cloneChildren)
+	public StaticFieldList cloneTo(StaticFieldList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

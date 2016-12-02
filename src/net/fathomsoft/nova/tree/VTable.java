@@ -53,7 +53,7 @@ public abstract class VTable extends IIdentifier
 	 */
 	public VTable cloneTo(VTable node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -63,9 +63,9 @@ public abstract class VTable extends IIdentifier
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VTable cloneTo(VTable node, boolean cloneChildren)
+	public VTable cloneTo(VTable node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

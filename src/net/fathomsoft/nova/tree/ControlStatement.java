@@ -54,11 +54,11 @@ public class ControlStatement extends Node
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ControlStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ControlStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ControlStatement node = new ControlStatement(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -66,7 +66,7 @@ public class ControlStatement extends Node
 	 */
 	public ControlStatement cloneTo(ControlStatement node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -76,9 +76,9 @@ public class ControlStatement extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ControlStatement cloneTo(ControlStatement node, boolean cloneChildren)
+	public ControlStatement cloneTo(ControlStatement node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -67,7 +67,7 @@ public class RequireGenericTypeAnnotation extends Annotation
 			
 			if (parameters.length() == 0)
 			{
-				requiresArguments(n, require);
+				n.requiresArguments(require);
 				
 				return null;
 			}
@@ -138,11 +138,11 @@ public class RequireGenericTypeAnnotation extends Annotation
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public RequireGenericTypeAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public RequireGenericTypeAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		RequireGenericTypeAnnotation node = new RequireGenericTypeAnnotation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -150,7 +150,7 @@ public class RequireGenericTypeAnnotation extends Annotation
 	 */
 	public RequireGenericTypeAnnotation cloneTo(RequireGenericTypeAnnotation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -160,9 +160,9 @@ public class RequireGenericTypeAnnotation extends Annotation
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public RequireGenericTypeAnnotation cloneTo(RequireGenericTypeAnnotation node, boolean cloneChildren)
+	public RequireGenericTypeAnnotation cloneTo(RequireGenericTypeAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

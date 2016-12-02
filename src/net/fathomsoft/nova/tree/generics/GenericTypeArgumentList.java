@@ -62,11 +62,11 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public GenericTypeArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public GenericTypeArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		GenericTypeArgumentList node = new GenericTypeArgumentList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -74,7 +74,7 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 	 */
 	public GenericTypeArgumentList cloneTo(GenericTypeArgumentList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -84,9 +84,9 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public GenericTypeArgumentList cloneTo(GenericTypeArgumentList node, boolean cloneChildren)
+	public GenericTypeArgumentList cloneTo(GenericTypeArgumentList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

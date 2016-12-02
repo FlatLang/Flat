@@ -489,11 +489,11 @@ public class Closure extends Variable
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Closure clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Closure clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Closure node = new Closure(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -501,7 +501,7 @@ public class Closure extends Variable
 	 */
 	public Closure cloneTo(Closure node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -511,9 +511,9 @@ public class Closure extends Variable
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Closure cloneTo(Closure node, boolean cloneChildren)
+	public Closure cloneTo(Closure node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.declarations = declarations;
 		node.closureDeclaration = closureDeclaration;

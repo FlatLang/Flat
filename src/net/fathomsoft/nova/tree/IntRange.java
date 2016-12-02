@@ -117,11 +117,11 @@ public class IntRange extends Instantiation
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public IntRange clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public IntRange clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		IntRange node = new IntRange(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -129,7 +129,7 @@ public class IntRange extends Instantiation
 	 */
 	public IntRange cloneTo(IntRange node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -139,9 +139,9 @@ public class IntRange extends Instantiation
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public IntRange cloneTo(IntRange node, boolean cloneChildren)
+	public IntRange cloneTo(IntRange node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

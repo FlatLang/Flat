@@ -166,11 +166,11 @@ public class ArrayAccess extends Node implements ArrayCompatible
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ArrayAccess clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ArrayAccess clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ArrayAccess node = new ArrayAccess(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -178,7 +178,7 @@ public class ArrayAccess extends Node implements ArrayCompatible
 	 */
 	public ArrayAccess cloneTo(ArrayAccess node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -188,9 +188,9 @@ public class ArrayAccess extends Node implements ArrayCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArrayAccess cloneTo(ArrayAccess node, boolean cloneChildren)
+	public ArrayAccess cloneTo(ArrayAccess node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

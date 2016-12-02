@@ -22,11 +22,11 @@ public class ClosureParameterList extends ParameterList<Value>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ClosureParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ClosureParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ClosureParameterList node = new ClosureParameterList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -34,7 +34,7 @@ public class ClosureParameterList extends ParameterList<Value>
 	 */
 	public ClosureParameterList cloneTo(ClosureParameterList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -44,9 +44,9 @@ public class ClosureParameterList extends ParameterList<Value>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ClosureParameterList cloneTo(ClosureParameterList node, boolean cloneChildren)
+	public ClosureParameterList cloneTo(ClosureParameterList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

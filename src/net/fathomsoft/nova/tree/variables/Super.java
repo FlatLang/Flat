@@ -78,11 +78,11 @@ public class Super extends Priority
 	 * @see net.fathomsoft.nova.tree.Variable#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Super clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Super clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Super node = new Super(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -90,7 +90,7 @@ public class Super extends Priority
 	 */
 	public Super cloneTo(Super node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -100,9 +100,9 @@ public class Super extends Priority
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Super cloneTo(Super node, boolean cloneChildren)
+	public Super cloneTo(Super node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -182,11 +182,11 @@ public class Throw extends ExceptionHandler
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Throw clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Throw clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Throw node = new Throw(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -194,7 +194,7 @@ public class Throw extends ExceptionHandler
 	 */
 	public Throw cloneTo(Throw node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -204,9 +204,9 @@ public class Throw extends ExceptionHandler
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Throw cloneTo(Throw node, boolean cloneChildren)
+	public Throw cloneTo(Throw node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

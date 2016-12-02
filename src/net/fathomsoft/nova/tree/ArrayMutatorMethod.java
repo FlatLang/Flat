@@ -56,7 +56,7 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 				ArrayMutatorMethod n = new ArrayMutatorMethod(parent, location);
 				
 				n.setName(IDENTIFIER);
-				n.getArrayBracketOverload().cloneTo(n, false);
+				n.getArrayBracketOverload().cloneTo(n, false, true);
 				n.setLocationIn(location);
 				n.setType(n.getArrayBracketOverload());
 				n.setDisabled(true);
@@ -72,7 +72,7 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 			ArrayMutatorMethod n = new ArrayMutatorMethod(parent, location);
 
 			n.setName(IDENTIFIER);
-			n.getArrayBracketOverload().cloneTo(n, false);
+			n.getArrayBracketOverload().cloneTo(n, false, true);
 			n.setLocationIn(location);
 			n.setType(n.getArrayBracketOverload());
 			
@@ -101,7 +101,7 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 	private void addDefaultParameter()
 	{
 		Parameter p = Parameter.decodeStatement(this, getArrayBracketOverload().generateNovaType() + " " + PARAMETER_NAME, getLocationIn().asNew(), true);
-		getArrayBracketOverload().cloneTo(p, false);
+		getArrayBracketOverload().cloneTo(p, false, false);
 		p.setName(PARAMETER_NAME);
 		
 		getParameterList().addChild(p);
@@ -142,11 +142,11 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 	 * @see Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ArrayMutatorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ArrayMutatorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ArrayMutatorMethod node = new ArrayMutatorMethod(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -154,7 +154,7 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 	 */
 	public ArrayMutatorMethod cloneTo(ArrayMutatorMethod node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -164,9 +164,9 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArrayMutatorMethod cloneTo(ArrayMutatorMethod node, boolean cloneChildren)
+	public ArrayMutatorMethod cloneTo(ArrayMutatorMethod node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

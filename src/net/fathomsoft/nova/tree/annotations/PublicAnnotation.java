@@ -51,21 +51,21 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
 	}
 	
 	@Override
-	public PublicAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public PublicAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		PublicAnnotation node = new PublicAnnotation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	public PublicAnnotation cloneTo(PublicAnnotation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
-	public PublicAnnotation cloneTo(PublicAnnotation node, boolean cloneChildren)
+	public PublicAnnotation cloneTo(PublicAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

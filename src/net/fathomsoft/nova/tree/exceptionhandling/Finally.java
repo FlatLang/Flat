@@ -53,11 +53,11 @@ public class Finally extends ExceptionHandler
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Finally clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Finally clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Finally node = new Finally(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -65,7 +65,7 @@ public class Finally extends ExceptionHandler
 	 */
 	public Finally cloneTo(Finally node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -75,9 +75,9 @@ public class Finally extends ExceptionHandler
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Finally cloneTo(Finally node, boolean cloneChildren)
+	public Finally cloneTo(Finally node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

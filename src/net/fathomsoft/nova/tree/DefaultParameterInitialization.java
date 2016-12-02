@@ -49,11 +49,11 @@ public class DefaultParameterInitialization extends Node
      * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
      */
     @Override
-    public DefaultParameterInitialization clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+    public DefaultParameterInitialization clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
     {
         DefaultParameterInitialization node = new DefaultParameterInitialization(temporaryParent, locationIn, parameter);
 
-        return cloneTo(node, cloneChildren);
+        return cloneTo(node, cloneChildren, cloneAnnotations);
     }
 
     /**
@@ -61,7 +61,7 @@ public class DefaultParameterInitialization extends Node
      */
     public DefaultParameterInitialization cloneTo(DefaultParameterInitialization node)
     {
-        return cloneTo(node, true);
+        return cloneTo(node, true, true);
     }
 
     /**
@@ -71,9 +71,9 @@ public class DefaultParameterInitialization extends Node
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public DefaultParameterInitialization cloneTo(DefaultParameterInitialization node, boolean cloneChildren)
+    public DefaultParameterInitialization cloneTo(DefaultParameterInitialization node, boolean cloneChildren, boolean cloneAnnotations)
     {
-        super.cloneTo(node, cloneChildren);
+        super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }

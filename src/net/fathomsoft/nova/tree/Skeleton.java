@@ -48,11 +48,11 @@ public class Skeleton extends Node
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Skeleton clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Skeleton clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Skeleton node = new Skeleton(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -60,7 +60,7 @@ public class Skeleton extends Node
 	 */
 	public Skeleton cloneTo(Skeleton node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -70,9 +70,9 @@ public class Skeleton extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Skeleton cloneTo(Skeleton node, boolean cloneChildren)
+	public Skeleton cloneTo(Skeleton node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

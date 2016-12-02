@@ -1,7 +1,9 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.ArrayOverloadMethod;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.PropertyMethod;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -40,7 +42,11 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof FieldDeclaration)
+		if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+		{
+			return true;
+		}
+		else if (next instanceof FieldDeclaration)
 		{
 			((FieldDeclaration)next).setVisibility(FieldDeclaration.VISIBLE);
 			
@@ -51,21 +57,21 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
 	}
 	
 	@Override
-	public VisibleAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public VisibleAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		VisibleAnnotation node = new VisibleAnnotation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	public VisibleAnnotation cloneTo(VisibleAnnotation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
-	public VisibleAnnotation cloneTo(VisibleAnnotation node, boolean cloneChildren)
+	public VisibleAnnotation cloneTo(VisibleAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

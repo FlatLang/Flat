@@ -81,11 +81,11 @@ public class ExternalTypeList extends List
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExternalTypeList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExternalTypeList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExternalTypeList node = new ExternalTypeList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -93,7 +93,7 @@ public class ExternalTypeList extends List
 	 */
 	public ExternalTypeList cloneTo(ExternalTypeList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -103,9 +103,9 @@ public class ExternalTypeList extends List
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExternalTypeList cloneTo(ExternalTypeList node, boolean cloneChildren)
+	public ExternalTypeList cloneTo(ExternalTypeList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

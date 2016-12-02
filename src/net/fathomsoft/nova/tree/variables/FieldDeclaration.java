@@ -451,7 +451,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 					{
 						if (i > 0)
 						{
-							assignment = assignment.clone(parents[i], getLocationIn(), true);
+							assignment = assignment.clone(parents[i], getLocationIn(), true, true);
 						}
 						
 						classes[i].addFieldInitialization(assignment);
@@ -480,11 +480,11 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public FieldDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public FieldDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		FieldDeclaration node = new FieldDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -492,7 +492,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	 */
 	public FieldDeclaration cloneTo(FieldDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -502,9 +502,9 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public FieldDeclaration cloneTo(FieldDeclaration node, boolean cloneChildren)
+	public FieldDeclaration cloneTo(FieldDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.initializationValue = initializationValue;
 		

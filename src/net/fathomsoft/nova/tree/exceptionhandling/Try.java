@@ -144,11 +144,11 @@ public class Try extends ExceptionHandler
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Try clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Try clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Try node = new Try(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -156,7 +156,7 @@ public class Try extends ExceptionHandler
 	 */
 	public Try cloneTo(Try node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -166,9 +166,9 @@ public class Try extends ExceptionHandler
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Try cloneTo(Try node, boolean cloneChildren)
+	public Try cloneTo(Try node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.exceptions = new ArrayList<Exception>();
 		

@@ -98,7 +98,7 @@ public class MutatorMethod extends PropertyMethod
 	private void addDefaultParameter()
 	{
 		Parameter p = Parameter.decodeStatement(this, getParentField().generateNovaType() + " " + PARAMETER_NAME, getLocationIn().asNew(), true);
-		getParentField().cloneTo(p);
+		getParentField().cloneTo(p, true, false);
 		p.setName(PARAMETER_NAME);
 		
 		getParameterList().addChild(p);
@@ -139,11 +139,11 @@ public class MutatorMethod extends PropertyMethod
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public MutatorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public MutatorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		MutatorMethod node = new MutatorMethod(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -151,7 +151,7 @@ public class MutatorMethod extends PropertyMethod
 	 */
 	public MutatorMethod cloneTo(MutatorMethod node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -161,9 +161,9 @@ public class MutatorMethod extends PropertyMethod
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MutatorMethod cloneTo(MutatorMethod node, boolean cloneChildren)
+	public MutatorMethod cloneTo(MutatorMethod node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -202,7 +202,7 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 */
 	public MethodDeclaration cloneTo(MethodDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -212,9 +212,9 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public MethodDeclaration cloneTo(MethodDeclaration node, boolean cloneChildren)
+	public MethodDeclaration cloneTo(MethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -163,11 +163,11 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public TypeList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public TypeList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		TypeList<E> node = new TypeList<E>(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -175,7 +175,7 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 	 */
 	public TypeList<E> cloneTo(TypeList<E> node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -185,9 +185,9 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public TypeList<E> cloneTo(TypeList<E> node, boolean cloneChildren)
+	public TypeList<E> cloneTo(TypeList<E> node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

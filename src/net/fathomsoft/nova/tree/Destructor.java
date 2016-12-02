@@ -105,11 +105,11 @@ public class Destructor extends BodyMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Destructor clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Destructor clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Destructor node = new Destructor(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -117,7 +117,7 @@ public class Destructor extends BodyMethodDeclaration
 	 */
 	public Destructor cloneTo(Destructor node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -127,9 +127,9 @@ public class Destructor extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Destructor cloneTo(Destructor node, boolean cloneChildren)
+	public Destructor cloneTo(Destructor node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -37,7 +37,7 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration
 	public void addIndexParameter()
 	{
 		Parameter p = Parameter.decodeStatement(this, getArrayBracketOverload().getIndexValue().generateNovaInput().toString(), getLocationIn().asNew(), true);
-		getArrayBracketOverload().getIndexValue().cloneTo(p, false);
+		getArrayBracketOverload().getIndexValue().cloneTo(p, false, true);
 		
 		getParameterList().addChild(p);
 	}
@@ -98,7 +98,7 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration
 	 */
 	public ArrayOverloadMethod cloneTo(ArrayOverloadMethod node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -108,9 +108,9 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ArrayOverloadMethod cloneTo(ArrayOverloadMethod node, boolean cloneChildren)
+	public ArrayOverloadMethod cloneTo(ArrayOverloadMethod node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.disabled = disabled;
 		

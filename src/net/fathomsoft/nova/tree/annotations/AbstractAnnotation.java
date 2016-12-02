@@ -58,21 +58,21 @@ public class AbstractAnnotation extends ApplicableAnnotationBase implements Modi
 	}
 	
 	@Override
-	public AbstractAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public AbstractAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		AbstractAnnotation node = new AbstractAnnotation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	public AbstractAnnotation cloneTo(AbstractAnnotation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
-	public AbstractAnnotation cloneTo(AbstractAnnotation node, boolean cloneChildren)
+	public AbstractAnnotation cloneTo(AbstractAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

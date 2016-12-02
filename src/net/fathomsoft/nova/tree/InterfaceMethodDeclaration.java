@@ -76,11 +76,11 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public InterfaceMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public InterfaceMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		InterfaceMethodDeclaration node = new InterfaceMethodDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -88,7 +88,7 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration
 	 */
 	public InterfaceMethodDeclaration cloneTo(InterfaceMethodDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -98,9 +98,9 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InterfaceMethodDeclaration cloneTo(InterfaceMethodDeclaration node, boolean cloneChildren)
+	public InterfaceMethodDeclaration cloneTo(InterfaceMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -134,11 +134,11 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public AbstractMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public AbstractMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		AbstractMethodDeclaration node = new AbstractMethodDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -148,9 +148,9 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public AbstractMethodDeclaration cloneTo(AbstractMethodDeclaration node, boolean cloneChildren)
+	public AbstractMethodDeclaration cloneTo(AbstractMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

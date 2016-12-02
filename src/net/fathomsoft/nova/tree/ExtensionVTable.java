@@ -58,11 +58,11 @@ public class ExtensionVTable extends VTable
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExtensionVTable clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExtensionVTable clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExtensionVTable node = new ExtensionVTable(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -70,7 +70,7 @@ public class ExtensionVTable extends VTable
 	 */
 	public ExtensionVTable cloneTo(ExtensionVTable node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -80,9 +80,9 @@ public class ExtensionVTable extends VTable
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExtensionVTable cloneTo(ExtensionVTable node, boolean cloneChildren)
+	public ExtensionVTable cloneTo(ExtensionVTable node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

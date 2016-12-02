@@ -48,11 +48,11 @@ public class DefaultArgument extends IValue
      * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
      */
     @Override
-    public DefaultArgument clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+    public DefaultArgument clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
     {
         DefaultArgument node = new DefaultArgument(temporaryParent, locationIn);
 
-        return cloneTo(node, cloneChildren);
+        return cloneTo(node, cloneChildren, cloneAnnotations);
     }
 
     /**
@@ -60,7 +60,7 @@ public class DefaultArgument extends IValue
      */
     public DefaultArgument cloneTo(DefaultArgument node)
     {
-        return cloneTo(node, true);
+        return cloneTo(node, true, true);
     }
 
     /**
@@ -70,9 +70,9 @@ public class DefaultArgument extends IValue
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public DefaultArgument cloneTo(DefaultArgument node, boolean cloneChildren)
+    public DefaultArgument cloneTo(DefaultArgument node, boolean cloneChildren, boolean cloneAnnotations)
     {
-        super.cloneTo(node, cloneChildren);
+        super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }

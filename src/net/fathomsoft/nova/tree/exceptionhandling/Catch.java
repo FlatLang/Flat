@@ -265,11 +265,11 @@ public class Catch extends ExceptionHandler
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Catch clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Catch clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Catch node = new Catch(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -277,7 +277,7 @@ public class Catch extends ExceptionHandler
 	 */
 	public Catch cloneTo(Catch node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -287,9 +287,9 @@ public class Catch extends ExceptionHandler
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Catch cloneTo(Catch node, boolean cloneChildren)
+	public Catch cloneTo(Catch node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

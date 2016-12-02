@@ -103,11 +103,11 @@ public class VariableDeclarationList extends List
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public VariableDeclarationList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public VariableDeclarationList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		VariableDeclarationList node = new VariableDeclarationList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -115,7 +115,7 @@ public class VariableDeclarationList extends List
 	 */
 	public VariableDeclarationList cloneTo(VariableDeclarationList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -125,9 +125,9 @@ public class VariableDeclarationList extends List
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VariableDeclarationList cloneTo(VariableDeclarationList node, boolean cloneChildren)
+	public VariableDeclarationList cloneTo(VariableDeclarationList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

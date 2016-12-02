@@ -29,11 +29,11 @@ public class AnonymousClass extends Node
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public AnonymousClass clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public AnonymousClass clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		AnonymousClass node = new AnonymousClass(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -41,7 +41,7 @@ public class AnonymousClass extends Node
 	 */
 	public AnonymousClass cloneTo(AnonymousClass node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -51,9 +51,9 @@ public class AnonymousClass extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public AnonymousClass cloneTo(AnonymousClass node, boolean cloneChildren)
+	public AnonymousClass cloneTo(AnonymousClass node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

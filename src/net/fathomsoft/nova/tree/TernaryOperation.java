@@ -221,11 +221,11 @@ public class TernaryOperation extends IValue implements Accessible
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public TernaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public TernaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		TernaryOperation node = new TernaryOperation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -233,7 +233,7 @@ public class TernaryOperation extends IValue implements Accessible
 	 */
 	public TernaryOperation cloneTo(TernaryOperation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -243,9 +243,9 @@ public class TernaryOperation extends IValue implements Accessible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public TernaryOperation cloneTo(TernaryOperation node, boolean cloneChildren)
+	public TernaryOperation cloneTo(TernaryOperation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.safeNavigation = safeNavigation;
 		

@@ -90,7 +90,7 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 				}
 				else
 				{
-					tooManyArguments(n, require);
+					n.tooManyArguments(require);
 					
 					return null;
 				}
@@ -176,11 +176,11 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ObsoleteAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ObsoleteAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ObsoleteAnnotation node = new ObsoleteAnnotation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -188,7 +188,7 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 	 */
 	public ObsoleteAnnotation cloneTo(ObsoleteAnnotation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -198,9 +198,9 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ObsoleteAnnotation cloneTo(ObsoleteAnnotation node, boolean cloneChildren)
+	public ObsoleteAnnotation cloneTo(ObsoleteAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

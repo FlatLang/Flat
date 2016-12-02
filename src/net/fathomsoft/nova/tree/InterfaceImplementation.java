@@ -85,11 +85,11 @@ public class InterfaceImplementation extends IValue implements GenericCompatible
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public InterfaceImplementation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public InterfaceImplementation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		InterfaceImplementation node = new InterfaceImplementation(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -97,7 +97,7 @@ public class InterfaceImplementation extends IValue implements GenericCompatible
 	 */
 	public InterfaceImplementation cloneTo(InterfaceImplementation node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -107,9 +107,9 @@ public class InterfaceImplementation extends IValue implements GenericCompatible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public InterfaceImplementation cloneTo(InterfaceImplementation node, boolean cloneChildren)
+	public InterfaceImplementation cloneTo(InterfaceImplementation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

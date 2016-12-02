@@ -103,11 +103,11 @@ public class TargetAnnotation extends Annotation
      * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
      */
     @Override
-    public TargetAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+    public TargetAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
     {
         TargetAnnotation node = new TargetAnnotation(temporaryParent, locationIn);
 
-        return cloneTo(node, cloneChildren);
+        return cloneTo(node, cloneChildren, cloneAnnotations);
     }
 
     /**
@@ -115,7 +115,7 @@ public class TargetAnnotation extends Annotation
      */
     public TargetAnnotation cloneTo(TargetAnnotation node)
     {
-        return cloneTo(node, true);
+        return cloneTo(node, true, true);
     }
 
     /**
@@ -125,9 +125,9 @@ public class TargetAnnotation extends Annotation
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public TargetAnnotation cloneTo(TargetAnnotation node, boolean cloneChildren)
+    public TargetAnnotation cloneTo(TargetAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
     {
-        super.cloneTo(node, cloneChildren);
+        super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }

@@ -105,11 +105,11 @@ public class Loop extends Node
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Loop clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Loop clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Loop node = new Loop(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -117,7 +117,7 @@ public class Loop extends Node
 	 */
 	public Loop cloneTo(Loop node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -127,9 +127,9 @@ public class Loop extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Loop cloneTo(Loop node, boolean cloneChildren)
+	public Loop cloneTo(Loop node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

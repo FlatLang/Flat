@@ -174,11 +174,11 @@ public class Interface extends ClassDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Interface clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Interface clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Interface node = new Interface(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -186,7 +186,7 @@ public class Interface extends ClassDeclaration
 	 */
 	public Interface cloneTo(Interface node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -196,9 +196,9 @@ public class Interface extends ClassDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Interface cloneTo(Interface node, boolean cloneChildren)
+	public Interface cloneTo(Interface node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

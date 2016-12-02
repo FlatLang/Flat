@@ -65,11 +65,11 @@ public class Exception extends Node
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Exception clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Exception clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Exception node = new Exception(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -77,7 +77,7 @@ public class Exception extends Node
 	 */
 	public Exception cloneTo(Exception node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -87,9 +87,9 @@ public class Exception extends Node
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Exception cloneTo(Exception node, boolean cloneChildren)
+	public Exception cloneTo(Exception node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.type = type;
 		

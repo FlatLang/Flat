@@ -335,11 +335,11 @@ public class Parameter extends LocalDeclaration
 	 * @see net.fathomsoft.nova.tree.LocalDeclaration#clone(Node, Location)
 	 */
 	@Override
-	public Parameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Parameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Parameter node = new Parameter(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -347,7 +347,7 @@ public class Parameter extends LocalDeclaration
 	 */
 	public Parameter cloneTo(Parameter node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -357,9 +357,9 @@ public class Parameter extends LocalDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Parameter cloneTo(Parameter node, boolean cloneChildren)
+	public Parameter cloneTo(Parameter node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
         
 		node.defaultValueString = defaultValueString;
 		node.defaultValue = defaultValue;

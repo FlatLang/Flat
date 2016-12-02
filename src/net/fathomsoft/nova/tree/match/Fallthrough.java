@@ -66,11 +66,11 @@ public class Fallthrough extends Node implements MatchChild
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Fallthrough clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Fallthrough clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Fallthrough node = new Fallthrough(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -78,7 +78,7 @@ public class Fallthrough extends Node implements MatchChild
 	 */
 	public Fallthrough cloneTo(Fallthrough node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -88,9 +88,9 @@ public class Fallthrough extends Node implements MatchChild
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Fallthrough cloneTo(Fallthrough node, boolean cloneChildren)
+	public Fallthrough cloneTo(Fallthrough node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

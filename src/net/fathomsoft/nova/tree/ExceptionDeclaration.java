@@ -48,11 +48,11 @@ public class ExceptionDeclaration extends LocalDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExceptionDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExceptionDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExceptionDeclaration node = new ExceptionDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -60,7 +60,7 @@ public class ExceptionDeclaration extends LocalDeclaration
 	 */
 	public ExceptionDeclaration cloneTo(ExceptionDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -70,9 +70,9 @@ public class ExceptionDeclaration extends LocalDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExceptionDeclaration cloneTo(ExceptionDeclaration node, boolean cloneChildren)
+	public ExceptionDeclaration cloneTo(ExceptionDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

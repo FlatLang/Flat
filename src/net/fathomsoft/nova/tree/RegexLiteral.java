@@ -83,11 +83,11 @@ public class RegexLiteral extends Instantiation
 	 * @see Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public RegexLiteral clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public RegexLiteral clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		RegexLiteral node = new RegexLiteral(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -95,7 +95,7 @@ public class RegexLiteral extends Instantiation
 	 */
 	public RegexLiteral cloneTo(RegexLiteral node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -105,9 +105,9 @@ public class RegexLiteral extends Instantiation
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public RegexLiteral cloneTo(RegexLiteral node, boolean cloneChildren)
+	public RegexLiteral cloneTo(RegexLiteral node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.originalValue = originalValue;
 		

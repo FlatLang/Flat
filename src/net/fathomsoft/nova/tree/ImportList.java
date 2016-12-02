@@ -146,11 +146,11 @@ public class ImportList extends TypeList<Import>
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ImportList clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ImportList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ImportList node = new ImportList(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -158,7 +158,7 @@ public class ImportList extends TypeList<Import>
 	 */
 	public ImportList cloneTo(ImportList node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -168,9 +168,9 @@ public class ImportList extends TypeList<Import>
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ImportList cloneTo(ImportList node, boolean cloneChildren)
+	public ImportList cloneTo(ImportList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -901,7 +901,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			virtualMethod = new VirtualMethodDeclaration(getParentClass(), getLocationIn().asNew());
 			virtualMethod.base = this;
 			
-			this.cloneTo(virtualMethod, false);
+			this.cloneTo(virtualMethod, false, true);
 			virtualMethod.objectReference = new ObjectReference(virtualMethod);
 			
 			getParentClass().addChild(virtualMethod);
@@ -1023,11 +1023,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public NovaMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public NovaMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		NovaMethodDeclaration node = new NovaMethodDeclaration(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -1035,7 +1035,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public NovaMethodDeclaration cloneTo(NovaMethodDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -1045,9 +1045,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public NovaMethodDeclaration cloneTo(NovaMethodDeclaration node, boolean cloneChildren)
+	public NovaMethodDeclaration cloneTo(NovaMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.objectReference = objectReference;
 		node.overloadID = overloadID;

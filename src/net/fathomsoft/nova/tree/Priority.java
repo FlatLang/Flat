@@ -379,11 +379,11 @@ public class Priority extends Value implements Accessible
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Priority clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Priority clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Priority node = new Priority(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -391,7 +391,7 @@ public class Priority extends Value implements Accessible
 	 */
 	public Priority cloneTo(Priority node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -401,7 +401,7 @@ public class Priority extends Value implements Accessible
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Priority cloneTo(Priority node, boolean cloneChildren)
+	public Priority cloneTo(Priority node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo((Node)node, cloneChildren);
 		

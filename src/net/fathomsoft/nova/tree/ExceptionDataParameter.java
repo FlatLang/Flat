@@ -28,11 +28,11 @@ public class ExceptionDataParameter extends Parameter
 	 * @see Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ExceptionDataParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ExceptionDataParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ExceptionDataParameter node = new ExceptionDataParameter(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -40,7 +40,7 @@ public class ExceptionDataParameter extends Parameter
 	 */
 	public ExceptionDataParameter cloneTo(ExceptionDataParameter node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -50,9 +50,9 @@ public class ExceptionDataParameter extends Parameter
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ExceptionDataParameter cloneTo(ExceptionDataParameter node, boolean cloneChildren)
+	public ExceptionDataParameter cloneTo(ExceptionDataParameter node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -35,11 +35,11 @@ public class ShorthandAccessor extends AccessorMethod
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public ShorthandAccessor clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public ShorthandAccessor clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		ShorthandAccessor node = new ShorthandAccessor(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -47,7 +47,7 @@ public class ShorthandAccessor extends AccessorMethod
 	 */
 	public ShorthandAccessor cloneTo(ShorthandAccessor node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -57,9 +57,9 @@ public class ShorthandAccessor extends AccessorMethod
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public ShorthandAccessor cloneTo(ShorthandAccessor node, boolean cloneChildren)
+	public ShorthandAccessor cloneTo(ShorthandAccessor node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

@@ -315,11 +315,11 @@ public class Match extends ControlStatement
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
-	public Match clone(Node temporaryParent, Location locationIn, boolean cloneChildren)
+	public Match clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		Match node = new Match(temporaryParent, locationIn);
 		
-		return cloneTo(node, cloneChildren);
+		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
 	/**
@@ -327,7 +327,7 @@ public class Match extends ControlStatement
 	 */
 	public Match cloneTo(Match node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -337,9 +337,9 @@ public class Match extends ControlStatement
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public Match cloneTo(Match node, boolean cloneChildren)
+	public Match cloneTo(Match node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
 	}

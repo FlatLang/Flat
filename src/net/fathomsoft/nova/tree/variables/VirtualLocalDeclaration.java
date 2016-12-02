@@ -50,7 +50,7 @@ public class VirtualLocalDeclaration extends LocalDeclaration
 	 */
 	public VirtualLocalDeclaration cloneTo(VirtualLocalDeclaration node)
 	{
-		return cloneTo(node, true);
+		return cloneTo(node, true, true);
 	}
 	
 	/**
@@ -60,9 +60,9 @@ public class VirtualLocalDeclaration extends LocalDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public VirtualLocalDeclaration cloneTo(VirtualLocalDeclaration node, boolean cloneChildren)
+	public VirtualLocalDeclaration cloneTo(VirtualLocalDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		super.cloneTo(node, cloneChildren);
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.reference = reference;
 		
