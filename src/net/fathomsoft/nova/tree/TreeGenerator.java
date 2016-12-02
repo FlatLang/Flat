@@ -333,7 +333,14 @@ public class TreeGenerator implements Runnable
 				currentNode = null;
 			}
 			
-			previous.onNextStatementDecoded(currentNode);
+			if (previous instanceof Annotation == false)
+			{
+				previous.onNextStatementDecoded(currentNode);
+			}
+			else if (currentNode != null)
+			{
+				currentNode.addAnnotation((Annotation)previous);
+			}
 		}
 	}
 	
@@ -437,7 +444,7 @@ public class TreeGenerator implements Runnable
 					if (!skipped && node != null)
 					{
 						node.addAnnotation(a);
-						a.onNextStatementDecoded(node);
+						//a.onNextStatementDecoded(node);
 					}
 				}
 				else
