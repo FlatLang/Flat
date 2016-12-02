@@ -257,7 +257,7 @@ public class Nova
 			
 			args = new String[]
 			{
-				"../Compiler",
+				"../Spectra",
 //				"../Nova.c",
 //				"../Misc/example",
 //				"../Misc/stabilitytest", 
@@ -284,7 +284,7 @@ public class Nova
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
-				"compiler/Compiler",
+				"spectra/Spectra",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
