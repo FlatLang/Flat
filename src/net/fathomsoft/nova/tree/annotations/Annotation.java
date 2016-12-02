@@ -87,6 +87,11 @@ public class Annotation extends Node
 		return new String[0];
 	}
 	
+	public String[][] defaultParameterTypes()
+	{
+		return new String[0][];
+	}
+	
 	public String writeParameters()
 	{
 		String output = "";
