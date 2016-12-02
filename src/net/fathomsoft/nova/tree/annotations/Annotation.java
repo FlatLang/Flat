@@ -169,7 +169,7 @@ public class Annotation extends Node
 		final boolean[] parsedExplicit = new boolean[] { false };
 		final int[] index = new int[] { 0 };
 		
-		return Arrays.stream(StringUtils.splitCommas(parameters)).allMatch(parameter -> {
+		return parameters.length() == 0 || Arrays.stream(StringUtils.splitCommas(parameters)).allMatch(parameter -> {
 			return parseParameter(parameter, index[0]++, parsedExplicit);
 		});
 	}
