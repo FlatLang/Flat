@@ -7,6 +7,7 @@ __Aim__
 
   * Generate fancy code analytics with the [Nova Reactor](https://github.com/NovaFoundation/Nova-Reactor)
   * Increase code reusability
+  * Induce natrually parallelizable code
   * Ensure a smooth transition between running code on various operating systems
   * Deliver a uniform exception handling environment
   * Simplify common tasks and concepts
