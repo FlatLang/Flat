@@ -71,12 +71,6 @@ public class Parameter extends LocalDeclaration
 		return generateNovaAnnotations(builder, false);
 	}
 	
-	@Override
-	public void setImplicit(boolean implicit)
-	{
-		SyntaxMessage.queryError("Implicit types are not supported by parameters", this, implicit);
-	}
-	
 	public boolean isUnnamedParameter()
 	{
 		NovaMethodDeclaration method = getParentMethod();
