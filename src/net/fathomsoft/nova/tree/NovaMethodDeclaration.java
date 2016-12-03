@@ -705,7 +705,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			arg = arg.substring(GENERIC_START.length(), arg.length() - GENERIC_END.length());
 			
-			if (bounds.getStart() > returnIndex)
+			if (returnIndex > 0 && bounds.getStart() > returnIndex)
 			{
 				Arrays.stream(StringUtils.splitCommas(arg)).forEach(x -> addGenericTypeArgumentName(x));
 			}
