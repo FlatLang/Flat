@@ -40,7 +40,8 @@ public class Annotation extends Node
 			StaticAnnotation.class,
 			VisibleAnnotation.class,
 			ImmutableAnnotation.class,
-			FinalAnnotation.class
+			FinalAnnotation.class,
+			VarAnnotation.class
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
