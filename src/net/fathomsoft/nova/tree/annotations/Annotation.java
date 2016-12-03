@@ -300,11 +300,16 @@ public class Annotation extends Node
 															
 															if (n == null)
 															{
-																n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+																n = AutoFinalAnnotation.decodeStatement(parent, name, arguments, location, require);
 																
 																if (n == null)
 																{
-																	n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																	n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+																	
+																	if (n == null)
+																	{
+																		n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																	}
 																}
 															}
 														}
