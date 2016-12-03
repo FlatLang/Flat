@@ -972,12 +972,25 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public Node detach(Node fromNode)
 	{
+		return detach(fromNode, false);
+	}
+	
+	public Node detach(Node fromNode, boolean detachChildren)
+	{
 		fromNode.children.remove(this);
 		
 		parent = null;
 		
 		onRemoved(fromNode);
 		fromNode.onChildRemoved(this);
+		
+		if (detachChildren)
+		{
+			for (int i = children.size() - 1; i >= 0; i--)
+			{
+				children.get(i).detach(this);
+			}
+		}
 		
 		return this;
 	}
@@ -1004,7 +1017,7 @@ public abstract class Node implements Listenable, Annotatable
 		
 		if (detach)
 		{
-			old.detach();
+			old.detach();//this, true);
 		}
 		
 		if (replacement != null)
