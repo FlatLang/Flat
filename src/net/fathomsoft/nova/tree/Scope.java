@@ -272,6 +272,7 @@ public class Scope extends Node
 		LocalDeclaration decl = new LocalDeclaration(type.getParent(), type.getLocationIn());
 		
 		decl.setName("nova_local_" + getParentMethod().getScope().localVariableID++);
+		decl.setForceOriginalName(true);
 		decl.setType(type.getReturnedNode().getNovaTypeValue(type.getReturnedNode()));
 		
 		addChild(decl);
