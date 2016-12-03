@@ -7,10 +7,7 @@ import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.annotations.Annotation;
-import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
-import net.fathomsoft.nova.tree.annotations.ImmutableAnnotation;
-import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
+import net.fathomsoft.nova.tree.annotations.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Bounds;
@@ -34,8 +31,6 @@ import java.util.ArrayList;
 public class VariableDeclaration extends IIdentifier
 {
 	private boolean            volatileVal, external, reference;
-	
-//	public boolean isFinal;
 	
 	public  String[]           extraDeclarations;
 	
@@ -98,6 +93,16 @@ public class VariableDeclaration extends IIdentifier
 	public FinalAnnotation getFinalAnnotation()
 	{
 		return (FinalAnnotation)getAnnotationOfType(FinalAnnotation.class, false, true);
+	}
+	
+	public boolean isVar()
+	{
+		return getVarAnnotation() != null;
+	}
+	
+	public VarAnnotation getVarAnnotation()
+	{
+		return (VarAnnotation)getAnnotationOfType(VarAnnotation.class, false, true);
 	}
 	
 	@Override

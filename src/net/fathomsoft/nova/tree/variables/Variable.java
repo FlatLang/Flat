@@ -6,6 +6,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.annotations.ImmutableAnnotation;
+import net.fathomsoft.nova.tree.annotations.VarAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -483,6 +484,16 @@ public class Variable extends Identifier
 		return getDeclaration() != null && getDeclaration().isFinal();
 	}
 	
+	public VarAnnotation getVarAnnotation()
+	{
+		return getDeclaration() != null ? getDeclaration().getVarAnnotation() : null;
+	}
+	
+	public boolean isVar()
+	{
+		return getDeclaration() != null && getDeclaration().isVar();
+	}
+	
 	public boolean isBeingModified()
 	{
 		if (getReturnedNode() == this)
@@ -494,7 +505,7 @@ public class Variable extends Identifier
 			
 			Assignment a = (Assignment)getAncestorOfType(Assignment.class);
 			
-			if (a != null)
+			if (a != null && !a.wasDeclaration)
 			{
 				if (a.getAssignedNode() == this)
 				{
