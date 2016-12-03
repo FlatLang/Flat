@@ -113,7 +113,7 @@ public class Parameter extends LocalDeclaration
 		
 		NovaMethodDeclaration method = getParentMethod();
 		
-		return method != null && !method.isUserMade() && !isUnnamedParameter();
+		return method != null && method.isUserMade() && !isUnnamedParameter();
 	}
 	
 	@Override
