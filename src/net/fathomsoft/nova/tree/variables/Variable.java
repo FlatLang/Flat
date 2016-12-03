@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.annotations.ImmutableAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -472,20 +473,33 @@ public class Variable extends Identifier
 		return getDeclaration() != null && getDeclaration().isImmutable();
 	}
 	
+	public FinalAnnotation getFinalAnnotation()
+	{
+		return getDeclaration() != null ? getDeclaration().getFinalAnnotation() : null;
+	}
+	
+	public boolean isFinal()
+	{
+		return getDeclaration() != null && getDeclaration().isFinal();
+	}
+	
 	public boolean isBeingModified()
 	{
-		if (getParent() instanceof UnaryOperation)
+		if (getReturnedNode() == this)
 		{
-			return true;
-		}
-		
-		Assignment a = (Assignment)getAncestorOfType(Assignment.class);
-		
-		if (a != null)
-		{
-			if (a.getAssignedNode() == this)
+			if (getParent() instanceof UnaryOperation && ((UnaryOperation)getParent()).getOperator().doesModify())
 			{
 				return true;
+			}
+			
+			Assignment a = (Assignment)getAncestorOfType(Assignment.class);
+			
+			if (a != null)
+			{
+				if (a.getAssignedNode() == this)
+				{
+					return true;
+				}
 			}
 		}
 		
