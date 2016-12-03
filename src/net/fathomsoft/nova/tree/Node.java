@@ -13,6 +13,7 @@ import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -40,6 +41,8 @@ public abstract class Node implements Listenable, Annotatable
 	private ArrayList<Node>	children;
 	private ArrayList<Annotation>	annotations;
 	
+	private HashMap<String, Object> properties;
+	
 	/**
 	 * Create a new Node. Initializes the data.
 	 * 
@@ -52,6 +55,31 @@ public abstract class Node implements Listenable, Annotatable
 		
 		setTemporaryParent(temporaryParent);
 		setLocationIn(locationIn);
+	}
+	
+	public Object getProperty(String name)
+	{
+		return properties != null ? properties.get(name) : null;
+	}
+	
+	public void setProperty(String name, Object value)
+	{
+		if (properties == null)
+		{
+			properties = new HashMap<>();
+		}
+		
+		properties.put(name, value);
+	}
+	
+	public boolean containsProperty(String name)
+	{
+		return getProperty(name) != null;
+	}
+	
+	public boolean isPropertyTrue(String name)
+	{
+		return containsProperty(name) && (Boolean)getProperty(name);
 	}
 	
 	/**
@@ -708,17 +736,42 @@ public abstract class Node implements Listenable, Annotatable
 		return false;
 	}
 	
-	public boolean containsChildOfType(Class<?> type)
+	public Node getChildOfType(Class<?> type)
 	{
 		for (Node n : children)
 		{
 			if (type.isAssignableFrom(n.getClass()) || n.containsChildOfType(type))
 			{
-				return true;
+				return n;
 			}
 		}
 		
-		return false;
+		return null;
+	}
+	
+	public Node[] getChildrenOfType(Class<?> type)
+	{
+		return addChildrenOfType(type, new ArrayList<>()).toArray(new Node[0]);
+	}
+	
+	private ArrayList<Node> addChildrenOfType(Class<?> type, ArrayList<Node> nodes)
+	{
+		for (Node n : children)
+		{
+			if (type.isAssignableFrom(n.getClass()))
+			{
+				nodes.add(n);
+			}
+			
+			n.addChildrenOfType(type, nodes);
+		}
+		
+		return nodes;
+	}
+	
+	public boolean containsChildOfType(Class<?> type)
+	{
+		return getChildOfType(type) != null;
 	}
 	
 	public boolean whereChildOfType(Class<?> type, Function<Node, Boolean> test)
@@ -1417,7 +1470,7 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public boolean isUserMade()
 	{
-		return true;
+		return !containsProperty("userMade") || isPropertyTrue("userMade");
 	}
 	
 	/**
