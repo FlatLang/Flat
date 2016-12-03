@@ -92,6 +92,11 @@ public interface Accessible
 			list.add(c);
 		}
 		
+		for (ClassDeclaration c : toValue().getStaticImports())
+		{
+			list.add(c);
+		}
+		
 		list.add(getDeclaringClass());
 		
 		return list.toArray(new ClassDeclaration[0]);
