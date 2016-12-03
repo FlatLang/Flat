@@ -78,7 +78,7 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 				ClassDeclaration mutableClass = declaration.getTypeClass();
 				ClassDeclaration immutableClass = null;
 				
-				if (!mutableClass.isImmutable())
+				if (mutableClass != null && !mutableClass.isImmutable())
 				{
 					immutableClass = getImmutableClass();
 					this.mutableClass = mutableClass;
