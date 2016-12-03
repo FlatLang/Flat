@@ -206,7 +206,7 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 							
 							result.errorOccurred = true;
 						}
-						else
+						else if (!field.isStatic())
 						{
 							field.references.forEach(variable -> {
 								if (variable.getParentMethod() instanceof Constructor == false &&
