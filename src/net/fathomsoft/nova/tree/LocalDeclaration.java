@@ -3,6 +3,8 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
+import net.fathomsoft.nova.tree.annotations.VarAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -18,14 +20,12 @@ import net.fathomsoft.nova.util.*;
  */
 public class LocalDeclaration extends VariableDeclaration
 {
-	private boolean implicit;
-	
 	private int scopeID;
 
+	private boolean isImplicit;
+	
 	public Value implicitType;
 	public Value correspondingImplicit;
-	
-	public static final String IMPLICIT_IDENTIFIER = "var";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -64,25 +64,7 @@ public class LocalDeclaration extends VariableDeclaration
 	
 	public boolean isImplicit()
 	{
-		return implicit;
-	}
-	
-	public void setImplicit(boolean implicit)
-	{
-		this.implicit = implicit;
-	}
-	
-	@Override
-	public boolean setType(String type, boolean require, boolean checkType, boolean checkDataType)
-	{
-		if (IMPLICIT_IDENTIFIER.equals(type))
-		{
-			setImplicit(true);
-			
-			return true;//setType("nova/Object", require, checkType, checkDataType);
-		}
-		
-		return super.setType(type, require, checkType, checkDataType);
+		return isImplicit;
 	}
 	
 	/**
@@ -181,7 +163,12 @@ public class LocalDeclaration extends VariableDeclaration
 			GenericTypeParameterList.searchGenerics(statement, data);
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data, require);
-		
+			
+			if (n.getType() == null && n.containsImplicitCompatibleAnnotation())
+			{
+				n.isImplicit = true;
+			}
+			
 			if (data.error != null)
 			{
 				SyntaxMessage.queryError(data.error, n, require);
@@ -193,6 +180,7 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			if (!checkName || n.validateDeclaration())
 			{
+				
 				for (int i = 0; i < n.getNumGenericTypeArguments(); i++)
 				{
 					GenericTypeArgument type = n.getGenericTypeArgument(i);
@@ -212,6 +200,11 @@ public class LocalDeclaration extends VariableDeclaration
 		return null;
 	}
 	
+	public boolean containsImplicitCompatibleAnnotation()
+	{
+		return containsAnnotationOfType(VarAnnotation.class, false, true) || containsAnnotationOfType(FinalAnnotation.class, false, true);
+	}
+	
 	/**
 	 * Make sure that the declaration is valid and that a declaration of
 	 * another variable does not have the same name.
@@ -220,7 +213,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	public boolean validateDeclaration()
 	{
-		if ((!isImplicit() && getType() == null) || getName() == null)
+		if ((!containsImplicitCompatibleAnnotation() && getType() == null) || getName() == null)
 		{
 			return false;
 		}
@@ -295,7 +288,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 */
 	private void interactName(String word, String leftDelimiter, String rightDelimiter, DeclarationData extra)
 	{
-		if (!isImplicit() && getType() == null)// || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
+		if (!containsImplicitCompatibleAnnotation() && getType() == null)// || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
 		{
 			return;
 		}
