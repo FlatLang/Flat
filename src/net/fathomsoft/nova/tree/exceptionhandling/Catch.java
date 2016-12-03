@@ -189,6 +189,9 @@ public class Catch extends ExceptionHandler
 		{
 			Assignment assign = Assignment.decodeStatement(this, exceptionDeclaration.getName() + " = null", Location.INVALID, true);
 			
+			assign.setProperty("userMade", false);
+			assign.getAssignedNode().setProperty("userMade", false);
+			
 			Variable exceptionData = getParentMethod().getParameterList().getExceptionData().generateUsableVariable(this, Location.INVALID);
 			Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
 			exceptionData.addChild(thrownException);
