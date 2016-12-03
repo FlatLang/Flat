@@ -32,7 +32,11 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 		setTemporaryParent(parent);
 	}
 	
-	
+	@Override
+	public boolean isUserMade()
+	{
+		return false;
+	}
 	
 	@Override
 	public boolean isTangible()

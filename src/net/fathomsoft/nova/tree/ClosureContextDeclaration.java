@@ -27,6 +27,12 @@ public class ClosureContextDeclaration extends LocalDeclaration
 		id = idCounter++;
 	}
 	
+	@Override
+	public boolean isUserMade()
+	{
+		return false;
+	}
+	
 	public String getName()
 	{
 		return "contextArg" + id;
