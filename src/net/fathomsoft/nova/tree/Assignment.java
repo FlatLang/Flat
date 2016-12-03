@@ -24,6 +24,8 @@ import java.util.ArrayList;
  */
 public class Assignment extends Value
 {
+	public boolean wasDeclaration;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -404,9 +406,14 @@ public class Assignment extends Value
 				return SyntaxMessage.queryError("Undeclared variable '" + assignee + "'", this, loc, require);
 			}
 			
-			if (varNode.getReturnedNode() instanceof VariableDeclaration && addDeclaration)
+			if (varNode.getReturnedNode() instanceof VariableDeclaration)
 			{
-				varNode = addDeclaration((VariableDeclaration)varNode);
+				if (addDeclaration)
+				{
+					varNode = addDeclaration((VariableDeclaration)varNode);
+				}
+				
+				wasDeclaration = true;
 			}
 			else if (varNode.getReturnedNode() instanceof Variable)
 			{
@@ -478,6 +485,8 @@ public class Assignment extends Value
 				}
 				else
 				{
+					previousType.getTypeClass();
+					assignment.getTypeClass();
 					return SyntaxMessage.queryError("Incompatible implicit type '" + declaration.getType() + "' being assigned to type '" + assignment.getType() + "'", this, require);
 				}
 				
