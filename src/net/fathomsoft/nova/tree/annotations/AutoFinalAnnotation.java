@@ -40,16 +40,13 @@ public class AutoFinalAnnotation extends Annotation
 		{
 			VariableDeclaration declaration = (VariableDeclaration)n;
 			
-			if (declaration instanceof NovaMethodDeclaration == false && declaration.isUserMade() && !declaration.isFinal())
+			if (declaration instanceof NovaMethodDeclaration == false && !declaration.isVar() && declaration.isUserMade() && !declaration.isFinal())
 			{
-				if (declaration instanceof LocalDeclaration == false || !((LocalDeclaration)declaration).isImplicit())
+				if (!declaration.isPropertyTrue("forLoopVariable"))
 				{
-					if (!declaration.isPropertyTrue("forLoopVariable"))
-					{
-						declaration.isUserMade();
-						declaration.isFinal();
-						declaration.addAnnotation(new FinalAnnotation(declaration, declaration.getLocationIn()));
-					}
+					declaration.isUserMade();
+					declaration.isFinal();
+					declaration.addAnnotation(new FinalAnnotation(declaration, declaration.getLocationIn()));
 				}
 			}
 		}
