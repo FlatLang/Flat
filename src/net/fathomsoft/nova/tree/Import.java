@@ -21,6 +21,8 @@ public class Import extends Node
 	private boolean used;
 	private boolean	external;
 	
+	public boolean isStatic;
+	
 	public String  alias;
 	public String  location;
 	
@@ -132,21 +134,30 @@ public class Import extends Node
 		{
 			Import n = new Import(parent, location);
 			
-			int quoteStart = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length());
+			statement = statement.substring(IDENTIFIER.length()).trim();
 			
-			if (quoteStart < 0 || statement.charAt(quoteStart) != '"')
+			String isStatic = StringUtils.findNextWord(statement);
+			
+			if (isStatic.equals("static"))
+			{
+				n.isStatic = true;
+				
+				statement = statement.substring("static".length()).trim();
+			}
+			
+			if (statement.charAt(0) != '"')
 			{
 				return null;
 			}
 			
-			int quoteEnd = StringUtils.findEndingChar(statement, '"', quoteStart, 1);
+			int quoteEnd = StringUtils.findEndingChar(statement, '"', 0, 1);
 			
 			if (quoteEnd < 0)
 			{
 				SyntaxMessage.error("Missing ending quotation for import statement", n);
 			}
 			
-			String importLocation = statement.substring(quoteStart + 1, quoteEnd);
+			String importLocation = statement.substring(1, quoteEnd);
 			String alias          = statement.substring(quoteEnd + 1).trim();
 			
 			if (n.validateImportLocation(importLocation) && n.validateAlias(alias, require))
