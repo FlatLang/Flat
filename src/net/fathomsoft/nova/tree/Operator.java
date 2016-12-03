@@ -157,6 +157,23 @@ public class Operator extends IValue
 		return null;
 	}
     
+	public boolean doesModify()
+	{
+		if (isShorthand())
+		{
+			return true;
+		}
+		
+		switch (operator)
+		{
+			case INCREMENT:
+			case DECREMENT:
+				return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Get the left Value that the operator is being used with.
 	 * 
