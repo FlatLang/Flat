@@ -44,8 +44,9 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 				if (variable.getParentMethod() instanceof Constructor == false &&
 					variable.getParentMethod() instanceof AssignmentMethod == false)
 				{
-					if (variable.isInTree() && variable.isBeingModified())
+					if (variable.isUserMade() && variable.isInTree() && variable.isBeingModified())
 					{
+						variable.isUserMade();
 						variable.isBeingModified();
 						SyntaxMessage.error("Final variable '" + declaration.getName() + "' cannot be modified in this context", variable, false);
 						
