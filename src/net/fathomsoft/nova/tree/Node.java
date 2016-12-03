@@ -1470,7 +1470,7 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public boolean isUserMade()
 	{
-		return !containsProperty("userMade") || isPropertyTrue("userMade");
+		return (!containsProperty("userMade") || isPropertyTrue("userMade")) && (getParent() == null || getParent().isUserMade());
 	}
 	
 	/**
@@ -1587,7 +1587,7 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		throw new UnimplementedOperationException("The Nova input implementation for this feature has not been implemented yet.");
+		return generateNovaInput(builder, outputChildren, true);
 	}
 	
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
