@@ -26,6 +26,12 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 	}
 	
 	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		return builder.append("let");
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
@@ -42,7 +48,9 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 			declaration.references.forEach(variable ->
 			{
 				if (variable.getParentMethod() instanceof Constructor == false &&
-					variable.getParentMethod() instanceof AssignmentMethod == false)
+					variable.getParentMethod() instanceof AssignmentMethod == false &&
+					variable.getParentMethod() instanceof MutatorMethod == false &&
+					variable.getAncestorOfType(StaticBlock.class) == null)
 				{
 					if (variable.isUserMade() && variable.isInTree() && variable.isBeingModified())
 					{
@@ -97,6 +105,6 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public String[] getAliases()
 	{
-		return new String[] { "final" };
+		return new String[] { "let", "final" };
 	}
 }
