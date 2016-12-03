@@ -263,6 +263,7 @@ public class ForEachLoop extends Loop
 	private boolean setupVariables()
 	{
 		LocalDeclaration decl = getVariableDeclaration();
+		decl.setProperty("forLoopVariable", true);
 		
 		getArgumentList().replace(decl, decl.generateUsableVariable(getArgumentList(), decl.getLocationIn()));
 		

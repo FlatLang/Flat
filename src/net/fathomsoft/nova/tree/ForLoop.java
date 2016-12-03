@@ -210,6 +210,8 @@ public class ForLoop extends Loop
 		initialization.onAfterDecoded();
 		getArgumentList().addChild(initialization);
 		
+		initialization.getAssignedNode().getDeclaration().setProperty("forLoopVariable", true);
+		
 		return true;
 	}
 	
