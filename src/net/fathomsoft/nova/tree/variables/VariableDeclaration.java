@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.IIdentifier;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.annotations.ImmutableAnnotation;
 import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -34,19 +35,11 @@ public class VariableDeclaration extends IIdentifier
 {
 	private boolean            volatileVal, external, reference;
 	
+//	public boolean isFinal;
+	
 	public  String[]           extraDeclarations;
 	
 	public ArrayList<Variable> references = new ArrayList<>();
-	
-	public boolean isValueReference()
-	{
-		return reference;
-	}
-	
-	public void setIsValueReference(boolean reference)
-	{
-		this.reference = reference;
-	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -59,6 +52,16 @@ public class VariableDeclaration extends IIdentifier
 		addChild(implementation, this);
 		
 		extraDeclarations = new String[0];
+	}
+	
+	public boolean isValueReference()
+	{
+		return reference;
+	}
+	
+	public void setIsValueReference(boolean reference)
+	{
+		this.reference = reference;
 	}
 	
 	public boolean isImmutable()
@@ -85,6 +88,16 @@ public class VariableDeclaration extends IIdentifier
 		}
 		
 		return null;
+	}
+	
+	public boolean isFinal()
+	{
+		return getFinalAnnotation() != null;
+	}
+	
+	public FinalAnnotation getFinalAnnotation()
+	{
+		return (FinalAnnotation)getAnnotationOfType(FinalAnnotation.class, false, true);
 	}
 	
 	@Override
