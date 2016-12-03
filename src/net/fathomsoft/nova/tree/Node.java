@@ -1825,6 +1825,25 @@ public abstract class Node implements Listenable, Annotatable
 		return list.toArray(new ClassDeclaration[0]);
 	}
 	
+	public ClassDeclaration[] getStaticImports()
+	{
+		ArrayList<ClassDeclaration> list = new ArrayList<>();
+		
+		getFileDeclaration().getImportList().forEachVisibleListChild(i -> {
+			if (i.isStatic)
+			{
+				ClassDeclaration c = i.getClassDeclaration();
+				
+				if (c != null)
+				{
+					list.add(c);
+				}
+			}
+		});
+		
+		return list.toArray(new ClassDeclaration[0]);
+	}
+	
 	/**
 	 * Get the ClassDeclaration parent instance of the Node, if one exists.
 	 * 
