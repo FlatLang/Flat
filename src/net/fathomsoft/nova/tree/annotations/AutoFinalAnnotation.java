@@ -1,24 +1,22 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.ArrayOverloadMethod;
-import net.fathomsoft.nova.tree.InstanceDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.PropertyMethod;
+import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
-public class StaticAnnotation extends Annotation implements ModifierAnnotation
+public class AutoFinalAnnotation extends Annotation
 {
-	public StaticAnnotation(Node temporaryParent, Location locationIn)
+	public AutoFinalAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 	}
 	
-	public static StaticAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
+	public static AutoFinalAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
 	{
-		if (name.equals("Static"))
+		if (name.equals("AutoFinal"))
 		{
-			StaticAnnotation n = new StaticAnnotation(parent, location);
+			AutoFinalAnnotation n = new AutoFinalAnnotation(parent, location);
 			
 			return n;
 		}
@@ -36,19 +34,35 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation
 			return result;
 		}
 		
+		Node[] nodes = getParent().getChildrenOfType(VariableDeclaration.class);
+		
+		for (Node n : nodes)
+		{
+			VariableDeclaration declaration = (VariableDeclaration)n;
+			
+			if (declaration instanceof NovaMethodDeclaration == false && declaration.isUserMade() && !declaration.isFinal())
+			{
+				if (declaration instanceof LocalDeclaration == false || !((LocalDeclaration)declaration).isImplicit())
+				{
+					if (!declaration.isPropertyTrue("forLoopVariable"))
+					{
+						declaration.isUserMade();
+						declaration.isFinal();
+						declaration.addAnnotation(new FinalAnnotation(declaration, declaration.getLocationIn()));
+					}
+				}
+			}
+		}
+		
 		return result;
 	}
 	
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+		if (next instanceof ClassDeclaration || next.containsScope())
 		{
-			return true;
-		}
-		else if (next instanceof InstanceDeclaration)
-		{
-			((InstanceDeclaration)next).setStatic(true);
+//			((InstanceDeclaration)next).setStatic(true);
 		}
 		else
 		{
@@ -59,28 +73,22 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation
 	}
 	
 	@Override
-	public StaticAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
+	public AutoFinalAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		StaticAnnotation node = new StaticAnnotation(temporaryParent, locationIn);
+		AutoFinalAnnotation node = new AutoFinalAnnotation(temporaryParent, locationIn);
 		
 		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
-	public StaticAnnotation cloneTo(StaticAnnotation node)
+	public AutoFinalAnnotation cloneTo(AutoFinalAnnotation node)
 	{
 		return cloneTo(node, true, true);
 	}
 	
-	public StaticAnnotation cloneTo(StaticAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
+	public AutoFinalAnnotation cloneTo(AutoFinalAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
-	}
-	
-	@Override
-	public String[] getAliases()
-	{
-		return new String[] { "static" };
 	}
 }
