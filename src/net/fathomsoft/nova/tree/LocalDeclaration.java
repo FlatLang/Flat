@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -270,7 +271,14 @@ public class LocalDeclaration extends VariableDeclaration
 				
 				if (rightDelimiter.equals("*"))
 				{
-					setDataType(POINTER);
+					if (getDataType() == POINTER)
+					{
+						setDataType(DOUBLE_POINTER);
+					}
+					else
+					{
+						setDataType(POINTER);
+					}
 				}
 			}
 		}
@@ -294,18 +302,6 @@ public class LocalDeclaration extends VariableDeclaration
 		}
 		
 		setName(word);
-		
-		if (leftDelimiter.length() > 0)
-		{
-			if (leftDelimiter.equals("*"))
-			{
-				setDataType(Value.POINTER);
-			}
-			else if (leftDelimiter.equals("&"))
-			{
-				setDataType(Value.REFERENCE);
-			}
-		}
 		
 		if (extra.getLeftAdjacentSkipBounds() != null)
 		{
