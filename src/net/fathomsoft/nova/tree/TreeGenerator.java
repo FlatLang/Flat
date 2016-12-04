@@ -571,6 +571,11 @@ public class TreeGenerator implements Runnable
 		
 		String prevWord = prevWordBounds.extractString(source);
 		
+		if (source.substring(statementStartIndex).startsWith("external"))
+		{
+			return false;
+		}
+		
 		return pendingCompletion ^ requiresCompletion || (prevWord.equals("return") && pendingCompletion && parentStack.check().getParentMethod().getType() != null);
 	}
 	
