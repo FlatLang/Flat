@@ -61,7 +61,16 @@ public class VariableDeclaration extends IIdentifier
 	
 	public boolean isImmutable()
 	{
-		return getImmutableAnnotation() != null;
+		if (isPrimitive())
+		{
+			return isFinal();
+		}
+		else if (isExternalType())
+		{
+			return false;
+		}
+		
+		return getTypeClass().isImmutable() || getImmutableAnnotation() != null;
 	}
 	
 	public ImmutableAnnotation getImmutableAnnotation()
@@ -348,31 +357,7 @@ public class VariableDeclaration extends IIdentifier
 	 */
 	public boolean setAttribute(String attribute, int argNum)
 	{
-		Constructor c = Annotation.MODIFIERS.get(attribute);
-		
-		if (c != null)
-		{
-			try
-			{
-				ModifierAnnotation modifier = (ModifierAnnotation)c.newInstance(null, null);
-				
-				return modifier.apply(this);
-			}
-			catch (InstantiationException e)
-			{
-				e.printStackTrace();
-			}
-			catch (IllegalAccessException e)
-			{
-				e.printStackTrace();
-			}
-			catch (InvocationTargetException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		
-		return false;
+		return parseModifier(attribute);
 	}
 	
 	public void swapNames(Variable other)
