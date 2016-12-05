@@ -1,9 +1,15 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
+import net.fathomsoft.nova.tree.annotations.ImpureFunctionAnnotation;
+import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.function.Consumer;
 
 /**
  * 
@@ -23,6 +29,34 @@ public interface CallableMethod
 	 * @return Whether or not a method call needs to pass a reference.
 	 */
 	public boolean isInstance();
+	
+	default PureFunctionAnnotation getPureAnnotation()
+	{
+		return (PureFunctionAnnotation)((Node)this).getAnnotationOfType(PureFunctionAnnotation.class, false, true);
+	}
+	
+	default boolean isPure()
+	{
+		return getPureAnnotation() != null;
+	}
+	
+	default ImpureFunctionAnnotation getImpureAnnotation()
+	{
+		return (ImpureFunctionAnnotation)((Node)this).getAnnotationOfType(ImpureFunctionAnnotation.class, false, true);
+	}
+	
+	default boolean isImpure()
+	{
+		return getImpureAnnotation() != null;
+	}
+	
+	default void setImpure()
+	{
+		if (!isImpure())
+		{
+			((Node)this).addAnnotation(new ImpureFunctionAnnotation((Node)this, Location.INVALID));
+		}
+	}
 	
 	/**
 	 * Get whether or not the method is static.
