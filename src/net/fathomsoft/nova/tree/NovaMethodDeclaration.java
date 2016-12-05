@@ -5,16 +5,20 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.ImpureFunctionAnnotation;
 import net.fathomsoft.nova.tree.annotations.PublicAnnotation;
+import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.function.Consumer;
 
 /**
  * Declaration extension that represents the declaration of a method
@@ -959,6 +963,28 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		
 		return contents;
+	}
+	
+	public MethodCall[] getReferencesIncludingOverrides()
+	{
+		ArrayList<MethodCall> refs = new ArrayList<>();
+		
+		for (Variable v : references)
+		{
+			refs.add((MethodCall)v);
+		}
+		
+		for (NovaMethodDeclaration method : getOverridingMethods())
+		{
+			MethodCall[] references = method.getReferencesIncludingOverrides();
+			
+			for (MethodCall m : references)
+			{
+				refs.add(m);
+			}
+		}
+		
+		return refs.toArray(new MethodCall[0]);
 	}
 	
 	/**
