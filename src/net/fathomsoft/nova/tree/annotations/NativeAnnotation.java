@@ -82,9 +82,9 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public void onAdded(Node parent)
 	{
-		if (parent instanceof Assignment)
+		if (parent instanceof Assignment && !parent.isDecoding())
 		{
-			((Assignment)parent).getAssignedNode().getDeclaration().addAnnotation(this);
+//			((Assignment)parent).getAssignedNode().getDeclaration().addAnnotation(this);
 		}
 		
 		super.onAdded(parent);
@@ -95,7 +95,13 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation
 	{
 		onAdded(next);
 		
-		if (next instanceof Assignment == false)
+		if (next instanceof Assignment)
+		{
+			((Assignment)next).getAssignedNode().getDeclaration().addAnnotation(this);
+			
+			return true;
+		}
+		else
 		{
 			next.addAnnotation(this);
 		}
