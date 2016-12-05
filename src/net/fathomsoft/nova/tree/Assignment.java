@@ -336,7 +336,10 @@ public class Assignment extends Value
 			
 			if (n.getAssignedNodeValue().isImmutable() && n.getAssignedNodeValue() instanceof Variable)
 			{
-				n.getAssignedNode().getImmutableAnnotation().convertAssignment((Value)assignment);
+				if (n.getAssignedNode().getImmutableAnnotation() != null)
+				{
+					n.getAssignedNode().getImmutableAnnotation().convertAssignment((Value)assignment);
+				}
 			}
 		}
 		
