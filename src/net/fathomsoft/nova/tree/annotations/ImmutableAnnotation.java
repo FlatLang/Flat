@@ -50,6 +50,11 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 		return null;
 	}
 	
+	public boolean appliedClassIsImmutable()
+	{
+		return toImmutable == null;
+	}
+	
 	@Override
 	public String[] defaultParameterNames()
 	{
