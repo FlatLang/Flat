@@ -24,6 +24,8 @@ import java.util.Map;
  */
 public class Annotation extends Node
 {
+	public boolean userAdded;
+	
 	public HashMap<String, Object> parameters = new HashMap<>();
 	
 	public static final HashMap<String, Constructor> MODIFIERS = new HashMap<>();
@@ -41,7 +43,9 @@ public class Annotation extends Node
 			VisibleAnnotation.class,
 			ImmutableAnnotation.class,
 			FinalAnnotation.class,
-			VarAnnotation.class
+			VarAnnotation.class,
+			PureFunctionAnnotation.class,
+			ImpureFunctionAnnotation.class
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
@@ -81,7 +85,14 @@ public class Annotation extends Node
 	 */
 	public Annotation(Node temporaryParent, Location locationIn)
 	{
+		this(temporaryParent, locationIn, true);
+	}
+	
+	public Annotation(Node temporaryParent, Location locationIn, boolean userAdded)
+	{
 		super(temporaryParent, locationIn);
+		
+		this.userAdded = userAdded;
 	}
 	
 	public String[] defaultParameterNames()
@@ -213,6 +224,8 @@ public class Annotation extends Node
 			getParent().removeAnnotation(this);
 		}
 		
+		parent = null;
+		
 		return this;
 	}
 	
@@ -289,27 +302,37 @@ public class Annotation extends Node
 												
 												if (n == null)
 												{
-													n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
+													n = PureFunctionAnnotation.decodeStatement(parent, name, arguments, location, require);
 													
 													if (n == null)
 													{
-														n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+														n = ImpureFunctionAnnotation.decodeStatement(parent, name, arguments, location, require);
 														
 														if (n == null)
 														{
-															n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+															n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
 															
 															if (n == null)
 															{
-																n = AutoFinalAnnotation.decodeStatement(parent, name, arguments, location, require);
+																n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
 																
 																if (n == null)
 																{
-																	n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+																	n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
 																	
 																	if (n == null)
 																	{
-																		n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																		n = AutoFinalAnnotation.decodeStatement(parent, name, arguments, location, require);
+																		
+																		if (n == null)
+																		{
+																			n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+																			
+																			if (n == null)
+																			{
+																				n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																			}
+																		}
 																	}
 																}
 															}
@@ -387,7 +410,7 @@ public class Annotation extends Node
 	
 	public final boolean onApplied(Node appliedTo)
 	{
-		return onApplied(appliedTo, true);
+		return onApplied(appliedTo, false);
 	}
 	
 	public boolean onApplied(Node appliedTo, boolean throwError)
@@ -415,7 +438,12 @@ public class Annotation extends Node
 	
 	public boolean invalidAppliedTo(Node node, boolean require)
 	{
-		return SyntaxMessage.queryError(getClass().getSimpleName() + " is applied to an invalid type '" + node.getClass().getSimpleName() + "'", node, require);
+		if (require)
+		{
+			SyntaxMessage.error(getClass().getSimpleName() + " is applied to an invalid type '" + node.getClass().getSimpleName() + "'", node);
+		}
+		
+		return false;
 	}
 	
 	public boolean invalidArgument(String name, boolean require)
