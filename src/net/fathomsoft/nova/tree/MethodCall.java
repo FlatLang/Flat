@@ -229,6 +229,64 @@ public class MethodCall extends Variable
 		return context;
 	}
 	
+//	public boolean isPure(BodyMethodDeclaration context, boolean allowInstanceModification)
+//	{
+//		if (getInferredDeclaration() instanceof BodyMethodDeclaration)
+//		{
+//			BodyMethodDeclaration bodyFunc = (BodyMethodDeclaration)getInferredDeclaration();
+//			
+//			if (!bodyFunc.checkPure(true))//!bodyFunc.isPure())
+//			{
+//				if (getReferenceNode() instanceof Variable)
+//				{
+//					Variable ref = (Variable)getReferenceNode();
+//					
+////					if (ref.isFinal())
+////					{
+////						return bodyFunc.checkPure(true);
+////					}
+////					else if (allowInstanceModification)
+////					{
+////						if (ref.getDeclaration().getParentMethod() == context)
+////						{
+////							return bodyFunc.checkPure(true);
+////						}
+////					}
+////
+////					return false;
+//					
+////					return bodyFunc.checkPure(true);
+//				}
+////				else if (bodyFunc.isStatic())
+////				{
+////					return bodyFunc.checkPure(false);
+////				}
+//				
+//				return false;
+//			}
+//		}
+//		else
+//		{
+//			return getCallableDeclaration().checkPure(this, allowInstanceModification);
+//		}
+//		
+//		return true;
+//	}
+	
+	public Value getArgument(String name)
+	{
+		Value[] values = getArgumentList().getArgumentsInOrder();
+		
+		int index = getCallableDeclaration().getParameterList().getVisibleParameterIndex(name);
+		
+		if (index >= 0 && index < values.length)
+		{
+			return values[index];
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Get the Method instance that this MethodCall is calling.
 	 * 
