@@ -187,7 +187,10 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			if (n.decodeDimensions(statement, index, newLoc, require))
 			{
-				if (!parent.containsAnnotationOfType(NativeAnnotation.class, true, true))
+				if (!parent.containsAnnotationOfType(NativeAnnotation.class, true, true) &&
+					(parent instanceof Assignment == false ||
+						!(((Assignment)parent).getAssignedNodeValue() instanceof Variable &&
+							((Assignment)parent).getAssignedNode().getDeclaration().containsAnnotationOfType(NativeAnnotation.class))))
 				{
 					Value value = SyntaxTree.decodeValue(parent, n.mapDimension(0), location, require);
 					
