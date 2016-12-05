@@ -6,12 +6,14 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.annotations.Annotatable;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.*;
 
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -36,7 +38,7 @@ public abstract class Node implements Listenable, Annotatable
 {
 	private Location		locationIn;
 	
-	private Node			parent;
+	public  Node			parent;
 
 	private ArrayList<Node>	children;
 	private ArrayList<Annotation>	annotations;
@@ -1255,6 +1257,49 @@ public abstract class Node implements Listenable, Annotatable
 				getChild(i).inheritChildren(child, clone);
 			}
 		}
+	}
+	
+	public String parseModifiers(String input)
+	{
+		String word = StringUtils.findNextWord(input);
+		
+		while (parseModifier(word))
+		{
+			input = input.substring(word.length()).trim();
+			
+			word = StringUtils.findNextWord(input);
+		}
+		
+		return input;
+	}
+	
+	public boolean parseModifier(String modifier)
+	{
+		java.lang.reflect.Constructor c = Annotation.MODIFIERS.get(modifier);
+		
+		if (c != null)
+		{
+			try
+			{
+				ModifierAnnotation annotation = (ModifierAnnotation)c.newInstance(null, null);
+				
+				return annotation.apply(this);
+			}
+			catch (InstantiationException e)
+			{
+				e.printStackTrace();
+			}
+			catch (IllegalAccessException e)
+			{
+				e.printStackTrace();
+			}
+			catch (InvocationTargetException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		
+		return false;
 	}
 	
 	/**
