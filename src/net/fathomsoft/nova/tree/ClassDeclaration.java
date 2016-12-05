@@ -83,6 +83,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(blocks, this);
 	}
 	
+	@Override
+	public boolean isImmutable()
+	{
+		return getImmutableAnnotation() != null && getImmutableAnnotation().appliedClassIsImmutable();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
