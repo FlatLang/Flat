@@ -39,6 +39,12 @@ public class Constructor extends BodyMethodDeclaration
 	}
 	
 	@Override
+	public boolean isPure()
+	{
+		return true;
+	}
+	
+	@Override
 	public Value inferShorthandActionType(String action, Value contents)
 	{
 		return contents;
