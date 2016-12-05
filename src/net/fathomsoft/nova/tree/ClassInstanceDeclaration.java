@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -20,6 +21,7 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 		
 		setType("Class");//temporaryParent.getProgram().getClassDeclaration("nova/Class"));
 		setName("class");
+		addAnnotation(new FinalAnnotation(this, locationIn));
 		setVisibility(VISIBLE);
 	}
 	
