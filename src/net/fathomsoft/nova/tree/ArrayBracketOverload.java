@@ -100,14 +100,16 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	 */
 	public static ArrayBracketOverload decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		ArrayBracketOverload n = new ArrayBracketOverload(parent, location);
+		
+		statement = n.parseModifiers(statement);
+		
 		if (statement.startsWith("this["))
 		{
 			int end = StringUtils.findEndingMatch(statement, "this".length(), '[', ']');
 			
 			if (end > 1)
 			{
-				ArrayBracketOverload n = new ArrayBracketOverload(parent, location);
-				
 				String original = statement;
 				String contents = statement.substring("this[".length(), end).trim();
 				
