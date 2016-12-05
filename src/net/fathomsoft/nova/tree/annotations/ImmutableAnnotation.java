@@ -170,7 +170,7 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 			}
 			else
 			{
-				invalidAppliedTo(next, true);
+				return invalidAppliedTo(next, throwError);
 			}
 		}
 		

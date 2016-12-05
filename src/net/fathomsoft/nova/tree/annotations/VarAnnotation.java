@@ -51,7 +51,7 @@ public class VarAnnotation extends Annotation implements ModifierAnnotation
 		}
 		else
 		{
-			invalidAppliedTo(next, true);
+			return invalidAppliedTo(next, throwError);
 		}
 		
 		return super.onApplied(next, throwError);
