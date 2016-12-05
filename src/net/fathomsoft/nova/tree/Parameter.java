@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -254,6 +255,19 @@ public class Parameter extends LocalDeclaration
 		return n;
 	}
 	
+	@Override
+	public void replace(Node old, Node replacement)
+	{
+		if (old == defaultValue)
+		{
+			defaultValue = (Value)replacement;
+		}
+		else
+		{
+			super.replace(old, replacement);
+		}
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
 	 */
@@ -274,6 +288,11 @@ public class Parameter extends LocalDeclaration
 			defaultValue.onAdded(this);
 			
 			defaultValueString = null;
+		}
+		
+		if (defaultValue != null)
+		{
+			SyntaxTree.validateNodes(defaultValue, phase);
 		}
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
