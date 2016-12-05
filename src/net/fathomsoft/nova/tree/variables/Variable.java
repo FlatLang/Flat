@@ -241,7 +241,7 @@ public class Variable extends Identifier
 	@Override
 	public boolean doesForceOriginalName()
 	{
-		return declaration.doesForceOriginalName() || isExternal();
+		return declaration != null && declaration.doesForceOriginalName() || isExternal();
 	}
 	
 	/**
@@ -252,7 +252,7 @@ public class Variable extends Identifier
 	 */
 	public boolean isExternal()
 	{
-		return declaration.isExternal();
+		return declaration != null && declaration.isExternal();
 	}
 	
 	/**
@@ -505,9 +505,9 @@ public class Variable extends Identifier
 			
 			Assignment a = (Assignment)getAncestorOfType(Assignment.class);
 			
-			if (a != null && !a.wasDeclaration)
+			if (a != null && !a.wasDeclaration && arrayAccess == null)
 			{
-				if (a.getAssignedNode() == this)
+				if (a.getAssignedNodeValue() == this)
 				{
 					return true;
 				}
