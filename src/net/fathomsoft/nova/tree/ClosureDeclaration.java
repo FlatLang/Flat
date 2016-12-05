@@ -3,10 +3,16 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.*;
+
+import java.util.Arrays;
+import java.util.function.Consumer;
 
 /**
  * Identifier extension that represents the use of a variable
@@ -160,10 +166,12 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	 */
 	public static ClosureDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		ClosureDeclaration n = new ClosureDeclaration(parent, location);
+		
+		statement = n.parseModifiers(statement);
+		
 		if (validateMethodDeclaration(statement))
 		{
-			ClosureDeclaration n = new ClosureDeclaration(parent, location);
-			
 			// Bounds of the data within the parentheses.
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 			
