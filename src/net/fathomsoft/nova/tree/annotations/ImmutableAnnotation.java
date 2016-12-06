@@ -4,6 +4,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.Arrays;
@@ -76,9 +77,9 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 		}
 		else
 		{
-			if (next instanceof InstanceDeclaration)
+			if (next instanceof VariableDeclaration)
 			{
-				InstanceDeclaration declaration = ((InstanceDeclaration)next);
+				VariableDeclaration declaration = ((VariableDeclaration)next);
 				
 				ClassDeclaration mutableClass = declaration.getTypeClass();
 				ClassDeclaration immutableClass = null;
@@ -128,9 +129,9 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	
 	public ClassDeclaration getImmutableClass()
 	{
-		if (getParent() instanceof InstanceDeclaration)
+		if (getParent() instanceof VariableDeclaration)
 		{
-			InstanceDeclaration declaration = ((InstanceDeclaration)getParent());
+			VariableDeclaration declaration = ((VariableDeclaration)getParent());
 			
 			ClassDeclaration mutableClass = declaration.getTypeClass();
 			
@@ -169,9 +170,9 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 		{
 			
 			
-			if (next instanceof InstanceDeclaration)
+			if (next instanceof VariableDeclaration)
 			{
-				next.toString();
+				
 			}
 			else
 			{
