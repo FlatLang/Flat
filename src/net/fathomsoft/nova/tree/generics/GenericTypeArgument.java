@@ -3,7 +3,6 @@ package net.fathomsoft.nova.tree.generics;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -263,10 +262,6 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		{
 			context = ((GenericTypeArgument)context).getTangibleNode();
 		}
-		if (context instanceof VariableDeclaration && isAccessibleFrom(context))
-		{
-			return this;
-		}
 		
 		if (isGenericType())
 		{
@@ -277,13 +272,26 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 				return arg.getNovaTypeValue(context);
 			}
 			
-			IValue value = new IValue(this, getLocationIn());
+			GenericTypeArgument value = clone(getParent(), getLocationIn(), false, true);
 			value.setTypeValue(getDefaultType());
 			
 			return value;
 		}
 		
-		return super.getNovaTypeValue(context);
+		if (getGenericTypeArgumentList() != null && getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+		{
+			GenericTypeArgument clone = clone(getParent(), getLocationIn(), true, true);
+			
+			for (int i = 0; i < clone.getGenericTypeArgumentList().getNumVisibleChildren(); i++)
+			{
+				clone.getGenericTypeArgumentList().getVisibleChild(i)
+					.replaceWith(getGenericTypeArgumentList().getVisibleChild(i).getNovaTypeValue(context).clone(getGenericTypeArgumentList(), getLocationIn(), true, true));
+			}
+			
+			return clone;
+		}
+		
+		return clone(getParent(), getLocationIn(), false, true);
 	}
 	
 	/**
