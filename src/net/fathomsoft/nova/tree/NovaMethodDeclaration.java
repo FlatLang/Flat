@@ -826,7 +826,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					addGenericTypeArgumentName(rightDelimiter.substring(GENERIC_START.length(), rightDelimiter.length() - GENERIC_END.length()));
 				}
 				
-				checkArray(data.signature, bounds.getEnd(), rightDelimiter);
+				if (!checkArray(data.signature, bounds.getEnd(), rightDelimiter, extra.require))
+				{
+					extra.error = "Could not parse array brackets";
+				}
 			}
 			else if (extra.isLastWord() || rightDelimiter.equals("->"))
 			{

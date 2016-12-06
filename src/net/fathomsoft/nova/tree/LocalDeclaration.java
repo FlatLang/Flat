@@ -283,7 +283,10 @@ public class LocalDeclaration extends VariableDeclaration
 			}
 		}
 		
-		checkArray(extra.statement, bounds.getEnd(), rightDelimiter);
+		if (!checkArray(extra.statement, bounds.getEnd(), rightDelimiter, extra.require))
+		{
+			extra.error = "Could not parse array brackets";
+		}
 	}
 	
 	/**

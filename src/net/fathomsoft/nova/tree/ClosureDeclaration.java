@@ -315,7 +315,10 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 			{
 				setType(word, true, false);
 				
-				checkArray(extra.statement, bounds.getEnd(), rightDelimiter);
+				if (!checkArray(extra.statement, bounds.getEnd(), rightDelimiter, extra.require))
+				{
+					extra.error = "Could not parse array brackets";
+				}
 			}
 			else if (extra.isLastWord() || rightDelimiter.equals("->"))
 			{
