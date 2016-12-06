@@ -7,6 +7,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.util.Stack;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
@@ -147,54 +148,8 @@ public interface Accessible
 			
 			if (typeClass != type.getParentClass())
 			{
-				// TODO: perform a walk on all extended classes and interfaces.
-				ExtendedClass extended = typeClass.getExtendedClass();
-				
-				while (extended != null)
-				{
-					GenericTypeArgumentList args = extended.getGenericTypeArgumentList();
-					
-					if (args.getNumVisibleChildren() > index)
-					{
-						return args.getVisibleChild(index);
-					}
-					
-					extended = extended.getTypeClass().getExtendedClass();
-				}
+				return performWalk(value, typeClass, type.getParentClass(), index);
 			}
-			/*Accessible lastRef = null;
-			Accessible ref = getReferenceNode();
-			
-			while (ref != lastRef && ref instanceof Accessible && index >= 0 && ref.getReferenceNode(true) != null)
-			{
-				lastRef = ref;
-				ref = ref.getReferenceNode(true);
-				
-				Accessible current = ref;
-				
-				if (current instanceof Variable)
-				{
-					current = ((Variable)ref).getDeclaration();
-				}
-				
-				GenericTypeArgument arg = ((Value)current).getGenericTypeArgument(index);
-				
-				if (!arg.isGenericType())
-				{
-					return arg;
-				}
-				
-				if (current instanceof Variable)
-				{
-					index = ((VariableDeclaration)current).getGenericTypeParameterDeclaration().getParameterIndex(arg.getType());
-				}
-			}*/
-			
-			/*if (index >= 0 && this instanceof MethodCall)
-			{
-				return ((Variable)getReferenceNode()).getDeclaration().getGenericTypeArgument(index);
-			}
-			else */
 			
 			if (index >= 0 && !novaType.isGenericType())
 			{
@@ -226,6 +181,84 @@ public interface Accessible
 		}
 		
 		return null;
+	}
+	
+	default GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, int parameterIndex)
+	{
+		Stack<IValue> path = new Stack<>();
+		
+		path = performWalk(current, required, path);
+		
+		if (path != null)
+		{
+			while (!path.isEmpty())
+			{
+				GenericTypeArgumentList args = path.pop().getGenericTypeArgumentList();
+				
+				if (args.getNumVisibleChildren() <= parameterIndex)
+				{
+					return null;
+				}
+				
+				GenericTypeArgument arg = args.getVisibleChild(parameterIndex);
+				
+				if (!arg.isGenericType())
+				{
+					return arg;
+				}
+				else
+				{
+					GenericTypeParameter param = arg.getGenericTypeParameter();
+					
+					parameterIndex = param.getIndex();
+				}
+			}
+		}
+		
+		if (context.getGenericTypeArgumentList() != null && context.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex)
+		{
+			return context.getGenericTypeArgument(parameterIndex);
+		}
+		
+		return null;
+	}
+	
+	default Stack<IValue> performWalk(ClassDeclaration current, ClassDeclaration required, Stack<IValue> path)
+	{
+		if (required instanceof Interface)
+		{
+			InterfaceImplementation implementation = checkInterface(current, (Interface)required);
+			
+			if (implementation != null)
+			{
+				path.push(implementation);
+				
+				return path;
+			}
+		}
+		
+		ExtendedClass extended = current.getExtendedClass();
+		
+		if (extended != null)
+		{
+			path.push(extended);
+			
+			if (extended.getTypeClass() != required)
+			{
+				return performWalk(extended.getTypeClass(), required, path);
+			}
+			else
+			{
+				return path;
+			}
+		}
+		
+		return null;
+	}
+	
+	default InterfaceImplementation checkInterface(ClassDeclaration current, Interface required)
+	{
+		return current.getInterfacesImplementationList().firstWhere(x -> x.getTypeClass() == required);
 	}
 	
 	/**
