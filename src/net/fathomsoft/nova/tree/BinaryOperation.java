@@ -147,52 +147,6 @@ public class BinaryOperation extends IValue
 	}
 	
 	/**
-	 * Decode the given statement into a BinaryOperation if possible.
-	 * If it is not possible, the method will return null. The requirements
-	 * of a BinaryOperation include: Contains an operator such as '!=',
-	 * '&gt;=', '&lt;=', '&gt;', '&lt;', '*', '/', '+', '-', and '%' surrounded by two
-	 * comparable values.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li>5 / 2</li>
-	 * 	<li>(a.getWidth() + b.getHeight) / array.getSize()</li>
-	 * 	<li>variableName % 2 == 0</li>
-	 * </ul>
-	 * 
-	 * The last two examples contain two BinaryOperations.
-	 * 
-	 * @param parent The parent of the current statement.
-	 * @param statement The statement to translate into a BinaryOperation
-	 * 		if possible.
-	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @return The generated Node, if it was possible to translated it
-	 * 		into a BinaryOperation.
-	 */
-	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
-	{
-		if (!validateStatement(parent, statement))
-		{
-			return null;
-		}
-		
-		// Pattern used to find word boundaries. 
-		Matcher matcher = Patterns.PRE_OPERATORS.matcher(statement);
-		Value   node    = decodeStatement(parent, statement, matcher, location, require);
-		
-		if (node == null)
-		{
-			if (require)
-			{
-//				SyntaxMessage.error("Could not decode binary operation '" + statement + "'", parent, location);
-			}
-		}
-		
-		return node;
-	}
-	
-	/**
 	 * Validate that the given statement is a possible candidate to being
 	 * a binary operator node.
 	 * 
@@ -207,6 +161,7 @@ public class BinaryOperation extends IValue
 		}
 		
 		Bounds operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
+		if (operatorLoc.getStart() == 0) operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, operatorLoc.getEnd() + 1);
 		
 		if (operatorLoc.getStart() < 0)
 		{
@@ -235,14 +190,17 @@ public class BinaryOperation extends IValue
 	 * @param parent The parent of the current statement.
 	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
-	 * @param matcher The matcher for the statement.
 	 * @param location The location of the statement in the source code.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The generated Node, if it was possible to translated it
 	 * 		into a BinaryOperation.
 	 */
-	private static Value decodeStatement(Node parent, String statement, Matcher matcher, Location location, boolean require)
+	public static Value decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		if (!validateStatement(parent, statement))
+		{
+			return null;
+		}
 		if (statement.length() <= 0)
 		{
 			return null;
@@ -257,6 +215,7 @@ public class BinaryOperation extends IValue
 		
 		Location operatorLoc    = new Location(location);
 		Bounds   operatorBounds = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
+		if (operatorBounds.getStart() == 0) operatorBounds = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, operatorBounds.getEnd() + 1);
 		
 		operatorLoc.setBounds(operatorBounds);
 		operatorLoc.setLineNumber(location.getLineNumber());
@@ -267,7 +226,7 @@ public class BinaryOperation extends IValue
 			{
 				BinaryOperation n = new BinaryOperation(parent, location);
 				
-				n.decodeOperands(statement, operatorLoc, matcher, require);
+				n.decodeOperands(statement, operatorLoc, require);
 				n.getOperator().updateType();
 				n.setType(n.getOperator().getType());
 				
@@ -290,10 +249,9 @@ public class BinaryOperation extends IValue
 	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
 	 * @param operatorLoc The Location of the operator in the operation.
-	 * @param matcher The matcher for the statement.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 */
-	private void decodeOperands(String statement, Location operatorLoc, Matcher matcher, boolean require)
+	private void decodeOperands(String statement, Location operatorLoc, boolean require)
 	{
 		Value lhn = decodeLeftOperand(statement, operatorLoc);
 		
@@ -308,7 +266,7 @@ public class BinaryOperation extends IValue
 		operator.setOperator(operatorVal);
 		addChild(operator);
 		
-		Value rhn = decodeRightOperand(statement, operatorLoc, matcher, require);
+		Value rhn = decodeRightOperand(statement, operatorLoc, require);
 		
 		validateOperation(lhn, rhn, operator);
 		
@@ -530,11 +488,10 @@ public class BinaryOperation extends IValue
 	 * @param statement The statement to translate into a BinaryOperation
 	 * 		if possible.
 	 * @param operatorLoc The Location of the operator in the operation.
-	 * @param matcher The matcher for the statement.
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return The right operand.
 	 */
-	private Value decodeRightOperand(String statement, Location operatorLoc, Matcher matcher, boolean require)
+	private Value decodeRightOperand(String statement, Location operatorLoc, boolean require)
 	{
 		int rhIndex = StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getEnd());
 		
@@ -546,11 +503,9 @@ public class BinaryOperation extends IValue
 		// Decode the value on the right.
 		statement = statement.substring(rhIndex);
 		
-		matcher.reset(statement);
-		
 		Location location = new Location(getLocationIn());
 		
-		Value rhn = decodeStatement(getParent(), statement, matcher, location, require);
+		Value rhn = SyntaxTree.decodeValue(getParent(), statement, location, require);
 		
 		if (rhn == null)
 		{
@@ -910,11 +865,13 @@ public class BinaryOperation extends IValue
 			
 			if (operator.isConjunction())
 			{
-				if (lhn instanceof BinaryOperation == false && !lhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(lhn))
+				if ((parent instanceof BinaryOperation == false || ((BinaryOperation)parent).getOperator().isConjunction()) &&
+					!lhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(lhn))
 				{
 					lhn.replaceWithNullCheck();
 				}
-				if (rhn instanceof BinaryOperation == false && !rhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(rhn))
+				if ((rhn instanceof BinaryOperation == false || ((BinaryOperation)rhn).getOperator().isConjunction()) &&
+					!rhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(rhn))
 				{
 					rhn.replaceWithNullCheck();
 				}
@@ -987,17 +944,11 @@ public class BinaryOperation extends IValue
 	{
 		private boolean require;
 		
-		/**
-		 * @see net.fathomsoft.nova.error.SyntaxErrorException#SyntaxErrorException(String)
-		 */
 		public BinarySyntaxException(String message)
 		{
 			this(message, true);
 		}
 		
-		/**
-		 * @see net.fathomsoft.nova.error.SyntaxErrorException#SyntaxErrorException(String)
-		 */
 		public BinarySyntaxException(String message, boolean require)
 		{
 			super(message, Message.ERROR);
