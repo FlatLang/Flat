@@ -402,11 +402,16 @@ public class Assignment extends Value
 	{
 		if (assignees == null || assignees.length <= 0)
 		{
-			Value varNode = SyntaxTree.decodeValue(this, assignee, loc, require, checkType);
+			Value varNode = LocalDeclaration.decodeStatement(this, assignee, loc, false);
 			
 			if (varNode == null)
 			{
-				return SyntaxMessage.queryError("Undeclared variable '" + assignee + "'", this, loc, require);
+				varNode = SyntaxTree.decodeValue(this, assignee, loc, require, checkType);
+				
+				if (varNode == null)
+				{
+					return SyntaxMessage.queryError("Undeclared variable '" + assignee + "'", this, loc, require);
+				}
 			}
 			
 			if (varNode.getReturnedNode() instanceof VariableDeclaration)
