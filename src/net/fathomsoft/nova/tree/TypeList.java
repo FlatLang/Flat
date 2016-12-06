@@ -38,6 +38,37 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 		return nodes;
 	}
 	
+	public boolean contains(E value)
+	{
+		for (E e : this)
+		{
+			if (value == e)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public boolean any(Function<E, Boolean> func)
+	{
+		return firstWhere(func) != null;
+	}
+	
+	public E firstWhere(Function<E, Boolean> func)
+	{
+		for (E e : this)
+		{
+			if (func.apply(e))
+			{
+				return e;
+			}
+		}
+		
+		return null;
+	}
+	
 	public void forEachListChild(Consumer<E> action)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
