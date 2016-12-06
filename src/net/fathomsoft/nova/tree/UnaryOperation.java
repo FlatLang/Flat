@@ -187,6 +187,16 @@ public class UnaryOperation extends IValue
 		return null;
 	}
 	
+	public boolean isOperatorOnLeft()
+	{
+		return getChild(0) instanceof Operator;
+	}
+	
+	public boolean isOperatorOnRight()
+	{
+		return getChild(1) instanceof Operator;
+	}
+	
 	@Override
 	public String getType(boolean checkCast)
 	{
@@ -291,8 +301,6 @@ public class UnaryOperation extends IValue
 			
 			if (n.decodeIdentifierValue(contents, newLoc, bounds, require))
 			{
-				n.getOperator().setType(n.getValue().getReturnedNode());
-				
 				return n;
 			}
 		}
@@ -393,6 +401,10 @@ public class UnaryOperation extends IValue
 				return SyntaxMessage.queryError("Undeclared value '" + contents + "'", this, require);
 			}
 		}
+		else if (value instanceof BinaryOperation)
+		{
+			return false;
+		}
 		
 		if (bounds.getStart() == 0)
 		{
@@ -403,7 +415,15 @@ public class UnaryOperation extends IValue
 			addChild(getNumDefaultChildren(), value);
 		}
 		
-		setType(value.getType());
+		if (getOperator().isBooleanOperator())
+		{
+			setType(getOperator().getType());
+		}
+		else
+		{
+			setType(value.getReturnedNode());
+			getOperator().setType(value.getReturnedNode());
+		}
 		
 		value.onAfterDecoded();
 		
@@ -426,6 +446,20 @@ public class UnaryOperation extends IValue
 		if (getValue() instanceof Variable)
 		{
 			SyntaxUtils.checkVolatile((Variable)getValue());
+		}
+		
+		if (isOperatorOnLeft() && getOperator().getOperator().equals(Operator.BANG))
+		{
+			if (!getValue().getReturnedNode().isPrimitive())
+			{
+				BinaryOperation operation = getValue().replaceWithNullCheck();
+				
+				operation.getOperator().setOperator(Operator.EQUALS);
+				
+				replaceWith(operation);
+				
+				result.returnedNode = operation;
+			}
 		}
 		
 		return result;
