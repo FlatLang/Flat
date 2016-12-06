@@ -960,6 +960,19 @@ public abstract class Value extends Node implements AbstractValue
 		return builder;
 	}
 	
+	public BinaryOperation replaceWithNullCheck()
+	{
+		BinaryOperation operation = BinaryOperation.generateDefault(parent, getLocationIn());
+		operation.getOperator().setOperator("!=");
+		operation.getRightOperand().replaceWith(Literal.decodeStatement(parent, Literal.NULL_IDENTIFIER, getLocationIn(), true, true));
+		
+		replaceWith(operation);
+		
+		operation.getLeftOperand().replaceWith(this);
+		
+		return operation;
+	}
+	
 	public String getNovaType()
 	{
 		return getNovaType(null);
