@@ -131,7 +131,7 @@ public class IfStatement extends ControlStatement
 		Location newLoc = new Location(getLocationIn());
 		newLoc.addBounds(bounds.getStart(), bounds.getEnd());
 		
-		Node condition = SyntaxTree.decodeScopeContents(this, contents, newLoc, require);
+		Value condition = SyntaxTree.decodeValue(this, contents, newLoc, require);
 		
 		if (condition == null)
 		{
@@ -139,6 +139,11 @@ public class IfStatement extends ControlStatement
 		}
 		
 		addChild(condition, this);
+		
+		if (!condition.getReturnedNode().isPrimitive())
+		{
+			condition.replaceWithNullCheck();
+		}
 		
 		return true;
 	}

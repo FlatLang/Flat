@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.Message;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -888,6 +889,57 @@ public class BinaryOperation extends IValue
 		}
 		
 		return value;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			Value lhn = getLeftOperand();
+			Value rhn = getRightOperand();
+			
+			Operator operator = getOperator();
+			
+			if (operator.isConjunction())
+			{
+				if (lhn instanceof BinaryOperation == false && !lhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(lhn))
+				{
+					lhn.replaceWithNullCheck();
+				}
+				if (rhn instanceof BinaryOperation == false && !rhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(rhn))
+				{
+					rhn.replaceWithNullCheck();
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	@Override
+	@Deprecated
+	public BinaryOperation replaceWithNullCheck()
+	{
+		Operator operator = getOperator();
+		Value right = getRightOperand();
+		
+		BinaryOperation operation = super.replaceWithNullCheck();
+		
+		BinaryOperation rhn = BinaryOperation.generateDefault(operation, operation.getLocationIn());
+		
+		rhn.getLeftOperand().replaceWith(operation.getRightOperand());
+		rhn.getOperator().replaceWith(operator);
+		rhn.getRightOperand().replaceWith(right);
+		
+		return operation;
 	}
 	
 	/**

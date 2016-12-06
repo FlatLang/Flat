@@ -129,7 +129,9 @@ public class TernaryOperation extends IValue implements Accessible
 				
 				Value trueValue = null;
 				
-				if (trueValueString.length() > 0)
+				boolean traditional = trueValueString.length() > 0;
+				
+				if (traditional)
 				{
 					trueValue = SyntaxTree.decodeValue(n, trueValueString, location, require);
 				}
@@ -158,6 +160,11 @@ public class TernaryOperation extends IValue implements Accessible
 				n.addChild(condition);
 				n.addChild(trueValue);
 				n.addChild(falseValue);
+				
+				if (traditional && !condition.getReturnedNode().isPrimitive())
+				{
+					condition.replaceWithNullCheck();
+				}
 				
 				ClassDeclaration commonClass = null;
 				
