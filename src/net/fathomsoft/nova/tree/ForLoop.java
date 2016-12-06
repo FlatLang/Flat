@@ -249,7 +249,7 @@ public class ForLoop extends Loop
 		 * 	return true
 		 */
 		
-		Node condition = SyntaxTree.decodeValue(getArgumentList(), argument, location, require);
+		Value condition = SyntaxTree.decodeValue(getArgumentList(), argument, location, require);
 		
 		if (condition == null)
 		{
@@ -257,6 +257,11 @@ public class ForLoop extends Loop
 		}
 		
 		getArgumentList().addChild(condition);
+		
+		if (!condition.getReturnedNode().isPrimitive())
+		{
+			condition.replaceWithNullCheck();
+		}
 		
 		return true;
 	}

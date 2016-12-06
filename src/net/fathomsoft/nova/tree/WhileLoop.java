@@ -121,6 +121,11 @@ public class WhileLoop extends Loop
 		
 		addChild(condition, this);
 		
+		if (!condition.getReturnedNode().isPrimitive())
+		{
+			condition.replaceWithNullCheck();
+		}
+		
 		return true;
 	}
 	
