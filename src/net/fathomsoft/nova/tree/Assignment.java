@@ -333,14 +333,6 @@ public class Assignment extends Value
 		if (assignment == null)
 		{
 			assignment = n.decodeRightHandSide(n, rhs, newLoc, require);
-			
-			if (n.getAssignedNodeValue().isImmutable() && n.getAssignedNodeValue() instanceof Variable)
-			{
-				if (n.getAssignedNode().getImmutableAnnotation() != null)
-				{
-					n.getAssignedNode().getImmutableAnnotation().convertAssignment((Value)assignment);
-				}
-			}
 		}
 		
 		if (assignment == null)
@@ -371,6 +363,14 @@ public class Assignment extends Value
 			if (getAssignedNodeValue() instanceof Variable)
 			{
 				getAssignedNode().getDeclaration().onAfterDecoded();
+			}
+			
+			if (getAssignedNodeValue().isImmutable() && getAssignedNodeValue() instanceof Variable)
+			{
+				if (getAssignedNode().getImmutableAnnotation() != null)
+				{
+					getAssignedNode().getImmutableAnnotation().convertAssignment(getAssignmentNode());
+				}
 			}
 			
 			validateCompatible();
