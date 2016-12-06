@@ -963,7 +963,7 @@ public abstract class Value extends Node implements AbstractValue
 	public BinaryOperation replaceWithNullCheck()
 	{
 		BinaryOperation operation = BinaryOperation.generateDefault(parent, getLocationIn());
-		operation.getOperator().setOperator("!=");
+		operation.getOperator().setOperator(Operator.NOT_EQUAL);
 		operation.getRightOperand().replaceWith(Literal.decodeStatement(parent, Literal.NULL_IDENTIFIER, getLocationIn(), true, true));
 		
 		replaceWith(operation);
