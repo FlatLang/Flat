@@ -417,7 +417,7 @@ public class VariableDeclaration extends IIdentifier
 	 * @param rightDelimiter The right delimiter possibly containing
 	 * 		array brackets.
 	 */
-	public void checkArray(String statement, int index, String rightDelimiter)
+	public boolean checkArray(String statement, int index, String rightDelimiter, boolean require)
 	{
 		// If it is an array declaration.
 		if (rightDelimiter.length() > 0 && rightDelimiter.charAt(0) == '[')
@@ -426,11 +426,13 @@ public class VariableDeclaration extends IIdentifier
 			
 			if (dimensions < 0)
 			{
-				SyntaxMessage.error("Array brackets cannot contain data", this);
+				return SyntaxMessage.queryError("Array brackets cannot contain data", this, require);
 			}
 			
 			setArrayDimensions(getArrayDimensions() + dimensions);
 		}
+		
+		return true;
 	}
 	
 	/**
