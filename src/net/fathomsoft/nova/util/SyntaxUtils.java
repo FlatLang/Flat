@@ -2344,7 +2344,7 @@ public class SyntaxUtils
 				
 				//SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
 				
-				if (isTypeCompatible((GenericCompatible)newContext, required, value, false))
+				if (isTypeCompatible(newContext, required, value, false))
 				{
 					return true;
 				}
