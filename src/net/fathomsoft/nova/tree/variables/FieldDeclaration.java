@@ -545,4 +545,10 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		
 		return null;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return generateNovaInput().toString();
+	}
 }
