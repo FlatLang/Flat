@@ -1197,12 +1197,22 @@ public abstract class Value extends Node implements AbstractValue
 		setType(value, true);
 	}
 	
-	public void setType(Value value, boolean extractType)
+	public final void setType(Value value, Value context)
+	{
+		setType(value, context, true);
+	}
+	
+	public final void setType(Value value, boolean extractType)
+	{
+		setType(value, value, extractType);
+	}
+	
+	public void setType(Value value, Value context, boolean extractType)
 	{
 		setArrayDimensions(value.getArrayDimensions());
 
 		Value original = value;
-		Value novaType = value.getNovaTypeValue(value);
+		Value novaType = value.getNovaTypeValue(context);
 		
 		if (novaType.isGenericType() && !getParentClass().isOfType(original.getGenericTypeParameter().getParentClass()))
 		{
@@ -1214,7 +1224,7 @@ public abstract class Value extends Node implements AbstractValue
 			
 			if (extractType)
 			{
-				String type = value.getNovaTypeValue(value).generateGenericType(value);
+				String type = value.getNovaTypeValue(context).generateGenericType(context);
 				
 				if (type.length() > 0 && getGenericTypeArgumentList() != null)
 				{
