@@ -134,14 +134,20 @@ public class Annotation extends Node
 	}
 	
 	@Override
-	public String toString()
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
 		String name = getClass().getSimpleName();
 		name = name.substring(0, name.length() - "Annotation".length());
 		
 		String parameters = writeParameters();
 		
-		return "[" + name + (parameters.length() > 0 ? " " + parameters : "") + "]";
+		return builder.append("[" + name + (parameters.length() > 0 ? " " + parameters : "") + "]");
+	}
+	
+	@Override
+	public String toString()
+	{
+		return generateNovaInput().toString();
 	}
 	
 	public boolean parseParameter(String parameter, int index, boolean[] parsedExplicit)
@@ -436,7 +442,17 @@ public class Annotation extends Node
 		return super.onNextStatementDecoded(next);
 	}
 	
-	public boolean invalidAppliedTo(Node node, boolean require)
+	public boolean duplicateApplication(Node node, boolean require)
+	{
+		if (require)
+		{
+			SyntaxMessage.error("Duplicate '" + getClass().getName() + "' annotation applied to expression", node);
+		}
+		
+		return false;
+	}
+	
+	public boolean invalidApplication(Node node, boolean require)
 	{
 		if (require)
 		{
