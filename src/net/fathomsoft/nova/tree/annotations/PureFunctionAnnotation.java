@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree.annotations;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
@@ -340,7 +339,7 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
 		}
 		else
 		{
-			return invalidAppliedTo(next, throwError);
+			return invalidApplication(next, throwError);
 		}
 		
 		return super.onApplied(next, throwError);

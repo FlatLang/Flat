@@ -29,7 +29,7 @@ public class ApplicableAnnotationBase extends Annotation
 	{
 		if (next instanceof Annotation == false)
 		{
-			return invalidAppliedTo(next, throwError);
+			return invalidApplication(next, throwError);
 		}
 		
 		return super.onApplied(next);

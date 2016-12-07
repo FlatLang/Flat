@@ -4,7 +4,6 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.NovaMethodDeclaration;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 public class AutoPureAnnotation extends Annotation
@@ -62,7 +61,7 @@ public class AutoPureAnnotation extends Annotation
 		}
 		else
 		{
-			return invalidAppliedTo(next, throwError);
+			return invalidApplication(next, throwError);
 		}
 		
 		return super.onApplied(next, throwError);

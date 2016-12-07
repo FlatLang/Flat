@@ -63,7 +63,7 @@ public class AutoFinalAnnotation extends Annotation
 		}
 		else
 		{
-			return invalidAppliedTo(next, throwError);
+			return invalidApplication(next, throwError);
 		}
 		
 		return super.onApplied(next, throwError);

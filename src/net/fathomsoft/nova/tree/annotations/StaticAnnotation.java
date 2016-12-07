@@ -52,7 +52,7 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation
 		}
 		else
 		{
-			return invalidAppliedTo(next, throwError);
+			return invalidApplication(next, throwError);
 		}
 		
 		return super.onApplied(next, throwError);

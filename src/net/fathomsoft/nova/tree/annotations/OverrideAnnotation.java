@@ -79,7 +79,7 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
 			}
 			else
 			{
-				invalidAppliedTo(node, true);
+				invalidApplication(node, true);
 			}
 			
 			if (Arrays.stream(methods).anyMatch(x -> x != null && !x.doesOverride()))

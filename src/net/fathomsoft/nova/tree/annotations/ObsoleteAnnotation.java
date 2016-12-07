@@ -118,7 +118,7 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 			
 			if (node instanceof VariableDeclaration == false)
 			{
-				invalidAppliedTo(node, true);
+				invalidApplication(node, true);
 			}
 			
 			VariableDeclaration decl = (VariableDeclaration)node;

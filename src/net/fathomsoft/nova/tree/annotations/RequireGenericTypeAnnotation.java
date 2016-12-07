@@ -94,7 +94,7 @@ public class RequireGenericTypeAnnotation extends Annotation
 		
 		if (node instanceof VariableDeclaration == false)
 		{
-			invalidAppliedTo(node, true);
+			invalidApplication(node, true);
 		}
 		
 		VariableDeclaration decl = (VariableDeclaration)node;
