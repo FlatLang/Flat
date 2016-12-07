@@ -273,7 +273,11 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 			}
 			
 			GenericTypeArgument value = clone(getParent(), getLocationIn(), false, true);
-			value.setTypeValue(getDefaultType());
+			
+			if (context == null || getParentClass() != context.getParentClass())
+			{
+				value.setTypeValue(getDefaultType());
+			}
 			
 			return value;
 		}
