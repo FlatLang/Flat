@@ -41,6 +41,13 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
 	}
 	
 	@Override
+	public void onAdded(Node parent)
+	{
+		ModifierAnnotation.super.onAdded(parent);
+		super.onAdded(parent);
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);

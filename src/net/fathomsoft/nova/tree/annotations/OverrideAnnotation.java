@@ -54,6 +54,13 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
 	}
 	
 	@Override
+	public void onAdded(Node parent)
+	{
+		ModifierAnnotation.super.onAdded(parent);
+		super.onAdded(parent);
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);

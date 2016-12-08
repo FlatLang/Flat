@@ -32,6 +32,13 @@ public class VarAnnotation extends Annotation implements ModifierAnnotation
 	}
 	
 	@Override
+	public void onAdded(Node parent)
+	{
+		ModifierAnnotation.super.onAdded(parent);
+		super.onAdded(parent);
+	}
+	
+	@Override
 	public boolean onNextStatementDecoded(Node next)
 	{
 //		if (next instanceof LocalDeclaration && next instanceof Parameter == false)

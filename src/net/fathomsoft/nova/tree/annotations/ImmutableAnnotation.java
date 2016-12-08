@@ -51,6 +51,13 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 		return null;
 	}
 	
+	@Override
+	public void onAdded(Node parent)
+	{
+		ModifierAnnotation.super.onAdded(parent);
+		super.onAdded(parent);
+	}
+	
 	public boolean appliedClassIsImmutable()
 	{
 		return toImmutable == null;

@@ -84,6 +84,8 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public void onAdded(Node parent)
 	{
+		ModifierAnnotation.super.onAdded(parent);
+		
 		if (parent instanceof Assignment && !parent.isDecoding())
 		{
 //			((Assignment)parent).getAssignedNode().getDeclaration().addAnnotation(this);

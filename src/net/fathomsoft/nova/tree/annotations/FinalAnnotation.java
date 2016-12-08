@@ -26,6 +26,13 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 	}
 	
 	@Override
+	public void onAdded(Node parent)
+	{
+		ModifierAnnotation.super.onAdded(parent);
+		super.onAdded(parent);
+	}
+	
+	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
 		return builder.append("let");
