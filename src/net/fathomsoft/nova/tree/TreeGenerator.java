@@ -5,12 +5,15 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.ApplicableAnnotationBase;
+import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.*;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 
 /**
@@ -423,6 +426,8 @@ public class TreeGenerator implements Runnable
 			
 			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 			
+			ArrayList<ModifierAnnotation> modifiers = new ArrayList<>();
+			
 			while (node instanceof Annotation)
 			{
 				Annotation a = (Annotation)node;
@@ -443,13 +448,28 @@ public class TreeGenerator implements Runnable
 					
 					if (!skipped && node != null)
 					{
-						node.addAnnotation(a);
+						if (a instanceof ModifierAnnotation)
+						{
+							modifiers.add((ModifierAnnotation)a);
+						}
+						else
+						{
+							node.addAnnotation(a);
+						}
 						//a.onNextStatementDecoded(node);
 					}
 				}
 				else
 				{
 					break;
+				}
+			}
+			
+			if (node != null)
+			{
+				for (ModifierAnnotation mod : modifiers)
+				{
+					mod.apply(node);
 				}
 			}
 			
