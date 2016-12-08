@@ -995,6 +995,21 @@ public abstract class Value extends Node implements AbstractValue
 		return this;
 	}
 	
+	public Value getClonedNovaTypeValue(Value context)
+	{
+		Value clone = (Value)clone(getParent(), getLocationIn(), false, true);
+		
+		if (getGenericTypeArgumentList() != null)
+		{
+			for (GenericTypeArgument arg : getGenericTypeArgumentList())
+			{
+				clone.getGenericTypeArgumentList().addChild(arg.getNovaTypeValue(context));
+			}
+		}
+		
+		return clone;
+	}
+	
 	public ClassDeclaration getNovaTypeClass()
 	{
 		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getNovaType()));
@@ -1270,6 +1285,28 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		
 		return node;
+	}
+	
+	public Literal generateDefaultValue(Node parent, Location location)
+	{
+		if (!isPrimitive())
+		{
+			return (Literal)Literal.decodeStatement(parent, Literal.NULL_IDENTIFIER, location, true, true);
+		}
+		else if (getTypeClass().isOfType(getProgram().getClassDeclaration("nova/primitive/number/Char")))
+		{
+			return (Literal)Literal.decodeStatement(parent, "'\\0'", location, true, true);
+		}
+		else if (getTypeClass().isOfType(getProgram().getClassDeclaration("nova/primitive/number/Number")))
+		{
+			return (Literal)Literal.decodeStatement(parent, "0", location, true, true);
+		}
+		else if (getTypeClass().isOfType(getProgram().getClassDeclaration("nova/primitive/Bool")))
+		{
+			return (Literal)Literal.decodeStatement(parent, "false", location, true, true);
+		}
+		
+		throw new UnsupportedOperationException("Value of type '" + getType() + "' does not have a default value.");
 	}
 	
 	/**
