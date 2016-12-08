@@ -1,11 +1,14 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Parameter;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 
-public class PrivateAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation
+public class PrivateAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier
 {
 	public PrivateAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -25,6 +28,13 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 	}
 	
 	@Override
+	public void onAdded(Node parent)
+	{
+		ModifierAnnotation.super.onAdded(parent);
+		super.onAdded(parent);
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
@@ -34,7 +44,26 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 			return result;
 		}
 		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (!addAssignment())
+			{
+				result.errorOccurred = true;
+			}
+		}
+		
 		return result;
+	}
+	
+	@Override
+	public boolean onNextStatementDecoded(Node next)
+	{
+		if (next instanceof Parameter && createFieldFromParameter((Parameter)next))
+		{
+			return true;
+		}
+		
+		return super.onNextStatementDecoded(next);
 	}
 	
 	@Override
@@ -42,7 +71,11 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 	{
 		if (!checkDuplicate(next, throwError))
 		{
-			if (next instanceof InstanceDeclaration)
+			if (checkParameter(next))
+			{
+				return true;
+			}
+			else if (next instanceof InstanceDeclaration)
 			{
 				((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
 				

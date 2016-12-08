@@ -1,13 +1,11 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.tree.ArrayOverloadMethod;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.PropertyMethod;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 
-public class VisibleAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation
+public class VisibleAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier
 {
 	public VisibleAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -36,7 +34,26 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
 			return result;
 		}
 		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (!addAssignment())
+			{
+				result.errorOccurred = true;
+			}
+		}
+		
 		return result;
+	}
+	
+	@Override
+	public boolean onNextStatementDecoded(Node next)
+	{
+		if (next instanceof Parameter && createFieldFromParameter((Parameter)next))
+		{
+			return true;
+		}
+		
+		return super.onNextStatementDecoded(next);
 	}
 	
 	@Override
@@ -44,7 +61,11 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
 	{
 		if (!checkDuplicate(next, throwError))
 		{
-			if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+			if (checkParameter(next))
+			{
+				return true;
+			}
+			else if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
 			{
 				return true;
 			}

@@ -3,9 +3,11 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.InstanceDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Parameter;
+import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 
-public class PublicAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation
+public class PublicAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier
 {
 	public PublicAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -34,7 +36,33 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
 			return result;
 		}
 		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (!addAssignment())
+			{
+				result.errorOccurred = true;
+			}
+		}
+		
 		return result;
+	}
+	
+	@Override
+	public void onAdded(Node parent)
+	{
+		ModifierAnnotation.super.onAdded(parent);
+		super.onAdded(parent);
+	}
+	
+	@Override
+	public boolean onNextStatementDecoded(Node next)
+	{
+		if (next instanceof Parameter && createFieldFromParameter((Parameter)next))
+		{
+			return true;
+		}
+		
+		return super.onNextStatementDecoded(next);
 	}
 	
 	@Override
@@ -42,7 +70,11 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
 	{
 		if (!checkDuplicate(next, throwError))
 		{
-			if (next instanceof InstanceDeclaration)
+			if (checkParameter(next))
+			{
+				return true;
+			}
+			else if (next instanceof InstanceDeclaration)
 			{
 				((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
 				
