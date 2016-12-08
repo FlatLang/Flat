@@ -5,6 +5,8 @@ import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Class that holds the information for a message that will be
  * output from the compiler.
@@ -74,6 +76,11 @@ public class Message
 	 */
 	public void outputMessage(int type, boolean throwException)
 	{
+		outputMessage(type, throwException, null);
+	}
+	
+	public void outputMessage(int type, boolean throwException, String exceptionType)
+	{
 		String info = message;
 		
 		if (node != null)
@@ -110,7 +117,33 @@ public class Message
 		
 		if (throwException)
 		{
-			throw new SyntaxErrorException(info, type);
+			SyntaxErrorException e = null;
+			
+			if (exceptionType != null)
+			{
+				try
+				{
+					e = (SyntaxErrorException)SyntaxMessage.ERROR_TYPES.get(exceptionType).newInstance(info, type);
+				}
+				catch (InstantiationException ex)
+				{
+					e.printStackTrace();
+				}
+				catch (IllegalAccessException ex)
+				{
+					e.printStackTrace();
+				}
+				catch (InvocationTargetException ex)
+				{
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+				e = new SyntaxErrorException(info, type);
+			}
+			
+			throw e;
 		}
 	}
 }
