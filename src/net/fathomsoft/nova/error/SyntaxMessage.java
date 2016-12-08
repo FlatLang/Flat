@@ -4,6 +4,9 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
+import java.lang.reflect.Constructor;
+import java.util.HashMap;
+
 /**
  * Class that outputs an error of a specific type.
  * 
@@ -13,6 +16,10 @@ import net.fathomsoft.nova.util.Location;
  */
 public class SyntaxMessage
 {
+	public static final HashMap<String, Constructor> ERROR_TYPES = new HashMap<String, Constructor>() {{
+		put("type", TypeError.class.getConstructors()[0]);
+	}};
+	
 	/**
 	 * Output an error message from the compiler.
 	 * 
@@ -47,7 +54,7 @@ public class SyntaxMessage
 	 */
 	public static void error(String message, Node node)
 	{
-		error(message, node, null);
+		error(message, node, null, null);
 	}
 	
 	/**
@@ -96,9 +103,12 @@ public class SyntaxMessage
 	 */
 	public static void error(String message, Node node, Location location)
 	{
-		Message error = new Message(message, node, location);
-		
-		error.outputMessage(Message.ERROR);
+		error(message, node, location, null);
+	}
+	
+	public static void error(String message, Node node, Location location, String type)
+	{
+		error(message, node, location, true, type);
 	}
 	
 	/**
@@ -126,9 +136,14 @@ public class SyntaxMessage
 	 */
 	public static void error(String message, Node node, Location location, boolean throwException)
 	{
+		error(message, node, location, throwException, null);
+	}
+	
+	public static void error(String message, Node node, Location location, boolean throwException, String type)
+	{
 		Message error = new Message(message, node, location);
 		
-		error.outputMessage(Message.ERROR, throwException);
+		error.outputMessage(Message.ERROR, throwException, type);
 	}
 	
 	/**
@@ -159,12 +174,17 @@ public class SyntaxMessage
 	 */
 	public static boolean queryError(String message, Node node, boolean require)
 	{
+		return queryError(message, node, require, null);
+	}
+	
+	public static boolean queryError(String message, Node node, boolean require, String type)
+	{
 		if (!require)
 		{
 			return false;
 		}
 		
-		error(message, node);
+		error(message, node, null, require, type);
 		
 		return true;
 	}
