@@ -2130,6 +2130,8 @@ public abstract class Node implements Listenable, Annotatable
 				cloned.add(a.clone(node, node.getLocationIn(), cloneAnnotations, true));
 			}
 			
+			cloned.forEach(a -> a.onAdded(node));
+			
 			node.annotations = cloned;
 		}
 		
