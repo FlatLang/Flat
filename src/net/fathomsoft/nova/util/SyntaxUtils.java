@@ -2630,7 +2630,7 @@ public class SyntaxUtils
 	
 	public static boolean invalidType(Node parent, String type, boolean require)
 	{
-		return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, require);
+		return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, require, "type");
 	}
 	
 	public static boolean invalidType(Node parent, String type, boolean require, boolean throwException)
