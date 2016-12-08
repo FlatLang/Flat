@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.TypeError;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
@@ -1059,7 +1060,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		FieldDeclaration field = getFieldList().getField(fieldName);
 		
-		if (field == null)
+		if (field == null && checkAncestor)
 		{
 			field = getExternalFieldsListNode().getField(fieldName);
 		
@@ -2369,6 +2370,97 @@ public class ClassDeclaration extends InstanceDeclaration
 				field.decodeShorthandAccessor();
 			});
 		});
+	}
+	
+	private void addFieldsFromInterface(Interface i)
+	{
+		i.getFieldList().getPublicFieldList().forEachVisibleChild(n -> {
+			FieldDeclaration field = (FieldDeclaration)n;
+			
+			if (field.isPropertyTrue("addedDefaultInterfaceFunctions") || field.isUserMade() && !field.containsAccessorMethod() && !field.containsMutatorMethod() && field.getShorthandAccessor() == null)
+			{
+				FieldDeclaration current = getField(field.getName(), false);
+				
+				if (current != null)
+				{
+					if (current.getVisibility() != field.getVisibility() && !(current.getVisibility() == PUBLIC && field.getVisibility() == FieldDeclaration.VISIBLE))
+					{
+						SyntaxMessage.error("Interface field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' has to be " + field.getVisibilityText(), this, false);
+					}
+					else if (field.getVisibility() == PUBLIC && (current.getMutatorMethod() == null || current.getMutatorMethod().isDisabled()))
+					{
+						SyntaxMessage.error("Interface field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' cannot hide mutator function", this, false);
+					}
+				}
+				else
+				{
+					FieldDeclaration clone = field.clone(this, Location.INVALID, true, true);
+					
+					clone.setTwoWayBinding(true);//field.getVisibility() == PUBLIC);
+					clone.setShorthandAccessor(field.getName());
+					
+					if (field.isGenericType())
+					{
+						clone.setType(field.getGenericTypeParameter().getCorrespondingArgument(clone), clone);
+					}
+					
+					addChild(clone);
+					
+					if (!getFileDeclaration().containsImport(field.getTypeClassLocation()))
+					{
+						getFileDeclaration().addImport(field.getTypeClassLocation());
+					}
+					
+					Value type = clone;
+					
+					if (field.getVisibility() == FieldDeclaration.VISIBLE && !field.isGenericType())
+					{
+						type = field.getClonedNovaTypeValue(clone);
+						
+						if (type.getGenericTypeArgumentList() != null)
+						{
+							for (GenericTypeArgument arg : type.getGenericTypeArgumentList())
+							{
+								if (!arg.isGenericType())
+								{
+									if (!getFileDeclaration().containsImport(arg.getTypeClassLocation()))
+									{
+										getFileDeclaration().addImport(arg.getTypeClassLocation());
+									}
+								}
+							}
+						}
+					}
+					
+					clone.decodeShorthandAccessor(type);
+					
+//					if (!clone.isTwoWayBinding())
+//					{
+//						MutatorMethod method = (MutatorMethod)clone.addDefaultMutator(field.getClonedNovaTypeValue(clone));
+//						
+//						Assignment assignment = Assignment.generateDefault(method, method.getLocationIn());
+//						
+//						assignment.getAssigneeNodes().addChild(field.generateUsableVariable(assignment, assignment.getLocationIn()));
+//						assignment.addChild(SyntaxTree.decodeIdentifier(assignment, "value", assignment.getLocationIn(), true));
+//						
+//						method.addChild(assignment);
+//					}
+				}
+			}
+		});
+		
+		for (Interface extended : i.getImplementedInterfaces(false))
+		{
+			addFieldsFromInterface(extended);
+		}
+	}
+	
+	public void autoAddInterfaceFieldOverrides()
+	{
+		for (Interface i : getImplementedInterfaces(false))
+		{
+			addFieldsFromInterface(i);
+		}
 	}
 	
 	public void checkShorthandActionOverrides()
