@@ -2215,14 +2215,19 @@ public class SyntaxUtils
 	{
 		FileDeclaration file = node.getReferenceFile();
 		
-		String location = file.getImportList().getAbsoluteClassLocation(type);
+		if (file != null)
+		{
+			String location = file.getImportList().getAbsoluteClassLocation(type);
+			
+			//		if (location == null)
+			//		{
+			//			SyntaxUtils.throwImportException(this, type, getLocationIn());
+			//		}
+			
+			return location;
+		}
 		
-//		if (location == null)
-//		{
-//			SyntaxUtils.throwImportException(this, type, getLocationIn());
-//		}
-		
-		return location;
+		return null;
 	}
 	
 	/**
