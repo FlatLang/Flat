@@ -146,6 +146,44 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	}
 	
 	@Override
+	public NovaMethodDeclaration addDefaultAccessor()
+	{
+		ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
+		
+		Return returned = Return.decodeStatement(method, "return null", getLocationIn(), true);
+		
+		returned.getValueNode().replaceWith(generateDefaultValue(returned, getLocationIn()));
+		
+		method.addChild(returned);
+		
+		addChild(method);
+		
+		return method;
+	}
+	
+	@Override
+	public NovaMethodDeclaration addDefaultMutator()
+	{
+		ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
+		
+		addChild(method);
+		
+		return method;
+	}
+	
+	@Override
+	public void addDisabledAccessor()
+	{
+		ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "no get", getLocationIn(), true);
+		
+		Value type = getArrayAccessorMethod();
+		
+		method.setType(type);
+		
+		addChild(method);
+	}
+	
+	@Override
 	public void addDisabledMutator()
 	{
 		ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "no set", getLocationIn(), true);
@@ -202,7 +240,7 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	}
 	
 	@Override
-	public BodyMethodDeclaration decodeMutator()
+	public BodyMethodDeclaration decodeMutator(Value context)
 	{
 		ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
 		
