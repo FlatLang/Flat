@@ -249,9 +249,9 @@ public class Parameter extends LocalDeclaration
 			
 			if (old.getAnnotations() != null)
 			{
-				for (Annotation a : old.getAnnotations())
+				for (int i = old.getAnnotations().size() - 1; i >= 0; i--)
 				{
-					n.addAnnotation(a);
+					n.addAnnotation(old.getAnnotations().get(i));
 				}
 			}
 		}
@@ -263,9 +263,9 @@ public class Parameter extends LocalDeclaration
 			
 			if (annotations != null)
 			{
-				for (Annotation a : annotations)
+				for (int i = annotations.size() - 1; i >= 0; i--)
 				{
-					n.addAnnotation(a);
+					n.addAnnotation(annotations.get(i));
 				}
 			}
 		}
