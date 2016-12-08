@@ -6,16 +6,28 @@ public interface ModifierAnnotation
 {
 	String[] getAliases();
 	
+	default void onAdded(Node to)
+	{
+		apply(to);
+	}
+	
 	default boolean apply(Node to)
 	{
-		if (onAppliedAsModifier(to, false))
+		if (to != ((Annotation)this).getParent())
 		{
-			to.addAnnotation((Annotation)this);
-			
-			return true;
+			if (onAppliedAsModifier(to, false))
+			{
+				to.addAnnotation((Annotation)this);
+				
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 		
-		return false;
+		return true;
 	}
 	
 	default boolean onAppliedAsModifier(Node toNode, boolean throwError)
