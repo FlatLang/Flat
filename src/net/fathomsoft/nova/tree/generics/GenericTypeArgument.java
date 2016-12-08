@@ -267,7 +267,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		{
 			GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
 			
-			if (arg != null && arg != this)
+			if (arg != null && arg != this && arg != getParent().getParent())
 			{
 				return arg.getNovaTypeValue(context);
 			}
