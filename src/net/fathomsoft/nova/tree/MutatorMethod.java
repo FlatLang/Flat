@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -53,6 +54,13 @@ public class MutatorMethod extends PropertyMethod
 	 */
 	public static MutatorMethod decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		return decodeStatement(parent, statement, location, require, null);
+	}
+	
+	public static MutatorMethod decodeStatement(Node parent, String statement, Location location, boolean require, Value type)
+	{
+		type = type == null ? (Value)parent : type;
+		
 		if (StringUtils.findNextWord(statement).equals(DISABLED_IDENTIFIER))
 		{
 			String remainder = statement.substring(DISABLED_IDENTIFIER.length() + 1).trim();
@@ -61,7 +69,7 @@ public class MutatorMethod extends PropertyMethod
 			{
 				MutatorMethod n = new MutatorMethod(parent, location);
 				n.setName(n.getParentField().getName());
-				n.setType(n.getParentField().getType());
+				n.setType(type.getType());
 				n.setDisabled(true);
 				
 				return n;
@@ -72,7 +80,7 @@ public class MutatorMethod extends PropertyMethod
 			MutatorMethod n = new MutatorMethod(parent, location);
 
 			n.setName(n.getParentField().getName());
-			n.setType(n.getParentField().getType());
+			n.setType(type);
 			n.setVisibility(n.getParentField().getVisibility());
 			
 			if (StringUtils.findNextNonWhitespaceChar(statement, IDENTIFIER.length()) == '(')
@@ -86,7 +94,7 @@ public class MutatorMethod extends PropertyMethod
 			}
 			else
 			{
-				n.addDefaultParameter();
+				n.addDefaultParameter(type);
 			}
 
 			return n;
@@ -95,9 +103,9 @@ public class MutatorMethod extends PropertyMethod
 		return null;
 	}
 	
-	private void addDefaultParameter()
+	private void addDefaultParameter(Value type)
 	{
-		Parameter p = Parameter.decodeStatement(this, getParentField().generateNovaType() + " " + PARAMETER_NAME, getLocationIn().asNew(), true);
+		Parameter p = Parameter.decodeStatement(this, type.generateNovaType() + " " + PARAMETER_NAME, getLocationIn().asNew(), true);
 		getParentField().cloneTo(p, true, false);
 		p.setName(PARAMETER_NAME);
 		
