@@ -1,12 +1,14 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+
+import java.util.ArrayList;
 
 /**
  * LocalDeclaration extension that represents a Parameter of a method.
@@ -215,6 +217,10 @@ public class Parameter extends LocalDeclaration
 	{
 		String defaultValue = null;
 		
+		Parameter n = new Parameter(parent, location);
+		
+		statement = n.parseModifiers(statement);
+		
 		if (statement.contains("="))
 		{
 			defaultValue = statement.substring(statement.indexOf('=') + 1).trim();
@@ -235,16 +241,33 @@ public class Parameter extends LocalDeclaration
 			}
 		}
 		
-		Parameter n = null;
-		
 		if (node instanceof Parameter)
 		{
+			Parameter old = n;
+			
 			n = (Parameter)node;
+			
+			if (old.getAnnotations() != null)
+			{
+				for (Annotation a : old.getAnnotations())
+				{
+					n.addAnnotation(a);
+				}
+			}
 		}
 		else
 		{
-			n = new Parameter(parent, location);
+			ArrayList<Annotation> annotations = n.getAnnotations();
+			
 			node.cloneTo(n);
+			
+			if (annotations != null)
+			{
+				for (Annotation a : annotations)
+				{
+					n.addAnnotation(a);
+				}
+			}
 		}
 		
 		if (defaultValue != null)
