@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -158,6 +159,12 @@ public class Interface extends ClassDeclaration
 	}
 	
 	@Override
+	public void autoAddInterfaceFieldOverrides()
+	{
+		
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
@@ -165,6 +172,32 @@ public class Interface extends ClassDeclaration
 		if (result.skipValidation())
 		{
 			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			getFieldList().getPublicFieldList().forEachVisibleChild(n -> {
+				if (n.isUserMade())
+				{
+					FieldDeclaration field = (FieldDeclaration)n;
+					
+					if (field.getShorthandAccessor() == null && !field.containsAccessorMethod() && !field.containsMutatorMethod())
+					{
+						field.addDefaultAccessor();
+						
+//						if (field.getVisibility() == PUBLIC)
+//						{
+							field.addDefaultMutator();
+//						}
+//						else
+//						{
+//							field.addDisabledMutator();
+//						}
+						
+						field.setProperty("addedDefaultInterfaceFunctions", true);
+					}
+				}
+			});
 		}
 		
 		return result;
