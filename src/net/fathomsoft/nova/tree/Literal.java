@@ -457,7 +457,7 @@ public class Literal extends IValue implements Accessible
 			}
 			else if (getAncestorOfType(Return.class) != null)
 			{
-				getParentMethod().cloneTo(this, false, true);
+				getParentMethod().cloneTo(this, false, false);
 			}
 		}
 		
