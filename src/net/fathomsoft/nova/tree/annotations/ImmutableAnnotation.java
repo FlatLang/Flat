@@ -162,21 +162,24 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof ClassDeclaration)
+		if (!checkDuplicate(next, throwError))
 		{
-			
-		}
-		else
-		{
-			
-			
-			if (next instanceof VariableDeclaration)
+			if (next instanceof ClassDeclaration)
 			{
 				
 			}
 			else
 			{
-				return invalidApplication(next, throwError);
+				
+				
+				if (next instanceof VariableDeclaration)
+				{
+					
+				}
+				else
+				{
+					return invalidApplication(next, throwError);
+				}
 			}
 		}
 		

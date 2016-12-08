@@ -42,17 +42,20 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+		if (!checkDuplicate(next, throwError))
 		{
-			return true;
-		}
-		else if (next instanceof InstanceDeclaration)
-		{
-			((InstanceDeclaration)next).setStatic(true);
-		}
-		else
-		{
-			return invalidApplication(next, throwError);
+			if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+			{
+				return true;
+			}
+			else if (next instanceof InstanceDeclaration)
+			{
+				((InstanceDeclaration)next).setStatic(true);
+			}
+			else
+			{
+				return invalidApplication(next, throwError);
+			}
 		}
 		
 		return super.onApplied(next, throwError);

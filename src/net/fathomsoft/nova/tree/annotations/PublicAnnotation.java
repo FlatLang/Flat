@@ -40,16 +40,14 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next.containsAnnotationOfType(getClass(), false, false))
+		if (!checkDuplicate(next, throwError))
 		{
-			return duplicateApplication(next, throwError);
-		}
-		
-		if (next instanceof InstanceDeclaration)
-		{
-			((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
-			
-			return true;
+			if (next instanceof InstanceDeclaration)
+			{
+				((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
+				
+				return true;
+			}
 		}
 		
 		return super.onApplied(next, throwError);

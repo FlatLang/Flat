@@ -42,15 +42,18 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+		if (!checkDuplicate(next, throwError))
 		{
-			return true;
-		}
-		else if (next instanceof FieldDeclaration)
-		{
-			((FieldDeclaration)next).setVisibility(FieldDeclaration.VISIBLE);
-			
-			return true;
+			if (next instanceof PropertyMethod || next instanceof ArrayOverloadMethod)
+			{
+				return true;
+			}
+			else if (next instanceof FieldDeclaration)
+			{
+				((FieldDeclaration)next).setVisibility(FieldDeclaration.VISIBLE);
+				
+				return true;
+			}
 		}
 		
 		return super.onApplied(next, throwError);

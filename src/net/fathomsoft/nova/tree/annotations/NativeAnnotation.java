@@ -26,6 +26,8 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public boolean onApplied(Node appliedTo, boolean throwError)
 	{
+		checkDuplicate(appliedTo, throwError);
+		
 		return appliedTo instanceof VariableDeclaration || appliedTo instanceof Assignment || super.onApplied(appliedTo, throwError);
 	}
 	

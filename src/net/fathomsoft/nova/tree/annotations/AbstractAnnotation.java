@@ -41,17 +41,20 @@ public class AbstractAnnotation extends ApplicableAnnotationBase implements Modi
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof ClassDeclaration)
+		if (!checkDuplicate(next, throwError))
 		{
-			((ClassDeclaration)next).abstractValue = true;
-		}
-		else if (next instanceof NovaMethodDeclaration)
-		{
-			// Abstract method parser will detect this annotation
-		}
-		else
-		{
-			return super.onApplied(next, throwError);
+			if (next instanceof ClassDeclaration)
+			{
+				((ClassDeclaration)next).abstractValue = true;
+			}
+			else if (next instanceof NovaMethodDeclaration)
+			{
+				// Abstract method parser will detect this annotation
+			}
+			else
+			{
+				return super.onApplied(next, throwError);
+			}
 		}
 		
 		return true;

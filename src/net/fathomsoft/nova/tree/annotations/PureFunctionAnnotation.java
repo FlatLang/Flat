@@ -330,16 +330,19 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof MethodDeclaration ||
-			next instanceof ArrayBracketOverload ||
-			next instanceof ClosureDeclaration ||
-			next instanceof FieldDeclaration)
+		if (!checkDuplicate(next, throwError))
 		{
-			// valid
-		}
-		else
-		{
-			return invalidApplication(next, throwError);
+			if (next instanceof MethodDeclaration ||
+				next instanceof ArrayBracketOverload ||
+				next instanceof ClosureDeclaration ||
+				next instanceof FieldDeclaration)
+			{
+				// valid
+			}
+			else
+			{
+				return invalidApplication(next, throwError);
+			}
 		}
 		
 		return super.onApplied(next, throwError);

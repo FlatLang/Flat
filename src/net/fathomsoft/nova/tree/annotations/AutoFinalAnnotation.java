@@ -57,13 +57,16 @@ public class AutoFinalAnnotation extends Annotation
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof ClassDeclaration || next.containsScope())
+		if (!checkDuplicate(next, throwError))
 		{
+			if (next instanceof ClassDeclaration || next.containsScope())
+			{
 //			((InstanceDeclaration)next).setStatic(true);
-		}
-		else
-		{
-			return invalidApplication(next, throwError);
+			}
+			else
+			{
+				return invalidApplication(next, throwError);
+			}
 		}
 		
 		return super.onApplied(next, throwError);

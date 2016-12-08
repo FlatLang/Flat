@@ -70,13 +70,16 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof VariableDeclaration)
+		if (!checkDuplicate(next, throwError))
 		{
+			if (next instanceof VariableDeclaration)
+			{
 //			((VariableDeclaration)next).isFinal = true;
-		}
-		else
-		{
-			return invalidApplication(next, throwError);
+			}
+			else
+			{
+				return invalidApplication(next, throwError);
+			}
 		}
 		
 		return super.onApplied(next, throwError);

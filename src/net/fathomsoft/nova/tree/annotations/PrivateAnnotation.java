@@ -40,11 +40,14 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
-		if (next instanceof InstanceDeclaration)
+		if (!checkDuplicate(next, throwError))
 		{
-			((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
-			
-			return true;
+			if (next instanceof InstanceDeclaration)
+			{
+				((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
+				
+				return true;
+			}
 		}
 		
 		return super.onApplied(next, throwError);
