@@ -452,6 +452,18 @@ public class Annotation extends Node
 		return false;
 	}
 	
+	public boolean checkDuplicate(Node next, boolean throwError)
+	{
+		if (next.containsAnnotationOfType(getClass(), false, false))
+		{
+			duplicateApplication(next, throwError);
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
 	public boolean invalidApplication(Node node, boolean require)
 	{
 		if (require)
