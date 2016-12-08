@@ -34,7 +34,10 @@ public interface ShorthandAccessible
 	
 	boolean containsAccessorMethod();
 	boolean containsMutatorMethod();
+	void addDisabledAccessor();
 	void addDisabledMutator();
+	NovaMethodDeclaration addDefaultAccessor();
+	NovaMethodDeclaration addDefaultMutator();
 	void addChild(Node n);
 	Location getLocationIn();
 	
@@ -46,13 +49,23 @@ public interface ShorthandAccessible
 	
 	default BodyMethodDeclaration decodeMutator()
 	{
-		return MutatorMethod.decodeStatement((Node)this, "set", getLocationIn(), true)
+		return decodeMutator(null);
+	}
+	
+	default BodyMethodDeclaration decodeMutator(Value context)
+	{
+		return MutatorMethod.decodeStatement((Node)this, "set", getLocationIn(), true, context)
 			.cloneTo(new ShorthandMutator((Node)this, getLocationIn()));
 	}
 	
 	void setType(Value value);
 	
 	default void decodeShorthandAccessor()
+	{
+		decodeShorthandAccessor(null);
+	}
+	
+	default void decodeShorthandAccessor(Value context)
 	{
 		String accessorValue = getShorthandAccessor();
 		boolean twoWayBinding = isTwoWayBinding();
@@ -91,7 +104,7 @@ public interface ShorthandAccessible
 					SyntaxMessage.error("Cannot have both a mutator method and two-way shorthand value assignment to a field declaration", (Node)this);
 				}
 				
-				BodyMethodDeclaration m = decodeMutator();
+				BodyMethodDeclaration m = decodeMutator(context);
 				
 				addChild(m);
 				
