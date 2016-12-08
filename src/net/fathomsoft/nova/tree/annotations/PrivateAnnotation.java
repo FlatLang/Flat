@@ -77,7 +77,7 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 			}
 			else if (next instanceof InstanceDeclaration)
 			{
-				((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PUBLIC);
+				((InstanceDeclaration)next).setVisibility(InstanceDeclaration.PRIVATE);
 				
 				return true;
 			}
