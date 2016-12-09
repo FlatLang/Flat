@@ -67,6 +67,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		GenericTypeParameterList declaration     = new GenericTypeParameterList(this, Location.INVALID);
 		TypeList<InterfaceImplementation> interfaces      = new TypeList<InterfaceImplementation>(this, locationIn);
 		TypeList<ExternalCodeBlock>       blocks          = new TypeList<>(this, locationIn);
+		TypeList<ClosureVariable>         closures        = new TypeList<>(this, locationIn);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
@@ -82,6 +83,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(declaration, this);
 		addChild(interfaces, this);
 		addChild(blocks, this);
+		addChild(closures, this);
 	}
 	
 	@Override
@@ -96,7 +98,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 14;
+		return super.getNumDefaultChildren() + 15;
 	}
 	
 	/**
@@ -268,6 +270,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	public TypeList<ExternalCodeBlock> getExternalCodeBlocks()
 	{
 		return (TypeList<ExternalCodeBlock>)getChild(super.getNumDefaultChildren() + 13);
+	}
+	
+	public TypeList<ClosureVariable> getClosureVariables()
+	{
+		return (TypeList<ClosureVariable>)getChild(super.getNumDefaultChildren() + 14);
 	}
 	
 	/**
@@ -1612,6 +1619,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				getPropertyMethodList().addChild(child);
 			}
+//			else if (child instanceof ClosureVariable)
+//			{
+//				getFieldList().addChild(child);
+//			}
 			else
 			{
 				getMethodList().addChild(child);
@@ -1659,6 +1670,36 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			SyntaxMessage.error("Unexpected node type of '" + child.getClass().getSimpleName() + "' within class " + getName(), child);
 		}
+	}
+	
+	public ClosureVariable[] getPublicClosureVariables()
+	{
+		ArrayList<ClosureVariable> vars = new ArrayList<>();
+		
+		for (ClosureVariable c : getClosureVariables())
+		{
+			if (c.visibility != InstanceDeclaration.PRIVATE)
+			{
+				vars.add(c);
+			}
+		}
+		
+		return vars.toArray(new ClosureVariable[0]);
+	}
+	
+	public ClosureVariable[] getPrivateClosureVariables()
+	{
+		ArrayList<ClosureVariable> vars = new ArrayList<>();
+		
+		for (ClosureVariable c : getClosureVariables())
+		{
+			if (c.visibility == InstanceDeclaration.PRIVATE)
+			{
+				vars.add(c);
+			}
+		}
+		
+		return vars.toArray(new ClosureVariable[0]);
 	}
 	
 	/**
@@ -1808,7 +1849,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public MethodDeclaration[] getVisibleNativeMethods()
 	{
-		ArrayList<MethodDeclaration> methods = new ArrayList<MethodDeclaration>();
+		ArrayList<MethodDeclaration> methods = new ArrayList<>();
 		
 		MethodList lists[] = new MethodList[] { getMethodList(), getConstructorList() };
 		
@@ -1816,7 +1857,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			for (int i = 0; i < list.getNumVisibleChildren(); i++)
 			{
-				MethodDeclaration method = (MethodDeclaration)list.getVisibleChild(i);
+				MethodDeclaration method = list.getVisibleChild(i);
 				
 				if (!method.isExternal() && !(method instanceof AssignmentMethod) &&
 						!(method instanceof InitializationMethod) &&
