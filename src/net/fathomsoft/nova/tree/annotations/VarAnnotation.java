@@ -7,6 +7,20 @@ import net.fathomsoft.nova.util.Location;
 
 public class VarAnnotation extends Annotation implements ModifierAnnotation
 {
+	public String aliasUsed;
+	
+	@Override
+	public String getAliasUsed()
+	{
+		return aliasUsed;
+	}
+	
+	@Override
+	public void setAliasUsed(String aliasUsed)
+	{
+		this.aliasUsed = aliasUsed;
+	}
+	
 	public VarAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);

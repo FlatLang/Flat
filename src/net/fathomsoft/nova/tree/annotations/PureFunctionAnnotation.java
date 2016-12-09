@@ -16,6 +16,20 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
 {
 	public boolean validated;
 	
+	public String aliasUsed;
+	
+	@Override
+	public String getAliasUsed()
+	{
+		return aliasUsed;
+	}
+	
+	@Override
+	public void setAliasUsed(String aliasUsed)
+	{
+		this.aliasUsed = aliasUsed;
+	}
+	
 	public PureFunctionAnnotation(Node temporaryParent, Location locationIn)
 	{
 		this(temporaryParent, locationIn, false);

@@ -16,6 +16,20 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	
 	public NovaMethodDeclaration toImmutable;
 	
+	public String aliasUsed;
+	
+	@Override
+	public String getAliasUsed()
+	{
+		return aliasUsed;
+	}
+	
+	@Override
+	public void setAliasUsed(String aliasUsed)
+	{
+		this.aliasUsed = aliasUsed;
+	}
+	
 	public ImmutableAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);

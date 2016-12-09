@@ -9,6 +9,20 @@ import net.fathomsoft.nova.util.Location;
 
 public class PublicAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier
 {
+	public String aliasUsed;
+	
+	@Override
+	public String getAliasUsed()
+	{
+		return aliasUsed;
+	}
+	
+	@Override
+	public void setAliasUsed(String aliasUsed)
+	{
+		this.aliasUsed = aliasUsed;
+	}
+	
 	public PublicAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);

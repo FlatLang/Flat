@@ -17,6 +17,20 @@ import net.fathomsoft.nova.util.StringUtils;
  */
 public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 {
+	public String aliasUsed;
+	
+	@Override
+	public String getAliasUsed()
+	{
+		return aliasUsed;
+	}
+	
+	@Override
+	public void setAliasUsed(String aliasUsed)
+	{
+		this.aliasUsed = aliasUsed;
+	}
+	
 	public boolean fail;
 	
 	public String message;

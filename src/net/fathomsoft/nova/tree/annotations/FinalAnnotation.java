@@ -8,6 +8,20 @@ import net.fathomsoft.nova.util.Location;
 
 public class FinalAnnotation extends Annotation implements ModifierAnnotation
 {
+	public String aliasUsed;
+	
+	@Override
+	public String getAliasUsed()
+	{
+		return aliasUsed;
+	}
+	
+	@Override
+	public void setAliasUsed(String aliasUsed)
+	{
+		this.aliasUsed = aliasUsed;
+	}
+	
 	public FinalAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
