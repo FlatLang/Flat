@@ -6,18 +6,24 @@ public interface ModifierAnnotation
 {
 	String[] getAliases();
 	
+	String getAliasUsed();
+	
+	void setAliasUsed(String aliasUsed);
+	
 	default void onAdded(Node to)
 	{
-		apply(to);
+		apply(to, getAliasUsed());
 	}
 	
-	default boolean apply(Node to)
+	default boolean apply(Node to, String alias)
 	{
 		if (to != ((Annotation)this).getParent())
 		{
 			if (onAppliedAsModifier(to, false))
 			{
 				to.addAnnotation((Annotation)this);
+				
+				setAliasUsed(alias);
 				
 				return true;
 			}
