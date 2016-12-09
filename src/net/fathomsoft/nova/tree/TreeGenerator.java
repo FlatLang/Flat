@@ -469,7 +469,7 @@ public class TreeGenerator implements Runnable
 			{
 				for (ModifierAnnotation mod : modifiers)
 				{
-					mod.apply(node);
+					mod.apply(node, mod.getAliasUsed());
 				}
 			}
 			

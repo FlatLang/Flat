@@ -1283,7 +1283,7 @@ public abstract class Node implements Listenable, Annotatable
 			{
 				ModifierAnnotation annotation = (ModifierAnnotation)c.newInstance(null, null);
 				
-				return annotation.apply(this);
+				return annotation.apply(this, modifier);
 			}
 			catch (InstantiationException e)
 			{
