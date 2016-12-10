@@ -67,7 +67,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		GenericTypeParameterList declaration     = new GenericTypeParameterList(this, Location.INVALID);
 		TypeList<InterfaceImplementation> interfaces      = new TypeList<InterfaceImplementation>(this, locationIn);
 		TypeList<ExternalCodeBlock>       blocks          = new TypeList<>(this, locationIn);
-		TypeList<ClosureVariable>         closures        = new TypeList<>(this, locationIn);
 		
 		addChild(fields, this);
 		addChild(constructors, this);
@@ -83,7 +82,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(declaration, this);
 		addChild(interfaces, this);
 		addChild(blocks, this);
-		addChild(closures, this);
 	}
 	
 	@Override
@@ -98,7 +96,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 15;
+		return super.getNumDefaultChildren() + 14;
 	}
 	
 	/**
@@ -270,11 +268,6 @@ public class ClassDeclaration extends InstanceDeclaration
 	public TypeList<ExternalCodeBlock> getExternalCodeBlocks()
 	{
 		return (TypeList<ExternalCodeBlock>)getChild(super.getNumDefaultChildren() + 13);
-	}
-	
-	public TypeList<ClosureVariable> getClosureVariables()
-	{
-		return (TypeList<ClosureVariable>)getChild(super.getNumDefaultChildren() + 14);
 	}
 	
 	/**
@@ -1676,11 +1669,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		ArrayList<ClosureVariable> vars = new ArrayList<>();
 		
-		for (ClosureVariable c : getClosureVariables())
+		for (MethodDeclaration m : getMethodList())
 		{
-			if (c.visibility != InstanceDeclaration.PRIVATE)
+			if (m instanceof ClosureVariable && m.getVisibility() != InstanceDeclaration.PRIVATE)
 			{
-				vars.add(c);
+				vars.add((ClosureVariable)m);
 			}
 		}
 		
@@ -1691,15 +1684,28 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		ArrayList<ClosureVariable> vars = new ArrayList<>();
 		
-		for (ClosureVariable c : getClosureVariables())
+		for (MethodDeclaration m : getMethodList())
 		{
-			if (c.visibility == InstanceDeclaration.PRIVATE)
+			if (m instanceof ClosureVariable && m.getVisibility() == InstanceDeclaration.PRIVATE)
 			{
-				vars.add(c);
+				vars.add((ClosureVariable)m);
 			}
 		}
 		
 		return vars.toArray(new ClosureVariable[0]);
+	}
+	
+	public ClosureVariable getClosureVariable(String name)
+	{
+		for (MethodDeclaration m : getMethodList())
+		{
+			if (m instanceof ClosureVariable && m.getName().equals(name))
+			{
+				return (ClosureVariable)m;
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -1861,6 +1867,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (!method.isExternal() && !(method instanceof AssignmentMethod) &&
 						!(method instanceof InitializationMethod) &&
+						!(method instanceof ClosureVariable) &&
 						method.getVisibility() == PUBLIC && method.getRootDeclaration().getParentClass() == this)
 				{
 					methods.add(method);
@@ -2406,9 +2413,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		getFieldList().forEachChild(fields -> {
 			fields.forEachChild(f -> {
-				FieldDeclaration field = (FieldDeclaration)f;
-				
-				field.decodeShorthandAccessor();
+				if (f instanceof ShorthandAccessible)
+				{
+					ShorthandAccessible field = (ShorthandAccessible)f;
+					
+					field.decodeShorthandAccessor();
+				}
 			});
 		});
 	}
@@ -2508,12 +2518,15 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		getFieldList().forEachChild(fields -> {
 			fields.forEachChild(f -> {
-				FieldDeclaration field = (FieldDeclaration)f;
-				
-				if (field.getAccessorMethod() != null)
-					field.getAccessorMethod().checkOverrides();
-				if (field.getMutatorMethod() != null)
-					field.getMutatorMethod().checkOverrides();
+				if (f instanceof FieldDeclaration)
+				{
+					FieldDeclaration field = (FieldDeclaration)f;
+					
+					if (field.getAccessorMethod() != null)
+						field.getAccessorMethod().checkOverrides();
+					if (field.getMutatorMethod() != null)
+						field.getMutatorMethod().checkOverrides();
+				}
 			});
 		});
 		
