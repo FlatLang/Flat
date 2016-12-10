@@ -3,16 +3,10 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.error.UnimplementedOperationException;
-import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.*;
-
-import java.util.Arrays;
-import java.util.function.Consumer;
 
 /**
  * Identifier extension that represents the use of a variable
@@ -52,11 +46,6 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		
 		parameterList.getObjectReference().setType(null, true, false, false);
 		parameterList.getObjectReference().setDataType(POINTER);
-	}
-	
-	public String getContextName()
-	{
-		return getName() + "_" + ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME;
 	}
 	
 	public void register()
@@ -412,7 +401,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	}
 	
 	@Override
-	public String toString()
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		String s = getName() + "(" + getParameterList().generateNovaInput() + ")";
 		
@@ -421,6 +410,11 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 			s += " -> " + generateNovaType();
 		}
 		
-		return s;
+		if (defaultValueString != null)
+		{
+			s += " = " + defaultValueString;
+		}
+		
+		return builder.append(s);
 	}
 }
