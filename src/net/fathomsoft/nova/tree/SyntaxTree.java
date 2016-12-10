@@ -1351,7 +1351,7 @@ public class SyntaxTree
 	 * @return The found Field. If the Field was not found, null is
 	 * 		returned.
 	 */
-	private static FieldDeclaration checkForVariableAccess(Node parent, String statement, boolean validateAccess)
+	private static InstanceDeclaration checkForVariableAccess(Node parent, String statement, boolean validateAccess)
 	{
 		if (!(parent instanceof Accessible) || !((Accessible)parent).canAccess())
 		{
@@ -1375,13 +1375,18 @@ public class SyntaxTree
 		
 		if (id != null)
 		{
-			Function<ClassDeclaration, FieldDeclaration> getField = (clazz) -> {
+			Function<ClassDeclaration, InstanceDeclaration> getField = (clazz) -> {
 				if (clazz == null)
 				{
 					return null;
 				}
 				
-				FieldDeclaration field = clazz.getField(statement);
+				InstanceDeclaration field = clazz.getField(statement);
+				
+				if (field == null)
+				{
+					field = clazz.getClosureVariable(statement);
+				}
 				
 				if (validateAccess)
 				{
@@ -1393,7 +1398,7 @@ public class SyntaxTree
 			
 			for (ClassDeclaration c : id.toValue().getExtensionClasses())
 			{
-				FieldDeclaration field = getField.apply(c);
+				InstanceDeclaration field = getField.apply(c);
 				
 				if (field != null)
 				{
@@ -1407,7 +1412,7 @@ public class SyntaxTree
 		return null;
 	}
 	
-	private static FieldDeclaration validateFieldAccess(Node parent, ClassDeclaration accessingClass, FieldDeclaration field)
+	private static InstanceDeclaration validateFieldAccess(Node parent, ClassDeclaration accessingClass, InstanceDeclaration field)
 	{
 		if (field != null)
 		{
