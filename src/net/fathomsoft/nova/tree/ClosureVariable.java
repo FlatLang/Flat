@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.annotations.VarAnnotation;
@@ -61,6 +62,17 @@ public class ClosureVariable extends NovaMethodDeclaration
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			getParameterList().getReferenceParameter().setTypeValue("void");
+		}
+		
+		return super.validate(phase);
 	}
 	
 	/**
