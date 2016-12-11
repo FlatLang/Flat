@@ -102,33 +102,36 @@ public class Interface extends ClassDeclaration
 	{
 		MethodDeclaration[] methods = super.getMethods(methodName, filter);
 		
-		ClassDeclaration obj = getExtendedClass().getTypeClass();//getProgram().getClassDeclaration("nova/Object");
-		
-		for (Interface i : obj.getImplementedInterfaces())
+		if (filter.checkAncestor)
 		{
-			if (i == this)
-			{
-				return methods;
-			}
-		}
-		
-		MethodDeclaration[] extra = obj.getMethods(methodName, filter);
-		
-		if (extra.length > 0)
-		{
-			ArrayList<MethodDeclaration> list = new ArrayList<>();
+			ClassDeclaration obj = getExtendedClass().getTypeClass();//getProgram().getClassDeclaration("nova/Object");
 			
-			for (MethodDeclaration method : methods)
+			for (Interface i : obj.getImplementedInterfaces())
 			{
-				list.add(method);
+				if (i == this)
+				{
+					return methods;
+				}
 			}
 			
-			for (MethodDeclaration method : extra)
-			{
-				list.add(method);
-			}
+			MethodDeclaration[] extra = obj.getMethods(methodName, filter);
 			
-			return list.toArray(new MethodDeclaration[0]);
+			if (extra.length > 0)
+			{
+				ArrayList<MethodDeclaration> list = new ArrayList<>();
+				
+				for (MethodDeclaration method : methods)
+				{
+					list.add(method);
+				}
+				
+				for (MethodDeclaration method : extra)
+				{
+					list.add(method);
+				}
+				
+				return list.toArray(new MethodDeclaration[0]);
+			}
 		}
 		
 		return methods;
