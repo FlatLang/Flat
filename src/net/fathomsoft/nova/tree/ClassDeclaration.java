@@ -1467,10 +1467,15 @@ public class ClassDeclaration extends InstanceDeclaration
 			addMethods(output, getExtendedClassDeclaration().getMethods(methodName, filter));
 		}
 		
-		for (Interface inter : getImplementedInterfaces())
+		boolean before = filter.checkAncestor;
+		filter.checkAncestor = false;
+		
+		for (Interface inter : getImplementedInterfaces(false))
 		{
 			addMethods(output, inter.getMethods(methodName, filter));
 		}
+		
+		filter.checkAncestor = before;
 		
 		return output.toArray(new MethodDeclaration[0]);
 	}
