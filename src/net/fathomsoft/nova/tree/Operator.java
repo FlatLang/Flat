@@ -121,6 +121,18 @@ public class Operator extends IValue
 		updateType();
 	}
 	
+	public Interface getOperatorOverload()
+	{
+		switch (operator)
+		{
+			case "==": return (Interface)getProgram().getClassDeclaration("nova/operators/EqualsOperator");
+			case "+=": return (Interface)getProgram().getClassDeclaration("nova/operators/PlusEqualsOperator");
+			case "+": return (Interface)getProgram().getClassDeclaration("nova/operators/PlusOperator");
+			case "*": return (Interface)getProgram().getClassDeclaration("nova/operators/MultiplyOperator");
+			default: return null;
+		}
+	}
+	
 	public boolean isShorthand()
     {
         return stream(SHORTHAND_OPERATORS).anyMatch(x -> x.equals(operator));
