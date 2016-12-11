@@ -63,6 +63,7 @@ public class FileDeclaration extends Node
 			"nova/datastruct/list/IntRange",
 			"nova/thread/Thread",
 			"nova/thread/async/Async",
+			"nova/thread/async/Task",
 			"nova/gc/GC",
 			"nova/math/Math",
 			"nova/Object",
