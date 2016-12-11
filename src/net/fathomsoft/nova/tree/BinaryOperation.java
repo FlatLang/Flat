@@ -10,8 +10,11 @@ import net.fathomsoft.nova.tree.exceptionhandling.Throw;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.*;
 
-import java.util.regex.Matcher;
- 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 /**
  * Node extension that represents the use of a binary operator.
  * For example: "153 + 4 / 2" represents two binary operator nodes.
@@ -230,7 +233,7 @@ public class BinaryOperation extends IValue
 				n.getOperator().updateType();
 				n.setType(n.getOperator().getType());
 				
-				return n.optimizeConcatenation();
+				return n.optimizeOperation();
 			}
 			else
 			{
@@ -685,7 +688,7 @@ public class BinaryOperation extends IValue
 	 * @return The generated concatenation operation if generated. If not,
 	 * 		then the calling Node, BinaryOperation, is returned.
 	 */
-	private Value optimizeConcatenation()
+	private Value optimizeOperation()
 	{
 		if (getOperator().isShorthand())
 		{
@@ -708,77 +711,174 @@ public class BinaryOperation extends IValue
 			}
 		}
 		
-		if (getOperator().getOperator().equals("+"))
+		Interface overload = getOperator().getOperatorOverload();
+		
+		if (overload != null)
 		{
 			Value left = getLeftOperand();
 			Value right = getRightOperand();
-
-			boolean leftString = SyntaxUtils.isString(left);
-			boolean rightString = SyntaxUtils.isString(right);
-
-			if (leftString || rightString)
+			
+			if (overload.getName().equals("PlusOperator"))
 			{
-				Value nonString = null;
-
-				if (!leftString)
+				boolean leftString = SyntaxUtils.isString(left);
+				boolean rightString = SyntaxUtils.isString(right);
+	
+				if (leftString || rightString)
 				{
-					nonString = left;
-				}
-				else if (!rightString)
-				{
-					nonString = right;
-				}
-
-				if (nonString != null)
-				{
-					Value stringOutput = generateStringOutput(nonString);
-					
-					if (stringOutput == null)
-					{
-						return null;
-					}
-					
+					Value nonString = null;
+	
 					if (!leftString)
 					{
-						left = stringOutput;
+						nonString = left;
 					}
 					else if (!rightString)
 					{
-						right = stringOutput;
+						nonString = right;
 					}
+	
+					if (nonString != null)
+					{
+						Value stringOutput = generateStringOutput(nonString);
+						
+						if (stringOutput == null)
+						{
+							return null;
+						}
+						
+						if (!leftString)
+						{
+							left = stringOutput;
+						}
+						else if (!rightString)
+						{
+							right = stringOutput;
+						}
+					}
+	
+					MethodCall concat = MethodCall.decodeStatement(left.getReturnedNode(), "plus(null)", Location.INVALID, true);
+					
+					((Accessible)left.getReturnedNode()).setAccessedNode(concat);
+					concat.getArgumentList().getVisibleChild(0).replaceWith(right);
+					
+					return left;
 				}
-
-				MethodCall concat = MethodCall.decodeStatement(left.getReturnedNode(), "concat(null)", Location.INVALID, true);
-				
-				((Accessible)left.getReturnedNode()).setAccessedNode(concat);
-				concat.getArgumentList().getVisibleChild(0).replaceWith(right);
-				
-				return left;
 			}
-		}
-		else if (getOperator().getOperator().equals("+="))
-		{
-			Value left = getLeftOperand();
-			Value right = getRightOperand();
-
-			boolean leftString = SyntaxUtils.isString(left);
-			boolean rightString = SyntaxUtils.isString(right);
-
-			if (leftString)
+			else if (overload.getName().equals("PlusEqualsOperator"))
 			{
-				if (!rightString)
+				boolean leftString = SyntaxUtils.isString(left);
+				boolean rightString = SyntaxUtils.isString(right);
+				
+				if (leftString)
 				{
-					right = generateStringOutput(right);
+					if (!rightString)
+					{
+						right = generateStringOutput(right);
+					}
+					
+					String statement = left.generateNovaInput() + " = " + left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
+					Assignment strConcat = Assignment.decodeStatement(getParent(), statement, left.getLocationIn(), false);
+					
+					return strConcat;
 				}
-
-				String statement = left.generateNovaInput() + " = " + left.generateNovaInput() + ".concat(" + right.generateNovaInput() + ")";
-				Assignment strConcat = Assignment.decodeStatement(getParent(), statement, left.getLocationIn(), false);
-
-				return strConcat;
+			}
+			
+			Value value = checkOperatorOverload(overload);
+			
+			if (value != null)
+			{
+				return value;
+			}
+			
+			if (overload.getName().equals("NotEqualToOperator"))
+			{
+				overload = (Interface)getProgram().getClassDeclaration("nova/operators/EqualsOperator");
+				
+				value = checkOperatorOverload(overload);
+				
+				if (value != null)
+				{
+					UnaryOperation operation = new UnaryOperation(getParent(), getLocationIn());
+					
+					operation.addChild(new Operator(value, value.getLocationIn(), "!"));
+					operation.addChild(value);
+					operation.setType("Bool");
+					
+					return operation;
+				}
 			}
 		}
 		
 		return this;
+	}
+	
+	public Value checkOperatorOverload(Interface overload)
+	{
+		Value left = getLeftOperand();
+		Value right = getRightOperand();
+		
+		Value leftReturned = left.getReturnedNode();
+		ClassDeclaration leftClass = leftReturned.getTypeClass();
+		ClassDeclaration objectClass = getProgram().getClassDeclaration("nova/Object");
+		
+		if (leftClass != null && !leftReturned.isPrimitive() && leftClass != objectClass)
+		{
+			if (leftClass.isOfType(overload))
+			{
+				NovaMethodDeclaration method = overload.getMethods()[0];
+				
+				if (!getParentMethod().getName().equals(method.getName()))
+				{
+					MethodDeclaration[] methods = leftClass.getMethods(method.getName());
+					
+					Stream<MethodDeclaration> validMethods = Arrays.stream(methods)
+						.filter(x -> x != method && x.getDeclaringClass() != objectClass && x.getParameterList().getNumParameters() == 1);
+					
+					validMethods = validMethods.sorted((o1, o2) -> o1.getDeclaringClass().getDistanceFrom(overload) - o2.getDeclaringClass().getDistanceFrom(overload));
+					
+					ArrayList<MethodDeclaration> list = validMethods.collect(Collectors.toCollection(ArrayList::new));
+					
+					if (list.size() > 0)
+					{
+						NovaMethodDeclaration validMethod = (NovaMethodDeclaration)list.get(0);
+						
+						//GenericTypeArgument arg = validMethod.getParameter(0).getGenericTypeParameter().getCorrespondingArgument(leftReturned);
+						Value required = validMethod.getParameter(0);
+						Value rightNode = right instanceof BinaryOperation ? ((BinaryOperation)right).getLeftOperand() : right;
+						
+						if (required != null && SyntaxUtils.isTypeCompatible(this, required, rightNode.getReturnedNode()))
+						{
+							MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(), validMethod.getName() + "(null)", leftReturned.getLocationIn(), true, true, validMethod);
+							
+							((Accessible)left.getReturnedNode()).setAccessedNode(call);
+							
+							if (right instanceof BinaryOperation)
+							{
+								rightNode.replaceWith(left);
+								
+								call.getArgumentList().getVisibleChild(0).replaceWith(rightNode);
+								
+								return right;
+							}
+							else
+							{
+								call.getArgumentList().getVisibleChild(0).replaceWith(right);
+								
+								return left;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		ClassDeclaration rightClass = right.getReturnedNode().getTypeClass();
+		
+		if (overload.getName().equals("EqualsOperator") && (leftClass != null && leftClass.isOfType("nova/String") || rightClass != null && rightClass.isOfType("nova/String")))
+		{
+			SyntaxMessage.warning("Object reference comparison done instead of String comparison for this operation", this);
+		}
+		
+		return  null;
 	}
 	
 	/**
