@@ -204,6 +204,14 @@ public class UnaryOperation extends IValue
 	}
 	
 	@Override
+	public boolean setType(String type)
+	{
+		getOperator().setType(type);
+		
+		return super.setType(type);
+	}
+	
+	@Override
 	public byte getDataType(boolean checkGeneric)
 	{
 		return getOperator().getDataType();
