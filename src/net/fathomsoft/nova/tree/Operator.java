@@ -96,7 +96,14 @@ public class Operator extends IValue
 	 */
 	public Operator(Node temporaryParent, Location locationIn)
 	{
+		this(temporaryParent, locationIn, null);
+	}
+	
+	public Operator(Node temporaryParent, Location locationIn, String operator)
+	{
 		super(temporaryParent, locationIn);
+		
+		this.operator = operator;
 	}
 	
 	/**
@@ -126,6 +133,7 @@ public class Operator extends IValue
 		switch (operator)
 		{
 			case "==": return (Interface)getProgram().getClassDeclaration("nova/operators/EqualsOperator");
+			case "!=": return (Interface)getProgram().getClassDeclaration("nova/operators/NotEqualToOperator");
 			case "+=": return (Interface)getProgram().getClassDeclaration("nova/operators/PlusEqualsOperator");
 			case "+": return (Interface)getProgram().getClassDeclaration("nova/operators/PlusOperator");
 			case "*": return (Interface)getProgram().getClassDeclaration("nova/operators/MultiplyOperator");
