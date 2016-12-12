@@ -2428,6 +2428,20 @@ public class ClassDeclaration extends InstanceDeclaration
 		});
 	}
 	
+	public void decodeFieldInitializations()
+	{
+		getFieldList().forEachChild(fields -> {
+			fields.forEachChild(f -> {
+				if (f instanceof FieldDeclaration)
+				{
+					FieldDeclaration field = (FieldDeclaration)f;
+					
+					field.decodeInitializationValue();
+				}
+			});
+		});
+	}
+	
 	private void addFieldsFromInterface(Interface i)
 	{
 		i.getFieldList().getPublicFieldList().forEachVisibleChild(n -> {

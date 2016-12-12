@@ -269,6 +269,7 @@ public class SyntaxTree
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkShorthandActionOverrides()));
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.autoAddInterfaceFieldOverrides()));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeFieldInitializations()));
 		}
 	}
 	
