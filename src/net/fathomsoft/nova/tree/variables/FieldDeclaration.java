@@ -442,59 +442,6 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			if (initializationValue != null)
-			{
-				Node[] parents = new Node[] { null };
-				
-				ClassDeclaration[] classes = new ClassDeclaration[] { getParentClass() };
-				
-				if (isStatic())
-				{
-					parents[0] = getParentClass().getStaticAssignmentBlock();
-				}
-				else
-				{
-					if (getParentClass() instanceof Interface)
-					{
-						Interface i = (Interface)getParentClass();
-						
-						ArrayList<Node> tempParents = new ArrayList<>();
-						ArrayList<ClassDeclaration> temp = new ArrayList<>();
-						
-						for (ClassDeclaration c : i.implementingClasses)
-						{
-							if (!c.containsField(getName(), false))
-							{
-								temp.add(c);
-								tempParents.add(c.getAssignmentMethodNode());
-							}
-						}
-						
-						classes = temp.toArray(new ClassDeclaration[0]);
-						parents = tempParents.toArray(new Node[0]);
-					}
-					else
-					{
-						parents[0] = getParentClass().getAssignmentMethodNode();
-					}
-				}
-				
-				if (parents.length > 0)
-				{
-					Assignment assignment = Assignment.decodeStatement(parents[0], getName() + " = " + initializationValue, getLocationIn(), true);
-					
-					for (int i = 0; i < classes.length; i++)
-					{
-						if (i > 0)
-						{
-							assignment = assignment.clone(parents[i], getLocationIn(), true, true);
-						}
-						
-						classes[i].addFieldInitialization(assignment);
-					}
-				}
-			}
-			
 			//decodeShorthandAccessor();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
@@ -510,6 +457,67 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		}
 		
 		return result;
+	}
+	
+	public void decodeInitializationValue()
+	{
+		if (initializationValue != null)
+		{
+			Node[] parents = new Node[] { null };
+			
+			ClassDeclaration[] classes = new ClassDeclaration[] { getParentClass() };
+			
+			if (isStatic())
+			{
+				parents[0] = getParentClass().getStaticAssignmentBlock();
+			}
+			else
+			{
+				if (getParentClass() instanceof Interface)
+				{
+					Interface i = (Interface)getParentClass();
+					
+					ArrayList<Node> tempParents = new ArrayList<>();
+					ArrayList<ClassDeclaration> temp = new ArrayList<>();
+					
+					for (ClassDeclaration c : i.implementingClasses)
+					{
+						if (!c.containsField(getName(), false))
+						{
+							temp.add(c);
+							tempParents.add(c.getAssignmentMethodNode());
+						}
+					}
+					
+					classes = temp.toArray(new ClassDeclaration[0]);
+					parents = tempParents.toArray(new Node[0]);
+				}
+				else
+				{
+					parents[0] = getParentClass().getAssignmentMethodNode();
+				}
+			}
+			
+			if (parents.length > 0)
+			{
+				Assignment assignment = Assignment.decodeStatement(parents[0], getName() + " = " + initializationValue, getLocationIn(), true);
+				
+				if (assignment != null)
+				{
+					assignment.onAfterDecoded();
+					
+					for (int i = 0; i < classes.length; i++)
+					{
+						if (i > 0)
+						{
+							assignment = assignment.clone(parents[i], getLocationIn(), true, true);
+						}
+						
+						classes[i].addFieldInitialization(assignment);
+					}
+				}
+			}
+		}
 	}
 	
 	/**
