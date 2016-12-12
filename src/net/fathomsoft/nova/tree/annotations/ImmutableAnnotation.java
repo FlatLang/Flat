@@ -6,12 +6,15 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 public class ImmutableAnnotation extends Annotation implements ModifierAnnotation
 {
+	private boolean searched = false;
+	
 	public ClassDeclaration mutableClass;
 	
 	public NovaMethodDeclaration toImmutable;
@@ -96,43 +99,57 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 		{
 			
 		}
-		else
+		else if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			if (next instanceof VariableDeclaration)
+			searchProperties(next);
+		}
+		
+		return super.onNextStatementDecoded(next);
+	}
+	
+	private void searchProperties(Node next)
+	{
+		if (searched) return;
+		
+		searched = true;
+		
+		if (next instanceof VariableDeclaration)
+		{
+			VariableDeclaration declaration = (VariableDeclaration)next;
+			
+			ClassDeclaration mutableClass = declaration.getTypeClass();
+			ClassDeclaration immutableClass = null;
+			
+			if (mutableClass != null && !mutableClass.isImmutable())
 			{
-				VariableDeclaration declaration = ((VariableDeclaration)next);
+				immutableClass = getImmutableClass();
+				this.mutableClass = mutableClass;
 				
-				ClassDeclaration mutableClass = declaration.getTypeClass();
-				ClassDeclaration immutableClass = null;
+				MethodDeclaration[] methods = mutableClass.getMethods("toImmutable");
 				
-				if (mutableClass != null && !mutableClass.isImmutable())
-				{
-					immutableClass = getImmutableClass();
-					this.mutableClass = mutableClass;
-					
-					MethodDeclaration[] methods = mutableClass.getMethods("toImmutable");
-					
-					Optional<MethodDeclaration> method = Arrays.stream(methods).filter(x -> {
-						for (Parameter p : x.getParameterList())
+				Optional<MethodDeclaration> method = Arrays.stream(methods).filter(x -> {
+					for (Parameter p : x.getParameterList())
+					{
+						if (!p.isOptional())
 						{
-							if (!p.isOptional())
-							{
-								return false;
-							}
+							return false;
 						}
-						
-						return true;
-					}).findFirst();
-					
-					if (method.isPresent())
-					{
-						toImmutable = (NovaMethodDeclaration)method.get();
-					}
-					else if (parameters.containsKey("className"))
-					{
-						SyntaxMessage.error("Immutable class '" + immutableClass.getClassLocation() + "' must contain a toImmutable function with 0 required arguments", this);
 					}
 					
+					return true;
+				}).findFirst();
+				
+				if (method.isPresent())
+				{
+					toImmutable = (NovaMethodDeclaration)method.get();
+				}
+				else if (parameters.containsKey("className"))
+				{
+					SyntaxMessage.error("Immutable class '" + immutableClass.getClassLocation() + "' must contain a toImmutable function with 0 required arguments", this);
+				}
+				
+				if (!parameters.containsKey("className"))
+				{
 					if (immutableClass != null)
 					{
 						declaration.setType(immutableClass.getName());
@@ -144,8 +161,6 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 				}
 			}
 		}
-		
-		return super.onNextStatementDecoded(next);
 	}
 	
 	public ClassDeclaration getImmutableClass()
@@ -171,11 +186,14 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	{
 		if (toImmutable != null)
 		{
-			MethodCall call = MethodCall.decodeStatement(assignment.getReturnedNode(), "toImmutable()", assignment.getLocationIn(), true, true, toImmutable);
-			
-			if (call != null)
+			if (!SyntaxUtils.isTypeCompatible(assignment, toImmutable, assignment.getReturnedNode()))
 			{
-				((Accessible)assignment.getReturnedNode()).setAccessedNode(call);
+				MethodCall call = MethodCall.decodeStatement(assignment.getReturnedNode(), "toImmutable()", assignment.getLocationIn(), true, true, toImmutable);
+				
+				if (call != null)
+				{
+					((Accessible)assignment.getReturnedNode()).setAccessedNode(call);
+				}
 			}
 		}
 	}
@@ -217,7 +235,11 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			searchProperties(getParent());
+		}
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			Node node = getParent();
 			
