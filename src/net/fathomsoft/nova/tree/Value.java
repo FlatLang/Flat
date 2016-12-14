@@ -968,7 +968,10 @@ public abstract class Value extends Node implements AbstractValue
 		
 		replaceWith(operation);
 		
-		operation.getLeftOperand().replaceWith(this);
+		Priority p = new Priority(getParent(), getLocationIn());
+		p.addChild(this);
+		
+		operation.getLeftOperand().replaceWith(p);
 		
 		return operation;
 	}
