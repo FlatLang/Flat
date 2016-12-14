@@ -125,6 +125,8 @@ public class TernaryOperation extends IValue implements Accessible
 					return null;
 				}
 				
+				condition.onAfterDecoded();
+				
 				String trueValueString = statement.substring(questionMarkIndex + 1, colonIndex).trim();
 				
 				Value trueValue = null;
