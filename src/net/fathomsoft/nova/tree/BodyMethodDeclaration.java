@@ -100,6 +100,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 			
 			method.cloneTo(n);
 			n.setLocationIn(location);
+			n.uniqueID = 1;
 			
 			for (Parameter p : n.getParameterList().getOptionalParameters())
 			{
