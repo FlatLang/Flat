@@ -96,7 +96,7 @@ public class Assignment extends Value
 	 */
 	public Accessible getAssignee()
 	{
-		return (Accessible)getAssigneeNode();
+		return getAssigneeNode() instanceof Accessible ? (Accessible)getAssigneeNode() : null;
 	}
 	
 	public Value getAssignedNodeValue()
@@ -785,12 +785,24 @@ public class Assignment extends Value
 	{
 		Node scopeNode = getParent().getAncestorWithScope();
 		
+		Node original = scopeNode;
+		
+		if (scopeNode instanceof IfStatement && scopeNode.isDecoding())
+		{
+			scopeNode = scopeNode.getParent().getAncestorWithScope();
+		}
+		
 		scopeNode.getScope().addChild(var);
 		
 		Location newLoc = new Location(getLocationIn());
 		Variable newVar = var.generateUsableVariable(this, newLoc);
 		
 		var.setLocationIn(getLocationIn());
+		
+		if (scopeNode != original)
+		{
+			((LocalDeclaration)var).setScopeID(original.getScope().id);
+		}
 		
 		return newVar;
 	}
