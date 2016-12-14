@@ -74,6 +74,7 @@ public interface ShorthandAccessible
 		{
 			if (containsAccessorMethod())
 			{
+				containsAccessorMethod();
 				SyntaxMessage.error("Cannot have both an accessor method and shorthand value assignment to a field declaration", (Node)this);
 			}
 			
