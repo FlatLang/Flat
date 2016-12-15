@@ -29,6 +29,16 @@ public class ElseStatement extends ControlStatement
 		super(temporaryParent, locationIn);
 	}
 	
+	public Node getDecodedParent()
+	{
+		if (getNumChildren() >= 2 && getChild(1) instanceof IfStatement)
+		{
+			return getChild(1);
+		}
+		
+		return super.getDecodedParent();
+	}
+	
 	/**
 	 * Decode the given statement into a ElseStatement instance, if
 	 * possible. If it is not possible, this method returns null.<br>
