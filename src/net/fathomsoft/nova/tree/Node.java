@@ -221,6 +221,11 @@ public abstract class Node implements Listenable, Annotatable
 		return false;
 	}
 	
+	public Node getDecodedParent()
+	{
+		return this;
+	}
+	
 	/**
 	 * Get the line number in which the Node was decoded at.
 	 * 

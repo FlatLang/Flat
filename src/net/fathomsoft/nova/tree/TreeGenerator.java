@@ -711,7 +711,7 @@ public class TreeGenerator implements Runnable
 		
 		if ((statementEndIndex >= 0 && statementEndIndex < source.length() && !skipScopes && source.charAt(statementEndIndex) == '{') || (pendingScopeFragment.check() == node && node.pendingScopeFragment(null)))
 		{
-			parentStack.push(node);
+			parentStack.push(node.getDecodedParent());
 		}
 		
 		updateParents(node);
