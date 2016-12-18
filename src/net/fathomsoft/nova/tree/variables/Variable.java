@@ -13,6 +13,8 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.util.Location;
 
+import java.util.AbstractMap;
+
 /**
  * Identifier extension that represents the use of a variable
  * type. Harnesses the needed information of each variable, such as
@@ -50,6 +52,81 @@ public class Variable extends Identifier
 	public boolean isValid()
 	{
 		return super.isValid() && getDeclaration() != null && getDeclaration().isValid();
+	}
+	
+	@Override
+	public AbstractMap.SimpleEntry<Value, Boolean> getCastedType()
+	{
+		AbstractMap.SimpleEntry<Value, Boolean> cast = getIfStatementCast();
+		
+		if (cast == null)
+		{
+			return super.getCastedType();
+		}
+		
+		return cast;
+	}
+	
+	public AbstractMap.SimpleEntry<Value, Boolean> getBinaryStatementCast()
+	{
+		BinaryOperation o = (BinaryOperation)getAncestorOfType(BinaryOperation.class);
+		
+		
+		
+		return null;
+	}
+	
+	public AbstractMap.SimpleEntry<Value, Boolean> getIfStatementCast()
+	{
+		IfStatement current = (IfStatement)getParent().getAncestorOfType(IfStatement.class);
+		
+		if (current != null)
+		{
+			if (current.getCondition() == null)
+			{
+				current = (IfStatement)current.getAncestorOfType(IfStatement.class);
+			}
+			
+			if (current != null)
+			{
+				if (current.getCondition().containsChild(this, true))
+				{
+					return null;
+				}
+				
+				while (current != null)
+				{
+					Node[] children = current.getCondition().getChildrenOfType(MethodCall.class);
+					
+					for (Node n : children)
+					{
+						MethodCall m = (MethodCall)n;
+						
+						if (m.getName().equals("isOfType") && m.getDeclaringClass().getClassLocation().endsWith("nova/Class"))
+						{
+							Accessible r = m.getReferenceNode().getReferenceNode();
+							
+							if (r instanceof Variable && ((Variable)r).declaration == declaration)
+							{
+								Accessible root = m.getRootAccessNode();
+								Node parent = root.getParent();
+								
+								boolean negated = parent instanceof UnaryOperation && ((UnaryOperation)parent).getOperator().getOperator().equals(Operator.BANG);
+								
+								Value cloneType = ((Variable)r).cloneTo(new IValue(parent, getLocationIn()), true, true, true);
+								cloneType.setTypeValue(m.getArgument("other").getType());
+								
+								return new AbstractMap.SimpleEntry<>(cloneType, negated);
+							}
+						}
+					}
+					
+					current = (IfStatement)current.getAncestorOfType(IfStatement.class);
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	@Override
