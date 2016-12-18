@@ -46,7 +46,7 @@ public class IfStatement extends ControlStatement
 	 */
 	public Value getCondition()
 	{
-		return (Value)getChild(super.getNumDefaultChildren() + 0);
+		return getNumChildren() > super.getNumDefaultChildren() ? (Value)getChild(super.getNumDefaultChildren() + 0) : null;
 	}
 	
 	/**
