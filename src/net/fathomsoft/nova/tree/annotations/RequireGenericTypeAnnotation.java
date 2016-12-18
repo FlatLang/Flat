@@ -126,6 +126,7 @@ public class RequireGenericTypeAnnotation extends Annotation
 					
 					if (!SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass()))
 					{
+						SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass());
 						SyntaxMessage.error("Method call on method '" + v.getName() + "' requires a generic type of '" + required.getDefaultType() + "'", v, false);
 					}
 				}
