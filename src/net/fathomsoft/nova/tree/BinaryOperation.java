@@ -847,7 +847,10 @@ public class BinaryOperation extends IValue
 						
 						if (required != null && SyntaxUtils.isTypeCompatible(this, required, rightNode.getReturnedNode()))
 						{
-							MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(), validMethod.getName() + "(null)", leftReturned.getLocationIn(), true, true, validMethod);
+							Value param = validMethod.getParameter(0);
+							String defaultValue = param.isPrimitive() ? "0" : "null";
+							
+							MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(), validMethod.getName() + "(" + defaultValue + ")", leftReturned.getLocationIn(), true, true, validMethod);
 							
 							((Accessible)left.getReturnedNode()).setAccessedNode(call);
 							
