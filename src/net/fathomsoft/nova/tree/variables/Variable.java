@@ -158,7 +158,7 @@ public class Variable extends Identifier
 			GenericTypeParameter param = getGenericTypeParameter();
 			GenericTypeArgument arg = param.getCorrespondingArgument(this);
 			
-			return arg != null ? arg.getType() : param.getDefaultType();
+			return arg != null && !arg.isGenericType() ? arg.getType() : param.getDefaultType();
 		}
 		
 		throw new RuntimeException("Generic return type requested from non-generic type.");
