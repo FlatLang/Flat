@@ -78,7 +78,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		
 		for (int i = 0; i < implementation.getNumVisibleChildren(); i++)
 		{
-			if (implementation.getVisibleChild(i) == this)
+			if (((Value)implementation.getVisibleChild(i)).getType().equals(getType()))
 			{
 				return i;
 			}
@@ -116,7 +116,14 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 			return method.getGenericTypeParameter(getType()).getDefaultType();
 		}
 		
-		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(getArgumentIndex()).getDefaultType();
+		int index = getArgumentIndex();
+		
+		if (index < 0)
+		{
+			getArgumentIndex();
+		}
+		
+		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(index).getDefaultType();
 	}
 	
 	/**
