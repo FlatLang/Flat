@@ -78,7 +78,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		{
 			GenericTypeParameter type = getParentClass().getGenericTypeParameter(i);
 			
-			reference.addGenericTypeArgumentName(type.getDefaultType());
+			reference.addGenericTypeArgumentName(type.getType());//.getDefaultType());
 		}
 		
 		return reference;
