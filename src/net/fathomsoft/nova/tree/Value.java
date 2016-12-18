@@ -1,8 +1,10 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
 import net.fathomsoft.nova.tree.annotations.NativeAnnotation;
+import net.fathomsoft.nova.tree.annotations.RequireGenericTypeAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -12,6 +14,8 @@ import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.AbstractMap;
 
 /**
  * Node extension that represents something that returns a value.
@@ -551,6 +555,11 @@ public abstract class Value extends Node implements AbstractValue
 		return setType(type, require, checkType, true);
 	}
 	
+	public AbstractMap.SimpleEntry<Value, Boolean> getCastedType()
+	{
+		return null;
+	}
+	
 	/**
 	 * Get the ClassDeclaration that represents the type of the specified
 	 * Value. If the type is primitive, this will return the
@@ -570,9 +579,40 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
 	{
-		if (defaultGenericType && isGenericType(false, checkCast))
+		AbstractMap.SimpleEntry<Value, Boolean> casted = getCastedType();
+		
+		if (casted != null)
 		{
-			return getFileDeclaration().getImport(getGenericReturnType(checkCast), false).getClassDeclaration();
+			if (!casted.getValue())
+			{
+				return casted.getKey().getTypeClass();
+			}
+		}
+		
+		RequireGenericTypeAnnotation required = (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class, true, true);
+		
+		if ((required != null || defaultGenericType) && isGenericType(false, checkCast))
+		{
+			String type = null;
+			
+			if (required != null)
+			{
+				type = required.getRequiredType(getType());
+			}
+			if (defaultGenericType && type == null)
+			{
+				type = getGenericReturnType(checkCast);
+				
+				if ("Type".equals(type))
+				{
+					getGenericReturnType(checkCast);
+				}
+			}
+			
+			if (type != null)
+			{
+				return getFileDeclaration().getImport(type, false).getClassDeclaration();
+			}
 		}
 		
 		return getProgram().getClassDeclaration(getTypeClassLocation(checkCast));
