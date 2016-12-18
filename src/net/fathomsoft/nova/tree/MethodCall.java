@@ -671,7 +671,7 @@ public class MethodCall extends Variable
 		GenericTypeParameter param = getGenericTypeParameter();
 		GenericTypeArgument arg = param.getCorrespondingArgument(this/*.getReferenceNode()*/.toValue());
 		
-		if (arg == null)
+		if (arg == null || arg.isGenericType())
 		{
 			return param.getDefaultType();
 		}
