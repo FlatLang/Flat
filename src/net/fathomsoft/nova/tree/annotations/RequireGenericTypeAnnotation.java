@@ -29,6 +29,18 @@ public class RequireGenericTypeAnnotation extends Annotation
 		addChild(new GenericTypeParameterList(this, locationIn));
 	}
 	
+	public String getRequiredType(String name)
+	{
+		GenericTypeParameter param = getGenericTypeParameterDeclaration().getParameter(name);
+		
+		if (param != null)
+		{
+			return param.getDefaultType();
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public int getNumDefaultChildren()
 	{
