@@ -269,7 +269,11 @@ public class BinaryOperation extends IValue
 		operator.setOperator(operatorVal);
 		addChild(operator);
 		
+		lhn.onAfterDecoded();
+		
 		Value rhn = decodeRightOperand(statement, operatorLoc, require);
+		
+		rhn.onAfterDecoded();
 		
 		validateOperation(lhn, rhn, operator);
 		
