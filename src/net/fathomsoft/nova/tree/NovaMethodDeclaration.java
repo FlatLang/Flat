@@ -744,11 +744,17 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				if (parameters[i].length() > 0)
 				{
+					ArrayList<Annotation> annotations = new ArrayList<>();
+
 					Annotation a = Annotation.decodeStatement(this, parameters[i], location, require);
 					
-					if (a != null)
+					while (a != null)
 					{
 						parameters[i] = Annotation.getFragment(parameters[i]);
+
+						annotations.add(a);
+
+						a = Annotation.decodeStatement(this, parameters[i], location, require);
 					}
 					
 					Parameter param = Parameter.decodeStatement(this, parameters[i], location, require, isUserMade(), isUserMade());
@@ -757,9 +763,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					{
 						return SyntaxMessage.queryError("Incorrect parameter definition", this, require);
 					}
-					else if (a != null)
+
+					for (Annotation anno : annotations)
 					{
-						param.addAnnotation(a);
+						param.addAnnotation(anno);
 					}
 					
 					param.onAfterDecoded();
