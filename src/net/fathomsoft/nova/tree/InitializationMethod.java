@@ -65,9 +65,16 @@ public class InitializationMethod extends BodyMethodDeclaration
 		String params = constructor.getParameterList().generateNovaInput().toString();
 		
 		NovaMethodDeclaration method = decodeStatement(getParentClass(true), "public " + name + '(' + params + ')', getLocationIn(), true);
-		
-		method.setName(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
-		method.cloneTo(this);
+
+		if (method != null)
+		{
+			method.setName(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
+			method.cloneTo(this);
+		}
+		else
+		{
+			decodeStatement(getParentClass(true), "public " + name + '(' + params + ')', getLocationIn(), true);
+		}
 	}
 	
 	/**
