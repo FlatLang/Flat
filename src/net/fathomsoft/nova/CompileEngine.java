@@ -14,6 +14,8 @@ public abstract class CompileEngine
 		this.tree = controller.getTree();
 	}
 	
+	public void init() {}
+	
 	/**
 	 * Compile the generated code into an executable file.
 	 */

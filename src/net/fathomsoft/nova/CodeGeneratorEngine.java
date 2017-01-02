@@ -23,6 +23,8 @@ public abstract class CodeGeneratorEngine
 		this.tree = controller.getTree();
 	}
 	
+	public void init() {}
+	
 	public File writeFile(String fileName, File parentDir, String source) throws IOException
 	{
 		return FileUtils.writeFile(fileName, parentDir, source);

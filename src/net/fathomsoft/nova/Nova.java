@@ -205,6 +205,9 @@ public class Nova
 				
 				codeGeneratorEngine = (CodeGeneratorEngine)codeGeneratorEngineConstructor.newInstance(this);
 				compileEngine = (CompileEngine)compileEngineConstructor.newInstance(this);
+				
+				codeGeneratorEngine.init();
+				compileEngine.init();
 			}
 			catch (InvocationTargetException e)
 			{
@@ -294,7 +297,7 @@ public class Nova
 //				"-no-notes",
 //				"-no-warnings",
 //				"-no-errors",
-				"-no-optimize",
+//				"-no-optimize",
 				"-target", target,
 //				"-library",
 			};
