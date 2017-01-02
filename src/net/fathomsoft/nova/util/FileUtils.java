@@ -231,13 +231,23 @@ public class FileUtils
 		return null;
 	}
 	
-	public static boolean writeIfDifferent(File file, Consumer<FileBuilder> write) throws IOException
+	public static boolean writeIfDifferent(File file, String source) throws IOException
+	{
+		return writeIfDifferent(file, writer ->
+		{
+			writer.write(source);
+		});
+	}
+	
+	public static boolean writeIfDifferent(File file, Consumer<PrintWriter> write) throws IOException
 	{
 		return writeIfDifferent(file, write, false);
 	}
 	
-	public static boolean writeIfDifferent(File file, Consumer<FileBuilder> write, boolean force) throws IOException
+	public static boolean writeIfDifferent(File file, Consumer<PrintWriter> write, boolean force) throws IOException
 	{
+		long lastModified = file.lastModified();
+		
 		String previous = null;
 		
 		if (file.isFile())
@@ -245,23 +255,82 @@ public class FileUtils
 			previous = readFile(file);
 		}
 		
+		final StringBuilder builder = new StringBuilder();
+		
 //		final String lineSeparator = java.security.AccessController.doPrivileged(
 //			new sun.security.action.GetPropertyAction("line.separator"));
 		
-		FileBuilder builder = new FileBuilder();
+		PrintWriter writer = new PrintWriter(new FileWriter(file))
+		{
+			@Override
+			public void print(char c)
+			{
+				builder.append(c);
+				
+				super.print(c);
+			}
+			
+			@Override
+			public void print(char[] s)
+			{
+				builder.append(s);
+				
+				super.print(s);
+			}
+			
+			@Override
+			public PrintWriter append(char c)
+			{
+				builder.append(c);
+				
+				return super.append(c);
+			}
+			
+			@Override
+			public void write(String s)
+			{
+				builder.append(s);
+				
+				super.write(s);
+			}
+			
+			@Override
+			public void println()
+			{
+				builder.append('\n');
+				
+				write('\n');
+			}
+			
+			@Override
+			public void println(char x)
+			{
+				builder.append(x);
+				
+				write(x);
+				println();
+			}
+			
+			@Override
+			public void println(char[] x)
+			{
+				builder.append(x);
+				
+				write(x);
+				println();
+			}
+		};
 		
-		write.accept(builder);
+		write.accept(writer);
+		
+		writer.close();
 		
 		if (!force && previous != null && builder.toString().trim().equals(previous.trim()))
 		{
+			file.setLastModified(lastModified);
+			
 			return false;
 		}
-		
-		PrintWriter writer = new PrintWriter(new FileWriter(file));
-		
-		writer.print(builder.toString());
-			
-		writer.close();
 		
 		return true;
 	}
