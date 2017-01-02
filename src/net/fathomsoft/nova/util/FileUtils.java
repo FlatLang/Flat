@@ -3,6 +3,8 @@ package net.fathomsoft.nova.util;
 import net.fathomsoft.nova.Nova;
 
 import java.io.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Utility methods for File operations, such as: reading, writing, and
@@ -33,9 +35,14 @@ public class FileUtils
 		
 		while (line != null)
 		{
-			source.append(line).append('\n');
+			source.append(line);
 			
 			line = reader.readLine();
+			
+			if (line != null)
+			{
+				source.append('\n');
+			}
 		}
 		
 		reader.close();
@@ -222,5 +229,122 @@ public class FileUtils
 		}
 		
 		return null;
+	}
+	
+	public static boolean writeIfDifferent(File file, Consumer<FileBuilder> write) throws IOException
+	{
+		return writeIfDifferent(file, write, false);
+	}
+	
+	public static boolean writeIfDifferent(File file, Consumer<FileBuilder> write, boolean force) throws IOException
+	{
+		String previous = null;
+		
+		if (file.isFile())
+		{
+			previous = readFile(file);
+		}
+		
+//		final String lineSeparator = java.security.AccessController.doPrivileged(
+//			new sun.security.action.GetPropertyAction("line.separator"));
+		
+		FileBuilder builder = new FileBuilder();
+		
+		write.accept(builder);
+		
+		if (!force && previous != null && builder.toString().trim().equals(previous.trim()))
+		{
+			return false;
+		}
+		
+		PrintWriter writer = new PrintWriter(new FileWriter(file));
+		
+		writer.print(builder.toString());
+			
+		writer.close();
+		
+		return true;
+	}
+	
+	public static class FileBuilder extends Writer
+	{
+		final StringBuilder builder = new StringBuilder();
+		
+		public void print(char c)
+		{
+			builder.append(c);
+		}
+		
+		public void print(char[] s)
+		{
+			builder.append(s);
+		}
+		
+		public FileBuilder append(char c)
+		{
+			builder.append(c);
+			
+			return this;
+		}
+		
+		@Override
+		public void flush() throws IOException
+		{
+			
+		}
+		
+		@Override
+		public void close() throws IOException
+		{
+			
+		}
+		
+		public FileBuilder append(String c)
+		{
+			builder.append(c);
+			
+			return this;
+		}
+		
+		@Override
+		public void write(char[] cbuf, int off, int len) throws IOException
+		{
+			
+		}
+		
+		public void write(String s)
+		{
+			builder.append(s);
+		}
+		
+		public void print(String s)
+		{
+			builder.append(s);
+		}
+		
+		public void print(Object s)
+		{
+			print(s.toString());
+		}
+		
+		public void println()
+		{
+			builder.append('\n');
+		}
+		
+		public void println(char x)
+		{
+			builder.append(x);
+		}
+		
+		public void println(char[] x)
+		{
+			builder.append(x);
+		}
+		
+		public String toString()
+		{
+			return builder.toString();
+		}
 	}
 }
