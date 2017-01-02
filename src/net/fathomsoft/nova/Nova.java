@@ -138,6 +138,8 @@ public class Nova
 		nova.compile(args, true);
 		
 		nova.compileEngine.compile();
+		
+		nova.outputMessages(false);
 	}
 	
 	/**
@@ -257,10 +259,10 @@ public class Nova
 			
 			args = new String[]
 			{
-				"../Spectra",
+//				"../Spectra",
 //				"../Nova.c",
-//				"../Misc/example",
-//				"../Misc/stabilitytest", 
+				"../Misc/example",
+//				"../Misc/stabilitytest",
 				"-output-directory", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
@@ -279,15 +281,16 @@ public class Nova
 				"-single-file",
 				"-line-numbers",
 				"-main",
-//				"example/Lab",
+				"example/Lab",
 //				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
-				"spectra/Spectra",
+//				"spectra/Spectra",
 //				"-nogc",
 //				"-no-c-output",
-//				"-dry",
+				"-dry",
+//				"-force",
 //				"-no-notes",
 //				"-no-warnings",
 //				"-no-errors",
@@ -435,7 +438,7 @@ public class Nova
 		
 		String str  = LANGUAGE_NAME + " compile time: " + time + "ms";
 		
-		outputMessages();
+		outputMessages(true);
 		
 		if (BENCHMARK > 0)
 		{
@@ -818,7 +821,7 @@ public class Nova
 			startTimer();
 			stopTimer();
 			
-			outputMessages();
+			outputMessages( true);
 			
 			completed(false);
 		}
@@ -918,44 +921,35 @@ public class Nova
 		return tree;
 	}
 	
-	/**
-	 * Output all of the stored errors, warnings, and other messages.
-	 */
 	private void outputMessages()
 	{
 		outputMessages(true);
 	}
 	
-	private void outputMessages(boolean success)
+	/**
+	 * Output all of the stored errors, warnings, and other messages.
+	 */
+	private void outputMessages(boolean outputResult)
 	{
-		outputMessages(success, warnings.size(), errors.size());
+		outputMessages(true, outputResult);
+	}
+	
+	private void outputMessages(boolean success, boolean outputResult)
+	{
+		outputMessages(success, warnings.size(), errors.size(), outputResult);
 	}
 	
 	private void outputMessages(boolean success, int warningCount, int errorCount)
+	{
+		outputMessages(success, warningCount, errorCount, true);
+	}
+	
+	private void outputMessages(boolean success, int warningCount, int errorCount, boolean outputResult)
 	{
 		for (String s : messages)
 		{
 			System.out.println(s);
 		}
-
-		String status = success ? "succeeded" : "failed";
-		String errorsText = "";
-		String warningsText = "";
-		
-		if (warningCount > 0)
-		{
-			warningsText = " " + warningCount + " warning" + (warningCount > 1 ? "s" : "");
-		}
-		if (errorCount > 0)
-		{
-			status = "failed";
-			
-			errorsText = " " + errorCount + " error" + (errorCount > 1 ? "s" : "");
-		}
-		
-		String with = errorsText.length() + warningsText.length() > 0 ? " with" : "";
-		String message = "Compilation " + status + with + errorsText + warningsText;
-		
 		for (String s : warnings)
 		{
 			System.out.println(s);
@@ -964,15 +958,40 @@ public class Nova
 		{
 			System.err.println(s);
 		}
+
+		if (outputResult)
+		{
+			String status = success ? "succeeded" : "failed";
+			String errorsText = "";
+			String warningsText = "";
+			
+			if (warningCount > 0)
+			{
+				warningsText = " " + warningCount + " warning" + (warningCount > 1 ? "s" : "");
+			}
+			if (errorCount > 0)
+			{
+				status = "failed";
+				
+				errorsText = " " + errorCount + " error" + (errorCount > 1 ? "s" : "");
+			}
+			
+			String with = errorsText.length() + warningsText.length() > 0 ? " with" : "";
+			String message = "Compilation " + status + with + errorsText + warningsText;
+			
+			if (status.equals("succeeded"))
+			{
+				log(message);
+			}
+			else
+			{
+				System.err.println(message);
+			}
+		}
 		
-		if (status.equals("succeeded"))
-		{
-			log(message);
-		}
-		else
-		{
-			System.err.println(message);
-		}
+		messages = new ArrayList<>();
+		warnings = new ArrayList<>();
+		errors = new ArrayList<>();
 	}
 	
 	/**
