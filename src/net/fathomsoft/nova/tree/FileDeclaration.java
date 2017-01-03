@@ -327,11 +327,14 @@ public class FileDeclaration extends Node
 	 */
 	public ClassDeclaration getClassDeclaration(String className)
 	{
-		ClassDeclaration clazz = getClassDeclaration();
-		
-		if (clazz != null && clazz.getName().equals(className))
+		for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset() + i; i++)
 		{
-			return clazz;
+			ClassDeclaration c = (ClassDeclaration)getChild(super.getNumDefaultChildren() + getClassOffset() + i);
+			
+			if (c.getName().equals(className))
+			{
+				return c;
+			}
 		}
 		
 		return null;
