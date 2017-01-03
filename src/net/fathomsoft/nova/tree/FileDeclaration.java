@@ -338,7 +338,14 @@ public class FileDeclaration extends Node
 	
 	public ClassDeclaration[] getClassDeclarations()
 	{
-		return new ClassDeclaration[] { getClassDeclaration() };
+		ArrayList<ClassDeclaration> classes = new ArrayList<>();
+		
+		for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset() + i; i++)
+		{
+			classes.add((ClassDeclaration)getChild(super.getNumDefaultChildren() + getClassOffset() + i));
+		}
+		
+		return classes.toArray(new ClassDeclaration[0]);
 	}
 	
 	public Package getPackage()
