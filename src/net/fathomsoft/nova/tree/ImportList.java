@@ -105,9 +105,9 @@ public class ImportList extends TypeList<Import>
 			return className;
 		}
 		
-		ClassDeclaration clazz = getFileDeclaration().getClassDeclaration();
+		ClassDeclaration clazz = getFileDeclaration().getClassDeclaration(className);
 		
-		if (clazz.getName().equals(className))
+		if (clazz != null)
 		{
 			return clazz.getClassLocation();
 		}
