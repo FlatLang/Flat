@@ -17,7 +17,7 @@ public class ExtensionVTable extends VTable
 	{
 		super(temporaryParent, locationIn);
 		
-		InterfaceVTable table = new InterfaceVTable(this, Location.INVALID);
+		TraitVTable table = new TraitVTable(this, Location.INVALID);
 		
 		addChild(table);
 	}
@@ -31,9 +31,9 @@ public class ExtensionVTable extends VTable
 		return super.getNumDefaultChildren() + 1;
 	}
 	
-	public InterfaceVTable getInterfaceVTable()
+	public TraitVTable getInterfaceVTable()
 	{
-		return (InterfaceVTable)getChild(super.getNumDefaultChildren() + 0);
+		return (TraitVTable)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	/**

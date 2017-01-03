@@ -137,7 +137,7 @@ public class Program extends TypeList<FileDeclaration>
 		{
 			for (ClassDeclaration clazz : file.getClassDeclarations())
 			{
-				if (clazz instanceof Interface)
+				if (clazz instanceof Trait)
 				{
 					NovaMethodDeclaration[][] methodLists = new NovaMethodDeclaration[][] { clazz.getMethods(), clazz.getPropertyMethodList().getMethods() }; 
 					

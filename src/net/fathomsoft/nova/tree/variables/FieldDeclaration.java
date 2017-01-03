@@ -473,9 +473,9 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			}
 			else
 			{
-				if (getParentClass() instanceof Interface)
+				if (getParentClass() instanceof Trait)
 				{
-					Interface i = (Interface)getParentClass();
+					Trait i = (Trait)getParentClass();
 					
 					ArrayList<Node> tempParents = new ArrayList<>();
 					ArrayList<ClassDeclaration> temp = new ArrayList<>();

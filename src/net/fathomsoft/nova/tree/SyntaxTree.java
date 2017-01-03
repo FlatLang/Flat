@@ -75,7 +75,7 @@ public class SyntaxTree
 	
 	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		Annotation.class, Import.class, ClassDeclaration.class, Interface.class, ExtensionDeclaration.class,
+		Annotation.class, Import.class, ClassDeclaration.class, Trait.class, ExtensionDeclaration.class,
 		Package.class, ExternalCodeBlock.class
 	};
 	
@@ -549,7 +549,7 @@ public class SyntaxTree
 				else if (node == null && type == IfStatement.class) node = IfStatement.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Import.class) node = Import.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Instantiation.class) node = Instantiation.decodeStatement(parent, statement, location, require);
-				else if (node == null && type == Interface.class) node = Interface.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == Trait.class) node = Trait.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == IntRange.class) node = IntRange.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Literal.class) node = Literal.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
@@ -655,7 +655,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(ExternalType.class) && (node = ExternalType.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Fallthrough.class) && (node = Fallthrough.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Import.class) && (node = Import.decodeStatement(parent, statement, location, require)) != null);
-		else if (type.isAssignableFrom(Interface.class) && (node = Interface.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(Trait.class) && (node = Trait.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(IntRange.class) && (node = IntRange.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Literal.class) && (node = Literal.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);

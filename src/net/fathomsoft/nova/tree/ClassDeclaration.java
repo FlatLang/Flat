@@ -4,7 +4,6 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.error.TypeError;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
@@ -65,7 +64,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		TypeList<StaticBlock>             staticBlocks    = new TypeList<StaticBlock>(this, Location.INVALID);
 		VTableList                        vtables         = new VTableList(this, Location.INVALID);
 		GenericTypeParameterList declaration     = new GenericTypeParameterList(this, Location.INVALID);
-		TypeList<InterfaceImplementation> interfaces      = new TypeList<InterfaceImplementation>(this, locationIn);
+		TypeList<TraitImplementation> interfaces      = new TypeList<TraitImplementation>(this, locationIn);
 		TypeList<ExternalCodeBlock>       blocks          = new TypeList<>(this, locationIn);
 		
 		addChild(fields, this);
@@ -260,9 +259,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getGenericTypeParameterDeclarationNode();
 	}
 	
-	public TypeList<InterfaceImplementation> getInterfacesImplementationList()
+	public TypeList<TraitImplementation> getInterfacesImplementationList()
 	{
-		return (TypeList<InterfaceImplementation>)getChild(super.getNumDefaultChildren() + 12);
+		return (TypeList<TraitImplementation>)getChild(super.getNumDefaultChildren() + 12);
 	}
 	
 	public TypeList<ExternalCodeBlock> getExternalCodeBlocks()
@@ -418,9 +417,9 @@ public class ClassDeclaration extends InstanceDeclaration
 						method = method.getVirtualMethod();
 					}*/
 					
-					if (!excludeInterfaces || method.getRootDeclaration().getParentClass() instanceof Interface == false)
+					if (!excludeInterfaces || method.getRootDeclaration().getParentClass() instanceof Trait == false)
 					{
-						if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Interface)
+						if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Trait)
 						{
 							NovaMethodDeclaration existing = getMethod(method, methods, filter);
 							
@@ -540,16 +539,16 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * 
 	 * @return The Interfaces instances that the class implements.
 	 */
-	public Interface[] getImplementedInterfaces()
+	public Trait[] getImplementedInterfaces()
 	{
 		return getImplementedInterfaces(true);
 	}
 	
-	public Interface[] getImplementedInterfaces(boolean checkAncestors)
+	public Trait[] getImplementedInterfaces(boolean checkAncestors)
 	{
-		TypeList<InterfaceImplementation> list = getInterfacesImplementationList();
+		TypeList<TraitImplementation> list = getInterfacesImplementationList();
 		
-		ArrayList<Interface> array = new ArrayList<>();
+		ArrayList<Trait> array = new ArrayList<>();
 		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
@@ -557,9 +556,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), type);
 			
-			if (clazz instanceof Interface)
+			if (clazz instanceof Trait)
 			{
-				array.add((Interface)clazz);
+				array.add((Trait)clazz);
 			}
 			else
 			{
@@ -571,19 +570,19 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			for (int i = array.size() - 1; i >= 0; i--)
 			{
-				for (Interface inter : array.get(i).getImplementedInterfaces())
+				for (Trait inter : array.get(i).getImplementedInterfaces())
 				{
 					array.add(inter);
 				}
 			}
 		}
 		
-		return array.toArray(new Interface[0]);
+		return array.toArray(new Trait[0]);
 	}
 	
 	public boolean implementsInterface(ClassDeclaration clazz)
 	{
-		for (Interface i : getImplementedInterfaces())
+		for (Trait i : getImplementedInterfaces())
 		{
 			if (clazz == i)
 			{
@@ -920,7 +919,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public String[] getImplementedClassNames()
 	{
-		TypeList<InterfaceImplementation> list = getInterfacesImplementationList();
+		TypeList<TraitImplementation> list = getInterfacesImplementationList();
 		
 		String[] implementedClasses = new String[list.getNumVisibleChildren()];
 		
@@ -1071,7 +1070,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (field == null)
 			{
-				for (Interface i : getImplementedInterfaces(false))
+				for (Trait i : getImplementedInterfaces(false))
 				{
 					field = i.getField(fieldName, false);
 					
@@ -1470,7 +1469,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		boolean before = filter.checkAncestor;
 		filter.checkAncestor = false;
 		
-		for (Interface inter : getImplementedInterfaces(false))
+		for (Trait inter : getImplementedInterfaces(false))
 		{
 			addMethods(output, inter.getMethods(methodName, filter));
 		}
@@ -2054,7 +2053,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					Location loc = new Location(0, 0, bounds.getStart(), bounds.getEnd());
 					
-					InterfaceImplementation i = InterfaceImplementation.decodeStatement(this, word, loc, extra.require);
+					TraitImplementation i = TraitImplementation.decodeStatement(this, word, loc, extra.require);
 					
 					getInterfacesImplementationList().addChild(i);
 					
@@ -2168,7 +2167,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				}
 				else
 				{
-					for (InterfaceImplementation i : getInterfacesImplementationList())
+					for (TraitImplementation i : getInterfacesImplementationList())
 					{
 						GenericTypeArgumentList args = i.getGenericTypeArgumentList();
 						
@@ -2442,7 +2441,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		});
 	}
 	
-	private void addFieldsFromInterface(Interface i)
+	private void addFieldsFromInterface(Trait i)
 	{
 		i.getFieldList().getPublicFieldList().forEachVisibleChild(n -> {
 			FieldDeclaration field = (FieldDeclaration)n;
@@ -2455,11 +2454,11 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					if (current.getVisibility() != field.getVisibility() && !(current.getVisibility() == PUBLIC && field.getVisibility() == FieldDeclaration.VISIBLE))
 					{
-						SyntaxMessage.error("Interface field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' has to be " + field.getVisibilityText(), this, false);
+						SyntaxMessage.error("Trait field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' has to be " + field.getVisibilityText(), this, false);
 					}
 					else if (field.getVisibility() == PUBLIC && (current.getMutatorMethod() == null || current.getMutatorMethod().isDisabled()))
 					{
-						SyntaxMessage.error("Interface field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' cannot hide mutator function", this, false);
+						SyntaxMessage.error("Trait field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' cannot hide mutator function", this, false);
 					}
 				}
 				else
@@ -2519,7 +2518,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 		});
 		
-		for (Interface extended : i.getImplementedInterfaces(false))
+		for (Trait extended : i.getImplementedInterfaces(false))
 		{
 			addFieldsFromInterface(extended);
 		}
@@ -2527,7 +2526,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public void autoAddInterfaceFieldOverrides()
 	{
-		for (Interface i : getImplementedInterfaces(false))
+		for (Trait i : getImplementedInterfaces(false))
 		{
 			addFieldsFromInterface(i);
 		}
@@ -2614,11 +2613,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			while (clazz != null)
 			{
-				TypeList<InterfaceImplementation> interfaces = clazz.getInterfacesImplementationList();
+				TypeList<TraitImplementation> interfaces = clazz.getInterfacesImplementationList();
 				
 				if (interfaces.getNumVisibleChildren() > 0)
 				{
-					for (InterfaceImplementation inter : interfaces)
+					for (TraitImplementation inter : interfaces)
 					{
 						for (NovaMethodDeclaration method : inter.getTypeClass().getMethods())
 						{
@@ -2690,12 +2689,12 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				SyntaxMessage.error("Class '" + implementedClass + "' not declared", this);
 			}
-			else if (clazz instanceof Interface == false)
+			else if (clazz instanceof Trait == false)
 			{
 				SyntaxMessage.error("Class '" + implementedClass + "' is not an interface and therefore cannot be implemented", this);
 			}
 			
-			Interface i = (Interface)clazz;
+			Trait i = (Trait)clazz;
 			
 			i.addImplementingClass(this);
 		}

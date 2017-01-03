@@ -715,7 +715,7 @@ public class BinaryOperation extends IValue
 			}
 		}
 		
-		Interface overload = getOperator().getOperatorOverload();
+		Trait overload = getOperator().getOperatorOverload();
 		
 		if (overload != null)
 		{
@@ -795,7 +795,7 @@ public class BinaryOperation extends IValue
 			
 			if (overload.getName().equals("NotEqualToOperator"))
 			{
-				overload = (Interface)getProgram().getClassDeclaration("nova/operators/EqualsOperator");
+				overload = (Trait)getProgram().getClassDeclaration("nova/operators/EqualsOperator");
 				
 				value = checkOperatorOverload(overload);
 				
@@ -815,7 +815,7 @@ public class BinaryOperation extends IValue
 		return this;
 	}
 	
-	public Value checkOperatorOverload(Interface overload)
+	public Value checkOperatorOverload(Trait overload)
 	{
 		Value left = getLeftOperand();
 		Value right = getRightOperand();

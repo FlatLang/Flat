@@ -5,7 +5,6 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
-import net.fathomsoft.nova.tree.annotations.ApplicableAnnotationBase;
 import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
@@ -232,7 +231,7 @@ public class TreeGenerator implements Runnable
 			return;
 		}
 		
-		boolean requireScope = !(classDeclaration instanceof Interface);
+		boolean requireScope = !(classDeclaration instanceof Trait);
 		
 		decodeScopeContents(classDeclaration.getPropertyMethodList(), requireScope);
 		decodeScopeContents(classDeclaration.getMethodList(), requireScope);

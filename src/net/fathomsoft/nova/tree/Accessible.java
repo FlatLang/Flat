@@ -225,9 +225,9 @@ public interface Accessible
 	
 	default Stack<IValue> performWalk(ClassDeclaration current, ClassDeclaration required, Stack<IValue> path)
 	{
-		if (required instanceof Interface)
+		if (required instanceof Trait)
 		{
-			InterfaceImplementation implementation = checkInterface(current, (Interface)required);
+			TraitImplementation implementation = checkInterface(current, (Trait)required);
 			
 			if (implementation != null)
 			{
@@ -256,7 +256,7 @@ public interface Accessible
 		return null;
 	}
 	
-	default InterfaceImplementation checkInterface(ClassDeclaration current, Interface required)
+	default TraitImplementation checkInterface(ClassDeclaration current, Trait required)
 	{
 		return current.getInterfacesImplementationList().firstWhere(x -> x.getTypeClass() == required);
 	}

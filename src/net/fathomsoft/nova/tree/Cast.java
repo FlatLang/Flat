@@ -184,7 +184,7 @@ public class Cast extends IValue
 		
 		ClassDeclaration type = node.getReturnedNode().getTypeClass();
 		
-		if (type instanceof Interface)
+		if (type instanceof Trait)
 		{
 			type = getProgram().getClassDeclaration("nova/Object");
 		}

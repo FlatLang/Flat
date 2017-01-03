@@ -109,7 +109,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 				n.addChild(init);
 			}
 			
-			if (n.getParentClass() instanceof Interface)
+			if (n.getParentClass() instanceof Trait)
 			{
 				return new InterfaceMethodDeclaration(parent, location, n);
 			}

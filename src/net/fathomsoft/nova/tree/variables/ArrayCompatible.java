@@ -4,7 +4,7 @@ import net.fathomsoft.nova.tree.Dimensions;
 import net.fathomsoft.nova.tree.Node;
 
 /**
- * Interface used to share some of the common ground between arrays
+ * Trait used to share some of the common ground between arrays
  * and array accesses. Such as the Dimensional count.
  * 
  * @author	Braden Steffaniak

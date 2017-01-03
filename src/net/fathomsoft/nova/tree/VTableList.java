@@ -24,9 +24,9 @@ public class VTableList extends TypeList<VTable>
 		return (ExtensionVTable)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
-	public InterfaceVTable getInterfaceVTable()
+	public TraitVTable getInterfaceVTable()
 	{
-		return (InterfaceVTable)getChild(super.getNumDefaultChildren() + 1);
+		return (TraitVTable)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -45,7 +45,7 @@ public class VTableList extends TypeList<VTable>
 		if (getNumVisibleChildren() <= 0)
 		{
 			ExtensionVTable extension = new ExtensionVTable(this, Location.INVALID);
-			InterfaceVTable inter     = new InterfaceVTable(this, Location.INVALID);
+			TraitVTable inter     = new TraitVTable(this, Location.INVALID);
 			
 			addChild(extension);
 			addChild(inter);

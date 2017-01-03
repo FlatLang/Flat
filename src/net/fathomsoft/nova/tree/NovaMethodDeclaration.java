@@ -5,9 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
-import net.fathomsoft.nova.tree.annotations.ImpureFunctionAnnotation;
 import net.fathomsoft.nova.tree.annotations.PublicAnnotation;
-import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
@@ -18,7 +16,6 @@ import net.fathomsoft.nova.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 /**
  * Declaration extension that represents the declaration of a method
@@ -297,7 +294,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 		}
 		
-		for (Interface inter : getParentClass().getImplementedInterfaces())
+		for (Trait inter : getParentClass().getImplementedInterfaces())
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
@@ -506,11 +503,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				n.checkExternalType();
 				
-				if (parent.getParentClass(true) instanceof Interface)
+				if (parent.getParentClass(true) instanceof Trait)
 				{
 					/*if (n.getVisibility() != PRIVATE)
 					{
-						SyntaxMessage.error("Interface functions cannot have visibility modifiers", n);
+						SyntaxMessage.error("Trait functions cannot have visibility modifiers", n);
 					}
 					
 					n.setVisibility(PUBLIC);*/
