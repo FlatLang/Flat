@@ -2309,6 +2309,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			addAssignmentMethods();
+			
+			generateFunctionMap();
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
@@ -2317,6 +2319,14 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return result;
+	}
+	
+	public void generateFunctionMap()
+	{
+		if (getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType("nova/meta/FunctionMap"))
+		{
+			
+		}
 	}
 	
 	@Override
