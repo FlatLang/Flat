@@ -33,6 +33,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	public boolean abstractValue;
 	
 	public ClassInstanceDeclaration classInstanceDeclaration;
+	public ClassDeclaration functionMap;
 	
 	private ExtendedClass	extendedClass;
 	
@@ -1674,7 +1675,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			getFileDeclaration().addChild(child);
 			
-			child.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
+			if (getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION) // if added as inner class, re-run class declaration validation
+			{
+				child.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
+			}
 		}
 		else
 		{
@@ -2322,9 +2326,23 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public void generateFunctionMap()
 	{
-		if (getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType("nova/meta/FunctionMap"))
+		if (functionMap == null && !getFileDeclaration().isExternalFile())
 		{
+			ClassDeclaration funMap = getProgram().getClassDeclaration("nova/meta/FunctionMap");
 			
+			if (getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
+			{
+				ClassDeclaration c = ClassDeclaration.decodeStatement(this, "class " + getClassLocation().replace('/', '_') + "FunctionMap extends FunctionMap", Location.INVALID, true);
+				
+				if (c == null)
+				{
+					SyntaxMessage.error("Could not generate function map for class '" + getName() + "'", this);
+				}
+				
+				functionMap = c;
+				
+				addChild(c);
+			}
 		}
 	}
 	
