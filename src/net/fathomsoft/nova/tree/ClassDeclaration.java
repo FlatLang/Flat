@@ -1536,13 +1536,20 @@ public class ClassDeclaration extends InstanceDeclaration
 		Package p = getFileDeclaration().getPackage();
 		
 		String extension = "";
+		String name = getName();
 		
+		ClassDeclaration fileClass = getFileDeclaration().getClassDeclaration();
+		
+		if (fileClass != null && fileClass != this)
+		{
+			name = fileClass.getName() + "." + name;
+		}
 		if (checkExternal && getFileDeclaration().isExternalFile())
 		{
-			extension = "." + getFileDeclaration().getExternalExtension();
+			extension += "." + getFileDeclaration().getExternalExtension();
 		}
 		
-		return p.getLocation() + "/" + getName() + extension;
+		return p.getLocation() + "/" + name + extension;
 	}
 	
 	public Package getPackage()
@@ -1662,6 +1669,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			arrayBracketOverload = (ArrayBracketOverload)child;
 			arrayBracketOverload.setTemporaryParent(this);
+		}
+		else if (child instanceof ClassDeclaration)
+		{
+			getFileDeclaration().addChild(child);
+			
+			child.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
 		}
 		else
 		{
@@ -1968,8 +1981,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, ClassData data)
 	{
+		int index = SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER);
+		
 		// If contains 'class' in the statement.
-		if (StringUtils.containsWord(statement, IDENTIFIER))
+		if (index >= 0 && IDENTIFIER.equals(StringUtils.findNextWord(statement, index)))
 		{
 			ClassDeclaration n = new ClassDeclaration(parent, location);
 			n.setVisibility(PUBLIC);
