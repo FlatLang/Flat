@@ -102,7 +102,7 @@ public class Variable extends Identifier
 					{
 						MethodCall m = (MethodCall)n;
 						
-						if (m.getName().equals("isOfType") && m.getDeclaringClass().getClassLocation().endsWith("nova/Class"))
+						if (m.getName().equals("isOfType") && m.getDeclaringClass().getClassLocation().endsWith("nova/meta/Class"))
 						{
 							Accessible r = m.getReferenceNode().getReferenceNode();
 							

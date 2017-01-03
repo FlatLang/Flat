@@ -19,7 +19,7 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 	{
 		super(temporaryParent, locationIn);
 		
-		setType("Class");//temporaryParent.getProgram().getClassDeclaration("nova/Class"));
+		setType("Class");//temporaryParent.getProgram().getClassDeclaration("nova/meta/Class"));
 		setName("class");
 		addAnnotation(new FinalAnnotation(this, locationIn));
 		setVisibility(VISIBLE);

@@ -69,7 +69,7 @@ public class FileDeclaration extends Node
 			"nova/Object",
 			"nova/String",
 			"nova/System",
-			"nova/Class",
+			"nova/meta/Class",
 			"nova/regex/Pattern",
 		};
 	}

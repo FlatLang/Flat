@@ -67,7 +67,7 @@ public class StaticClassReference extends IIdentifier
 	{
 		if (!isDecoding() && !doesAccess())
 		{
-			return getProgram().getClassDeclaration("nova/Class");
+			return getProgram().getClassDeclaration("nova/meta/Class");
 		}
 		
 		return super.getTypeClass(checkCast, defaultGenericType);
