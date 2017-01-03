@@ -232,6 +232,21 @@ public class Program extends TypeList<FileDeclaration>
 		return controller;
 	}
 	
+	public String[] getClassLocationComponents(String classLocation)
+	{
+		if (classLocation != null)
+		{
+			int index = classLocation.indexOf('.');
+			
+			if (index > 0)
+			{
+				return new String[] { classLocation.substring(0, index), classLocation.substring(index + 1) };
+			}
+		}
+		
+		return new String[] { classLocation };
+	}
+	
 	/**
 	 * Get the Program's ClassDeclaration with the specified name.<br>
 	 * <br>
@@ -252,16 +267,18 @@ public class Program extends TypeList<FileDeclaration>
 	 */
 	public ClassDeclaration getClassDeclaration(String classLocation)
 	{
-		if (!files.containsKey(classLocation))
+		String[] components = getClassLocationComponents(classLocation);
+		
+		if (!files.containsKey(components[0]))
 		{
 			return null;
 		}
 		
-		int index = files.get(classLocation);
+		int index = files.get(components[0]);
 		
 		FileDeclaration node = getVisibleChild(index);
 		
-		String className = SyntaxUtils.getClassName(classLocation);
+		String className = SyntaxUtils.getClassName(components.length > 1 ? components[1] : components[0]);
 		
 		return node.getClassDeclaration(className);
 	}
