@@ -849,6 +849,11 @@ public class BinaryOperation extends IValue
 						Value required = validMethod.getParameter(0);
 						Value rightNode = right instanceof BinaryOperation ? ((BinaryOperation)right).getLeftOperand() : right;
 						
+						if (Literal.isNullLiteral(leftReturned) || Literal.isNullLiteral(rightNode))
+						{
+							return null;
+						}
+						
 						if (required != null && SyntaxUtils.isTypeCompatible(this, required, rightNode.getReturnedNode()))
 						{
 							Value param = validMethod.getParameter(0);
