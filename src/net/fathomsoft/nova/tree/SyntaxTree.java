@@ -81,7 +81,7 @@ public class SyntaxTree
 	
 	public static final Class<?> SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		ArrayBracketOverload.class, Annotation.class, StaticBlock.class, AbstractMethodDeclaration.class,
+		ArrayBracketOverload.class, Annotation.class, StaticBlock.class, ClassDeclaration.class, Trait.class, AbstractMethodDeclaration.class,
 		ExternalMethodDeclaration.class, ClosureVariable.class, ExtensionMethodDeclaration.class,
 		ExtensionFieldDeclaration.class, Destructor.class, Constructor.class, BodyMethodDeclaration.class,
 		ExternalType.class, FieldDeclaration.class, ExternalCodeBlock.class
