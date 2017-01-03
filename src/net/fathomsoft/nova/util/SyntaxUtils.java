@@ -2217,6 +2217,16 @@ public class SyntaxUtils
 		
 		if (file != null)
 		{
+			if (!file.getClassDeclaration().getName().equals(type))
+			{
+				ClassDeclaration c = file.getClassDeclaration(type);
+				
+				if (c != null)
+				{
+					return file.getClassDeclaration().getClassLocation() + "." + type;
+				}
+			}
+			
 			String location = file.getImportList().getAbsoluteClassLocation(type);
 			
 			//		if (location == null)
