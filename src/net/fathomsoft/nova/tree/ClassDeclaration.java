@@ -2824,13 +2824,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		return clazz;
 	}
 	
-	public StringBuilder generateClassClass(StringBuilder builder)
-	{
-		
-		
-		return builder;
-	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
