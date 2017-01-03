@@ -2277,22 +2277,6 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			validateDeclaration(phase);
 			
-			ClassDeclaration clazz = getParentClass();
-			
-			if (clazz == null)
-			{
-				FileDeclaration file = getFileDeclaration();
-				
-				if (!file.getName().substring(0, file.getName().indexOf('.') > 0 ? file.getName().indexOf('.') : file.getName().length()).equals(getName()))
-				{
-					SyntaxMessage.error("The name of the class '" + getName() + "' must be the same as the file that it is contained within", this, false);
-					
-//					getParent().getParent().removeChild(getParent());
-					
-					return result.errorOccurred();
-				}
-			}
-			
 			if (extendedClass != null && getFileDeclaration().containsImport(getExtendedClassLocation()))
 			{
 				getFileDeclaration().getImport(getExtendedClassLocation()).markUsed();

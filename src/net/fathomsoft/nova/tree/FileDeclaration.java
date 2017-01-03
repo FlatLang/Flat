@@ -10,6 +10,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Class used to organize the Files that are fed to the compiler.
@@ -426,7 +427,24 @@ public class FileDeclaration extends Node
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			if (Arrays.stream(getClassDeclarations()).noneMatch(clazz ->
+			{
+				if (!getName().substring(0, getName().indexOf('.') > 0 ? getName().indexOf('.') : getName().length()).equals(clazz.getName()))
+				{
+					SyntaxMessage.error("The name of the class '" + clazz.getName() + "' must be the same as the file '" + getName() + "' that it is contained within", this, false);
+					
+					return false;
+				}
+				
+				return true;
+			}))
+			{
+				return result.errorOccurred();
+			}
+		}
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			validateImports();
 		}
