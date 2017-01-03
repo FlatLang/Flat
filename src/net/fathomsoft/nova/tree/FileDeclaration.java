@@ -351,6 +351,23 @@ public class FileDeclaration extends Node
 		getPackage().replaceWith(n);
 	}
 	
+	private int getClassOffset()
+	{
+		int offset = 1;
+		
+		if (getPackage() != null)
+		{
+			if (getNumChildren() < getNumDecodedChildren() + 1)
+			{
+//				SyntaxMessage.error("Missing class declaration", this);
+			}
+			
+			offset++;
+		}
+		
+		return offset;
+	}
+	
 	/**
 	 * Get the ClassDeclaration of the class that is contained within the file.
 	 * 
@@ -358,21 +375,9 @@ public class FileDeclaration extends Node
 	 */
 	public ClassDeclaration getClassDeclaration()
 	{
-		if (getNumChildren() > getNumDecodedChildren())
+		if (getNumChildren() > super.getNumDefaultChildren() + getClassOffset())
 		{
-			int offset = 1;
-			
-			if (getPackage() != null)
-			{
-				if (getNumChildren() < getNumDecodedChildren() + 1)
-				{
-					SyntaxMessage.error("Missing class declaration", this);
-				}
-				
-				offset++;
-			}
-			
-			return (ClassDeclaration)getChild(super.getNumDefaultChildren() + offset);
+			return (ClassDeclaration)getChild(super.getNumDefaultChildren() + getClassOffset());
 		}
 		
 		return null;
