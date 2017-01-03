@@ -21,7 +21,7 @@ public abstract class VTable extends IIdentifier
 		
 		ClassDeclaration c = getParentClass();
 		
-		String type = c.getClassLocation().replace('/', '_') + '_' + getVTableType() + "_VTable";
+		String type = c.getClassLocation().replace('/', '_').replace('.', '_') + '_' + getVTableType() + "_VTable";
 		setType(type, true, false, false);
 		
 		setName(type + "_val", true);
