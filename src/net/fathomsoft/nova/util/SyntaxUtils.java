@@ -1886,7 +1886,14 @@ public class SyntaxUtils
 				return type;
 			}
 			
-			clazz = clazz.getParentClass();
+			clazz = clazz.encapsulatingClass;
+		}
+		
+		clazz = getImportedClass(value.getFileDeclaration(), type);
+		
+		if (clazz != null)
+		{
+			return type;
 		}
 		
 		if (checkGenericType(value, type))
