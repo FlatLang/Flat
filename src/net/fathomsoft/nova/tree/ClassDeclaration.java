@@ -1104,7 +1104,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (field == null)
 			{
-				for (Trait i : getImplementedInterfaces(false))
+				for (Trait i : getImplementedInterfaces(true))
 				{
 					field = i.getField(fieldName, false);
 					
