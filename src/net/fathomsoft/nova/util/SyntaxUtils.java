@@ -2737,7 +2737,7 @@ public class SyntaxUtils
 		int lastIndex = classLocation.lastIndexOf('/') + 1;
 		int endIndex = classLocation.lastIndexOf('.');
 		
-		return classLocation.substring(lastIndex, endIndex < 0 ? classLocation.length() : endIndex);
+		return classLocation.substring(Math.max(endIndex + 1, lastIndex));
 	}
 	
 	public static ClassDeclaration getImportedClass(FileDeclaration file, String className)
