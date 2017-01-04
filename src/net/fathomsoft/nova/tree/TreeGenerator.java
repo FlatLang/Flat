@@ -175,41 +175,43 @@ public class TreeGenerator implements Runnable
 	 */
 	private void phase2(File file)
 	{
-		String filename = FileUtils.removeFileExtension(file.getName());
+		ClassDeclaration[] classes = fileDeclaration.getClassDeclarations();
 		
-		controller.log("Phase two for '" + filename + "'...");
-		
-		ClassDeclaration node = fileDeclaration.getClassDeclaration();
-		
-		if (node == null)
+		for (ClassDeclaration node : classes)
 		{
-			return;
-		}
-		
-		// Finds the starting scope '{'
-		int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
-		// Finds the ending scope '}'
-		int endingIndex   = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
-		
-		int contentStart  = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-		int contentEnd    = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
-		
-		// If there is no content to decode.
-		if (contentStart >= contentEnd)
-		{
-			return;
-		}
-		
-		traverseCode(node, contentStart, SyntaxTree.SECOND_PASS_CLASSES, true);
-		
-		decodeScopeContents(node.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-		decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-		decodeScopeContents(node.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-		decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-		
-		if (node.arrayBracketOverload != null)
-		{
-			decodeScopeContentsNode(node.arrayBracketOverload, false, SyntaxTree.ARRAY_BRACKET_OVERLOAD_DECODE, true);
+			if (node == null || !node.isUserMade())
+			{
+				continue;
+			}
+			
+			controller.log("Phase two for '" + node.getClassLocation() + "'...");
+			
+			// Finds the starting scope '{'
+			int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+			// Finds the ending scope '}'
+			int endingIndex = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
+			
+			int contentStart = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+			int contentEnd = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+			
+			// If there is no content to decode.
+			if (contentStart >= contentEnd)
+			{
+				continue;
+			}
+			
+			traverseCode(node, contentStart, SyntaxTree.SECOND_PASS_CLASSES, true);
+			
+			decodeScopeContents(node.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+			decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+			decodeScopeContents(node.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+			decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+			decodeScopeContents(node.getInnerClasses(), false, SyntaxTree.SECOND_PASS_CLASSES, true);
+			
+			if (node.arrayBracketOverload != null)
+			{
+				decodeScopeContentsNode(node.arrayBracketOverload, false, SyntaxTree.ARRAY_BRACKET_OVERLOAD_DECODE, true);
+			}
 		}
 	}
 	
@@ -220,24 +222,23 @@ public class TreeGenerator implements Runnable
 	 */
 	private void phase3(File file)
 	{
-		String filename = FileUtils.removeFileExtension(file.getName());
-
-		controller.log("Phase three for '" + filename + "'...");
-		
-		ClassDeclaration classDeclaration = fileDeclaration.getClassDeclaration();
-		
-		if (classDeclaration == null)
+		for (ClassDeclaration classDeclaration : fileDeclaration.getClassDeclarations())
 		{
-			return;
+			if (classDeclaration == null || !classDeclaration.isUserMade())
+			{
+				continue;
+			}
+			
+			controller.log("Phase three for '" + classDeclaration.getClassLocation() + "'...");
+			
+			boolean requireScope = !(classDeclaration instanceof Trait);
+			
+			decodeScopeContents(classDeclaration.getPropertyMethodList(), requireScope);
+			decodeScopeContents(classDeclaration.getMethodList(), requireScope);
+			decodeScopeContents(classDeclaration.getConstructorList(), requireScope);
+			decodeScopeContents(classDeclaration.getDestructorList(), requireScope);
+			decodeScopeContents(classDeclaration.getStaticBlockList(), requireScope);
 		}
-		
-		boolean requireScope = !(classDeclaration instanceof Trait);
-		
-		decodeScopeContents(classDeclaration.getPropertyMethodList(), requireScope);
-		decodeScopeContents(classDeclaration.getMethodList(), requireScope);
-		decodeScopeContents(classDeclaration.getConstructorList(), requireScope);
-		decodeScopeContents(classDeclaration.getDestructorList(), requireScope);
-		decodeScopeContents(classDeclaration.getStaticBlockList(), requireScope);
 	}
 	
 	/**
