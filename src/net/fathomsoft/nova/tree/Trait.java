@@ -49,7 +49,9 @@ public class Trait extends ClassDeclaration
 	@Override
 	public String getExtendedClassLocation()
 	{
-		return null;
+		String extended = super.getExtendedClassLocation();
+		
+		return !extended.equals("nova/Object") ? extended : null;
 	}
 	
 	/**

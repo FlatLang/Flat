@@ -427,6 +427,15 @@ public class ClassDeclaration extends InstanceDeclaration
 			getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
 		}
 		
+		for (Trait t : getImplementedInterfaces())
+		{
+			if (t.getExtendedClassDeclaration() != null && t.getExtendedClassDeclaration() == getExtendedClassDeclaration())
+			{
+				((ClassDeclaration)t).addVirtualMethods(methods, t.getMethodList(), false, false, true);
+				((ClassDeclaration)t).addVirtualMethods(methods, t.getPropertyMethodList(), false, false, true);
+			}
+		}
+		
 		addVirtualMethods(methods, getMethodList(), false, false, true);
 		addVirtualMethods(methods, getPropertyMethodList(), false, false, true);
 	}
@@ -451,9 +460,11 @@ public class ClassDeclaration extends InstanceDeclaration
 						method = method.getVirtualMethod();
 					}*/
 					
-					if (!excludeInterfaces || method.getRootDeclaration().getParentClass() instanceof Trait == false)
+					boolean trait = method.getRootDeclaration().getParentClass() instanceof Trait;
+					
+					if (!excludeInterfaces || !trait)
 					{
-						if (!interfaceOnly || method.getRootDeclaration().getParentClass() instanceof Trait)
+						if (!interfaceOnly || trait)
 						{
 							NovaMethodDeclaration existing = getMethod(method, methods, filter);
 							
@@ -592,7 +603,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (clazz instanceof Trait)
 			{
-				array.add((Trait)clazz);
+				if (clazz != this)
+				{
+					array.add((Trait)clazz);
+				}
 			}
 			else
 			{
@@ -606,7 +620,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				for (Trait inter : array.get(i).getImplementedInterfaces())
 				{
-					array.add(inter);
+					if (inter != this)
+					{
+						array.add(inter);
+					}
 				}
 			}
 		}
@@ -822,7 +839,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
-			MethodDeclaration method = (MethodDeclaration)list.getChild(i);
+			MethodDeclaration method = list.getChild(i);
 			
 			if (method instanceof NovaMethodDeclaration)
 			{
@@ -2066,7 +2083,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (data.extending || data.implementing)
 		{
-			if (data.extending && !data.isInterface)
+			if (data.extending)
 			{
 				ExtendedClass extended = ExtendedClass.decodeStatement(this, word, getLocationIn().asNew(), extra.require);
 				
