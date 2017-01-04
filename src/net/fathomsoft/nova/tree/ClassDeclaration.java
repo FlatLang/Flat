@@ -33,7 +33,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	public boolean abstractValue;
 	
 	public ClassInstanceDeclaration classInstanceDeclaration;
-	public ClassDeclaration functionMap;
+	public ClassDeclaration functionMap, encapsulatingClass;
 	
 	private ExtendedClass	extendedClass;
 	
@@ -1674,6 +1674,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		else if (child instanceof ClassDeclaration)
 		{
 			getFileDeclaration().addChild(child);
+			
+			((ClassDeclaration)child).encapsulatingClass = this;
 			
 			if (getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION) // if added as inner class, re-run class declaration validation
 			{
