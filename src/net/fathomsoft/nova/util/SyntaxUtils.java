@@ -1670,7 +1670,7 @@ public class SyntaxUtils
 		{
 			ClassDeclaration clazz2 = declaration.getParentClass();
 			
-			if (accessingClass.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(accessingClass))
+			if (accessingClass.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(accessingClass) || accessingClass.encapsulates(clazz2))
 			{
 				return true;
 			}
