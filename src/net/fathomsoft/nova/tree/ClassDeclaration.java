@@ -2367,7 +2367,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
 			{
-				ClassDeclaration c = ClassDeclaration.decodeStatement(this, "class " + getClassLocation().replace('/', '_').replace('.', '_') + "FunctionMap extends FunctionMap", Location.INVALID, true);
+				ClassDeclaration c = ClassDeclaration.decodeStatement(this, "class " + /*getClassLocation().replace('/', '_').replace('.', '_')*/ getName() + "FunctionMap extends FunctionMap", Location.INVALID, true);
 				
 				if (c == null)
 				{
