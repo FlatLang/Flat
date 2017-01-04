@@ -878,7 +878,14 @@ public abstract class Node implements Listenable, Annotatable
 		}
 		else
 		{
-			toNode.children.set(index, node);
+			if (index >= getNumChildren())
+			{
+				toNode.children.add(index, node);
+			}
+			else
+			{
+				toNode.children.set(index, node);
+			}
 		}
 		
 		node.onAdded(toNode);
