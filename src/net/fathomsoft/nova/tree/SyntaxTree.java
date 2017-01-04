@@ -1299,7 +1299,7 @@ public class SyntaxTree
 		}
 		if (statement.equals("class"))
 		{
-			if (!(parent instanceof Accessible) || !((Accessible)parent).canAccess())
+			if (parent instanceof StaticClassReference)//!(parent instanceof Accessible) || !((Accessible)parent).canAccess())
 			{
 				ClassDeclaration clazz = ((Value)parent).getTypeClass();
 				
