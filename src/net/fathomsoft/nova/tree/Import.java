@@ -223,7 +223,7 @@ public class Import extends Node
 			}
 			else
 			{
-				SyntaxMessage.error("Import location ends with unknown extension", this);
+//				SyntaxMessage.error("Import location ends with unknown extension", this);
 			}
 		}
 		
@@ -243,23 +243,51 @@ public class Import extends Node
 			return result;
 		}
 		
-		if (!isExternal())
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			Program    program  = getProgram();
-			
-			ClassDeclaration clazz = program.getClassDeclaration(location);
-			
-			if (clazz == null)
+			if (!isExternal() && !location.contains("."))
 			{
-					SyntaxMessage.error("Unknown import location '" + location + "'", this, false);
-					
-					getParent().removeChild(this);
-					
-					return result.errorOccurred();
+				ValidationResult r = validateLocation(result);
+				
+				if (r != null)
+				{
+					return r;
+				}
+			}
+		}
+		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (!isExternal() && location.contains("."))
+			{
+				ValidationResult r = validateLocation(result);
+				
+				if (r != null)
+				{
+					return r;
+				}
 			}
 		}
 		
 		return result;
+	}
+	
+	private ValidationResult validateLocation(ValidationResult result)
+	{
+		if (!isExternal())
+		{
+			ClassDeclaration clazz = getProgram().getClassDeclaration(location);
+			
+			if (clazz == null)
+			{
+				SyntaxMessage.error("Unknown import location '" + location + "'", this, false);
+				
+				getParent().removeChild(this);
+				
+				return result.errorOccurred();
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
