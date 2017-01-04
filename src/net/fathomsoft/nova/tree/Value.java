@@ -1278,11 +1278,22 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		else if (value.getType() != null)
 		{
-			setType(SyntaxUtils.getPrimitiveNovaType((extractType ? novaType : original).getType()));
+			String type = SyntaxUtils.getPrimitiveNovaType((extractType ? novaType : original).getType());
+			
+			if (extractType && !novaType.isExternalType() && !novaType.isGenericType() && getFileDeclaration().getClassDeclaration(type) == null && !getFileDeclaration().containsImport(type, false))
+			{
+				if ((novaType instanceof LocalDeclaration == false || !((LocalDeclaration)novaType).isImplicit()) &&
+					(this instanceof LocalDeclaration == false || !((LocalDeclaration)this).isImplicit()))
+				{
+					getFileDeclaration().addImport(novaType.getTypeClassLocation());
+				}
+			}
+			
+			setType(type);
 			
 			if (extractType)
 			{
-				String type = value.getNovaTypeValue(context).generateGenericType(context);
+				type = value.getNovaTypeValue(context).generateGenericType(context);
 				
 				if (type.length() > 0 && getGenericTypeArgumentList() != null)
 				{
