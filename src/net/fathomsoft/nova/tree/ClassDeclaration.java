@@ -84,6 +84,39 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(blocks, this);
 	}
 	
+	public TypeList<ClassDeclaration> getInnerClasses()
+	{
+		return getInnerClasses(true);
+	}
+	
+	public TypeList<ClassDeclaration> getInnerClasses(boolean recursive)
+	{
+		return addInnerClasses(recursive, new TypeList<>(this, Location.INVALID));
+	}
+	
+	private TypeList<ClassDeclaration> addInnerClasses(boolean recursive, TypeList<ClassDeclaration> list)
+	{
+		for (ClassDeclaration c : getFileDeclaration().getClassDeclarations())
+		{
+			if (c.encapsulatingClass == this && c.isUserMade())
+			{
+				list.addChild(list.getNumChildren(), c, list, false);
+				
+				if (recursive)
+				{
+					c.addInnerClasses(true, list);
+				}
+			}
+		}
+		
+		return list;
+	}
+	
+	public boolean encapsulates(ClassDeclaration other)
+	{
+		return other.encapsulatingClass == this || other.encapsulatingClass != null && encapsulates(other.encapsulatingClass);
+	}
+	
 	@Override
 	public boolean isImmutable()
 	{
@@ -2334,12 +2367,14 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
 			{
-				ClassDeclaration c = ClassDeclaration.decodeStatement(this, "class " + getClassLocation().replace('/', '_') + "FunctionMap extends FunctionMap", Location.INVALID, true);
+				ClassDeclaration c = ClassDeclaration.decodeStatement(this, "class " + getClassLocation().replace('/', '_').replace('.', '_') + "FunctionMap extends FunctionMap", Location.INVALID, true);
 				
 				if (c == null)
 				{
 					SyntaxMessage.error("Could not generate function map for class '" + getName() + "'", this);
 				}
+				
+				c.setProperty("userMade", false);
 				
 				functionMap = c;
 				
