@@ -265,7 +265,15 @@ public class FileDeclaration extends Node
 				return clazz;
 			}
 			
-			clazz = clazz.getParentClass();
+			clazz = clazz.encapsulatingClass;
+		}
+		
+		for (ClassDeclaration c : from.getFileDeclaration().getClassDeclarations())
+		{
+			if (c.getName().endsWith(className)) // TODO: need to check if at valid depth
+			{
+				return c;
+			}
 		}
 		
 		Import i = getImport(className, false, true);
