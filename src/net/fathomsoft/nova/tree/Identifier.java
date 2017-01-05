@@ -65,7 +65,7 @@ public abstract class Identifier extends Value implements Accessible
 	@Override
 	public boolean isExternalType()
 	{
-		return getType() != null && getDeclaringClass().containsExternalType(getType());
+		return getType() != null && getDeclaringClass() != null && getDeclaringClass().containsExternalType(getType());
 	}
 	
 	/**
