@@ -677,6 +677,10 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			Accessible id = (Accessible)this;
 			
+			if (id.getCast() != null)
+			{
+				return getFileDeclaration();
+			}
 			if (id.isAccessed())
 			{
 				if (isGenericType())
