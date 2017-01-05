@@ -21,7 +21,7 @@ public class LambdaExpression extends Value
 {
 	public String[] variables; 
 	
-	public static final String OPERATOR = "->";
+	public static final String OPERATOR = "=>";
 	public static final String UNNAMED_PARAMETER = "_";
 	
 	private static int id = 1;
