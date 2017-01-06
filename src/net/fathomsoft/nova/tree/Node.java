@@ -16,6 +16,7 @@ import net.fathomsoft.nova.util.*;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -758,7 +759,19 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public Node[] getChildrenOfType(Class<?> type)
 	{
-		return addChildrenOfType(type, new ArrayList<>()).toArray(new Node[0]);
+		return getChildrenOfType(type, false);
+	}
+	
+	public Node[] getChildrenOfType(Class<?> type, boolean inclusive)
+	{
+		ArrayList<Node> nodes = new ArrayList<>();
+		
+		if (inclusive && type.isAssignableFrom(this.getClass()))
+		{
+			nodes.add(this);
+		}
+		
+		return addChildrenOfType(type, nodes).toArray(new Node[0]);
 	}
 	
 	private ArrayList<Node> addChildrenOfType(Class<?> type, ArrayList<Node> nodes)
