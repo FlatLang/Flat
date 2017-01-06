@@ -870,7 +870,7 @@ public class MethodCall extends Variable
 				n.setDeclaration((VariableDeclaration)callableMethod);
 			}
 			
-			boolean skipArgumentChecks = callableMethod instanceof PropertyMethod;
+			boolean skipArgumentChecks = callableMethod != null && (callableMethod instanceof PropertyMethod || parent.getParentClass().isPropertyTrue("functionMap"));
 			
 			if (!n.decodeArguments(statement, bounds, require))
 			{
