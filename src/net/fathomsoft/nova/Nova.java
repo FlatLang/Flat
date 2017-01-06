@@ -244,6 +244,21 @@ public class Nova
 	}
 	
 	/**
+	 * Used to represent a debugging breakpoint...
+	 *
+	 * @param condition Whether or not to break.
+	 */
+	public static boolean debuggingBreakpoint(boolean condition)
+	{
+		if (condition)
+		{
+			System.out.println("Breakpoint");
+		}
+		
+		return condition;
+	}
+	
+	/**
 	 * Compile the input files given within the args.
 	 * 
 	 * @param args The String array containing the locations of the files
@@ -1068,21 +1083,6 @@ public class Nova
 		{
 			System.exit(0);
 		}
-	}
-	
-	/**
-	 * Used to represent a debugging breakpoint...
-	 * 
-	 * @param condition Whether or not to break.
-	 */
-	public static boolean debuggingBreakpoint(boolean condition)
-	{
-		if (condition)
-		{
-			System.out.println("Breakpoint");
-		}
-		
-		return condition;
 	}
 	
 	public static Nova generateTemporaryController()
