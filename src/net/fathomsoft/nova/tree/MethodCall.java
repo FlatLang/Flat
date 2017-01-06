@@ -1354,7 +1354,7 @@ public class MethodCall extends Variable
 			{
 				Variable var = (Variable)accessing;
 				
-				if (var.isPrimitiveType() && var.getTypeClass() != null)
+				if (var.isPrimitiveType() && var.getTypeClass() != null && var.getDataType() != Value.POINTER)
 				{
 					SearchFilter filter  = new SearchFilter();
 					filter.checkAncestor = false;
