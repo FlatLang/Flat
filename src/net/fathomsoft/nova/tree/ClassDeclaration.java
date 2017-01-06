@@ -2499,7 +2499,17 @@ public class ClassDeclaration extends InstanceDeclaration
 				return;
 			}
 			
-			parameters += p.generateNovaInput();
+			if (p.isOptional())
+			{
+				parameters += "passing ";
+			}
+			
+			parameters += p.generateNovaInput(new StringBuilder(), true, true, false);
+			
+			if (p.isOptional())
+			{
+				parameters += " = " + (p.isPrimitive() ? "0" : "null");
+			}
 		}
 		
 		parameters += ")";
@@ -2526,6 +2536,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (method == null)
 		{
+			BodyMethodDeclaration.decodeStatement(this, function.getVisibilityText() + " " + staticValue + functionName + genericParams + parameters + returnType, function.getLocationIn(), true);
 			SyntaxMessage.error("Could not generate function map handle for function '" + reference.getClassLocation() + "." + function.getName() + "'", function);
 		}
 		
