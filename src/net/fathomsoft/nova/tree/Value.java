@@ -555,6 +555,26 @@ public abstract class Value extends Node implements AbstractValue
 		return setType(type, require, checkType, true);
 	}
 	
+	public void checkDataType(String type)
+	{
+		if (type != null && !isExternalType())
+		{
+			boolean primitive = SyntaxUtils.isPrimitiveType(type) || SyntaxUtils.isExternalPrimitiveType(type);
+			
+			if (primitive)
+			{
+				if (getArrayDimensions() == 0)
+				{
+					setDataType(Value.VALUE);
+				}
+			}
+			else if (getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
+			{
+				setDataType(Value.POINTER);
+			}
+		}
+	}
+	
 	public AbstractMap.SimpleEntry<Value, Boolean> getCastedType()
 	{
 		return null;
