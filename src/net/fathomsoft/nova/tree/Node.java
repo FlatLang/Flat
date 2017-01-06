@@ -2147,6 +2147,14 @@ public abstract class Node implements Listenable, Annotatable
 			node.annotations = cloned;
 		}
 		
+		if (properties != null)
+		{
+			for (Map.Entry<String, Object> entry : properties.entrySet())
+			{
+				node.setProperty(entry.getKey(), entry.getValue());
+			}
+		}
+		
 		return node;
 	}
 	
