@@ -164,6 +164,12 @@ public class Constructor extends BodyMethodDeclaration
 		return result;
 	}
 	
+	@Override
+	public void checkDataType(String type)
+	{
+		
+	}
+	
 	public void addSuperCallFor(Stack<MethodCall> constructorCalls, Constructor current)
 	{
 		ClassDeclaration clazz = current.getParentClass().getExtendedClassDeclaration();

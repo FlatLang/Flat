@@ -36,6 +36,12 @@ public class ReferenceParameter extends Parameter
 		return true;
 	}
 	
+	@Override
+	public void checkDataType(String type)
+	{
+		
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
