@@ -18,6 +18,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -2403,9 +2404,39 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			ClassDeclaration funMap = getProgram().getClassDeclaration("nova/meta/FunctionMap");
 			
-			if (getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
+			if (this instanceof Trait || getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
 			{
-				ClassDeclaration c = ClassDeclaration.decodeStatement(this, "class " + /*getClassLocation().replace('/', '_').replace('.', '_')*/ getName() + "FunctionMap extends FunctionMap", Location.INVALID, true);
+				addFunctionMapImport(getExtendedClassDeclaration());
+				
+				String extensionName = !getExtendedClassName().equals("Object") ? getExtendedClassName() : "";
+				
+				String type = this instanceof Trait ? "trait" : "class";
+				
+				String declaration = type + " " + /*getClassLocation().replace('/', '_').replace('.', '_')*/ getName() + "FunctionMap extends " + extensionName + "FunctionMap";
+				
+				if (getImplementedInterfaces().length > 0)
+				{
+					declaration += " implements ";
+					
+					int i = 0;
+					
+					for (Trait t : getImplementedInterfaces())
+					{
+						addFunctionMapImport(t);
+						
+						if (i++ > 0)
+						{
+							declaration += ", ";
+						}
+						
+						declaration += t.getName() + "FunctionMap";
+					}
+				}
+				
+				ClassDeclaration c = (ClassDeclaration)SyntaxTree.decodeStatement(this, declaration, Location.INVALID, true, new Class[] {
+					ClassDeclaration.class,
+					Trait.class,
+				});
 				
 				if (c == null)
 				{
