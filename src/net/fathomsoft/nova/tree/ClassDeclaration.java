@@ -2346,7 +2346,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
 			
-			validateDeclaration(phase);
+			if (!isPropertyTrue("functionMap"))
+			{
+				validateDeclaration(phase);
+			}
 			
 			if (extendedClass != null && getFileDeclaration().containsImport(getExtendedClassLocation()))
 			{
