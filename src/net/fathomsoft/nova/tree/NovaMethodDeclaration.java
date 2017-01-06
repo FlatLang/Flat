@@ -227,7 +227,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		Parameter parameter = getParameter(name);
 		
-		if (parameter != null)
+		if (parameter != null && parameter != parent)
 		{
 			getParameterList().validateAccess(parameter, parent);
 			
