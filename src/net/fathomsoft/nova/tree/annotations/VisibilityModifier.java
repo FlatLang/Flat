@@ -9,31 +9,34 @@ public interface VisibilityModifier
 {
 	default boolean addAssignment()
 	{
-		Node parent = ((Annotation)this).getParent();
-		
-		if (parent instanceof Parameter && !parent.isPropertyTrue("addedAssignment"))
+		if (!((Annotation)this).getParentClass().isPropertyTrue("functionMap"))
 		{
-			Parameter param = (Parameter)parent;
+			Node parent = ((Annotation)this).getParent();
 			
-			if (param.getParentMethod() instanceof Constructor == false && param.getParentMethod() instanceof InitializationMethod == false)
+			if (parent instanceof Parameter && !parent.isPropertyTrue("addedAssignment"))
 			{
-				SyntaxMessage.error("Parameter field declarations can only be used in constructors", param);
+				Parameter param = (Parameter)parent;
 				
-				return false;
-			}
-			
-			if (param.getParentMethod() instanceof Constructor)
-			{
-				param.setProperty("addedAssignment", true);
-				
-				Node assignment = SyntaxTree.decodeScopeContents(param.getParentMethod(), "this." + param.getName() + " = " + param.getName(), param.getLocationIn(), true);
-				
-				if (assignment != null)
+				if (param.getParentMethod() instanceof Constructor == false && param.getParentMethod() instanceof InitializationMethod == false)
 				{
-					param.getParentMethod().getScope().addChild(assignment);
+					SyntaxMessage.error("Parameter field declarations can only be used in constructors", param);
+					
+					return false;
 				}
 				
-				return assignment != null;
+				if (param.getParentMethod() instanceof Constructor)
+				{
+					param.setProperty("addedAssignment", true);
+					
+					Node assignment = SyntaxTree.decodeScopeContents(param.getParentMethod(), "this." + param.getName() + " = " + param.getName(), param.getLocationIn(), true);
+					
+					if (assignment != null)
+					{
+						param.getParentMethod().getScope().addChild(assignment);
+					}
+					
+					return assignment != null;
+				}
 			}
 		}
 		
@@ -42,20 +45,23 @@ public interface VisibilityModifier
 	
 	default boolean createFieldFromParameter(Parameter param)
 	{
-		FieldDeclaration current = param.getParentClass().getField(param.getName(), false);
-		
-		if (current == null)
+		if (!((Annotation)this).getParentClass().isPropertyTrue("functionMap"))
 		{
-			FieldDeclaration field = new FieldDeclaration(param.getParentClass(), Location.INVALID);
+			FieldDeclaration current = param.getParentClass().getField(param.getName(), false);
 			
-			param.cloneTo(field, true, true);
-			field.setLocationIn(Location.INVALID);
-			
-			param.getParentClass().addChild(field);
-		}
-		else
-		{
-//			if (current.getVisibility() != param.getvis)
+			if (current == null)
+			{
+				FieldDeclaration field = new FieldDeclaration(param.getParentClass(), Location.INVALID);
+				
+				param.cloneTo(field, true, true);
+				field.setLocationIn(Location.INVALID);
+				
+				param.getParentClass().addChild(field);
+			}
+			else
+			{
+				//			if (current.getVisibility() != param.getvis)
+			}
 		}
 		
 		return true;
