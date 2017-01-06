@@ -177,6 +177,11 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 */
 	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
+		return decodeStatement(parent, statement, location, require, validateAccess, null);
+	}
+	
+	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod reference)
+	{
 		if (!SyntaxUtils.isInstantiation(statement))
 		{
 			return null;
@@ -191,7 +196,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		String instantiation = statement.substring(startIndex);
 		
-		return n.decodeInstantiation(instantiation, newLoc, require, validateAccess);
+		return n.decodeInstantiation(instantiation, newLoc, require, validateAccess, reference);
 	}
 	
 	/**
@@ -208,6 +213,11 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 * @return The generated Instantiation.
 	 */
 	private Instantiation decodeInstantiation(String instantiation, Location location, boolean require, boolean validateAccess)
+	{
+		return decodeInstantiation(instantiation, location, require, validateAccess, null);
+	}
+	
+	private Instantiation decodeInstantiation(String instantiation, Location location, boolean require, boolean validateAccess, CallableMethod reference)
 	{
 		Identifier child  = null;
 		String     params = null;
@@ -238,7 +248,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 //			
 //			instantiation = clazz.getName() + instantiation.substring(className.length());
 //			
-			MethodCall methodCall = MethodCall.decodeStatement(this, instantiation, location, require, validateAccess);
+			MethodCall methodCall = MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference);
 			
 			if (methodCall == null)
 			{
@@ -251,7 +261,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 				
 				if (callType != null && !callType.isOfType(getTypeClass()) && type != null && type.getConstructorList().getNumVisibleChildren() > 0)
 				{
-					MethodCall.decodeStatement(this, instantiation, location, require, validateAccess);
+					MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference);
 					SyntaxMessage.queryError("Incompatible arguments given to " + getName() + " constructor", this, require);
 					
 					return null;
