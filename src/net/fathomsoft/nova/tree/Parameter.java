@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -291,6 +292,67 @@ public class Parameter extends LocalDeclaration
 		}
 	}
 	
+	private void checkFunctionMapParameter()
+	{
+		if (defaultValueString != null)
+		{
+			if (getParentClass().isPropertyTrue("functionMap"))
+			{
+				int index = getIndex() - (getParentMethod().isStatic() ? 0 : 1);
+				
+				NovaMethodDeclaration correspondingFunction = (NovaMethodDeclaration)getParentMethod().getProperty("correspondingFunction");
+				
+				Parameter correspondingParameter = correspondingFunction.getParameter(index);
+				Value corresponding = correspondingParameter.getDefaultValue();
+				Value clone = (Value)corresponding.clone(this, getLocationIn());
+				
+				Node[] nodes = clone.getChildrenOfType(Variable.class, true);
+				
+				if (nodes.length > 0)
+				{
+					Parameter referenceParameter = getParentMethod().getParameter("reference");
+					
+					for (Node n : nodes)
+					{
+						Variable v = (Variable)n;
+						
+						Parameter param = correspondingFunction.getParameter(v.getName());
+						
+						if (!v.isAccessed() && (param == null || param == correspondingParameter) && corresponding.getParentClass().isOfType(v.getDeclaration().getDeclaringClass()))
+						{
+							if (v.declaration instanceof InstanceDeclaration == false || !((InstanceDeclaration)v.declaration).isStatic())
+							{
+								Variable a = referenceParameter.generateUsableVariable(v.parent, v.getLocationIn());
+								
+								if (v != clone)
+								{
+									v.replaceWith(a);
+								}
+								
+								a.setAccessedNode(v);
+								
+								if (clone == v)
+								{
+									clone = a;
+								}
+							}
+						}
+						else if (v.isAccessed() && v.getAccessingNode() instanceof Variable && ((Variable)v.getAccessingNode()).declaration instanceof ReferenceParameter)
+						{
+							Variable a = referenceParameter.generateUsableVariable(this, v.getLocationIn());
+							
+							a.setAccessedNode(v);
+							clone = a;
+						}
+					}
+				}
+				
+				defaultValue = clone;
+				defaultValueString = null;
+			}
+		}
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
 	 */
@@ -304,13 +366,18 @@ public class Parameter extends LocalDeclaration
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && defaultValueString != null)
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			defaultValue = SyntaxTree.decodeValue(this, defaultValueString, getLocationIn(), true);
-			defaultValue.onAfterDecoded();
-			defaultValue.onAdded(this);
+			checkFunctionMapParameter();
 			
-			defaultValueString = null;
+			if (defaultValueString != null)
+			{
+				defaultValue = SyntaxTree.decodeValue(this, defaultValueString, getLocationIn(), true);
+				defaultValue.onAfterDecoded();
+				defaultValue.onAdded(this);
+				
+				defaultValueString = null;
+			}
 		}
 		
 		if (defaultValue != null)
