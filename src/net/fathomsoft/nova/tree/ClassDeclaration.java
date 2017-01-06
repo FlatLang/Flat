@@ -2404,6 +2404,167 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
+	private void addFunctionMapFunctions(ClassDeclaration reference)
+	{
+		Consumer<MethodDeclaration> addFunction = m -> {
+			if (m instanceof NovaMethodDeclaration && m.isUserMade() && m instanceof Destructor == false && m instanceof ClosureVariable == false)
+			{
+				addFunctionMapFunction(reference, (NovaMethodDeclaration)m);
+			}
+		};
+		
+		reference.getConstructorList().forEach(addFunction);
+		reference.getMethodList().forEach(addFunction);
+		reference.getDestructorList().forEach(addFunction);
+	}
+	
+	private void addFunctionMapFunction(ClassDeclaration reference, NovaMethodDeclaration function)
+	{
+		if (function instanceof AbstractMethodDeclaration)
+		{
+			return;
+		}
+		
+		ArrayList<String> genericParameters = new ArrayList<>();
+		String parameters = "(";
+		
+		if (!function.isStatic())
+		{
+			parameters += reference.getName() + " reference";
+		}
+		
+		for (Parameter p : function.getParameterList())
+		{
+			if (parameters.length() > 1)
+			{
+				parameters += ", ";
+			}
+			
+			if (p.isGenericType() && !genericParameters.contains(p.getType()))
+			{
+				genericParameters.add(p.getType());
+			}
+			else if (p.isExternalType())
+			{
+				return;
+			}
+			
+			parameters += p.generateNovaInput();
+		}
+		
+		parameters += ")";
+		
+		String functionName = function instanceof Constructor ? "construct" : (function instanceof Destructor ? "destroy" : function.getName());
+		
+		String returnType = function.getType() != null ? " -> " + function.getNovaType() : "";
+		
+		if (function.isGenericType() && !genericParameters.contains(function.getType()))
+		{
+			genericParameters.add(function.getType());
+		}
+		
+		String genericParams = "";
+		
+		if (genericParameters.size() > 0)
+		{
+			genericParams = "<" + String.join(", ", genericParameters) + ">";
+		}
+		
+		String staticValue = function.isStatic() ? "static " : "";
+		
+		BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(this, function.getVisibilityText() + " " + staticValue + functionName + genericParams + parameters + returnType, function.getLocationIn(), true);
+		
+		if (method == null)
+		{
+			SyntaxMessage.error("Could not generate function map handle for function '" + reference.getClassLocation() + "." + function.getName() + "'", function);
+		}
+		
+		Parameter referenceParameter = null;
+		
+		if (!function.isStatic())
+		{
+			referenceParameter = method.getParameter("reference");
+		}
+		
+		String arguments = "(";
+		
+		int i = function.isStatic() ? 0 : 1;
+		
+		for (Parameter p : function.getParameterList())
+		{
+			if (arguments.length() > 1)
+			{
+				arguments += ", ";
+			}
+			
+			arguments += p.getName();
+			
+//			if (p instanceof ClosureDeclaration)
+//			{
+//				ClosureDeclaration closure = (ClosureDeclaration)p;
+//				
+//				((ClosureDeclaration)method.getParameterList().getParameter(i)).id = closure.id;
+////				method.getParameterList().getParameter(i).replaceWith(closure.clone(method.getParameterList(), function.getLocationIn(), true, true));
+//			}
+			
+			i++;
+		}
+		
+		arguments += ")";
+		
+		Identifier accessing = null;
+		Identifier call = null;
+		Node node = null;
+		
+		if (function instanceof Constructor)
+		{
+			method.setDataType(Value.POINTER);
+			
+			call = Instantiation.decodeStatement(method, "new " + function.getName() + genericParams + arguments, function.getLocationIn(), true, false, function);
+			node = call;
+		}
+		else
+		{
+			if (!function.isStatic())
+			{
+				referenceParameter.setDataType(Value.POINTER);
+				
+				accessing = method.getParameter("reference").generateUsableVariable(method, function.getLocationIn());
+			}
+			else
+			{
+				accessing = StaticClassReference.decodeStatement(method, function.getDeclaringClass().getName(), function.getLocationIn(), true);
+			}
+			
+			call = MethodCall.decodeStatement(accessing, function.getName() + genericParams + arguments, function.getLocationIn(), true, false, function);
+		}
+		
+		if (call == null)
+		{
+			SyntaxMessage.error("Could not generate function map handle delegate call for function '" + reference.getClassLocation() + "." + function.getName() + "'", function);
+		}
+		
+		if (function instanceof Constructor == false)
+		{
+			accessing.setAccessedNode(call);
+			node = accessing;
+		}
+		
+		if (method.getType() != null)
+		{
+			Return r = new Return(method, function.getLocationIn());
+			
+			r.getReturnValues().addChild(node);
+			
+			node = r;
+		}
+		
+		method.addChild(node);
+		method.setProperty("correspondingFunction", function);
+		
+		addChild(method);
+	}
+	
 	@Override
 	public void prePreGenerationValidation()
 	{
