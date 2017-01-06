@@ -126,15 +126,26 @@ public class Parameter extends LocalDeclaration
 		
 		return method == null || method.isExternal();
 	}
-
+	
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		return generateNovaInput(builder, outputChildren, true);
+	}
+	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		return generateNovaInput(builder, outputChildren, generateArray, true);
+	}
+	
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray, boolean outputDefaultValue)
 	{
 		generateNovaAnnotations(builder);
 		
 		builder.append(generateNovaType()).append(' ').append(getName());
 		
-		if (isOptional())
+		if (outputDefaultValue && isOptional())
 		{
 			builder.append(" = ").append(defaultValueString != null ? defaultValueString : defaultValue.generateNovaInput());
 		}
@@ -298,56 +309,6 @@ public class Parameter extends LocalDeclaration
 		{
 			if (getParentClass().isPropertyTrue("functionMap"))
 			{
-				int index = getIndex() - (getParentMethod().isStatic() ? 0 : 1);
-				
-				NovaMethodDeclaration correspondingFunction = (NovaMethodDeclaration)getParentMethod().getProperty("correspondingFunction");
-				
-				Parameter correspondingParameter = correspondingFunction.getParameter(index);
-				Value corresponding = correspondingParameter.getDefaultValue();
-				Value clone = (Value)corresponding.clone(this, getLocationIn());
-				
-				Node[] nodes = clone.getChildrenOfType(Variable.class, true);
-				
-				if (nodes.length > 0)
-				{
-					Parameter referenceParameter = getParentMethod().getParameter("reference");
-					
-					for (Node n : nodes)
-					{
-						Variable v = (Variable)n;
-						
-						Parameter param = correspondingFunction.getParameter(v.getName());
-						
-						if (!v.isAccessed() && (param == null || param == correspondingParameter) && corresponding.getParentClass().isOfType(v.getDeclaration().getDeclaringClass()))
-						{
-							if (v.declaration instanceof InstanceDeclaration == false || !((InstanceDeclaration)v.declaration).isStatic())
-							{
-								Variable a = referenceParameter.generateUsableVariable(v.parent, v.getLocationIn());
-								
-								if (v != clone)
-								{
-									v.replaceWith(a);
-								}
-								
-								a.setAccessedNode(v);
-								
-								if (clone == v)
-								{
-									clone = a;
-								}
-							}
-						}
-						else if (v.isAccessed() && v.getAccessingNode() instanceof Variable && ((Variable)v.getAccessingNode()).declaration instanceof ReferenceParameter)
-						{
-							Variable a = referenceParameter.generateUsableVariable(this, v.getLocationIn());
-							
-							a.setAccessedNode(v);
-							clone = a;
-						}
-					}
-				}
-				
-				defaultValue = clone;
 				defaultValueString = null;
 			}
 		}
