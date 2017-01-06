@@ -44,7 +44,7 @@ public class StaticClassReference extends IIdentifier
 	 */
 	public static StaticClassReference decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (parent.getParentClass().getName().equals(statement) || parent.getFileDeclaration().containsImport(statement, false))
+		if (parent.getFileDeclaration().getClassDeclaration(statement) != null || parent.getFileDeclaration().containsImport(statement, false))
 		{
 			StaticClassReference n = new StaticClassReference(parent, location);
 			
