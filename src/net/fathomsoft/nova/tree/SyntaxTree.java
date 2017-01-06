@@ -264,12 +264,23 @@ public class SyntaxTree
 		{
 			root.decodeShorthandActions = true;
 			
-			controller.log("Compiling shorthand actions...");
-			
+			controller.log("Compiling arrow bindings...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
+			
+			controller.log("Compiling interface field overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.autoAddInterfaceFieldOverrides()));
+			
+			controller.log("Compiling field initializations...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeFieldInitializations()));
+			
+			controller.log("Compiling arrow binding overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkShorthandActionOverrides()));
+			
+			controller.log("Compiling shorthand actions...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
+			
+			controller.log("Compiling function map overrides...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkFunctionMapOverrides()));
 		}
 	}
 	

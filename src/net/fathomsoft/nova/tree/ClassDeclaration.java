@@ -2637,6 +2637,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		getDestructorList().forEachNovaMethod(x -> x.checkOverrides());
 	}
 	
+	public void checkFunctionMapOverrides()
+	{
+		if (functionMap != null)
+		{
+			functionMap.getMethodList().forEachNovaMethod(x -> x.checkOverrides());
+			functionMap.getConstructorList().forEachNovaMethod(x -> x.checkOverrides());
+		}
+	}
+	
 	public void addDefaultConstructor()
 	{
 		addChild(Constructor.decodeStatement(this, "public construct()", Location.INVALID, true));
@@ -2747,6 +2756,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (clazz == null)
 			{
+				SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
 				SyntaxMessage.error("Class '" + extended.getType() + "' is not imported", this);
 			}
 			
