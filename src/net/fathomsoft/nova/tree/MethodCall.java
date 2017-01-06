@@ -702,20 +702,6 @@ public class MethodCall extends Variable
 		return super.getGenericReturnType();*/
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.variables.Variable#getName()
-	 */
-	@Override
-	public String getName()
-	{
-		if (Constructor.IDENTIFIER.equals(super.getName()))
-		{
-			return getDeclaration().getParentClass().getName();
-		}
-		
-		return super.getName();
-	}
-	
 	public Value[] getTypes()
 	{
 		return getMethodDeclaration().getTypes();
