@@ -70,6 +70,12 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		return true;
 	}
 	
+	@Override
+	public boolean isInstance()
+	{
+		return super.isInstance() || getName().equals(Constructor.IDENTIFIER) && getParentClass().isPropertyTrue("functionMap");
+	}
+	
 	/**
 	 * Decode the given statement into a Method instance, if
 	 * possible. If it is not possible, this method returns null.
