@@ -1,6 +1,8 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -41,6 +43,18 @@ public class VirtualMethodDeclaration extends BodyMethodDeclaration
 	public NovaParameterList getOriginalParameterList()
 	{
 		return super.getParameterList();
+	}
+	
+	@Override
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return base.getGenericTypeArgumentList();
+	}
+	
+	@Override
+	public GenericTypeParameterList getMethodGenericTypeParameterDeclaration()
+	{
+		return base != null ? base.getMethodGenericTypeParameterDeclaration() : super.getMethodGenericTypeParameterDeclaration();
 	}
 	
 	@Override
