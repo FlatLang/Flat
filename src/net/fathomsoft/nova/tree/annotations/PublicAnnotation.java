@@ -41,6 +41,12 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
 	}
 	
 	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		return builder.append("public");
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);

@@ -42,6 +42,12 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 	}
 	
 	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		return builder.append("private");
+	}
+	
+	@Override
 	public void onAdded(Node parent)
 	{
 		ModifierAnnotation.super.onAdded(parent);

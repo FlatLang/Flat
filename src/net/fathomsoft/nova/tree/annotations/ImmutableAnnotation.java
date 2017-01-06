@@ -69,6 +69,12 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	}
 	
 	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		return builder.append("immutable");
+	}
+	
+	@Override
 	public void onAdded(Node parent)
 	{
 		ModifierAnnotation.super.onAdded(parent);
