@@ -70,20 +70,7 @@ public interface AbstractValue extends GenericCompatible
 		
 		if (checkDataType)
 		{
-			/*if (n.isExternalType())
-			{
-				if (n.getAncestorOfType(ExternalMethodDeclaration.class) == null)
-				{
-					setDataType(Value.POINTER);
-				}
-			}
-			else */if (type != null && !SyntaxUtils.isPrimitiveType(type) && !SyntaxUtils.isExternalPrimitiveType(type))
-			{
-				if (!n.isExternalType() && getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
-				{
-					setDataType(Value.POINTER);
-				}
-			}
+			n.checkDataType(type);
 		}
 		
 		return true;
