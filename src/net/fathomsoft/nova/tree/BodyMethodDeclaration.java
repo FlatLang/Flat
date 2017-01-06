@@ -108,11 +108,14 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 			n.setLocationIn(location);
 			n.uniqueID = 1;
 			
-			for (Parameter p : n.getParameterList().getOptionalParameters())
+			if (!n.getParentClass().isPropertyTrue("functionMap"))
 			{
-				DefaultParameterInitialization init = new DefaultParameterInitialization(n, location, p);
-				
-				n.addChild(init);
+				for (Parameter p : n.getParameterList().getOptionalParameters())
+				{
+					DefaultParameterInitialization init = new DefaultParameterInitialization(n, location, p);
+					
+					n.addChild(init);
+				}
 			}
 			
 			if (n.getParentClass() instanceof Trait)
