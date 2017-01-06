@@ -403,6 +403,18 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
+		return generateNovaInput(builder, outputChildren, true);
+	}
+	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		return generateNovaInput(builder, outputChildren, generateArray, true);
+	}
+	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray, boolean outputDefaultValue)
+	{
 		String s = getName() + "(" + getParameterList().generateNovaInput() + ")";
 		
 		if (getType() != null)
@@ -410,7 +422,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 			s += " -> " + generateNovaType();
 		}
 		
-		if (defaultValueString != null)
+		if (outputDefaultValue && defaultValueString != null)
 		{
 			s += " = " + defaultValueString;
 		}
