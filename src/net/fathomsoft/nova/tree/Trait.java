@@ -148,25 +148,37 @@ public class Trait extends ClassDeclaration
 	@Override
 	public void addDefaultConstructor()
 	{
-		
+		if (isPropertyTrue("functionMap"))
+		{
+			super.addDefaultConstructor();
+		}
 	}
 	
 	@Override
 	public void addDefaultDestructor()
 	{
-		
+		if (isPropertyTrue("functionMap"))
+		{
+			super.addDefaultDestructor();
+		}
 	}
 	
 	@Override
 	public void addAssignmentMethods()
 	{
-		
+		if (isPropertyTrue("functionMap"))
+		{
+			super.addAssignmentMethods();
+		}
 	}
 	
 	@Override
 	public void autoAddInterfaceFieldOverrides()
 	{
-		
+		if (isPropertyTrue("functionMap"))
+		{
+			super.autoAddInterfaceFieldOverrides();
+		}
 	}
 	
 	@Override
