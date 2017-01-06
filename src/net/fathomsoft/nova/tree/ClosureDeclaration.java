@@ -415,18 +415,18 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray, boolean outputDefaultValue)
 	{
-		String s = getName() + "(" + getParameterList().generateNovaInput() + ")";
+		builder.append(getName()).append("(").append(getParameterList().generateNovaInput()).append(")");
 		
 		if (getType() != null)
 		{
-			s += " -> " + generateNovaType();
+			builder.append(" -> ").append(generateNovaType());
 		}
 		
 		if (outputDefaultValue && defaultValueString != null)
 		{
-			s += " = " + defaultValueString;
+			builder.append(" = ").append(defaultValueString);
 		}
 		
-		return builder.append(s);
+		return builder;
 	}
 }
