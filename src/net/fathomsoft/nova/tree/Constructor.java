@@ -155,6 +155,7 @@ public class Constructor extends BodyMethodDeclaration
 			MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true);
 			addChild(init);
 			
+			SyntaxTree.validateNodes(getParameterList(), phase);
 			result.returnedNode = initMethod;
 			
 			return result;
