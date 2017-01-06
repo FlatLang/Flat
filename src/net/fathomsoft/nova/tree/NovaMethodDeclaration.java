@@ -754,7 +754,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						a = Annotation.decodeStatement(this, parameters[i], location, require);
 					}
 					
-					Parameter param = Parameter.decodeStatement(this, parameters[i], location, require, isUserMade(), isUserMade());
+					Parameter param = Parameter.decodeStatement(this, parameters[i], location, require, isUserMade(), isUserMade() || getParentClass().isPropertyTrue("functionMap"));
 					
 					if (param == null)
 					{
