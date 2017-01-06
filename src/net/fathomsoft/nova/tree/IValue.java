@@ -134,11 +134,11 @@ public class IValue extends Value
 		return node;
 	}
 	
-	@Override
-	public String toString()
-	{
-		return getTypeStringValue();
-	}
+//	@Override
+//	public String toString()
+//	{
+//		return getTypeStringValue();
+//	}
 	
 	/**
 	 * Test the IValue class type to make sure everything
