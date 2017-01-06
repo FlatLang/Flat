@@ -2379,9 +2379,27 @@ public class ClassDeclaration extends InstanceDeclaration
 		return result;
 	}
 	
+	public void addFunctionMapFunctions()
+	{
+		if (functionMap != null)
+		{
+			functionMap.addFunctionMapFunctions(this);
+		}
+	}
+	
+	private void addFunctionMapImport(ClassDeclaration c)
+	{
+		if (c != null && !c.getClassLocation().equals("nova/Object"))
+		{
+			String importLocation = c.getClassLocation() + "." + c.getName() + "FunctionMap";
+			
+			getFileDeclaration().addImport(importLocation);
+		}
+	}
+	
 	public void generateFunctionMap()
 	{
-		if (functionMap == null && !getFileDeclaration().isExternalFile())
+		if (functionMap == null && !isPropertyTrue("functionMap") && !getFileDeclaration().isExternalFile())
 		{
 			ClassDeclaration funMap = getProgram().getClassDeclaration("nova/meta/FunctionMap");
 			
