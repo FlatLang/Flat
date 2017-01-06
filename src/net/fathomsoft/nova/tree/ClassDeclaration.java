@@ -2396,6 +2396,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				c.setProperty("userMade", false);
 				c.setProperty("functionMap", true);
+				c.setProperty("correspondingClass", this);
 				
 				functionMap = c;
 				
