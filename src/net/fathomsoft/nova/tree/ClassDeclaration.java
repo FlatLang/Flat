@@ -1349,15 +1349,29 @@ public class ClassDeclaration extends InstanceDeclaration
 
 		int max = -1;
 		int maxI = -1;
+		int distance = -1;
 
 		for (int i = 0; i < compatible.size(); i++)
 		{
 			MethodDeclaration method = compatible.get(i);
-
-			if (method.getParameterList().getNumRequiredParameters() > max)
+			
+			int count = method.getParameterList().getNumRequiredParameters();
+			
+			if (count > max)
 			{
 				max = method.getParameterList().getNumRequiredParameters();
 				maxI = i;
+				distance = getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+			}
+			else if (count == max)
+			{
+				int dist = getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+				
+				if (dist < distance)
+				{
+					maxI = i;
+					distance = dist;
+				}
 			}
 		}
 
@@ -1367,6 +1381,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		return null;
+	}
+	
+	private int getParametersDistance(Value[] required, Value[] given)
+	{
+		int sum = 0;
+		
+		for (int i = 0; i < Math.min(required.length, given.length); i++)
+		{
+			ClassDeclaration g = given[i].getTypeClass();
+			ClassDeclaration r = required[i].getTypeClass();
+			
+			if (g != null && r != null)
+			{
+				sum += g.getDistanceFrom(r);
+			}
+		}
+		
+		return sum;
 	}
 	
 	/**
