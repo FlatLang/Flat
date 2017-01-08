@@ -752,7 +752,7 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)getParentMethod();
 				
-				if (lambda.getParameterList().getVisibleIndex(this) >= 0)
+				if (lambda.getParameterList().getVisibleIndex(this) >= 0 && lambda.methodCall != null)
 				{
 					Value corresponding = lambda.getCorrespondingClosureDeclaration().getParameterList().getParameter(lambda.getParameterList().getVisibleIndex(this));
 					
