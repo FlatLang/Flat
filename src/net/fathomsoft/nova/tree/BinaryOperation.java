@@ -841,10 +841,10 @@ public class BinaryOperation extends IValue
 					
 					ArrayList<MethodDeclaration> list = validMethods.collect(Collectors.toCollection(ArrayList::new));
 					
-					if (list.size() > 0)
+					NovaMethodDeclaration validMethod = list.size() > 0 ? (NovaMethodDeclaration)list.get(0) : method;
+					
+//					if (list.size() > 0)
 					{
-						NovaMethodDeclaration validMethod = (NovaMethodDeclaration)list.get(0);
-						
 						//GenericTypeArgument arg = validMethod.getParameter(0).getGenericTypeParameter().getCorrespondingArgument(leftReturned);
 						Value required = validMethod.getParameter(0);
 						Value rightNode = right instanceof BinaryOperation ? ((BinaryOperation)right).getLeftOperand() : right;
