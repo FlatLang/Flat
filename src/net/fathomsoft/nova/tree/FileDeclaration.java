@@ -30,6 +30,8 @@ public class FileDeclaration extends Node
 	public ArrayList<ClosureDeclaration> closures;
 	public ArrayList<ClosureContext> contexts;
 	
+	public static int closureId, contextId;
+	
 	/**
 	 * The default imports that each file uses.
 	 */
@@ -166,14 +168,14 @@ public class FileDeclaration extends Node
 	{
 		closures.add(closure);
 		
-		return closures.size();
+		return closureId++;
 	}
 	
 	public int registerClosureContext(ClosureContext context)
 	{
 		contexts.add(context);
 		
-		return contexts.size();
+		return contextId++;
 	}
 	
 	public void unregisterClosure(ClosureDeclaration closure)
