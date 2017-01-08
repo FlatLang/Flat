@@ -7,6 +7,7 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.exceptionhandling.*;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.match.Case;
@@ -1047,6 +1048,8 @@ public class SyntaxTree
 					parent.addChild((Node)node);
 				}
 				
+				root = checkAutoCasts((Node)node, (Value)parent, root);
+				
 				if (index < 0)
 				{
 					return root;
@@ -1072,6 +1075,43 @@ public class SyntaxTree
 		
 		// Should never reach here...
 		return null;
+	}
+	
+	private static Accessible checkAutoCasts(Node node, Value accessing, Accessible root)
+	{
+		if ("nova/meta/Class".equals(accessing.getTypeClassLocation()) && node instanceof Variable)
+		{
+			Variable v = (Variable)node;
+			
+			if (v.getName().equals("functionMap"))
+			{
+				if (((Accessible)accessing).getCast() == null)
+				{
+					GenericTypeArgument arg = accessing.getGenericTypeArgument(0);
+					
+					String funMap = arg.getType() + "FunctionMap";
+					
+					if (!accessing.getFileDeclaration().containsImport(funMap, false))
+					{
+						accessing.getFileDeclaration().addImport(arg.getTypeClassLocation() + "." + funMap);
+					}
+					
+					Cast c = new Cast(root.getParent(), ((Node)root).getLocationIn());
+					
+					c.setType(funMap);
+					
+					Priority p = new Priority(root.getParent(), ((Node)root).getLocationIn());
+					
+					c.addChild((Node)root);
+					
+					p.addChild(c);
+					
+					root = p;
+				}
+			}
+		}
+		
+		return root;
 	}
 	
 	/**
