@@ -90,7 +90,12 @@ public class FileUtils
 	
 	public static PrintWriter getFileWriter(File file) throws IOException
 	{
-		return new PrintWriter(new FileWriter(file));
+		return getFileWriter(file, false);
+	}
+	
+	public static PrintWriter getFileWriter(File file, boolean append) throws IOException
+	{
+		return new PrintWriter(new FileWriter(file, append));
 	}
 	
 	public static PrintWriter getFileWriter(String fileName, File parentDir) throws IOException
@@ -231,12 +236,24 @@ public class FileUtils
 		return null;
 	}
 	
+	public static void clearFile(File file)
+	{
+		try
+		{
+			new PrintWriter(file).close();
+		}
+		catch (FileNotFoundException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public static boolean writeIfDifferent(File file, String source) throws IOException
 	{
 		return writeIfDifferent(file, writer ->
 		{
 			writer.write(source);
-		});
+		}, false);
 	}
 	
 	public static boolean writeIfDifferent(File file, Consumer<PrintWriter> write) throws IOException
@@ -325,7 +342,12 @@ public class FileUtils
 		
 		writer.close();
 		
-		if (!force && previous != null && builder.toString().trim().equals(previous.trim()))
+		return force || checkModified(file, lastModified, previous, builder.toString());
+	}
+	
+	public static boolean checkModified(File file, long lastModified, String previous, String current)
+	{
+		if (previous != null && current.trim().equals(previous.trim()))
 		{
 			file.setLastModified(lastModified);
 			
