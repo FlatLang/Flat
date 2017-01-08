@@ -272,7 +272,7 @@ public class Variable extends Identifier
 	@Override
 	public ClassDeclaration getDeclaringClass()
 	{
-		return getDeclaration().getParentClass();
+		return declaration != null ? declaration.getParentClass() : null;
 	}
 	
 	/**
