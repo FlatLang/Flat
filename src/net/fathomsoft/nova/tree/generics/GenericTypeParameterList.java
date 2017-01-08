@@ -21,6 +21,7 @@ import net.fathomsoft.nova.util.StringUtils;
 public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 {
 	public static final String EXTENDS_IDENTIFIER = "extends";
+	public static final String IMPLEMENTS_IDENTIFIER = "implements";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -134,7 +135,7 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 			Bounds bounds     = StringUtils.findNextWordBounds(parameterName);
 			Bounds nextBounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
 			
-			if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER))
+			if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER) || nextBounds.extractString(parameterName).equals(IMPLEMENTS_IDENTIFIER))
 			{
 				if (numWords == 3)
 				{
