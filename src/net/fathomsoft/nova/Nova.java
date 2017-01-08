@@ -43,7 +43,7 @@ public class Nova
 	
 	private SyntaxTree			tree;
 	
-	public ArrayList<String>	externalImports;
+	public ArrayList<String>	externalImports, externalIncludes;
 	private ArrayList<String> errors, warnings, messages;
 	
 	public File outputDirectory;
@@ -168,6 +168,7 @@ public class Nova
 		
 		inputFiles         = new ArrayList<>();
 		externalImports    = new ArrayList<>();
+		externalIncludes   = new ArrayList<>();
 		errors             = new ArrayList<>();
 		warnings           = new ArrayList<>();
 		messages           = new ArrayList<>();
@@ -277,10 +278,10 @@ public class Nova
 			
 			args = new String[]
 			{
-//				"../Spectra",
+				"../Spectra",
 //				"../Nova.c",
 				"../Misc/example",
-//				"../Misc/stabilitytest",
+				"../Misc/stabilitytest",
 				"-output-directory", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
@@ -307,12 +308,13 @@ public class Nova
 //				"spectra/Spectra",
 //				"-nogc",
 //				"-no-c-output",
-				"-dry",
+//				"-dry",
 //				"-force",
+//				"-force-check",
 //				"-no-notes",
 //				"-no-warnings",
 //				"-no-errors",
-//				"-no-optimize",
+				"-no-optimize",
 				"-target", target,
 //				"-library",
 			};
@@ -556,12 +558,13 @@ public class Nova
 		if (!StringUtils.containsString(location, FileDeclaration.DEFAULT_IMPORTS))
 		{
 //			location = file.getFile().getParent() + "/" + location;
-			location = location.substring(0, location.length() - 1) + "c"; 
-			location = FileUtils.findFileLocation(location, includeDirectories.toArray(new String[0]));
+			String absoluteLocation = location.substring(0, location.length() - 1) + "c";
+			absoluteLocation = FileUtils.findFileLocation(absoluteLocation, includeDirectories.toArray(new String[0]));
 			
-			if (location != null && !StringUtils.containsString(externalImports, location))
+			if (absoluteLocation != null && !StringUtils.containsString(externalImports, absoluteLocation))
 			{
-				externalImports.add(location);
+				externalImports.add(absoluteLocation);
+				externalIncludes.add(location);
 			}
 		}
 	}
