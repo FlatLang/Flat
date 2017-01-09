@@ -2,6 +2,8 @@ package net.fathomsoft.nova;
 
 import net.fathomsoft.nova.tree.SyntaxTree;
 
+import java.util.HashSet;
+
 public abstract class CompileEngine
 {
 	public Nova controller;
@@ -20,6 +22,8 @@ public abstract class CompileEngine
 	 * Compile the generated code into an executable file.
 	 */
 	public abstract void compile();
+	
+	public void addIncludeDirectories(HashSet<String> directories) {}
 	
 	public boolean checkArgument(String arg)
 	{

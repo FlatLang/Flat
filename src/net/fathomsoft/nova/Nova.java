@@ -209,6 +209,7 @@ public class Nova
 				
 				codeGeneratorEngine.init();
 				compileEngine.init();
+				compileEngine.addIncludeDirectories(includeDirectories);
 			}
 			catch (InvocationTargetException e)
 			{
