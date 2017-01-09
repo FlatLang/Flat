@@ -195,6 +195,8 @@ public class FileUtils
 	 */
 	public static String formAbsolutePath(String path)
 	{
+		path = path.replace('\\', '/');
+		
 		StringBuilder absolute = new StringBuilder(path);
 		
 		int index = absolute.indexOf("..");
