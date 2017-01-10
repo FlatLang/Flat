@@ -277,7 +277,7 @@ public class SyntaxTree
 			controller.log("Compiling arrow binding overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkShorthandActionOverrides()));
 			
-			controller.log("Compiling shorthand actions...");
+			controller.log("Compiling function map functions...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
 			
 			controller.log("Compiling function map overrides...");
