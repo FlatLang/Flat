@@ -787,7 +787,7 @@ public class Assignment extends Value
 		
 		Node original = scopeNode;
 		
-		if (scopeNode instanceof IfStatement && scopeNode.isDecoding())
+		if ((scopeNode instanceof ControlStatement || scopeNode instanceof WhileLoop) && scopeNode.isDecoding())
 		{
 			scopeNode = scopeNode.getParent().getAncestorWithScope();
 		}
