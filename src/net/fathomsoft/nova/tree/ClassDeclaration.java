@@ -3017,6 +3017,10 @@ public class ClassDeclaration extends InstanceDeclaration
 				SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
 				SyntaxMessage.error("Class '" + extended.getType() + "' is not imported", this);
 			}
+			else if (clazz instanceof Trait)
+			{
+				SyntaxMessage.error("Cannot extend trait '" + extended.getType() + "'", this);
+			}
 			
 			// TODO: Add extension reference here
 		}
