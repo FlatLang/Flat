@@ -155,7 +155,7 @@ public class MethodCall extends Variable
 	@Override
 	public boolean isVirtualTypeKnown()
 	{
-		return (!getName().equals("toString") && (getParent() instanceof Instantiation || (getMethodDeclaration() instanceof NovaMethodDeclaration && !((NovaMethodDeclaration)getMethodDeclaration()).isOverridden()) || super.isVirtualTypeKnown())) || getParentClass().isPropertyTrue("functionMap");
+		return !isVirtual() || getMethodDeclaration() instanceof NovaMethodDeclaration == false || getParent() instanceof Instantiation || super.isVirtualTypeKnown() || getParentClass().isPropertyTrue("functionMap") || declaration.getParentClass().isPropertyTrue("primitiveGeneric") || containsPrimitiveGenericParameters();//(!getName().equals("toString") && (getParent() instanceof Instantiation || (getMethodDeclaration() instanceof NovaMethodDeclaration && !((NovaMethodDeclaration)getMethodDeclaration()).isOverridden()) || super.isVirtualTypeKnown())) || getParentClass().isPropertyTrue("functionMap");
 	}
 	
 	public boolean isVirtual()
