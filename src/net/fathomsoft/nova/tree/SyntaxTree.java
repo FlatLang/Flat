@@ -1029,6 +1029,7 @@ public class SyntaxTree
 				root = node;
 				
 				((Node)node).setLocationIn(location);
+				parent = node.getReturnedNode();
 			}
 			else
 			{
@@ -1051,8 +1052,18 @@ public class SyntaxTree
 					parent.addChild((Node)node);
 				}
 				
-				root = checkAutoCasts((Node)node, (Value)parent, root, "FunctionMap");
-				root = checkAutoCasts((Node)node, (Value)parent, root, "PropertyMap");
+				Accessible cast = null;
+				
+				if ((cast = checkAutoCasts((Node)node, (Value)parent, root, "FunctionMap")) != root ||
+					(cast = checkAutoCasts((Node)node, (Value)parent, root, "PropertyMap")) != root)
+				{
+					root = cast;
+					parent = (Node)cast;
+				}
+				else
+				{
+					parent = node.getReturnedNode();
+				}
 				
 				if (index < 0)
 				{
@@ -1061,7 +1072,6 @@ public class SyntaxTree
 			}
 			
 			location = location.asNew();
-			parent   = node.getReturnedNode();
 			offset   = index + 1;
 			index    = SyntaxUtils.findDotOperator(statement, offset);
 			
