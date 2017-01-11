@@ -174,6 +174,11 @@ public class Return extends IValue
 			{
 				Value value = decodeReturnValue(v, getParentMethod(), newLoc, validateType);
 				
+				if (value instanceof Accessible && ((Accessible)value).canAccess() && getParentMethod().getImmutableAnnotation() != null)
+				{
+					getParentMethod().getImmutableAnnotation().convertAssignment(value);
+				}
+				
 				getReturnValues().addChild(value);
 			}
 		}
