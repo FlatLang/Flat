@@ -280,8 +280,11 @@ public class SyntaxTree
 			controller.log("Compiling function map functions...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
 			
-			controller.log("Compiling function map overrides...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkFunctionMapOverrides()));
+			controller.log("Compiling property map functions...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addPropertyMapFunctions()));
+			
+			controller.log("Compiling function/property map overrides...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkMapOverrides()));
 		}
 	}
 	
@@ -1048,7 +1051,8 @@ public class SyntaxTree
 					parent.addChild((Node)node);
 				}
 				
-				root = checkAutoCasts((Node)node, (Value)parent, root);
+				root = checkAutoCasts((Node)node, (Value)parent, root, "FunctionMap");
+				root = checkAutoCasts((Node)node, (Value)parent, root, "PropertyMap");
 				
 				if (index < 0)
 				{
@@ -1077,19 +1081,21 @@ public class SyntaxTree
 		return null;
 	}
 	
-	private static Accessible checkAutoCasts(Node node, Value accessing, Accessible root)
+	private static Accessible checkAutoCasts(Node node, Value accessing, Accessible root, String type)
 	{
 		if ("nova/meta/Class".equals(accessing.getTypeClassLocation()) && node instanceof Variable)
 		{
 			Variable v = (Variable)node;
 			
-			if (v.getName().equals("functionMap"))
+			String lower = Character.toLowerCase(type.charAt(0)) + type.substring(1);
+			
+			if (v.getName().equals(lower))
 			{
 				if (((Accessible)accessing).getCast() == null)
 				{
 					GenericTypeArgument arg = accessing.getGenericTypeArgument(0);
 					
-					String funMap = arg.getType() + "FunctionMap";
+					String funMap = arg.getType() + type;
 					
 					if (!accessing.getFileDeclaration().containsImport(funMap, false))
 					{
@@ -1168,7 +1174,7 @@ public class SyntaxTree
 		return node;
 	}
 	
-	private static Accessible decodeAccessible(Node parent, String statement, Location location, boolean require, boolean validateAccess)
+	public static Accessible decodeAccessible(Node parent, String statement, Location location, boolean require, boolean validateAccess)
 	{
 		String accessString = null;
 		

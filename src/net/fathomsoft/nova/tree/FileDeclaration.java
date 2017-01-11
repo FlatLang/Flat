@@ -75,6 +75,7 @@ public class FileDeclaration extends Node
 			"nova/System",
 			"nova/meta/Class",
 			"nova/meta/FunctionMap",
+			"nova/meta/PropertyMap",
 			"nova/regex/Pattern",
 		};
 	}

@@ -34,7 +34,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	public boolean abstractValue;
 	
 	public ClassInstanceDeclaration classInstanceDeclaration;
-	public ClassDeclaration functionMap, encapsulatingClass;
+	public ClassDeclaration functionMap, propertyMap, encapsulatingClass;
 	
 	private ExtendedClass	extendedClass;
 	
@@ -611,7 +611,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else
 			{
-				SyntaxMessage.error("Class '" + clazz.getName() + "' is not an interface", this);
+				SyntaxMessage.error("Class '" + type + "' is not a trait", this);
 			}
 		}
 		
@@ -2402,6 +2402,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			addAssignmentMethods();
 			
 			generateFunctionMap();
+			generatePropertyMap();
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
@@ -2420,68 +2421,98 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 	}
 	
-	private void addFunctionMapImport(ClassDeclaration c)
+	public void addPropertyMapFunctions()
+	{
+		if (propertyMap != null)
+		{
+			propertyMap.addPropertyMapProperties(this);
+		}
+	}
+	
+	private void addMapImport(ClassDeclaration c, String type)
 	{
 		if (c != null && !c.getClassLocation().equals("nova/Object"))
 		{
-			String importLocation = c.getClassLocation() + "." + c.getName() + "FunctionMap";
+			String importLocation = c.getClassLocation() + "." + c.getName() + type;
 			
 			getFileDeclaration().addImport(importLocation);
 		}
 	}
 	
-	public void generateFunctionMap()
+	public ClassDeclaration generateMap(String type)
+	{
+		String lower = Character.toLowerCase(type.charAt(0)) + type.substring(1);
+		
+		ClassDeclaration funMap = getProgram().getClassDeclaration("nova/meta/" + type);
+		
+		if (this instanceof Trait || getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
+		{
+			addMapImport(getExtendedClassDeclaration(), type);
+			
+			String extensionName = !getExtendedClassName().equals("Object") ? getExtendedClassName() : "";
+			
+			String classType = this instanceof Trait ? "trait" : "class";
+			
+			String declaration = classType + " " + /*getClassLocation().replace('/', '_').replace('.', '_')*/ getName() + type + " extends " + extensionName + type;
+			
+			if (getImplementedInterfaces().length > 0)
+			{
+				declaration += " implements ";
+				
+				int i = 0;
+				
+				for (Trait t : getImplementedInterfaces())
+				{
+					addMapImport(t, type);
+					
+					if (i++ > 0)
+					{
+						declaration += ", ";
+					}
+					
+					declaration += t.getName() + type;
+				}
+			}
+			
+			ClassDeclaration c = (ClassDeclaration)SyntaxTree.decodeStatement(this, declaration, Location.INVALID, true, new Class[] {
+				ClassDeclaration.class,
+				Trait.class,
+			});
+			
+			if (c == null)
+			{
+				SyntaxMessage.error("Could not generate " + type + " for class '" + getName() + "'", this);
+			}
+			
+			c.setProperty("userMade", false);
+			c.setProperty(lower, true);
+			c.setProperty("correspondingClass", this);
+			
+			addChild(c);
+			
+			return c;
+		}
+		
+		return null;
+	}
+	
+	private void generateFunctionMap()
 	{
 		if (functionMap == null && !isPropertyTrue("functionMap") && !getFileDeclaration().isExternalFile())
 		{
-			ClassDeclaration funMap = getProgram().getClassDeclaration("nova/meta/FunctionMap");
+			functionMap = generateMap("FunctionMap");
+		}
+	}
+	
+	public void generatePropertyMap()
+	{
+		if (propertyMap == null && !isPropertyTrue("functionMap") && !getFileDeclaration().isExternalFile())
+		{
+			propertyMap = generateMap("PropertyMap");
 			
-			if (this instanceof Trait || getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
+			if (propertyMap != null)
 			{
-				addFunctionMapImport(getExtendedClassDeclaration());
-				
-				String extensionName = !getExtendedClassName().equals("Object") ? getExtendedClassName() : "";
-				
-				String type = this instanceof Trait ? "trait" : "class";
-				
-				String declaration = type + " " + /*getClassLocation().replace('/', '_').replace('.', '_')*/ getName() + "FunctionMap extends " + extensionName + "FunctionMap";
-				
-				if (getImplementedInterfaces().length > 0)
-				{
-					declaration += " implements ";
-					
-					int i = 0;
-					
-					for (Trait t : getImplementedInterfaces())
-					{
-						addFunctionMapImport(t);
-						
-						if (i++ > 0)
-						{
-							declaration += ", ";
-						}
-						
-						declaration += t.getName() + "FunctionMap";
-					}
-				}
-				
-				ClassDeclaration c = (ClassDeclaration)SyntaxTree.decodeStatement(this, declaration, Location.INVALID, true, new Class[] {
-					ClassDeclaration.class,
-					Trait.class,
-				});
-				
-				if (c == null)
-				{
-					SyntaxMessage.error("Could not generate function map for class '" + getName() + "'", this);
-				}
-				
-				c.setProperty("userMade", false);
-				c.setProperty("functionMap", true);
-				c.setProperty("correspondingClass", this);
-				
-				functionMap = c;
-				
-				addChild(c);
+				propertyMap.setProperty("functionMap", true);
 			}
 		}
 	}
@@ -2500,6 +2531,36 @@ public class ClassDeclaration extends InstanceDeclaration
 		reference.getDestructorList().forEach(addFunction);
 	}
 	
+	private void addPropertyMapProperties(ClassDeclaration reference)
+	{
+		Consumer<MethodDeclaration> addProperty = m -> {
+			if (m instanceof PropertyMethod && m.isUserMade())
+			{
+				addPropertyMapProperty(reference, (PropertyMethod)m);
+			}
+		};
+		Consumer<Node> addField = m -> {
+			if (m instanceof FieldDeclaration && m.isUserMade())
+			{
+				addPropertyMapProperty(reference, (FieldDeclaration)m);
+			}
+		};
+		
+		reference.getPropertyMethodList().forEach(addProperty);
+		reference.getFieldList().getPublicFieldList().forEachChild(addField);
+		reference.getFieldList().getPublicStaticFieldList().forEachChild(addField);
+	}
+	
+	private void addPropertyMapProperty(ClassDeclaration reference, FieldDeclaration field)
+	{
+		addMapFunction(reference, field, field.getName(), new TypeList<Parameter>(field, field.getLocationIn()), ClassDeclaration::decodeMapPropertyAccess);
+	}
+	
+	private void addPropertyMapProperty(ClassDeclaration reference, PropertyMethod property)
+	{
+		
+	}
+	
 	private void addFunctionMapFunction(ClassDeclaration reference, NovaMethodDeclaration function)
 	{
 		if (function instanceof AbstractMethodDeclaration)
@@ -2507,15 +2568,38 @@ public class ClassDeclaration extends InstanceDeclaration
 			return;
 		}
 		
+		String functionName = function instanceof Constructor ? "construct" : (function instanceof Destructor ? "destroy" : function.getName());
+		
+		addMapFunction(reference, function, functionName, function.getParameterList(), ClassDeclaration::decodeMapFunctionAccess);
+	}
+	
+	private static Identifier decodeMapFunctionAccess(InstanceDeclaration function, Identifier accessing, String arguments)
+	{
+		return MethodCall.decodeStatement(accessing, function.getName() + arguments, function.getLocationIn(), true, false, (NovaMethodDeclaration)function);
+	}
+	
+	private static Identifier decodeMapPropertyAccess(InstanceDeclaration field, Identifier accessing, String arguments)
+	{
+		return (Identifier)SyntaxTree.decodeAccessible(accessing, field.getName(), field.getLocationIn(), true, false);
+	}
+	
+	@FunctionalInterface
+	private interface QuadFunction<A, B, C, D>
+	{
+		D call(A a, B b, C c);
+	}
+	
+	private void addMapFunction(ClassDeclaration reference, InstanceDeclaration instance, String functionName, TypeList<Parameter> parameterList, QuadFunction<InstanceDeclaration, Identifier, String, Identifier> generator)
+	{
 		ArrayList<String> genericParameters = new ArrayList<>();
 		String parameters = "(";
 		
-		if (!function.isStatic())
+		if (!instance.isStatic())
 		{
 			parameters += reference.getName() + " reference";
 		}
 		
-		for (Parameter p : function.getParameterList())
+		for (Parameter p : parameterList)
 		{
 			if (parameters.length() > 1)
 			{
@@ -2546,13 +2630,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		parameters += ")";
 		
-		String functionName = function instanceof Constructor ? "construct" : (function instanceof Destructor ? "destroy" : function.getName());
+		String returnType = instance.getType() != null ? " -> " + instance.getNovaType() : "";
 		
-		String returnType = function.getType() != null ? " -> " + function.getNovaType() : "";
-		
-		if (function.isGenericType() && !genericParameters.contains(function.getType()))
+		if (instance.isGenericType() && !genericParameters.contains(instance.getType()))
 		{
-			genericParameters.add(function.getType());
+			genericParameters.add(instance.getType());
 		}
 		
 		String genericParams = "";
@@ -2562,28 +2644,30 @@ public class ClassDeclaration extends InstanceDeclaration
 			genericParams = "<" + String.join(", ", genericParameters) + ">";
 		}
 		
-		String staticValue = function.isStatic() ? "static " : "";
+		String staticValue = instance.isStatic() ? "static " : "";
+		String visibility = instance.getVisibilityText();
+		visibility = visibility.endsWith("visible") ? "public" : visibility;
 		
-		BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(this, function.getVisibilityText() + " " + staticValue + functionName + genericParams + parameters + returnType, function.getLocationIn(), true);
+		BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(this, visibility + " " + staticValue + functionName + genericParams + parameters + returnType, instance.getLocationIn(), true);
 		
 		if (method == null)
 		{
-			BodyMethodDeclaration.decodeStatement(this, function.getVisibilityText() + " " + staticValue + functionName + genericParams + parameters + returnType, function.getLocationIn(), true);
-			SyntaxMessage.error("Could not generate function map handle for function '" + reference.getClassLocation() + "." + function.getName() + "'", function);
+			BodyMethodDeclaration.decodeStatement(this, visibility + " " + staticValue + functionName + genericParams + parameters + returnType, instance.getLocationIn(), true);
+			SyntaxMessage.error("Could not generate function map handle for function '" + reference.getClassLocation() + "." + instance.getName() + "'", instance);
 		}
 		
 		Parameter referenceParameter = null;
 		
-		if (!function.isStatic())
+		if (!instance.isStatic())
 		{
 			referenceParameter = method.getParameter("reference");
 		}
 		
 		String arguments = "(";
 		
-		int i = function.isStatic() ? 0 : 1;
+		int i = instance.isStatic() ? 0 : 1;
 		
-		for (Parameter p : function.getParameterList())
+		for (Parameter p : parameterList)
 		{
 			if (arguments.length() > 1)
 			{
@@ -2609,35 +2693,35 @@ public class ClassDeclaration extends InstanceDeclaration
 		Identifier call = null;
 		Node node = null;
 		
-		if (function instanceof Constructor)
+		if (instance instanceof Constructor)
 		{
 			method.setDataType(Value.POINTER);
 			
-			call = Instantiation.decodeStatement(method, "new " + function.getName() + genericParams + arguments, function.getLocationIn(), true, false, function);
+			call = Instantiation.decodeStatement(method, "new " + instance.getName() + genericParams + arguments, instance.getLocationIn(), true, false, (Constructor)instance);
 			node = call;
 		}
 		else
 		{
-			if (!function.isStatic())
+			if (!instance.isStatic())
 			{
 				referenceParameter.setDataType(Value.POINTER);
 				
-				accessing = method.getParameter("reference").generateUsableVariable(method, function.getLocationIn());
+				accessing = method.getParameter("reference").generateUsableVariable(method, instance.getLocationIn());
 			}
 			else
 			{
-				accessing = StaticClassReference.decodeStatement(method, function.getDeclaringClass().getName(), function.getLocationIn(), true);
+				accessing = StaticClassReference.decodeStatement(method, instance.getDeclaringClass().getName(), instance.getLocationIn(), true);
 			}
 			
-			call = MethodCall.decodeStatement(accessing, function.getName() + genericParams + arguments, function.getLocationIn(), true, false, function);
+			call = generator.call(instance, accessing, genericParams + arguments);
 		}
 		
 		if (call == null)
 		{
-			SyntaxMessage.error("Could not generate function map handle delegate call for function '" + reference.getClassLocation() + "." + function.getName() + "'", function);
+			SyntaxMessage.error("Could not generate function map handle delegate call for function '" + reference.getClassLocation() + "." + instance.getName() + "'", instance);
 		}
 		
-		if (function instanceof Constructor == false)
+		if (instance instanceof Constructor == false)
 		{
 			accessing.setAccessedNode(call);
 			node = accessing;
@@ -2645,7 +2729,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (method.getType() != null)
 		{
-			Return r = new Return(method, function.getLocationIn());
+			Return r = new Return(method, instance.getLocationIn());
 			
 			r.getReturnValues().addChild(node);
 			
@@ -2653,7 +2737,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		method.addChild(node);
-		method.setProperty("correspondingFunction", function);
+		
+		if (instance instanceof NovaMethodDeclaration)
+		{
+			method.setProperty("correspondingFunction", instance);
+		}
+		else if (instance instanceof FieldDeclaration)
+		{
+			method.setProperty("correspondingField", instance);
+		}
 		
 		addChild(method);
 	}
@@ -2895,12 +2987,18 @@ public class ClassDeclaration extends InstanceDeclaration
 		getDestructorList().forEachNovaMethod(x -> x.checkOverrides());
 	}
 	
-	public void checkFunctionMapOverrides()
+	public void checkMapOverrides()
 	{
 		if (functionMap != null)
 		{
 			functionMap.getMethodList().forEachNovaMethod(x -> x.checkOverrides());
 			functionMap.getConstructorList().forEachNovaMethod(x -> x.checkOverrides());
+		}
+		if (propertyMap != null)
+		{
+			propertyMap.getMethodList().forEachNovaMethod(x -> x.checkOverrides());
+			propertyMap.getConstructorList().forEachNovaMethod(x -> x.checkOverrides());
+			propertyMap.getPropertyMethodList().forEachNovaMethod(x -> x.checkOverrides());
 		}
 	}
 	
