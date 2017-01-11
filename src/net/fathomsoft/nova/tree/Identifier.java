@@ -145,10 +145,10 @@ public abstract class Identifier extends Value implements Accessible
 	@Override
 	public boolean isVirtualTypeKnown()
 	{
-		if (isAccessedWithinStaticContext())
-		{
-			return true;
-		}
+//		if (isAccessedWithinStaticContext())
+//		{
+//			return true;
+//		}
 		
 		if (isAccessed())
 		{
