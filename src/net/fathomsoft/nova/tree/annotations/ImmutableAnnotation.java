@@ -305,6 +305,11 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.searched = searched;
+		node.mutableClass = mutableClass;
+		node.toImmutable = toImmutable;
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	
