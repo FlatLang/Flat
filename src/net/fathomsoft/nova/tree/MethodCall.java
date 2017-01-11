@@ -101,6 +101,29 @@ public class MethodCall extends Variable
 		return super.getGenericTypeArgumentList();
 	}
 	
+	public CallableMethod getCallableMethodBase()
+	{
+		CallableMethod callable = (CallableMethod)getMethodDeclaration();
+		
+		if (callable.isVirtual() && ((NovaMethodDeclaration)callable).getVirtualMethod() != null && !isVirtualTypeKnown())
+		{
+			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)callable;
+			
+			if (parent instanceof Super)
+			{
+				novaMethod = (NovaMethodDeclaration)callable;
+			}
+			else
+			{
+				novaMethod = novaMethod.getVirtualMethod();
+			}
+			
+			return novaMethod;
+		}
+		
+		return callable;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#isVirtualTypeKnown()
 	 */
