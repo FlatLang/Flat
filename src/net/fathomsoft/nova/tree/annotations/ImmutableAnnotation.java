@@ -105,7 +105,7 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 		{
 			
 		}
-		else if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		else if (getProgram().getPhase() >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			searchProperties(next);
 		}
