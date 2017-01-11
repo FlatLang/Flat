@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.annotations;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.tree.Node;
 
 public interface ModifierAnnotation
@@ -17,7 +18,7 @@ public interface ModifierAnnotation
 	
 	default boolean apply(Node to, String alias)
 	{
-		if (to != ((Annotation)this).getParent())
+		if (to != ((Annotation)this).getParent() && !to.containsAnnotationOfType(this.getClass(), false, false))
 		{
 			if (onAppliedAsModifier(to, false))
 			{
