@@ -461,6 +461,11 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			MethodCall call = MethodCall.decodeStatement(getParent(), func.getName() + "(" + String.join(", ", args) + ")", getLocationIn(), true, false, func);
 			
+			if (getParent().getParent() instanceof Return && getParentMethod().getImmutableAnnotation() != null)
+			{
+				getParentMethod().getImmutableAnnotation().convertAssignment(call);
+			}
+			
 			replaceWith(call);
 		}
 		
