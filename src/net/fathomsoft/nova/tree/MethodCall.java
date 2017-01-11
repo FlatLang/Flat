@@ -124,6 +124,31 @@ public class MethodCall extends Variable
 		return callable;
 	}
 	
+	public boolean containsPrimitiveGenericParameters()
+	{
+		CallableMethod callable = getInferredDeclaration();
+		
+		if (callable instanceof BodyMethodDeclaration)
+		{
+			VirtualMethodDeclaration virtual = ((NovaMethodDeclaration)callable).getVirtualMethod();
+			
+			if (virtual != null)
+			{
+				NovaParameterList params = virtual.getParameterList();
+				
+				for (int i = 0; i < params.getNumParameters(); i++)
+				{
+					if (params.getParameter(i).isGenericType() && !((Value)getArgumentList().getVisibleChild(i)).isGenericType())
+					{
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#isVirtualTypeKnown()
 	 */
