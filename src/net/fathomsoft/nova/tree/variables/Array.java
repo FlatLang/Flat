@@ -43,6 +43,12 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	}
 	
 	@Override
+	public boolean canAccess()
+	{
+		return false;
+	}
+	
+	@Override
 	public int getNumDefaultChildren()
 	{
 		return super.getNumDefaultChildren() + 1 + getChildrenOffset();
