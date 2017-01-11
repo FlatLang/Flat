@@ -2403,6 +2403,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			generateFunctionMap();
 			generatePropertyMap();
+			
+			if (!isPropertyTrue("functionMap") && isPrimitiveGenericTypeWrapper())
+			{
+				setProperty("primitiveGeneric", true);
+			}
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
