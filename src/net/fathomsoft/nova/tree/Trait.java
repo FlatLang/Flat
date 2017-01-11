@@ -51,7 +51,7 @@ public class Trait extends ClassDeclaration
 	{
 		String extended = super.getExtendedClassLocation();
 		
-		return !extended.equals("nova/Object") ? extended : null;
+		return extended != null ? (!extended.equals("nova/Object") ? extended : null) : null;
 	}
 	
 	/**
