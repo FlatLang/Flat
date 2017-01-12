@@ -265,6 +265,12 @@ public class SyntaxTree
 		{
 			root.decodeShorthandActions = true;
 			
+			controller.log("Compiling function map functions...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
+			
+			controller.log("Compiling property map functions...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addPropertyMapFunctions()));
+			
 			controller.log("Compiling arrow bindings...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
 			
@@ -276,12 +282,6 @@ public class SyntaxTree
 			
 			controller.log("Compiling arrow binding overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkShorthandActionOverrides()));
-			
-			controller.log("Compiling function map functions...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
-			
-			controller.log("Compiling property map functions...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addPropertyMapFunctions()));
 			
 			controller.log("Compiling function/property map overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkMapOverrides()));
