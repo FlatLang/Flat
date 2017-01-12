@@ -24,6 +24,7 @@ public class Throw extends ExceptionHandler
 	public boolean soft = false;
 	
 	public static final String IDENTIFIER = "throw";
+	public static final String SOFT_IDENTIFIER = "toss";
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -101,14 +102,10 @@ public class Throw extends ExceptionHandler
 	 */
 	public static Throw decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		boolean soft = StringUtils.startsWithWord(statement, "softly");
+		boolean soft = StringUtils.startsWithWord(statement, SOFT_IDENTIFIER);
+		boolean hard = !soft && StringUtils.startsWithWord(statement, IDENTIFIER);
 		
-		if (soft)
-		{
-			statement = statement.substring("softly ".length()).trim();
-		}
-		
-		if (StringUtils.startsWithWord(statement, IDENTIFIER))
+		if (soft || hard)
 		{
 			Throw n = new Throw(parent, location);
 			n.soft = soft;
@@ -138,7 +135,7 @@ public class Throw extends ExceptionHandler
 	 */
 	private Bounds calculateThrowContents(String statement)
 	{
-		Bounds bounds = new Bounds(StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length() + 1), statement.length());
+		Bounds bounds = new Bounds(StringUtils.findNextNonWhitespaceIndex(statement, (soft ? SOFT_IDENTIFIER.length() : IDENTIFIER.length()) + 1), statement.length());
 		
 		if (!bounds.isValid())
 		{
