@@ -704,13 +704,18 @@ public class BinaryOperation extends IValue
 				{
 					Value value = (Value)getLeftOperand().clone(getLeftOperand().getParent(), getLeftOperand().getLocationIn());
 					
-					BinaryOperation operation = (BinaryOperation)BinaryOperation.decodeStatement(getParent(), value.generateNovaInput() + " " + getOperator().getNonShorthand() + " " + getRightOperand().generateNovaInput(), getLocationIn(), true);
+					Value output = BinaryOperation.decodeStatement(getParent(), value.generateNovaInput() + " " + getOperator().getNonShorthand() + " " + getRightOperand().generateNovaInput(), getLocationIn(), true);
 					
-					MethodCall call = SyntaxUtils.generateArraySetterCallFromAccess((Variable)a, operation);
-					
-					((Variable)a).replaceWith(call);
-					
-					return getLeftOperand();
+					if (output instanceof BinaryOperation)
+					{
+						BinaryOperation operation = (BinaryOperation)output;
+						
+						MethodCall call = SyntaxUtils.generateArraySetterCallFromAccess((Variable)a, operation);
+						
+						((Variable)a).replaceWith(call);
+						
+						return getLeftOperand();
+					}
 				}
 			}
 		}
