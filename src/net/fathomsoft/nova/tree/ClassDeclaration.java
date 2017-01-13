@@ -627,6 +627,17 @@ public class ClassDeclaration extends InstanceDeclaration
 					}
 				}
 			}
+			
+			if (getExtendedClassDeclaration() != null)
+			{
+				for (Trait t : getExtendedClassDeclaration().getImplementedInterfaces(true))
+				{
+					if (t != this)
+					{
+						array.add(t);
+					}
+				}
+			}
 		}
 		
 		return array.toArray(new Trait[0]);
