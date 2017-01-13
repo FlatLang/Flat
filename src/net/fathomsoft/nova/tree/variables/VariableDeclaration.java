@@ -482,18 +482,6 @@ public class VariableDeclaration extends IIdentifier
 				return result.errorOccurred();
 			}
 		}
-		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
-		{
-			if (!isTangible())
-			{
-				detach();
-				
-				result.skipCycle = true;
-				result.nextIncrement = 0;
-				
-				return result;
-			}
-		}
 		
 		addDefaultGenericTypeArguments();
 		

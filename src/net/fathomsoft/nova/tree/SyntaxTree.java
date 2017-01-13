@@ -159,6 +159,9 @@ public class SyntaxTree
 			root.prePreGenerationValidation();
 			
 			validateNodes(root);
+			
+			controller.log("Removing non-concrete property fields...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.removeNonConcreteProperties()));
 		}
 		catch (InterruptedException e)
 		{
