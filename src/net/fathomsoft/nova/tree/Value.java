@@ -563,15 +563,20 @@ public abstract class Value extends Node implements AbstractValue
 			
 			if (primitive)
 			{
-				if (getArrayDimensions() == 0)
-				{
-					setDataType(Value.VALUE);
-				}
+				setPrimitive();
 			}
 			else if (getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
 			{
 				setDataType(Value.POINTER);
 			}
+		}
+	}
+	
+	public void setPrimitive()
+	{
+		if (getArrayDimensions() == 0)
+		{
+			setDataType(Value.VALUE);
 		}
 	}
 	
