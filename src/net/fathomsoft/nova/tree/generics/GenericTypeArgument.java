@@ -126,6 +126,18 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(index).getDefaultType();
 	}
 	
+	@Override
+	public byte getDataType()
+	{
+		return POINTER;
+	}
+	
+	@Override
+	public void setPrimitive()
+	{
+		
+	}
+	
 	/**
 	 * Get the Value instance that this generic argument is manifested as.
 	 * 
