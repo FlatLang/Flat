@@ -1753,6 +1753,18 @@ public class SyntaxUtils
 		return node;
 	}
 	
+	public static Value unboxPrimitive(Value primitive)
+	{
+		Accessible value = SyntaxTree.decodeAccessible(primitive.getReturnedNode(), "value", Location.INVALID, true, false);
+		
+		if (value instanceof Identifier)
+		{
+			((Accessible)primitive.getReturnedNode()).setAccessedNode((Identifier)value);
+		}
+		
+		return primitive;//(Value)SyntaxTree.decodeIdentifierAccess(primitive.parent, primitive.generateNovaInput().toString() + ".value", Location.INVALID, true);
+	}
+	
 	/**
 	 * Try to autobox the given primitive Node, if it truly has a
 	 * primitive value. If the given Value does not have a primitive
