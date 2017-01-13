@@ -746,7 +746,7 @@ public class Variable extends Identifier
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			if (getDeclaration() != null)
 			{
