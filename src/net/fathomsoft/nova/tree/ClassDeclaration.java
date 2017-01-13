@@ -1148,6 +1148,21 @@ public class ClassDeclaration extends InstanceDeclaration
 		return field;
 	}
 	
+	public void removeNonConcreteProperties()
+	{
+		Consumer<Node> remove = x -> {
+			if (x instanceof VariableDeclaration && !((VariableDeclaration)x).isTangible())// && x instanceof ClassInstanceDeclaration == false)
+			{
+				x.detach();
+			}
+		};
+		
+		getFieldList().getPublicFieldList().forEachChild(remove);
+		getFieldList().getPrivateFieldList().forEachChild(remove);
+		getFieldList().getPublicStaticFieldList().forEachChild(remove);
+		getFieldList().getPrivateStaticFieldList().forEachChild(remove);
+	}
+	
 	/**
 	 * Get the method with the given methodName and parameterTypes. If a
 	 * method with the specified name and parameter types does not exist,
