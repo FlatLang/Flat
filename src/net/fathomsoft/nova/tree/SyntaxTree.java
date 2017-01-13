@@ -1195,7 +1195,7 @@ public class SyntaxTree
 		
 		if (o instanceof Node)
 		{
-			return (Accessible)o;
+			return o instanceof Accessible ? (Accessible)o : null;
 		}
 		else if (o != null)
 		{
