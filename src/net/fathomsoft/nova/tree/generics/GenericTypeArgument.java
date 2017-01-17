@@ -129,7 +129,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	@Override
 	public byte getDataType()
 	{
-		return POINTER;
+		return getAncestorOfType(ClosureDeclaration.class) == null ? POINTER : super.getDataType();
 	}
 	
 	@Override
