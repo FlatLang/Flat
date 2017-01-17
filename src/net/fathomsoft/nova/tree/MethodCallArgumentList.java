@@ -297,6 +297,16 @@ public class MethodCallArgumentList extends ArgumentList
 					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
 					
 					replace(value, newValue);
+					
+					result.returnedNode = newValue;
+				}
+				else if (value instanceof DefaultArgument == false && param.getType() != null && !value.getType().equals("void") && !value.getReturnedNode().isPrimitive() && param.isPrimitive())
+				{
+					Value newValue = SyntaxUtils.unboxPrimitive(value);
+					
+					replace(value, newValue);
+					
+					result.returnedNode = newValue;
 				}
 			}
 		}
