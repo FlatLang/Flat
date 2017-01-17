@@ -1274,7 +1274,12 @@ public class MethodCall extends Variable
 	 */
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		builder.append(getName()).append('(').append(getArgumentList().generateNovaInput()).append(')');
+		builder.append(getName());
+		
+		if (declaration instanceof AccessorMethod == false)
+		{
+			builder.append('(').append(getArgumentList().generateNovaInput()).append(')');
+		}
 		
 		if (outputChildren && doesAccess())
 		{
