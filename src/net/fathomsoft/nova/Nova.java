@@ -425,7 +425,7 @@ public class Nova
 						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
 						
-						log("Writing files... ", false);
+						log("Writing files... ");
 						codeGeneratorEngine.writeFiles();
 						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
