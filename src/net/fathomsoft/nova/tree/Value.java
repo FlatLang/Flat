@@ -324,7 +324,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitive()
 	{
-		return (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray();
+		return getDataType() == VALUE && (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray();
 	}
 	
 	public void setPrimitiveWrapperType()
