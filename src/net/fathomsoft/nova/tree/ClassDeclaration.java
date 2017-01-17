@@ -85,6 +85,18 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(blocks, this);
 	}
 	
+	@Override
+	public byte getDataType()
+	{
+		return POINTER;
+	}
+	
+	@Override
+	public boolean isPointer()
+	{
+		return true;
+	}
+	
 	public TypeList<ClassDeclaration> getInnerClasses()
 	{
 		return getInnerClasses(true);
