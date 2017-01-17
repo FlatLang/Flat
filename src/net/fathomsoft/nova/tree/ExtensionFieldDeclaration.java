@@ -60,28 +60,32 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 			
 			if (bounds.getStart() > 0)
 			{
+				int eqIndex = statement.indexOf('=');
 				int dotIndex = statement.indexOf('.', bounds.getStart());
 				
-				String type = statement.substring(bounds.getStart(), dotIndex).trim();
-				
-				statement = statement.substring(0, bounds.getStart()).trim() + " " + statement.substring(dotIndex + 1).trim();
-				
-				FieldDeclaration field = FieldDeclaration.decodeStatement(parent, statement, location, require);
-				
-				if (field != null)
+				if (dotIndex < eqIndex || eqIndex < 0)
 				{
-					ExtensionFieldDeclaration n = new ExtensionFieldDeclaration(parent, location);
+					String type = statement.substring(bounds.getStart(), dotIndex).trim();
 					
-					field.cloneTo(n, true, true);
+					statement = statement.substring(0, bounds.getStart()).trim() + " " + statement.substring(dotIndex + 1).trim();
 					
-					/*Parameter type = (Parameter)n.getParameterList().getParameter(0).detach();
+					FieldDeclaration field = FieldDeclaration.decodeStatement(parent, statement, location, require);
 					
-					n.getParameterList().getReferenceParameter().setType(type);
-					*/
-					
-					n.instanceClass = parent.getFileDeclaration().getImportedClass(n, type);
-					
-					return n;
+					if (field != null)
+					{
+						ExtensionFieldDeclaration n = new ExtensionFieldDeclaration(parent, location);
+						
+						field.cloneTo(n, true, true);
+						
+						/*Parameter type = (Parameter)n.getParameterList().getParameter(0).detach();
+						
+						n.getParameterList().getReferenceParameter().setType(type);
+						*/
+						
+						n.instanceClass = parent.getFileDeclaration().getImportedClass(n, type);
+						
+						return n;
+					}
 				}
 			}
 		}
