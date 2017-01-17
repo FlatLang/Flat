@@ -1779,11 +1779,11 @@ public class SyntaxUtils
 	{
 		Instantiation node = null;
 		
-		if (primitive.isPrimitiveType())
+		if (primitive.isPrimitiveType() && primitive instanceof Accessible)
 		{
 			String className = primitive.getType();
 			
-			String instantiation = "new " + className + '(' + primitive.generateNovaInput(false) + ')';
+			String instantiation = "new " + className + '(' + ((Accessible)primitive).getRootAccessNode().generateNovaInputUntil((Accessible)primitive) + ')';
 			
 			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
 		}
