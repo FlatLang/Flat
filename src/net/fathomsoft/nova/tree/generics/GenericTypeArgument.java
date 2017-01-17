@@ -135,7 +135,10 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	@Override
 	public void setPrimitive()
 	{
-		
+		if (getAncestorOfType(ClosureDeclaration.class) != null)
+		{
+			super.setPrimitive();
+		}
 	}
 	
 	/**
