@@ -489,7 +489,7 @@ public class Assignment extends Value
 //					value.setType(base.generateNovaType().toString());
 					
 					// Add the common ancestor type to the scope
-					getAncestorWithScope().getScope().addImplicitVariableAssignment(declaration, base);
+					getAncestorWithScope().getScope().addImplicitVariableAssignment(declaration, base, assignment);
 				}
 				else
 				{

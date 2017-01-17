@@ -83,6 +83,7 @@ public class Scope extends Node
 	}
 	
 	public void addImplicitVariableAssignment(LocalDeclaration var, Value type)
+	public void addImplicitVariableAssignment(LocalDeclaration var, Value type, Value reference)
 	{
 		if (assignedImplicitVariables == null)
 		{
