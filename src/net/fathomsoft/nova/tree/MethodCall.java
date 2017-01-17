@@ -1355,39 +1355,39 @@ public class MethodCall extends Variable
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			// TODO: Update to never do this
-			if (isPrimitiveGenericType() && !(reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/CharArray") || reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/IntArray") || reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/DoubleArray")))
-			{
-				if (accessed instanceof Variable)
-				{
-					if (accessed.getName().equals("value"))
-					{
-						return result;
-					}
-				}
-				
-				String input = returned.generateNovaInputUntil(returned) + ".value";
-				
-				if (accessed != null)
-				{
-					input += "." + accessed.generateNovaInput();
-				}
-				
-				Identifier value = (Identifier)SyntaxTree.decodeIdentifierAccess(getParent(), input, getLocationIn(), false, false);
-				
-				if (value == null)
-				{
-					return result.errorOccurred();
-				}
-				
-				returned.getParent().replace(returned, value);
-				
-				result.returnedNode = value;
-				
-				return result;
-				
-//				setDataType(VALUE);
-			}
+//			// TODO: Update to never do this
+//			if (isPrimitiveGenericType() && !(reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/CharArray") || reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/IntArray") || reference.toValue().getTypeClassLocation().equals("nova/datastruct/list/DoubleArray")))
+//			{
+//				if (accessed instanceof Variable)
+//				{
+//					if (accessed.getName().equals("value"))
+//					{
+//						return result;
+//					}
+//				}
+//				
+//				String input = returned.generateNovaInputUntil(returned) + ".value";
+//				
+//				if (accessed != null)
+//				{
+//					input += "." + accessed.generateNovaInput();
+//				}
+//				
+//				Identifier value = (Identifier)SyntaxTree.decodeIdentifierAccess(getParent(), input, getLocationIn(), false, false);
+//				
+//				if (value == null)
+//				{
+//					return result.errorOccurred();
+//				}
+//				
+//				returned.getParent().replace(returned, value);
+//				
+//				result.returnedNode = value;
+//				
+//				return result;
+//				
+////				setDataType(VALUE);
+//			}
 			
 			if (accessing instanceof Variable)
 			{
