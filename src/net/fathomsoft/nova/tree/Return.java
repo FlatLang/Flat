@@ -229,7 +229,7 @@ public class Return extends IValue
 				
 				if (m != null && m.usedShorthandAction)
 				{
-					return value;
+					return checkPrimitiveType(value);
 				}
 			}
 			if (validateType && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
@@ -239,7 +239,17 @@ public class Return extends IValue
 			}
 		}
 		
-		return value;
+		return checkPrimitiveType(value);
+	}
+	
+	private Value checkPrimitiveType(Value node)
+	{
+		if (!node.getReturnedNode().isPrimitive() && getParentMethod().isPrimitive())
+		{
+			return SyntaxUtils.unboxPrimitive(node);
+		}
+		
+		return node;
 	}
 	
 	private boolean queryReturnError(MethodDeclaration method, boolean require)
