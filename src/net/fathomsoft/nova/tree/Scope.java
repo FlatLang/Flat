@@ -82,7 +82,20 @@ public class Scope extends Node
 		return list.toArray(new DefaultParameterInitialization[0]);
 	}
 	
-	public void addImplicitVariableAssignment(LocalDeclaration var, Value type)
+	private static class Triple<A, B, C>
+	{
+		A a;
+		B b;
+		C c;
+		
+		public Triple(A a, B b, C c)
+		{
+			this.a = a;
+			this.b = b;
+			this.c = c;
+		}
+	}
+	
 	public void addImplicitVariableAssignment(LocalDeclaration var, Value type, Value reference)
 	{
 		if (assignedImplicitVariables == null)
@@ -90,7 +103,7 @@ public class Scope extends Node
 			assignedImplicitVariables = new ArrayList<>();
 		}
 
-		assignedImplicitVariables.add(new Pair<>(var, type));
+		assignedImplicitVariables.add(new Triple<>(var, type, reference));
 	}
 
 	@Override
