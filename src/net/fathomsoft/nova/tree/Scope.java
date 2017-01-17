@@ -37,7 +37,7 @@ public class Scope extends Node
 	
 	private ArrayList<Listener> listeners;
 
-	private ArrayList<Pair<LocalDeclaration, Value>> assignedImplicitVariables;
+	private ArrayList<Triple<LocalDeclaration, Value, Value>> assignedImplicitVariables;
 	
 	/**
 	 * Instantiate and initialize the default values.
@@ -111,7 +111,17 @@ public class Scope extends Node
 	{
 		if (assignedImplicitVariables != null)
 		{
-			assignedImplicitVariables.stream().forEach(x -> x.getKey().setType(x.getValue()));
+			assignedImplicitVariables.stream().forEach(x ->
+			{
+				byte prev = x.a.getDataType();
+				
+				x.a.setType(x.b);
+				
+				if (x.a.getDataType() > prev && x.c.getDataType() >= prev)
+				{
+					x.a.setDataType(prev);
+				}
+			});
 		}
 
 		super.onStackPopped();
