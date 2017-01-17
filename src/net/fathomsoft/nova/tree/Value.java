@@ -201,19 +201,19 @@ public abstract class Value extends Node implements AbstractValue
 				type += "Array<";
 			}
 			
-			if ("nova/primitive/number/Int".equals(getTypeClassLocation()))
-			{
-				type += "IntArray";
-			}
-			else if ("nova/primitive/number/Char".equals(getTypeClassLocation()))
-			{
-				type += "CharArray";
-			}
-			else if ("nova/primitive/number/Double".equals(getTypeClassLocation()))
-			{
-				type += "DoubleArray";
-			}
-			else
+//			if ("nova/primitive/number/Int".equals(getTypeClassLocation()))
+//			{
+//				type += "IntArray";
+//			}
+//			else if ("nova/primitive/number/Char".equals(getTypeClassLocation()))
+//			{
+//				type += "CharArray";
+//			}
+//			else if ("nova/primitive/number/Double".equals(getTypeClassLocation()))
+//			{
+//				type += "DoubleArray";
+//			}
+//			else
 			{
 				type += "Array<" + getNovaType(this, false) + ">";
 			}
@@ -413,9 +413,9 @@ public abstract class Value extends Node implements AbstractValue
 		
 		switch (getType())
 		{
-			case "Char": type += "CharArray"; break;
-			case "Int": type += "IntArray"; break;
-			case "Double": type += "DoubleArray"; break;
+//			case "Char": type += "CharArray"; break;
+//			case "Int": type += "IntArray"; break;
+//			case "Double": type += "DoubleArray"; break;
 			default: type += "Array<" + generateNovaInput(new StringBuilder(), false, false) + ">";
 		}
 		
@@ -429,13 +429,13 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isPrimitiveGenericTypeWrapper()
 	{
-		ClassDeclaration c = getTypeClass();
-		
-		if (c != null)
-		{
-			return c.isOfType("nova/datastruct/list/CharArray") || c.isOfType("nova/datastruct/list/IntArray") || c.isOfType("nova/datastruct/list/DoubleArray") ||
-				c.isOfType("nova/datastruct/list/CharArrayIterator") || c.isOfType("nova/datastruct/list/IntArrayIterator") || c.isOfType("nova/datastruct/list/DoubleArrayIterator");
-		}
+//		ClassDeclaration c = getTypeClass();
+//		
+//		if (c != null)
+//		{
+//			return c.isOfType("nova/datastruct/list/CharArray") || c.isOfType("nova/datastruct/list/IntArray") || c.isOfType("nova/datastruct/list/DoubleArray") ||
+//				c.isOfType("nova/datastruct/list/CharArrayIterator") || c.isOfType("nova/datastruct/list/IntArrayIterator") || c.isOfType("nova/datastruct/list/DoubleArrayIterator");
+//		}
 		
 		return false;
 	}
