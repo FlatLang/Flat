@@ -89,6 +89,24 @@ public class Parameter extends LocalDeclaration
 		return false;
 	}
 	
+	@Override
+	public boolean isPrimitive()
+	{
+		if (super.isPrimitive())
+		{
+			VirtualMethodDeclaration virtual = getParentMethod().getVirtualMethod();
+			
+			if (virtual != null && !virtual.getParameterList().getParameter(getIndex()).isPrimitive())
+			{
+				return false;
+			}
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
 	private static Integer tryParse(String text)
 	{
 		try
