@@ -193,6 +193,7 @@ public class Cast extends IValue
 		{
 			if (!getProgram().getController().isTesting)
 			{
+				node.getReturnedNode().getTypeClass();
 				getTypeClass().isRelatedTo(type);
 			}
 			
