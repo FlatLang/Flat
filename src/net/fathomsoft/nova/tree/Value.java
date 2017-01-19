@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
 import net.fathomsoft.nova.tree.annotations.NativeAnnotation;
@@ -324,7 +323,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitive()
 	{
-		return getDataType() == VALUE && (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray();
+		return getDataType() == VALUE && (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray() && getArrayDimensions() == 0;
 	}
 	
 	public void setPrimitiveWrapperType()
