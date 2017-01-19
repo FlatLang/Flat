@@ -1108,7 +1108,7 @@ public class SyntaxTree
 			
 			String lower = Character.toLowerCase(type.charAt(0)) + type.substring(1);
 			
-			if (v.getName().equals(lower))
+			if (v.getName() != null && v.getName().equals(lower))
 			{
 				if (((Accessible)accessing).getCast() == null)
 				{
