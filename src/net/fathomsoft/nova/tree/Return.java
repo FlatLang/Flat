@@ -248,6 +248,10 @@ public class Return extends IValue
 		{
 			return SyntaxUtils.unboxPrimitive(node);
 		}
+		if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive() && !Literal.isNullLiteral(node))
+		{
+			return SyntaxUtils.autoboxPrimitive(node);
+		}
 		
 		return node;
 	}
