@@ -517,7 +517,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				
 				// Temporary workaround for crappy closure declaration implementation
 				// Won't make this mistake in the rewrite.
-				if (parent.getProgram().containsPendingAnnotationOfType(PublicAnnotation.class))
+				if (parent.getFileDeclaration().containsPendingAnnotationOfType(PublicAnnotation.class))
 				{
 					n.setVisibility(PUBLIC);
 				}

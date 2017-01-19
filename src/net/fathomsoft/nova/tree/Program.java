@@ -36,43 +36,6 @@ public class Program extends TypeList<FileDeclaration>
 	
 	private int uniqueId = 1;
 	
-	private ArrayList<Annotation> pendingAnnotations = new ArrayList<>();
-	
-	public void addPendingAnnotation(Annotation annotation)
-	{
-		pendingAnnotations.add(annotation);
-	}
-	
-	public void removePendingAnnotation(Annotation annotation)
-	{
-		pendingAnnotations.remove(annotation);
-	}
-	
-	public boolean containsPendingAnnotationOfType(Class type)
-	{
-		return getPendingAnnotationOfType(type) != null;
-	}
-	
-	public Annotation getPendingAnnotationOfType(Class type)
-	{
-		for (Annotation a : pendingAnnotations)
-		{
-			if (type.isAssignableFrom(a.getClass()))
-			{
-				return a;
-			}
-			
-			Annotation b = a.getAnnotationOfType(type);
-			
-			if (b != null)
-			{
-				return b;
-			}
-		}
-		
-		return null;
-	}
-	
 	public int getUniqueId()
 	{
 		return uniqueId++;

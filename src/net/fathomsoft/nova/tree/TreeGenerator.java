@@ -440,11 +440,11 @@ public class TreeGenerator implements Runnable
 				{
 					boolean skipped = skipNextStatement;
 					
-					a.getProgram().addPendingAnnotation(a);
+					a.getFileDeclaration().addPendingAnnotation(a);
 					
 					node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
 					
-					a.getProgram().removePendingAnnotation(a);
+					a.getFileDeclaration().removePendingAnnotation(a);
 					
 					if (!skipped && node != null)
 					{

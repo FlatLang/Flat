@@ -155,7 +155,7 @@ public abstract class Node implements Listenable, Annotatable
 			annotation.getParent().annotations.remove(annotation);
 		}
 		
-		getProgram().removePendingAnnotation(annotation);
+		getFileDeclaration().removePendingAnnotation(annotation);
 		
 		annotations.add(annotation);
 		

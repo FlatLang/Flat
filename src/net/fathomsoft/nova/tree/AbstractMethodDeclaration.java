@@ -76,7 +76,7 @@ public class AbstractMethodDeclaration extends NovaMethodDeclaration
 		{
 			statement = findMethodSignature(statement, StringUtils.findWordBounds(statement, IDENTIFIER));
 		}
-		else if (!parent.getProgram().containsPendingAnnotationOfType(AbstractAnnotation.class))
+		else if (!parent.getFileDeclaration().containsPendingAnnotationOfType(AbstractAnnotation.class))
 		{
 			return null;
 		}

@@ -404,7 +404,7 @@ public class Annotation extends Node
 	@Override
 	public boolean onAfterDecoded()
 	{
-		getProgram().addPendingAnnotation(this);
+		getFileDeclaration().addPendingAnnotation(this);
 		
 		return super.onAfterDecoded();
 	}

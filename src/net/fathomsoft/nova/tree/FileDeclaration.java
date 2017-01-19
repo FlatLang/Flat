@@ -4,6 +4,7 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -78,6 +79,43 @@ public class FileDeclaration extends Node
 			"nova/meta/PropertyMap",
 			"nova/regex/Pattern",
 		};
+	}
+	
+	private final ArrayList<Annotation> pendingAnnotations = new ArrayList<>();
+	
+	public void addPendingAnnotation(Annotation annotation)
+	{
+		pendingAnnotations.add(annotation);
+	}
+	
+	public void removePendingAnnotation(Annotation annotation)
+	{
+		pendingAnnotations.remove(annotation);
+	}
+	
+	public boolean containsPendingAnnotationOfType(Class type)
+	{
+		return getPendingAnnotationOfType(type) != null;
+	}
+	
+	public Annotation getPendingAnnotationOfType(Class type)
+	{
+		for (Annotation a : pendingAnnotations)
+		{
+			if (type.isAssignableFrom(a.getClass()))
+			{
+				return a;
+			}
+			
+			Annotation b = a.getAnnotationOfType(type);
+			
+			if (b != null)
+			{
+				return b;
+			}
+		}
+		
+		return null;
 	}
 	
 	/**

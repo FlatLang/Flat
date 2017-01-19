@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree.annotations;
 
+import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.Node;
 
 import java.util.ArrayList;
@@ -54,14 +55,14 @@ public interface Annotatable
 		
 		if (checkAncestors)
 		{
-			if (((Node)this).getParent() != null)
+			if (((Node)this).getParent() != null && ((Node)this).getParent() instanceof FileDeclaration == false)
 			{
 				return ((Node)this).getParent().getAnnotationOfType(c, true, checkPending);
 			}
 			
-			if (checkPending)
+			if (checkPending && ((Node)this).getFileDeclaration() != null)
 			{
-				return ((Node)this).getProgram().getPendingAnnotationOfType(c);
+				return ((Node)this).getFileDeclaration().getPendingAnnotationOfType(c);
 			}
 		}
 		
