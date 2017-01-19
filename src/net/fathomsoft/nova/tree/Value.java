@@ -1351,6 +1351,23 @@ public abstract class Value extends Node implements AbstractValue
 		return newValue;
 	}
 	
+	public Value replaceWithUnboxedValue()
+	{
+		return SyntaxUtils.unboxPrimitive(this);
+	}
+	
+	public Value replaceWithUnboxedValue(String type)
+	{
+		Value newValue = SyntaxUtils.unboxPrimitive(this, type);
+		
+//		if (!newValue.containsChild(newValue))
+//		{
+//			replaceWith(newValue);
+//		}
+		
+		return newValue;
+	}
+	
 	public boolean isImmutable()
 	{
 		return getTypeClass().isImmutable();
