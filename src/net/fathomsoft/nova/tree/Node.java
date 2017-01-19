@@ -2139,11 +2139,6 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public Node cloneTo(Node node, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		if (getNumDefaultChildren() > 0 && cloneChildren)
-		{
-			node.slaughterEveryLastChild(getNumDefaultChildren());
-		}
-		
 		if (locationIn != null)
 		{
 			Location locIn = new Location(locationIn);
@@ -2183,6 +2178,11 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public void cloneChildrenTo(final Node node)
 	{
+		if (getNumDefaultChildren() > 0)
+		{
+			node.slaughterEveryLastChild(getNumDefaultChildren());
+		}
+		
 		for (int i = getNumChildren() - 1; i >= 0; i--)
 		{
 			Node child = children.get(i);
