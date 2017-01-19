@@ -979,6 +979,19 @@ public class BinaryOperation extends IValue
 			return result;
 		}
 		
+		if (getOperator().isNumerical() ||
+			getOperator().isComparison() && getLeftOperand().getReturnedNode().isPrimitive() ^ getRightOperandValue().getReturnedNode().isPrimitive() && !isZeroComparison())
+		{
+			if (!getLeftOperand().getReturnedNode().isPrimitive())
+			{
+				getLeftOperand().replaceWithUnboxedValue();
+			}
+			if (!getRightOperandValue().getReturnedNode().isPrimitive())
+			{
+				getRightOperandValue().replaceWithUnboxedValue();
+			}
+		}
+		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			Value lhn = getLeftOperand();
