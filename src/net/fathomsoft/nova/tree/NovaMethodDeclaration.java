@@ -974,6 +974,40 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return contents;
 	}
 	
+	public void updateGenericParameters()
+	{
+		NovaMethodDeclaration overridden = getOverriddenMethod();
+		
+		if (overridden != null)
+		{
+			overridden.updateGenericParameters();
+			
+			NovaParameterList params = overridden.getParameterList();
+			
+			for (int i = 0; i < params.getNumParameters(); i++)
+			{
+				getParameterList().getParameter(i).updateGenericParameter(params.getParameter(i));
+			}
+			
+			setDataType(overridden.getDataType());
+			
+			if (getScope().getNumVisibleChildren() > 0)
+			{
+				Node n = getScope().getVisibleChild(0);
+				
+				if (n instanceof Return)
+				{
+					Return r = (Return)n;
+					
+					if (r.getValueNode().getReturnedNode().isPrimitive() && !isPrimitive())
+					{
+						r.getValueNode().replaceWithAutoboxedValue();
+					}
+				}
+			}
+		}
+	}
+	
 	public MethodCall[] getReferencesIncludingOverrides()
 	{
 		ArrayList<MethodCall> refs = new ArrayList<>();
