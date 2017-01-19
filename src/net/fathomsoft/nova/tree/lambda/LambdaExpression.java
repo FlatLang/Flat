@@ -362,19 +362,6 @@ public class LambdaExpression extends Value
 		return null;
 	}
 	
-	@Override
-	public ValidationResult validate(int phase)
-	{
-		ValidationResult result = super.validate(phase);
-		
-		if (result.skipValidation())
-		{
-			return result;
-		}
-		
-		return result;
-	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
