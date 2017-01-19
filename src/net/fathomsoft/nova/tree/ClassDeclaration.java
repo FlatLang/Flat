@@ -19,6 +19,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -3038,6 +3039,64 @@ public class ClassDeclaration extends InstanceDeclaration
 		getVirtualMethodList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
 		getPropertyMethodList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
 		getDestructorList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
+	}
+	
+	public void updateGenericParameters()
+	{
+		getMethodList().forEachNovaMethod(x -> x.updateGenericParameters());
+		getConstructorList().forEachNovaMethod(x -> x.updateGenericParameters());
+		getHiddenMethodList().forEachNovaMethod(x -> x.updateGenericParameters());
+		getVirtualMethodList().forEachNovaMethod(x -> x.updateGenericParameters());
+		getPropertyMethodList().forEachNovaMethod(x -> x.updateGenericParameters());
+		getDestructorList().forEachNovaMethod(x -> x.updateGenericParameters());
+		
+		if (functionMap != null)
+		{
+			functionMap.updateFunctionMapGenericParameters();
+		}
+	}
+	
+	private void updateFunctionMapGenericParameters()
+	{
+		Consumer<NovaMethodDeclaration> func = method -> {
+			NovaMethodDeclaration corresponding = (NovaMethodDeclaration)method.getProperty("correspondingFunction");
+			
+			if (corresponding != null)
+			{
+				ParameterList params = corresponding.getParameterList();
+				
+				int offset = method.isStatic() ? 0 : 1;
+				
+				for (int i = 0; i < params.getNumParameters(); i++)
+				{
+					method.getParameter(i + offset).setDataType(params.getParameter(i).getDataType());
+				}
+				
+				method.setDataType(corresponding.getDataType());
+				
+//				if (getScope().getNumVisibleChildren() > 0)
+//				{
+//					Node n = getScope().getVisibleChild(0);
+//					
+//					if (n instanceof Return)
+//					{
+//						Return r = (Return)n;
+//						
+//						if (r.getValueNode().getReturnedNode().isPrimitive() && !isPrimitive())
+//						{
+//							r.getValueNode().replaceWithAutoboxedValue();
+//						}
+//					}
+//				}
+			}
+		};
+		
+		getMethodList().forEachNovaMethod(x -> func.accept(x));
+		getConstructorList().forEachNovaMethod(x -> func.accept(x));
+		getHiddenMethodList().forEachNovaMethod(x -> func.accept(x));
+		getVirtualMethodList().forEachNovaMethod(x -> func.accept(x));
+		getPropertyMethodList().forEachNovaMethod(x -> func.accept(x));
+		getDestructorList().forEachNovaMethod(x -> func.accept(x));
 	}
 	
 	public void checkMapOverrides()

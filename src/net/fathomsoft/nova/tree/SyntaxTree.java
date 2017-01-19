@@ -291,6 +291,9 @@ public class SyntaxTree
 			
 			controller.log("Linking virtual declarations...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.searchVirtualDeclarations()));
+			
+			controller.log("Updating generic parameters...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.updateGenericParameters()));
 		}
 	}
 	
