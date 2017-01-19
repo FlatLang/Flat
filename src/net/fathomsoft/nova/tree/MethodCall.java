@@ -141,7 +141,7 @@ public class MethodCall extends Variable
 			{
 				NovaParameterList params = virtual.getParameterList();
 				
-				for (int i = 0; i < params.getNumParameters(); i++)
+				for (int i = 0; i < Math.min(getArgumentList().getNumVisibleChildren(), params.getNumParameters()); i++)
 				{
 					if (params.getParameter(i).isGenericType() && !((Value)getArgumentList().getVisibleChild(i)).isGenericType())
 					{
