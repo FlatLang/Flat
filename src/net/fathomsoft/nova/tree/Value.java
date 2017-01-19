@@ -1333,6 +1333,24 @@ public abstract class Value extends Node implements AbstractValue
 		setDataType(novaType.getDataType());
 	}
 	
+	public Value replaceWithAutoboxedValue()
+	{
+		Instantiation newValue = SyntaxUtils.autoboxPrimitive(this);
+		
+		replaceWith(newValue);
+		
+		return newValue;
+	}
+	
+	public Value replaceWithAutoboxedValue(String type)
+	{
+		Instantiation newValue = SyntaxUtils.autoboxPrimitive(this, type);
+		
+		replaceWith(newValue);
+		
+		return newValue;
+	}
+	
 	public boolean isImmutable()
 	{
 		return getTypeClass().isImmutable();
