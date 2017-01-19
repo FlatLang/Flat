@@ -1121,6 +1121,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		node.uniqueID   = uniqueID;
 		node.shorthandAction = shorthandAction;
 		node.usedShorthandAction = usedShorthandAction;
+		node.virtualMethod = virtualMethod;
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
