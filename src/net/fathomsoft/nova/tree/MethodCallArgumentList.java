@@ -227,6 +227,38 @@ public class MethodCallArgumentList extends ArgumentList
 			return result;
 		}
 		
+		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			MethodCall call = getMethodCall();
+			CallableMethod declaration = call.getCallableMethodBase(true);
+			CallableMethod inferred = call.getInferredDeclaration();
+			
+			for (int i = 0; i < getNumVisibleChildren(); i++)
+			{
+				Value param;
+				
+				if (getArgumentName(i) != null)
+				{
+					param = declaration.getParameterList().getParameter(getArgumentName(i));
+				}
+				else
+				{
+					param = declaration.getParameterList().getParameter(i);
+				}
+				
+				Value inferredType = inferred.getParameterList().getParameter(i);
+				Value context = (Value)getVisibleChild(i);
+				ClassDeclaration typeClass = context.getReturnedNode().getTypeClass();
+				
+				if (typeClass != null)
+				{
+					String type = inferredType.isGenericType() || "Number".equals(inferredType.getType()) || inferredType.getTypeClass() != null && inferredType.getTypeClass().isOfType(typeClass) ? context.getReturnedNode().getNovaType(context) : inferredType.getType();
+					
+					context.replaceWithBoxedValue(param, type);
+				}
+			}
+		}
+		
 		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
 			int numRet = 0;
@@ -290,23 +322,6 @@ public class MethodCallArgumentList extends ArgumentList
 				else
 				{
 					param = method.getParameterList().getParameter(i);
-				}
-				
-				if (value instanceof DefaultArgument == false && value.getReturnedNode().isPrimitive() && !param.isPrimitiveType() && !call.getReferenceNode().toValue().isPrimitiveGenericTypeWrapper())
-				{
-					Instantiation newValue = SyntaxUtils.autoboxPrimitive(value);
-					
-					replace(value, newValue);
-					
-					result.returnedNode = newValue;
-				}
-				else if (value instanceof DefaultArgument == false && param.getType() != null && !value.getType().equals("void") && !value.getReturnedNode().isPrimitive() && param.isPrimitive())
-				{
-					Value newValue = SyntaxUtils.unboxPrimitive(value);
-					
-					replace(value, newValue);
-					
-					result.returnedNode = newValue;
 				}
 			}
 		}
