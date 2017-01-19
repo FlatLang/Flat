@@ -195,8 +195,8 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				if (!parent.containsAnnotationOfType(NativeAnnotation.class, true, true) &&
 					(parent instanceof Assignment == false ||
-						!(((Assignment)parent).getAssignedNodeValue() instanceof Variable &&
-							((Assignment)parent).getAssignedNode().getDeclaration().containsAnnotationOfType(NativeAnnotation.class))))
+						(((Assignment)parent).getAssignedNodeValue() instanceof Variable == false ||
+							!((Assignment)parent).getAssignedNode().getDeclaration().containsAnnotationOfType(NativeAnnotation.class))))
 				{
 					Value value = SyntaxTree.decodeValue(parent, n.mapDimension(0), location, require);
 					
@@ -256,6 +256,11 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		}
 		else if (dimension > 0)
 		{
+			if (isPrimitiveType() && getArrayDimensions() > 1)
+			{
+				return ".map({ " + getDefaultLiteralValue() + " })";
+			}
+			
 			return "";
 		}
 		
@@ -397,13 +402,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			String type = generateNovaType(new StringBuilder(), null, false).toString();
 			
-			NativeAnnotation annotation = new NativeAnnotation(getParent(), getParent().getLocationIn());
-			annotation.onAfterDecoded();
-			
-			Assignment array = Assignment.decodeStatement(func, type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
+			Assignment array = Assignment.decodeStatement(func, "native " + type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
 			
 			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
-			decl.addAnnotation(annotation);
+			
+			setDataType(POINTER);
+			decl.setDataType(POINTER);
+			array.getAssignmentNode().getReturnedNode().setDataType(POINTER);
+			((Instantiation)array.getAssignmentNode().getReturnedNode()).getIdentifier().setDataType(POINTER);
 			
 			array.onAfterDecoded();
 			
@@ -430,6 +436,11 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 					var.setDeclaration(param);
 					
 					value = var;
+				}
+				
+				if (value.isPrimitive())
+				{
+					value = SyntaxUtils.autoboxPrimitive(value);
 				}
 				
 				Assignment a = Assignment.decodeStatement(func, name + "[" + i + "] = " + value.generateNovaInput(), getLocationIn(), true);
