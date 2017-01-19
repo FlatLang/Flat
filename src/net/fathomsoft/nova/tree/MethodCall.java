@@ -580,7 +580,7 @@ public class MethodCall extends Variable
 	 */
 	public Value getCorrespondingParameter(int argIndex)
 	{
-		return getCallableDeclaration().getParameterList().getParameter(argIndex);
+		return getInferredDeclaration().getParameterList().getParameter(argIndex);
 	}
 	
 	@Override
