@@ -244,7 +244,7 @@ public class Return extends IValue
 	
 	private Value checkPrimitiveType(Value node)
 	{
-		if (!node.getReturnedNode().isPrimitive() && getParentMethod().isPrimitive())
+		if (!node.getReturnedNode().isPrimitive() && getParentMethod().isPrimitive() && !Literal.isNullLiteral(node))
 		{
 			return SyntaxUtils.unboxPrimitive(node);
 		}
