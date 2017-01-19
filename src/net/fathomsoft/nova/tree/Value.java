@@ -298,6 +298,22 @@ public abstract class Value extends Node implements AbstractValue
 		return getAncestorOfType(ReturnParameterList.class) != null;
 	}
 	
+	public String getDefaultLiteralValue()
+	{
+		if (isPrimitiveType()) // needed so native arrays are included
+		{
+			switch (getType())
+			{
+				case "Bool":
+					return "false";
+				default:
+					return "0";
+			}
+		}
+		
+		return "null";
+	}
+	
 	/**
 	 * Get whether a variable's type is a primitive type or not.<br>
 	 * <br>
