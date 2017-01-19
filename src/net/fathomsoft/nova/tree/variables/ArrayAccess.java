@@ -142,6 +142,11 @@ public class ArrayAccess extends Node implements ArrayCompatible
 							
 							return null;
 						}
+						
+						if (!created.isPrimitive())
+						{
+							created = SyntaxUtils.unboxPrimitive(created);
+						}
 					}
 					
 					n.addDimension(created);
