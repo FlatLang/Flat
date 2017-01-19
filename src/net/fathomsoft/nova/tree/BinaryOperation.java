@@ -829,7 +829,7 @@ public class BinaryOperation extends IValue
 		ClassDeclaration leftClass = leftReturned.getTypeClass();
 		ClassDeclaration objectClass = getProgram().getClassDeclaration("nova/Object");
 		
-		if (leftClass != null && !leftReturned.isPrimitive() && leftClass != objectClass)
+		if (leftClass != null && !leftReturned.isPrimitive() && leftClass != objectClass && leftReturned.getArrayDimensions() == 0 && getRightOperandValue().getReturnedNode().getArrayDimensions() == 0)
 		{
 			if (leftClass.isOfType(overload))
 			{
