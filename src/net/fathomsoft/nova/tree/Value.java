@@ -298,6 +298,11 @@ public abstract class Value extends Node implements AbstractValue
 		return getAncestorOfType(ReturnParameterList.class) != null;
 	}
 	
+	public boolean isExternal()
+	{
+		return false;
+	}
+	
 	public String getDefaultLiteralValue()
 	{
 		if (isPrimitiveType()) // needed so native arrays are included
