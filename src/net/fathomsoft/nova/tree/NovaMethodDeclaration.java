@@ -1081,6 +1081,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				setVisibility(PUBLIC);
 			}
+			
+			if (this instanceof VirtualMethodDeclaration == false && virtualMethod != null)
+			{
+				virtualMethod.validate(phase);
+			}
 		}
 		
 		return result;
