@@ -856,7 +856,24 @@ public class Assignment extends Value
 			return null;
 		}
 		
-		return (Value)child;
+		Value value = (Value)child;
+		
+		if (getAssignedNodeValue().getReturnedNode().getType() != null)
+		{
+			if (getAssignedNodeValue().getReturnedNode().isPrimitive())
+			{
+				if (!value.getReturnedNode().isPrimitive())
+				{
+					value = SyntaxUtils.unboxPrimitive(value);
+				}
+			}
+			else if (value.getReturnedNode().isPrimitive())
+			{
+				value = SyntaxUtils.autoboxPrimitive(value);
+			}
+		}
+		
+		return value;
 	}
 	
 	/**
