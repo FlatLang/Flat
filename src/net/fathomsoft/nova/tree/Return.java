@@ -256,6 +256,21 @@ public class Return extends IValue
 		return node;
 	}
 	
+	public void convertPrimitiveType()
+	{
+		Value old = getValueNode();
+		
+		if (old != null)
+		{
+			Value v = checkPrimitiveType(old);
+			
+			if (v != old)
+			{
+				old.replaceWith(v);
+			}
+		}
+	}
+	
 	private boolean queryReturnError(MethodDeclaration method, boolean require)
 	{
 		String expected = method.getType();
@@ -306,6 +321,8 @@ public class Return extends IValue
 		{
 			return result;
 		}
+		
+		convertPrimitiveType();
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
