@@ -13,6 +13,8 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 
+import static net.fathomsoft.nova.tree.Value.POINTER;
+
 /**
  * Class used for getting information about the Syntax of Nova.
  * 
@@ -1760,14 +1762,37 @@ public class SyntaxUtils
 	
 	public static Value unboxPrimitive(Value primitive)
 	{
-		Accessible value = SyntaxTree.decodeAccessible(primitive.getReturnedNode(), "value", Location.INVALID, true, false);
-		
-		if (value instanceof Identifier)
+		return unboxPrimitive(primitive, primitive.getReturnedNode().getNovaType(primitive));
+	}
+	
+	public static Value unboxPrimitive(Value primitive, String type)
+	{
+		if (primitive instanceof Accessible)
 		{
-			((Accessible)primitive.getReturnedNode()).setAccessedNode((Identifier)value);
+			Priority p = new Priority(primitive.getParent(), primitive.getLocationIn());
+			Cast c = new Cast(p, primitive.getLocationIn());
+			c.setTypeValue(type);
+			c.setDataType(POINTER);
+			
+			Accessible value = SyntaxTree.decodeAccessible(primitive.getReturnedNode(), "value", Location.INVALID, true, false);
+			
+			if (primitive.getParent().containsChild(primitive, false))
+			{
+				primitive.replaceWith(p);
+			}
+			
+			c.addChild(primitive);
+			p.addChild(c);
+			
+			if (value instanceof Identifier)
+			{
+				p.setAccessedNode((Identifier)value);
+			}
+			
+			return p;//(Value)SyntaxTree.decodeIdentifierAccess(primitive.parent, primitive.generateNovaInput().toString() + ".value", Location.INVALID, true);
 		}
 		
-		return primitive;//(Value)SyntaxTree.decodeIdentifierAccess(primitive.parent, primitive.generateNovaInput().toString() + ".value", Location.INVALID, true);
+		return primitive;
 	}
 	
 	/**
