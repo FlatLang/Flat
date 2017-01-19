@@ -3,6 +3,9 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
+import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -254,7 +257,31 @@ public class MethodCallArgumentList extends ArgumentList
 				{
 					String type = inferredType.isGenericType() || "Number".equals(inferredType.getType()) || inferredType.getTypeClass() != null && inferredType.getTypeClass().isOfType(typeClass) ? context.getReturnedNode().getNovaType(context) : inferredType.getType();
 					
-					context.replaceWithBoxedValue(param, type);
+					if (context instanceof Closure)
+					{
+						Closure c = (Closure)context;
+						
+						if (c.declaration instanceof LambdaMethodDeclaration && c.getType() != null && param.getType() != null)
+						{
+							LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)c.declaration;
+							
+							if (c.isPrimitive())
+							{
+								if (!param.isPrimitive())
+								{
+									lambda.setDataType(param.getDataType());
+								}
+							}
+							else if (param.isPrimitive())
+							{
+								lambda.setDataType(param.getDataType());
+							}
+						}
+					}
+					else
+					{
+						context.replaceWithBoxedValue(param, type);
+					}
 				}
 			}
 		}
