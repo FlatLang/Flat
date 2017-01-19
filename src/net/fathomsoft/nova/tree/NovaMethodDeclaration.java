@@ -1004,6 +1004,15 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						r.getValueNode().replaceWithAutoboxedValue();
 					}
 				}
+				else if (n instanceof Assignment)
+				{
+					Assignment assign = (Assignment)n;
+					
+					if (assign.getAssignedNodeValue().getReturnedNode().isPrimitive() && !isPrimitive())
+					{
+						assign.getAssignmentNode().replaceWithUnboxedValue();
+					}
+				}
 			}
 		}
 	}
