@@ -1738,6 +1738,11 @@ public class SyntaxUtils
 	 */
 	public static Instantiation autoboxPrimitive(Value primitive)
 	{
+		return autoboxPrimitive(primitive, primitive.getReturnedNode().getType());
+	}
+	
+	public static Instantiation autoboxPrimitive(Value primitive, String type)
+	{
 		Instantiation node = null;
 		
 		Value returned = primitive.getReturnedNode();
