@@ -182,6 +182,11 @@ public class SyntaxUtils
 	
 	public static String getPrimitiveDefaultValue(String type)
 	{
+		if (type == null)
+		{
+			return null;
+		}
+		
 		switch (type)
 		{
 			case "Int":
