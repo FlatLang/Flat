@@ -746,9 +746,14 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public Node getChildOfType(Class<?> type)
 	{
+		return getChildOfType(type, true);
+	}
+	
+	public Node getChildOfType(Class<?> type, boolean recursive)
+	{
 		for (Node n : children)
 		{
-			if (type.isAssignableFrom(n.getClass()) || n.containsChildOfType(type))
+			if (type.isAssignableFrom(n.getClass()) || recursive && n.containsChildOfType(type))
 			{
 				return n;
 			}
@@ -791,7 +796,12 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public boolean containsChildOfType(Class<?> type)
 	{
-		return getChildOfType(type) != null;
+		return containsChildOfType(type, true);
+	}
+	
+	public boolean containsChildOfType(Class<?> type, boolean recursive)
+	{
+		return getChildOfType(type, recursive) != null;
 	}
 	
 	public boolean whereChildOfType(Class<?> type, Function<Node, Boolean> test)
