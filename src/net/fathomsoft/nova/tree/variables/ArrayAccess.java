@@ -130,11 +130,11 @@ public class ArrayAccess extends Node implements ArrayCompatible
 					Location newLoc = location.asNew();
 					newLoc.setOffset(idBounds.getEnd() + location.getOffset());
 					
-					Node created = Literal.decodeStatement(n, data, newLoc, require, true);
+					Value created = Literal.decodeStatement(n, data, newLoc, require, true);
 					
 					if (created == null)
 					{
-						created = SyntaxTree.decodeScopeContents(n.getAncestorWithScope(), data, newLoc, require);
+						created = SyntaxTree.decodeValue(n.getAncestorWithScope(), data, newLoc, require);
 						
 						if (created == null)
 						{
