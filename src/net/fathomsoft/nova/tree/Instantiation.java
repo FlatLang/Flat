@@ -91,7 +91,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	 */
 	public Identifier getIdentifier()
 	{
-		return (Identifier)getChild(super.getNumDefaultChildren() + 1);
+		return getNumChildren() > super.getNumDefaultChildren() + 1 ? (Identifier)getChild(super.getNumDefaultChildren() + 1) : null;
 	}
 	
 	/**
