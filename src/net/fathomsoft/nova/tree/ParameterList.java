@@ -224,7 +224,17 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		
 		for (int i = 0; i < distances.length; i++)
 		{
-			distances[i] = getParameter(i).getTypeClass().getDistanceFrom(other.getParameter(i).getTypeClass());
+			Value given = getParameter(i);
+			Value required = other.getParameter(i);
+			
+			if (given instanceof ClosureDeclaration || required instanceof ClosureDeclaration)
+			{
+				distances[i] = 0;
+			}
+			else
+			{
+				distances[i] = given.getTypeClass().getDistanceFrom(required.getTypeClass());
+			}
 		}
 		
 		return distances;
