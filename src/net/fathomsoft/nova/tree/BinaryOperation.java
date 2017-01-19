@@ -979,14 +979,17 @@ public class BinaryOperation extends IValue
 			return result;
 		}
 		
+		Value left = getLeftOperand().getReturnedNode();
+		Value right = getRightOperandValue().getReturnedNode();
+		
 		if (getOperator().isNumerical() ||
-			getOperator().isComparison() && getLeftOperand().getReturnedNode().isPrimitive() ^ getRightOperandValue().getReturnedNode().isPrimitive() && !isZeroComparison())
+			getOperator().isComparison() && left.isPrimitive() ^ right.isPrimitive() && !isZeroComparison())
 		{
-			if (!getLeftOperand().getReturnedNode().isPrimitive())
+			if (!left.isPrimitive() && !left.isExternal())
 			{
 				getLeftOperand().replaceWithUnboxedValue();
 			}
-			if (!getRightOperandValue().getReturnedNode().isPrimitive())
+			if (!right.isPrimitive() && !right.isExternal())
 			{
 				getRightOperandValue().replaceWithUnboxedValue();
 			}
