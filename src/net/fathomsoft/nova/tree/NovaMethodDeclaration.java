@@ -1074,8 +1074,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					setOverloadIDs(methods);
 				}
 			}
-			
-			searchVirtualMethodDeclaration();
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
