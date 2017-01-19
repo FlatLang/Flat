@@ -968,6 +968,12 @@ public class BinaryOperation extends IValue
 		return getRightOperand() instanceof BinaryOperation ? ((BinaryOperation)getRightOperand()).getLeftOperand() : getRightOperand();
 	}
 	
+	public boolean isZeroComparison()
+	{
+		return getLeftOperand() instanceof Literal && ((Literal)getLeftOperand()).value.equals("0") ||
+			getRightOperandValue() instanceof Literal && ((Literal)getRightOperandValue()).value.equals("0");
+	}
+	
 	@Override
 	public ValidationResult validate(int phase)
 	{
