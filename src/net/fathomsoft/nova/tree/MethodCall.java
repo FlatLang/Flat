@@ -103,9 +103,14 @@ public class MethodCall extends Variable
 	
 	public CallableMethod getCallableMethodBase()
 	{
+		return getCallableMethodBase(false);
+	}
+	
+	public CallableMethod getCallableMethodBase(boolean requireVirtual)
+	{
 		CallableMethod callable = (CallableMethod)getMethodDeclaration();
 		
-		if (callable.isVirtual() && ((NovaMethodDeclaration)callable).getVirtualMethod() != null && !isVirtualTypeKnown())
+		if (callable.isVirtual() && ((NovaMethodDeclaration)callable).getVirtualMethod() != null && (requireVirtual || !isVirtualTypeKnown()))
 		{
 			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)callable;
 			
