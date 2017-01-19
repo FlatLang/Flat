@@ -199,9 +199,7 @@ public class Cast extends IValue
 			SyntaxMessage.error("Cannot cast from type '" + node.getReturnedNode().getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
 		}
 		
-		node = checkPrimitiveType(node);
-		
-		addChild(node);
+		addChild(checkPrimitiveType(node));
 		
 		return true;
 	}
@@ -210,7 +208,7 @@ public class Cast extends IValue
 	{
 		if (!node.getReturnedNode().isPrimitive() && isPrimitive())
 		{
-			return SyntaxUtils.unboxPrimitive(node);
+			return SyntaxUtils.unboxPrimitive(node, getType());
 		}
 		
 		return node;
