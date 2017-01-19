@@ -240,11 +240,11 @@ public class Operator extends IValue
 	{
 		switch (operator)
 		{
-			case MULTIPLY:
-			case DIVIDE:
-			case ADD:
-			case SUBTRACT:
-			case MODULO: return true;
+			case MULTIPLY: case SHORTHAND_MULTIPLY:
+			case DIVIDE: case SHORTHAND_DIVIDE:
+			case ADD: case SHORTHAND_ADD:
+			case SUBTRACT: case SHORTHAND_SUBTRACT:
+			case MODULO: case SHORTHAND_MODULO: return true;
 			default:
 				return false;
 		}
