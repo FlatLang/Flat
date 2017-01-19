@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 public interface ShorthandAccessible
@@ -113,10 +114,10 @@ public interface ShorthandAccessible
 				
 				if (value instanceof Cast)
 				{
-					value = ((Cast)value).getValueNode();
+					accessorValue = accessorValue.substring(StringUtils.findEndingMatch(accessorValue, 0, '(', ')') + 1);
 				}
 				
-				Assignment assignment = Assignment.decodeStatement(m, value.generateNovaInput() + " = value", getLocationIn(), true);
+				Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true);
 				
 				m.addChild(assignment);
 			}
