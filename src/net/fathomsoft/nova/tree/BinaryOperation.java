@@ -706,16 +706,11 @@ public class BinaryOperation extends IValue
 					
 					Value output = BinaryOperation.decodeStatement(getParent(), value.generateNovaInput() + " " + getOperator().getNonShorthand() + " " + getRightOperand().generateNovaInput(), getLocationIn(), true);
 					
-					if (output instanceof BinaryOperation)
-					{
-						BinaryOperation operation = (BinaryOperation)output;
-						
-						MethodCall call = SyntaxUtils.generateArraySetterCallFromAccess((Variable)a, operation);
-						
-						((Variable)a).replaceWith(call);
-						
-						return getLeftOperand();
-					}
+					MethodCall call = SyntaxUtils.generateArraySetterCallFromAccess((Variable)a, output);
+					
+					((Variable)a).replaceWith(call);
+					
+					return getLeftOperand();
 				}
 			}
 		}
