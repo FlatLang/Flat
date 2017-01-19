@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -59,7 +60,14 @@ public class StaticClassReference extends IIdentifier
 	
 	public ClassDeclaration getStaticTypeClass()
 	{
-		return super.getTypeClass(false, false);
+		Import i = getFileDeclaration().getImport(super.getType(true), false);
+		
+		if (i != null)
+		{
+			return i.getClassDeclaration();//super.getTypeClass(false, false);
+		}
+		
+		return getFileDeclaration().getClassDeclaration(super.getType(true));
 	}
 	
 	@Override
@@ -71,6 +79,33 @@ public class StaticClassReference extends IIdentifier
 		}
 		
 		return super.getTypeClass(checkCast, defaultGenericType);
+	}
+	
+	@Override
+	public String getType(boolean checkCast)
+	{
+		if (!isDecoding() && !doesAccess() && (parent instanceof MethodCallArgumentList == false || parent.parent.isDecoding() || !((MethodCallArgumentList)parent).getMethodDeclaration().getParentClass().getClassLocation().equals("nova/meta/Class")))
+		{
+			return "Class";
+		}
+		
+		return super.getType(checkCast);
+	}
+	
+	@Override
+	public boolean onAfterDecoded()
+	{
+		if (!doesAccess())
+		{
+			Variable var = (Variable)SyntaxTree.decodeIdentifier(this, "class", getLocationIn(), false);
+			
+			if (var != null)
+			{
+//				setAccessedNode(var);
+			}
+		}
+		
+		return super.onAfterDecoded();
 	}
 	
 	@Override
