@@ -288,6 +288,9 @@ public class SyntaxTree
 			
 			controller.log("Compiling function/property map overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkMapOverrides()));
+			
+			controller.log("Linking virtual declarations...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.searchVirtualDeclarations()));
 		}
 	}
 	

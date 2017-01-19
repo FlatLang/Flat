@@ -3030,6 +3030,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		getDestructorList().forEachNovaMethod(x -> x.checkOverrides());
 	}
 	
+	public void searchVirtualDeclarations()
+	{
+		getMethodList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
+		getConstructorList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
+		getHiddenMethodList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
+		getVirtualMethodList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
+		getPropertyMethodList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
+		getDestructorList().forEachNovaMethod(x -> x.searchVirtualMethodDeclaration());
+	}
+	
 	public void checkMapOverrides()
 	{
 		if (functionMap != null)
