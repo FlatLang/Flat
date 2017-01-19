@@ -917,7 +917,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			this.cloneTo(virtualMethod, false, true);
 			virtualMethod.objectReference = new ObjectReference(virtualMethod);
 			
-			getParentClass().addChild(virtualMethod);
+//			getParentClass().addChild(virtualMethod);
 		}
 	}
 	
