@@ -1744,7 +1744,7 @@ public class SyntaxUtils
 		
 		if (returned.isPrimitiveType())
 		{
-			String className     = returned.getType();
+			String className     = type;
 			String defaultValue  = SyntaxUtils.getPrimitiveDefaultValue(className);
 			String instantiation = "new " + className + '(' + defaultValue + ')';
 			
