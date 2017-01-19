@@ -1530,6 +1530,12 @@ public class MethodCall extends Variable
 		return node;
 	}
 	
+	@Override
+	public byte getDataType()
+	{
+		return getCallableMethodBase().getDataType(false);
+	}
+	
 	/**
 	 * Test the MethodCall class type to make sure everything
 	 * is working properly.
