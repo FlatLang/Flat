@@ -852,7 +852,7 @@ public class BinaryOperation extends IValue
 					{
 						//GenericTypeArgument arg = validMethod.getParameter(0).getGenericTypeParameter().getCorrespondingArgument(leftReturned);
 						Value required = validMethod.getParameter(0);
-						Value rightNode = right instanceof BinaryOperation ? ((BinaryOperation)right).getLeftOperand() : right;
+						Value rightNode = getRightOperandValue();
 						
 						if (Literal.isNullLiteral(leftReturned) || Literal.isNullLiteral(rightNode))
 						{
@@ -961,6 +961,11 @@ public class BinaryOperation extends IValue
 		}
 		
 		return value;
+	}
+	
+	public Value getRightOperandValue()
+	{
+		return getRightOperand() instanceof BinaryOperation ? ((BinaryOperation)getRightOperand()).getLeftOperand() : getRightOperand();
 	}
 	
 	@Override
