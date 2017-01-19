@@ -1368,6 +1368,20 @@ public abstract class Value extends Node implements AbstractValue
 		return newValue;
 	}
 	
+	public Value replaceWithBoxedValue(Value required, String type)
+	{
+		if (getReturnedNode().isPrimitive() && !required.isPrimitiveType())
+		{
+			return replaceWithAutoboxedValue(type);
+		}
+		else if (required.getType() != null && !getType().equals("void") && !getReturnedNode().isPrimitive() && required.isPrimitive())
+		{
+			return replaceWithUnboxedValue(type);
+		}
+		
+		return null;
+	}
+	
 	public boolean isImmutable()
 	{
 		return getTypeClass().isImmutable();
