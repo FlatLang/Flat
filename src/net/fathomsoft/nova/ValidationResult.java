@@ -12,7 +12,7 @@ import net.fathomsoft.nova.tree.Node;
  */
 public class ValidationResult
 {
-	public Node    returnedNode;
+	public Node    returnedNode, originalNode;
 	
 	public boolean errorOccurred;
 	public boolean continueValidation;
@@ -30,6 +30,7 @@ public class ValidationResult
 	public ValidationResult(Node returnedNode)
 	{
 		this.returnedNode       = returnedNode;
+		this.originalNode       = returnedNode;
 		
 		this.continueValidation = true;
 		this.errorOccurred      = false;
@@ -40,7 +41,7 @@ public class ValidationResult
 	
 	public boolean skipValidation()
 	{
-		return errorOccurred || skipCycle || !continueValidation;
+		return errorOccurred || skipCycle || !continueValidation || returnedNode != originalNode;
 	}
 	
 	/**
