@@ -133,6 +133,24 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 		return true;
 	}
 	
+	@Override
+	public void updateGenericParameter(Parameter other)
+	{
+		super.updateGenericParameter(other);
+		
+		if (other instanceof ClosureDeclaration)
+		{
+			ClosureDeclaration closure = (ClosureDeclaration)other;
+			
+			ParameterList<Value> params = closure.getParameterList();
+			
+			for (int i = 0; i < getParameterList().getNumVisibleChildren(); i++)
+			{
+				getParameterList().getParameter(i).setDataType(params.getParameter(i).getDataType());
+			}
+		}
+	}
+	
 	/**
 	 * Decode the given statement into a ClosureDeclaration instance, if
 	 * possible. If it is not possible, this method returns null.
