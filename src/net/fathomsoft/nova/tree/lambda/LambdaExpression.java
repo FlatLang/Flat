@@ -174,9 +174,16 @@ public class LambdaExpression extends Value
 							method.methodCall = (MethodCall)context;
 						}
 						
+						NovaParameterList params = method.getParameterList();
+						
 						if (parentMethod != null)
 						{
-							method.getParameterList().getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+							params.getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+						}
+						
+						for (int n = 0; n < params.getNumVisibleChildren(); n++)
+						{
+							params.getParameter(n).setDataType(closure.getParameterList().getParameter(n).getDataType());
 						}
 						
 						method.getParentClass().addChild(method);
