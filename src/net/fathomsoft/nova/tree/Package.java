@@ -31,12 +31,12 @@ public class Package extends Node
 	
 	public String[] getFolders()
 	{
-		return location.split("/");
+		return isDefaultPackage() ? new String[0] : location.split("/");
 	}
 	
 	public String getRootFolder()
 	{
-		return getFolders()[0];
+		return isDefaultPackage() ? null : getFolders()[0];
 	}
 	
 	public String getLocation()
@@ -51,7 +51,7 @@ public class Package extends Node
 	
 	public File getParentFile()
 	{
-		String directories[] = location.split("/");
+		String directories[] = getFolders();
 		
 		File current = getFileDeclaration().getFile().getParentFile();
 		
@@ -132,7 +132,7 @@ public class Package extends Node
 		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			if (!validLocation())
+			if (!validLocation() && !isDefaultPackage())
 			{
 				result.errorOccurred();
 				result.continueValidation = false;

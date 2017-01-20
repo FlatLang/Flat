@@ -2123,7 +2123,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public String getNativeLocation()
 	{
-		String location = getPackage().getLocation().replace('/', '_');
+		String location = getPackage().isDefaultPackage() ? "" : getPackage().getLocation().replace('/', '_');
 		
 		if (location.length() > 0)
 		{

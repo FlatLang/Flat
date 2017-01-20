@@ -41,7 +41,7 @@ public abstract class CodeGeneratorEngine
 		
 		String basePackage = file.getPackage().getRootFolder();
 		
-		if (controller.outputDirectories.containsKey(basePackage))
+		if (basePackage != null && controller.outputDirectories.containsKey(basePackage))
 		{
 			outputDir = new File(controller.outputDirectories.get(basePackage));
 		}
