@@ -184,6 +184,7 @@ public class MethodList extends TypeList<MethodDeclaration>
 			checkAncestor       = true;
 			requireExactMatch   = false;
 			checkStatic         = false;
+			checkInterfaces     = true;
 			checkConstructors   = true;
 			checkProperties     = false;
 			allowMoreParameters = false;
