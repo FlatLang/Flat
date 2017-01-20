@@ -797,7 +797,15 @@ public class Nova
 			{
 				validateArgumentSize(args, i + 1);
 				
-				outputDirectory = new File(args[i + 1]);
+				try
+				{
+					outputDirectory = new File(args[i + 1]).getCanonicalFile();
+					outputDirectory.mkdirs();
+				}
+				catch (IOException e)
+				{
+					throw new RuntimeException(e);
+				}
 				
 				skip = 1;
 			}
@@ -817,7 +825,7 @@ public class Nova
 				// (If it is one of the sources to compile)
 				if (lastInput == i - 1)
 				{
-					File file = new File(args[i]);
+					File file = new File(args[i]).getAbsoluteFile();
 					
 					inputFiles.add(file);
 					
