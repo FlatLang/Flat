@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -69,6 +70,8 @@ public class ExtensionMethodDeclaration extends BodyMethodDeclaration
 				n.getParameterList().getReferenceParameter().setType(type);
 				
 				type.detach();
+				
+				n.objectReference = new ObjectReference(n);
 				
 				return n;
 			}
