@@ -403,7 +403,7 @@ public class Nova
 //			inputFiles.add(new File(location));
 //		}
 		
-		args = prependArguments(args, new String[] { "../StandardLibrary/nova" });
+		args = prependArguments(args, new String[] { standardLibraryPath + "/nova" });
 		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
