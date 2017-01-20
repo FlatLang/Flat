@@ -272,6 +272,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		filter.checkStatic(isStatic());
 		filter.checkProperties = true;
 		filter.allowMoreParameters = false;
+		filter.requireExactMatch = true;
 		filter.requireEqualParameterCount = true;
 		
 		return getOverriddenMethod(filter);
