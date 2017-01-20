@@ -1104,7 +1104,12 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ClassDeclaration getNovaTypeClass()
 	{
-		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getNovaType()));
+		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getNovaType())));
+	}
+	
+	public ClassDeclaration getNovaTypeClass(Value context)
+	{
+		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getNovaType(context))));
 	}
 	
 	public boolean isOriginallyGenericType()
