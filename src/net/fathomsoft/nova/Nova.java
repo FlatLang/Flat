@@ -306,6 +306,13 @@ public class Nova
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Misc/example/";
 		
+		String standardLibraryPath = "";
+		
+		if (OS == WINDOWS)
+		{
+			standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
+		}
+		
 		if (args.length == 0 || args[0].equals("-version"))
 		{
 			System.out.println("Nova " + VERSION);
