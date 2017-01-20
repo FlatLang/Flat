@@ -1422,24 +1422,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
-	private int getParametersDistance(Value[] required, Value[] given)
-	{
-		int sum = 0;
-		
-		for (int i = 0; i < Math.min(required.length, given.length); i++)
-		{
-			ClassDeclaration g = given[i].getTypeClass();
-			ClassDeclaration r = required[i].getTypeClass();
-			
-			if (g != null && r != null)
-			{
-				sum += g.getDistanceFrom(r);
-			}
-		}
-		
-		return sum;
-	}
-	
 	/**
 	 * Get all of the methods that have the given methodName and the given
 	 * number of parameters.

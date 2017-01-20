@@ -2354,6 +2354,32 @@ public class SyntaxUtils
 		return true;
 	}
 	
+	public static int getParametersDistance(Value[] required, Value[] given)
+	{
+		return getParametersDistance(null, required, given);
+	}
+	
+	public static int getParametersDistance(Value context, Value[] required, Value[] given)
+	{
+		int sum = 0;
+		
+		for (int i = 0; i < Math.min(required.length, given.length); i++)
+		{
+//			if (!required[i].isGenericType())
+			{
+				ClassDeclaration g = given[i].getNovaTypeClass(context);
+				ClassDeclaration r = required[i].getNovaTypeClass(context);
+				
+				if (g != null && r != null && (!g.isPrimitiveType() || !r.isPrimitiveType()))
+				{
+					sum += g.getDistanceFrom(r);
+				}
+			}
+		}
+		
+		return sum;
+	}
+	
 	/**
 	 * Check to see if the 'given' type is compatible with the
 	 * required type.
