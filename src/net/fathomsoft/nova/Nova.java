@@ -843,6 +843,13 @@ public class Nova
 			}
 		}
 		
+		if (outputFile == null)
+		{
+			System.err.println("You must specify an output file using the -o argument. e.g. 'novac Test.nova -o Test'");
+			
+			System.exit(1);
+		}
+		
 		validateInputFiles();
 	}
 	
