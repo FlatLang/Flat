@@ -458,6 +458,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		SearchFilter filter = new SearchFilter();
 		filter.allowMoreParameters = false;
+		filter.requireExactMatch = true;
 		
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
