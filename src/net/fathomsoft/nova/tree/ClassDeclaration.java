@@ -527,7 +527,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		for (NovaMethodDeclaration m : methods)
 		{
 			// TODO: need to make this more strict.
-			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(null, false, filter, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
+			if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(new GenericCompatible[] { this }, false, filter, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
 			{
 				return m;
 			}
