@@ -46,7 +46,7 @@ public class Nova
 	public ArrayList<String>	externalImports, externalIncludes;
 	private ArrayList<String> errors, warnings, messages;
 	
-	public File outputDirectory;
+	public File outputDirectory, installDirectory;
 	
 	public HashMap<String, String> outputDirectories;
 	
@@ -164,6 +164,25 @@ public class Nova
 			}
 			
 			enableFlag(DRY_RUN);
+		}
+		
+		if (OS == WINDOWS)
+		{
+			if (System.getenv("NOVA_HOME") == null)
+			{
+				System.err.println("NOVA_HOME environment variable is not set. Learn how to set them at http://nova-lang.org/docs/getting-started/configure-environment");
+				
+				System.exit(1);
+			}
+			
+			installDirectory = new File(System.getenv("NOVA_HOME"));
+			
+			if (!installDirectory.isDirectory())
+			{
+				System.err.println("Missing Nova install directory located at '" + installDirectory.getAbsolutePath() + "'");
+				
+				System.exit(1);
+			}
 		}
 		
 		inputFiles         = new ArrayList<>();
