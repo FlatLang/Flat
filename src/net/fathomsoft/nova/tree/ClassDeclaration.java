@@ -18,8 +18,11 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -659,7 +662,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean implementsInterface(ClassDeclaration clazz)
 	{
-		for (Trait i : getImplementedInterfaces())
+		return implementsInterface(clazz, true);
+	}
+	
+	public boolean implementsInterface(ClassDeclaration clazz, boolean checkAncestor)
+	{
+		for (Trait i : getImplementedInterfaces(checkAncestor))
 		{
 			if (clazz == i)
 			{
@@ -676,6 +684,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			return -1;
 		}
+		if (node instanceof Trait)
+		{
+			return getDistanceFromTrait((Trait)node);
+		}
 		
 		int distance = 0;
 		
@@ -688,7 +700,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		while (clazz != null)
 		{
-			if (clazz == node || clazz.implementsInterface(node))
+			if (clazz == node)
 			{
 				return distance;
 			}
@@ -700,6 +712,60 @@ public class ClassDeclaration extends InstanceDeclaration
 		if (node.getClassLocation().equals("nova/Object"))
 		{
 			return distance;
+		}
+		
+		return -1;
+	}
+	
+	public int getDistanceFromTrait(Trait trait)
+	{
+		return getDistanceFromTrait(trait, new HashSet<>());
+	}
+	
+	public int getDistanceFromTrait(Trait trait, HashSet<ClassDeclaration> searched)
+	{
+		ClassDeclaration clazz = this;
+		
+		if (clazz == trait)
+		{
+			return 0;
+		}
+		if (clazz.implementsInterface(trait, false))
+		{
+			return 1;
+		}
+		
+		ArrayList<Integer> distances = new ArrayList<>();
+		
+		ClassDeclaration extended = clazz.getExtendedClassDeclaration();
+		
+		if (extended != null && !searched.contains(extended))
+		{
+			searched.add(extended);
+			
+			distances.add(extended.getDistanceFromTrait(trait, searched));
+		}
+		
+		for (Trait t : getImplementedInterfaces(false))
+		{
+			if (!searched.contains(t))
+			{
+				searched.add(t);
+				
+				distances.add(t.getDistanceFromTrait(trait, searched));
+			}
+		}
+		
+		OptionalInt max = distances.stream().mapToInt(Integer::intValue).max();
+		
+		if (max.isPresent())
+		{
+			int value = max.getAsInt();
+			
+			if (value >= 0)
+			{
+				return value + 1;
+			}
 		}
 		
 		return -1;
@@ -1401,11 +1467,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				max = method.getParameterList().getNumRequiredParameters();
 				maxI = i;
-				distance = getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+				distance = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
 			}
 			else if (count == max)
 			{
-				int dist = getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+				int dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
 				
 				if (dist < distance)
 				{
