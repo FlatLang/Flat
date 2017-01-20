@@ -189,7 +189,18 @@ public interface CallableMethod
 		Value[] required = reverse ? types : getParameterList().getTypes();
 		Value[] given = !reverse ? types : getParameterList().getTypes();
 		
-		return SyntaxUtils.areTypesCompatible(contexts, required, given, searchGeneric);
+		if (SyntaxUtils.areTypesCompatible(contexts, required, given, searchGeneric))
+		{
+			if (filter != null && filter.requireExactMatch && SyntaxUtils.getParametersDistance(contexts.length > 0 ? (Value)contexts[0] : null, required, given) > 0)
+			{
+				required[0].getNovaType((Value)contexts[0]);
+				return false;
+			}
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	public boolean isGenericType();
