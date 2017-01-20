@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -105,6 +106,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 			BodyMethodDeclaration n = new BodyMethodDeclaration(parent, location);
 			
 			method.cloneTo(n);
+			n.getObjectReference(true);
 			n.setLocationIn(location);
 			n.uniqueID = 1;
 			
