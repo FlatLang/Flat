@@ -85,7 +85,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	@Override
 	public ObjectReference getObjectReference()
 	{
-		if (objectReference == null && isInstance())
+		return getObjectReference(false);
+	}
+	
+	public ObjectReference getObjectReference(boolean force)
+	{
+		if ((objectReference == null || force) && isInstance())
 		{
 			objectReference = new ObjectReference(this);
 		}
