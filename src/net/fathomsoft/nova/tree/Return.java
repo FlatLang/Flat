@@ -259,12 +259,13 @@ public class Return extends IValue
 	public void convertPrimitiveType()
 	{
 		Value old = getValueNode();
+		Node oldParent = old != null ? old.parent : null;
 		
 		if (old != null)
 		{
 			Value v = checkPrimitiveType(old);
 			
-			if (v != old)
+			if (!oldParent.containsChild(v, false))
 			{
 				old.replaceWith(v);
 			}
