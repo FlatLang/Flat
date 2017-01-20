@@ -204,15 +204,31 @@ public class Nova
 	{
 		try
 		{
-			targetEngineWorkingDir = new File("../Nova-" + target).getCanonicalFile();
+			String enginePath = "..";
+			
+			if (OS == WINDOWS)
+			{
+				enginePath = System.getenv("APPDATA") + "/Nova";
+			}
+			
+			targetEngineWorkingDir = new File(enginePath + "/Nova-" + target).getCanonicalFile();
 			
 			formattedTarget = targetEngineWorkingDir.getName().substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
 			
-			targetFileExtension = new File(targetEngineWorkingDir, "out/production/Nova-" + formattedTarget + "/nova").list()[0];
+			File targetDirectory = new File(targetEngineWorkingDir, "out/production/Nova-" + formattedTarget + "/nova");
+			
+			if (!targetDirectory.isDirectory())
+			{
+				System.err.println("Could not find target directory for " + target + " compilation target in '" + targetDirectory.getAbsolutePath() + "'");
+				
+				System.exit(1);
+			}
+			
+			targetFileExtension = targetDirectory.list()[0];
 			
 			try
 			{
-				URL url = new File("../Nova-" + formattedTarget + "/out/production/Nova-" + formattedTarget).toURL();
+				URL url = new File(enginePath + "/Nova-" + formattedTarget + "/out/production/Nova-" + formattedTarget).toURL();
 				
 				// Create a new class loader with the directory
 				ClassLoader cl = new URLClassLoader(new URL[] { url });
