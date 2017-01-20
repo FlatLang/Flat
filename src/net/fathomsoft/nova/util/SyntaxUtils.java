@@ -2354,6 +2354,16 @@ public class SyntaxUtils
 		return true;
 	}
 	
+	public static String stripGenerics(String type)
+	{
+		if (type != null && type.indexOf('<') > 0)
+		{
+			return type.substring(0, type.indexOf('<')).trim();
+		}
+		
+		return type;
+	}
+	
 	public static int getParametersDistance(Value[] required, Value[] given)
 	{
 		return getParametersDistance(null, required, given);
