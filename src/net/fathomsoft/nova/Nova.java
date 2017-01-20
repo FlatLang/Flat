@@ -383,7 +383,16 @@ public class Nova
 		
 		ArrayList<String> postArgsList = new ArrayList<>();
 		
-		postArgsList.add(formatPath(directory + "bin/Executable"));
+		postArgsList.add("-single-thread");
+		postArgsList.add("-single-file");
+		postArgsList.add("-line-numbers");
+		postArgsList.add("-no-optimize");
+		postArgsList.add("-v");
+		postArgsList.add("-target");
+		postArgsList.add("c");
+//		postArgsList.add("-output-directory");
+//		postArgsList.add("../NovaCompilerOutput2/" + target);
+//		postArgsList.add(formatPath(directory + "bin/Executable"));
 		
 		String postArgs[] = postArgsList.toArray(new String[0]);
 		
