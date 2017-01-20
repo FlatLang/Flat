@@ -320,24 +320,27 @@ public class SyntaxTree
 				{
 					ClassDeclaration classDeclaration = (ClassDeclaration)child2;
 					
-					MethodList methods = classDeclaration.getMethodList();
-					
-					for (int k = 0; k < methods.getNumChildren(); k++)
+					if (!classDeclaration.isPropertyTrue("functionMap"))
 					{
-						MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(k);
+						MethodList methods = classDeclaration.getMethodList();
 						
-						if (methodDeclaration.containsBody())
+						for (int k = 0; k < methods.getNumChildren(); k++)
 						{
-							if (SyntaxUtils.isMainMethod((BodyMethodDeclaration)methodDeclaration))
+							MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(k);
+							
+							if (methodDeclaration.containsBody())
 							{
-								if (mainClass == null || methodDeclaration.getParentClass().getClassLocation().equals(mainClass))
+								if (SyntaxUtils.isMainMethod((BodyMethodDeclaration)methodDeclaration))
 								{
-									if (main != null)
+									if (mainClass == null || methodDeclaration.getParentClass().getClassLocation().equals(mainClass))
 									{
-										SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", main);
+										if (main != null)
+										{
+											SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", main);
+										}
+										
+										main = methodDeclaration;
 									}
-									
-									main = methodDeclaration;
 								}
 							}
 						}
