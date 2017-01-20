@@ -57,7 +57,7 @@ public class ObjectReference extends Variable
 		{
 			if (params.getVisibleChild(i).getName().equals(param.getType()))
 			{
-				return getGenericTypeArgumentList().getVisibleChild(i);
+				return getGenericTypeArgumentList().getNumVisibleChildren() > 0 ? getGenericTypeArgumentList().getVisibleChild(i) : null;
 			}
 		}
 		
