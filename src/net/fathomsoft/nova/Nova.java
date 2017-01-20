@@ -89,7 +89,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.2.44";
+	public static final String	VERSION       = "v0.3";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -289,6 +289,20 @@ public class Nova
 	{
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Misc/example/";
+		
+		if (args.length == 0 || args[0].equals("-version"))
+		{
+			System.out.println("Nova " + VERSION);
+			
+			if (args.length == 0)
+			{
+				System.err.println("Input files and/or directories must be specified to be compiled.");
+				
+				System.exit(1);
+			}
+			
+			System.exit(0);
+		}
 		
 		if (DEBUG)
 		{
