@@ -1033,17 +1033,36 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		Value type = getNovaTypeValue(context);
 		
-		builder.append(SyntaxUtils.getPrimitiveNovaType(type.getType()));
+		GenericTypeArgument arg = null;
 		
-		builder.append(type.generateGenericType(context));
-		
-		if (checkArray && isPrimitiveArray())
+		if (isGenericType())
 		{
-			builder.append(generateNovaArrayText());
+			GenericTypeParameter param = getGenericTypeParameter();
+			
+			if (param != null)
+			{
+				arg = param.getCorrespondingArgument(context);
+			}
 		}
-		if (isExternalType() && isPointer())
+		
+		if (arg != null && !arg.isGenericType())
 		{
-			builder.append('*');
+			builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType().toString()));
+		}
+		else
+		{
+			builder.append(SyntaxUtils.getPrimitiveNovaType(type.getType()));
+			
+			builder.append(type.generateGenericType(context));
+			
+			if (checkArray && isPrimitiveArray())
+			{
+				builder.append(generateNovaArrayText());
+			}
+			if (isExternalType() && isPointer())
+			{
+				builder.append('*');
+			}
 		}
 		
 		return builder;
