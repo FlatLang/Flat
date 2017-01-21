@@ -12,9 +12,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;
@@ -170,26 +169,35 @@ public class Nova
 		{
 			installDirectory = new File("../Misc/example");
 		}
+		else if (OS == WINDOWS)
+		{
+			if (System.getenv("NOVA_HOME") == null)
+			{
+				System.err.println("NOVA_HOME environment variable is not set. Learn how to set them at http://nova-lang.org/docs/getting-started/configure-environment");
+				
+				System.exit(1);
+			}
+			
+			installDirectory = new File(System.getenv("NOVA_HOME"));
+		}
+		else if (OS == MACOSX)
+		{
+			String workingPath = getWorkingDirectoryPath();
+			
+			installDirectory = new File(workingPath + "../Misc/example");
+		}
 		else
 		{
-			if (OS == WINDOWS)
-			{
-				if (System.getenv("NOVA_HOME") == null)
-				{
-					System.err.println("NOVA_HOME environment variable is not set. Learn how to set them at http://nova-lang.org/docs/getting-started/configure-environment");
-					
-					System.exit(1);
-				}
-				
-				installDirectory = new File(System.getenv("NOVA_HOME"));
-				
-				if (!installDirectory.isDirectory())
-				{
-					System.err.println("Missing Nova install directory located at '" + installDirectory.getAbsolutePath() + "'");
-					
-					System.exit(1);
-				}
-			}
+			System.err.println("Unsupported operating system.");
+			
+			System.exit(1);
+		}
+
+		if (!installDirectory.isDirectory())
+		{
+			System.err.println("Missing Nova install directory located at '" + installDirectory.getAbsolutePath() + "'");
+
+			System.exit(1);
 		}
 		
 		inputFiles         = new ArrayList<>();
@@ -221,6 +229,10 @@ public class Nova
 			{
 				enginePath = System.getenv("APPDATA") + "/Nova";
 			}
+			else if (OS == MACOSX)
+			{
+				enginePath = "..";
+			}
 			
 			targetEngineWorkingDir = new File(enginePath + "/Nova-" + target).getCanonicalFile();
 			
@@ -234,8 +246,17 @@ public class Nova
 				
 				System.exit(1);
 			}
+
+			Optional<File> dir = Arrays.stream(targetDirectory.listFiles()).filter(x -> x.isDirectory() && !x.isHidden()).findFirst();
 			
-			targetFileExtension = targetDirectory.list()[0];
+			if (!dir.isPresent())
+			{
+				System.err.println("Could not find engine for target '" + formattedTarget + "' in directory '" + targetDirectory.getAbsolutePath() + "'");
+				
+				System.exit(1);
+			}
+			
+			targetFileExtension = dir.get().getName();
 			
 			try
 			{
@@ -317,26 +338,7 @@ public class Nova
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Misc/example/";
 		
-		String standardLibraryPath = "";
-		
-		if (OS == WINDOWS)
-		{
-			standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
-		}
-		
-		if (args.length == 0 || args[0].equals("-version"))
-		{
-			System.out.println("Nova " + VERSION);
-			
-			if (args.length == 0)
-			{
-				System.err.println("Input files and/or directories must be specified to be compiled.");
-				
-				System.exit(1);
-			}
-			
-			System.exit(0);
-		}
+		String standardLibraryPath = "../StandardLibrary";
 		
 		if (DEBUG)
 		{
@@ -350,7 +352,7 @@ public class Nova
 //				"../Nova.c",
 //				"../Misc/example",
 //				"../Misc/stabilitytest",
-//				"-output-directory", "../NovaCompilerOutput/" + target,
+				"-output-directory", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -382,29 +384,44 @@ public class Nova
 //				"-no-optimize",
 //				"-target", target,
 //				"-library",
+ 				"-o", formatPath(directory + "bin/Executable")
 			};
 		}
-		if (ANDROID_DEBUG)
+		else if (ANDROID_DEBUG)
 		{
 			enableFlag(DRY_RUN);
+		}
+		else
+		{
+			if (OS == WINDOWS)
+			{
+				standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
+			}
+			
+			if (args.length == 0 || args[0].equals("-version"))
+			{
+				System.out.println("Nova " + VERSION);
+
+				if (args.length == 0)
+				{
+					System.err.println("Input files and/or directories must be specified to be compiled.");
+
+					System.exit(1);
+				}
+
+				System.exit(0);
+			}
 		}
 		
 		ArrayList<String> postArgsList = new ArrayList<>();
 		
-//		postArgsList.add("-single-thread");
+		postArgsList.add("-single-thread");
 		postArgsList.add("-single-file");
 		postArgsList.add("-line-numbers");
 		postArgsList.add("-no-optimize");
 		postArgsList.add("-v");
 		postArgsList.add("-target");
 		postArgsList.add("c");
-		
-		if (DEBUG)
-		{
-			postArgsList.add("-output-directory");
-			postArgsList.add("../NovaCompilerOutput/" + target);
-			postArgsList.add(formatPath(directory + "bin/Executable"));
-		}
 		
 		String postArgs[] = postArgsList.toArray(new String[0]);
 		
