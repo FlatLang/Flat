@@ -391,7 +391,7 @@ public class Nova
 		
 		ArrayList<String> postArgsList = new ArrayList<>();
 		
-		postArgsList.add("-single-thread");
+//		postArgsList.add("-single-thread");
 		postArgsList.add("-single-file");
 		postArgsList.add("-line-numbers");
 		postArgsList.add("-no-optimize");
