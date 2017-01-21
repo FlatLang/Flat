@@ -238,8 +238,17 @@ public class Nova
 				
 				System.exit(1);
 			}
+
+			Optional<File> dir = Arrays.stream(targetDirectory.listFiles()).filter(x -> x.isDirectory() && !x.isHidden()).findFirst();
 			
-			targetFileExtension = targetDirectory.list()[0];
+			if (!dir.isPresent())
+			{
+				System.err.println("Could not find engine for target '" + formattedTarget + "' in directory '" + targetDirectory.getAbsolutePath() + "'");
+				
+				System.exit(1);
+			}
+			
+			targetFileExtension = dir.get().getName();
 			
 			try
 			{
