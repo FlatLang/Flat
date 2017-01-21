@@ -13,7 +13,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;
@@ -184,7 +183,7 @@ public class Nova
 		{
 			String workingPath = getWorkingDirectoryPath();
 			
-			installDirectory = new File(workingPath + "../Misc/example");
+			installDirectory = new File("/Library/Application Support/Nova");
 		}
 		else
 		{
@@ -219,7 +218,7 @@ public class Nova
 	{
 		try
 		{
-			String enginePath;
+			String enginePath = null;
 			
 			if (DEBUG)
 			{
@@ -231,7 +230,7 @@ public class Nova
 			}
 			else if (OS == MACOSX)
 			{
-				enginePath = "..";
+				enginePath = installDirectory.getAbsolutePath();
 			}
 			
 			targetEngineWorkingDir = new File(enginePath + "/Nova-" + target).getCanonicalFile();
@@ -396,6 +395,10 @@ public class Nova
 			if (OS == WINDOWS)
 			{
 				standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
+			}
+			else if (OS == MACOSX)
+			{
+				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
 			}
 			
 			if (args.length == 0 || args[0].equals("-version"))
