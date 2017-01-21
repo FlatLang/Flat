@@ -12,9 +12,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 import static net.fathomsoft.nova.util.FileUtils.formatPath;
@@ -176,13 +175,25 @@ public class Nova
 			}
 			
 			installDirectory = new File(System.getenv("NOVA_HOME"));
+		}
+		else if (OS == MACOSX)
+		{
+			String workingPath = getWorkingDirectoryPath();
 			
-			if (!installDirectory.isDirectory())
-			{
-				System.err.println("Missing Nova install directory located at '" + installDirectory.getAbsolutePath() + "'");
-				
-				System.exit(1);
-			}
+			installDirectory = new File(workingPath + "../Misc/example");
+		}
+		else
+		{
+			System.err.println("Unsupported operating system.");
+			
+			System.exit(1);
+		}
+
+		if (!installDirectory.isDirectory())
+		{
+			System.err.println("Missing Nova install directory located at '" + installDirectory.getAbsolutePath() + "'");
+
+			System.exit(1);
 		}
 		
 		inputFiles         = new ArrayList<>();
@@ -209,6 +220,10 @@ public class Nova
 			if (OS == WINDOWS)
 			{
 				enginePath = System.getenv("APPDATA") + "/Nova";
+			}
+			else if (OS == MACOSX)
+			{
+				enginePath = "..";
 			}
 			
 			targetEngineWorkingDir = new File(enginePath + "/Nova-" + target).getCanonicalFile();
@@ -306,25 +321,11 @@ public class Nova
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Misc/example/";
 		
-		String standardLibraryPath = "";
+		String standardLibraryPath = "../StandardLibrary";
 		
 		if (OS == WINDOWS)
 		{
 			standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
-		}
-		
-		if (args.length == 0 || args[0].equals("-version"))
-		{
-			System.out.println("Nova " + VERSION);
-			
-			if (args.length == 0)
-			{
-				System.err.println("Input files and/or directories must be specified to be compiled.");
-				
-				System.exit(1);
-			}
-			
-			System.exit(0);
 		}
 		
 		if (DEBUG)
@@ -374,11 +375,28 @@ public class Nova
 				"-no-optimize",
 				"-target", target,
 //				"-library",
+ 				"-o", formatPath(directory + "bin/Executable")
 			};
 		}
-		if (ANDROID_DEBUG)
+		else if (ANDROID_DEBUG)
 		{
 			enableFlag(DRY_RUN);
+		}
+		else
+		{
+			if (args.length == 0 || args[0].equals("-version"))
+			{
+				System.out.println("Nova " + VERSION);
+
+				if (args.length == 0)
+				{
+					System.err.println("Input files and/or directories must be specified to be compiled.");
+
+					System.exit(1);
+				}
+
+				System.exit(0);
+			}
 		}
 		
 		ArrayList<String> postArgsList = new ArrayList<>();
