@@ -511,10 +511,10 @@ public class TreeGenerator implements Runnable
 		
 		if (currentEnd < 0)
 		{
-//			if (StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex + 1) < 0)
-//			{
-//				return -1;
-//			}
+			if (StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex + 1) < 0)
+			{
+				return -1;
+			}
 			
 			return source.length();
 		}
