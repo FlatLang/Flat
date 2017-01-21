@@ -226,7 +226,7 @@ public class SyntaxTree
 		
 		this.phase = phase;
 		
-		if (useThreads)
+		if (useThreads && phase >= PHASE_METHOD_CONTENTS)
 		{
 			Thread threads[] = new Thread[generators.length];
 			
