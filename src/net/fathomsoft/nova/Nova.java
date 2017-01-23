@@ -62,7 +62,7 @@ public class Nova
 	public boolean				isTesting     = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
-	public static final boolean	DEBUG         = true;
+	public static final boolean	DEBUG         = false;
 	
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
@@ -87,7 +87,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.3.1";
+	public static final String	VERSION       = "v0.3.2";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
