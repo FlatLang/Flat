@@ -62,7 +62,8 @@ public class Nova
 	public boolean				isTesting     = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
-	public static final boolean	DEBUG         = false;
+//	public static final boolean	DEBUG         = false;
+	public static final boolean	DEBUG         = true;
 	
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
