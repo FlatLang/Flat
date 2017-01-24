@@ -154,6 +154,12 @@ public class MethodCall extends Variable
 		return false;
 	}
 	
+	@Override
+	public boolean isInstance()
+	{
+		return declaration instanceof Constructor || super.isInstance();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#isVirtualTypeKnown()
 	 */
