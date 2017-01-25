@@ -24,7 +24,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		super(temporaryParent, locationIn);
 		
-		if (getParentGenericTypeArgumentList() == null)
+//		if (getParentGenericTypeArgumentList() == null)
 		{
 			addChild(new GenericTypeArgumentList(this, locationIn), this);
 		}
