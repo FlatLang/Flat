@@ -692,7 +692,7 @@ public class Nova
 			
 			if (args[i].toLowerCase().equals("-target"))
 			{
-				validateArgumentSize(args, i + 1);
+				validateArgumentSize(args, i + 1, "-target");
 				
 				target = args[i + 1].toLowerCase();
 			}
@@ -731,7 +731,7 @@ public class Nova
 			// If the user is trying to set the output location.
 			else if (arg.equals("-o"))
 			{
-				validateArgumentSize(args, i + 1);
+				validateArgumentSize(args, i + 1, "-output-directory");
 				
 				outputFile = new File(args[i + 1]);
 				
@@ -740,7 +740,7 @@ public class Nova
 			// If the user is trying to set the source include directory.
 			else if (arg.equals("-dir"))
 			{
-				validateArgumentSize(args, i + 1);
+				validateArgumentSize(args, postArgs.length + i + 1, "-o", "Expected output file name after argument '-o'");
 				
 				includeDirectories.add(formatPath(args[i + 1]));
 				
@@ -770,7 +770,7 @@ public class Nova
 			}
 			else if (arg.equals("-main"))
 			{
-				validateArgumentSize(args, i + 1);
+				validateArgumentSize(args, i + 1, "-dir");
 				
 				codeGeneratorEngine.mainClass = args[i + 1];
 				
@@ -830,7 +830,7 @@ public class Nova
 			// Specify a custom output directory.
 			else if (arg.equals("-output-directory"))
 			{
-				validateArgumentSize(args, i + 1);
+				validateArgumentSize(args, i + 1, "-main");
 				
 				try
 				{
@@ -847,7 +847,7 @@ public class Nova
 			// Specify a custom output directory for a specified package.
 			else if (arg.equals("-package-output-directory"))
 			{
-				validateArgumentSize(args, i + 2);
+				validateArgumentSize(args, i + 2, "-package-output-directory");
 				
 				outputDirectories.put(args[i + 1], args[i + 2]);
 
@@ -888,12 +888,18 @@ public class Nova
 		validateInputFiles();
 	}
 	
-	private void validateArgumentSize(String[] args, int size)
+	private void validateArgumentSize(String[] args, int size, String arg)
+	{
+		validateArgumentSize(args, size, arg, null);
+	}
+	
+	private void validateArgumentSize(String[] args, int size, String arg, String message)
 	{
 		if (args.length <= size)
 		{
-			error("Invalid arguments passed");
-			completed(false);
+			System.err.println(message == null ? "Invalid arguments passed" : message);
+			
+			System.exit(1);
 		}
 	}
 	
