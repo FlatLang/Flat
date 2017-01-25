@@ -258,7 +258,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		{
 			if (isPrimitiveType() && getArrayDimensions() > 1)
 			{
-				return ".map({ " + getDefaultLiteralValue() + " })";
+				return ".map({ (" + getType() + ")" + getDefaultLiteralValue() + " })";
 			}
 			
 			return "";
