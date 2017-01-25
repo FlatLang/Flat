@@ -44,6 +44,8 @@ public class Nova
 	public ArrayList<String>	externalImports, externalIncludes;
 	private ArrayList<String> errors, warnings, messages;
 	
+	private String[] postArgs;
+	
 	public File outputDirectory, installDirectory;
 	
 	public HashMap<String, String> outputDirectories;
@@ -427,7 +429,7 @@ public class Nova
 		postArgsList.add("-target");
 		postArgsList.add("c");
 		
-		String postArgs[] = postArgsList.toArray(new String[0]);
+		postArgs = postArgsList.toArray(new String[0]);
 		
 //		for (String location : standardFiles)
 //		{
