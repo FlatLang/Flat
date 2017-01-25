@@ -731,7 +731,7 @@ public class Nova
 			// If the user is trying to set the output location.
 			else if (arg.equals("-o"))
 			{
-				validateArgumentSize(args, i + 1, "-output-directory");
+				validateArgumentSize(args, postArgs.length + i + 1, "-o", "Expected output file name after argument '-o'");
 				
 				outputFile = new File(args[i + 1]);
 				
@@ -740,7 +740,7 @@ public class Nova
 			// If the user is trying to set the source include directory.
 			else if (arg.equals("-dir"))
 			{
-				validateArgumentSize(args, postArgs.length + i + 1, "-o", "Expected output file name after argument '-o'");
+				validateArgumentSize(args, i + 1, "-dir");
 				
 				includeDirectories.add(formatPath(args[i + 1]));
 				
@@ -770,7 +770,7 @@ public class Nova
 			}
 			else if (arg.equals("-main"))
 			{
-				validateArgumentSize(args, i + 1, "-dir");
+				validateArgumentSize(args, i + 1, "-main");
 				
 				codeGeneratorEngine.mainClass = args[i + 1];
 				
@@ -830,7 +830,7 @@ public class Nova
 			// Specify a custom output directory.
 			else if (arg.equals("-output-directory"))
 			{
-				validateArgumentSize(args, i + 1, "-main");
+				validateArgumentSize(args, i + 1, "-output-directory");
 				
 				try
 				{
