@@ -2505,6 +2505,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			validateFields(phase);
 			validateMethods(phase);
 		}
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			validateMethods(phase);
+		}
 		
 		return result;
 	}
