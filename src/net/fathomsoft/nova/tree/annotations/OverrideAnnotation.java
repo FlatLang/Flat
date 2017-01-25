@@ -103,9 +103,9 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
 				invalidApplication(node, true);
 			}
 			
-			if (Arrays.stream(methods).anyMatch(x -> x != null && !x.doesOverride()))
+			if (Arrays.stream(methods).anyMatch(x -> x != null && !x.checkOverrides()))
 			{
-				Arrays.stream(methods).anyMatch(x -> x != null && !x.doesOverride());
+				Arrays.stream(methods).anyMatch(x -> x != null && !x.checkOverrides());
 				
 				if (node instanceof FieldDeclaration)
 				{
