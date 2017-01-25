@@ -36,6 +36,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	private String[] types;
 	
+	public NovaMethodDeclaration overridenMethod;
 	private ArrayList<NovaMethodDeclaration>	overridingMethods;
 	
 	private static HashMap<Integer, Scope> scopes = new HashMap<>();
@@ -261,7 +262,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public boolean doesOverride()
 	{
-		return getOverriddenMethod() != null;
+		return overridenMethod != null;
 	}
 	
 	/**
@@ -273,17 +274,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	public NovaMethodDeclaration getOverriddenMethod()
 	{
-		SearchFilter filter = new SearchFilter();
-		filter.checkStatic(isStatic());
-		filter.checkProperties = true;
-		filter.allowMoreParameters = false;
-		filter.requireExactMatch = true;
-		filter.requireEqualParameterCount = true;
-		
-		return getOverriddenMethod(filter);
+		return overridenMethod;
 	}
 	
-	public NovaMethodDeclaration getOverriddenMethod(SearchFilter filter)
+	private NovaMethodDeclaration getOverriddenMethod(SearchFilter filter)
 	{
 		if (getVisibility() == PRIVATE)
 		{
@@ -414,7 +408,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 		}
 		
-		if (getOverriddenMethod() != null)
+		if (overridenMethod != null)
 		{
 			overloadID = getOverriddenMethod().overloadID;
 		}
@@ -541,17 +535,31 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return false;
 	}
 	
-	public void checkOverrides()
+	public boolean checkOverrides()
 	{
-		NovaMethodDeclaration methodDeclaration = getOverriddenMethod();
-		
-		if (methodDeclaration != null)
+		if (overridenMethod == null)
 		{
-			if (!containsOverridingMethod(methodDeclaration))
-			{
-				methodDeclaration.overridingMethods.add(this);
-			}
+			SearchFilter filter = new SearchFilter();
+			filter.checkStatic(isStatic());
+			filter.checkProperties = true;
+			filter.allowMoreParameters = false;
+			filter.requireExactMatch = true;
+			filter.requireEqualParameterCount = true;
+			
+			overridenMethod = getOverriddenMethod(filter);
 		}
+		
+		if (overridenMethod != null)
+		{
+			if (!containsOverridingMethod(overridenMethod))
+			{
+				overridenMethod.overridingMethods.add(this);
+			}
+			
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
@@ -982,20 +990,18 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public void updateGenericParameters()
 	{
-		NovaMethodDeclaration overridden = getOverriddenMethod();
-		
-		if (overridden != null)
+		if (overridenMethod != null)
 		{
-			overridden.updateGenericParameters();
+			overridenMethod.updateGenericParameters();
 			
-			NovaParameterList params = overridden.getParameterList();
+			NovaParameterList params = overridenMethod.getParameterList();
 			
 			for (int i = 0; i < params.getNumParameters(); i++)
 			{
 				getParameterList().getParameter(i).updateGenericParameter(params.getParameter(i));
 			}
 			
-			setDataType(overridden.getDataType());
+			setDataType(overridenMethod.getDataType());
 			
 			if (getScope().getNumVisibleChildren() > 0)
 			{
@@ -1142,6 +1148,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		node.shorthandAction = shorthandAction;
 		node.usedShorthandAction = usedShorthandAction;
 		node.virtualMethod = virtualMethod;
+		node.overridenMethod = overridenMethod;
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
@@ -1158,6 +1165,17 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		
 		return node;
+	}
+	
+	@Override
+	public void onReplaced(Node parent, Node replacement)
+	{
+		for (NovaMethodDeclaration overriding : overridingMethods)
+		{
+			overriding.overridenMethod = (NovaMethodDeclaration)replacement;
+		}
+		
+		super.onReplaced(parent, replacement);
 	}
 	
 	/**
