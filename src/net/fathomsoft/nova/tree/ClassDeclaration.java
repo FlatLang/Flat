@@ -3193,79 +3193,77 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	private void validateMethods(int phase)
 	{
-		validateConstructors(phase);
-		
-		if (!containsDestructor())
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			addDefaultDestructor();
-		}
-		
-		getMethodList().validate(phase);
-		getHiddenMethodList().validate(phase);
-		getVirtualMethodList().validate(phase);
-		getPropertyMethodList().validate(phase);
-		getConstructorList().validate(phase);
-		getDestructorList().validate(phase);
-		
-		ArrayList<NovaMethodDeclaration> errors = new ArrayList<>();
-		
-		if (doesExtendClass() && getExtendedClassDeclaration() != null)
-		{
-			for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods())
+			validateConstructors(phase);
+			
+			if (!containsDestructor())
 			{
-				if (!doesOverrideMethod(method))
-				{
-					doesOverrideMethod(method);
-					errors.add(method);
-				}
+				addDefaultDestructor();
 			}
 		}
-		
-		if (!isAbstract())
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			ClassDeclaration clazz = this;
+			ArrayList<NovaMethodDeclaration> errors = new ArrayList<>();
 			
-			while (clazz != null)
+			if (doesExtendClass() && getExtendedClassDeclaration() != null)
 			{
-				TypeList<TraitImplementation> interfaces = clazz.getInterfacesImplementationList();
-				
-				if (interfaces.getNumVisibleChildren() > 0)
+				for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods())
 				{
-					for (TraitImplementation inter : interfaces)
+					if (!doesOverrideMethod(method))
 					{
-						for (NovaMethodDeclaration method : inter.getTypeClass().getMethods())
+						doesOverrideMethod(method);
+						errors.add(method);
+					}
+				}
+			}
+			
+			if (!isAbstract())
+			{
+				ClassDeclaration clazz = this;
+				
+				while (clazz != null)
+				{
+					TypeList<TraitImplementation> interfaces = clazz.getInterfacesImplementationList();
+					
+					if (interfaces.getNumVisibleChildren() > 0)
+					{
+						for (TraitImplementation inter : interfaces)
 						{
-							if (method instanceof BodyMethodDeclaration == false && method.isUserMade() && !doesOverrideMethod(method))
+							for (NovaMethodDeclaration method : inter.getTypeClass().getMethods())
 							{
-								doesOverrideMethod(method);
-								errors.add(method);
+								if (method instanceof BodyMethodDeclaration == false && method.isUserMade() && !doesOverrideMethod(method))
+								{
+									doesOverrideMethod(method);
+									errors.add(method);
+								}
 							}
 						}
 					}
+					
+					clazz = clazz.getParentClass();
 				}
-				
-				clazz = clazz.getParentClass();
 			}
-		}
-		
-		if (errors.size() > 0)
-		{
-			for (int i = 0; i < errors.size(); i++)
+			
+			if (errors.size() > 0)
 			{
-				NovaMethodDeclaration method = errors.get(i);
-				
-				String type = null;
-				
-				if (method instanceof AbstractMethodDeclaration)
+				for (int i = 0; i < errors.size(); i++)
 				{
-					type = "abstract";
+					NovaMethodDeclaration method = errors.get(i);
+					
+					String type = null;
+					
+					if (method instanceof AbstractMethodDeclaration)
+					{
+						type = "abstract";
+					}
+					else
+					{
+						type = "interface";
+					}
+					
+					SyntaxMessage.error("Class " + getName() + " must implement " + type + " method " + method.getName(), this, i == errors.size() - 1);
 				}
-				else
-				{
-					type = "interface";
-				}
-				
-				SyntaxMessage.error("Class " + getName() + " must implement " + type + " method " + method.getName(), this, i == errors.size() - 1);
 			}
 		}
 	}
