@@ -2450,6 +2450,30 @@ public class ClassDeclaration extends InstanceDeclaration
 		return func;
 	}
 	
+	private void replaceGenerics(final Value[] types, Value original, Value value)
+	{
+		GenericTypeParameter genParam = original.getGenericTypeParameter();
+		
+		if (genParam != null)
+		{
+			if (genParam.getParentClass() == this)
+			{
+				value.setType(types[genParam.getIndex()]);
+				value.setArrayDimensions(original.getArrayDimensions());
+			}
+		}
+		else
+		{
+			GenericTypeArgumentList originalArgs = original.getGenericTypeArgumentList();
+			GenericTypeArgumentList args = value.getGenericTypeArgumentList();
+			
+			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
+			{
+				replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i));
+			}
+		}
+	}
+	
 	private void cloneMethods(final Value[] types, MethodList methods, MethodList addTo)
 	{
 		methods.forEachVisibleListChild(method -> {
