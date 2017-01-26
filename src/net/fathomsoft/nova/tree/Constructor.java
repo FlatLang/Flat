@@ -148,6 +148,27 @@ public class Constructor extends BodyMethodDeclaration
 		return null;
 	}
 	
+	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration type, GenericTypeArgumentList args)
+	{
+		return getExistingConvertedPrimitiveMethod(getExistingConvertedPrimitiveClass(type, args));
+	}
+	
+	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration c)
+	{
+		if (c != null)
+		{
+			MethodList.SearchFilter filter = new MethodList.SearchFilter();
+			filter.checkAncestor = false;
+			filter.checkInterfaces = false;
+			filter.checkConstructors = true;
+			filter.checkProperties = false;
+			
+			return (NovaMethodDeclaration)c.getMethod((GenericCompatible)null, getName(), filter, getTypes());
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#onAdded(net.fathomsoft.nova.tree.Node)
 	 */
