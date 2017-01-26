@@ -1031,11 +1031,16 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray)
 	{
+		return generateNovaType(builder, context, checkArray, true);
+	}
+	
+	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray, boolean checkGeneric)
+	{
 		Value type = getNovaTypeValue(context);
 		
 		GenericTypeArgument arg = null;
 		
-		if (isGenericType())
+		if (checkGeneric && isGenericType())
 		{
 			GenericTypeParameter param = getGenericTypeParameter();
 			
@@ -1043,26 +1048,30 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				arg = param.getCorrespondingArgument(context);
 			}
-		}
-		
-		if (arg != null && !arg.isGenericType())
-		{
-			builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType().toString()));
+			
+			if (arg != null && !arg.isGenericType())
+			{
+				builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType().toString()));
+			}
+			else
+			{
+				builder.append(param.getDefaultType());
+			}
 		}
 		else
 		{
 			builder.append(SyntaxUtils.getPrimitiveNovaType(type.getType()));
-			
-			builder.append(type.generateGenericType(context));
-			
-			if (checkArray && isPrimitiveArray())
-			{
-				builder.append(generateNovaArrayText());
-			}
-			if (isExternalType() && isPointer())
-			{
-				builder.append('*');
-			}
+		}
+		
+		builder.append(type.generateGenericType(context));
+		
+		if (checkArray && isPrimitiveArray())
+		{
+			builder.append(generateNovaArrayText());
+		}
+		if (isExternalType() && isPointer())
+		{
+			builder.append('*');
 		}
 		
 		return builder;
@@ -1128,7 +1137,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ClassDeclaration getNovaTypeClass(Value context)
 	{
-		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getNovaType(context))));
+		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getNovaType(context, false))));
 	}
 	
 	public boolean isOriginallyGenericType()
