@@ -1161,7 +1161,27 @@ public class MethodCall extends Variable
 			SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
 		}
 		
-		return methodDeclaration.areCompatibleParameterTypes(this, methodDeclaration instanceof NovaMethodDeclaration ? arguments.getTypes((NovaMethodDeclaration)methodDeclaration) : arguments.getTypes());
+		if (!methodDeclaration.areCompatibleParameterTypes(this, methodDeclaration instanceof NovaMethodDeclaration ? arguments.getTypes((NovaMethodDeclaration)methodDeclaration) : arguments.getTypes()))
+		{
+			return false;
+		}
+		
+//		checkPrimitiveMethodConversion(methodDeclaration);
+		
+		return true;
+	}
+	
+	private void checkPrimitiveMethodConversion(CallableMethod methodDeclaration)
+	{
+		if (methodDeclaration instanceof NovaMethodDeclaration)
+		{
+			NovaMethodDeclaration converted = ((NovaMethodDeclaration)methodDeclaration).getConvertedPrimitiveMethod(getArgumentList().getArgumentsInOrder());
+			
+			if (converted != null)
+			{
+				declaration = converted;
+			}
+		}
 	}
 	
 	/**
