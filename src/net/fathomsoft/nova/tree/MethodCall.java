@@ -1175,7 +1175,7 @@ public class MethodCall extends Variable
 	{
 		if (methodDeclaration instanceof NovaMethodDeclaration)
 		{
-			NovaMethodDeclaration converted = ((NovaMethodDeclaration)methodDeclaration).getConvertedPrimitiveMethod(getArgumentList().getArgumentsInOrder());
+			NovaMethodDeclaration converted = ((NovaMethodDeclaration)methodDeclaration).getConvertedPrimitiveMethod(this);
 			
 			if (converted != null)
 			{
