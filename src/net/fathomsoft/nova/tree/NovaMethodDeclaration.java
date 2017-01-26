@@ -342,7 +342,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * 
 	 * @param overridingMethod The Method to check.
 	 */
-	private boolean containsOverridingMethod(NovaMethodDeclaration overridingMethod)
+	public boolean containsOverridingMethod(NovaMethodDeclaration overridingMethod)
 	{
 		for (int i = 0; i < overridingMethods.size(); i++)
 		{
