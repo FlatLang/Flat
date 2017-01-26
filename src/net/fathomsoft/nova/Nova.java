@@ -697,7 +697,7 @@ public class Nova
 			
 			if (args[i].toLowerCase().equals("-target"))
 			{
-				validateArgumentSize(args, i + 1, "-target");
+				validateArgumentSize(args, i + 1, args[i]);
 				
 				target = args[i + 1].toLowerCase();
 			}
@@ -745,7 +745,7 @@ public class Nova
 			// If the user is trying to set the source include directory.
 			else if (arg.equals("-dir"))
 			{
-				validateArgumentSize(args, i + 1, "-dir");
+				validateArgumentSize(args, i + 1, arg);
 				
 				includeDirectories.add(formatPath(args[i + 1]));
 				
@@ -775,7 +775,7 @@ public class Nova
 			}
 			else if (arg.equals("-main"))
 			{
-				validateArgumentSize(args, i + 1, "-main");
+				validateArgumentSize(args, i + 1, arg);
 				
 				codeGeneratorEngine.mainClass = args[i + 1];
 				
@@ -835,7 +835,7 @@ public class Nova
 			// Specify a custom output directory.
 			else if (arg.equals("-output-directory") || arg.equals("-d"))
 			{
-				validateArgumentSize(args, i + 1, "-output-directory");
+				validateArgumentSize(args, i + 1, arg);
 				
 				try
 				{
@@ -852,7 +852,7 @@ public class Nova
 			// Specify a custom output directory for a specified package.
 			else if (arg.equals("-package-output-directory"))
 			{
-				validateArgumentSize(args, i + 2, "-package-output-directory");
+				validateArgumentSize(args, i + 2, arg);
 				
 				outputDirectories.put(args[i + 1], args[i + 2]);
 
