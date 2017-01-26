@@ -2549,7 +2549,10 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (clone instanceof NovaMethodDeclaration)
 				{
-					replaceGenerics(types, ((NovaMethodDeclaration)method).getParameterList().getReferenceParameter(), ((NovaMethodDeclaration)clone).getParameterList().getReferenceParameter());
+					NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)clone;
+					
+					novaMethod.getParameterList().getReferenceParameter().setType(addTo.getParentClass());
+					novaMethod.getObjectReference(true);
 				}
 				
 				addTo.addChild(clone);
