@@ -355,11 +355,11 @@ public class Nova
 			
 			args = new String[]
 			{
-				"../Spectra",
+//				"../Spectra",
 //				"../Nova.c",
-//				"../Misc/example",
+				"../Misc/example",
 //				"../Misc/stabilitytest",
-				"-output-directory", "../NovaCompilerOutput/" + target,
+				"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -373,8 +373,8 @@ public class Nova
 //				"-small",
 //				"-cargs",
 //				"-keepc",
-//				"-main",
-//				"example/Lab",
+				"-main",
+				"example/Lab",
 //				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
@@ -833,7 +833,7 @@ public class Nova
 				enableFlag(LIBRARY);
 			}
 			// Specify a custom output directory.
-			else if (arg.equals("-output-directory"))
+			else if (arg.equals("-output-directory") || arg.equals("-d"))
 			{
 				validateArgumentSize(args, i + 1, "-output-directory");
 				
