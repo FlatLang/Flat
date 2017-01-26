@@ -2538,9 +2538,11 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				clone.getParameterList().replaceWith(parameterList);
 				
+				boolean changed = false;
+				
 				for (int i = 0; i < parameterList.getNumParameters(); i++)
 				{
-					replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+					changed |= replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
 				}
 				
 				replaceGenerics(types, method, clone);
@@ -2550,16 +2552,21 @@ public class ClassDeclaration extends InstanceDeclaration
 					replaceGenerics(types, ((NovaMethodDeclaration)method).getParameterList().getReferenceParameter(), ((NovaMethodDeclaration)clone).getParameterList().getReferenceParameter());
 				}
 				
-				SearchFilter filter = new SearchFilter();
-				filter.requireExactMatch = true;
-				
 				addTo.addChild(clone);
 				
-				MethodDeclaration[] found = getMethods(new GenericCompatible[] { addTo.getParentClass() }, method.getName(), filter, clone.getParameterList().getTypes(), false);
-				
-				if (found.length > 1)
+				if (changed)
 				{
-					clone.detach();
+					SearchFilter filter = new SearchFilter();
+					filter.requireExactMatch = true;
+					filter.checkInterfaces = false;
+					filter.checkAncestor = false;
+					
+					MethodDeclaration[] found = getMethods(new GenericCompatible[] { addTo.getParentClass() }, method.getName(), filter, clone.getParameterList().getTypes(), false);
+					
+					if (found.length > 0)
+					{
+						clone.detach();
+					}
 				}
 			}
 		});
