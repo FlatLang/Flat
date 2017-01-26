@@ -163,7 +163,7 @@ public class Constructor extends BodyMethodDeclaration
 			filter.checkConstructors = true;
 			filter.checkProperties = false;
 			
-			return (NovaMethodDeclaration)c.getMethod((GenericCompatible)null, getName(), filter, getTypes());
+			return (NovaMethodDeclaration)c.getMethod((GenericCompatible)null, getName(), filter, getParameterList().getTypes());
 		}
 		
 		return null;
@@ -259,7 +259,7 @@ public class Constructor extends BodyMethodDeclaration
 			
 			String args = generateParameterOutput(this);
 			
-			MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true);
+			MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true, false, initMethod);
 			addChild(init);
 			
 			SyntaxTree.validateNodes(getParameterList(), phase);
