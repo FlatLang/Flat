@@ -634,6 +634,28 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 	}
 	
+	public NovaMethodDeclaration convertPrimitiveMethod(Value[] types)
+	{
+		NovaMethodDeclaration method = clone(getParent(), getLocationIn(), false, true);
+		
+		for (int i = 0; i < types.length; i++)
+		{
+			Parameter param = getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
+			
+			if (param.getDataType() != types[i].getDataType())
+			{
+				param.setType(types[i]);
+			}
+			
+			method.getParameterList().addChild(param);
+		}
+		
+		primitiveOverloads.add(method);
+		method.genericOverload = this;
+		
+		return method;
+	}
+	
 	public NovaMethodDeclaration getConvertedPrimitiveMethod(Value[] args)
 	{
 		NovaMethodDeclaration existing = getExistingConvertedPrimitiveMethod(args);
