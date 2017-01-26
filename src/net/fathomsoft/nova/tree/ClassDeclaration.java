@@ -2470,6 +2470,30 @@ public class ClassDeclaration extends InstanceDeclaration
 		});
 	}
 	
+	public ClassDeclaration convertToPrimitive(final Value[] types)
+	{
+		ClassDeclaration c = clone(getParent(), getLocationIn(), false, true);
+		
+		GenericTypeParameterList params = c.getGenericTypeParameterDeclaration();
+		
+		for (int i = 0; i < types.length; i++)
+		{
+			GenericTypeParameter param = new GenericTypeParameter(params, getLocationIn());
+			param.setType(types[i]);
+			
+			params.addChild(param);
+		}
+		
+		cloneMethods(types, getConstructorList(), c.getConstructorList());
+		cloneMethods(types, getDestructorList(), c.getDestructorList());
+		cloneMethods(types, getMethodList(), c.getMethodList());
+		cloneMethods(types, getPropertyMethodList(), c.getPropertyMethodList());
+		cloneMethods(types, getHiddenMethodList(), c.getHiddenMethodList());
+		cloneMethods(types, getVirtualMethodList(), c.getVirtualMethodList());
+		
+		return c;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
