@@ -181,6 +181,48 @@ public class Constructor extends BodyMethodDeclaration
 		return method;
 	}
 	
+	@Override
+	public NovaMethodDeclaration getConvertedPrimitiveMethod(MethodCall call)
+	{
+		ClassDeclaration type = getDeclaringClass();
+		GenericTypeArgumentList args = call.getMethodGenericTypeArgumentList();
+		
+		NovaMethodDeclaration existing = getExistingConvertedPrimitiveMethod(type, args);
+		
+		if (existing != null)
+		{
+			return existing;
+		}
+		
+		GenericTypeParameterList params = type.getGenericTypeParameterDeclaration();
+		Value[] types = new Value[params.getNumParameters()];
+		
+		boolean isPrimitive = false;
+		
+		for (int i = 0; i < params.getNumParameters(); i++)
+		{
+			GenericTypeParameter param = params.getParameter(i);
+			
+			if (i >= args.getNumVisibleChildren())
+			{
+				types[i] = param;
+			}
+			else if (!param.isPrimitiveType() && args.getVisibleChild(i).isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
+			{
+				types[i] = args.getVisibleChild(i);
+				
+				isPrimitive = true;
+			}
+		}
+		
+		if (isPrimitive)
+		{
+			return convertPrimitiveMethod(type, types);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#onAdded(net.fathomsoft.nova.tree.Node)
 	 */
