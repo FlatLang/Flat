@@ -39,6 +39,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	public ClassInstanceDeclaration classInstanceDeclaration;
 	public ClassDeclaration functionMap, propertyMap, encapsulatingClass;
 	
+	public Value[] primitiveOverloadTypes;
 	public ClassDeclaration genericOverload;
 	public ArrayList<ClassDeclaration> primitiveOverloads;
 	
