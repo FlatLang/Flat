@@ -2371,10 +2371,10 @@ public class SyntaxUtils
 	
 	public static int getParametersDistance(Value context, Value[] required, Value[] given)
 	{
-		return getParametersDistance(context, required, given, true);
+		return getParametersDistance(context, required, given, false);
 	}
 	
-	public static int getParametersDistance(Value context, Value[] required, Value[] given, boolean checkGeneric)
+	public static int getParametersDistance(Value context, Value[] required, Value[] given, boolean defaultGeneric)
 	{
 		int sum = 0;
 		
@@ -2382,8 +2382,8 @@ public class SyntaxUtils
 		{
 //			if (!required[i].isGenericType())
 			{
-				ClassDeclaration g = given[i].getNovaTypeClass(context, false, checkGeneric);
-				ClassDeclaration r = required[i].getNovaTypeClass(context, false, checkGeneric);
+				ClassDeclaration g = given[i].getNovaTypeClass(context, false, defaultGeneric);
+				ClassDeclaration r = required[i].getNovaTypeClass(context, false, defaultGeneric);
 				
 				if (g != null && r != null)
 				{

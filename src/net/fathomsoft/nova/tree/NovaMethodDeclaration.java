@@ -549,7 +549,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			filter.checkProperties = true;
 			filter.allowMoreParameters = false;
 			filter.requireExactMatch = true;
-			filter.checkGeneric = false;
+			filter.defaultGeneric = false;
 			filter.requireEqualParameterCount = true;
 			
 			overridenMethod = getOverriddenMethod(filter);

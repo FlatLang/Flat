@@ -1031,10 +1031,10 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray)
 	{
-		return generateNovaType(builder, context, checkArray, true);
+		return generateNovaType(builder, context, checkArray, false);
 	}
 	
-	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray, boolean checkGeneric)
+	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray, boolean defaultGeneric)
 	{
 		Value type = getNovaTypeValue(context);
 		
@@ -1055,7 +1055,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType().toString()));
 		}
-		else if (checkGeneric && param != null)
+		else if (defaultGeneric && param != null)
 		{
 			builder.append(param.getDefaultType());
 		}

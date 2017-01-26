@@ -191,7 +191,7 @@ public interface CallableMethod
 		
 		if (SyntaxUtils.areTypesCompatible(contexts, required, given, searchGeneric))
 		{
-			if (filter != null && filter.requireExactMatch && SyntaxUtils.getParametersDistance(contexts.length > 0 ? (Value)contexts[0] : null, required, given, filter.checkGeneric) > 0)
+			if (filter != null && filter.requireExactMatch && SyntaxUtils.getParametersDistance(contexts.length > 0 ? (Value)contexts[0] : null, required, given, filter.defaultGeneric) > 0)
 			{
 				required[0].getNovaType((Value)contexts[0]);
 				return false;
