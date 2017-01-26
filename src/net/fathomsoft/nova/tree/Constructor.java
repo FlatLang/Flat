@@ -123,13 +123,11 @@ public class Constructor extends BodyMethodDeclaration
 	{
 		for (ClassDeclaration converted : type.primitiveOverloads)
 		{
-			GenericTypeParameterList params = converted.getGenericTypeParameterDeclaration();
-			
 			boolean compatible = true;
 			
 			for (int i = 0; i < args.getNumVisibleChildren(); i++)
 			{
-				GenericTypeParameter param = params.getParameter(i);
+				Value required = converted.primitiveOverloadTypes[i];
 				Value arg = args.getVisibleChild(i).getReturnedNode();
 				
 				if (arg.getReturnedNode().getDataType() != param.getDataType() ||
@@ -177,6 +175,7 @@ public class Constructor extends BodyMethodDeclaration
 		
 		type.primitiveOverloads.add(c);
 		c.genericOverload = type;
+		c.primitiveOverloadTypes = types;
 		
 		return method;
 	}
