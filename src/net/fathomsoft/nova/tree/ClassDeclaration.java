@@ -2661,6 +2661,25 @@ public class ClassDeclaration extends InstanceDeclaration
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			validateMethods(phase);
+			
+			for (ClassDeclaration converted : primitiveOverloads)
+			{
+				SyntaxTree.validateNodes(converted, phase);
+			}
+		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (isPrimitiveOverload())
+			{
+				
+			}
+			else
+			{
+				for (ClassDeclaration converted : primitiveOverloads)
+				{
+					getParent().addChild(converted);
+				}
+			}
 		}
 		
 		return result;
