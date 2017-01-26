@@ -1191,14 +1191,26 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			if (getParentClass().isPrimitiveType())
+			if (isPrimitiveOverload())
 			{
-				setVisibility(PUBLIC);
+				virtualMethod = genericOverload.virtualMethod;
 			}
-			
-			if (this instanceof VirtualMethodDeclaration == false && virtualMethod != null)
+			else
 			{
-				virtualMethod.validate(phase);
+				if (getParentClass().isPrimitiveType())
+				{
+					setVisibility(PUBLIC);
+				}
+				
+				if (this instanceof VirtualMethodDeclaration == false && virtualMethod != null)
+				{
+					virtualMethod.validate(phase);
+				}
+				
+				for (NovaMethodDeclaration converted : primitiveOverloads)
+				{
+					getParent().addChild(converted);
+				}
 			}
 		}
 		
