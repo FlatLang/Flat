@@ -3,6 +3,9 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Stack;
@@ -111,6 +114,35 @@ public class Constructor extends BodyMethodDeclaration
 			n.setDataType(POINTER);
 			
 			return n;
+		}
+		
+		return null;
+	}
+	
+	public ClassDeclaration getExistingConvertedPrimitiveClass(ClassDeclaration type, GenericTypeArgumentList args)
+	{
+		for (ClassDeclaration converted : type.primitiveOverloads)
+		{
+			GenericTypeParameterList params = converted.getGenericTypeParameterDeclaration();
+			
+			boolean compatible = true;
+			
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				GenericTypeParameter param = params.getParameter(i);
+				Value arg = args.getVisibleChild(i).getReturnedNode();
+				
+				if (arg.getReturnedNode().getDataType() != param.getDataType() ||
+					arg.getReturnedNode().getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass()))
+				{
+					compatible = false;
+				}
+			}
+			
+			if (compatible)
+			{
+				return converted;
+			}
 		}
 		
 		return null;
