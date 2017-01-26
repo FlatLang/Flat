@@ -39,6 +39,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	public ClassDeclaration functionMap, propertyMap, encapsulatingClass;
 	
 	public ClassDeclaration genericOverload;
+	public ArrayList<ClassDeclaration> primitiveOverloads;
 	
 	private ExtendedClass	extendedClass;
 	
@@ -55,6 +56,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	public ClassDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		primitiveOverloads = new ArrayList<>();
 		
 		setType("class");
 		
