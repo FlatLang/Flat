@@ -2540,6 +2540,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		cloneMethods(types, getHiddenMethodList(), c.getHiddenMethodList());
 		cloneMethods(types, getVirtualMethodList(), c.getVirtualMethodList());
 		
+		getFieldList().forEachChild(list -> {
+			list.forEachChild(node -> {
+				FieldDeclaration field = (FieldDeclaration)node;
+				
+				if (field.isUserMade())
+				{
+					FieldDeclaration clone = field.clone(c, field.getLocationIn(), true, true);
+					clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
+					
+					replaceGenerics(types, field, clone);
+					
+					c.addChild(clone);
+				}
+			});
+		});
+		
+		SyntaxTree.validateNodes(c, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+		
 		return c;
 	}
 	
