@@ -37,7 +37,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	private String[] types;
 	
 	public NovaMethodDeclaration overridenMethod;
-	private ArrayList<NovaMethodDeclaration>	overridingMethods;
+	private ArrayList<NovaMethodDeclaration>	overridingMethods, primitiveOverloads;
+	
+	private NovaMethodDeclaration genericOverload;
 	
 	private static HashMap<Integer, Scope> scopes = new HashMap<>();
 	
@@ -52,10 +54,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		super(temporaryParent, locationIn);
 		
-		uniqueID          = 0;
-		overloadID        = -1;
-		types             = new String[0];
-		overridingMethods = new ArrayList<>();
+		uniqueID           = 0;
+		overloadID         = -1;
+		types              = new String[0];
+		overridingMethods  = new ArrayList<>();
+		primitiveOverloads = new ArrayList<>();
 		
 		NovaParameterList parameters = new NovaParameterList(this, locationIn.asNew());
 		
@@ -1149,6 +1152,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		node.usedShorthandAction = usedShorthandAction;
 		node.virtualMethod = virtualMethod;
 		node.overridenMethod = overridenMethod;
+		node.genericOverload = genericOverload;
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
