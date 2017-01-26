@@ -169,6 +169,18 @@ public class Constructor extends BodyMethodDeclaration
 		return null;
 	}
 	
+	public NovaMethodDeclaration convertPrimitiveMethod(ClassDeclaration type, Value[] types)
+	{
+		ClassDeclaration c = type.convertToPrimitive(types);
+		
+		NovaMethodDeclaration method = getExistingConvertedPrimitiveMethod(c);
+		
+		type.primitiveOverloads.add(c);
+		c.genericOverload = type;
+		
+		return method;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#onAdded(net.fathomsoft.nova.tree.Node)
 	 */
