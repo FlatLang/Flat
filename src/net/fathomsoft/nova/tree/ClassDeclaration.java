@@ -6,6 +6,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.OverrideAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -2452,21 +2453,45 @@ public class ClassDeclaration extends InstanceDeclaration
 	private void cloneMethods(final Value[] types, MethodList methods, MethodList addTo)
 	{
 		methods.forEachVisibleListChild(method -> {
-			MethodDeclaration clone = (MethodDeclaration)method.clone(addTo, method.getLocationIn(), false, true);
-			
-			ParameterList<Parameter> originalParameterList = method.getParameterList();
-			ParameterList<Parameter> parameterList = originalParameterList.clone(clone, method.getLocationIn(), true, true);
-			
-			clone.getParameterList().replaceWith(parameterList);
-			
-			for (int i = 0; i < parameterList.getNumParameters(); i++)
+			if (method instanceof InitializationMethod == false)
 			{
-				replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+				MethodDeclaration clone = (MethodDeclaration)method.clone(addTo, method.getLocationIn(), false, true);
+				clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
+				
+				if (method.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+				{
+					clone.getGenericTypeArgumentList().replaceWith(method.getGenericTypeArgumentList().clone(clone.getGenericTypeArgumentList(), method.getLocationIn(), true, true));
+				}
+				
+				ParameterList<Parameter> originalParameterList = method.getParameterList();
+				ParameterList<Parameter> parameterList = originalParameterList.clone(clone, method.getLocationIn(), true, true);
+				
+				clone.getParameterList().replaceWith(parameterList);
+				
+				for (int i = 0; i < parameterList.getNumParameters(); i++)
+				{
+					replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+				}
+				
+				replaceGenerics(types, method, clone);
+				
+				if (clone instanceof NovaMethodDeclaration)
+				{
+					replaceGenerics(types, ((NovaMethodDeclaration)method).getParameterList().getReferenceParameter(), ((NovaMethodDeclaration)clone).getParameterList().getReferenceParameter());
+				}
+				
+				SearchFilter filter = new SearchFilter();
+				filter.requireExactMatch = true;
+				
+				addTo.addChild(clone);
+				
+				MethodDeclaration[] found = getMethods(new GenericCompatible[] { addTo.getParentClass() }, method.getName(), filter, clone.getParameterList().getTypes(), false);
+				
+				if (found.length > 1)
+				{
+					clone.detach();
+				}
 			}
-			
-			replaceGenerics(types, method, this);
-			
-			addTo.addChild(clone);
 		});
 	}
 	
