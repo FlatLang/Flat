@@ -2666,6 +2666,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return result;
 	}
 	
+	public boolean isPrimitiveOverload()
+	{
+		return genericOverload != null;
+	}
+	
 	public void addFunctionMapFunctions()
 	{
 		if (functionMap != null)
