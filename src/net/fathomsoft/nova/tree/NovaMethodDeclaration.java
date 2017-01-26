@@ -394,6 +394,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				{
 					if (method.getParentClass() == getParentClass())
 					{
+						method.getParentClass();
+						getParentClass();
 						SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
 					}
 					
