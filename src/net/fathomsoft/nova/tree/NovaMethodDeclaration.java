@@ -634,6 +634,42 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 	}
 	
+	public NovaMethodDeclaration getConvertedPrimitiveMethod(Value[] args)
+	{
+		NovaMethodDeclaration existing = getExistingConvertedPrimitiveMethod(args);
+		
+		if (existing != null)
+		{
+			return existing;
+		}
+		
+		NovaParameterList parameters = getParameterList();
+		
+		Value[] types = new Value[args.length];
+		boolean isPrimitive = false;
+		
+		for (int i = 0; i < args.length; i++)
+		{
+			if (args[i].getReturnedNode().isPrimitive() && parameters.getParameter(i).isGenericType())
+			{
+				types[i] = args[i].getReturnedNode();
+				
+				isPrimitive = true;
+			}
+			else
+			{
+				types[i] = parameters.getParameter(i);
+			}
+		}
+		
+		if (isPrimitive)
+		{
+			return convertPrimitiveMethod(types);
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * Find the String representing the signature of the bodyless
 	 * method that is currently being decoded from the given
