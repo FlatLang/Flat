@@ -130,8 +130,8 @@ public class Constructor extends BodyMethodDeclaration
 				Value required = converted.primitiveOverloadTypes[i];
 				Value arg = args.getVisibleChild(i).getReturnedNode();
 				
-				if (arg.getReturnedNode().getDataType() != param.getDataType() ||
-					arg.getReturnedNode().getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass()))
+				if (arg.getDataType() != required.getDataType() ||
+					arg.getTypeClass() != required.getTypeClass())
 				{
 					compatible = false;
 				}
