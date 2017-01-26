@@ -21,8 +21,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -39,6 +37,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public ClassInstanceDeclaration classInstanceDeclaration;
 	public ClassDeclaration functionMap, propertyMap, encapsulatingClass;
+	
+	public ClassDeclaration genericOverload;
 	
 	private ExtendedClass	extendedClass;
 	
@@ -3464,6 +3464,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		node.extendedClass = extendedClass;
 		node.abstractValue = abstractValue;
+		node.genericOverload = genericOverload;
 		
 		return node;
 	}
