@@ -2449,6 +2449,27 @@ public class ClassDeclaration extends InstanceDeclaration
 		return func;
 	}
 	
+	private void cloneMethods(final Value[] types, MethodList methods, MethodList addTo)
+	{
+		methods.forEachVisibleListChild(method -> {
+			MethodDeclaration clone = (MethodDeclaration)method.clone(addTo, method.getLocationIn(), false, true);
+			
+			ParameterList<Parameter> originalParameterList = method.getParameterList();
+			ParameterList<Parameter> parameterList = originalParameterList.clone(clone, method.getLocationIn(), true, true);
+			
+			clone.getParameterList().replaceWith(parameterList);
+			
+			for (int i = 0; i < parameterList.getNumParameters(); i++)
+			{
+				replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+			}
+			
+			replaceGenerics(types, method, this);
+			
+			addTo.addChild(clone);
+		});
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
