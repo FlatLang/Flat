@@ -2488,7 +2488,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		return func;
 	}
 	
-	private void replaceGenerics(final Value[] types, Value original, Value value)
+	private boolean replaceGenerics(final Value[] types, Value original, Value value)
 	{
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
 		
@@ -2498,6 +2498,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				value.setType(types[genParam.getIndex()]);
 				value.setArrayDimensions(original.getArrayDimensions());
+				
+				return true;
 			}
 		}
 		else
@@ -2505,11 +2507,17 @@ public class ClassDeclaration extends InstanceDeclaration
 			GenericTypeArgumentList originalArgs = original.getGenericTypeArgumentList();
 			GenericTypeArgumentList args = value.getGenericTypeArgumentList();
 			
+			boolean changed = false;
+			
 			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
 			{
-				replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i));
+				changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i));
 			}
+			
+			return changed;
 		}
+		
+		return false;
 	}
 	
 	private void cloneMethods(final Value[] types, MethodList methods, MethodList addTo)
