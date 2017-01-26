@@ -1115,6 +1115,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return result;
 	}
 	
+	public boolean isPrimitiveOverload()
+	{
+		return genericOverload != null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
