@@ -688,8 +688,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return method;
 	}
 	
-	public NovaMethodDeclaration getConvertedPrimitiveMethod(Value[] args)
+	public NovaMethodDeclaration getConvertedPrimitiveMethod(MethodCall call)
 	{
+		Value[] args = call.getArgumentList().getArgumentsInOrder();
+		
 		NovaMethodDeclaration existing = getExistingConvertedPrimitiveMethod(args);
 		
 		if (existing != null)
