@@ -1445,10 +1445,22 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
 	{
+		MethodDeclaration methods[] = getMethods(contexts, methodName, filter, parameterTypes, reverse);
+		
+		if (methods.length == 1)
+		{
+			return methods[0];
+		}
+		
+		return null;
+	}
+	
+	public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
+	{
 		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
-
+		
 		ArrayList<MethodDeclaration> compatible = new ArrayList<>();
-
+		
 		for (MethodDeclaration method : methods)
 		{
 			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes, reverse))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
@@ -1456,11 +1468,13 @@ public class ClassDeclaration extends InstanceDeclaration
 				compatible.add(method);
 			}
 		}
-
+		
 		int max = -1;
 		int maxI = -1;
 		int distance = -1;
-
+		
+		ArrayList<MethodDeclaration> list = new ArrayList<>();
+		
 		for (int i = 0; i < compatible.size(); i++)
 		{
 			MethodDeclaration method = compatible.get(i);
@@ -1472,6 +1486,9 @@ public class ClassDeclaration extends InstanceDeclaration
 				max = method.getParameterList().getNumRequiredParameters();
 				maxI = i;
 				distance = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+				
+				list = new ArrayList<>();
+				list.add(method);
 			}
 			else if (count == max)
 			{
@@ -1481,16 +1498,37 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					maxI = i;
 					distance = dist;
+					
+					list = new ArrayList<>();
+					list.add(method);
+				}
+				else if (dist == distance)
+				{
+					boolean valid = true;
+					
+					for (MethodDeclaration m : list)
+					{
+						if (!(m instanceof NovaMethodDeclaration && method instanceof NovaMethodDeclaration &&
+							((NovaMethodDeclaration)m).containsOverridingMethod((NovaMethodDeclaration)method)))
+						{
+							valid = false;
+						}
+					}
+					
+					if (valid)
+					{
+						list.add(method);
+					}
 				}
 			}
 		}
-
+		
 		if (maxI >= 0)
 		{
-			return compatible.get(maxI);
+			return list.toArray(new MethodDeclaration[0]);
 		}
 		
-		return null;
+		return new MethodDeclaration[0];
 	}
 	
 	/**
