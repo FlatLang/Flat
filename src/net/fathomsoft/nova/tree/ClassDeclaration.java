@@ -2583,10 +2583,13 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (int i = 0; i < types.length; i++)
 		{
-			GenericTypeParameter param = new GenericTypeParameter(params, getLocationIn());
-			param.setType(types[i]);
-			
-			params.addChild(param);
+			if (types[i] instanceof GenericTypeParameter)
+			{
+				GenericTypeParameter param = new GenericTypeParameter(params, getLocationIn());
+				param.setType(types[i]);
+				
+				params.addChild(param);
+			}
 		}
 		
 		cloneMethods(types, getConstructorList(), c.getConstructorList());
