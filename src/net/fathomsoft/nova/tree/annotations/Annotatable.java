@@ -69,6 +69,50 @@ public interface Annotatable
 		return null;
 	}
 	
+	default Annotation removeAnnotationOfType(Class c)
+	{
+		return removeAnnotationOfType(c, false);
+	}
+	
+	default Annotation removeAnnotationOfType(Class c, boolean checkAncestors)
+	{
+		return removeAnnotationOfType(c, checkAncestors, false);
+	}
+	
+	default Annotation removeAnnotationOfType(Class c, boolean checkAncestors, boolean checkPending)
+	{
+		ArrayList<Annotation> annotations = getAnnotations();
+		
+		if (annotations != null)
+		{
+			for (int i = annotations.size() - 1; i >= 0; i--)
+			{
+				Annotation a = annotations.get(i);
+				
+				if (c.isAssignableFrom(a.getClass()))
+				{
+					a.detach();
+					annotations.remove(i);
+				}
+			}
+		}
+		
+		if (checkAncestors)
+		{
+			if (((Node)this).getParent() != null && ((Node)this).getParent() instanceof FileDeclaration == false)
+			{
+				return ((Node)this).getParent().getAnnotationOfType(c, true, checkPending);
+			}
+			
+			if (checkPending && ((Node)this).getFileDeclaration() != null)
+			{
+				return ((Node)this).getFileDeclaration().getPendingAnnotationOfType(c);
+			}
+		}
+		
+		return null;
+	}
+	
 	default StringBuilder generateNovaAnnotations(StringBuilder builder)
 	{
 		return generateNovaAnnotations(builder, true);
