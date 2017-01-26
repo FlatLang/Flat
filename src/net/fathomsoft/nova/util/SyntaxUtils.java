@@ -2371,18 +2371,37 @@ public class SyntaxUtils
 	
 	public static int getParametersDistance(Value context, Value[] required, Value[] given)
 	{
+		return getParametersDistance(context, required, given, true);
+	}
+	
+	public static int getParametersDistance(Value context, Value[] required, Value[] given, boolean checkGeneric)
+	{
 		int sum = 0;
 		
 		for (int i = 0; i < Math.min(required.length, given.length); i++)
 		{
 //			if (!required[i].isGenericType())
 			{
-				ClassDeclaration g = given[i].getNovaTypeClass(context);
-				ClassDeclaration r = required[i].getNovaTypeClass(context);
+				ClassDeclaration g = given[i].getNovaTypeClass(context, false, checkGeneric);
+				ClassDeclaration r = required[i].getNovaTypeClass(context, false, checkGeneric);
 				
-				if (g != null && r != null && (!g.isPrimitiveType() || !r.isPrimitiveType()))
+				if (g != null && r != null)
 				{
-					sum += g.getDistanceFrom(r);
+					if (g.isPrimitiveType() || r.isPrimitiveType())
+					{
+						if (g.isPrimitiveType() && r.isPrimitiveType())
+						{
+							sum += getPrimitiveDistance(r.getType(), g.getType());
+						}
+						else
+						{
+							return Integer.MAX_VALUE;
+						}
+					}
+					else
+					{
+						sum += g.getDistanceFrom(r);
+					}
 				}
 			}
 		}

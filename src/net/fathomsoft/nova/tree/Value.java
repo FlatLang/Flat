@@ -1039,24 +1039,25 @@ public abstract class Value extends Node implements AbstractValue
 		Value type = getNovaTypeValue(context);
 		
 		GenericTypeArgument arg = null;
+		GenericTypeParameter param = null;
 		
-		if (checkGeneric && isGenericType())
+		if (isGenericType())
 		{
-			GenericTypeParameter param = getGenericTypeParameter();
+			param = getGenericTypeParameter();
 			
 			if (param != null)
 			{
 				arg = param.getCorrespondingArgument(context);
 			}
-			
-			if (arg != null && !arg.isGenericType())
-			{
-				builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType().toString()));
-			}
-			else
-			{
-				builder.append(param.getDefaultType());
-			}
+		}
+		
+		if (arg != null && !arg.isGenericType())
+		{
+			builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType().toString()));
+		}
+		else if (checkGeneric && param != null)
+		{
+			builder.append(param.getDefaultType());
 		}
 		else
 		{
@@ -1105,9 +1106,14 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getNovaType(Value context, boolean checkArray)
 	{
+		return getNovaType(context, checkArray, true);
+	}
+	
+	public String getNovaType(Value context, boolean checkArray, boolean checkGeneric)
+	{
 		Value value = getNovaTypeValue(context);
 		
-		return value.generateNovaType(new StringBuilder(), context, checkArray).toString();
+		return value.generateNovaType(new StringBuilder(), context, checkArray, checkGeneric).toString();
 	}
 	
 	public Value getNovaTypeValue(Value context)
@@ -1137,7 +1143,17 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ClassDeclaration getNovaTypeClass(Value context)
 	{
-		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getNovaType(context, false))));
+		return getNovaTypeClass(context, true);
+	}
+		
+	public ClassDeclaration getNovaTypeClass(Value context, boolean checkArray)
+	{
+		return getNovaTypeClass(context, checkArray, true);
+	}
+		
+	public ClassDeclaration getNovaTypeClass(Value context, boolean checkArray, boolean checkGeneric)
+	{
+		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getNovaType(context, checkArray, checkGeneric))));
 	}
 	
 	public boolean isOriginallyGenericType()
