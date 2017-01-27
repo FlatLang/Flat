@@ -1106,14 +1106,14 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getNovaType(Value context, boolean checkArray)
 	{
-		return getNovaType(context, checkArray, true);
+		return getNovaType(context, checkArray, false);
 	}
 	
-	public String getNovaType(Value context, boolean checkArray, boolean checkGeneric)
+	public String getNovaType(Value context, boolean checkArray, boolean defaultGeneric)
 	{
 		Value value = getNovaTypeValue(context);
 		
-		return value.generateNovaType(new StringBuilder(), context, checkArray, checkGeneric).toString();
+		return value.generateNovaType(new StringBuilder(), context, checkArray, defaultGeneric).toString();
 	}
 	
 	public Value getNovaTypeValue(Value context)
