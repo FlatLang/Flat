@@ -2489,7 +2489,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		return func;
 	}
 	
-	private boolean replaceGenerics(final Value[] types, Value original, Value value)
+	public boolean replaceGenerics(final Value[] types, Value original, Value value)
 	{
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
 		
