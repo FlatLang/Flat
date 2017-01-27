@@ -2733,7 +2733,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				for (ClassDeclaration converted : primitiveOverloads)
 				{
-					getParent().addChild(converted);
+					addChild(converted);
 				}
 			}
 		}
