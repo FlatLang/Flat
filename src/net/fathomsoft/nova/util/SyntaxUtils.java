@@ -2365,6 +2365,18 @@ public class SyntaxUtils
 	}
 	
 	public static int getParametersDistance(Value[] required, Value[] given)
+	public static class Pair<A, B>
+	{
+		public A a;
+		public B b;
+		
+		public Pair(A a, B b)
+		{
+			this.a = a;
+			this.b = b;
+		}
+	}
+	
 	{
 		return getParametersDistance(null, required, given);
 	}
