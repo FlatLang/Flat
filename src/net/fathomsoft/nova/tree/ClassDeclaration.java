@@ -1472,7 +1472,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		int max = -1;
 		int maxI = -1;
-		int distance = -1;
+		SyntaxUtils.Pair<Integer, Integer> distance = new SyntaxUtils.Pair<>(Integer.MAX_VALUE, Integer.MAX_VALUE);
 		
 		ArrayList<MethodDeclaration> list = new ArrayList<>();
 		
@@ -1493,9 +1493,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else if (count == max)
 			{
-				int dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+				SyntaxUtils.Pair<Integer, Integer> dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
 				
-				if (dist < distance)
+				if (dist.a < distance.a)
 				{
 					maxI = i;
 					distance = dist;
