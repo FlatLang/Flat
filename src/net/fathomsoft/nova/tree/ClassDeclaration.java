@@ -2611,12 +2611,23 @@ public class ClassDeclaration extends InstanceDeclaration
 					novaMethod.usedShorthandAction = false;
 					novaMethod.shorthandAction = null;
 					
-					novaMethod.getParameterList().forEachVisibleListChild(p -> {
-						if (p instanceof ClosureDeclaration)
+					for (int i = 0; i < parameterList.getNumParameters(); i++)
+					{
+						if (parameterList.getParameter(i) instanceof ClosureDeclaration)
 						{
-							((ClosureDeclaration)p).register();
+							ClosureDeclaration closure = (ClosureDeclaration)parameterList.getParameter(i);
+							
+							closure.register();
+							
+							ParameterList<Value> originalClosureParams = ((ClosureDeclaration)originalParameterList.getParameter(i)).getParameterList();
+							ParameterList<Value> closureParams = closure.getParameterList();
+							
+							for (int n = 0; n < originalClosureParams.getNumParameters(); n++)
+							{
+								changed |= replaceGenerics(types, originalClosureParams.getParameter(n), closureParams.getParameter(n));
+							}
 						}
-					});
+					}
 					
 					if (novaMethod instanceof Constructor)
 					{
