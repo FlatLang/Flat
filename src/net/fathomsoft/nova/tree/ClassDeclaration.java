@@ -2550,6 +2550,12 @@ public class ClassDeclaration extends InstanceDeclaration
 							((ClosureDeclaration)p).register();
 						}
 					});
+					
+					if (novaMethod instanceof Constructor)
+					{
+						novaMethod.setName(addTo.getParentClass().getName());
+						novaMethod.setType(addTo.getParentClass());
+					}
 				}
 				
 				if (changed)
