@@ -166,18 +166,6 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		}
 	}
 	
-	public BodyMethodDeclaration cloneTo(BodyMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
-	{
-		super.cloneTo(node, cloneChildren, cloneAnnotations);
-		
-		for (DefaultParameterInitialization param : node.getScope().getDefaultParameterInitializations())
-		{
-			param.parameter = node.getParameter(param.parameter.getIndex());
-		}
-		
-		return node;
-	}
-	
 	@Override
 	public ValidationResult validate(int phase)
 	{
@@ -194,6 +182,29 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		}
 		
 		return result;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
+	 */
+	@Override
+	public BodyMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
+	{
+		BodyMethodDeclaration node = new BodyMethodDeclaration(temporaryParent, locationIn);
+		
+		return cloneTo(node, cloneChildren, cloneAnnotations);
+	}
+	
+	public BodyMethodDeclaration cloneTo(BodyMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
+	{
+		super.cloneTo(node, cloneChildren, cloneAnnotations);
+		
+		for (DefaultParameterInitialization param : node.getScope().getDefaultParameterInitializations())
+		{
+			param.parameter = node.getParameter(param.parameter.getIndex());
+		}
+		
+		return node;
 	}
 	
 	/**
