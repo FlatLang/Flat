@@ -2681,12 +2681,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			addAssignmentMethods();
 			
-			generateFunctionMap();
-			generatePropertyMap();
-			
-			if (!isPropertyTrue("functionMap") && isPrimitiveGenericTypeWrapper())
+			if (!isPrimitiveOverload())
 			{
-				setProperty("primitiveGeneric", true);
+				generateFunctionMap();
+				generatePropertyMap();
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
