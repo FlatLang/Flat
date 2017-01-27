@@ -12,8 +12,6 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 
 /**
@@ -484,6 +482,23 @@ public class VariableDeclaration extends IIdentifier
 		}
 		
 		addDefaultGenericTypeArguments();
+		
+		if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			ClassDeclaration c = getTypeClass();
+			
+			if (c != null)
+			{
+				ClassDeclaration converted = c.getConvertedPrimitiveClass(getGenericTypeArgumentList());
+				
+				if (converted != null)
+				{
+					getFileDeclaration().addImport(converted.genericOverload.getClassLocation() + "." + converted.getName());
+					
+					setType(converted);
+				}
+			}
+		}
 		
 		return result;
 	}
