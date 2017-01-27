@@ -2713,6 +2713,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		c.setName(name);
 		c.setTypeValue(name);
 		
+		c.setExtendedClass(ExtendedClass.decodeStatement(this, getName(), c.getLocationIn(), true));
+		
 		getFieldList().forEachChild(list -> {
 			list.forEachChild(node -> {
 				FieldDeclaration field = (FieldDeclaration)node;
