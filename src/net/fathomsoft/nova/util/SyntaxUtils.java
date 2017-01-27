@@ -4,6 +4,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
@@ -2364,7 +2365,6 @@ public class SyntaxUtils
 		return type;
 	}
 	
-	public static int getParametersDistance(Value[] required, Value[] given)
 	public static class Pair<A, B>
 	{
 		public A a;
@@ -2377,18 +2377,19 @@ public class SyntaxUtils
 		}
 	}
 	
+	public static Pair<Integer, Integer> getParametersDistance(Value[] required, Value[] given)
 	{
 		return getParametersDistance(null, required, given);
 	}
 	
-	public static int getParametersDistance(Value context, Value[] required, Value[] given)
+	public static Pair<Integer, Integer> getParametersDistance(Value context, Value[] required, Value[] given)
 	{
 		return getParametersDistance(context, required, given, false);
 	}
 	
-	public static int getParametersDistance(Value context, Value[] required, Value[] given, boolean defaultGeneric)
+	public static Pair<Integer, Integer> getParametersDistance(Value context, Value[] required, Value[] given, boolean defaultGeneric)
 	{
-		int sum = 0;
+		Pair<Integer, Integer> pair = new Pair<>(0, 0);
 		
 		for (int i = 0; i < Math.min(required.length, given.length); i++)
 		{
@@ -2399,26 +2400,62 @@ public class SyntaxUtils
 				
 				if (g != null && r != null)
 				{
-					if (g.isPrimitiveType() || r.isPrimitiveType())
+					getDistance(context, g, r, defaultGeneric, pair);
+				}
+			}
+		}
+		
+		return pair;
+	}
+	
+	public static Pair<Integer, Integer> getDistance(Value g, Value r)
+	{
+		return getDistance(null, g, r, false);
+	}
+	
+	public static Pair<Integer, Integer> getDistance(Value context, Value g, Value r, boolean defaultGeneric)
+	{
+		return getDistance(context, g, r, defaultGeneric, new Pair<>(0, 0));
+	}
+	
+	public static Pair<Integer, Integer> getDistance(Value context, Value g, Value r, boolean defaultGeneric, Pair<Integer, Integer> pair)
+	{
+		if (g.isPrimitiveType() || r.isPrimitiveType())
+		{
+			if (g.isPrimitiveType() && r.isPrimitiveType())
+			{
+				int dist = getPrimitiveDistance(r.getType(), g.getType());
+				
+				pair.b += dist > 0 ? 1 : (dist < 0 ? -1 : 0);
+			}
+			else
+			{
+				pair.a += 1000;
+			}
+		}
+		else
+		{
+			ClassDeclaration gc = g.getNovaTypeClass(context, false, defaultGeneric);
+			ClassDeclaration rc = r.getNovaTypeClass(context, false, defaultGeneric);
+			
+			if (gc != null && rc != null)
+			{
+				pair.a += gc.getDistanceFrom(rc);
+				
+				if (r.getGenericTypeArgumentList() != null)
+				{
+					GenericTypeArgumentList gargs = g.getGenericTypeArgumentList();
+					GenericTypeArgumentList rargs = r.getGenericTypeArgumentList();
+					
+					for (int n = 0; n < Math.min(gargs.getNumVisibleChildren(), rargs.getNumVisibleChildren()); n++)
 					{
-						if (g.isPrimitiveType() && r.isPrimitiveType())
-						{
-							sum += getPrimitiveDistance(r.getType(), g.getType());
-						}
-						else
-						{
-							return Integer.MAX_VALUE;
-						}
-					}
-					else
-					{
-						sum += g.getDistanceFrom(r);
+						getDistance(context, gargs.getVisibleChild(n), rargs.getVisibleChild(n), defaultGeneric, pair);
 					}
 				}
 			}
 		}
 		
-		return sum;
+		return pair;
 	}
 	
 	/**
