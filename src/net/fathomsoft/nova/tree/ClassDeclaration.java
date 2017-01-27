@@ -2556,21 +2556,30 @@ public class ClassDeclaration extends InstanceDeclaration
 					novaMethod.getObjectReference(true);
 				}
 				
-				addTo.addChild(clone);
-				
 				if (changed)
 				{
 					SearchFilter filter = new SearchFilter();
 					filter.requireExactMatch = true;
 					filter.checkInterfaces = false;
 					filter.checkAncestor = false;
+					filter.defaultGeneric = true;
 					
-					MethodDeclaration[] found = getMethods(new GenericCompatible[] { addTo.getParentClass() }, method.getName(), filter, clone.getParameterList().getTypes(), false);
+					ClassDeclaration c = addTo.getParentClass();
 					
-					if (found.length > 0)
+					MethodDeclaration[] found = c.getMethods(new GenericCompatible[] { c }, method.getName(), filter, clone.getParameterList().getTypes(), false);
+					
+					if (found.length == 0)
 					{
-						clone.detach();
+						addTo.addChild(clone);
 					}
+					else
+					{
+						c.getMethods(new GenericCompatible[] { c }, method.getName(), filter, clone.getParameterList().getTypes(), false);
+					}
+				}
+				else
+				{
+					addTo.addChild(clone);
 				}
 			}
 		});
