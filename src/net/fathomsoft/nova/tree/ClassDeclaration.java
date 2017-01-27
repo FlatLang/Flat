@@ -3399,6 +3399,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(assignments);
 	}
 	
+	@Override
+	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
+	{
+		return this;
+	}
+	
 	/**
 	 * Make sure that the methods are all valid
 	 * 
