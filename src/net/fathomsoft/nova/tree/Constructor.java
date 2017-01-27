@@ -161,7 +161,18 @@ public class Constructor extends BodyMethodDeclaration
 			filter.checkConstructors = true;
 			filter.checkProperties = false;
 			
-			return (NovaMethodDeclaration)c.getMethod((GenericCompatible)null, getName(), filter, getParameterList().getTypes());
+			Value[] original = getParameterList().getTypes();
+			Value[] types = getParameterList().clone(getParameterList().getParent(), getParameterList().getLocationIn(), true, true).getTypes();
+			
+			if (c.genericOverload != null)
+			{
+				for (int i = 0; i < types.length; i++)
+				{
+					c.genericOverload.replaceGenerics(c.primitiveOverloadTypes, original[i], types[i]);
+				}
+			}
+			
+			return (NovaMethodDeclaration)c.getMethod((GenericCompatible)null, getName(), filter, types);
 		}
 		
 		return null;
