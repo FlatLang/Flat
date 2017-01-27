@@ -530,6 +530,13 @@ public class Annotation extends Node
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.parameters = new HashMap<>();
+		
+		for (Map.Entry<String, Object> entry : parameters.entrySet())
+		{
+			node.parameters.put(entry.getKey(), entry.getValue());
+		}
+		
 		return node;
 	}
 	
