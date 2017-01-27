@@ -184,10 +184,6 @@ public class Constructor extends BodyMethodDeclaration
 		
 		NovaMethodDeclaration method = getExistingConvertedPrimitiveMethod(c);
 		
-		type.primitiveOverloads.add(c);
-		c.genericOverload = type;
-		c.primitiveOverloadTypes = types;
-		
 		return method;
 	}
 	

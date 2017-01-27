@@ -2625,6 +2625,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			});
 		});
 		
+		primitiveOverloads.add(c);
+		
+		c.genericOverload = this;
+		c.primitiveOverloadTypes = types;
+		
 		SyntaxTree.validateNodes(c, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 		
 		return c;
