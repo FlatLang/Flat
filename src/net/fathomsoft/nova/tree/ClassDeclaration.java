@@ -2524,7 +2524,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	private void cloneMethods(final Value[] types, MethodList methods, MethodList addTo)
 	{
 		methods.forEachVisibleListChild(method -> {
-			if (method instanceof InitializationMethod == false)
+			if (method instanceof InitializationMethod == false && method instanceof Destructor == false)
 			{
 				MethodDeclaration clone = (MethodDeclaration)method.clone(addTo, method.getLocationIn(), false, true);
 				clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
