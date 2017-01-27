@@ -2581,6 +2581,28 @@ public class ClassDeclaration extends InstanceDeclaration
 		});
 	}
 	
+	private void setMethodReferences(MethodList methods)
+	{
+		methods.forEachVisibleListChild(x -> {
+			if (x instanceof NovaMethodDeclaration && x.isInstance())
+			{
+				NovaMethodDeclaration method = (NovaMethodDeclaration)x;
+				
+				method.getParameterList().getReferenceParameter().setTypeValue(getName());
+			}
+		});
+	}
+	
+	private void setMethodReferences()
+	{
+		setMethodReferences(getConstructorList());
+		setMethodReferences(getDestructorList());
+		setMethodReferences(getMethodList());
+		setMethodReferences(getPropertyMethodList());
+		setMethodReferences(getHiddenMethodList());
+		setMethodReferences(getVirtualMethodList());
+	}
+	
 	public ClassDeclaration convertToPrimitive(final Value[] types)
 	{
 		ClassDeclaration c = clone(getParent(), getLocationIn(), false, true);
@@ -2629,6 +2651,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		c.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
 		c.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 		SyntaxTree.validateNodes(c, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+		
+		c.setMethodReferences();
 		
 		return c;
 	}
