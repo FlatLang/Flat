@@ -2164,20 +2164,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		return false;
 	}
 	
-	public String getNativeLocation()
-	{
-		String location = getPackage().isDefaultPackage() ? "" : getPackage().getLocation().replace('/', '_');
-		
-		if (location.length() > 0)
-		{
-			location += "_";
-		}
-		
-		location += getName();
-		
-		return location;
-	}
-	
 	/**
 	 * Decode the given statement into a ClassDeclaration, if possible. If it is
 	 * not possible, this method returns null.<br>
