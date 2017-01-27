@@ -2475,6 +2475,33 @@ public class ClassDeclaration extends InstanceDeclaration
 		return func;
 	}
 	
+	public ClassDeclaration getExistingConvertedPrimitiveClass(GenericTypeArgumentList args)
+	{
+		for (ClassDeclaration converted : primitiveOverloads)
+		{
+			boolean compatible = true;
+			
+			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			{
+				Value required = converted.primitiveOverloadTypes[i];
+				Value arg = args.getVisibleChild(i).getReturnedNode();
+				
+				if (arg.getDataType() != required.getDataType() ||
+					arg.getTypeClass() != required.getTypeClass())
+				{
+					compatible = false;
+				}
+			}
+			
+			if (compatible)
+			{
+				return converted;
+			}
+		}
+		
+		return null;
+	}
+	
 	public boolean replaceGenerics(final Value[] types, Value original, Value value)
 	{
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
