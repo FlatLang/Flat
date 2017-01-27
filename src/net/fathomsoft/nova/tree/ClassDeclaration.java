@@ -2502,6 +2502,46 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
+	public ClassDeclaration getConvertedPrimitiveClass(GenericTypeArgumentList args)
+	{
+		ClassDeclaration c = getExistingConvertedPrimitiveClass(args);
+		
+		if (c != null)
+		{
+			return c;
+		}
+		
+		ClassDeclaration type = getDeclaringClass();
+		
+		GenericTypeParameterList params = type.getGenericTypeParameterDeclaration();
+		Value[] types = new Value[params.getNumParameters()];
+		
+		boolean isPrimitive = false;
+		
+		for (int i = 0; i < params.getNumParameters(); i++)
+		{
+			GenericTypeParameter param = params.getParameter(i);
+			
+			if (i >= args.getNumVisibleChildren())
+			{
+				types[i] = param;
+			}
+			else if (!param.isPrimitiveType() && args.getVisibleChild(i).isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
+			{
+				types[i] = args.getVisibleChild(i);
+				
+				isPrimitive = true;
+			}
+		}
+		
+		if (isPrimitive)
+		{
+			return convertToPrimitive(types);
+		}
+		
+		return null;
+	}
+	
 	public boolean replaceGenerics(final Value[] types, Value original, Value value)
 	{
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
