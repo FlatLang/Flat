@@ -2613,6 +2613,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		ClassDeclaration c = clone(getParent(), getLocationIn(), false, true);
 		
+		String name = c.getName();
+		
 		GenericTypeParameterList params = c.getGenericTypeParameterDeclaration();
 		
 		for (int i = 0; i < types.length; i++)
@@ -2624,7 +2626,14 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				params.addChild(param);
 			}
+			else
+			{
+				name += (i + 1) + types[i].getType();
+			}
 		}
+		
+		c.setName(name);
+		c.setTypeValue(name);
 		
 		getFieldList().forEachChild(list -> {
 			list.forEachChild(node -> {
