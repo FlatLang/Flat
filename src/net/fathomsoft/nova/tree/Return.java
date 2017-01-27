@@ -219,6 +219,7 @@ public class Return extends IValue
 		
 		if (value == null)
 		{
+			SyntaxTree.decodeValue(this, statement, location, false);
 			SyntaxMessage.error("Could not decode return statement '" + statement + "'", this, location);
 		}
 		else
