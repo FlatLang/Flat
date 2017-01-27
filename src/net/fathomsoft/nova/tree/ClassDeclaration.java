@@ -2743,6 +2743,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		c.genericOverload = this;
 		c.primitiveOverloadTypes = types;
 		
+		addChild(c);
+		
 		c.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
 		c.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 		SyntaxTree.validateNodes(c, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
@@ -2822,14 +2824,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (isPrimitiveOverload())
 			{
-				
-			}
-			else
-			{
-				for (ClassDeclaration converted : primitiveOverloads)
-				{
-					addChild(converted);
-				}
 			}
 		}
 		
