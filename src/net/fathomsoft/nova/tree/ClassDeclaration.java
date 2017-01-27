@@ -2554,6 +2554,16 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					novaMethod.getParameterList().getReferenceParameter().setType(addTo.getParentClass());
 					novaMethod.getObjectReference(true);
+					
+					novaMethod.usedShorthandAction = false;
+					novaMethod.shorthandAction = null;
+					
+					novaMethod.getParameterList().forEachVisibleListChild(p -> {
+						if (p instanceof ClosureDeclaration)
+						{
+							((ClosureDeclaration)p).register();
+						}
+					});
 				}
 				
 				if (changed)
@@ -2602,13 +2612,6 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 		}
 		
-		cloneMethods(types, getConstructorList(), c.getConstructorList());
-		cloneMethods(types, getDestructorList(), c.getDestructorList());
-		cloneMethods(types, getMethodList(), c.getMethodList());
-		cloneMethods(types, getPropertyMethodList(), c.getPropertyMethodList());
-		cloneMethods(types, getHiddenMethodList(), c.getHiddenMethodList());
-		cloneMethods(types, getVirtualMethodList(), c.getVirtualMethodList());
-		
 		getFieldList().forEachChild(list -> {
 			list.forEachChild(node -> {
 				FieldDeclaration field = (FieldDeclaration)node;
@@ -2624,6 +2627,13 @@ public class ClassDeclaration extends InstanceDeclaration
 				}
 			});
 		});
+		
+		cloneMethods(types, getConstructorList(), c.getConstructorList());
+		cloneMethods(types, getDestructorList(), c.getDestructorList());
+		cloneMethods(types, getMethodList(), c.getMethodList());
+		cloneMethods(types, getPropertyMethodList(), c.getPropertyMethodList());
+		cloneMethods(types, getHiddenMethodList(), c.getHiddenMethodList());
+		cloneMethods(types, getVirtualMethodList(), c.getVirtualMethodList());
 		
 		primitiveOverloads.add(c);
 		
