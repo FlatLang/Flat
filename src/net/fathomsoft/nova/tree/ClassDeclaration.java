@@ -2630,6 +2630,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		c.genericOverload = this;
 		c.primitiveOverloadTypes = types;
 		
+		c.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
+		c.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 		SyntaxTree.validateNodes(c, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 		
 		return c;
