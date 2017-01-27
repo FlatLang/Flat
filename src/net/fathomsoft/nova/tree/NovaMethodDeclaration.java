@@ -1268,7 +1268,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (NovaMethodDeclaration child : overridingMethods)
 		{
-			node.overridingMethods.add((NovaMethodDeclaration)child.clone(node, child.getLocationIn()));
+			node.overridingMethods.add(child);//(NovaMethodDeclaration)child.clone(node, child.getLocationIn()));
 		}
 		
 		node.types = new String[types.length];
