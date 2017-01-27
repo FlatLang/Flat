@@ -119,36 +119,9 @@ public class Constructor extends BodyMethodDeclaration
 		return null;
 	}
 	
-	public ClassDeclaration getExistingConvertedPrimitiveClass(ClassDeclaration type, GenericTypeArgumentList args)
-	{
-		for (ClassDeclaration converted : type.primitiveOverloads)
-		{
-			boolean compatible = true;
-			
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
-			{
-				Value required = converted.primitiveOverloadTypes[i];
-				Value arg = args.getVisibleChild(i).getReturnedNode();
-				
-				if (arg.getDataType() != required.getDataType() ||
-					arg.getTypeClass() != required.getTypeClass())
-				{
-					compatible = false;
-				}
-			}
-			
-			if (compatible)
-			{
-				return converted;
-			}
-		}
-		
-		return null;
-	}
-	
 	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration type, GenericTypeArgumentList args)
 	{
-		return getExistingConvertedPrimitiveMethod(getExistingConvertedPrimitiveClass(type, args));
+		return getExistingConvertedPrimitiveMethod(type.getExistingConvertedPrimitiveClass(args));
 	}
 	
 	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration c)
@@ -172,7 +145,7 @@ public class Constructor extends BodyMethodDeclaration
 				}
 			}
 			
-			return (NovaMethodDeclaration)c.getMethod((GenericCompatible)null, getName(), filter, types);
+			return (NovaMethodDeclaration)c.getMethod((GenericCompatible)null, c.getName(), filter, types);
 		}
 		
 		return null;
@@ -180,11 +153,7 @@ public class Constructor extends BodyMethodDeclaration
 	
 	public NovaMethodDeclaration convertPrimitiveMethod(ClassDeclaration type, Value[] types)
 	{
-		ClassDeclaration c = type.convertToPrimitive(types);
-		
-		NovaMethodDeclaration method = getExistingConvertedPrimitiveMethod(c);
-		
-		return method;
+		return getExistingConvertedPrimitiveMethod(type.convertToPrimitive(types));
 	}
 	
 	@Override
@@ -193,37 +162,11 @@ public class Constructor extends BodyMethodDeclaration
 		ClassDeclaration type = getDeclaringClass();
 		GenericTypeArgumentList args = call.getMethodGenericTypeArgumentList();
 		
-		NovaMethodDeclaration existing = getExistingConvertedPrimitiveMethod(type, args);
+		ClassDeclaration existing = type.getConvertedPrimitiveClass(args);
 		
 		if (existing != null)
 		{
-			return existing;
-		}
-		
-		GenericTypeParameterList params = type.getGenericTypeParameterDeclaration();
-		Value[] types = new Value[params.getNumParameters()];
-		
-		boolean isPrimitive = false;
-		
-		for (int i = 0; i < params.getNumParameters(); i++)
-		{
-			GenericTypeParameter param = params.getParameter(i);
-			
-			if (i >= args.getNumVisibleChildren())
-			{
-				types[i] = param;
-			}
-			else if (!param.isPrimitiveType() && args.getVisibleChild(i).isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
-			{
-				types[i] = args.getVisibleChild(i);
-				
-				isPrimitive = true;
-			}
-		}
-		
-		if (isPrimitive)
-		{
-			return convertPrimitiveMethod(type, types);
+			return getExistingConvertedPrimitiveMethod(existing);
 		}
 		
 		return null;
