@@ -1215,6 +1215,16 @@ public class ClassDeclaration extends InstanceDeclaration
 			if (field == null && checkAncestor && getExtendedClassDeclaration() != null)
 			{
 				field = getExtendedClassDeclaration().getField(fieldName);
+				
+				if (field != null)
+				{
+					ClassDeclaration c = field.getTypeClass();
+					
+					if (c != null && c.isPrimitiveOverload())
+					{
+						getFileDeclaration().addImport(c.getClassLocation());
+					}
+				}
 			}
 			
 			if (field == null)
