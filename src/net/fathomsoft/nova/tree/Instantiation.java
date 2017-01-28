@@ -242,8 +242,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		{
 			className = StringUtils.findNextWord(instantiation);
 			
-			setTypeValue(className);
-			
+//			setTypeValue(className);
+//			
 //			ClassDeclaration clazz = getFileDeclaration().getImportedClass(this, className);
 //			
 //			instantiation = clazz.getName() + instantiation.substring(className.length());
@@ -259,12 +259,17 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 				ClassDeclaration callType = methodCall.getTypeClass();
 				ClassDeclaration type = getTypeClass();
 				
-				if (callType != null && !callType.isOfType(getTypeClass()) && type != null && type.getConstructorList().getNumVisibleChildren() > 0)
+				if (callType != null)
 				{
-					MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference);
-					SyntaxMessage.queryError("Incompatible arguments given to " + getName() + " constructor", this, require);
+					setTypeValue(callType.getName());
 					
-					return null;
+					if (!callType.isOfType(getTypeClass()) && type != null && type.getConstructorList().getNumVisibleChildren() > 0)
+					{
+						MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference);
+						SyntaxMessage.queryError("Incompatible arguments given to " + getName() + " constructor", this, require);
+						
+						return null;
+					}
 				}
 			}
 			
@@ -274,13 +279,18 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		{
 			Value value = Array.decodeStatement(getParent(), instantiation, location, require);
 			
-			if (value instanceof Instantiation)
+			if (value != null)
 			{
-				return (Instantiation)value;
-			}
-			else if (value instanceof Array)
-			{
-				child = (Array)value;
+				setTypeValue(value.getType());
+				
+				if (value instanceof Instantiation)
+				{
+					return (Instantiation)value;
+				}
+				else if (value instanceof Array)
+				{
+					child = (Array)value;
+				}
 			}
 			else
 			{
@@ -297,15 +307,6 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		addChild(child);
 		setName(child.getName());
-		
-		if (className != null)
-		{
-			setType(className);
-		}
-		else
-		{
-			setType(child.getType());
-		}
 		
 		setDataType(child.getDataType());
 		
