@@ -317,7 +317,7 @@ public class FileDeclaration extends Node
 		
 		for (ClassDeclaration c : from.getFileDeclaration().getClassDeclarations())
 		{
-			if (c.getName().endsWith(className)) // TODO: need to check if at valid depth
+			if (c.getName().equals(className)) // TODO: need to check if at valid depth
 			{
 				return c;
 			}
