@@ -5,7 +5,9 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.OverrideAnnotation;
 import net.fathomsoft.nova.tree.annotations.PublicAnnotation;
+import net.fathomsoft.nova.tree.annotations.RequireGenericTypeAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.Array;
@@ -749,18 +751,24 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public NovaMethodDeclaration convertPrimitiveMethod(Value[] types)
 	{
 		NovaMethodDeclaration method = clone(getParent(), getLocationIn(), false, true);
-		
+
 		for (int i = 0; i < types.length; i++)
 		{
 			Parameter param = getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
-			
+
 			if (param.getDataType() != types[i].getDataType())
 			{
 				param.setType(types[i]);
 			}
-			
+//			if (param instanceof ClosureDeclaration)
+//			{
+//				getParentClass().replaceGenerics(types, (ClosureDeclaration)param, (ClosureDeclaration)types[i]);
+//			}
+
 			method.getParameterList().addChild(param);
 		}
+		
+//		NovaMethodDeclaration method = convertToClass(getParentClass(), types);
 		
 		primitiveOverloads.add(method);
 		method.genericOverload = this;
