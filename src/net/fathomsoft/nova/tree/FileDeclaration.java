@@ -298,6 +298,11 @@ public class FileDeclaration extends Node
 	
 	public ClassDeclaration getImportedClass(Node from, String className)
 	{
+		if (className == null)
+		{
+			return null;
+		}
+		
 		ClassDeclaration clazz = from.getParentClass(true);
 		
 		while (clazz != null)
