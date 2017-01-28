@@ -7,6 +7,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.annotations.OverrideAnnotation;
+import net.fathomsoft.nova.tree.annotations.RequireGenericTypeAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
@@ -2759,6 +2760,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					FieldDeclaration clone = field.clone(c, field.getLocationIn(), true, true);
 					clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
+					clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
 					
 					replaceGenerics(types, field, clone);
 					
