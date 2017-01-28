@@ -2669,6 +2669,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			c.primitiveOverloadTypes[i] = (Value)types[i].clone(this, types[i].getLocationIn(), true, true);//types[i].cloneTo(value, true, true);
 		}
 		
+		addChild(c);
+		
 		String name = c.getName();
 		
 		GenericTypeParameterList params = c.getGenericTypeParameterDeclaration();
@@ -2710,8 +2712,6 @@ public class ClassDeclaration extends InstanceDeclaration
 			});
 		});
 		
-		
-		addChild(c);
 		cloneMethods(types, getConstructorList(), c);
 		cloneMethods(types, getDestructorList(), c);
 		cloneMethods(types, getMethodList(), c);
