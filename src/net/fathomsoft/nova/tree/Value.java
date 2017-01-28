@@ -1300,7 +1300,7 @@ public abstract class Value extends Node implements AbstractValue
 		return isGenericType(checkArray, true);
 	}
 	
-	public final boolean isGenericType(boolean checkArray, boolean checkCast)
+	public boolean isGenericType(boolean checkArray, boolean checkCast)
 	{
 		if (getGenericTypeParameter(checkCast) != null)
 		{
