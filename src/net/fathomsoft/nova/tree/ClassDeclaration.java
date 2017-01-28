@@ -3768,6 +3768,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		node.abstractValue = abstractValue;
 		node.genericOverload = genericOverload;
 		
+		if (arrayBracketOverload != null)
+		{
+			node.arrayBracketOverload = arrayBracketOverload.clone(node, arrayBracketOverload.getLocationIn(), true, true);
+		}
+		
 		return node;
 	}
 	
