@@ -459,7 +459,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				constructor = func.getType();
 			}
 			
-			ClassDeclaration converted = func.getTypeClass().getConvertedPrimitiveClass(func.getGenericTypeArgumentList());
+			ClassDeclaration converted = func.getTypeClass().getConvertedPrimitiveClass(func.getGenericTypeArgumentList().getTypes());
 			
 			if (converted != null)
 			{

@@ -121,7 +121,7 @@ public class Constructor extends BodyMethodDeclaration
 	
 	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration type, GenericTypeArgumentList args)
 	{
-		return getExistingConvertedPrimitiveMethod(type.getExistingConvertedPrimitiveClass(args));
+		return getExistingConvertedPrimitiveMethod(type.getExistingConvertedPrimitiveClass(args.getTypes()));
 	}
 	
 	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration c)
@@ -162,7 +162,7 @@ public class Constructor extends BodyMethodDeclaration
 		ClassDeclaration type = getDeclaringClass();
 		GenericTypeArgumentList args = call.getMethodGenericTypeArgumentList();
 		
-		ClassDeclaration existing = type.getConvertedPrimitiveClass(args);
+		ClassDeclaration existing = type.getConvertedPrimitiveClass(args.getTypes());
 		
 		if (existing != null)
 		{
