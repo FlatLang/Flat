@@ -2475,15 +2475,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		return func;
 	}
 	
-	public ClassDeclaration getExistingConvertedPrimitiveClass(GenericTypeArgumentList args)
+	public ClassDeclaration getExistingConvertedPrimitiveClass(Value[] args)
 	{
 		for (ClassDeclaration converted : primitiveOverloads)
 		{
-			if (converted.primitiveOverloadTypes.length == args.getNumVisibleChildren())
+			if (converted.primitiveOverloadTypes.length == args.length)
 			{
 				boolean compatible = true;
 				
-				for (int i = 0; i < args.getNumVisibleChildren(); i++)
+				for (int i = 0; i < args.length; i++)
 				{
 					Value required = converted.primitiveOverloadTypes[i];
 					Value arg = args.getVisibleChild(i).getReturnedNode();
@@ -2505,18 +2505,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
-	public ClassDeclaration getConvertedPrimitiveClass(GenericTypeArgumentList args)
+	public Value[] getConvertedTypes(Value[] args)
 	{
-		ClassDeclaration c = getExistingConvertedPrimitiveClass(args);
-		
-		if (c != null)
-		{
-			return c;
-		}
-		
-		ClassDeclaration type = getDeclaringClass();
-		
-		GenericTypeParameterList params = type.getGenericTypeParameterDeclaration();
+		GenericTypeParameterList params = getGenericTypeParameterDeclaration();
 		Value[] types = new Value[params.getNumParameters()];
 		
 		boolean isPrimitive = false;
@@ -2525,19 +2516,38 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			GenericTypeParameter param = params.getParameter(i);
 			
-			if (i >= args.getNumVisibleChildren())
+			if (i >= args.length)
 			{
 				types[i] = param;
 			}
-			else if (!param.isPrimitiveType() && args.getVisibleChild(i).isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
+			else if (!param.isPrimitiveType() && args[i].isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
 			{
-				types[i] = args.getVisibleChild(i);
+				types[i] = args[i];
 				
 				isPrimitive = true;
 			}
 		}
 		
 		if (isPrimitive)
+		{
+			return types;
+		}
+		
+		return null;
+	}
+	
+	public ClassDeclaration getConvertedPrimitiveClass(Value[] args)
+	{
+		ClassDeclaration c = getExistingConvertedPrimitiveClass(args);
+		
+		if (c != null)
+		{
+			return c;
+		}
+		
+		Value[] types = getConvertedTypes(args);
+		
+		if (types != null)
 		{
 			return convertToPrimitive(types);
 		}
@@ -2573,7 +2583,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (changed)
 			{
-				ClassDeclaration converted = getTypeClass().getConvertedPrimitiveClass(args);
+				ClassDeclaration converted = value.getTypeClass().getConvertedPrimitiveClass(args.getTypes());
 				
 				if (converted != null)
 				{
