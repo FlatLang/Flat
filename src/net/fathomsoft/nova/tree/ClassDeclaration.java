@@ -2598,6 +2598,25 @@ public class ClassDeclaration extends InstanceDeclaration
 		return false;
 	}
 	
+	public boolean replaceGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value)
+	{
+		ClosureDeclaration closure = value;
+		
+		closure.register();
+		
+		ParameterList<Value> originalClosureParams = original.getParameterList();
+		ParameterList<Value> closureParams = closure.getParameterList();
+		
+		boolean changed = false;
+		
+		for (int n = 0; n < originalClosureParams.getNumParameters(); n++)
+		{
+			changed |= replaceGenerics(types, originalClosureParams.getParameter(n), closureParams.getParameter(n));
+		}
+		
+		return changed;
+	}
+	
 	private void cloneMethods(final Value[] types, MethodList methods, MethodList addTo)
 	{
 		methods.forEachVisibleListChild(method -> {
