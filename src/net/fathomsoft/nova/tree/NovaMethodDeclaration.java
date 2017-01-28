@@ -672,6 +672,80 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
+	public NovaMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types)
+	{
+		ClassDeclaration referenceClass = getParentClass();
+		
+		NovaMethodDeclaration clone = clone(parent, getLocationIn(), false, true);
+		clone.setProperty("userMade", false);
+		clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
+		clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+		
+		if (getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+		{
+			clone.getGenericTypeArgumentList().replaceWith(getGenericTypeArgumentList().clone(clone.getGenericTypeArgumentList(), getLocationIn(), true, true));
+		}
+		
+		ParameterList<Parameter> originalParameterList = getParameterList();
+		ParameterList<Parameter> parameterList = originalParameterList.clone(clone, getLocationIn(), true, true);
+		
+		clone.getParameterList().replaceWith(parameterList);
+		
+		boolean changed = false;
+		
+		for (int i = 0; i < parameterList.getNumParameters(); i++)
+		{
+			changed |= referenceClass.replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+		}
+		
+		referenceClass.replaceGenerics(types, this, clone);
+		
+		clone.getParameterList().getReferenceParameter().setType(parent);
+		clone.getObjectReference(true);
+		
+		clone.usedShorthandAction = false;
+		clone.shorthandAction = null;
+		
+		correspondingPrimitiveOverloads.add(clone);
+		
+		for (int i = 0; i < parameterList.getNumParameters(); i++)
+		{
+			changed |= parent.replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+		}
+		
+		if (clone instanceof Constructor)
+		{
+			clone.setName(parent.getName());
+			clone.setType(parent);
+		}
+		
+		if (changed)
+		{
+			SearchFilter filter = new SearchFilter();
+			filter.requireExactMatch = true;
+			filter.checkInterfaces = false;
+			filter.checkAncestor = false;
+			filter.defaultGeneric = true;
+			
+			MethodDeclaration[] found = parent.getMethods(new GenericCompatible[] { parent }, getName(), filter, clone.getParameterList().getTypes(), false);
+			
+			if (found.length == 0)
+			{
+				parent.addChild(clone);
+			}
+			else
+			{
+				parent.getMethods(new GenericCompatible[] { parent }, getName(), filter, clone.getParameterList().getTypes(), false);
+			}
+		}
+		else
+		{
+			parent.addChild(clone);
+		}
+		
+		return clone;
+	}
+	
 	public NovaMethodDeclaration convertPrimitiveMethod(Value[] types)
 	{
 		NovaMethodDeclaration method = clone(getParent(), getLocationIn(), false, true);
