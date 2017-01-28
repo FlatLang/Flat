@@ -2702,6 +2702,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				if (field.isUserMade())
 				{
 					FieldDeclaration clone = field.clone(c, field.getLocationIn(), true, true);
+					clone.setProperty("userMade", false);
 					clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
 					clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
 					
@@ -2796,9 +2797,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			if (isPrimitiveOverload())
-			{
-			}
+			
 		}
 		
 		return result;
