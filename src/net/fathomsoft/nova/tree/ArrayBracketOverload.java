@@ -303,6 +303,10 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.twoWayBinding = twoWayBinding;
+		node.decoded = decoded;
+		node.accessorValue = accessorValue;
+		
 		return node;
 	}
 	
