@@ -2479,23 +2479,26 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		for (ClassDeclaration converted : primitiveOverloads)
 		{
-			boolean compatible = true;
-			
-			for (int i = 0; i < args.getNumVisibleChildren(); i++)
+			if (converted.primitiveOverloadTypes.length == args.getNumVisibleChildren())
 			{
-				Value required = converted.primitiveOverloadTypes[i];
-				Value arg = args.getVisibleChild(i).getReturnedNode();
+				boolean compatible = true;
 				
-				if (arg.getDataType() != required.getDataType() ||
-					arg.getTypeClass() != required.getTypeClass())
+				for (int i = 0; i < args.getNumVisibleChildren(); i++)
 				{
-					compatible = false;
+					Value required = converted.primitiveOverloadTypes[i];
+					Value arg = args.getVisibleChild(i).getReturnedNode();
+					
+					if (arg.getDataType() != required.getDataType() ||
+						arg.getTypeClass() != required.getTypeClass())
+					{
+						compatible = false;
+					}
 				}
-			}
-			
-			if (compatible)
-			{
-				return converted;
+				
+				if (compatible)
+				{
+					return converted;
+				}
 			}
 		}
 		
