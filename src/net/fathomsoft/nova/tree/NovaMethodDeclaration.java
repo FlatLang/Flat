@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.annotations.PublicAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
+import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -38,6 +39,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public NovaMethodDeclaration overridenMethod;
 	private ArrayList<NovaMethodDeclaration>	overridingMethods, primitiveOverloads;
+	private ArrayList<NovaMethodDeclaration> overridingMethods, primitiveOverloads;
+	public ArrayList<NovaMethodDeclaration> correspondingPrimitiveOverloads;
 	
 	private NovaMethodDeclaration genericOverload;
 	
@@ -59,6 +62,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		types              = new String[0];
 		overridingMethods  = new ArrayList<>();
 		primitiveOverloads = new ArrayList<>();
+		correspondingPrimitiveOverloads = new ArrayList<>();
 		
 		NovaParameterList parameters = new NovaParameterList(this, locationIn.asNew());
 		
