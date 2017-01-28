@@ -38,7 +38,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	private String[] types;
 	
 	public NovaMethodDeclaration overridenMethod;
-	private ArrayList<NovaMethodDeclaration>	overridingMethods, primitiveOverloads;
 	private ArrayList<NovaMethodDeclaration> overridingMethods, primitiveOverloads;
 	public ArrayList<NovaMethodDeclaration> correspondingPrimitiveOverloads;
 	
@@ -1045,6 +1044,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			shorthandAction = null;
 			
+			boolean containedType = getType() != null;
+			
 			Node contents = SyntaxTree.decodeScopeContents(this, action, getLocationIn(), true);
 			
 			if (contents instanceof Value)
@@ -1053,6 +1054,18 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 			
 			addChild(contents);
+			
+			if (!containedType && getType() != null)
+			{
+				for (NovaMethodDeclaration m : correspondingPrimitiveOverloads)
+				{
+					m.setType(this);
+					
+					getParentClass().replaceGenerics(m.getParentClass().primitiveOverloadTypes, this, m);
+					
+					int j = 5;
+				}
+			}
 		}
 	}
 	
