@@ -53,6 +53,12 @@ public class Literal extends IValue implements Accessible
 	}
 	
 	@Override
+	public boolean isGenericType(boolean checkArray, boolean checkCast)
+	{
+		return false;
+	}
+	
+	@Override
 	public String getGenericReturnType()
 	{
 		if (isGenericType())
