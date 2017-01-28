@@ -652,6 +652,11 @@ public abstract class Node implements Listenable, Annotatable
 		return getParent().children.indexOf(this);
 	}
 	
+	public int getVisibleIndex()
+	{
+		return getParent().children.indexOf(this) - getNumVisibleChildren();
+	}
+	
 	/**
 	 * Get the number of children that have been added to the specified
 	 * Node after the Node has been decoded.
