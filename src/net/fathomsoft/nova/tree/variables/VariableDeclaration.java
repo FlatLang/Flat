@@ -485,19 +485,7 @@ public class VariableDeclaration extends IIdentifier
 		
 		if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			ClassDeclaration c = getTypeClass();
-			
-			if (c != null)
-			{
-				ClassDeclaration converted = c.getConvertedPrimitiveClass(getGenericTypeArgumentList());
-				
-				if (converted != null)
-				{
-					getFileDeclaration().addImport(converted.genericOverload.getClassLocation() + "." + converted.getName());
-					
-					setType(converted);
-				}
-			}
+			convertToPrimitiveType();
 		}
 		
 		return result;
