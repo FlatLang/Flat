@@ -1,10 +1,8 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.TypeList;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -58,6 +56,17 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 		return builder;
 	}
 	
+	public Value[] getTypes()
+	{
+		Value[] types = new Value[getNumVisibleChildren()];
+		
+		for (int i = 0; i < types.length; i++)
+		{
+			types[i] = getVisibleChild(i);
+		}
+		
+		return types;
+	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
