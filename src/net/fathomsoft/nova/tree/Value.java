@@ -1176,6 +1176,23 @@ public abstract class Value extends Node implements AbstractValue
 		return null;
 	}
 	
+	public void convertToPrimitiveType()
+	{
+		ClassDeclaration c = getTypeClass();
+		
+		if (c != null)
+		{
+			ClassDeclaration converted = c.getConvertedPrimitiveClass(getGenericTypeArgumentList().getTypes());
+			
+			if (converted != null)
+			{
+				getFileDeclaration().addImport(converted.getClassLocation());
+				
+				setType(converted);
+			}
+		}
+	}
+	
 	public StringBuilder generateNovaArrayAccess()
 	{
 		return generateNovaArrayAccess(new StringBuilder());
