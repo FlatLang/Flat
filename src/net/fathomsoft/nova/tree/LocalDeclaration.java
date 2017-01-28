@@ -194,6 +194,11 @@ public class LocalDeclaration extends VariableDeclaration
 					}
 				}
 				
+				if (parent.getProgram().getPhase() >= SyntaxTree.PHASE_METHOD_CONTENTS)
+				{
+					n.convertToPrimitiveType();
+				}
+				
 				return n;
 			}
 		}

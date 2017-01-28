@@ -58,6 +58,31 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 		return builder;
 	}
 	
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			for (int i = 0; i < getNumVisibleChildren(); i++)
+			{
+				getVisibleChild(i).convertToPrimitiveType();
+			}
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */

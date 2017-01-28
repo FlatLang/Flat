@@ -241,6 +241,11 @@ public abstract class Value extends Node implements AbstractValue
 			
 			setType(type);
 			
+			if (getProgram().getPhase() >= SyntaxTree.PHASE_METHOD_CONTENTS)
+			{
+				convertToPrimitiveType();
+			}
+			
 			/*if (args != null)
 			{
 				GenericTypeArgumentList current = getGenericTypeArgumentList();

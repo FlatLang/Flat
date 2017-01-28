@@ -208,6 +208,11 @@ public interface GenericCompatible
 		for (GenericTypeArgument arg : getGenericTypeArguments(params))
 		{
 			list.addChild(arg);
+			
+			if (list.getProgram().getPhase() >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+			{
+				arg.convertToPrimitiveType();
+			}
 		}
 	}
 
