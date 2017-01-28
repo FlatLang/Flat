@@ -2487,7 +2487,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				for (int i = 0; i < args.length; i++)
 				{
 					Value required = converted.primitiveOverloadTypes[i];
-					Value arg = args.getVisibleChild(i).getReturnedNode();
+					Value arg = args[i].getReturnedNode();
 					
 					if (arg.getDataType() != required.getDataType() ||
 						arg.getTypeClass() != required.getTypeClass())
@@ -2558,6 +2558,8 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean replaceGenerics(final Value[] types, Value original, Value value)
 	{
+		boolean changed = false;
+		
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
 		
 		if (genParam != null)
@@ -2567,15 +2569,13 @@ public class ClassDeclaration extends InstanceDeclaration
 				value.setType(types[genParam.getIndex()]);
 				value.setArrayDimensions(original.getArrayDimensions());
 				
-				return true;
+				changed |= true;
 			}
 		}
 		else
 		{
 			GenericTypeArgumentList originalArgs = original.getGenericTypeArgumentList();
 			GenericTypeArgumentList args = value.getGenericTypeArgumentList();
-			
-			boolean changed = false;
 			
 			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
 			{
@@ -2588,14 +2588,19 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (converted != null)
 				{
+					value.getFileDeclaration().addImport(converted.getClassLocation());
+					
 					value.setType(converted);
 				}
-				
-				return true;
 			}
 		}
 		
-		return false;
+		if (value instanceof ClosureDeclaration)
+		{
+			changed |= replaceGenerics(types, (ClosureDeclaration)original, (ClosureDeclaration)value);
+		}
+		
+		return changed;
 	}
 	
 	public boolean replaceGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value)
