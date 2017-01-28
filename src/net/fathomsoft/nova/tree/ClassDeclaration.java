@@ -2571,7 +2571,17 @@ public class ClassDeclaration extends InstanceDeclaration
 				changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i));
 			}
 			
-			return changed;
+			if (changed)
+			{
+				ClassDeclaration converted = getTypeClass().getConvertedPrimitiveClass(args);
+				
+				if (converted != null)
+				{
+					value.setType(converted);
+				}
+				
+				return true;
+			}
 		}
 		
 		return false;
