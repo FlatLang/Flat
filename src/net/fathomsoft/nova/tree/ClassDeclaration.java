@@ -2624,6 +2624,8 @@ public class ClassDeclaration extends InstanceDeclaration
 					novaMethod.usedShorthandAction = false;
 					novaMethod.shorthandAction = null;
 					
+					((NovaMethodDeclaration)method).correspondingPrimitiveOverloads.add(novaMethod);
+					
 					for (int i = 0; i < parameterList.getNumParameters(); i++)
 					{
 						if (parameterList.getParameter(i) instanceof ClosureDeclaration)
