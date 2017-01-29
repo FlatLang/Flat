@@ -418,11 +418,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 		}
 		
-		if (overridenMethod != null)
+		/*if (overridenMethod != null)
 		{
 			overloadID = getOverriddenMethod().overloadID;
 		}
-		else if (list.size() > 0)
+		else */if (list.size() > 0)
 		{
 			overloadID = ++max;
 			
