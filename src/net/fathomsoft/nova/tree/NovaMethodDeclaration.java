@@ -43,7 +43,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	private ArrayList<NovaMethodDeclaration> overridingMethods, primitiveOverloads;
 	public ArrayList<NovaMethodDeclaration> correspondingPrimitiveOverloads;
 	
-	private NovaMethodDeclaration genericOverload;
+	public NovaMethodDeclaration genericOverload;
 	
 	private static HashMap<Integer, Scope> scopes = new HashMap<>();
 	
