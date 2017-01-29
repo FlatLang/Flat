@@ -55,7 +55,12 @@ public class Literal extends IValue implements Accessible
 	@Override
 	public boolean isGenericType(boolean checkArray, boolean checkCast)
 	{
-		return false;
+		if (!isNullLiteral())
+		{
+			return false;
+		}
+		
+		return super.isGenericType(checkArray, checkCast);
 	}
 	
 	@Override
