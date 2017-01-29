@@ -3538,7 +3538,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods())
 				{
-					if (!doesOverrideMethod(method))
+					if (!doesOverrideMethod(method) && method.isUserMade())
 					{
 						doesOverrideMethod(method);
 						errors.add(method);
