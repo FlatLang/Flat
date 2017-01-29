@@ -679,6 +679,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		ClassDeclaration referenceClass = getParentClass();
 		
 		NovaMethodDeclaration clone = clone(parent, getLocationIn(), false, true);
+		clone.overridenMethod = null;
+		clone.overridingMethods = new ArrayList<>();
 		clone.setProperty("userMade", false);
 		clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
 		clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
