@@ -255,7 +255,7 @@ public class MethodCallArgumentList extends ArgumentList
 				
 				if (typeClass != null)
 				{
-					String type = inferredType.isGenericType() || "Number".equals(inferredType.getType()) || inferredType.getTypeClass() != null && inferredType.getTypeClass().isOfType(typeClass) ? context.getReturnedNode().getNovaType(context) : inferredType.getType();
+					String type = inferredType.isGenericType() || "Number".equals(inferredType.getType()) || inferredType.getTypeClass() != null && inferredType.getTypeClass().isOfType(typeClass) ? context.getReturnedNode().getNovaType(context, false) : inferredType.getType();
 					
 					if (context instanceof Closure)
 					{
