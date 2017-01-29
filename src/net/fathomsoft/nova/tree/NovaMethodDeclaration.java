@@ -1371,7 +1371,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public boolean isPrimitiveOverload()
 	{
-		return genericOverload != null;
+		return genericOverload != null || getParentClass().isPrimitiveOverload();
 	}
 	
 	/**
