@@ -789,6 +789,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		primitiveOverloads.add(method);
 		method.genericOverload = this;
 		
+		getParent().addChild(method);
+		
 		return method;
 	}
 	
@@ -1360,11 +1362,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				if (this instanceof VirtualMethodDeclaration == false && virtualMethod != null)
 				{
 					virtualMethod.validate(phase);
-				}
-				
-				for (NovaMethodDeclaration converted : primitiveOverloads)
-				{
-					getParent().addChild(converted);
 				}
 			}
 		}
