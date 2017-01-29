@@ -356,6 +356,8 @@ public class Scope extends Node
 	{
 		builder.append('{').append('\n');
 		
+		getVariableList().generateNovaInput(builder);
+		
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
 			getVisibleChild(i).generateNovaInput(builder).append('\n');
