@@ -125,12 +125,12 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		
 		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(index).getDefaultType();
 	}
-	
-	@Override
-	public byte getDataType()
-	{
-		return getAncestorOfType(ClosureDeclaration.class) == null ? POINTER : super.getDataType();
-	}
+//	
+//	@Override
+//	public byte getDataType()
+//	{
+//		return getAncestorOfType(ClosureDeclaration.class) == null ? POINTER : super.getDataType();
+//	}
 	
 	@Override
 	public void setPrimitive()
