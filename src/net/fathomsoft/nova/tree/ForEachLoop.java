@@ -236,6 +236,8 @@ public class ForEachLoop extends Loop
 			return SyntaxMessage.queryError("Could not decode assignment portion of Iterator for foreach loop", this, require);
 		}
 		
+		assignment.setProperty("userMade", false);
+		
 		getScope().addChild(getScope().getNumDecodedChildren(), assignment);
 		
 		return true;
@@ -253,6 +255,9 @@ public class ForEachLoop extends Loop
 			return SyntaxMessage.queryError("Could not decode assignment portion of Iterator for foreach loop", this, require);
 		}
 		
+		assignment.getAssignedNode().declaration.setProperty("userMade", false);
+		assignment.setProperty("userMade", false);
+		
 		getParent().getAncestorWithScope().getScope().addChild(assignment);
 		
 		//getArgumentList().addChild(assignment);
@@ -266,6 +271,7 @@ public class ForEachLoop extends Loop
 	{
 		LocalDeclaration decl = getVariableDeclaration();
 		decl.setProperty("forLoopVariable", true);
+		decl.setProperty("userMade", false);
 		
 		getArgumentList().replace(decl, decl.generateUsableVariable(getArgumentList(), decl.getLocationIn()));
 		
