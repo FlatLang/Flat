@@ -453,6 +453,19 @@ public class ForEachLoop extends Loop
 		return null;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		builder.append("for (").append(getVariable().getName()).append(" in ").append(getIterator().generateNovaInput()).append(")");
+		
+		if (outputChildren)
+		{
+			getScope().generateNovaInput(builder, true);
+		}
+		
+		return builder;
+	}
+	
 	public String toString()
 	{
 		String s = "for (" + getVariable().getName() + " in " + getIterator().generateNovaInput() + ")";
