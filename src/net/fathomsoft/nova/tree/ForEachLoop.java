@@ -20,6 +20,8 @@ public class ForEachLoop extends Loop
 {
 	public static final String	IDENTIFIER = "for";
 	
+	public Value givenIteratorValue;
+	
 	/**
 	 * Instantiate a new ForLoop and initialize its default values.
 	 * 
@@ -290,9 +292,9 @@ public class ForEachLoop extends Loop
 			return null;
 		}
 		
-		Value value = SyntaxTree.decodeValue(this, arguments[1], newLoc, require);
+		givenIteratorValue = SyntaxTree.decodeValue(this, arguments[1], newLoc, require);
 		
-		if (value == null)
+		if (givenIteratorValue == null)
 		{
 			return null;
 		}
@@ -301,12 +303,12 @@ public class ForEachLoop extends Loop
 		{
 			return null;
 		}
-		if (value instanceof IntRange)
+		if (givenIteratorValue instanceof IntRange)
 		{
-			return value;
+			return givenIteratorValue;
 		}
 		
-		value = decodeValue(arguments[1], value, newLoc, require);
+		Value value = decodeValue(arguments[1], givenIteratorValue, newLoc, require);
 		
 		if (value != null)
 		{
@@ -436,6 +438,8 @@ public class ForEachLoop extends Loop
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.givenIteratorValue = givenIteratorValue;
+		
 		return node;
 	}
 	
@@ -456,7 +460,7 @@ public class ForEachLoop extends Loop
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
-		builder.append("for (").append(getVariable().getName()).append(" in ").append(getIterator().generateNovaInput()).append(")");
+		builder.append("for (").append(getVariable().getName()).append(" in ").append(givenIteratorValue.generateNovaInput()).append(")");
 		
 		if (outputChildren)
 		{
