@@ -2713,7 +2713,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		c.setName(name);
 		c.setTypeValue(name);
 		
+		String args = String.join(", ", Arrays.stream(types).map(x -> x.getNovaType(this)).collect(Collectors.toList()));
+		
 		c.setExtendedClass(ExtendedClass.decodeStatement(this, getName(), c.getLocationIn(), true));
+		c.getExtendedClass().decodeGenericTypeArguments(args);
 		
 		getFieldList().forEachChild(list -> {
 			list.forEachChild(node -> {
