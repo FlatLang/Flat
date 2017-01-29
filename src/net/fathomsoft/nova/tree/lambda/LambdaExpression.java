@@ -204,11 +204,14 @@ public class LambdaExpression extends Value
 						{
 							Node returned = method.getScope().getLastChild();
 							
-							Return r = new Return(method, returned.getLocationIn());
-							
-							r.getReturnValues().addChild(returned);
-							
-							method.getScope().addChild(r);
+							if (returned instanceof Return == false)
+							{
+								Return r = new Return(method, returned.getLocationIn());
+								
+								r.getReturnValues().addChild(returned);
+								
+								method.getScope().addChild(r);
+							}
 						}
 						
 						ClosureContextDeclaration c = new ClosureContextDeclaration(parent, location, method.context);
