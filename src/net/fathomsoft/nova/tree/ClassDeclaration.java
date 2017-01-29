@@ -2736,12 +2736,12 @@ public class ClassDeclaration extends InstanceDeclaration
 			});
 		});
 		
+		c.getHiddenMethodList().slaughterEveryLastVisibleChild();
+		c.getDestructorList().slaughterEveryLastVisibleChild();
+		
 		cloneMethods(types, getConstructorList(), c);
-		cloneMethods(types, getDestructorList(), c);
 		cloneMethods(types, getMethodList(), c);
 		cloneMethods(types, getPropertyMethodList(), c);
-		cloneMethods(types, getHiddenMethodList(), c);
-		cloneMethods(types, getVirtualMethodList(), c);
 		
 		c.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
 		c.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
