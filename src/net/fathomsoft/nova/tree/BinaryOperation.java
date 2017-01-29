@@ -313,6 +313,10 @@ public class BinaryOperation extends IValue
 				
 				if (operatorType == null || !operatorType.equals("Bool") || rightClass != null && !rightClass.isOfType(integerClass) && !rightClass.isOfType(integerClass))
 				{
+					if (lhn instanceof LocalDeclaration && rhn instanceof  LocalDeclaration)
+					{
+						throw new BinarySyntaxException("", false);
+					}
 					lhn.getReturnedNode().getTypeClass();
 					rhn.getReturnedNode().getTypeClass();
 					SyntaxMessage.error("Type '" + returnedLeft.getType() + "' and '" + returnedRight.getType() + "' are not compatible", this);
