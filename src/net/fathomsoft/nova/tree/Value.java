@@ -1411,7 +1411,7 @@ public abstract class Value extends Node implements AbstractValue
 			
 			setType(type);
 			
-			if (extractType)
+			if (extractType && value instanceof ClassDeclaration == false)
 			{
 				type = value.getNovaTypeValue(context).generateGenericType(context);
 				
