@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -2744,8 +2745,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		cloneMethods(types, getPropertyMethodList(), c);
 		
 		c.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
-		c.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
-		SyntaxTree.validateNodes(c, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+		
+		if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			c.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+		}
 		
 		c.setMethodReferences();
 		
