@@ -182,7 +182,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		{
 			if (genericOverload != null)
 			{
-				Scope temp = new Scope(this, Location.INVALID);
+				Scope temp = new Scope(genericOverload, Location.INVALID);
 				
 				genericOverload.getScope().cloneChildrenTo(temp);
 				
