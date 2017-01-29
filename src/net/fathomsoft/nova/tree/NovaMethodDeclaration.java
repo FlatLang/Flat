@@ -752,10 +752,15 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return clone;
 	}
 	
-	public NovaMethodDeclaration convertPrimitiveMethod(Value[] types)
+	public NovaMethodDeclaration convertPrimitiveMethod(Value[] types, ArrayList<Value[]> closureTypes)
 	{
 		NovaMethodDeclaration method = clone(getParent(), getLocationIn(), false, true);
+		method.setProperty("userMade", false);
+		method.overridenMethod = null;
+		method.overridingMethods = new ArrayList<>();
 
+		int closureIndex = 0;
+		
 		for (int i = 0; i < types.length; i++)
 		{
 			Parameter param = getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
@@ -764,15 +769,22 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				param.setType(types[i]);
 			}
-//			if (param instanceof ClosureDeclaration)
-//			{
+			if (param instanceof ClosureDeclaration)
+			{
+				ClosureDeclaration closure = (ClosureDeclaration)param;
+				
+				Value[] closureValues = closureTypes.get(closureIndex++);
+				
+				for (int n = 0; n < closureValues.length; n++)
+				{
+					closure.getParameterList().getParameter(n).setType(closureValues[n]);
+				}
+				
 //				getParentClass().replaceGenerics(types, (ClosureDeclaration)param, (ClosureDeclaration)types[i]);
-//			}
+			}
 
 			method.getParameterList().addChild(param);
 		}
-		
-//		NovaMethodDeclaration method = convertToClass(getParentClass(), types);
 		
 		primitiveOverloads.add(method);
 		method.genericOverload = this;
@@ -794,25 +806,62 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		NovaParameterList parameters = getParameterList();
 		
 		Value[] types = new Value[args.length];
-		boolean isPrimitive = false;
+		ArrayList<Value[]> closureTypes = new ArrayList<>();
 		
+		boolean isPrimitive = false;
 		for (int i = 0; i < args.length; i++)
 		{
-			if (args[i].getReturnedNode().isPrimitive() && parameters.getParameter(i).isGenericType())
+			Value arg = args[i].getReturnedNode();
+			Parameter param = parameters.getParameter(i);
+			
+			if (arg.isPrimitive() && param.isGenericType())
 			{
-				types[i] = args[i].getReturnedNode();
+				types[i] = arg;
 				
 				isPrimitive = true;
 			}
 			else
 			{
-				types[i] = parameters.getParameter(i);
+				types[i] = param;
+			}
+			
+			if (param instanceof ClosureDeclaration)
+			{
+				Variable varg = (Variable)arg;
+				ClosureDeclaration closure = (ClosureDeclaration)param;
+				
+				if (varg.declaration != null)
+				{
+					ParameterList aParams = ((CallableMethod)varg.declaration).getParameterList();
+					ParameterList<Value> cParams = closure.getParameterList();
+					
+					Value[] closureValues = new Value[Math.min(aParams.getNumParameters(), cParams.getNumParameters())];
+					
+					for (int n = 0; n < closureValues.length; n++)
+					{
+						Value aarg = aParams.getParameter(n);
+						Value aparam = cParams.getParameter(n);
+						
+						if (aarg.isPrimitive() && aparam.isGenericType())
+						{
+							closureValues[n] = aarg;
+							
+							isPrimitive = true;
+						}
+						else
+						{
+							closureValues[n] = aparam;
+						}
+					}
+					
+					closureTypes.add(closureValues);
+				}
 			}
 		}
 		
 		if (isPrimitive)
 		{
-			return convertPrimitiveMethod(types);
+			return convertPrimitiveMethod(types, closureTypes);
 		}
 		
 		return null;
@@ -1148,8 +1197,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					m.setType(this);
 					
 					getParentClass().replaceGenerics(m.getParentClass().primitiveOverloadTypes, this, m);
-					
-					int j = 5;
 				}
 			}
 		}
