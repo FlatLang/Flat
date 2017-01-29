@@ -737,10 +737,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				parent.addChild(clone);
 			}
-			else
-			{
-				parent.getMethods(new GenericCompatible[] { parent }, getName(), filter, clone.getParameterList().getTypes(), false);
-			}
 		}
 		else
 		{
