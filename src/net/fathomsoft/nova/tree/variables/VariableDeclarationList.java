@@ -91,12 +91,10 @@ public class VariableDeclarationList extends List
 	{
 		for (int i = 0; i < getNumChildren(); i++)
 		{
-			if (i > 0)
+			if (getChild(i).isUserMade())
 			{
-				builder.append(", ");
+				builder.append(getChild(i).generateNovaInput().toString().replaceAll("\n", " ")).append('\n');
 			}
-			
-			getChild(i).generateNovaInput(builder);
 		}
 		
 		return builder;
