@@ -763,6 +763,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (int i = 0; i < types.length; i++)
 		{
+			Parameter original = getParameter(i);
 			Parameter param = getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
 
 			if (param.getDataType() != types[i].getDataType())
