@@ -415,6 +415,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void addInterfaceVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context, boolean checkAncestors)
 	{
+		if (isPrimitiveOverload())
+		{
+			return;
+		}
+		
 		if (checkAncestors && getExtendedClassDeclaration() != null)
 		{
 			getExtendedClassDeclaration().addInterfaceVirtualMethods(methods, this);
@@ -445,6 +450,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void addExtensionVirtualMethods(ArrayList<NovaMethodDeclaration> methods, ClassDeclaration context, boolean checkAncestors)
 	{
+		if (isPrimitiveOverload())
+		{
+			return;
+		}
+		
 		if (checkAncestors && getExtendedClassDeclaration() != null)
 		{
 			getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
