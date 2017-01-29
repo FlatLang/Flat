@@ -684,6 +684,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		clone.setProperty("userMade", false);
 		clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
 		clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+		clone.setName("zca_" + clone.getName());
 		
 		if (getGenericTypeArgumentList().getNumVisibleChildren() > 0)
 		{
@@ -731,7 +732,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			filter.checkAncestor = false;
 			filter.defaultGeneric = true;
 			
-			MethodDeclaration[] found = parent.getMethods(new GenericCompatible[] { parent }, getName(), filter, clone.getParameterList().getTypes(), false);
+			MethodDeclaration[] found = parent.getMethods(new GenericCompatible[] { parent }, clone.getName(), filter, clone.getParameterList().getTypes(), false);
 			
 			if (found.length == 0)
 			{
