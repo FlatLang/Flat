@@ -3,7 +3,9 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -178,7 +180,55 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			moveShorthandActionToEnd();
+			if (genericOverload != null)
+			{
+				Scope temp = new Scope(this, Location.INVALID);
+				
+				genericOverload.getScope().cloneChildrenTo(temp);
+				
+				Node[] nodes = temp.getChildrenOfType(Closure.class);
+				
+				for (Node n : nodes)
+				{
+					Closure c = (Closure)n;
+					VariableDeclaration d = c.declaration;
+					
+					if (d instanceof LambdaMethodDeclaration)
+					{
+						LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)d;
+						
+						Literal replacement = new Literal(c.getParent(), Location.INVALID);
+						
+						String params = "";
+						
+						for (int i = 0; i < lambda.getParameterList().getNumParameters(); i++)
+						{
+							if (i > 0)
+							{
+								params += ", ";
+							}
+							
+							params += lambda.getParameterList().getParameter(i).getName();
+						}
+						
+						replacement.setValue("(" + params + ") => " + c.getDeclaration().getScope().generateNovaInput().toString());
+						
+						c.replaceWith(replacement);
+					}
+				}
+				
+				String code = temp.generateNovaInput().toString().trim();
+				
+				code = code.substring(1, code.length() - 1).trim();
+				
+				TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
+				
+				generator.traverseCode(this, 0, null, false);
+			}
+			else
+			{
+				moveShorthandActionToEnd();
+			}
 		}
 		
 		return result;
