@@ -1417,13 +1417,11 @@ public abstract class Value extends Node implements AbstractValue
 				
 				if (getGenericTypeArgumentList() != null)
 				{
+					getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
+					
 					if (type.length() > 0)
 					{
 						decodeGenericTypeArguments(type, new Bounds(0, type.length()), true);
-					}
-					else
-					{
-						getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
 					}
 				}
 			}
