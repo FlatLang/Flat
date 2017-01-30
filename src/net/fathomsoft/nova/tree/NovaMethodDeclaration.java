@@ -757,6 +757,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		method.setProperty("userMade", false);
 		method.overridenMethod = null;
 		method.overridingMethods = new ArrayList<>();
+		getGenericTypeArgumentList().cloneChildrenTo(method.getGenericTypeArgumentList());
+		getMethodGenericTypeParameterDeclaration().cloneChildrenTo(method.getMethodGenericTypeParameterDeclaration());
 		
 		Node addTo = getParent();
 		
