@@ -844,7 +844,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			Value arg = args[i].getReturnedNode();
 			Parameter param = parameters.getParameter(i);
 			
-			if (arg.isPrimitive() && param.isGenericType())
+			if (arg.isPrimitive() && !param.isPrimitive())
 			{
 				types[i] = arg;
 				
@@ -872,7 +872,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						Value aarg = aParams.getParameter(n);
 						Value aparam = cParams.getParameter(n);
 						
-						if (aarg.isPrimitive() && aparam.isGenericType())
+						if (aarg.isPrimitive() && !aparam.isPrimitive())
 						{
 							closureValues[n] = aarg;
 							
