@@ -10,7 +10,6 @@ import net.fathomsoft.nova.tree.annotations.PublicAnnotation;
 import net.fathomsoft.nova.tree.annotations.RequireGenericTypeAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
-import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -758,7 +757,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		method.setProperty("userMade", false);
 		method.overridenMethod = null;
 		method.overridingMethods = new ArrayList<>();
-
+		
+		Node addTo = getParent();
+		
 		int closureIndex = 0;
 		
 		for (int i = 0; i < types.length; i++)
@@ -779,6 +780,27 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				for (int n = 0; n < closureValues.length; n++)
 				{
 					closure.getParameterList().getParameter(n).setType(closureValues[n]);
+					
+					for (Variable v : original.references)
+					{
+						if (v instanceof MethodCall)
+						{
+							MethodCall c = (MethodCall)v;
+							
+							Value val = (Value)c.getArgumentList().getVisibleChild(n);
+							
+							if (val instanceof Variable)
+							{
+								VariableDeclaration decl = ((Variable)val).declaration;
+								
+								if (decl instanceof ReferenceParameter || decl instanceof InstanceDeclaration && decl.getParentClass() == getParentClass())
+								{
+									// TODO: Do I need to convert if not yet converted here??
+									addTo = call.getDeclaringClass();
+								}
+							}
+						}
+					}
 				}
 				
 //				getParentClass().replaceGenerics(types, (ClosureDeclaration)param, (ClosureDeclaration)types[i]);
@@ -790,7 +812,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		primitiveOverloads.add(method);
 		method.genericOverload = this;
 		
-		getParent().addChild(method);
+		addTo.addChild(method);
 		
 		return method;
 	}
