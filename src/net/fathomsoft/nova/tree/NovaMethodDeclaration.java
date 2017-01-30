@@ -799,6 +799,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 								{
 									// TODO: Do I need to convert if not yet converted here??
 									addTo = call.getDeclaringClass();
+									
+									Parameter ref = method.getParameterList().getReferenceParameter();
+									
+									ref.getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
+									ref.setType((ClassDeclaration)addTo);
 								}
 							}
 						}
