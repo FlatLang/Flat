@@ -880,13 +880,22 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						}
 						else
 						{
-							closureValues[n] = aparam;
-							
 							if (aarg.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
 							{
-								closureValues[n] = (Value)aparam.clone(aparam.getParent(), aparam.getLocationIn(), true, true);
+								closureValues[n] = (Value)aarg.clone(aarg.getParent(), aarg.getLocationIn(), true, true);
 								
-								isPrimitive |= getParentClass().replaceGenerics(ref.toValue().getGenericTypeArgumentList().getTypes(), aparam, closureValues[n]);
+								if (getParentClass().replaceGenerics(argTypes, aparam, closureValues[n]))
+								{
+									isPrimitive = true;
+								}
+								else
+								{
+									closureValues[n] = aparam;
+								}
+							}
+							else
+							{
+								closureValues[n] = aparam;
 							}
 						}
 					}
