@@ -828,12 +828,17 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			return existing;
 		}
 		
+		Accessible ref = call.getReferenceNode();
+		ClassDeclaration refType = ref.toValue().getTypeClass();
+		Value[] refTypes = refType != null ? refType.getClassGenericValues(getParentClass()) : null;
+		
 		NovaParameterList parameters = getParameterList();
 		
 		Value[] types = new Value[args.length];
 		ArrayList<Value[]> closureTypes = new ArrayList<>();
 		
 		boolean isPrimitive = false;
+		
 		for (int i = 0; i < args.length; i++)
 		{
 			Value arg = args[i].getReturnedNode();
@@ -876,6 +881,13 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						else
 						{
 							closureValues[n] = aparam;
+							
+							if (aarg.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+							{
+								closureValues[n] = (Value)aparam.clone(aparam.getParent(), aparam.getLocationIn(), true, true);
+								
+								isPrimitive |= getParentClass().replaceGenerics(ref.toValue().getGenericTypeArgumentList().getTypes(), aparam, closureValues[n]);
+							}
 						}
 					}
 					
