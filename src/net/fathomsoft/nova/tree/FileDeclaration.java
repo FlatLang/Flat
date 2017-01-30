@@ -723,7 +723,7 @@ public class FileDeclaration extends Node
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.file     = new File(file.getAbsolutePath());
-		node.closures = new ArrayList<ClosureDeclaration>();
+		node.closures = new ArrayList<>();
 		
 		for (ClosureDeclaration c : closures)
 		{
