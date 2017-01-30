@@ -777,6 +777,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				Parameter original = getParameter(i);
 				ClosureDeclaration closure = (ClosureDeclaration)param;
 				
+				closure.register();
+				
 				Value[] closureValues = closureTypes.get(closureIndex++);
 				
 				for (int n = 0; n < closureValues.length; n++)
