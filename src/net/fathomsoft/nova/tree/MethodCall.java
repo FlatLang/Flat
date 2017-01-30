@@ -95,7 +95,7 @@ public class MethodCall extends Variable
 	{
 		if (getParent() instanceof Instantiation)
 		{
-			return ((Instantiation)getParent()).getGenericTypeArgumentList();
+//			return ((Instantiation)getParent()).getGenericTypeArgumentList();
 		}
 		
 		return super.getGenericTypeArgumentList();
