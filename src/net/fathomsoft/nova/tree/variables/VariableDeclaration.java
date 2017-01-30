@@ -520,7 +520,11 @@ public class VariableDeclaration extends IIdentifier
 			
 			for (int i = args.getNumVisibleChildren(); i < decl.getNumParameters(); i++)
 			{
-				args.addChild(SyntaxUtils.getGenericTypeArgumentName(this, decl.getParameter(i).getDefaultType()));
+				String type = decl.getParameter(i).getDefaultType();
+				
+				args.addChild(SyntaxUtils.getGenericTypeArgumentName(this, type));
+				
+				getFileDeclaration().addImport(decl.getFileDeclaration().getImport(type, false).getClassLocation());
 			}
 		}
 	}
