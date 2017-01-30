@@ -178,7 +178,10 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 
 			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
 			
-			return call.getReferenceNode().toValue().getTypeClass();
+			if (!call.isDecoding())
+			{
+				return call.getReferenceNode().toValue().getTypeClass();
+			}
 		}
 		
 		return getParentClass();
