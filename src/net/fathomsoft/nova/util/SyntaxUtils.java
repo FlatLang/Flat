@@ -2632,7 +2632,7 @@ public class SyntaxUtils
 				
 				if (arg != null)
 				{
-					Value value = arg.cloneTo(new IValue(arg.getParent(), arg.getLocationIn()), false, true);
+					Value value = arg.cloneTo(new GenericTypeArgument(arg.getParent(), arg.getLocationIn()), false, true);
 					value.setArrayDimensions(required.getArrayDimensions());
 					
 					if (!isTypeCompatible(context, value, given, false))
@@ -2641,6 +2641,7 @@ public class SyntaxUtils
 						{
 							required.getGenericTypeParameter();
 							param.getCorrespondingArgument(context);
+							value.getTypeClass();
 							isTypeCompatible(context, value, given, false);
 							param.getCorrespondingArgument(context);
 						}
