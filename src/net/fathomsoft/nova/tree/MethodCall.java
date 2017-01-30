@@ -1166,7 +1166,7 @@ public class MethodCall extends Variable
 			return false;
 		}
 		
-//		checkPrimitiveMethodConversion(methodDeclaration);
+		checkPrimitiveMethodConversion(methodDeclaration);
 		
 		return true;
 	}
