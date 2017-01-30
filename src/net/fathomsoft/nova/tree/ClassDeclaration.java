@@ -2363,19 +2363,26 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean doesExtendClass(ClassDeclaration clazz)
 	{
+		return getExtendedClass(clazz) != null;
+	}
+	
+	public ExtendedClass getExtendedClass(ClassDeclaration clazz)
+	{
+		ClassDeclaration prev = this;
 		ClassDeclaration extension = getExtendedClassDeclaration();
 		
 		while (extension != null)
 		{
 			if (extension == clazz)
 			{
-				return true;
+				return prev.getExtendedClass();
 			}
 			
+			prev = extension;
 			extension = extension.getExtendedClassDeclaration();
 		}
 		
-		return false;
+		return null;
 	}
 	
 	public GenericTypeParameter getGenericTypeParameter(String parameterName, GenericCompatible value)
