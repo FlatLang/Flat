@@ -840,11 +840,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		Accessible ref = call.getReferenceNode();
 		Value[] argTypes = ref.toValue().getGenericTypeArgumentList() != null ? ref.toValue().getGenericTypeArgumentList().getTypes() : null;
 		
-		if ((argTypes == null || argTypes.length == 0) && ref instanceof MethodCall)
-		{
-			argTypes = ((MethodCall)ref).getMethodGenericTypeArgumentList().getTypes();
-		}
-		
 		NovaParameterList parameters = getParameterList();
 		
 		Value[] types = new Value[args.length];
