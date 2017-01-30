@@ -1329,37 +1329,47 @@ public class MethodCall extends Variable
 			GenericTypeParameterList params = decl.getMethodGenericTypeParameterDeclaration();
 			GenericTypeArgumentList args = getMethodGenericTypeArgumentList();
 			
-			for (int i = args.getNumVisibleChildren(); i < params.getNumVisibleChildren(); i++)
+			if (parent instanceof Instantiation)
 			{
-				GenericTypeArgument arg = new GenericTypeArgument(args, getLocationIn().asNew());
-				
-				GenericTypeParameter param = params.getParameter(i);
-				
-				Value common = null;
-				
-				for (int n = 0; n < decl.getParameterList().getNumParameters(); n++)
-				{
-					Parameter p = decl.getParameterList().getParameter(n);
-					
-					if (p instanceof ClosureDeclaration)
-					{
-						Value v = (Value)getArgumentList().getVisibleChild(n);
-						
-						common = common == null ? v : SyntaxUtils.getTypeInCommon(common, v);
-					}
-				}
-				
-				if (common == null)
-				{
-					arg.setTypeValue(params.getVisibleChild(i).getNovaType(this));
-				}
-				else
-				{
-					arg.setType(common);
-				}
-				
-				args.addChild(arg, args);
+				params = decl.getGenericTypeParameterDeclaration();
 			}
+			
+			addCommonDefaultGenericParameters(decl, params, args);
+		}
+	}
+	
+	private void addCommonDefaultGenericParameters(NovaMethodDeclaration decl, GenericTypeParameterList params, GenericTypeArgumentList args)
+	{
+		for (int i = args.getNumVisibleChildren(); i < params.getNumVisibleChildren(); i++)
+		{
+			GenericTypeArgument arg = new GenericTypeArgument(args, getLocationIn().asNew());
+			
+			GenericTypeParameter param = params.getParameter(i);
+			
+			Value common = null;
+			
+			for (int n = 0; n < decl.getParameterList().getNumParameters(); n++)
+			{
+				Parameter p = decl.getParameterList().getParameter(n);
+				
+				if (p instanceof ClosureDeclaration)
+				{
+					Value v = (Value)getArgumentList().getVisibleChild(n);
+					
+					common = common == null ? v : SyntaxUtils.getTypeInCommon(common, v);
+				}
+			}
+			
+			if (common == null)
+			{
+				arg.setTypeValue(param.getNovaType(this));
+			}
+			else
+			{
+				arg.setType(common);
+			}
+			
+			args.addChild(arg, args);
 		}
 	}
 	
