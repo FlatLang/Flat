@@ -2604,15 +2604,18 @@ public class ClassDeclaration extends InstanceDeclaration
 		boolean changed = false;
 		
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
+		GenericTypeParameter valParam = value.getGenericTypeParameter();
 		
-		if (genParam != null)
+		if (genParam != null && genParam != valParam)
 		{
 			if (genParam.getParentClass() == this)
 			{
-				value.setType(types[genParam.getIndex()]);
+				Value type = types[genParam.getIndex()];
+				
+				value.setType(type);
 				value.setArrayDimensions(original.getArrayDimensions());
 				
-				changed |= true;
+				changed = true;
 			}
 		}
 		else
