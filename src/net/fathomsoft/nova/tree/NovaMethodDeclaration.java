@@ -852,7 +852,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			Value arg = args[i].getReturnedNode();
 			Parameter param = parameters.getParameter(i);
 			
-			if (arg.isPrimitive() && !param.isPrimitive())
+			if (arg instanceof DefaultArgument == false && arg.isPrimitive() && !param.isPrimitive())
 			{
 				types[i] = arg;
 				
