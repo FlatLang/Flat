@@ -99,6 +99,23 @@ public class ElseStatement extends ControlStatement
 		return null;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append(IDENTIFIER).append(' ');
+		
+		if (getDecodedParent() != this)
+		{
+			getDecodedParent().generateNovaInput(builder, outputChildren);
+		}
+		else if (outputChildren)
+		{
+			getScope().generateNovaInput(builder, true);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
