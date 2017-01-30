@@ -551,6 +551,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.initializationValue = initializationValue;
+		node.accessorValue = accessorValue;
+		node.twoWayBinding = twoWayBinding;
 		
 		return node;
 	}
