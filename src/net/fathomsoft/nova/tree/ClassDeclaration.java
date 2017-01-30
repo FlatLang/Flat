@@ -2534,6 +2534,21 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
+	public Value[] getClassGenericValues(ClassDeclaration required)
+	{
+		if (this == required)
+		{
+			return getGenericTypeArgumentList().getTypes();
+		}
+		
+		if (doesExtendClass(required))
+		{
+			return getExtendedClass(required).getGenericTypeArgumentList().getTypes();
+		}
+		
+		return null;
+	}
+	
 	public Value[] getConvertedTypes(Value[] args)
 	{
 		GenericTypeParameterList params = getGenericTypeParameterDeclaration();
