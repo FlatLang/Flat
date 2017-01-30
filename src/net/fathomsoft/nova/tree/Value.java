@@ -733,6 +733,33 @@ public abstract class Value extends Node implements AbstractValue
 			}
 			if (id.isAccessed())
 			{
+				if (this instanceof MethodCall == false)
+				{
+					Value ref = id.getReferenceNode().toValue();
+					
+					if (ref instanceof Variable)
+					{
+						Variable var = (Variable)ref;
+						
+						if (var.declaration instanceof LocalDeclaration)
+						{
+							LocalDeclaration decl = (LocalDeclaration)var.declaration;
+							
+							if (decl.implicitType != null)
+							{
+								Value ret = decl.implicitType.getReturnedNode();
+								
+								if (ret instanceof Variable)
+								{
+									var = (Variable)ret;
+									
+									return var.declaration.getFileDeclaration();
+								}
+							}
+						}
+					}
+				}
+				
 				if (isGenericType())
 				{
 					id = id.getRootAccessNode();
@@ -748,6 +775,7 @@ public abstract class Value extends Node implements AbstractValue
 				{
 					return ((MethodCall)this).getDeclaration().getFileDeclaration();
 				}
+				
 				//Nova.debuggingBreakpoint(id instanceof Variable && ((Variable)id).getName().equals("hypotheses"));
 				ClassDeclaration type = ((Accessible)this).getDeclaringClass();
 				
