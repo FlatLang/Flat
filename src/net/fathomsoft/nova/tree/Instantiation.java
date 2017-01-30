@@ -273,6 +273,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 				}
 			}
 			
+//			methodCall.declaration.getGenericTypeArgumentList().cloneChildrenTo(getGenericTypeArgumentList());
+			
 			child = methodCall;
 		}
 		else if (SyntaxUtils.isArrayInitialization(instantiation))
