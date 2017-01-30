@@ -2744,8 +2744,18 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		String args = String.join(", ", Arrays.stream(types).map(x -> x.getNovaType(this)).collect(Collectors.toList()));
 		
-		c.setExtendedClass(ExtendedClass.decodeStatement(this, getName(), c.getLocationIn(), true));
-		c.getExtendedClass().decodeGenericTypeArguments(args);
+		if (this instanceof Trait)
+		{
+			TraitImplementation i = TraitImplementation.decodeStatement(this, getName(), c.getLocationIn(), true);
+			i.decodeGenericTypeArguments(args);
+			
+			c.getInterfacesImplementationList().addChild(i);
+		}
+		else
+		{
+			c.setExtendedClass(ExtendedClass.decodeStatement(this, getName(), c.getLocationIn(), true));
+			c.getExtendedClass().decodeGenericTypeArguments(args);
+		}
 		
 		getFieldList().forEachChild(list -> {
 			list.forEachChild(node -> {
