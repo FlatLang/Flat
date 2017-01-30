@@ -2612,10 +2612,13 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				Value type = types[genParam.getIndex()];
 				
-				value.setType(type);
-				value.setArrayDimensions(original.getArrayDimensions());
-				
-				changed = true;
+				if (type.isPrimitive())
+				{
+					value.setType(type);
+					value.setArrayDimensions(original.getArrayDimensions());
+					
+					changed = true;
+				}
 			}
 		}
 		else
