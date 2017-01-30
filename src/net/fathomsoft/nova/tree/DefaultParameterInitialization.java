@@ -23,6 +23,12 @@ public class DefaultParameterInitialization extends Node
         this.parameter = parameter;
     }
     
+    @Override
+    public boolean isUserMade()
+    {
+        return false;
+    }
+    
     /**
      * @see net.fathomsoft.nova.tree.Node#validate(int)
      */
