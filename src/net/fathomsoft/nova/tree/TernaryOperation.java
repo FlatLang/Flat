@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -24,6 +25,9 @@ public class TernaryOperation extends IValue implements Accessible
 	public TernaryOperation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
+		addChild(implementation, this);
 	}
 	
 	@Override
@@ -32,25 +36,31 @@ public class TernaryOperation extends IValue implements Accessible
 		return super.getNumDecodedChildren() + 3;
 	}
 	
-	public Value getCondition()
+	@Override
+	public int getNumDefaultChildren()
 	{
-		return (Value)getChild(super.getNumDefaultChildren() + 0);
+		return super.getNumDefaultChildren() + 1;
 	}
 	
-	public Value getTrueValue()
+	public Value getCondition()
 	{
 		return (Value)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
-	public Value getFalseValue()
+	public Value getTrueValue()
 	{
 		return (Value)getChild(super.getNumDefaultChildren() + 2);
+	}
+	
+	public Value getFalseValue()
+	{
+		return (Value)getChild(super.getNumDefaultChildren() + 3);
 	}
 
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		return getFalseValue().getGenericTypeArgumentList();
+		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0);
 	}
 	
 	@Override
