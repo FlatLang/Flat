@@ -211,6 +211,7 @@ public class ForLoop extends Loop
 		getArgumentList().addChild(initialization);
 		
 		initialization.getAssignedNode().getDeclaration().setProperty("forLoopVariable", true);
+		initialization.getAssignedNode().getDeclaration().setProperty("userMade", false);
 		
 		return true;
 	}
