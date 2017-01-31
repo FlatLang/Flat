@@ -733,7 +733,7 @@ public abstract class Value extends Node implements AbstractValue
 			}
 			if (id.isAccessed())
 			{
-				if (this instanceof MethodCall == false)
+				if (isGenericType())
 				{
 					Value ref = id.getReferenceNode().toValue();
 					
@@ -758,10 +758,7 @@ public abstract class Value extends Node implements AbstractValue
 							}
 						}
 					}
-				}
-				
-				if (isGenericType())
-				{
+					
 					id = id.getRootAccessNode();
 					
 					Value reference = (Value)id.getReferenceNode();
