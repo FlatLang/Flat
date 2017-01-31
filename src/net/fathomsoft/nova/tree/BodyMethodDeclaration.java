@@ -217,6 +217,18 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 					}
 				}
 				
+				ClassDeclaration pc = getParentClass();
+				
+				nodes = temp.getChildrenOfType(Value.class);
+				
+				for (Node n : nodes)
+				{
+					if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
+					{
+						genericOverload.getParentClass().replaceGenerics(pc.primitiveOverloadTypes, (Value)n);
+					}
+				}
+				
 				String code = temp.generateNovaInput().toString().trim();
 				
 				code = code.substring(1, code.length() - 1).trim();
