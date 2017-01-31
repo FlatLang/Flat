@@ -705,6 +705,16 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		getMethodGenericTypeParameterDeclaration().cloneChildrenTo(clone.getMethodGenericTypeParameterDeclaration());
 //		clone.setName("zca_" + clone.getName());
 		
+		RequireGenericTypeAnnotation require = (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+		
+		if (require != null)
+		{
+			if (!SyntaxUtils.areTypesCompatible(new GenericCompatible[] { this }, require.getGenericTypeParameterDeclaration().getTypes(), types))
+			{
+				return null;
+			}
+		}
+		
 		if (getGenericTypeArgumentList().getNumVisibleChildren() > 0)
 		{
 			clone.getGenericTypeArgumentList().replaceWith(getGenericTypeArgumentList().clone(clone.getGenericTypeArgumentList(), getLocationIn(), true, true));
