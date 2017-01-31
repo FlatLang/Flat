@@ -743,27 +743,22 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			clone.setType(parent);
 		}
 		
-		if (changed)
-		{
-			SearchFilter filter = new SearchFilter();
-			filter.requireExactMatch = true;
-			filter.checkInterfaces = false;
-			filter.checkAncestor = false;
-			filter.defaultGeneric = true;
-			
-			MethodDeclaration[] found = parent.getMethods(new GenericCompatible[] { parent }, clone.getName(), filter, clone.getParameterList().getTypes(), false);
-			
-			if (found.length == 0)
-			{
-				parent.addChild(clone);
-			}
-		}
-		else
+		SearchFilter filter = new SearchFilter();
+		filter.requireExactMatch = true;
+		filter.checkInterfaces = false;
+		filter.checkAncestor = false;
+		filter.defaultGeneric = true;
+		
+		MethodDeclaration[] found = parent.getMethods(new GenericCompatible[] { parent }, clone.getName(), filter, clone.getParameterList().getTypes(), false);
+		
+		if (found.length == 0)
 		{
 			parent.addChild(clone);
+			
+			return clone;
 		}
 		
-		return clone;
+		return null;
 	}
 	
 	public NovaMethodDeclaration convertPrimitiveMethod(MethodCall call, Value[] types, ArrayList<Value[]> closureTypes)
