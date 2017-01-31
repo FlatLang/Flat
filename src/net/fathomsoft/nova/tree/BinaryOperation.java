@@ -162,6 +162,10 @@ public class BinaryOperation extends IValue
 		{
 			return false;
 		}
+		if (!SyntaxUtils.strictStripGenerics(statement).equals(statement))
+		{
+			return false;
+		}
 		
 		Bounds operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
 		if (operatorLoc.getStart() == 0) operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, operatorLoc.getEnd() + 1);
