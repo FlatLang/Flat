@@ -1,9 +1,7 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.TypeList;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration.DeclarationData;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -215,6 +213,21 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 		}
 		
 		return builder;
+	}
+	
+	public Value[] getTypes()
+	{
+		Value[] types = new Value[getNumVisibleChildren()];
+		
+		for (int i = 0; i < types.length; i++)
+		{
+			IValue value = new IValue(this, getLocationIn());
+			value.setType(getVisibleChild(i).getDefaultType());
+			
+			types[i] = value;
+		}
+		
+		return types;
 	}
 	
 	/**
