@@ -2716,11 +2716,26 @@ public class SyntaxUtils
 		{
 			return true;
 		}
-		else if (given.getTypeClass() != null && given.getTypeClass().isOfType(required.getTypeClass()))
+		
+		ClassDeclaration givenType = given.getTypeClass();
+		ClassDeclaration requiredType = required.getTypeClass();
+		
+		if (givenType != null && requiredType != null)
 		{
-			return true;
+			if (givenType.isOfType(requiredType))
+			{
+				return true;
+			}
+			else if (givenType.isPrimitiveOverload() && requiredType.isPrimitiveOverload())
+			{
+				if (givenType.genericOverload.isOfType(requiredType.genericOverload))
+				{
+					return true;
+				}
+			}
 		}
-		else if (arePrimitiveTypesCompatible(required.getTypeClassName(), given.getTypeClassName()))
+		
+		if (arePrimitiveTypesCompatible(required.getTypeClassName(), given.getTypeClassName()))
 		{
 			return true;
 		}

@@ -804,7 +804,16 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean isOfType(ClassDeclaration node)
 	{
-		return getDistanceFrom(node) >= 0;
+		if (getDistanceFrom(node) >= 0)
+		{
+			return true;
+		}
+		else if (isPrimitiveOverload() && node != null && node.isPrimitiveOverload())
+		{
+			return genericOverload.isOfType(node.genericOverload);
+		}
+		
+		return false;
 	}
 	
 	public boolean doesOverrideMethod(NovaMethodDeclaration method)
