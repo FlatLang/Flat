@@ -2365,6 +2365,55 @@ public class SyntaxUtils
 		return type;
 	}
 	
+	public static String strictStripGenerics(String type)
+	{
+		if (type != null)
+		{
+			int start = type.indexOf('<');
+			
+			if (start > 0)
+			{
+				int end = start + 1;
+				int stack = 0;
+				
+				while (end < type.length())
+				{
+					char c = type.charAt(end);
+					
+					if (StringUtils.isSymbol(c))
+					{
+						if (c == '<')
+						{
+							stack++;
+						}
+						else if (c == '>')
+						{
+							if (stack == 0)
+							{
+								break;
+							}
+							
+							stack--;
+						}
+						else
+						{
+							break;
+						}
+					}
+					
+					end++;
+				}
+				
+				if (end < type.length() && type.charAt(end) == '>')
+				{
+					return strictStripGenerics(type.substring(0, start) + type.substring(end + 1));
+				}
+			}
+		}
+		
+		return type;
+	}
+	
 	public static class Pair<A, B>
 	{
 		public A a;
