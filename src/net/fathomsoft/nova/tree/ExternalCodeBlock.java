@@ -187,6 +187,19 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 		return result;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append("external ").append(target);
+		
+		if (outputChildren)
+		{
+			builder.append(" {\n").append(joinContents((x, e) -> "#{" + (e ? "" : "\n") + x.generateNovaInput() + (e ? "" : "\n") + "}")).append("\n}");
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
