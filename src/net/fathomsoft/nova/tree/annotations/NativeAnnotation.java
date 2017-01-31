@@ -34,7 +34,7 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		return builder.append("[Native]");
+		return builder.append("native");
 	}
 	
 	@Override
