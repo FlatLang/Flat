@@ -332,11 +332,11 @@ public class Closure extends Variable
 			return true;
 		}
 
-		MethodDeclaration declaration = getMethodDeclaration(getMethodCall(), declarations[0].getName(), declaringClass);
+		MethodDeclaration declaration = getMethodDeclaration(call, declarations[0].getName(), declaringClass);
 
 		if (declaration == null)
 		{
-			getMethodDeclaration(getMethodCall(), declarations[0].getName(), declaringClass);
+			getMethodDeclaration(call, declarations[0].getName(), declaringClass);
 			SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
 			
 			return false;
