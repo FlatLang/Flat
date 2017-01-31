@@ -217,6 +217,12 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.ending = ending;
+		node.bounds = bounds;
+		node.expressions = expressions;
+		node.target = target;
+		node.uniqueID = uniqueID;
+		
 		return node;
 	}
 	
