@@ -300,6 +300,20 @@ public class Literal extends IValue implements Accessible
 						return SyntaxTree.decodeValue(parent, expression, location, require);
 					}
 				}
+				else if (n.isNullLiteral())
+				{
+					if (parent.getParentMethod() != null && parent.getParentMethod().isPrimitiveOverload())
+					{
+						Return parentReturn = (Return)parent.getAncestorOfType(Return.class, true);
+						
+						if (parentReturn != null && parent.getAncestorOfType(MethodCallArgumentList.class, true) == null)
+						{
+							Value def = generateDefaultValue(parent, location, parent.getParentMethod());
+							
+							return def;
+						}
+					}
+				}
 			}
 			
 			return n;
