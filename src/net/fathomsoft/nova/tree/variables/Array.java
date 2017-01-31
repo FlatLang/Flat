@@ -191,13 +191,13 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			n.setName(idValue);
 			n.setType(idValue);
 			
-			if (n.isGenericType())
-			{
-				String type = n.getGenericReturnType();
-				
-				n.setName(type);
-				n.setType(type);
-			}
+//			if (n.isGenericType())
+//			{
+//				String type = n.getGenericReturnType();
+//				
+//				n.setName(type);
+//				n.setType(type);
+//			}
 			
 			if (n.decodeDimensions(statement, index, newLoc, require))
 			{
