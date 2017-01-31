@@ -149,6 +149,19 @@ public class WhileLoop extends Loop
 		return null;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		builder.append(IDENTIFIER).append(" (").append(getCondition().generateNovaInput()).append(") ");
+		
+		if (outputChildren)
+		{
+			getScope().generateNovaInput(builder);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
