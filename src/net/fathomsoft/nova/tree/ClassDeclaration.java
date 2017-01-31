@@ -3671,6 +3671,18 @@ public class ClassDeclaration extends InstanceDeclaration
 				SyntaxMessage.error("Cannot extend trait '" + extended.getType() + "'", this);
 			}
 			
+			GenericTypeArgumentList existing = extended.getGenericTypeArgumentList();
+			GenericTypeParameterList required = extended.getTypeClass().getGenericTypeParameterDeclaration();
+			
+			for (int i = existing.getNumVisibleChildren(); i < required.getNumParameters(); i++)
+			{
+				GenericTypeArgument arg = new GenericTypeArgument(existing, Location.INVALID);
+				
+				arg.setType(required.getParameter(i).getDefaultType());
+					
+				existing.addChild(arg);
+			}
+			
 			// TODO: Add extension reference here
 		}
 	}
