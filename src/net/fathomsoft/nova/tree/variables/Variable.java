@@ -28,6 +28,8 @@ public class Variable extends Identifier
 {
 	public VariableDeclaration	declaration;
 	
+	public GenericTypeArgumentList genericTypeArgumentList;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -132,6 +134,11 @@ public class Variable extends Identifier
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
+		if (genericTypeArgumentList != null)
+		{
+			return genericTypeArgumentList;
+		}
+		
 		return getDeclaration() != null ? getDeclaration().getGenericTypeArgumentList() : null;
 	}
 	
