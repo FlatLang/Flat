@@ -141,6 +141,14 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		return builder;
 	}
 	
+	@Override
+	public void setTypeValue(String type)
+	{
+		setName(type);
+		
+		super.setTypeValue(type);
+	}
+	
 	/**
 	 * Decode the given statement into an Array instance. If the
 	 * given statement cannot be decoded into an Array, then null is
