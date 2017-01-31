@@ -701,6 +701,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		clone.setProperty("userMade", false);
 		clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
 		clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+		getGenericTypeArgumentList().cloneChildrenTo(clone.getGenericTypeArgumentList());
+		getMethodGenericTypeParameterDeclaration().cloneChildrenTo(clone.getMethodGenericTypeParameterDeclaration());
 //		clone.setName("zca_" + clone.getName());
 		
 		if (getGenericTypeArgumentList().getNumVisibleChildren() > 0)
