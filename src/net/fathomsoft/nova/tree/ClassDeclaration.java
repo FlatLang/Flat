@@ -2599,14 +2599,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
+	public boolean replaceGenerics(final Value[] types, Value value)
+	{
+		return replaceGenerics(types, value, value, true);
+	}
+	
 	public boolean replaceGenerics(final Value[] types, Value original, Value value)
+	{
+		return replaceGenerics(types, original, value, false);
+	}
+	
+	public boolean replaceGenerics(final Value[] types, Value original, Value value, boolean allowSame)
 	{
 		boolean changed = false;
 		
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
 		GenericTypeParameter valParam = value.getGenericTypeParameter();
 		
-		if (genParam != null && genParam != valParam)
+		if (genParam != null && (allowSame || genParam != valParam))
 		{
 			if (!genParam.isMethodGenericParameter() && genParam.getParentClass() == this)
 			{
