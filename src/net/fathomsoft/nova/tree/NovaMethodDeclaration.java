@@ -678,6 +678,19 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
+	public NovaMethodDeclaration checkConvertToClass(ClassDeclaration type)
+	{
+		if (getParentClass() != type)
+		{
+			if (getExistingConvertedPrimitiveMethod(type.primitiveOverloadTypes) == null)
+			{
+				return convertToClass(type, type.primitiveOverloadTypes);
+			}
+		}
+		
+		return null;
+	}
+	
 	public NovaMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types)
 	{
 		ClassDeclaration referenceClass = getParentClass();
