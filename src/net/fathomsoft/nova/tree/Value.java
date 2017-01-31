@@ -1537,6 +1537,8 @@ public abstract class Value extends Node implements AbstractValue
 			node.setDataType(getDataType(false));
 		}
 		
+		node.arrayAccess = arrayAccess;
+		
 		return node;
 	}
 	

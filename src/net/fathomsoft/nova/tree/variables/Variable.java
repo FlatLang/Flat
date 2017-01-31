@@ -826,6 +826,7 @@ public class Variable extends Identifier
 	public Variable cloneTo(Variable node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		node.declaration = declaration;
+		node.arrayAccess = arrayAccess;
 		
 		//super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
