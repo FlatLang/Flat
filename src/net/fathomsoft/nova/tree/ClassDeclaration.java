@@ -2638,7 +2638,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
 			{
-				changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i));
+				changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
 			}
 			
 			if (changed)
@@ -2656,7 +2656,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (value instanceof ClosureDeclaration)
 		{
-			changed |= replaceGenerics(types, (ClosureDeclaration)original, (ClosureDeclaration)value);
+			changed |= replaceGenerics(types, (ClosureDeclaration)original, (ClosureDeclaration)value, allowSame);
 		}
 		
 		return changed;
@@ -2675,7 +2675,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (int n = 0; n < originalClosureParams.getNumParameters(); n++)
 		{
-			changed |= replaceGenerics(types, originalClosureParams.getParameter(n), closureParams.getParameter(n));
+			changed |= replaceGenerics(types, originalClosureParams.getParameter(n), closureParams.getParameter(n), allowSame);
 		}
 		
 		return changed;
