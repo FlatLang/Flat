@@ -1307,7 +1307,15 @@ public class MethodCall extends Variable
 	{
 		builder.append(getName());
 		
-		if (declaration instanceof AccessorMethod == false)
+		if (declaration instanceof AccessorMethod)
+		{
+			
+		}
+		else if (declaration instanceof MutatorMethod)
+		{
+			builder.append(" = ").append(getArgumentList().generateNovaInput());
+		}
+		else
 		{
 			builder.append('(').append(getArgumentList().generateNovaInput()).append(')');
 		}
