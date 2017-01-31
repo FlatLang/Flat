@@ -330,6 +330,19 @@ public class ForLoop extends Loop
 		return result;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		builder.append("for (var ").append(getLoopInitialization().generateNovaInput()).append("; ").append(getCondition().generateNovaInput()).append("; ").append(getLoopUpdate().generateNovaInput()).append(")");
+		
+		if (outputChildren)
+		{
+			getScope().generateNovaInput(builder);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
