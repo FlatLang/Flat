@@ -128,6 +128,20 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		return getIdentifier().getType();
 	}
 	
+	@Override
+	public void setTypeValue(String type)
+	{
+		if (getIdentifier() != null)
+		{
+			getIdentifier().setType(type);
+			getIdentifier().setName(type);
+		}
+		
+		setName(type);
+		
+		super.setTypeValue(type);
+	}
+	
 	/**
 	 * Decode the given statement into an Instantiation instance, if
 	 * possible. If it is not possible, this method returns null.<br>
