@@ -6,6 +6,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -115,6 +116,10 @@ public class LambdaExpression extends Value
 				
 				if (closure != null || (context = findContext(parent)) != null && (closure = findDeclaration(context, variables)) != null)
 				{
+					Accessible refNode = context != null ? ((Accessible)context).getReferenceNode() : null;
+					ClassDeclaration refClass = refNode != null ? refNode.toValue().getTypeClass() : null;
+					final FileDeclaration refFile = refClass != null ? refClass.getFileDeclaration() : null;
+					
 					final ClosureDeclaration finalClosure = closure;
 					final Value finalContext = context;
 					final String[] finalVars = variables;
@@ -142,6 +147,16 @@ public class LambdaExpression extends Value
 						}
 						
 						builder.append(builder.length() > 0 ? ", " : "").append(type).append(" ").append(name);
+						
+						if (refFile != null)
+						{
+							Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
+							
+							if (imp != null)
+							{
+								parent.getFileDeclaration().addImport(imp.getClassLocation());
+							}
+						}
 					});
 					
 					String parameters = builder.toString();
