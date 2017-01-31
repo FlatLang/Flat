@@ -49,6 +49,11 @@ public class GenericTypeParameter extends IValue
 		this.defaultType = type;
 	}
 	
+	public boolean isMethodGenericParameter()
+	{
+		return getParentMethod() != null;
+	}
+	
 	public GenericTypeParameterList getGenericDeclaration()
 	{
 		return (GenericTypeParameterList)getParent();
