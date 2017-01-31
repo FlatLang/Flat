@@ -2664,6 +2664,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean replaceGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value)
 	{
+		return replaceGenerics(types, original, value, false);
+	}
+	
+	public boolean replaceGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
+	{
 		ClosureDeclaration closure = value;
 		
 		closure.register();
