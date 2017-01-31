@@ -470,7 +470,7 @@ public class ForEachLoop extends Loop
 		
 		if (outputChildren)
 		{
-			getScope().generateNovaInput(builder, true);
+			getScope().generateNovaInput(builder);
 		}
 		
 		return builder;
