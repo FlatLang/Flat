@@ -2608,7 +2608,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (genParam != null && genParam != valParam)
 		{
-			if (genParam.getParentClass() == this)
+			if (!genParam.isMethodGenericParameter() && genParam.getParentClass() == this)
 			{
 				Value type = types[genParam.getIndex()];
 				
