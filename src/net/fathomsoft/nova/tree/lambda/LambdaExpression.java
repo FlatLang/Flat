@@ -292,6 +292,8 @@ public class LambdaExpression extends Value
 			return null;
 		}
 		
+		ClassDeclaration type = call.getReferenceNode().toValue().getTypeClass();
+		
 		ArrayList<MethodDeclaration> temp = new ArrayList<>();
 		
 		for (ClassDeclaration c : classes)
@@ -300,6 +302,16 @@ public class LambdaExpression extends Value
 			
 			for (MethodDeclaration m : methods)
 			{
+				if (type.isPrimitiveOverload() && m instanceof NovaMethodDeclaration)
+				{
+					NovaMethodDeclaration converted = ((NovaMethodDeclaration)m).checkConvertToClass(type);
+					
+					if (converted != null)
+					{
+						m = converted;
+					}
+				}
+				
 				temp.add(m);
 			}
 		}
