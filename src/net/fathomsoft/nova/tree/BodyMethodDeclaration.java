@@ -199,6 +199,11 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		return genericOverload;
 	}
 	
+	public boolean doesConvertToPrimitive()
+	{
+		return genericOverload != null;
+	}
+	
 	public void convertFunctionContents()
 	{
 		NovaMethodDeclaration overload = getConversionTarget();
