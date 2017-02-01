@@ -728,6 +728,21 @@ public interface Accessible
 		return (Node)this;
 	}
 	
+	public default StringBuilder generateAccessedNode(StringBuilder builder, boolean safeNavigation)
+	{
+		if (doesAccess())
+		{
+			if (safeNavigation)
+			{
+				builder.append('?');
+			}
+			
+			builder.append('.').append(getAccessedNode().generateNovaInput());
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * Get the furthest node that is accessing the specified identifier.<br>
 	 * <br>
