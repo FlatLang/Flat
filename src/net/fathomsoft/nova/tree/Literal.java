@@ -312,6 +312,18 @@ public class Literal extends IValue implements Accessible
 							
 							return def;
 						}
+						
+						Node base = parent.getBaseNode();
+						
+						if (base instanceof Assignment)
+						{
+							Assignment a = (Assignment)base;
+							
+							if (a.getAssignedNodeValue().getReturnedNode().isPrimitive())
+							{
+								return generateDefaultValue(parent, location, a.getAssignedNodeValue().getReturnedNode());
+							}
+						}
 					}
 				}
 			}
