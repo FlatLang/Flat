@@ -218,6 +218,25 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 					}
 				}
 	
+	public void convertFunctionContents()
+	{
+		Scope temp = new Scope(genericOverload, Location.INVALID);
+		
+		genericOverload.getScope().cloneChildrenTo(temp);
+		
+		extractLambdas(temp);
+		
+		convertConvertedTypes(temp);
+		
+		String code = temp.generateNovaInput().toString().trim();
+		
+		code = code.substring(1, code.length() - 1).trim();
+		
+		TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
+		
+		generator.traverseCode(this, 0, null, false);
+	}
+	
 	public void extractLambdas(Scope scope)
 	{
 		Node[] nodes = scope.getChildrenOfType(Closure.class);
