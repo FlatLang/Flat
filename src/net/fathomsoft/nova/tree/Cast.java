@@ -211,6 +211,10 @@ public class Cast extends IValue
 		{
 			return SyntaxUtils.unboxPrimitive(node, getType());
 		}
+		else if (node.getReturnedNode().isPrimitive() && !isPrimitive())
+		{
+			return SyntaxUtils.autoboxPrimitive(node);
+		}
 		
 		return node;
 	}
