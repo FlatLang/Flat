@@ -201,6 +201,18 @@ public class Priority extends Value implements Accessible
 		return Accessible.super.getReturnedNode();
 	}
 	
+	
+	@Override
+	public StringBuilder generateAccessedNode(StringBuilder builder, boolean safeNavigation)
+	{
+		if (isPrimitiveUnboxing())
+		{
+			return builder;
+		}
+		
+		return Accessible.super.generateAccessedNode(builder, safeNavigation);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#generateNovaInput(StringBuilder, boolean)
 	 */
