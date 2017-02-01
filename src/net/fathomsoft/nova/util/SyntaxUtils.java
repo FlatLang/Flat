@@ -1768,7 +1768,7 @@ public class SyntaxUtils
 	
 	public static Value unboxPrimitive(Value primitive)
 	{
-		return unboxPrimitive(primitive, primitive.getReturnedNode().getNovaType(primitive));
+		return unboxPrimitive(primitive, primitive.getReturnedNode().getNovaType(primitive, false));
 	}
 	
 	public static Value unboxPrimitive(Value primitive, String type)
