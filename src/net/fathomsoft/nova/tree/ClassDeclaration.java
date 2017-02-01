@@ -2633,8 +2633,10 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				if (type.isPrimitive())
 				{
+					int dimensions = original.getArrayDimensions();
+					
 					value.setType(type);
-					value.setArrayDimensions(original.getArrayDimensions());
+					value.setArrayDimensions(dimensions);
 					
 					changed = true;
 				}
