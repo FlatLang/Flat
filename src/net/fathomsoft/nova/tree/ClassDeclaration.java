@@ -2647,20 +2647,23 @@ public class ClassDeclaration extends InstanceDeclaration
 			GenericTypeArgumentList originalArgs = original.getGenericTypeArgumentList();
 			GenericTypeArgumentList args = value.getGenericTypeArgumentList();
 			
-			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
+			if (args != null)
 			{
-				changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
-			}
-			
-			if (changed)
-			{
-				ClassDeclaration converted = value.getTypeClass().getConvertedPrimitiveClass(args.getTypes());
-				
-				if (converted != null)
+				for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
 				{
-					value.getFileDeclaration().addImport(converted.getClassLocation());
+					changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
+				}
+				
+				if (changed)
+				{
+					ClassDeclaration converted = value.getTypeClass().getConvertedPrimitiveClass(args.getTypes());
 					
-					value.setType(converted);
+					if (converted != null)
+					{
+						value.getFileDeclaration().addImport(converted.getClassLocation());
+						
+						value.setType(converted);
+					}
 				}
 			}
 		}
