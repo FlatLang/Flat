@@ -91,6 +91,12 @@ public class InitializationMethod extends BodyMethodDeclaration
 	}
 	
 	@Override
+	public NovaMethodDeclaration getConversionTargetContext()
+	{
+		return constructor.genericOverload;
+	}
+	
+	@Override
 	public boolean doesConvertToPrimitive()
 	{
 		return getConversionTarget() != null;
