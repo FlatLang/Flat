@@ -181,11 +181,9 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			if (genericOverload != null)
-			{
-				convertFunctionContents();
-			}
-			else
+			convertFunctionContents();
+			
+			if (genericOverload == null)
 			{
 				moveShorthandActionToEnd();
 			}
@@ -206,23 +204,26 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	
 	public void convertFunctionContents()
 	{
-		NovaMethodDeclaration overload = getConversionTarget();
-		
-		Scope temp = new Scope(overload, Location.INVALID);
-		
-		overload.getScope().cloneChildrenTo(temp);
-		
-		extractLambdas(temp);
-		
-		convertConvertedTypes(overload, temp);
-		
-		String code = temp.generateNovaInput().toString().trim();
-		
-		code = code.substring(1, code.length() - 1).trim();
-		
-		TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
-		
-		generator.traverseCode(this, 0, null, false);
+		if (doesConvertToPrimitive())
+		{
+			NovaMethodDeclaration overload = getConversionTarget();
+			
+			Scope temp = new Scope(overload, Location.INVALID);
+			
+			overload.getScope().cloneChildrenTo(temp);
+			
+			extractLambdas(temp);
+			
+			convertConvertedTypes(overload, temp);
+			
+			String code = temp.generateNovaInput().toString().trim();
+			
+			code = code.substring(1, code.length() - 1).trim();
+			
+			TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
+			
+			generator.traverseCode(this, 0, null, false);
+		}
 	}
 	
 	public void extractLambdas(Scope scope)
