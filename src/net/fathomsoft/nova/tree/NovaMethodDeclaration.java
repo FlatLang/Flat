@@ -754,7 +754,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			changed = true;
 		}
-		
+
 //		if (changed)
 		{
 			SearchFilter filter = new SearchFilter();
@@ -770,6 +770,13 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				parent.addChild(clone);
 				
 				clone.genericOverload = this;
+				
+				for (Parameter p : clone.getParameterList().getOptionalParameters())
+				{
+					DefaultParameterInitialization init = new DefaultParameterInitialization(clone, p.getLocationIn(), p);
+					
+					clone.addChild(init);
+				}
 				
 				return clone;
 			}
