@@ -136,7 +136,27 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 			MethodCall call = (MethodCall)getIdentifier();
 			ClassDeclaration impor = getFileDeclaration().getImportedClass(getParentClass(), type);
 			
-			MethodDeclaration method = impor.getMethod(this, type, call.getArgumentList());
+			MethodDeclaration method = null;
+			
+			NovaMethodDeclaration decl = call.getNovaMethod();
+			
+			if (decl != null)
+			{
+				for (NovaMethodDeclaration m : decl.correspondingPrimitiveOverloads)
+				{
+					if (m.getParentClass() == impor)
+					{
+						method = m;
+						
+						break;
+					}
+				}
+			}
+			
+			if (method == null)
+			{
+				method = impor.getMethod(this, type, call.getArgumentList());
+			}
 			
 			call.declaration = method;
 		}
