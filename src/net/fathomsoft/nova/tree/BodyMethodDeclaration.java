@@ -183,40 +183,16 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		{
 			if (genericOverload != null)
 			{
-				Scope temp = new Scope(genericOverload, Location.INVALID);
-				
-				genericOverload.getScope().cloneChildrenTo(temp);
-				
-				Node[] nodes = temp.getChildrenOfType(Closure.class);
-				
-				for (Node n : nodes)
-				{
-					Closure c = (Closure)n;
-					VariableDeclaration d = c.declaration;
-					
-					if (d instanceof LambdaMethodDeclaration)
-					{
-						LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)d;
-						
-						Literal replacement = new Literal(c.getParent(), Location.INVALID);
-						
-						String params = "";
-						
-						for (int i = 0; i < lambda.getParameterList().getNumParameters(); i++)
-						{
-							if (i > 0)
-							{
-								params += ", ";
-							}
-							
-							params += lambda.getParameterList().getParameter(i).getName();
-						}
-						
-						replacement.setValue("(" + params + ") => " + c.getDeclaration().getScope().generateNovaInput().toString());
-						
-						c.replaceWith(replacement);
-					}
-				}
+				convertFunctionContents();
+			}
+			else
+			{
+				moveShorthandActionToEnd();
+			}
+		}
+		
+		return result;
+	}
 	
 	public void convertFunctionContents()
 	{
