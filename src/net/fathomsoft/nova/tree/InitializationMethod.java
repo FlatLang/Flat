@@ -15,6 +15,8 @@ public class InitializationMethod extends BodyMethodDeclaration
 	public static final String	SUPER_IDENTIFIER = "super";
 	public static final String	IDENTIFIER       = ParameterList.OBJECT_REFERENCE_IDENTIFIER;
 	
+	public Constructor constructor;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */

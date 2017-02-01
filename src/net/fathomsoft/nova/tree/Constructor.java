@@ -181,6 +181,7 @@ public class Constructor extends BodyMethodDeclaration
 		initMethod = new InitializationMethod(getParent(), Location.INVALID);
 		
 		initMethod.createFrom(this);
+		initMethod.constructor = this;
 		
 		setName(getParentClass().getName());
 		
