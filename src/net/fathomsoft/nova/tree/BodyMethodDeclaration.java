@@ -217,28 +217,40 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 						c.replaceWith(replacement);
 					}
 				}
+	
+	public void extractLambdas(Scope scope)
+	{
+		Node[] nodes = scope.getChildrenOfType(Closure.class);
+		
+		for (Node n : nodes)
+		{
+			Closure c = (Closure)n;
+			VariableDeclaration d = c.declaration;
+			
+			if (d instanceof LambdaMethodDeclaration)
+			{
+				LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)d;
 				
-				ClassDeclaration pc = getParentClass();
+				Literal replacement = new Literal(c.getParent(), Location.INVALID);
 				
-				nodes = temp.getChildrenOfType(Value.class);
+				String params = "";
 				
-				for (Node n : nodes)
+				for (int i = 0; i < lambda.getParameterList().getNumParameters(); i++)
 				{
-					if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
+					if (i > 0)
 					{
-						genericOverload.getParentClass().replaceGenerics(pc.primitiveOverloadTypes, (Value)n);
+						params += ", ";
 					}
+					
+					params += lambda.getParameterList().getParameter(i).getName();
 				}
 				
-				String code = temp.generateNovaInput().toString().trim();
+				replacement.setValue("(" + params + ") => " + c.getDeclaration().getScope().generateNovaInput().toString());
 				
-				code = code.substring(1, code.length() - 1).trim();
-				
-				TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
-				
-				generator.traverseCode(this, 0, null, false);
+				c.replaceWith(replacement);
 			}
-			else
+		}
+	}
 	
 	public void convertConvertedTypes(Scope scope)
 	{
