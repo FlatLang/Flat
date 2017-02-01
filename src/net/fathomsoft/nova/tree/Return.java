@@ -224,16 +224,18 @@ public class Return extends IValue
 		}
 		else
 		{
+			boolean skipCompatible = false;
+			
 			if (value.getReturnedNode() instanceof MethodCall)
 			{
 				NovaMethodDeclaration m = ((MethodCall)value.getReturnedNode()).getNovaMethod();
 				
 				if (m != null && m.usedShorthandAction)
 				{
-					return checkPrimitiveType(value);
+					skipCompatible = true;
 				}
 			}
-			if (validateType && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
+			if (!skipCompatible && validateType && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
 			{
 				SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode());
 				queryReturnError(method, true);
