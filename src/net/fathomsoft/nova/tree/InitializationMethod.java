@@ -90,6 +90,12 @@ public class InitializationMethod extends BodyMethodDeclaration
 		return null;
 	}
 	
+	@Override
+	public boolean doesConvertToPrimitive()
+	{
+		return getConversionTarget() != null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
