@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 
@@ -201,6 +202,20 @@ public class Priority extends Value implements Accessible
 		return Accessible.super.getReturnedNode();
 	}
 	
+	public boolean isPrimitiveUnboxing()
+	{
+		if (doesAccess() && getContents() instanceof Cast)
+		{
+			Cast c = (Cast)getContents();
+			
+			if (c.isPrimitiveType())
+			{
+				return getAccessedNode().getName().equals("value");
+			}
+		}
+		
+		return false;
+	}
 	
 	@Override
 	public StringBuilder generateAccessedNode(StringBuilder builder, boolean safeNavigation)
