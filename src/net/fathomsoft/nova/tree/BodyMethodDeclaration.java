@@ -239,12 +239,20 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 				generator.traverseCode(this, 0, null, false);
 			}
 			else
+	
+	public void convertConvertedTypes(Scope scope)
+	{
+		ClassDeclaration pc = getParentClass();
+		
+		Node[] nodes = scope.getChildrenOfType(Value.class);
+		
+		for (Node n : nodes)
+		{
+			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
 			{
-				moveShorthandActionToEnd();
+				genericOverload.getParentClass().replaceGenerics(pc.primitiveOverloadTypes, (Value)n);
 			}
 		}
-		
-		return result;
 	}
 	
 	/**
