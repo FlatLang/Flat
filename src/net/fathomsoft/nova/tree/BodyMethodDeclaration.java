@@ -194,15 +194,22 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		return result;
 	}
 	
+	public NovaMethodDeclaration getConversionTarget()
+	{
+		return genericOverload;
+	}
+	
 	public void convertFunctionContents()
 	{
-		Scope temp = new Scope(genericOverload, Location.INVALID);
+		NovaMethodDeclaration overload = getConversionTarget();
 		
-		genericOverload.getScope().cloneChildrenTo(temp);
+		Scope temp = new Scope(overload, Location.INVALID);
+		
+		overload.getScope().cloneChildrenTo(temp);
 		
 		extractLambdas(temp);
 		
-		convertConvertedTypes(temp);
+		convertConvertedTypes(overload, temp);
 		
 		String code = temp.generateNovaInput().toString().trim();
 		
@@ -247,7 +254,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		}
 	}
 	
-	public void convertConvertedTypes(Scope scope)
+	public void convertConvertedTypes(NovaMethodDeclaration target, Scope scope)
 	{
 		ClassDeclaration pc = getParentClass();
 		
@@ -257,7 +264,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		{
 			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
 			{
-				genericOverload.getParentClass().replaceGenerics(pc.primitiveOverloadTypes, (Value)n);
+				target.getParentClass().replaceGenerics(pc.primitiveOverloadTypes, (Value)n);
 			}
 		}
 	}
