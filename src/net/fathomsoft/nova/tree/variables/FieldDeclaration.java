@@ -520,6 +520,21 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		}
 	}
 	
+	@Override
+	public void decodeShorthandAccessor(Value context)
+	{
+		ShorthandAccessible.super.decodeShorthandAccessor(context);
+		
+		if (accessorValue != null && getParentClass().isPrimitiveOverload())
+		{
+			Return r = (Return)getAccessorMethod().getScope().getLastChild();
+			
+			ClassDeclaration c = getParentClass();
+			
+			c.genericOverload.replaceGenerics(c.primitiveOverloadTypes, r.getReturnedNode());
+		}
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
