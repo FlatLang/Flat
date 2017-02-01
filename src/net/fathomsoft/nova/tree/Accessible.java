@@ -141,6 +141,22 @@ public interface Accessible
 		
 		if (index >= 0)
 		{
+			if (value.getTypeClass() == type.getParentClass() && value.getGenericTypeArgumentList() != null && value.getGenericTypeArgumentList().getNumVisibleChildren() > index)
+			{
+				GenericTypeArgument arg = value.getGenericTypeArgumentList().getVisibleChild(index);
+				
+				if (arg.isGenericType() && ((Accessible)value).canAccess())
+				{
+					GenericTypeArgument extracted = ((Accessible)value).getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
+					
+					if (extracted != null)
+					{
+						return extracted;
+					}
+				}
+				
+				return arg;
+			}
 			if (toValue().getParentClass() == type.getParentClass() && toValue().getParentMethod() != null && toValue().getParentMethod().isInstance())
 			{
 				return toValue().getParentMethod().getObjectReference().getGenericTypeArgumentFromParameter(type);
