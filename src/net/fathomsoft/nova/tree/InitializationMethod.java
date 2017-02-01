@@ -79,6 +79,17 @@ public class InitializationMethod extends BodyMethodDeclaration
 		}
 	}
 	
+	@Override
+	public NovaMethodDeclaration getConversionTarget()
+	{
+		if (constructor.genericOverload != null)
+		{
+			return ((Constructor)constructor.genericOverload).initMethod;
+		}
+		
+		return null;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
