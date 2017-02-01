@@ -765,6 +765,23 @@ public class Variable extends Identifier
 					
 					return result.errorOccurred();
 				}
+				
+				if (isPrimitiveType() && doesAccess() && getAccessedNode().getName().equals("class"))
+				{
+					Identifier newAccessed = getAccessedNode();
+					
+					StaticClassReference replacement = StaticClassReference.decodeStatement(getParent(), getTypeClassName(), getLocationIn(), true);
+					
+					if (replacement != null && newAccessed != null)
+					{
+						replaceWith(replacement);
+						replacement.setAccessedNode(newAccessed);
+						
+						result.returnedNode = replacement;
+						
+						return result;
+					}
+				}
 			}
 			
 			if (getDeclaration() instanceof FieldDeclaration)
