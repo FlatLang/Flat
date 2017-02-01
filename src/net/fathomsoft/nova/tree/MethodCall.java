@@ -110,20 +110,27 @@ public class MethodCall extends Variable
 	{
 		CallableMethod callable = (CallableMethod)getMethodDeclaration();
 		
-		if (callable.isVirtual() && ((NovaMethodDeclaration)callable).getVirtualMethod() != null && (requireVirtual || !isVirtualTypeKnown()))
+		if (callable.isVirtual() && ((NovaMethodDeclaration)callable).getVirtualMethod() != null)
 		{
-			NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)callable;
-			
-			if (parent instanceof Super)
+			if (requireVirtual || !isVirtualTypeKnown())
 			{
-				novaMethod = (NovaMethodDeclaration)callable;
+				NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)callable;
+				
+				if (parent instanceof Super)
+				{
+					novaMethod = (NovaMethodDeclaration)callable;
+				}
+				else
+				{
+					novaMethod = novaMethod.getVirtualMethod();
+				}
+				
+				return novaMethod;
 			}
-			else
+			else if (callable instanceof BodyMethodDeclaration == false)
 			{
-				novaMethod = novaMethod.getVirtualMethod();
+				return ((NovaMethodDeclaration)callable).getVirtualMethod();
 			}
-			
-			return novaMethod;
 		}
 		
 		return callable;
