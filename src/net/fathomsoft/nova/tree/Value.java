@@ -1492,7 +1492,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public Value replaceWithBoxedValue(Value required, String type)
 	{
-		if (getReturnedNode().isPrimitive() && !required.isPrimitiveType())
+		if (getReturnedNode().isPrimitive() && !required.isPrimitive())
 		{
 			return replaceWithAutoboxedValue(type);
 		}
