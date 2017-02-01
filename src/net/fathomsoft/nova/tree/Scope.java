@@ -360,7 +360,7 @@ public class Scope extends Node
 		
 		for (int i = 0; i < getNumVisibleChildren(); i++)
 		{
-			if (getVisibleChild(i).isUserMade())
+			if (getVisibleChild(i).isUserMade(false))
 			{
 				getVisibleChild(i).generateNovaInput(builder).append('\n');
 			}
