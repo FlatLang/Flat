@@ -197,6 +197,11 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		return genericOverload;
 	}
 	
+	public NovaMethodDeclaration getConversionTargetContext()
+	{
+		return getConversionTarget();
+	}
+	
 	public boolean doesConvertToPrimitive()
 	{
 		return genericOverload != null;
@@ -208,7 +213,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		{
 			NovaMethodDeclaration overload = getConversionTarget();
 			
-			Scope temp = new Scope(overload, Location.INVALID);
+			Scope temp = new Scope(getConversionTargetContext(), Location.INVALID);
 			
 			overload.getScope().cloneChildrenTo(temp);
 			
