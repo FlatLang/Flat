@@ -23,7 +23,7 @@ public class Constructor extends BodyMethodDeclaration
 {
 	public static final String	IDENTIFIER = "construct";
 	
-	private InitializationMethod	initMethod;
+	public InitializationMethod	initMethod;
 	
 	/**
 	 * Create a Constructor and initialize default values.
