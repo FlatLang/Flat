@@ -131,7 +131,16 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public void setTypeValue(String type)
 	{
-		if (getIdentifier() != null)
+		if (getIdentifier() instanceof MethodCall)
+		{
+			MethodCall call = (MethodCall)getIdentifier();
+			ClassDeclaration impor = getFileDeclaration().getImportedClass(getParentClass(), type);
+			
+			MethodDeclaration method = impor.getMethod(this, type, call.getArgumentList());
+			
+			call.declaration = method;
+		}
+		else if (getIdentifier() != null)
 		{
 			getIdentifier().setType(type);
 			getIdentifier().setName(type);
