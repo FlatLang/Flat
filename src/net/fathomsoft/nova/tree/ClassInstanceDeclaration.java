@@ -35,7 +35,7 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

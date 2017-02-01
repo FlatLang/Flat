@@ -20,7 +20,7 @@ public class ShorthandAccessor extends AccessorMethod
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

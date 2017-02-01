@@ -27,7 +27,7 @@ public class AssignmentMethod extends BodyMethodDeclaration
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

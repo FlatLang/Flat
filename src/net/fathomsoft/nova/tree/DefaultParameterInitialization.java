@@ -24,7 +24,7 @@ public class DefaultParameterInitialization extends Node
     }
     
     @Override
-    public boolean isUserMade()
+    public boolean isUserMade(boolean checkAncestor)
     {
         return false;
     }

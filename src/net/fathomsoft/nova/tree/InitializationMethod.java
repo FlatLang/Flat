@@ -56,7 +56,7 @@ public class InitializationMethod extends BodyMethodDeclaration
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

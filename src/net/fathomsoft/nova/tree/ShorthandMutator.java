@@ -19,7 +19,7 @@ public class ShorthandMutator extends MutatorMethod
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

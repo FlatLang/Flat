@@ -25,7 +25,7 @@ public class ReferenceParameter extends Parameter
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

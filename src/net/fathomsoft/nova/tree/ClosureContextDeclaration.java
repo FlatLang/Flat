@@ -28,7 +28,7 @@ public class ClosureContextDeclaration extends LocalDeclaration
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

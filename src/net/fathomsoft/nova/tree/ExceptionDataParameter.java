@@ -19,7 +19,7 @@ public class ExceptionDataParameter extends Parameter
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
 	}

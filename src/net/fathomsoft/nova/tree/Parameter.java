@@ -107,16 +107,16 @@ public class Parameter extends LocalDeclaration
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
-		if (!super.isUserMade())
+		if (!super.isUserMade(checkAncestor))
 		{
 			return false;
 		}
 		
 		NovaMethodDeclaration method = getParentMethod();
 		
-		return method != null && method.isUserMade() && !isUnnamedParameter();
+		return method != null && method.isUserMade(checkAncestor) && !isUnnamedParameter();
 	}
 	
 	@Override

@@ -1553,9 +1553,14 @@ public abstract class Node implements Listenable, Annotatable
 		
 	}
 	
-	public boolean isUserMade()
+	public final boolean isUserMade()
 	{
-		return (!containsProperty("userMade") || isPropertyTrue("userMade")) && (getParent() == null || getParent().isUserMade());
+		return isUserMade(true);
+	}
+	
+	public boolean isUserMade(boolean checkAncestor)
+	{
+		return (!containsProperty("userMade") || isPropertyTrue("userMade")) && (!checkAncestor || (getParent() == null || getParent().isUserMade()));
 	}
 	
 	/**

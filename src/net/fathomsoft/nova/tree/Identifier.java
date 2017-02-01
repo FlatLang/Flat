@@ -58,9 +58,9 @@ public abstract class Identifier extends Value implements Accessible
 	}
 	
 	@Override
-	public boolean isUserMade()
+	public boolean isUserMade(boolean checkAncestor)
 	{
-		return !doesForceOriginalName() && super.isUserMade();
+		return !doesForceOriginalName() && super.isUserMade(checkAncestor);
 	}
 	
 	@Override
