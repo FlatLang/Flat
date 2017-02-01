@@ -42,6 +42,12 @@ public class Constructor extends BodyMethodDeclaration
 	}
 	
 	@Override
+	public boolean doesConvertToPrimitive()
+	{
+		return false;
+	}
+	
+	@Override
 	public boolean isPure()
 	{
 		return true;
