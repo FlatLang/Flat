@@ -1,10 +1,12 @@
 package net.fathomsoft.nova.tree.variables;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.annotations.*;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Bounds;
@@ -456,6 +458,42 @@ public class VariableDeclaration extends IIdentifier
 	public Variable generateUsableVariable(Variable toVar)
 	{
 		toVar.setDeclaration(this);
+		
+		if (toVar.isAccessed())
+		{
+			GenericTypeArgumentList refArgs = toVar.getReferenceNode().toValue().getGenericTypeArgumentList();
+			GenericTypeArgumentList declarationArgs = getGenericTypeArgumentList();
+			GenericTypeArgumentList args = new GenericTypeArgumentList(toVar, toVar.getLocationIn());
+			declarationArgs.cloneChildrenTo(args);
+			
+			boolean changed = false;
+			
+			for (int i = 0; i < declarationArgs.getNumVisibleChildren(); i++)
+			{
+				GenericTypeArgument arg = toVar.getGenericTypeArgumentList().getVisibleChild(i);
+				
+				if (arg.isGenericType())
+				{
+//					int index = arg.getGenericTypeParameter().getIndex();
+//					
+//					args.getVisibleChild(i).setType(refArgs.getVisibleChild(index));
+					
+					GenericTypeArgument extracted = toVar.getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
+					
+					if (extracted != null)
+					{
+						args.getVisibleChild(i).setType(extracted);
+						
+						changed = true;
+					}
+				}
+			}
+			
+			if (changed)
+			{
+				toVar.genericTypeArgumentList = args;
+			}
+		}
 		
 		return toVar;
 	}
