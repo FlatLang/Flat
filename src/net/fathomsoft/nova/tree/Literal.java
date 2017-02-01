@@ -126,7 +126,7 @@ public class Literal extends IValue implements Accessible
 		
 		if (outputChildren && doesAccess())
 		{
-			builder.append(".").append(getAccessedNode().generateNovaInput());
+			generateAccessedNode(builder, safeNavigation);
 		}
 		
 		return builder;

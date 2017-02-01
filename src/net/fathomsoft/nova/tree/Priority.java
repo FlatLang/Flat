@@ -209,14 +209,9 @@ public class Priority extends Value implements Accessible
 	{
 		builder.append('(').append(getContents().generateNovaInput(outputChildren)).append(')').append(generateNovaArrayAccess());
 		
-		if (outputChildren && doesAccess())
+		if (outputChildren)
 		{
-			if (safeNavigation)
-			{
-				builder.append('?');
-			}
-			
-			builder.append('.').append(getAccessedNode().generateNovaInput());
+			generateAccessedNode(builder, safeNavigation);
 		}
 		
 		return builder;

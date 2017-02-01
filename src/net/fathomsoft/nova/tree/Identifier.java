@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -126,14 +127,9 @@ public abstract class Identifier extends Value implements Accessible
 		builder.append(getName());
 		generateNovaArrayAccess(builder);
 		
-		if (outputChildren && doesAccess())
+		if (outputChildren)
 		{
-			if (safeNavigation)
-			{
-				builder.append('?');
-			}
-			
-			builder.append('.').append(getAccessedNode().generateNovaInput());
+			generateAccessedNode(builder, safeNavigation);
 		}
 		
 		return builder;
