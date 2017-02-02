@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * Declaration extension that represents the declaration of a method
@@ -211,72 +212,8 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	{
 		if (doesConvertToPrimitive())
 		{
-			NovaMethodDeclaration overload = getConversionTarget();
 			
-			Scope temp = new Scope(getConversionTargetContext(), Location.INVALID);
-			
-			overload.getScope().cloneChildrenTo(temp);
-			
-			extractLambdas(temp);
-			
-			convertConvertedTypes(overload, temp);
-			
-			String code = temp.generateNovaInput().toString().trim();
-			
-			code = code.substring(1, code.length() - 1).trim();
-			
-			TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
-			
-			generator.traverseCode(this, 0, null, false);
-		}
-	}
-	
-	public void extractLambdas(Scope scope)
-	{
-		Node[] nodes = scope.getChildrenOfType(Closure.class);
-		
-		for (Node n : nodes)
-		{
-			Closure c = (Closure)n;
-			VariableDeclaration d = c.declaration;
-			
-			if (d instanceof LambdaMethodDeclaration)
-			{
-				LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)d;
-				
-				Literal replacement = new Literal(c.getParent(), Location.INVALID);
-				
-				String params = "";
-				
-				for (int i = 0; i < lambda.getParameterList().getNumParameters(); i++)
-				{
-					if (i > 0)
-					{
-						params += ", ";
-					}
-					
-					params += lambda.getParameterList().getParameter(i).getName();
-				}
-				
-				replacement.setValue("(" + params + ") => " + c.getDeclaration().getScope().generateNovaInput().toString());
-				
-				c.replaceWith(replacement);
-			}
-		}
-	}
-	
-	public void convertConvertedTypes(NovaMethodDeclaration target, Scope scope)
-	{
-		ClassDeclaration pc = getParentClass();
-		
-		Node[] nodes = scope.getChildrenOfType(Value.class);
-		
-		for (Node n : nodes)
-		{
-			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
-			{
-				target.getParentClass().replaceGenerics(pc.primitiveOverloadTypes, (Value)n);
-			}
+			SyntaxUtils.parseConvertedContentsTo(getConversionTarget().getScope(), getConversionTargetContext(), getParentClass(), this);
 		}
 	}
 	
