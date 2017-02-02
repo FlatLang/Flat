@@ -740,8 +740,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		clone.usedShorthandAction = false;
 		clone.shorthandAction = null;
 		
-		correspondingPrimitiveOverloads.add(clone);
-		
 		for (int i = 0; i < parameterList.getNumParameters(); i++)
 		{
 			changed |= parent.replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
@@ -770,6 +768,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				parent.addChild(clone);
 				
 				clone.genericOverload = this;
+				
+				correspondingPrimitiveOverloads.add(clone);
 				
 				for (Parameter p : clone.getParameterList().getOptionalParameters())
 				{
