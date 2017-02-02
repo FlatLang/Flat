@@ -3167,4 +3167,13 @@ public class SyntaxUtils
 		
 		return type1.equals(type2);
 	}
+	
+	public static Scope cloneToScope(Scope scope, Node parent)
+	{
+		Scope temp = new Scope(parent, Location.INVALID);
+		
+		scope.cloneChildrenTo(temp);
+		
+		return temp;
+	}
 }
