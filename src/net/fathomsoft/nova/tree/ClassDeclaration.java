@@ -2610,6 +2610,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean replaceGenerics(final Value[] types, Value original, Value value, boolean allowSame)
 	{
+		return replaceGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
+	}
+	
+	public static boolean replaceGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
+	{
 		boolean changed = false;
 		
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
@@ -2617,7 +2622,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (genParam != null && (allowSame || genParam != valParam))
 		{
-			if (!genParam.isMethodGenericParameter() && genParam.getParentClass() == this)
+			if (genParam.getParent() == params)
 			{
 				Value type = types[genParam.getIndex()];
 				
@@ -2641,7 +2646,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
 				{
-					changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
+					changed |= replaceGenerics(params, types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
 				}
 				
 //				if (changed)
@@ -2663,7 +2668,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (value instanceof ClosureDeclaration)
 		{
-			changed |= replaceGenerics(types, (ClosureDeclaration)original, (ClosureDeclaration)value, allowSame);
+			changed |= replaceGenerics(params, types, (ClosureDeclaration)original, (ClosureDeclaration)value, allowSame);
 		}
 		
 		return changed;
@@ -2676,6 +2681,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean replaceGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
 	{
+		return replaceGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
+	}
+	
+	public static boolean replaceGenerics(GenericTypeParameterList params, Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
+	{
 		ClosureDeclaration closure = value;
 		
 		closure.register();
@@ -2687,7 +2697,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (int n = 0; n < originalClosureParams.getNumParameters(); n++)
 		{
-			changed |= replaceGenerics(types, originalClosureParams.getParameter(n), closureParams.getParameter(n), allowSame);
+			changed |= replaceGenerics(params, types, originalClosureParams.getParameter(n), closureParams.getParameter(n), allowSame);
 		}
 		
 		return changed;
