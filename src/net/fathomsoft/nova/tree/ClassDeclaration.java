@@ -2696,7 +2696,20 @@ public class ClassDeclaration extends InstanceDeclaration
 	private void cloneMethods(final Value[] types, MethodList methods, ClassDeclaration addTo)
 	{
 		methods.forEachVisibleListChild(method -> {
-			if (method instanceof InitializationMethod == false && method instanceof Destructor == false && method instanceof AssignmentMethod == false && method instanceof ExternalMethodDeclaration == false)
+			if (method instanceof ExternalMethodDeclaration)
+			{
+				ExternalMethodDeclaration clone = (ExternalMethodDeclaration)method.clone(addTo, method.getLocationIn(), true, true);
+				
+				ParameterList original = method.getParameterList();
+				
+				for (int i = 0; i < clone.getParameterList().getNumVisibleChildren(); i++)
+				{
+					replaceGenerics(types, original.getParameter(i), clone.getParameter(i));
+				}
+				
+				addTo.addChild(clone);
+			}
+			else if (method instanceof InitializationMethod == false && method instanceof Destructor == false && method instanceof AssignmentMethod == false)
 			{
 				((NovaMethodDeclaration)method).convertToClass(addTo, types);
 			}
