@@ -371,6 +371,14 @@ public class Scope extends Node
 		return builder;
 	}
 	
+	
+	public String getNovaContents()
+	{
+		String code = generateNovaInput().toString().trim();
+		
+		return code.substring(1, code.length() - 1).trim();
+	}
+	
 	public static Scope generateEmptyScope(Node parent, Location location)
 	{
 		return new Scope(parent, location);
