@@ -116,18 +116,6 @@ public interface ShorthandAccessible
 			}
 			
 			Value value = decodeAccessorValue();
-
-//			Value type = returnValue.getReturnedNode().getNovaTypeValue(returnValue.getReturnedNode());
-//			
-//			if (returnValue.getValueNode() instanceof Cast)
-//			{
-//				setType(returnValue.getValueNode());
-//			}
-//			else
-//			{
-//				setType(type);
-//			}
-			//a.setType(type);
 			
 			if (twoWayBinding)
 			{
