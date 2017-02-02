@@ -3,10 +3,8 @@ package net.fathomsoft.nova.tree;
 import javafx.util.Pair;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
-import net.fathomsoft.nova.tree.variables.VirtualLocalDeclaration;
+import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
+import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
@@ -371,6 +369,39 @@ public class Scope extends Node
 		return builder;
 	}
 	
+	public void extractLambdas()
+	{
+		Node[] nodes = getChildrenOfType(Closure.class);
+		
+		for (Node n : nodes)
+		{
+			Closure c = (Closure)n;
+			VariableDeclaration d = c.declaration;
+			
+			if (d instanceof LambdaMethodDeclaration)
+			{
+				LambdaMethodDeclaration lambda = (LambdaMethodDeclaration)d;
+				
+				Literal replacement = new Literal(c.getParent(), Location.INVALID);
+				
+				String params = "";
+				
+				for (int i = 0; i < lambda.getParameterList().getNumParameters(); i++)
+				{
+					if (i > 0)
+					{
+						params += ", ";
+					}
+					
+					params += lambda.getParameterList().getParameter(i).getName();
+				}
+				
+				replacement.setValue("(" + params + ") => " + c.getDeclaration().getScope().generateNovaInput().toString());
+				
+				c.replaceWith(replacement);
+			}
+		}
+	}
 	
 	public void convertConvertedTypes(ClassDeclaration context)
 	{
