@@ -2751,6 +2751,17 @@ public class SyntaxUtils
 		{
 			return true;
 		}
+		if (required instanceof Parameter && required.isPrimitive() && Literal.isNullLiteral(given))
+		{
+			int index = ((ParameterList)required.parent).getParameterIndex(((Parameter)required).getName()) - ((ParameterList)required.parent).getParameterOffset();
+			
+			if (!required.getParentMethod().genericOverload.getParameter(index).isPrimitive())
+			{
+				given.replaceWithDefaultLiteralValue(required);
+				
+				return true;
+			}
+		}
 		
 		return false;
 	}

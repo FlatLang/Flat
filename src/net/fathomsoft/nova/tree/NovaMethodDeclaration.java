@@ -286,7 +286,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	private NovaMethodDeclaration getOverriddenMethod(SearchFilter filter)
 	{
-		if (getVisibility() == PRIVATE || isPrimitiveOverload())
+		if (getVisibility() == PRIVATE)
 		{
 			return null;
 		}
@@ -546,11 +546,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public boolean checkOverrides()
 	{
-		if (isPrimitiveOverload())
-		{
-			return false;
-		}
-		
 		if (overridenMethod == null)
 		{
 			SearchFilter filter = new SearchFilter();

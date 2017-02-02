@@ -324,6 +324,15 @@ public abstract class Value extends Node implements AbstractValue
 		return "null";
 	}
 	
+	public Value replaceWithDefaultLiteralValue(Value type)
+	{
+		Value v = Literal.generateDefaultValue(parent, getLocationIn(), type);
+		
+		replaceWith(v);
+		
+		return v;
+	}
+	
 	/**
 	 * Get whether a variable's type is a primitive type or not.<br>
 	 * <br>

@@ -192,6 +192,17 @@ public class Literal extends IValue implements Accessible
 		return value.equals(NULL_IDENTIFIER);
 	}
 	
+	@Override
+	public Value replaceWithDefaultLiteralValue(Value type)
+	{
+		Literal v = generateDefaultValue(parent, getLocationIn(), type);
+		
+		value = v.value;
+		setType(v.getType());
+		
+		return this;
+	}
+	
 	public static Literal generateDefaultValue(Node parent, Location location, Value value)
 	{
 		Literal n = new Literal(parent, location);
