@@ -75,11 +75,11 @@ public interface ShorthandAccessible
 	{
 		BodyMethodDeclaration a = decodeAccessor();
 		
+		addChild(a);
+		
 		Return returnValue = Return.decodeStatement(a, "return " + getShorthandAccessor(), getLocationIn(), true, false);
 		
 		a.addChild(returnValue);
-		
-		addChild(a);
 		
 		return returnValue.getValueNode();
 	}
@@ -87,6 +87,8 @@ public interface ShorthandAccessible
 	default void decodeMutatorValue(Value value, Value context)
 	{
 		BodyMethodDeclaration m = decodeMutator(context);
+		
+		addChild(m);
 		
 		String accessorValue = getShorthandAccessor();
 		
@@ -98,8 +100,6 @@ public interface ShorthandAccessible
 		Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true);
 		
 		m.addChild(assignment);
-		
-		addChild(m);
 	}
 	
 	default void decodeShorthandAccessor(Value context)
