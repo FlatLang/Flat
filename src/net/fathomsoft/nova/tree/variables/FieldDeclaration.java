@@ -19,9 +19,9 @@ import java.util.ArrayList;
  */
 public class FieldDeclaration extends InstanceDeclaration implements ShorthandAccessible
 {
-	private boolean twoWayBinding;
+	public boolean twoWayBinding;
 	
-	private String   initializationValue, accessorValue;
+	public String   initializationValue, accessorValue;
 	
 	/**
 	 * Declares that a variable can be viewed from anywhere, but not
