@@ -3186,4 +3186,13 @@ public class SyntaxUtils
 		
 		return temp.getNovaContents();
 	}
+	
+	public static void parseConvertedContentsTo(Scope scope, Node parent, ClassDeclaration conversionTarget, Node to)
+	{
+		String code = SyntaxUtils.getConvertedNovaContents(scope, parent, conversionTarget);
+		
+		TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
+		
+		generator.traverseCode(to, 0, null, false);
+	}
 }
