@@ -84,6 +84,24 @@ public interface ShorthandAccessible
 		return returnValue.getValueNode();
 	}
 	
+	default void decodeMutatorValue(Value value, Value context)
+	{
+		BodyMethodDeclaration m = decodeMutator(context);
+		
+		String accessorValue = getShorthandAccessor();
+		
+		if (value instanceof Cast)
+		{
+			accessorValue = accessorValue.substring(StringUtils.findEndingMatch(accessorValue, 0, '(', ')') + 1);
+		}
+		
+		Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true);
+		
+		m.addChild(assignment);
+		
+		addChild(m);
+	}
+	
 	default void decodeShorthandAccessor(Value context)
 	{
 		String accessorValue = getShorthandAccessor();
@@ -118,20 +136,7 @@ public interface ShorthandAccessible
 					SyntaxMessage.error("Cannot have both a mutator method and two-way shorthand value assignment to a field declaration", (Node)this);
 				}
 				
-				BodyMethodDeclaration m = decodeMutator(context);
-				
-				addChild(m);
-				
-				Value value = returnValue.getValueNode();
-				
-				if (value instanceof Cast)
-				{
-					accessorValue = accessorValue.substring(StringUtils.findEndingMatch(accessorValue, 0, '(', ')') + 1);
-				}
-				
-				Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true);
-				
-				m.addChild(assignment);
+				decodeMutatorValue(value, context);
 			}
 			else
 			{
