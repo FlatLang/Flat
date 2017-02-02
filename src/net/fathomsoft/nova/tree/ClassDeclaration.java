@@ -2654,7 +2654,8 @@ public class ClassDeclaration extends InstanceDeclaration
 					changed |= replaceGenerics(types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
 				}
 				
-				if (changed)
+//				if (changed)
+				if (value.getTypeClass() != null)
 				{
 					ClassDeclaration converted = value.getTypeClass().getConvertedPrimitiveClass(args.getTypes());
 					
@@ -2663,6 +2664,8 @@ public class ClassDeclaration extends InstanceDeclaration
 						value.getFileDeclaration().addImport(converted.getClassLocation());
 						
 						value.setType(converted);
+						
+						changed = true;
 					}
 				}
 			}
