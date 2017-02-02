@@ -2754,6 +2754,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		return converted;
 	}
 	
+	public String formatGenericArguments(Value[] args)
+	{
+		if (args.length > 0)
+		{
+			return String.join(", ", Arrays.stream(args).map(x -> x.getNovaType(this)).collect(Collectors.toList()));
+		}
+		
+		return "";
+	}
+	
 	public ClassDeclaration convertToPrimitive(final Value[] types)
 	{
 		ClassDeclaration c = clone(getParent(), getLocationIn(), false, true);
