@@ -534,8 +534,26 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		
 		return this;
 	}
+	
+	@Override
+	public Value decodeAccessorValue()
+	{
+		if (getParentClass().isPrimitiveOverload())
 		{
-			Return r = (Return)getAccessorMethod().getScope().getLastChild();
+			BodyMethodDeclaration accessor = decodeAccessor();
+			BodyMethodDeclaration reference = ((FieldDeclaration)getProperty("genericOverload")).getAccessorMethod();
+			
+			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, getParentClass(), accessor);
+			
+			addChild(accessor);
+			
+			return ((Return)accessor.getScope().getLastChild()).getValueNode();
+		}
+		else
+		{
+			return ShorthandAccessible.super.decodeAccessorValue();
+		}
+	}
 			
 			ClassDeclaration c = getParentClass();
 			
