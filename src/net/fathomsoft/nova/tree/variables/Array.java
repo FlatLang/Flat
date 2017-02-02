@@ -414,12 +414,12 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			Assignment array = Assignment.decodeStatement(func, "native " + type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
 			
-			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
-			
-			setDataType(POINTER);
-			decl.setDataType(POINTER);
-			array.getAssignmentNode().getReturnedNode().setDataType(POINTER);
-			((Instantiation)array.getAssignmentNode().getReturnedNode()).getIdentifier().setDataType(POINTER);
+//			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
+//			
+//			setDataType(POINTER);
+//			decl.setDataType(POINTER);
+//			array.getAssignmentNode().getReturnedNode().setDataType(POINTER);
+//			((Instantiation)array.getAssignmentNode().getReturnedNode()).getIdentifier().setDataType(POINTER);
 			
 			array.onAfterDecoded();
 			
@@ -448,10 +448,10 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 					value = var;
 				}
 				
-				if (value.isPrimitive())
-				{
-					value = SyntaxUtils.autoboxPrimitive(value);
-				}
+//				if (value.isPrimitive())
+//				{
+//					value = SyntaxUtils.autoboxPrimitive(value);
+//				}
 				
 				Assignment a = Assignment.decodeStatement(func, name + "[" + i + "] = " + value.generateNovaInput(), getLocationIn(), true);
 				
@@ -464,7 +464,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			func.convertArrays();
 			
-			if (func.isPrimitiveGenericTypeWrapper())
+			if (func.getTypeClass().isPrimitiveOverload())
 			{
 				constructor = func.getType();
 			}
