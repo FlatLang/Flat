@@ -808,9 +808,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			return true;
 		}
-		else if (isPrimitiveOverload() && node != null && node.isPrimitiveOverload())
+		else if (isPrimitiveOverload())
 		{
-			return genericOverload.isOfType(node.genericOverload);
+			return genericOverload.isOfType(node);
 		}
 		
 		return false;
