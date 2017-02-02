@@ -356,6 +356,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.alias = alias;
+		
 		return node;
 	}
 	
