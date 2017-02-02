@@ -71,7 +71,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	{
 		Parameter reference = new ReferenceParameter(this, getLocationIn());
 		reference.setType(getParentClass().getName());
-		reference.setName(OBJECT_REFERENCE_IDENTIFIER, true);
+		reference.setName(OBJECT_REFERENCE_IDENTIFIER);
 		reference.setDataType(Value.POINTER);
 		
 		for (int i = 0; i < getParentClass().getGenericTypeParameterDeclaration().getNumVisibleChildren(); i++)
