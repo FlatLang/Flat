@@ -57,11 +57,11 @@ public abstract class Identifier extends Value implements Accessible
 		return Accessible.super.getReturnedNode();
 	}
 	
-	@Override
-	public boolean isUserMade(boolean checkAncestor)
-	{
-		return !doesForceOriginalName() && super.isUserMade(checkAncestor);
-	}
+//	@Override
+//	public boolean isUserMade(boolean checkAncestor)
+//	{
+//		return !doesForceOriginalName() && super.isUserMade(checkAncestor);
+//	}
 	
 	@Override
 	public boolean isExternalType()
