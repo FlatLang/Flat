@@ -42,10 +42,15 @@ public interface ShorthandAccessible
 	void addChild(Node n);
 	Location getLocationIn();
 	
+	default Node getParseContext()
+	{
+		return (Node)this;
+	}
+	
 	default BodyMethodDeclaration decodeAccessor()
 	{
-		return AccessorMethod.decodeStatement((Node)this, "get", getLocationIn(), true)
-			.cloneTo(new ShorthandAccessor((Node)this, getLocationIn()));
+		return AccessorMethod.decodeStatement(getParseContext(), "get", getLocationIn(), true)
+			.cloneTo(new ShorthandAccessor(getParseContext(), getLocationIn()));
 	}
 	
 	default BodyMethodDeclaration decodeMutator()
@@ -55,8 +60,8 @@ public interface ShorthandAccessible
 	
 	default BodyMethodDeclaration decodeMutator(Value context)
 	{
-		return MutatorMethod.decodeStatement((Node)this, "set", getLocationIn(), true, context)
-			.cloneTo(new ShorthandMutator((Node)this, getLocationIn()));
+		return MutatorMethod.decodeStatement(getParseContext(), "set", getLocationIn(), true, context)
+			.cloneTo(new ShorthandMutator(getParseContext(), getLocationIn()));
 	}
 	
 	void setType(Value value);
