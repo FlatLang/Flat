@@ -66,6 +66,19 @@ public interface ShorthandAccessible
 		decodeShorthandAccessor(null);
 	}
 	
+	default Value decodeAccessorValue()
+	{
+		BodyMethodDeclaration a = decodeAccessor();
+		
+		Return returnValue = Return.decodeStatement(a, "return " + getShorthandAccessor(), getLocationIn(), true, false);
+		
+		a.addChild(returnValue);
+		
+		addChild(a);
+		
+		return returnValue.getValueNode();
+	}
+	
 	default void decodeShorthandAccessor(Value context)
 	{
 		String accessorValue = getShorthandAccessor();
@@ -79,14 +92,8 @@ public interface ShorthandAccessible
 				SyntaxMessage.error("Cannot have both an accessor method and shorthand value assignment to a field declaration", (Node)this);
 			}
 			
-			BodyMethodDeclaration a = decodeAccessor();
-			
-			addChild(a);
-			
-			Return returnValue = Return.decodeStatement(a, "return " + accessorValue, getLocationIn(), true, false);
-			
-			a.addChild(returnValue);
-			
+			Value value = decodeAccessorValue();
+
 //			Value type = returnValue.getReturnedNode().getNovaTypeValue(returnValue.getReturnedNode());
 //			
 //			if (returnValue.getValueNode() instanceof Cast)
