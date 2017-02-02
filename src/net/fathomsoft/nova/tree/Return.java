@@ -241,6 +241,16 @@ public class Return extends IValue
 				SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode());
 				queryReturnError(method, true);
 			}
+			else if (getParentMethod().getType() != null)
+			{
+				ClassDeclaration type = getParentMethod().getTypeClass();
+				Value returned = value.getReturnedNode();
+				
+				if (returned instanceof Instantiation && returned.getType().equals(getParentMethod().getType()))
+				{
+					returned.setType(getParentMethod());
+				}
+			}
 		}
 		
 		return checkPrimitiveType(value);
