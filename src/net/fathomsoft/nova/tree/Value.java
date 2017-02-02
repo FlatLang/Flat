@@ -1210,7 +1210,7 @@ public abstract class Value extends Node implements AbstractValue
 		return null;
 	}
 	
-	public void convertToPrimitiveType()
+	public boolean convertToPrimitiveType()
 	{
 		ClassDeclaration c = getTypeClass();
 		
@@ -1223,8 +1223,12 @@ public abstract class Value extends Node implements AbstractValue
 				getFileDeclaration().addImport(converted.getClassLocation());
 				
 				setType(converted);
+				
+				return true;
 			}
 		}
+		
+		return false;
 	}
 	
 	public StringBuilder generateNovaArrayAccess()
