@@ -554,10 +554,22 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			return ShorthandAccessible.super.decodeAccessorValue();
 		}
 	}
+	
+	@Override
+	public void decodeMutatorValue(Value value, Value context)
+	{
+		if (getParentClass().isPrimitiveOverload())
+		{
+			BodyMethodDeclaration mutator = decodeMutator();
+			BodyMethodDeclaration reference = ((FieldDeclaration)getProperty("genericOverload")).getMutatorMethod();
 			
-			ClassDeclaration c = getParentClass();
+			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, getParentClass(), mutator);
 			
-			c.genericOverload.replaceGenerics(c.primitiveOverloadTypes, r.getReturnedNode());
+			addChild(mutator);
+		}
+		else
+		{
+			ShorthandAccessible.super.decodeMutatorValue(value, context);
 		}
 	}
 	
