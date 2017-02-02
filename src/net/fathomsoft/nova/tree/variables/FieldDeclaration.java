@@ -23,6 +23,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	
 	public String   initializationValue, accessorValue;
 	
+	public ArrayList<FieldDeclaration> correspondingPrimitiveOverloads;
+	
 	/**
 	 * Declares that a variable can be viewed from anywhere, but not
 	 * modified.
@@ -35,6 +37,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	public FieldDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
+		
+		correspondingPrimitiveOverloads = new ArrayList<>();
 	}
 	
 	@Override
