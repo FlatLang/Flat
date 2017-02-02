@@ -372,6 +372,21 @@ public class Scope extends Node
 	}
 	
 	
+	public void convertConvertedTypes(ClassDeclaration context)
+	{
+		Node[] nodes = getChildrenOfType(Value.class);
+		
+		ClassDeclaration targetContext = getParentClass();
+		
+		for (Node n : nodes)
+		{
+			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
+			{
+				targetContext.replaceGenerics(context.primitiveOverloadTypes, (Value)n);
+			}
+		}
+	}
+	
 	public String getNovaContents()
 	{
 		String code = generateNovaInput().toString().trim();
