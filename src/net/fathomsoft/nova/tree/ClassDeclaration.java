@@ -2750,7 +2750,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else
 			{
-				converted[i] = arg;
+				converted[i] = arg.clone(arg.getParent(), arg.getLocationIn(), true, true);
+				replaceGenerics(types, converted[i]);
 			}
 		}
 		
