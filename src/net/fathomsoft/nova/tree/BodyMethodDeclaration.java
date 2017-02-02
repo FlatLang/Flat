@@ -212,7 +212,6 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	{
 		if (doesConvertToPrimitive())
 		{
-			
 			SyntaxUtils.parseConvertedContentsTo(getConversionTarget().getScope(), getConversionTargetContext(), getParentClass(), this);
 		}
 	}
