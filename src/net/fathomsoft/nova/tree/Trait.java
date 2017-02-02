@@ -194,7 +194,7 @@ public class Trait extends ClassDeclaration
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			getFieldList().getPublicFieldList().forEachVisibleChild(n -> {
-				if (n.isUserMade())
+				if (n.isUserMade() || n.containsProperty("genericOverload"))
 				{
 					FieldDeclaration field = (FieldDeclaration)n;
 					

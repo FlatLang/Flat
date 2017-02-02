@@ -3431,7 +3431,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		i.getFieldList().getPublicFieldList().forEachVisibleChild(n -> {
 			FieldDeclaration field = (FieldDeclaration)n;
 			
-			if (field.isPropertyTrue("addedDefaultInterfaceFunctions") || field.isUserMade() && !field.containsAccessorMethod() && !field.containsMutatorMethod() && field.getShorthandAccessor() == null)
+			if (field.isPropertyTrue("addedDefaultInterfaceFunctions") || (field.isUserMade() || field.containsProperty("genericOverload")) && !field.containsAccessorMethod() && !field.containsMutatorMethod() && field.getShorthandAccessor() == null)
 			{
 				FieldDeclaration current = getField(field.getName(), false);
 				
