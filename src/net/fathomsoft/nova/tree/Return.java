@@ -246,7 +246,7 @@ public class Return extends IValue
 				ClassDeclaration type = getParentMethod().getTypeClass();
 				Value returned = value.getReturnedNode();
 				
-				if (type.isPrimitiveOverload() && type.genericOverload.isOfType(returned.getTypeClass()) && returned instanceof Instantiation)
+				if (/*type.isPrimitiveOverload() && type.genericOverload.isOfType(returned.getTypeClass()) && */returned instanceof Instantiation)
 				{
 					returned.setType(getParentMethod());
 				}
