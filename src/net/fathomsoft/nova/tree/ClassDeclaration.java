@@ -2732,6 +2732,28 @@ public class ClassDeclaration extends InstanceDeclaration
 		setMethodReferences(getVirtualMethodList());
 	}
 	
+	public Value[] convertImplementationTypes(final Value[] types, GenericTypeArgumentList args)
+	{
+		Value[] converted = new Value[args.getNumVisibleChildren()];
+		
+		for (int i = 0; i < args.getNumVisibleChildren(); i++)
+		{
+			GenericTypeArgument arg = args.getVisibleChild(i);
+			GenericTypeParameter param = arg.getGenericTypeParameter();
+			
+			if (param != null && param.getParentClass() == this)
+			{
+				converted[i] = types[param.getIndex()];
+			}
+			else
+			{
+				converted[i] = arg;
+			}
+		}
+		
+		return converted;
+	}
+	
 	public ClassDeclaration convertToPrimitive(final Value[] types)
 	{
 		ClassDeclaration c = clone(getParent(), getLocationIn(), false, true);
