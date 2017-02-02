@@ -2764,6 +2764,34 @@ public class ClassDeclaration extends InstanceDeclaration
 		return "";
 	}
 	
+	public void addConvertedImplementations(ClassDeclaration c, final Value[] types)
+	{
+		ExtendedClass extended = getExtendedClass();
+		
+		Value[] extendedValues = convertImplementationTypes(types, extended.getGenericTypeArgumentList());
+		
+		c.setExtendedClass(ExtendedClass.decodeStatement(c, extended.getType(), extended.getLocationIn(), true));
+		c.getExtendedClass().decodeGenericTypeArguments(formatGenericArguments(extendedValues));
+		
+		replaceGenerics(types, c.getExtendedClass());
+		
+		TypeList<TraitImplementation> traits = getInterfacesImplementationList();
+		
+		for (int i = 0; i < traits.getNumVisibleChildren(); i++)
+		{
+			TraitImplementation trait = traits.getVisibleChild(i);
+			
+			Value[] traitValues = convertImplementationTypes(types, trait.getGenericTypeArgumentList());
+			
+			TraitImplementation t = TraitImplementation.decodeStatement(this, trait.getType(), c.getLocationIn(), true);
+			t.decodeGenericTypeArguments(formatGenericArguments(traitValues));
+			
+			replaceGenerics(types, t);
+
+			c.getInterfacesImplementationList().addChild(t);
+		}
+	}
+	
 	public ClassDeclaration convertToPrimitive(final Value[] types)
 	{
 		ClassDeclaration c = clone(getParent(), getLocationIn(), false, true);
