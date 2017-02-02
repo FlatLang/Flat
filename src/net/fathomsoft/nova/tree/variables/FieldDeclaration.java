@@ -525,11 +525,15 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	}
 	
 	@Override
-	public void decodeShorthandAccessor(Value context)
+	public Node getParseContext()
 	{
-		ShorthandAccessible.super.decodeShorthandAccessor(context);
+//		if (getParentClass().isPrimitiveOverload())
+//		{
+//			return (Node)getProperty("genericOverload");
+//		}
 		
-		if (accessorValue != null && getParentClass().isPrimitiveOverload())
+		return this;
+	}
 		{
 			Return r = (Return)getAccessorMethod().getScope().getLastChild();
 			
