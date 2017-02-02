@@ -3176,4 +3176,14 @@ public class SyntaxUtils
 		
 		return temp;
 	}
+	
+	public static String getConvertedNovaContents(Scope scope, Node parent, ClassDeclaration conversionTarget)
+	{
+		Scope temp = SyntaxUtils.cloneToScope(scope, parent);
+		
+		temp.extractLambdas();
+		temp.convertConvertedTypes(conversionTarget);
+		
+		return temp.getNovaContents();
+	}
 }
