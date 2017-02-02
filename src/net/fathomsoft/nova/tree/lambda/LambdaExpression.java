@@ -4,6 +4,11 @@ import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
+import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -237,6 +242,42 @@ public class LambdaExpression extends Value
 							{
 								method.setType(((Return)method.getScope().getLastChild()).getReturnedNode());
 							}
+						}
+						
+						if (context instanceof MethodCall)
+						{
+							MethodCall call = (MethodCall)context;
+							
+							GenericTypeParameterList genParams = call.getNovaMethod().getMethodGenericTypeParameterDeclaration();
+							
+							Value[] types = genParams.getTypes();
+							
+							if (genParams.getNumVisibleChildren() > 0)
+							{
+//								call.genericTypeArgumentList = new GenericTypeArgumentList(call, call.getLocationIn());
+								
+								for (int n = 0; n < genParams.getNumVisibleChildren(); n++)
+								{
+									if (genParams.getVisibleChild(0).getType().equals(closure.getType()))
+									{
+										types[n] = method;
+									}
+									
+//									GenericTypeArgument arg = new GenericTypeArgument(call.genericTypeArgumentList, Location.INVALID);
+//									arg.setType(types[n]);
+									
+//									call.genericTypeArgumentList.addChild(arg);
+									if (call.getMethodGenericTypeArgumentList().getNumVisibleChildren() <= n)
+									{
+										GenericTypeArgument arg = new GenericTypeArgument(call.getMethodGenericTypeArgumentList(), Location.INVALID);
+										arg.setType(types[n]);
+										
+										call.getMethodGenericTypeArgumentList().addChild(arg);
+									}
+								}
+							}
+							
+//							ClassDeclaration.replaceGenerics(genParams, types, genAr)
 						}
 						
 						Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), location.asNew(), require, method.getParentClass());
