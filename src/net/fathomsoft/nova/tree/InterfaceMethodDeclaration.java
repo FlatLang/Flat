@@ -102,6 +102,8 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.containsScope = containsScope;
+		
 		return node;
 	}
 	
