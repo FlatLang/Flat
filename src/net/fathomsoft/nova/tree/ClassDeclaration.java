@@ -1491,6 +1491,26 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 		}
 		
+		ArrayList<MethodDeclaration> nonOverload = new ArrayList<>();
+		
+		for (MethodDeclaration m : compatible)
+		{
+			if (m instanceof NovaMethodDeclaration)
+			{
+				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
+				
+				if (!method.isPrimitiveOverload())
+				{
+					nonOverload.add(method);
+				}
+			}
+		}
+		
+		if (nonOverload.size() > 0)
+		{
+			compatible = nonOverload;
+		}
+		
 		int max = -1;
 		int maxI = -1;
 		SyntaxUtils.Pair<Integer, Integer> distance = new SyntaxUtils.Pair<>(Integer.MAX_VALUE, Integer.MAX_VALUE);
