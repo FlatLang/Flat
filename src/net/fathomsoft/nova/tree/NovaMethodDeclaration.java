@@ -669,6 +669,27 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					}
 				}
 				
+				GenericTypeParameterList genParams = converted.getMethodGenericTypeParameterDeclaration();
+				
+				if (genParams.getNumVisibleChildren() != methodArgs.length)
+				{
+					compatible = false;
+				}
+				else
+				{
+					for (int i = 0; i < methodArgs.length; i++)
+					{
+						Value param = genParams.getVisibleChild(i);
+						Value arg = methodArgs[i];
+						
+						if (arg.getReturnedNode().getDataType() != param.getDataType() ||
+							arg.getReturnedNode().getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass()))
+						{
+							compatible = false;
+						}
+					}
+				}
+				
 				if (compatible)
 				{
 					return converted;
