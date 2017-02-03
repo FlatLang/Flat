@@ -47,6 +47,15 @@ public class GenericTypeParameter extends IValue
 	public void setDefaultType(String type)
 	{
 		this.defaultType = type;
+		
+		if (SyntaxUtils.isPrimitiveType(type))
+		{
+			setDataType(VALUE);
+		}
+		else
+		{
+			setDataType(POINTER);
+		}
 	}
 	
 	public boolean isMethodGenericParameter()
@@ -172,7 +181,7 @@ public class GenericTypeParameter extends IValue
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
-		node.defaultType = this.defaultType;
+		node.defaultType = defaultType;
 		
 		return node;
 	}
