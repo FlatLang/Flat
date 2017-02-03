@@ -987,7 +987,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			if (arg.convertToPrimitiveType())
 			{
 				returnType = arg;
-				addTo = arg.getTypeClass();
+//				addTo = arg.getTypeClass();
 			}
 			
 //			isPrimitive |= ClassDeclaration.replaceGenerics(getMethodGenericTypeParameterDeclaration(), methodArgs, call, call, true);
