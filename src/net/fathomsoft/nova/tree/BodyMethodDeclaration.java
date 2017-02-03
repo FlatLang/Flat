@@ -195,7 +195,14 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	
 	public NovaMethodDeclaration getConversionTarget()
 	{
-		return genericOverload;
+		NovaMethodDeclaration overload = genericOverload;
+		
+		while (overload != null && overload.genericOverload != null)
+		{
+			overload = overload.genericOverload;
+		}
+		
+		return overload;
 	}
 	
 	public NovaMethodDeclaration getConversionTargetContext()
