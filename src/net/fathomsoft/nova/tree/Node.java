@@ -37,6 +37,9 @@ import static java.util.Arrays.stream;
  */
 public abstract class Node implements Listenable, Annotatable
 {
+//	public long id = ++idcount;
+//	private static long idcount = 0;
+	
 	private Location		locationIn;
 	
 	public  Node			parent;
@@ -1003,7 +1006,10 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public void onRemoved(Node parent)
 	{
-		
+//		if (id == 1348265)
+//		{
+//			int j = 5;
+//		}
 	}
 	
 	/**
