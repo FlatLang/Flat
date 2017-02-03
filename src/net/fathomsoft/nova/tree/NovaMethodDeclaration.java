@@ -831,7 +831,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
-	public NovaMethodDeclaration convertPrimitiveMethod(MethodCall call, Value[] types, Value[] methodTypes, ArrayList<Value[]> closureTypes)
+	public NovaMethodDeclaration convertPrimitiveMethod(MethodCall call, Value returnType, Node addTo, Value[] types, Value[] methodTypes, ArrayList<Value[]> closureTypes)
 	{
 		NovaMethodDeclaration method = clone(getParent(), getLocationIn(), false, true);
 		method.setProperty("userMade", false);
@@ -859,7 +859,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			param.setDefaultType(methodTypes[i].getType());
 		}
 		
-		Node addTo = getParent();
+		addTo = addTo == null ? getParent() : addTo;
 		
 		int closureIndex = 0;
 		
@@ -968,7 +968,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		if (isPrimitive)
 		{
-			return convertPrimitiveMethod(call, types, methodTypes, closureTypes);
+			return convertPrimitiveMethod(call, returnType, addTo, types, methodTypes, closureTypes);
 		}
 		
 		return null;
