@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.annotations.OverrideAnnotation;
 import net.fathomsoft.nova.tree.annotations.PublicAnnotation;
 import net.fathomsoft.nova.tree.annotations.RequireGenericTypeAnnotation;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
@@ -643,6 +644,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(Value[] args)
 	{
+		return getExistingConvertedPrimitiveMethod(args, getMethodGenericTypeParameterDeclaration().getTypes());
+	}
+	
+	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(Value[] args, Value[] methodArgs)
+	{
 		for (NovaMethodDeclaration converted : primitiveOverloads)
 		{
 			NovaParameterList params = converted.getParameterList();
@@ -675,6 +681,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public NovaMethodDeclaration checkConvertToClass(ClassDeclaration type)
 	{
+		return checkConvertToClass(type, getMethodGenericTypeParameterDeclaration().getTypes());
+	}
+	
+	public NovaMethodDeclaration checkConvertToClass(ClassDeclaration type, Value[] methodTypes)
+	{
 		if (getParentClass() != type)
 		{
 			if (getExistingConvertedPrimitiveMethod(type.primitiveOverloadTypes) == null)
@@ -686,7 +697,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
-	public NovaMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types)
+	public NovaMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types, final Value[] methodTypes)
 	{
 		ClassDeclaration referenceClass = getParentClass();
 		
@@ -780,7 +791,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return null;
 	}
 	
-	public NovaMethodDeclaration convertPrimitiveMethod(MethodCall call, Value[] types, ArrayList<Value[]> closureTypes)
+	public NovaMethodDeclaration convertPrimitiveMethod(MethodCall call, Value[] types, Value[] methodTypes, ArrayList<Value[]> closureTypes)
 	{
 		NovaMethodDeclaration method = clone(getParent(), getLocationIn(), false, true);
 		method.setProperty("userMade", false);
