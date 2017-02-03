@@ -132,14 +132,14 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 //		return getAncestorOfType(ClosureDeclaration.class) == null ? POINTER : super.getDataType();
 //	}
 	
-	@Override
-	public void setPrimitive()
-	{
-		if (getAncestorOfType(ClosureDeclaration.class) != null)
-		{
-			super.setPrimitive();
-		}
-	}
+//	@Override
+//	public void setPrimitive()
+//	{
+//		if (getAncestorOfType(ClosureDeclaration.class) != null)
+//		{
+//			super.setPrimitive();
+//		}
+//	}
 	
 	/**
 	 * Get the Value instance that this generic argument is manifested as.
