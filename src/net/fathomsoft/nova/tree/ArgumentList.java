@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * @since	v0.1 Jan 10, 2014 at 3:12:54 AM
  * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class ArgumentList extends List
+public class ArgumentList extends TypeList<Value>
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
