@@ -84,6 +84,7 @@ public class Nova
 	public static final long	CSOURCE       = 0x0000000000100000l;
 	public static final long	NO_C_OUTPUT   = 0x0000000000010000l;
 	public static final long	NO_OPTIMIZE   = 0x0000000000001000l;
+	public static final long	QUOTE_PATHS   = 0x0000000000000100l;
 	
 	public static final int		WINDOWS       = 1;
 	public static final int		MACOSX        = 2;
@@ -373,6 +374,7 @@ public class Nova
 //				"-small",
 //				"-cargs",
 //				"-keepc",
+//				"-qp",
 				"-main",
 				"example/Lab",
 //				"stabilitytest/StabilityTest",
@@ -815,6 +817,12 @@ public class Nova
 			else if (arg.equals("-dry"))
 			{
 				enableFlag(DRY_RUN);
+			}
+			// If the user wants to format the makefile file paths with quotes
+			// instead of backslashes for escaping spaces.
+			else if (arg.equals("-quotes") || arg.equals("-qp"))
+			{
+				enableFlag(QUOTE_PATHS);
 			}
 			// If the user wants to obtain the c compiler arguments.
 			else if (arg.equals("-cargs"))
