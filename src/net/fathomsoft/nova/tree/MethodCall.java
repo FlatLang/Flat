@@ -1341,6 +1341,25 @@ public class MethodCall extends Variable
 		}
 		else
 		{
+			GenericTypeArgumentList args = getMethodGenericTypeArgumentList();
+			
+			if (args.getNumVisibleChildren() > 0)
+			{
+				builder.append("<");
+				
+				for (int i = 0; i < args.getNumVisibleChildren(); i++)
+				{
+					if (i > 0)
+					{
+						builder.append(", ");
+					}
+					
+					args.getVisibleChild(i).generateNovaInput(builder, true, this);
+				}
+				
+				builder.append(">");
+			}
+			
 			builder.append('(').append(getArgumentList().generateNovaInput()).append(')');
 		}
 		
