@@ -928,8 +928,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public NovaMethodDeclaration getConvertedPrimitiveMethod(MethodCall call)
 	{
 		Value[] args = call.getArgumentList().getArgumentsInOrder();
+		Value[] methodArgs = call.getMethodGenericTypeArgumentList().getTypes();
 		
-		NovaMethodDeclaration existing = getExistingConvertedPrimitiveMethod(args);
+		NovaMethodDeclaration existing = getExistingConvertedPrimitiveMethod(args, methodArgs);
 		
 		if (existing != null)
 		{
@@ -942,6 +943,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		NovaParameterList parameters = getParameterList();
 		
 		Value[] types = new Value[args.length];
+		Value[] methodTypes = new Value[methodArgs.length];
 		ArrayList<Value[]> closureTypes = new ArrayList<>();
 		
 		boolean isPrimitive = false;
@@ -949,75 +951,94 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		for (int i = 0; i < args.length; i++)
 		{
 			Value arg = args[i].getReturnedNode();
-			Parameter param = parameters.getParameter(i);
+			Value param = parameters.getParameter(i);
 			
-			if (arg instanceof DefaultArgument == false && arg.isPrimitive() && !param.isPrimitive())
-			{
-				types[i] = arg;
-				
-				isPrimitive = true;
-			}
-			else
-			{
-				types[i] = param;
-			}
+			isPrimitive |= checkType(argTypes, types, i, arg, param, closureTypes);
+		}
+		
+		GenericTypeParameterList methodGenParams = getMethodGenericTypeParameterDeclaration();
+		
+		for (int i = 0; i < Math.min(methodArgs.length, methodGenParams.getNumVisibleChildren()); i++)
+		{
+			Value arg = methodArgs[i].getReturnedNode();
+			Value param = methodGenParams.getVisibleChild(i);
 			
-			if (param instanceof ClosureDeclaration)
+			isPrimitive |= checkType(methodArgs, methodTypes, i, arg, param, closureTypes);
+		}
+		
+		if (isPrimitive)
+		{
+			return convertPrimitiveMethod(call, types, methodTypes, closureTypes);
+		}
+		
+		return null;
+	}
+	
+	public boolean checkType(Value[] argTypes, Value[] types, int i, Value arg, Value param, ArrayList<Value[]> closureTypes)
+	{
+		boolean isPrimitive = false;
+		
+		if (arg instanceof DefaultArgument == false && arg.isPrimitive() && !param.isPrimitive())
+		{
+			types[i] = arg;
+			
+			isPrimitive = true;
+		}
+		else
+		{
+			types[i] = param;
+		}
+		
+		if (param instanceof ClosureDeclaration)
+		{
+			Variable varg = (Variable)arg;
+			ClosureDeclaration closure = (ClosureDeclaration)param;
+			
+			if (varg.declaration != null)
 			{
-				Variable varg = (Variable)arg;
-				ClosureDeclaration closure = (ClosureDeclaration)param;
+				ParameterList aParams = ((CallableMethod)varg.declaration).getParameterList();
+				ParameterList<Value> cParams = closure.getParameterList();
 				
-				if (varg.declaration != null)
+				Value[] closureValues = new Value[Math.min(aParams.getNumParameters(), cParams.getNumParameters())];
+				
+				for (int n = 0; n < closureValues.length; n++)
 				{
-					ParameterList aParams = ((CallableMethod)varg.declaration).getParameterList();
-					ParameterList<Value> cParams = closure.getParameterList();
+					Value aarg = aParams.getParameter(n);
+					Value aparam = cParams.getParameter(n);
 					
-					Value[] closureValues = new Value[Math.min(aParams.getNumParameters(), cParams.getNumParameters())];
-					
-					for (int n = 0; n < closureValues.length; n++)
+					if (aarg.isPrimitive() && !aparam.isPrimitive())
 					{
-						Value aarg = aParams.getParameter(n);
-						Value aparam = cParams.getParameter(n);
+						closureValues[n] = aarg;
 						
-						if (aarg.isPrimitive() && !aparam.isPrimitive())
+						isPrimitive = true;
+					}
+					else
+					{
+						if (aarg.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
 						{
-							closureValues[n] = aarg;
+							closureValues[n] = (Value)aarg.clone(aarg.getParent(), aarg.getLocationIn(), true, true);
 							
-							isPrimitive = true;
-						}
-						else
-						{
-							if (aarg.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+							if (getParentClass().replaceGenerics(argTypes, aparam, closureValues[n]))
 							{
-								closureValues[n] = (Value)aarg.clone(aarg.getParent(), aarg.getLocationIn(), true, true);
-								
-								if (getParentClass().replaceGenerics(argTypes, aparam, closureValues[n]))
-								{
-									isPrimitive = true;
-								}
-								else
-								{
-									closureValues[n] = aparam;
-								}
+								isPrimitive = true;
 							}
 							else
 							{
 								closureValues[n] = aparam;
 							}
 						}
+						else
+						{
+							closureValues[n] = aparam;
+						}
 					}
-					
-					closureTypes.add(closureValues);
 				}
+				
+				closureTypes.add(closureValues);
 			}
 		}
 		
-		if (isPrimitive)
-		{
-			return convertPrimitiveMethod(call, types, closureTypes);
-		}
-		
-		return null;
+		return isPrimitive;
 	}
 	
 	/**
