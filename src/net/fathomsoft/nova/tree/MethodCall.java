@@ -1144,6 +1144,8 @@ public class MethodCall extends Variable
 	}
 	
 	private boolean deduceMethodCallGenericArguments()
+	
+	public void setMethodCallGenericArgumentTypes()
 	{
 		NovaMethodDeclaration novaMethod = getNovaMethod();
 		
@@ -1159,39 +1161,45 @@ public class MethodCall extends Variable
 			{
 				Value common = types[n];
 				
-				for (int i = 0; i < params.getNumParameters(); i++)
+				for (int i = 0; i < Math.min(args.length, params.getNumParameters()); i++)
 				{
-					GenericTypeParameter param = params.getParameter(i).getGenericTypeParameter();
-					
-					recursiveGenericParamSearch(params.getParameter(i), args[i]);
-					
-					if (param == genParams.getParameter(n))
+					if (args[i] instanceof LambdaExpression == false)
 					{
-						if (common == types[n])
+						Pair<GenericTypeParameter, Value> pair = recursiveGenericParamSearch(params.getParameter(i), args[i], genParams.getParameter(n));
+						
+						if (pair != null)
 						{
-							common = args[i];
-						}
-						else
-						{
-							common = SyntaxUtils.getTypeInCommon(common, args[i]);
+							if (common == types[n])
+							{
+								common = pair.b;
+							}
+							else
+							{
+								common = SyntaxUtils.getTypeInCommon(common, pair.b);
+							}
 						}
 					}
 				}
-					
-//				if (genParams.getVisibleChild(n).getType().equals(closure.getType()))
-//				{
-//					types[n] = method;
-//				}
 				
-				if (getMethodGenericTypeArgumentList().getNumVisibleChildren() <= n)
+				if (common != types[n])
 				{
-					GenericTypeArgument arg = new GenericTypeArgument(getMethodGenericTypeArgumentList(), Location.INVALID);
-					arg.setType(common);
-					
-					getMethodGenericTypeArgumentList().addChild(arg);
+					if (getMethodGenericTypeArgumentList().getNumVisibleChildren() <= n)
+					{
+						GenericTypeArgument arg = new GenericTypeArgument(getMethodGenericTypeArgumentList(), Location.INVALID);
+						arg.setType(common);
+						
+						getMethodGenericTypeArgumentList().addChild(arg);
+					}
+					else
+					{
+						GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(n);
+						arg.setType(SyntaxUtils.getTypeInCommon(arg, common));
+					}
 				}
 			}
 		}
+	}
+	
 		
 		return true;
 	}
