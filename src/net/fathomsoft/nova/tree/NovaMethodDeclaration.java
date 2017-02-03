@@ -298,7 +298,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
-			if (method != null && SyntaxUtils.isTypeCompatible(this, method, this))
+			if (method != null && method != this && SyntaxUtils.isTypeCompatible(this, method, this))
 			{
 				return method;
 			}
@@ -308,7 +308,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
 			
-			if (method != null && SyntaxUtils.isTypeCompatible(this, method, this))
+			if (method != null && method != this && SyntaxUtils.isTypeCompatible(this, method, this))
 			{
 				return method;
 			}
