@@ -1099,6 +1099,20 @@ public class MethodCall extends Variable
 		return addArguments(arguments, argsLocation, require);
 	}
 	
+	public static class Pair<A, B>
+	{
+		public A a;
+		public B b;
+		
+		public Pair() {}
+		
+		public Pair(A a, B b)
+		{
+			this.a = a;
+			this.b = b;
+		}
+	}
+	
 	
 	private boolean deduceMethodCallGenericArguments()
 	{
