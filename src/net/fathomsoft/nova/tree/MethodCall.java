@@ -924,7 +924,7 @@ public class MethodCall extends Variable
 			
 			boolean skipArgumentChecks = callableMethod != null && (callableMethod instanceof PropertyMethod || parent.getParentClass().isPropertyTrue("functionMap"));
 			
-			if (!n.decodeArguments(statement, bounds, require))
+			if (!n.decodeArguments(statement, bounds, require) || !n.deduceMethodCallGenericArguments())
 			{
 				return null;
 			}
@@ -1097,6 +1097,60 @@ public class MethodCall extends Variable
 		argsLocation.addBounds(bounds.getStart(), bounds.getEnd());
 		
 		return addArguments(arguments, argsLocation, require);
+	}
+	
+	
+	private boolean deduceMethodCallGenericArguments()
+	{
+		NovaMethodDeclaration novaMethod = getNovaMethod();
+		
+		if (novaMethod != null)
+		{
+			GenericTypeParameterList genParams = novaMethod.getMethodGenericTypeParameterDeclaration();
+			NovaParameterList params = novaMethod.getParameterList();
+			
+			Value[] args = getArgumentList().getArgumentsInOrder();
+			Value[] types = genParams.getTypes();
+			
+			for (int n = 0; n < genParams.getNumVisibleChildren(); n++)
+			{
+				Value common = types[n];
+				
+				for (int i = 0; i < params.getNumParameters(); i++)
+				{
+					GenericTypeParameter param = params.getParameter(i).getGenericTypeParameter();
+					
+					recursiveGenericParamSearch(params.getParameter(i), args[i]);
+					
+					if (param == genParams.getParameter(n))
+					{
+						if (common == types[n])
+						{
+							common = args[i];
+						}
+						else
+						{
+							common = SyntaxUtils.getTypeInCommon(common, args[i]);
+						}
+					}
+				}
+					
+//				if (genParams.getVisibleChild(n).getType().equals(closure.getType()))
+//				{
+//					types[n] = method;
+//				}
+				
+				if (getMethodGenericTypeArgumentList().getNumVisibleChildren() <= n)
+				{
+					GenericTypeArgument arg = new GenericTypeArgument(getMethodGenericTypeArgumentList(), Location.INVALID);
+					arg.setType(common);
+					
+					getMethodGenericTypeArgumentList().addChild(arg);
+				}
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
