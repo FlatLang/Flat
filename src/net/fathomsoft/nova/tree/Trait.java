@@ -108,15 +108,29 @@ public class Trait extends ClassDeclaration
 		{
 			ClassDeclaration obj = getExtendedClass().getTypeClass();//getProgram().getClassDeclaration("nova/Object");
 			
-			for (Trait i : obj.getImplementedInterfaces())
+			boolean before = filter.checkInterfaces;
+			
+			if (obj.getClassLocation().equals("nova/Object") && obj.implementsInterface(this, false))
 			{
-				if (i == this)
+				filter.checkInterfaces = false;
+			}
+			else
+			{
+				for (Trait i : obj.getImplementedInterfaces())
 				{
-					return methods;
+					if (i == this)
+					{
+						return methods;
+					}
 				}
 			}
 			
 			MethodDeclaration[] extra = obj.getMethods(methodName, filter);
+			
+			if (obj.getClassLocation().equals("nova/Object") && obj.implementsInterface(this, false))
+			{
+				filter.checkInterfaces = before;
+			}
 			
 			if (extra.length > 0)
 			{
