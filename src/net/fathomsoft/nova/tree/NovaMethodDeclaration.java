@@ -837,7 +837,15 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		method.setProperty("userMade", false);
 		method.overridenMethod = null;
 		method.overridingMethods = new ArrayList<>();
-		getGenericTypeArgumentList().cloneChildrenTo(method.getGenericTypeArgumentList());
+		
+		if (returnType == call)
+		{
+			getGenericTypeArgumentList().cloneChildrenTo(method.getGenericTypeArgumentList());
+		}
+		else
+		{
+			method.setType(returnType);
+		}
 		
 		GenericTypeParameterList methodParams = method.getMethodGenericTypeParameterDeclaration();
 		
@@ -964,6 +972,25 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			Value param = methodGenParams.getVisibleChild(i);
 			
 			isPrimitive |= checkType(methodArgs, methodTypes, i, arg, param, closureTypes);
+		}
+		
+		Value returnType = call;
+		Node addTo = getParent();
+		
+		if (call.getType() != null && call.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+		{
+			String s = generateNovaType(call).toString();
+
+			GenericTypeArgument arg = new GenericTypeArgument(this, Location.INVALID);
+			arg.setType(s);
+
+			if (arg.convertToPrimitiveType())
+			{
+				returnType = arg;
+				addTo = arg.getTypeClass();
+			}
+			
+//			isPrimitive |= ClassDeclaration.replaceGenerics(getMethodGenericTypeParameterDeclaration(), methodArgs, call, call, true);
 		}
 		
 		if (isPrimitive)
