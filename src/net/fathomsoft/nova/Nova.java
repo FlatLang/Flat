@@ -91,7 +91,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.3.3";
+	public static final String	VERSION       = "v0.3.4";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -356,10 +356,10 @@ public class Nova
 			
 			args = new String[]
 			{
-//				"../Spectra",
+				"../Spectra",
 //				"../Nova.c",
 				"../Misc/example",
-//				"../Misc/stabilitytest",
+				"../Misc/stabilitytest",
 				"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
