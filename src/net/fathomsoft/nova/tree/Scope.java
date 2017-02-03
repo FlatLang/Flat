@@ -410,11 +410,17 @@ public class Scope extends Node
 		
 		ClassDeclaration targetContext = getParentClass();
 		
+		Value[] types = context.getParentClass().primitiveOverloadTypes;
+		
 		for (Node n : nodes)
 		{
 			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
 			{
-				targetContext.replaceGenerics(context.getParentClass().primitiveOverloadTypes, (Value)n);
+				if (types != null)
+				{
+					targetContext.replaceGenerics(types, (Value)n);
+				}
+				
 				targetContext.replaceGenerics(getParentMethod().getMethodGenericTypeParameterDeclaration(), context.getMethodGenericTypeParameterDeclaration().getTypes(), (Value)n);
 			}
 		}
