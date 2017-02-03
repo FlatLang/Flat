@@ -404,7 +404,7 @@ public class Scope extends Node
 		}
 	}
 	
-	public void convertConvertedTypes(ClassDeclaration context)
+	public void convertConvertedTypes(NovaMethodDeclaration context)
 	{
 		Node[] nodes = getChildrenOfType(Value.class);
 		

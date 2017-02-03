@@ -543,7 +543,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			BodyMethodDeclaration accessor = decodeAccessor();
 			BodyMethodDeclaration reference = ((FieldDeclaration)getProperty("genericOverload")).getAccessorMethod();
 			
-			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, getParentClass(), accessor);
+			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, accessor, accessor);
 			
 			addChild(accessor);
 			
@@ -563,7 +563,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			BodyMethodDeclaration mutator = decodeMutator();
 			BodyMethodDeclaration reference = ((FieldDeclaration)getProperty("genericOverload")).getMutatorMethod();
 			
-			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, getParentClass(), mutator);
+			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, mutator, mutator);
 			
 			addChild(mutator);
 		}

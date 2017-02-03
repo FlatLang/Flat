@@ -3188,7 +3188,7 @@ public class SyntaxUtils
 		return temp;
 	}
 	
-	public static String getConvertedNovaContents(Scope scope, Node parent, ClassDeclaration conversionTarget)
+	public static String getConvertedNovaContents(Scope scope, Node parent, NovaMethodDeclaration conversionTarget)
 	{
 		Scope temp = SyntaxUtils.cloneToScope(scope, parent);
 		
@@ -3198,7 +3198,7 @@ public class SyntaxUtils
 		return temp.getNovaContents();
 	}
 	
-	public static void parseConvertedContentsTo(Scope scope, Node parent, ClassDeclaration conversionTarget, Node to)
+	public static void parseConvertedContentsTo(Scope scope, Node parent, NovaMethodDeclaration conversionTarget, Node to)
 	{
 		String code = SyntaxUtils.getConvertedNovaContents(scope, parent, conversionTarget);
 		
