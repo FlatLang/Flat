@@ -309,26 +309,46 @@ public class Operator extends IValue
 				r = ((BinaryOperation)r).getLeftOperand().getReturnedNode();
 			}
 			
-			ClassDeclaration common = SyntaxUtils.getTypeInCommon(l, r);
-			
-			if (common == null)
+			if (l.isPrimitive() && r.isPrimitive())
 			{
-				String left = l.getType();
-				String right = r.getType();
+				String left = SyntaxUtils.getPrimitiveNovaType(l.getType());
+				String right = SyntaxUtils.getPrimitiveNovaType(r.getType());
 				
-				SyntaxUtils.getTypeInCommon(l, r);
+				if (!SyntaxUtils.arePrimitiveTypesCompatibleGeneral(left, right))
+				{
+					left = SyntaxUtils.getPrimitiveNovaType(l.getType());
+					right = SyntaxUtils.getPrimitiveNovaType(r.getType());
+					
+					SyntaxUtils.arePrimitiveTypesCompatibleGeneral(left, right);
+					
+					SyntaxMessage.error("Type '" + left + "' is not compatible with type '" + right + "'", this);
+				}
 				
-				SyntaxMessage.error("Type '" + left + "' is not compatible with type '" + right + "'", this);
+				setType(SyntaxUtils.getHighestPrimitiveType(left, right));
 			}
-			
-			String type = common.getType();
-			
-			if (getLeftOperand().getReturnedNode().isPrimitive() && getRightOperand().getReturnedNode().isPrimitive())
+			else
 			{
-				type = SyntaxUtils.getHighestPrimitiveType(getLeftOperand().getReturnedNode().getType(), getRightOperand().getReturnedNode().getType());
+				ClassDeclaration common = SyntaxUtils.getTypeInCommon(l, r);
+				
+				if (common == null)
+				{
+					String left = l.getType();
+					String right = r.getType();
+					
+					SyntaxUtils.getTypeInCommon(l, r);
+					
+					SyntaxMessage.error("Type '" + left + "' is not compatible with type '" + right + "'", this);
+				}
+				
+				String type = common.getType();
+				
+				if (getLeftOperand().getReturnedNode().isPrimitive() && getRightOperand().getReturnedNode().isPrimitive())
+				{
+					type = SyntaxUtils.getHighestPrimitiveType(getLeftOperand().getReturnedNode().getType(), getRightOperand().getReturnedNode().getType());
+				}
+				
+				setType(type);
 			}
-			
-			setType(type);
 		}
 	}
 	
