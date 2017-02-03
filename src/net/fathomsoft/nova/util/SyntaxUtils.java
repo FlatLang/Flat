@@ -113,6 +113,11 @@ public class SyntaxUtils
 		return getPrimitiveDistance(required, given) >= 0;
 	}
 	
+	public static boolean arePrimitiveTypesCompatibleGeneral(String a, String b)
+	{
+		return Math.abs(getPrimitiveDistance(a, b)) >= 0;
+	}
+	
 	public static int getPrimitiveDistance(String required, String given)
 	{
 		if (required == null || given == null)
