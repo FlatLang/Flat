@@ -1189,7 +1189,7 @@ public class MethodCall extends Variable
 							}
 							else
 							{
-								common = SyntaxUtils.getTypeInCommon(common, pair.b);
+								common = SyntaxUtils.getValueInCommon(common, pair.b);
 							}
 						}
 					}
@@ -1207,7 +1207,7 @@ public class MethodCall extends Variable
 					else
 					{
 						GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(n);
-						arg.setType(SyntaxUtils.getTypeInCommon(arg, common));
+						arg.setType(SyntaxUtils.getValueInCommon(arg, common));
 					}
 				}
 			}
