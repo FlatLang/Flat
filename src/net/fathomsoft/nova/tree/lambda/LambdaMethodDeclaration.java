@@ -22,6 +22,8 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	public ClosureContext context;
 	public ClosureContextDeclaration contextDeclaration;
 	
+	public int index;
+	
 	public MethodCall methodCall;
 	
 	private Scope scope;
@@ -48,7 +50,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	{
 		if (isDecodingContents())
 		{
-			return (ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getNumVisibleChildren());
+			return (ClosureDeclaration)methodCall.getNovaMethod().getParameter(index);
 		}
 		
 		return closure.closureDeclaration;//(ClosureDeclaration)methodCall.getNovaMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
