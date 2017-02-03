@@ -1363,9 +1363,9 @@ public class MethodCall extends Variable
 			builder.append('(').append(getArgumentList().generateNovaInput()).append(')');
 		}
 		
-		if (outputChildren && doesAccess())
+		if (outputChildren)
 		{
-			builder.append('.').append(getAccessedNode().generateNovaInput());
+			generateAccessedNode(builder, safeNavigation);
 		}
 		
 		return builder;
