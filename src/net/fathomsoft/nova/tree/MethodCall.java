@@ -1113,6 +1113,10 @@ public class MethodCall extends Variable
 		}
 	}
 	
+	private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(VariableDeclaration parameter, Value corresponding)
+	{
+		return null;
+	}
 	
 	private boolean deduceMethodCallGenericArguments()
 	{
