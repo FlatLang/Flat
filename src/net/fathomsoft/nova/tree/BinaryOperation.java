@@ -734,7 +734,7 @@ public class BinaryOperation extends IValue
 			{
 				boolean leftString = SyntaxUtils.isString(left);
 				boolean rightString = SyntaxUtils.isString(right);
-	
+				
 				if (leftString || rightString)
 				{
 					Value nonString = null;
@@ -929,7 +929,7 @@ public class BinaryOperation extends IValue
 		{
 			MethodCall toString = MethodCall.decodeStatement(nonString, "toString()", nonString.getLocationIn(), true);
 			
-			((Accessible)nonString).setAccessedNode(toString);
+			((Accessible)ret).setAccessedNode(toString);
 			
 			return nonString;
 		}
