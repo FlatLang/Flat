@@ -711,7 +711,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			if (getExistingConvertedPrimitiveMethod(type.primitiveOverloadTypes) == null)
 			{
-				return convertToClass(type, type.primitiveOverloadTypes);
+				return convertToClass(type, type.primitiveOverloadTypes, methodTypes);
 			}
 		}
 		
@@ -729,8 +729,27 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
 		clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
 		getGenericTypeArgumentList().cloneChildrenTo(clone.getGenericTypeArgumentList());
-		getMethodGenericTypeParameterDeclaration().cloneChildrenTo(clone.getMethodGenericTypeParameterDeclaration());
 //		clone.setName("zca_" + clone.getName());
+		
+		GenericTypeParameterList methodParams = clone.getMethodGenericTypeParameterDeclaration();
+		
+		getMethodGenericTypeParameterDeclaration().cloneChildrenTo(methodParams);
+		
+		for (int i = 0; i < methodTypes.length; i++)
+		{
+			GenericTypeParameter param;
+			
+			if (i >= methodParams.getNumVisibleChildren())
+			{
+				param = new GenericTypeParameter(clone, Location.INVALID);
+			}
+			else
+			{
+				param = methodParams.getVisibleChild(i);
+			}
+			
+			param.setDefaultType(methodTypes[i].getType());
+		}
 		
 		RequireGenericTypeAnnotation require = (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
 		
@@ -819,7 +838,26 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		method.overridenMethod = null;
 		method.overridingMethods = new ArrayList<>();
 		getGenericTypeArgumentList().cloneChildrenTo(method.getGenericTypeArgumentList());
-		getMethodGenericTypeParameterDeclaration().cloneChildrenTo(method.getMethodGenericTypeParameterDeclaration());
+		
+		GenericTypeParameterList methodParams = method.getMethodGenericTypeParameterDeclaration();
+		
+		getMethodGenericTypeParameterDeclaration().cloneChildrenTo(methodParams);
+		
+		for (int i = 0; i < methodTypes.length; i++)
+		{
+			GenericTypeParameter param;
+			
+			if (i >= methodParams.getNumVisibleChildren())
+			{
+				param = new GenericTypeParameter(method, Location.INVALID);
+			}
+			else
+			{
+				param = methodParams.getVisibleChild(i);
+			}
+			
+			param.setDefaultType(methodTypes[i].getType());
+		}
 		
 		Node addTo = getParent();
 		
