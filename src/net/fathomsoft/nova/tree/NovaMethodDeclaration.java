@@ -875,7 +875,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			Parameter param = getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
 
-			if (param.getDataType() != types[i].getDataType())
+			if (param != types[i])
 			{
 				param.setType(types[i]);
 			}
@@ -1005,7 +1005,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		boolean isPrimitive = false;
 		
-		if (arg instanceof DefaultArgument == false && arg.isPrimitive() && !param.isPrimitive())
+		if (arg instanceof DefaultArgument == false &&
+			(arg.isPrimitive() && !param.isPrimitive() ||
+				!param.isGenericType() && param.getTypeClass() != null && !param.getTypeClass().isPrimitiveOverload() &&
+					arg.getTypeClass() != null && arg.getTypeClass().isPrimitiveOverload()))
 		{
 			types[i] = arg;
 			
