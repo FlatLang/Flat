@@ -628,7 +628,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (clazz instanceof Trait)
 			{
-				if (clazz != this && !clazz.isPropertyTrue("functionMap"))
+				if (clazz != this)// && !clazz.isPropertyTrue("functionMap"))
 				{
 					array.add((Trait)clazz);
 				}
