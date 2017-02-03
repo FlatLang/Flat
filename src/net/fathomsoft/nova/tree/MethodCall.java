@@ -1313,21 +1313,6 @@ public class MethodCall extends Variable
 		{
 			NovaMethodDeclaration method = (NovaMethodDeclaration)methodDeclaration;
 			
-//			if (getGenericTypeArgumentList().getNumVisibleChildren() > 0)
-//			{
-//				String s = generateNovaType(this).toString();
-//				
-//				GenericTypeArgument arg = new GenericTypeArgument(this, Location.INVALID);
-//				arg.setType(s);
-//				
-//				if (arg.convertToPrimitiveType())
-//				{
-//					
-//					
-//					return;
-//				}
-//			}
-			
 			NovaMethodDeclaration converted = method.getConvertedPrimitiveMethod(this);
 			
 			if (converted != null)
