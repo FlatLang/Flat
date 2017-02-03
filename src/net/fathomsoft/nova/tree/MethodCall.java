@@ -1113,13 +1113,31 @@ public class MethodCall extends Variable
 		}
 	}
 	
-	private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(VariableDeclaration parameter, Value corresponding)
+	private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter, Value corresponding, GenericTypeParameter target)
 	{
 		GenericTypeParameter param = parameter.getGenericTypeParameter();
 		
-		if (param != null)
+		if (param != null && param == target)
 		{
 			return new Pair<>(param, corresponding);
+		}
+		else
+		{
+			GenericTypeArgumentList params = parameter.getGenericTypeArgumentList();
+			GenericTypeArgumentList args = corresponding.getGenericTypeArgumentList();
+			
+			// TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A, Out>(Pair<A, A> other, ...)
+			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), params.getNumVisibleChildren()); i++)
+			{
+				Value arg = args.getVisibleChild(i);
+				
+				Pair<GenericTypeParameter, Value> p = recursiveGenericParamSearch(params.getVisibleChild(i), arg, target);
+				
+				if (p != null)
+				{
+					return p;
+				}
+			}
 		}
 		
 		return null;
