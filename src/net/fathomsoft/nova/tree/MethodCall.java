@@ -1115,6 +1115,13 @@ public class MethodCall extends Variable
 	
 	private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(VariableDeclaration parameter, Value corresponding)
 	{
+		GenericTypeParameter param = parameter.getGenericTypeParameter();
+		
+		if (param != null)
+		{
+			return new Pair<>(param, corresponding);
+		}
+		
 		return null;
 	}
 	
