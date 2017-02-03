@@ -2603,6 +2603,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return replaceGenerics(types, value, value, true);
 	}
 	
+	public boolean replaceGenerics(GenericTypeParameterList params, final Value[] types, Value value)
+	{
+		return replaceGenerics(params, types, value, value, true);
+	}
+	
 	public boolean replaceGenerics(final Value[] types, Value original, Value value)
 	{
 		return replaceGenerics(types, original, value, false);
@@ -2721,7 +2726,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else if (method instanceof InitializationMethod == false && method instanceof Destructor == false && method instanceof AssignmentMethod == false)
 			{
-				((NovaMethodDeclaration)method).convertToClass(addTo, types);
+				NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
+				
+				novaMethod.convertToClass(addTo, types, novaMethod.getMethodGenericTypeParameterDeclaration().getTypes());
 			}
 		});
 	}
