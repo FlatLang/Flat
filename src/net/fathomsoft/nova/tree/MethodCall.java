@@ -1214,6 +1214,16 @@ public class MethodCall extends Variable
 		}
 	}
 	
+	public boolean deduceMethodCallGenericArguments()
+	{
+		setMethodCallGenericArgumentTypes();
+		
+		if (!finishParsingLambdas())
+		{
+			return false;
+		}
+		
+		setMethodCallGenericArgumentTypes();
 		
 		return true;
 	}
