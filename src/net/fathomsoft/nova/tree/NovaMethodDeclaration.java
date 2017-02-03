@@ -662,8 +662,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					Parameter param = params.getParameter(i);
 					Value arg = args[i].getReturnedNode();
 					
-					if (arg.getReturnedNode().getDataType() != param.getDataType() ||
-						arg.getReturnedNode().getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass()))
+					if (arg.getDataType() != param.getDataType() ||
+						arg.getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass()))
+					{
+						compatible = false;
+					}
+					else if (arg.isPrimitive() && param.isPrimitive() && !arg.getType().equals(param.getType()))
 					{
 						compatible = false;
 					}
@@ -680,10 +684,14 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					for (int i = 0; i < methodArgs.length; i++)
 					{
 						Value param = genParams.getVisibleChild(i);
-						Value arg = methodArgs[i];
+						Value arg = methodArgs[i].getReturnedNode();
 						
-						if (arg.getReturnedNode().getDataType() != param.getDataType() ||
-							arg.getReturnedNode().getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass()))
+						if (arg.getDataType() != param.getDataType() ||
+							arg.getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass()))
+						{
+							compatible = false;
+						}
+						else if (arg.isPrimitive() && param.isPrimitive() && !arg.getType().equals(param.getType()))
 						{
 							compatible = false;
 						}
