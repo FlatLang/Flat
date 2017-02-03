@@ -48,7 +48,17 @@ public class MethodGenericTypeParameter extends GenericTypeParameter
 	{
 		// TODO: update this when defaultType is an actual Value type
 		Value value = new IValue(this, Location.INVALID);
-		value.setType(getDefaultType());
+		
+		GenericTypeArgument arg = getCorrespondingArgument(context);
+		
+		if (arg != null)
+		{
+			value.setType(arg);
+		}
+		else
+		{
+			value.setType(getDefaultType());
+		}
 		
 		return value;
 	}
