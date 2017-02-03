@@ -355,6 +355,11 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 				defaultValue.onAfterDecoded();
 				defaultValue.onAdded(this);
 				
+				if (defaultValue instanceof LambdaExpression)
+				{
+					defaultValue = ((LambdaExpression)defaultValue).generateClosure();
+				}
+				
 				defaultValueString = null;
 			}
 		}
