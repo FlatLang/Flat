@@ -1143,7 +1143,21 @@ public class MethodCall extends Variable
 		return null;
 	}
 	
-	private boolean deduceMethodCallGenericArguments()
+	public boolean finishParsingLambdas()
+	{
+		for (Value arg : getArgumentList())
+		{
+			if (arg instanceof LambdaExpression)
+			{
+				if (((LambdaExpression)arg).generateClosure() == null)
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
 	
 	public void setMethodCallGenericArgumentTypes()
 	{
