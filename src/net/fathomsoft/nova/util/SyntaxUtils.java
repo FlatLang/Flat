@@ -2076,6 +2076,58 @@ public class SyntaxUtils
 		return null;
 	}
 	
+	public static Value getValueInCommon(Value value1, Value value2)
+	{
+		if (value1.isPrimitive() && value2.isPrimitive() && value1.getType() != null && value2.getType() != null)
+		{
+			String type = getHighestPrimitiveType(value1.getType(), value2.getType());
+			
+			return value1.getType().equals(type) ? value1 : value2;
+		}
+		
+		ClassDeclaration type1 = value1.getTypeClass();
+		ClassDeclaration type2 = value2.getTypeClass();
+		
+		if (type1 == null || type2 == null)
+		{
+			return null;
+		}
+		
+		ClassDeclaration type3 = type2;
+		
+		while (type2 != null)
+		{
+			if (type1.isOfType(type2))
+			{
+				IValue value = new IValue(value2.getParent(), value2.getLocationIn());
+				value.setType(value1);
+				value.setTypeValue(type2.getType());
+				
+				return value;
+			}
+			
+			type2 = type2.getExtendedClassDeclaration();
+		}
+		
+		type2 = type3;
+		
+		while (type1 != null)
+		{
+			if (type2.isOfType(type1))
+			{
+				IValue value = new IValue(value2.getParent(), value2.getLocationIn());
+				value.setType(value1);
+				value.setTypeValue(type1.getType());
+				
+				return value;
+			}
+			
+			type1 = type1.getExtendedClassDeclaration();
+		}
+		
+		return null;
+	}
+	
 //	/**
 //	 * Get the base class type that the two Values have in common. If
 //	 * the two nodes do not have anything in common, null is returned.
