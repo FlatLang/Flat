@@ -41,7 +41,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	public ClassInstanceDeclaration classInstanceDeclaration;
 	public ClassDeclaration functionMap, propertyMap, encapsulatingClass;
 	
-	public Value[] primitiveOverloadTypes;
+	public Value[] primitiveOverloadTypes, originalPrimitiveOverloadTypes;
 	public ClassDeclaration genericOverload;
 	public ArrayList<ClassDeclaration> primitiveOverloads;
 	
@@ -2857,6 +2857,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		primitiveOverloads.add(c);
 		
 		c.genericOverload = this;
+		c.originalPrimitiveOverloadTypes = types;
 		c.primitiveOverloadTypes = new Value[types.length];
 		
 		for (int i = 0; i < types.length; i++)
