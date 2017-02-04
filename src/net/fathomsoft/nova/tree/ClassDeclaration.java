@@ -2638,10 +2638,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		return replaceGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
 	}
 	
-	public static boolean replaceGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
+	public static boolean shallowReplaceGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
 	{
-		boolean changed = false;
-		
 		GenericTypeParameter genParam = original.getGenericTypeParameter();
 		GenericTypeParameter valParam = value.getGenericTypeParameter();
 		
@@ -2658,9 +2656,21 @@ public class ClassDeclaration extends InstanceDeclaration
 					value.setType(type);
 					value.setArrayDimensions(dimensions);
 					
-					changed = true;
+					return true;
 				}
 			}
+		}
+		
+		return false;
+	}
+	
+	public static boolean replaceGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
+	{
+		boolean changed = false;
+		
+		if (shallowReplaceGenerics(params, types, original, value, allowSame))
+		{
+			changed = true;
 		}
 		else
 		{
