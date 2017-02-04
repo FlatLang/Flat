@@ -2904,6 +2904,11 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		if (isPrimitiveOverload())
 		{
+			if (genericOverload.arrayBracketOverload != null)
+			{
+				arrayBracketOverload = genericOverload.arrayBracketOverload.clone(this, genericOverload.arrayBracketOverload.getLocationIn(), true, true);
+			}
+			
 			genericOverload.getFieldList().forEachChild(list ->
 			{
 				list.forEachChild(node ->
