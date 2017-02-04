@@ -264,6 +264,11 @@ public class SyntaxTree
 		{
 			root.addAutoImports();
 		}
+		else if (phase == PHASE_INSTANCE_DECLARATIONS)
+		{
+			controller.log("Adding primitive generic overload properties...");
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.convertProperties()));
+		}
 		
 		finishedPhase = true;
 		
