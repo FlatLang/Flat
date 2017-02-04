@@ -377,7 +377,7 @@ public class Closure extends Variable
 			variable = null;
 		}
 		
-		if (phase == SyntaxTree.PHASE_PRE_GENERATION && closureDeclaration == null)
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
 			closureDeclaration = searchClosureDeclaration();
 		}
