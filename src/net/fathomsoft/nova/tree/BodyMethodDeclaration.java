@@ -46,7 +46,7 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 			}
 			else if (genericOverload != null)
 			{
-				return genericOverload.getType(checkCast);
+				genericOverload.getType(checkCast);
 			}
 		}
 		
