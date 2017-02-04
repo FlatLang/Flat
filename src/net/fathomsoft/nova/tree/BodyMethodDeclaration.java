@@ -38,9 +38,16 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	@Override
 	public String getType(boolean checkCast)
 	{
-		if (super.getType(checkCast) == null && shorthandAction != null)
+		if (super.getType(checkCast) == null)
 		{
-			decodeShorthandAction();
+			if (shorthandAction != null)
+			{
+				decodeShorthandAction();
+			}
+			else if (genericOverload != null)
+			{
+				return genericOverload.getType(checkCast);
+			}
 		}
 		
 		return super.getType(checkCast);

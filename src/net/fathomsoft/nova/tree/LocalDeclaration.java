@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
@@ -185,7 +184,7 @@ public class LocalDeclaration extends VariableDeclaration
 				for (int i = 0; i < n.getNumGenericTypeArguments(); i++)
 				{
 					GenericTypeArgument type = n.getGenericTypeArgument(i);
-					
+
 					if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
 					{
 						type.isGenericType();
