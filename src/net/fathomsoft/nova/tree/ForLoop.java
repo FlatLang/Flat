@@ -320,10 +320,13 @@ public class ForLoop extends Loop
 			if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
 			{
 				LocalDeclaration declaration = (LocalDeclaration)existing;
-				
-				declaration.getAncestorWithScope().getParent().getAncestorWithScope().addChild(declaration);
-				
-				declaration.setScopeID(getScope().getID());
+
+				if (declaration.getAncestorWithScope() == this)
+				{
+					declaration.getAncestorWithScope().getParent().getAncestorWithScope().addChild(declaration);
+					
+					declaration.setScopeID(getScope().getID());
+				}
 			}
 		}
 		
