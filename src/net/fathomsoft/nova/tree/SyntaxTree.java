@@ -227,6 +227,7 @@ public class SyntaxTree
 		}
 		
 		this.phase = phase;
+		finishedPhase = false;
 		
 		if (useThreads && phase >= PHASE_METHOD_CONTENTS)
 		{
@@ -263,6 +264,8 @@ public class SyntaxTree
 		{
 			root.addAutoImports();
 		}
+		
+		finishedPhase = true;
 		
 		validateNodes(root);
 		
