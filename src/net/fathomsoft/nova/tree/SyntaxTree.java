@@ -43,6 +43,8 @@ public class SyntaxTree
 	
 	private boolean					useThreads;
 	
+	public boolean finishedPhase;
+	
 	public static final int			PHASE_CLASS_DECLARATION = 1, PHASE_INSTANCE_DECLARATIONS = 2,
 									PHASE_METHOD_CONTENTS = 3, PHASE_PRE_GENERATION = 4;
 	

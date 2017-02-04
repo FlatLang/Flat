@@ -2892,60 +2892,58 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		addConvertedImplementations(c, types);
 		
-//		String args = String.join(", ", Arrays.stream(types).map(x -> x.getNovaType(this)).collect(Collectors.toList()));
-//		
-//		if (this instanceof Trait)
-//		{
-//			TraitImplementation i = TraitImplementation.decodeStatement(this, getName(), c.getLocationIn(), true);
-//			i.decodeGenericTypeArguments(args);
-//			
-//			c.getInterfacesImplementationList().addChild(i);
-//		}
-//		else
-//		{
-//			c.setExtendedClass(ExtendedClass.decodeStatement(this, getName(), c.getLocationIn(), true));
-//			c.getExtendedClass().decodeGenericTypeArguments(args);
-//		}
-		
-		getFieldList().forEachChild(list -> {
-			list.forEachChild(node -> {
-				FieldDeclaration field = (FieldDeclaration)node;
-				
-				if (field.isUserMade())
-				{
-					FieldDeclaration clone = field.clone(c, field.getLocationIn(), true, true);
-					clone.setProperty("userMade", false);
-					clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
-					clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
-//					clone.accessorValue = null;
-//
-//					field.correspondingPrimitiveOverloads.add(clone);
-					clone.setProperty("genericOverload", field);
-					
-					replaceGenerics(types, field, clone);
-					
-					c.addChild(clone);
-				}
-			});
-		});
-		
-		c.getHiddenMethodList().slaughterEveryLastVisibleChild();
-		c.getDestructorList().slaughterEveryLastVisibleChild();
-		
-		cloneMethods(types, getConstructorList(), c);
-		cloneMethods(types, getMethodList(), c);
-		cloneMethods(types, getPropertyMethodList(), c);
-		
-		c.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
-		
-		if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS || getProgram().getTree().finishedPhase)
 		{
-			c.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+			c.convertProperties();
 		}
 		
-		c.setMethodReferences();
-		
 		return c;
+	}
+	
+	public void convertProperties()
+	{
+		if (isPrimitiveOverload())
+		{
+			genericOverload.getFieldList().forEachChild(list ->
+			{
+				list.forEachChild(node ->
+				{
+					FieldDeclaration field = (FieldDeclaration)node;
+					
+					if (field.isUserMade())
+					{
+						FieldDeclaration clone = field.clone(this, field.getLocationIn(), true, true);
+						clone.setProperty("userMade", false);
+						clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
+						clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+						//					clone.accessorValue = null;
+						//
+						//					field.correspondingPrimitiveOverloads.add(clone);
+						clone.setProperty("genericOverload", field);
+						
+						genericOverload.replaceGenerics(originalPrimitiveOverloadTypes, field, clone);
+						
+						addChild(clone);
+					}
+				});
+			});
+			
+			getHiddenMethodList().slaughterEveryLastVisibleChild();
+			getDestructorList().slaughterEveryLastVisibleChild();
+			
+			genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getConstructorList(), this);
+			genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getMethodList(), this);
+			genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getPropertyMethodList(), this);
+			
+			validate(SyntaxTree.PHASE_CLASS_DECLARATION);
+			
+			if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS || getProgram().getTree().finishedPhase)
+			{
+				SyntaxTree.validateNodes(this, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+			}
+			
+			setMethodReferences();
+		}
 	}
 	
 	/**
