@@ -906,7 +906,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						{
 							MethodCall c = (MethodCall)v;
 							
-							Value val = (Value)c.getArgumentList().getVisibleChild(n);
+							Value val = c.getArgumentList().getVisibleChild(n);
 							
 							if (val instanceof Variable)
 							{
@@ -926,8 +926,6 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						}
 					}
 				}
-				
-//				getParentClass().replaceGenerics(types, (ClosureDeclaration)param, (ClosureDeclaration)types[i]);
 			}
 
 			method.getParameterList().addChild(param);

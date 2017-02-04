@@ -2721,12 +2721,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public static boolean replaceGenerics(GenericTypeParameterList params, Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
 	{
-		ClosureDeclaration closure = value;
-		
-		closure.register();
+		value.register();
 		
 		ParameterList<Value> originalClosureParams = original.getParameterList();
-		ParameterList<Value> closureParams = closure.getParameterList();
+		ParameterList<Value> closureParams = value.getParameterList();
 		
 		boolean changed = false;
 		
