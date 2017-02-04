@@ -3888,7 +3888,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsDestructor()
 	{
-		return containsMethod(Destructor.IDENTIFIER, true, null);
+		return containsMethod(Destructor.IDENTIFIER, false, null);
 	}
 	
 	/**
