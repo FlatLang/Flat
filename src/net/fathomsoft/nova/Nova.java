@@ -64,9 +64,9 @@ public class Nova
 	public boolean				isTesting     = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
-	public static final boolean	DEBUG         = false;
-//	public static final boolean	DEBUG         = true;
-	
+//	public static final boolean	DEBUG         = false;
+	public static final boolean	DEBUG         = true;
+
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 
@@ -241,9 +241,22 @@ public class Nova
 			{
 				enginePath = installDirectory.getAbsolutePath();
 			}
-			
-			targetEngineWorkingDir = new File(enginePath + "/Nova-" + target).getCanonicalFile();
-			
+
+			String folderName = "Nova-" + target;
+
+			File engineDir = new File(enginePath);
+
+			Optional<File> existingFile = Arrays.stream(engineDir.listFiles()).filter(x -> x.isDirectory() && x.getName().equalsIgnoreCase(folderName)).findFirst();
+
+			if (!existingFile.isPresent())
+			{
+				System.err.println("Could not find target directory for " + target + " compilation target in '" + new File(enginePath + "/" + folderName).getCanonicalPath() + "'");
+
+				System.exit(1);
+			}
+
+			targetEngineWorkingDir = existingFile.get().getCanonicalFile();
+
 			formattedTarget = targetEngineWorkingDir.getName().substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
 			
 			File targetDirectory = new File(targetEngineWorkingDir, "out/production/Nova-" + formattedTarget + "/nova");
