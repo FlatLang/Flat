@@ -2063,6 +2063,12 @@ public class ClassDeclaration extends InstanceDeclaration
 //		
 //		return staticFields.getNumChildren() > 0 || containsStaticPrivateData();
 //	}
+
+	@Override
+	public boolean isUserMade(boolean checkAncestor)
+	{
+		return !isPrimitiveOverload() && super.isUserMade(checkAncestor);
+	}
 	
 	/**
 	 * Get whether or not the class contains any private non-static
@@ -2843,11 +2849,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			c.getInterfacesImplementationList().addChild(t);
 		}
 	}
-	
+
 	public ClassDeclaration convertToPrimitive(final Value[] types)
 	{
 		ClassDeclaration c = clone(getParent(), getLocationIn(), false, true);
-		
+
 		primitiveOverloads.add(c);
 		
 		c.genericOverload = this;
