@@ -1412,6 +1412,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 	}
 	
+	public void throwInferTypeError()
+	{
+		SyntaxMessage.error("Unable to infer return value of arrow binding for function '" + getName() + "'. Please add an explicit return type to any functions that the arrow binding returns.", this);
+	}
+	
 	public Value inferShorthandActionType(String action, Value contents)
 	{
 		boolean setType = getType(false) == null;
@@ -1426,7 +1431,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				
 				if (method != null && method.shorthandAction != null)
 				{
-					SyntaxMessage.error("Unable to infer return value of shorthand action '" + shorthandAction + "'. Please add an explicit return type to any functions that the shorthand action returns.", this);
+					throwInferTypeError();
 				}
 			}
 		}
