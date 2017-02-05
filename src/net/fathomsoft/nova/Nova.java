@@ -201,6 +201,10 @@ public class Nova
 			
 			installDirectory = new File("/Library/Application Support/Nova");
 		}
+		else if (OS == LINUX)
+		{
+			installDirectory = new File("/etc/nova");
+		}
 		else
 		{
 			unsupportedOs();
@@ -433,6 +437,10 @@ public class Nova
 				standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
 			}
 			else if (OS == MACOSX)
+			{
+				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
+			}
+			else if (OS == LINUX)
 			{
 				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
 			}
