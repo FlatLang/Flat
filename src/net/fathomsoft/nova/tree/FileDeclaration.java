@@ -592,10 +592,10 @@ public class FileDeclaration extends Node
 		{
 			Import node = getImportList().getChild(i);
 			
-			if (!node.isUsed())
-			{
-				getImportList().removeChild(i);
-			}
+//			if (!node.isUsed())
+//			{
+//				getImportList().removeChild(i);
+//			}
 		}
 	}
 	
