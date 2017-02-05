@@ -94,6 +94,26 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 	}
 	
 	@Override
+	public BodyMethodDeclaration decodeAccessor()
+	{
+		BodyMethodDeclaration method = super.decodeAccessor();
+		
+		method.getParameterList().getReferenceParameter().setType(instanceClass);
+		
+		return method;
+	}
+	
+	@Override
+	public BodyMethodDeclaration decodeMutator()
+	{
+		BodyMethodDeclaration method = super.decodeMutator();
+		
+		method.getParameterList().getReferenceParameter().setType(instanceClass);
+		
+		return method;
+	}
+	
+	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
