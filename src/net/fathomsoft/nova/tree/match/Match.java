@@ -17,9 +17,7 @@ import net.fathomsoft.nova.util.StringUtils;
  */
 public class Match extends ControlStatement
 {
-	private boolean conventional;
-	
-	public static final String IDENTIFIER = "match";
+	private boolean conventional, strict;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -123,6 +121,11 @@ public class Match extends ControlStatement
 				
 				if (!c.getValue().isConstant() || (c.getValue() instanceof Literal && ((Literal)c.getValue()).isStringInstantiation()))
 				{
+					if (strict)
+					{
+						SyntaxMessage.error("Switch statements cannot have variable cases", c);
+					}
+					
 					conventional = false;
 				}
 			}
@@ -234,15 +237,18 @@ public class Match extends ControlStatement
 	 */
 	public static Match decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
+		String type = StringUtils.findNextWord(statement);
+		
+		if (type.equals("match") || type.equals("switch"))
 		{
-			int index = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length());//statement.indexOf('(', IDENTIFIER.length());
+			int index = StringUtils.findNextNonWhitespaceIndex(statement, type.length());//statement.indexOf('(', IDENTIFIER.length());
 			
 			Match n = new Match(parent, location);
+			n.strict = type.equals("switch");
 			
 			if (index < 0)
 			{
-				SyntaxMessage.queryError("Unable to decode " + IDENTIFIER + " statement", n, require);
+				SyntaxMessage.queryError("Unable to decode " + type + " statement", n, require);
 				
 				return null;
 			}
@@ -271,7 +277,7 @@ public class Match extends ControlStatement
 		
 		if (value == null)
 		{
-			return SyntaxMessage.queryError("Unable to decode " + IDENTIFIER + " statement control value", this, require);
+			return SyntaxMessage.queryError("Unable to decode " + (strict ? "switch" : "match") + " statement control value", this, require);
 		}
 		
 		addChild(value, this);
@@ -355,11 +361,11 @@ public class Match extends ControlStatement
 	{
 		context.method.addChild(SyntaxTree.decodeScopeContents(context.method, "Int num = 3", Location.INVALID));
 		
-		Match s = decodeStatement(context.method, IDENTIFIER + " (num)", Location.INVALID, false);
+		Match s = decodeStatement(context.method, "match (num)", Location.INVALID, false);
 		
 		if (s == null)
 		{
-			return "Could not decode " + IDENTIFIER + " statement with an Int";
+			return "Could not decode match statement with an Int";
 		}
 		
 		Case c = Case.decodeStatement(s, "case 1", Location.INVALID, false);

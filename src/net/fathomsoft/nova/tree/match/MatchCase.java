@@ -77,7 +77,7 @@ public abstract class MatchCase extends Node implements MatchChild
 		{
 			if (!(getParent().getAncestorWithScope() instanceof Match))
 			{
-				SyntaxMessage.error(getIdentifier() + " statements must be inside " + Match.IDENTIFIER + " scopes", this);
+				SyntaxMessage.error(getIdentifier() + " statements must be inside match scopes", this);
 			}
 		}
 		
