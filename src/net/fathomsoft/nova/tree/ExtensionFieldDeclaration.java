@@ -113,31 +113,6 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 		return method;
 	}
 	
-	@Override
-	public ValidationResult validate(int phase)
-	{
-		ValidationResult result = super.validate(phase);
-		
-		if (result.skipValidation())
-		{
-			return result;
-		}
-		
-		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
-		{
-			if (containsAccessorMethod())
-			{
-				getAccessorMethod().getParameterList().getReferenceParameter().setType(instanceClass);
-			}
-			if (containsMutatorMethod())
-			{
-				getMutatorMethod().getParameterList().getReferenceParameter().setType(instanceClass);
-			}
-		}
-		
-		return result;
-	}
-	
 	/**
 	 * @see Node#clone(Node, Location, boolean)
 	 */
