@@ -149,6 +149,13 @@ public class Nova
 		nova.outputMessages(false);
 	}
 	
+	public static void unsupportedOs()
+	{
+		System.err.println("Unsupported operating system.");
+		
+		System.exit(1);
+	}
+	
 	/**
 	 * Method used to initialize the compiler data and start the
 	 * compilation process.
@@ -196,9 +203,7 @@ public class Nova
 		}
 		else
 		{
-			System.err.println("Unsupported operating system.");
-			
-			System.exit(1);
+			unsupportedOs();
 		}
 
 		if (!installDirectory.isDirectory())
@@ -240,6 +245,14 @@ public class Nova
 			else if (OS == MACOSX)
 			{
 				enginePath = installDirectory.getAbsolutePath();
+			}
+			else if (OS == LINUX)
+			{
+				enginePath = installDirectory.getAbsolutePath();
+			}
+			else
+			{
+				unsupportedOs();
 			}
 
 			String folderName = "Nova-" + target;
