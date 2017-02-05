@@ -268,7 +268,7 @@ public class LocalDeclaration extends VariableDeclaration
 			}
 			else
 			{
-				setType(leftDelimiter + word, true, false, extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
+				setType(leftDelimiter + word, true, false, true || extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
 				
 				if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS && !setType(getType(), false, extra.checkType))
 				{
