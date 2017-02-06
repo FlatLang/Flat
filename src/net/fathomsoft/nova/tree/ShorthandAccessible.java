@@ -62,6 +62,14 @@ public interface ShorthandAccessible
 		return MutatorMethod.decodeStatement(getParseContext(), "set", getLocationIn(), true, context);
 	}
 	
+	default BodyMethodDeclaration decodeShorthandMutator()
+	{
+		return decodeShorthandMutator(null);
+	}
+	
+	default BodyMethodDeclaration decodeShorthandMutator(Value context)
+	{
+		return decodeMutator(context).cloneTo(new ShorthandMutator(getParseContext(), getLocationIn()));
 	}
 	
 	void setType(Value value);
