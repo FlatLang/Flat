@@ -68,7 +68,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	@Override
 	public NovaMethodDeclaration addDefaultAccessor()
 	{
-		AccessorMethod method = AccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
+		AccessorMethod method = decodeAccessor();
 		
 		Return returned = Return.decodeStatement(method, "return null", getLocationIn(), true);
 		
@@ -89,7 +89,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	
 	public NovaMethodDeclaration addDefaultMutator(Value type)
 	{
-		MutatorMethod method = MutatorMethod.decodeStatement(this, "set", getLocationIn(), true, type);
+		MutatorMethod method = decodeMutator(type);
 		
 		addChild(method);
 		
