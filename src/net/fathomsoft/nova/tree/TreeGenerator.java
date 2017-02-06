@@ -579,7 +579,7 @@ public class TreeGenerator implements Runnable
 		{
 			if (source.substring(prevCharIndex - 1, prevCharIndex + 1).equals("=>"))
 			{
-				if (parentStack.peek() instanceof Match)
+				if (!parentStack.isEmpty() && parentStack.peek() instanceof Match)
 				{
 					return false;
 				}
