@@ -143,6 +143,11 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		});
 	}
 	
+	public boolean isPrimitiveOverload()
+	{
+		return genericOverload != null;
+	}
+	
 	@Override
 	public boolean isTangible()
 	{
