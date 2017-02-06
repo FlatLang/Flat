@@ -3254,6 +3254,7 @@ public class SyntaxUtils
 		Scope temp = SyntaxUtils.cloneToScope(scope, parent);
 		
 		temp.extractLambdas();
+		temp.extractArrayInitializers();
 		temp.convertConvertedTypes(conversionTarget);
 		
 		return temp.getNovaContents();
