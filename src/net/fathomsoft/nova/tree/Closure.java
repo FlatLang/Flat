@@ -79,7 +79,7 @@ public class Closure extends Variable
 		{
 			return closureDeclaration;
 		}
-		else if (isDecoding())
+		else if (isDecoding() && getMethodCall() != null)
 		{
 			int argNum = getMethodCall().getArgumentList().getArgumentsInOrder().length;
 			
