@@ -212,7 +212,7 @@ public class Trait extends ClassDeclaration
 				{
 					FieldDeclaration field = (FieldDeclaration)n;
 					
-					if (field.getShorthandAccessor() == null && !field.containsAccessorMethod() && !field.containsMutatorMethod())
+					if (field.getShorthandAccessor() == null && !field.containsAccessorMethod() && !field.containsMutatorMethod() && !isPrimitiveOverload())
 					{
 						field.addDefaultAccessor();
 						
