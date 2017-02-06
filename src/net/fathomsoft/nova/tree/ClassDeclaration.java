@@ -2592,15 +2592,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			GenericTypeParameter param = params.getParameter(i);
 			
-			if (i >= args.length)
-			{
-				types[i] = param;
-			}
-			else if (!param.isPrimitiveType() && args[i].isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
+			if (i < args.length && !param.isPrimitiveType() && args[i].isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
 			{
 				types[i] = args[i];
 				
 				isPrimitive = true;
+			}
+			else
+			{
+				types[i] = param;
 			}
 		}
 		
