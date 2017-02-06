@@ -53,7 +53,7 @@ public interface ShorthandAccessible
 			.cloneTo(new ShorthandAccessor(getParseContext(), getLocationIn()));
 	}
 	
-	default BodyMethodDeclaration decodeMutator()
+	default BodyMethodDeclaration decodeShorthandAccessor()
 	{
 		return decodeMutator(null);
 	}
@@ -66,14 +66,14 @@ public interface ShorthandAccessible
 	
 	void setType(Value value);
 	
-	default void decodeShorthandAccessor()
+	default void decodeArrowBinding()
 	{
-		decodeShorthandAccessor(null);
+		decodeArrowBinding(null);
 	}
 	
 	default Value decodeAccessorValue()
 	{
-		BodyMethodDeclaration a = decodeAccessor();
+		BodyMethodDeclaration a = decodeShorthandAccessor();
 		
 		addChild(a);
 		
@@ -86,7 +86,7 @@ public interface ShorthandAccessible
 	
 	default void decodeMutatorValue(Value value, Value context)
 	{
-		BodyMethodDeclaration m = decodeMutator(context);
+		BodyMethodDeclaration m = decodeShorthandMutator(context);
 		
 		addChild(m);
 		
@@ -102,7 +102,7 @@ public interface ShorthandAccessible
 		m.addChild(assignment);
 	}
 	
-	default void decodeShorthandAccessor(Value context)
+	default void decodeArrowBinding(Value context)
 	{
 		String accessorValue = getShorthandAccessor();
 		boolean twoWayBinding = isTwoWayBinding();

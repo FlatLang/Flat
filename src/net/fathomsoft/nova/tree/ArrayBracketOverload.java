@@ -219,7 +219,7 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	}
 	
 	@Override
-	public BodyMethodDeclaration decodeAccessor()
+	public BodyMethodDeclaration decodeShorthandAccessor()
 	{
 		ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
 		
@@ -240,7 +240,7 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	}
 	
 	@Override
-	public BodyMethodDeclaration decodeMutator(Value context)
+	public BodyMethodDeclaration decodeShorthandMutator(Value context)
 	{
 		ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
 		
@@ -267,7 +267,7 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			decodeShorthandAccessor();
+			decodeArrowBinding();
 		}
 		
 		return result;

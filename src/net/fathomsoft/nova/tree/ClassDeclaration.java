@@ -3471,7 +3471,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					ShorthandAccessible field = (ShorthandAccessible)f;
 					
-					field.decodeShorthandAccessor();
+					field.decodeArrowBinding();
 				}
 			});
 		});
@@ -3551,7 +3551,7 @@ public class ClassDeclaration extends InstanceDeclaration
 						}
 					}
 					
-					clone.decodeShorthandAccessor(type);
+					clone.decodeArrowBinding(type);
 					
 //					if (!clone.isTwoWayBinding())
 //					{

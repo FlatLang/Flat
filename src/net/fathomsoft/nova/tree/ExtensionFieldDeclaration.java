@@ -1,7 +1,6 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
@@ -94,9 +93,9 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 	}
 	
 	@Override
-	public BodyMethodDeclaration decodeAccessor()
+	public BodyMethodDeclaration decodeShorthandAccessor()
 	{
-		BodyMethodDeclaration method = super.decodeAccessor();
+		BodyMethodDeclaration method = super.decodeShorthandAccessor();
 		
 		method.getParameterList().getReferenceParameter().setType(instanceClass);
 		
@@ -104,9 +103,9 @@ public class ExtensionFieldDeclaration extends FieldDeclaration
 	}
 	
 	@Override
-	public BodyMethodDeclaration decodeMutator()
+	public BodyMethodDeclaration decodeShorthandMutator()
 	{
-		BodyMethodDeclaration method = super.decodeMutator();
+		BodyMethodDeclaration method = super.decodeShorthandMutator();
 		
 		method.getParameterList().getReferenceParameter().setType(instanceClass);
 		

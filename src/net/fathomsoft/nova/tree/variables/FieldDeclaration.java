@@ -446,7 +446,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			//decodeShorthandAccessor();
+			//decodeArrowBinding();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
@@ -540,7 +540,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	{
 		if (getParentClass().isPrimitiveOverload())
 		{
-			BodyMethodDeclaration accessor = decodeAccessor();
+			BodyMethodDeclaration accessor = decodeShorthandAccessor();
 			BodyMethodDeclaration reference = ((FieldDeclaration)getProperty("genericOverload")).getAccessorMethod();
 			
 			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, accessor, accessor);
@@ -560,7 +560,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	{
 		if (getParentClass().isPrimitiveOverload())
 		{
-			BodyMethodDeclaration mutator = decodeMutator();
+			BodyMethodDeclaration mutator = decodeShorthandMutator();
 			BodyMethodDeclaration reference = ((FieldDeclaration)getProperty("genericOverload")).getMutatorMethod();
 			
 			SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, mutator, mutator);
