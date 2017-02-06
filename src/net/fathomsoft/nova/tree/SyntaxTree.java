@@ -51,14 +51,14 @@ public class SyntaxTree
 	private static final Class<?> PRE_VALUE_DECODE[] = new Class<?>[]
 	{
 		Annotation.class, IfStatement.class, ElseStatement.class, Loop.class,
-		Case.class, Match.class, Default.class, Fallthrough.class, Priority.class,
+		Default.class, Case.class, Match.class, Fallthrough.class, Priority.class,
 		Return.class, Assignment.class, IntRange.class, TernaryOperation.class,
 		Instantiation.class, BinaryOperation.class, Super.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
-		Annotation.class, Break.class, Case.class, Match.class, Default.class,
+		Annotation.class, Break.class, Default.class, Case.class, Match.class,
 		Fallthrough.class, Continue.class, ExceptionHandler.class, Assignment.class,
 		Instantiation.class, ElseStatement.class, IfStatement.class, 
 		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
