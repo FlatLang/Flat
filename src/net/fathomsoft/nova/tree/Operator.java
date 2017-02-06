@@ -314,7 +314,7 @@ public class Operator extends IValue
 				String left = SyntaxUtils.getPrimitiveNovaType(l.getType());
 				String right = SyntaxUtils.getPrimitiveNovaType(r.getType());
 				
-				if (!SyntaxUtils.arePrimitiveTypesCompatibleGeneral(left, right))
+				if (left == null || right == null || !SyntaxUtils.arePrimitiveTypesCompatibleGeneral(left, right))
 				{
 					left = SyntaxUtils.getPrimitiveNovaType(l.getType());
 					right = SyntaxUtils.getPrimitiveNovaType(r.getType());
