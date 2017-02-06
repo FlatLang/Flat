@@ -2928,9 +2928,9 @@ public class ClassDeclaration extends InstanceDeclaration
 						clone.setProperty("userMade", false);
 						clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
 						clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
-						//					clone.accessorValue = null;
-						//
-						//					field.correspondingPrimitiveOverloads.add(clone);
+						clone.accessorValue = null;
+						clone.genericOverload = field;
+						field.correspondingPrimitiveOverloads.add(clone);
 						clone.setProperty("genericOverload", field);
 						
 						genericOverload.replaceGenerics(originalPrimitiveOverloadTypes, field, clone);
