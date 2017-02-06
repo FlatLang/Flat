@@ -1880,6 +1880,13 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else if (child instanceof PropertyMethod)
 			{
+				PropertyMethod propertyMethod = (PropertyMethod)child;
+				
+				for (ClassDeclaration c : primitiveOverloads)
+				{
+					propertyMethod.convertToClass(c, c.primitiveOverloadTypes, propertyMethod.getMethodGenericTypeParameterDeclaration().getTypes());
+				}
+				
 				getPropertyMethodList().addChild(child);
 			}
 //			else if (child instanceof ClosureVariable)
