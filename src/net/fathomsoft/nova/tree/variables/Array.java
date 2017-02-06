@@ -30,6 +30,8 @@ import java.util.ArrayList;
  */
 public class Array extends VariableDeclaration implements ArrayCompatible
 {
+	public String initializer;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -248,6 +250,8 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 					n.setType(type.getType());
 					n.setArrayDimensions(1);
 				}
+				
+				n.initializer = statement;
 				
 				return n;
 			}
