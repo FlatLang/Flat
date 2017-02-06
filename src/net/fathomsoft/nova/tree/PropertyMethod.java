@@ -73,6 +73,10 @@ public abstract class PropertyMethod extends BodyMethodDeclaration
 	public void setDisabled(boolean disabled)
 	{
 		this.disabled = disabled;
+		
+		correspondingPrimitiveOverloads.forEach(x -> {
+			((PropertyMethod)x).disabled = disabled;
+		});
 	}
 	
 	@Override
