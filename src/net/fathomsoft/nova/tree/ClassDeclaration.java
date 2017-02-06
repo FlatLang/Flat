@@ -2883,8 +2883,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (types[i] instanceof GenericTypeParameter)
 			{
-				GenericTypeParameter param = new GenericTypeParameter(params, getLocationIn());
-				param.setType(types[i]);
+				GenericTypeParameter param = (GenericTypeParameter)types[i].clone(params, getLocationIn(), true, true);//new GenericTypeParameter(params, getLocationIn());
+//				param.setType(types[i]);
 				
 				params.addChild(param);
 			}
