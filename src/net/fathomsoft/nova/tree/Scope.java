@@ -404,6 +404,28 @@ public class Scope extends Node
 		}
 	}
 	
+	public void extractArrayInitializers()
+	{
+		Node[] nodes = getChildrenOfType(MethodCall.class);
+		
+		for (Node n : nodes)
+		{
+			MethodCall c = (MethodCall)n;
+			VariableDeclaration d = c.declaration;
+			
+			if (d.containsProperty("array"))
+			{
+				Array a = (Array)d.getProperty("array");
+				
+				Literal replacement = new Literal(c.getParent(), Location.INVALID);
+				
+				replacement.setValue(a.initializer);
+				
+				c.replaceWith(replacement);
+			}
+		}
+	}
+	
 	public void convertConvertedTypes(NovaMethodDeclaration context)
 	{
 		Node[] nodes = getChildrenOfType(Value.class);
