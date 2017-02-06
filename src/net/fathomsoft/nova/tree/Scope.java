@@ -436,7 +436,7 @@ public class Scope extends Node
 		
 		for (Node n : nodes)
 		{
-			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array)
+			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array || n instanceof Cast)
 			{
 				if (types != null)
 				{
