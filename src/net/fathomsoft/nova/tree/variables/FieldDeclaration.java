@@ -23,6 +23,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	
 	public String   initializationValue, accessorValue;
 	
+	public FieldDeclaration genericOverload;
 	public ArrayList<FieldDeclaration> correspondingPrimitiveOverloads;
 	
 	/**
