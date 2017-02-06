@@ -2019,6 +2019,10 @@ public class SyntaxUtils
 		{
 			return value1.getType().equals(value2.getType());
 		}
+		else if (value1.isGenericType() && value2.isGenericType() && value1.getType().equals(value2.getType()))
+		{
+			return true;
+		}
 		
 		return getTypeInCommon(value1, value2) != null;
 	}
