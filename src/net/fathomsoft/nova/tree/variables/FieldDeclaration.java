@@ -151,7 +151,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	@Override
 	public boolean isTangible()
 	{
-		return (!containsAccessorMethod() || containsInstance(getAccessorMethod())) && super.isTangible();
+		return isPrimitiveOverload() ? genericOverload.isTangible() : parent != null && (!containsAccessorMethod() || containsInstance(getAccessorMethod())) && super.isTangible();
 	}
 	
 	public boolean allowsPropertyMethods()
