@@ -222,12 +222,16 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 		return genericOverload != null;
 	}
 	
-	public void convertFunctionContents()
+	public boolean convertFunctionContents()
 	{
 		if (doesConvertToPrimitive())
 		{
 			SyntaxUtils.parseConvertedContentsTo(getConversionTarget().getScope(), getConversionTargetContext(), this, this);
+			
+			return true;
 		}
+		
+		return false;
 	}
 	
 	/**
