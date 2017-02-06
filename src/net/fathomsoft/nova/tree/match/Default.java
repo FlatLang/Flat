@@ -26,12 +26,6 @@ public class Default extends MatchCase
 		super(temporaryParent, locationIn);
 	}
 	
-	@Override
-	public String getIdentifier()
-	{
-		return IDENTIFIER;
-	}
-	
 	/**
 	 * Decode the given statement into a {@link Default} instance, if
 	 * possible. If it is not possible, this method returns null.<br>

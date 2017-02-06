@@ -30,19 +30,6 @@ public abstract class MatchCase extends Node implements MatchChild
 	}
 	
 	/**
-	 * Get the String that is used to identify the specified MatchCase.<br>
-	 * <br>
-	 * Example outputs:
-	 * <ul>
-	 * 	<li>case</li>
-	 * 	<li>default</li>
-	 * </ul>
-	 * 
-	 * @return The String used to identify the MatchCase in the source code.
-	 */
-	public abstract String getIdentifier();
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#pendingScopeFragment(Node)
 	 */
 	@Override
@@ -77,7 +64,7 @@ public abstract class MatchCase extends Node implements MatchChild
 		{
 			if (!(getParent().getAncestorWithScope() instanceof Match))
 			{
-				SyntaxMessage.error(getIdentifier() + " statements must be inside match scopes", this);
+				SyntaxMessage.error("Case statements must be inside match scopes", this);
 			}
 		}
 		

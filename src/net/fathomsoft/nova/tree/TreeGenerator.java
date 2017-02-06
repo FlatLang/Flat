@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.*;
 
@@ -578,7 +579,10 @@ public class TreeGenerator implements Runnable
 		{
 			if (source.substring(prevCharIndex - 1, prevCharIndex + 1).equals("=>"))
 			{
-				
+				if (parentStack.peek() instanceof Match)
+				{
+					return false;
+				}
 			}
 			else if (GenericTypeArgument.searchGenericType(source, prevCharIndex, true) != null)
 			{

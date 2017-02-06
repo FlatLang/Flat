@@ -18,20 +18,12 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Case extends MatchCase
 {
-	public static final String IDENTIFIER = "case";
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
 	public Case(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	@Override
-	public String getIdentifier()
-	{
-		return IDENTIFIER;
 	}
 	
 	@Override
@@ -85,7 +77,7 @@ public class Case extends MatchCase
 	{
 		if (containsFallthrough())
 		{
-			SyntaxMessage.error("Fallthrough statement must be the last statement within a '" + IDENTIFIER + "' statement", getFallthrough());
+			SyntaxMessage.error("Fallthrough statement must be the last statement within a case statement", getFallthrough());
 		}
 		
 		super.addChild(node);
@@ -119,7 +111,7 @@ public class Case extends MatchCase
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		builder.append(IDENTIFIER + " " + getValue().generateNovaInput(true)).append('\n');
+		builder.append(getValue().generateNovaInput(true)).append(" => ");
 		
 		if (outputChildren)
 		{
@@ -150,27 +142,20 @@ public class Case extends MatchCase
 	 */
 	public static Case decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (StringUtils.findNextWord(statement).equals(IDENTIFIER))
+		if (parent instanceof Match)
 		{
 			Case n = new Case(parent, location);
 			
-			int valueStartIndex = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length() + 1);
+			int index = SyntaxUtils.findStringInBaseScope(statement, "=>");
 			
-			Bounds bounds = SyntaxUtils.findValueBounds(statement, valueStartIndex);
-			
-			if (!bounds.isValid())
+			if (index > 0)
 			{
-				if (!SyntaxMessage.queryError("Unable to decode " + IDENTIFIER + " statement", n, require))
+				String contents = statement.substring(0, index).trim();
+				
+				if (n.decodeContents(contents, require) && n.decodeScopeFragment(statement, index + 2))
 				{
-					return null;
+					return n;
 				}
-			}
-			
-			String contents = bounds.extractString(statement);
-			
-			if (n.decodeContents(contents, require) && n.decodeScopeFragment(statement, bounds))
-			{
-				return n;
 			}
 		}
 		
@@ -191,7 +176,7 @@ public class Case extends MatchCase
 		
 		if (value == null)
 		{
-			return SyntaxMessage.queryError("Unable to decode " + IDENTIFIER + " statement value", this, require);
+			return SyntaxMessage.queryError("Unable to decode match case statement value", this, require);
 		}
 		
 		addChild(value, this);

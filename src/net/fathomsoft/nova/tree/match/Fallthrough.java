@@ -58,7 +58,7 @@ public class Fallthrough extends Node implements MatchChild
 	{
 		if (parent.getBaseNode() instanceof Case == false)
 		{
-			SyntaxMessage.error("Fallthrough statements are only compatible within '" + Case.IDENTIFIER + "' statements", this);
+			SyntaxMessage.error("Fallthrough statements are only compatible within case statements", this);
 		}
 	}
 	
