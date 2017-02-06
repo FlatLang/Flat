@@ -47,21 +47,21 @@ public interface ShorthandAccessible
 		return (Node)this;
 	}
 	
-	default BodyMethodDeclaration decodeAccessor()
+	default AccessorMethod decodeAccessor()
 	{
-		return AccessorMethod.decodeStatement(getParseContext(), "get", getLocationIn(), true)
-			.cloneTo(new ShorthandAccessor(getParseContext(), getLocationIn()));
+		return AccessorMethod.decodeStatement(getParseContext(), "get", getLocationIn(), true);
 	}
 	
 	default BodyMethodDeclaration decodeShorthandAccessor()
 	{
-		return decodeMutator(null);
+		return decodeAccessor().cloneTo(new ShorthandAccessor(getParseContext(), getLocationIn()));
 	}
 	
-	default BodyMethodDeclaration decodeMutator(Value context)
+	default MutatorMethod decodeMutator(Value context)
 	{
-		return MutatorMethod.decodeStatement(getParseContext(), "set", getLocationIn(), true, context)
-			.cloneTo(new ShorthandMutator(getParseContext(), getLocationIn()));
+		return MutatorMethod.decodeStatement(getParseContext(), "set", getLocationIn(), true, context);
+	}
+	
 	}
 	
 	void setType(Value value);
