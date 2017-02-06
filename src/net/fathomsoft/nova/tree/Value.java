@@ -29,8 +29,6 @@ public abstract class Value extends Node implements AbstractValue
 {
 	public static final byte	VALUE = 1, POINTER = 2, REFERENCE = 3, DOUBLE_POINTER = 4;
 	
-	public static final String NULL_IDENTIFIER = "nova_null";
-	
 	public ArrayAccess arrayAccess;
 	
 	/**
