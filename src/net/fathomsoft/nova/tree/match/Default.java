@@ -6,6 +6,7 @@ import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link MatchCase} extension that represents
@@ -46,23 +47,24 @@ public class Default extends MatchCase
 	 */
 	public static Default decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (parent.getAncestorOfType(Match.class, true) != null && StringUtils.findNextWord(statement).equals(IDENTIFIER))
+		if (parent instanceof Match && StringUtils.findNextWord(statement).equals(IDENTIFIER))
 		{
 			Default n = new Default(parent, location);
 			
-			if (statement.length() > IDENTIFIER.length())
-			{
-				int index = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length() + 1);
-				
-				Bounds bounds = new Bounds(IDENTIFIER.length(), index - 1);
-				
-				if (!n.decodeScopeFragment(statement, bounds))
-				{
-					SyntaxMessage.queryError("Unable to decode '" + IDENTIFIER + "' statement contents", n, require);
-				}
-			}
+			int index = SyntaxUtils.findStringInBaseScope(statement + IDENTIFIER.length(), "=>");
 			
-			return n;
+			if (index < 0)
+			{
+				SyntaxMessage.error("Default case missing '=>' arrow", n);
+			}
+			else if (!n.decodeScopeFragment(statement, index + 2))
+			{
+				SyntaxMessage.error("Unable to decode '" + IDENTIFIER + "' statement contents", n);
+			}
+			else
+			{
+				return n;
+			}
 		}
 		
 		return null;
