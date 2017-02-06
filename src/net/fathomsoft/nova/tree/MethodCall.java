@@ -557,13 +557,11 @@ public class MethodCall extends Variable
 	 */
 	public Value getCorrespondingParameter(Value argument)
 	{
-		MethodCallArgumentList args = getArgumentList();
+		Value[] args = getArgumentList().getArgumentsInOrder();
 		
-		for (int i = 0; i < args.getNumChildren(); i++)
+		for (int i = 0; i < args.length; i++)
 		{
-			Value abstractValue = ((Value)args.getChild(i)).getRealValue();
-			
-			if (abstractValue == argument.getRealValue())
+			if (args[i] == argument)
 			{
 				return getCorrespondingParameter(i);
 			}
@@ -1626,7 +1624,12 @@ public class MethodCall extends Variable
 					
 					return result;
 				}
+//				else if (var.declaration instanceof ClassInstanceDeclaration && getName().equals("isOfType") && getDeclaringClass().getClassLocation().equals("nova/meta/Class"))
+//				{
+//					int j = 5;
+//				}
 			}
+			
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
