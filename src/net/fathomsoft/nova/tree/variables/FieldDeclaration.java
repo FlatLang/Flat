@@ -134,6 +134,16 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	}
 	
 	@Override
+	public void onReplaced(Node parent, Node replacement)
+	{
+		super.onReplaced(parent, replacement);
+		
+		correspondingPrimitiveOverloads.forEach(x -> {
+			x.genericOverload = (FieldDeclaration)replacement;
+		});
+	}
+	
+	@Override
 	public boolean isTangible()
 	{
 		return (!containsAccessorMethod() || containsInstance(getAccessorMethod())) && super.isTangible();
