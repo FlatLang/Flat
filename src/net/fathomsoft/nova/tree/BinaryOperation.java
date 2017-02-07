@@ -820,6 +820,48 @@ public class BinaryOperation extends IValue
 			}
 		}
 		
+		return convertPrimitiveComparison();
+	}
+	
+	public Value convertPrimitiveComparison()
+	{
+		if (getOperator().isEquivalenceOperator())
+		{
+			Value nonNull = null;
+			
+			if (Literal.isNullLiteral(getLeftOperand()))
+			{
+				nonNull = getRightOperandValue();
+			}
+			else if (Literal.isNullLiteral(getRightOperandValue()))
+			{
+				nonNull = getLeftOperand();
+			}
+			
+			if (nonNull != null && !Literal.isNullLiteral(nonNull))
+			{
+				Value returned = nonNull.getReturnedNode();
+				
+				if (returned.isPrimitive())
+				{
+					Literal bool = (Literal)Literal.decodeStatement(parent, getOperator().getOperator().equals(Operator.EQUALS) ? "false" : "true", getLocationIn(), true, true);
+					
+					if (nonNull instanceof BinaryOperation)
+					{
+						BinaryOperation op = (BinaryOperation)nonNull;
+						
+						op.getLeftOperand().replaceWith(bool);
+						
+						return op;
+					}
+					else
+					{
+						return bool;
+					}
+				}
+			}
+		}
+		
 		return this;
 	}
 	
