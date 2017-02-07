@@ -26,6 +26,7 @@ public class GenericTypeParameter extends IValue
 	{
 		super(temporaryParent, locationIn);
 		
+		setDataType(POINTER);
 		defaultType = "Object";
 	}
 	
