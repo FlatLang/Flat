@@ -233,6 +233,11 @@ public class TernaryOperation extends IValue implements Accessible
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
+		if (containsProperty("safeNavigation"))
+		{
+			return builder.append(getProperty("safeNavigation").toString());
+		}
+		
 		return getCondition().generateNovaInput(builder).append(" ? ").append(getTrueValue().generateNovaInput()).append(" : ").append(getFalseValue().generateNovaInput());
 	}
 	
