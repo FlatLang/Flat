@@ -766,18 +766,53 @@ public class Variable extends Identifier
 					return result.errorOccurred();
 				}
 				
-				if (isPrimitiveType() && doesAccess() && getAccessedNode().getName().equals("class"))
+				if (isPrimitiveType() && doesAccess())
 				{
-					Identifier newAccessed = getAccessedNode();
-					
-					StaticClassReference replacement = StaticClassReference.decodeStatement(getParent(), getTypeClassName(), getLocationIn(), true);
-					
-					if (replacement != null && newAccessed != null)
+					if (getAccessedNode().getName().equals("class"))
 					{
-						replaceWith(replacement);
-						replacement.setAccessedNode(newAccessed);
+						Identifier newAccessed = getAccessedNode();
 						
-						result.returnedNode = replacement;
+						StaticClassReference replacement = StaticClassReference.decodeStatement(getParent(), getTypeClassName(), getLocationIn(), true);
+						
+						if (replacement != null && newAccessed != null)
+						{
+							replaceWith(replacement);
+							replacement.setAccessedNode(newAccessed);
+							
+							result.returnedNode = replacement;
+							
+							return result;
+						}
+					}
+					else if (getDataType() == VALUE && getAccessedNode() instanceof MethodCall)
+					{
+						MethodCall call = (MethodCall)getAccessedNode();
+						
+						Accessible root = getRootAccessNode();
+						
+						String extraArgs = "";
+						
+						MethodCallArgumentList args = call.getArgumentList();
+						
+						for (int i = 0; i < args.getNumVisibleChildren(); i++)
+						{
+							extraArgs += ", " + args.getVisibleChild(i).generateNovaInput();
+						}
+						
+						String syntax = getType() + "." + call.getName() + "(" + root.generateNovaInputUntil(this).toString() + extraArgs + ")";
+						
+						Value staticCall = SyntaxTree.decodeIdentifierAccess(root.getParent(), syntax, call.getLocationIn(), true, false).toValue();
+						
+						Identifier accessed = call.getAccessedNode();
+						
+						if (accessed != null)
+						{
+							((Accessible)staticCall.getReturnedNode()).setAccessedNode(accessed);
+						}
+						
+						root.toValue().replaceWith(staticCall);
+						
+						result.returnedNode = staticCall;
 						
 						return result;
 					}
