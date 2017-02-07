@@ -2956,7 +2956,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS || getProgram().getTree().finishedPhase)
 			{
-				validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+				SyntaxTree.validateNodes(this, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 			}
 			
 			setMethodReferences();
