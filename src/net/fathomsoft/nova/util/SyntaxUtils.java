@@ -3276,10 +3276,20 @@ public class SyntaxUtils
 	
 	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter)
 	{
-		return performWalk(context, current, required, parameter.getVisibleIndex());
+		return performWalk(context, current, required, parameter, false);
+	}
+	
+	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter, boolean allowGeneric)
+	{
+		return performWalk(context, current, required, parameter.getVisibleIndex(), allowGeneric);
 	}
 	
 	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, int parameterIndex)
+	{
+		return performWalk(context, current, required, parameterIndex, false);
+	}
+	
+	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, int parameterIndex, boolean allowGeneric)
 	{
 		Stack<IValue> path = new Stack<>();
 		
@@ -3319,7 +3329,7 @@ public class SyntaxUtils
 					arg = args.getVisibleChild(parameterIndex);
 				}
 				
-				if (!arg.isGenericType())
+				if (!arg.isGenericType() || allowGeneric && arg.getParentClass() == current)
 				{
 					return arg;
 				}
