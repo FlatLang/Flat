@@ -578,6 +578,8 @@ public interface Accessible
 			boolean assignment = root != base && base instanceof Assignment && ((Assignment)base).getAssigneeNode() == root;
 			boolean ternary = !assignment && root != base;
 			
+			String original = null;
+			
 			if (ternary)
 			{
 				if (isAccessed())
@@ -588,6 +590,8 @@ public interface Accessible
 				{
 					newParent = parent;
 				}
+				
+				original = generateNovaInputUntil(this) + "?." + getAccessedNode().generateNovaInputUntil(null);
 				
 				index = rootIndex;
 			}
@@ -607,10 +611,13 @@ public interface Accessible
 			
 			Variable local = TernaryOperation.getLocalVariableFromNullCheck(nullCheck).getDeclaration().generateUsableVariable(nullCheck, toValue().getLocationIn());
 			local.setAccessedNode(accessed);
+			local.declaration.setProperty("userMade", false);
 			
 			if (ternary)
 			{
 				TernaryOperation t = TernaryOperation.generateDefault(old, toValue().getLocationIn());
+				
+				t.setProperty("safeNavigation", original);
 				
 				Priority p = Priority.generateFrom(local);
 				
