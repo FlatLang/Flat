@@ -1518,7 +1518,11 @@ public abstract class Value extends Node implements AbstractValue
 					
 					if (original instanceof ClassDeclaration == false && type.length() > 0)
 					{
+						args.slaughterEveryLastVisibleChild();
+						
 						decodeGenericTypeArguments(type, new Bounds(0, type.length()), true);
+						
+						newArgs = args;
 					}
 					else if (!value.isGenericType())
 					{
