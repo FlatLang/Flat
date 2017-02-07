@@ -4,8 +4,6 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Stack;
@@ -158,7 +156,7 @@ public class Constructor extends BodyMethodDeclaration
 			{
 				for (int i = 0; i < types.length; i++)
 				{
-					c.genericOverload.replaceGenerics(c.primitiveOverloadTypes, original[i], types[i]);
+					c.genericOverload.replacePrimitiveGenerics(c.primitiveOverloadTypes, original[i], types[i]);
 				}
 			}
 			

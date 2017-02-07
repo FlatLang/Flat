@@ -1,6 +1,5 @@
 package net.fathomsoft.nova.tree;
 
-import javafx.util.Pair;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
@@ -440,10 +439,10 @@ public class Scope extends Node
 			{
 				if (types != null)
 				{
-					targetContext.replaceGenerics(types, (Value)n);
+					targetContext.replacePrimitiveGenerics(types, (Value)n);
 				}
 				
-				targetContext.replaceGenerics(getParentMethod().getMethodGenericTypeParameterDeclaration(), context.getMethodGenericTypeParameterDeclaration().getTypes(), (Value)n);
+				targetContext.replacePrimitiveGenerics(getParentMethod().getMethodGenericTypeParameterDeclaration(), context.getMethodGenericTypeParameterDeclaration().getTypes(), (Value)n);
 			}
 		}
 	}

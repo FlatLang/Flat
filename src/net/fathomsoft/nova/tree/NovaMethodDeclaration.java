@@ -783,10 +783,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (int i = 0; i < parameterList.getNumParameters(); i++)
 		{
-			changed |= referenceClass.replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+			changed |= referenceClass.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
 		}
 		
-		referenceClass.replaceGenerics(types, this, clone);
+		referenceClass.replacePrimitiveGenerics(types, this, clone);
 		
 		clone.getParameterList().getReferenceParameter().setType(parent);
 		clone.getObjectReference(true);
@@ -796,7 +796,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (int i = 0; i < parameterList.getNumParameters(); i++)
 		{
-			changed |= parent.replaceGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+			changed |= parent.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
 		}
 		
 		if (clone instanceof Constructor)
@@ -996,7 +996,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 //				addTo = arg.getTypeClass();
 			}
 			
-//			isPrimitive |= ClassDeclaration.replaceGenerics(getMethodGenericTypeParameterDeclaration(), methodArgs, call, call, true);
+//			isPrimitive |= ClassDeclaration.replacePrimitiveGenerics(getMethodGenericTypeParameterDeclaration(), methodArgs, call, call, true);
 		}
 		
 		if (isPrimitive)
@@ -1054,7 +1054,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 						{
 							closureValues[n] = (Value)aarg.clone(aarg.getParent(), aarg.getLocationIn(), true, true);
 							
-							if (getParentClass().replaceGenerics(argTypes, aparam, closureValues[n]))
+							if (getParentClass().replacePrimitiveGenerics(argTypes, aparam, closureValues[n]))
 							{
 								isPrimitive = true;
 							}
@@ -1406,7 +1406,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				{
 					m.setType(this);
 					
-					getParentClass().replaceGenerics(m.getParentClass().primitiveOverloadTypes, this, m);
+					getParentClass().replacePrimitiveGenerics(m.getParentClass().primitiveOverloadTypes, this, m);
 				}
 			}
 		}

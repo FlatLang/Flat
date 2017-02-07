@@ -13,10 +13,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.*;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2638,24 +2635,24 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
-	public boolean replaceGenerics(final Value[] types, Value value)
+	public boolean replacePrimitiveGenerics(final Value[] types, Value value)
 	{
-		return replaceGenerics(types, value, value, true);
+		return replacePrimitiveGenerics(types, value, value, true);
 	}
 	
-	public boolean replaceGenerics(GenericTypeParameterList params, final Value[] types, Value value)
+	public boolean replacePrimitiveGenerics(GenericTypeParameterList params, final Value[] types, Value value)
 	{
-		return replaceGenerics(params, types, value, value, true);
+		return replacePrimitiveGenerics(params, types, value, value, true);
 	}
 	
-	public boolean replaceGenerics(final Value[] types, Value original, Value value)
+	public boolean replacePrimitiveGenerics(final Value[] types, Value original, Value value)
 	{
-		return replaceGenerics(types, original, value, false);
+		return replacePrimitiveGenerics(types, original, value, false);
 	}
 	
 	public boolean replaceGenerics(final Value[] types, Value original, Value value, boolean allowSame)
 	{
-		return replaceGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
+		return replacePrimitiveGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
 	}
 	
 	public static boolean shallowReplaceGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
@@ -2684,7 +2681,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		return false;
 	}
 	
-	public static boolean replaceGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
+	public static boolean replacePrimitiveGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
 	{
 		boolean changed = false;
 		
@@ -2701,7 +2698,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++)
 				{
-					changed |= replaceGenerics(params, types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
+					changed |= replacePrimitiveGenerics(params, types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
 				}
 				
 //				if (changed)
@@ -2723,23 +2720,23 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (value instanceof ClosureDeclaration)
 		{
-			changed |= replaceGenerics(params, types, (ClosureDeclaration)original, (ClosureDeclaration)value, allowSame);
+			changed |= replacePrimitiveGenerics(params, types, (ClosureDeclaration)original, (ClosureDeclaration)value, allowSame);
 		}
 		
 		return changed;
 	}
 	
-	public boolean replaceGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value)
+	public boolean replacePrimitiveGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value)
 	{
-		return replaceGenerics(types, original, value, false);
+		return replacePrimitiveGenerics(types, original, value, false);
 	}
 	
-	public boolean replaceGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
+	public boolean replacePrimitiveGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
 	{
-		return replaceGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
+		return replacePrimitiveGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
 	}
 	
-	public static boolean replaceGenerics(GenericTypeParameterList params, Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
+	public static boolean replacePrimitiveGenerics(GenericTypeParameterList params, Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
 	{
 		value.register();
 		
@@ -2750,7 +2747,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (int n = 0; n < originalClosureParams.getNumParameters(); n++)
 		{
-			changed |= replaceGenerics(params, types, originalClosureParams.getParameter(n), closureParams.getParameter(n), allowSame);
+			changed |= replacePrimitiveGenerics(params, types, originalClosureParams.getParameter(n), closureParams.getParameter(n), allowSame);
 		}
 		
 		return changed;
@@ -2767,7 +2764,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				for (int i = 0; i < clone.getParameterList().getNumVisibleChildren(); i++)
 				{
-					replaceGenerics(types, original.getParameter(i), clone.getParameter(i));
+					replacePrimitiveGenerics(types, original.getParameter(i), clone.getParameter(i));
 				}
 				
 				addTo.addChild(clone);
@@ -2819,7 +2816,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			else
 			{
 				converted[i] = arg.clone(arg.getParent(), arg.getLocationIn(), true, true);
-				replaceGenerics(types, converted[i]);
+				replacePrimitiveGenerics(types, converted[i]);
 			}
 		}
 		
@@ -2845,7 +2842,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		c.setExtendedClass(ExtendedClass.decodeStatement(c, extended.getType(), extended.getLocationIn(), true));
 		c.getExtendedClass().decodeGenericTypeArguments(formatGenericArguments(extendedValues));
 		
-		replaceGenerics(types, c.getExtendedClass());
+		replacePrimitiveGenerics(types, c.getExtendedClass());
 		
 		TypeList<TraitImplementation> traits = getInterfacesImplementationList();
 		
@@ -2858,7 +2855,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			TraitImplementation t = TraitImplementation.decodeStatement(this, trait.getType(), c.getLocationIn(), true);
 			t.decodeGenericTypeArguments(formatGenericArguments(traitValues));
 			
-			replaceGenerics(types, t);
+			replacePrimitiveGenerics(types, t);
 
 			c.getInterfacesImplementationList().addChild(t);
 		}
@@ -2941,7 +2938,7 @@ public class ClassDeclaration extends InstanceDeclaration
 						field.correspondingPrimitiveOverloads.add(clone);
 						clone.setProperty("genericOverload", field);
 						
-						genericOverload.replaceGenerics(originalPrimitiveOverloadTypes, field, clone);
+						genericOverload.replacePrimitiveGenerics(originalPrimitiveOverloadTypes, field, clone);
 						
 						addChild(clone);
 					}
