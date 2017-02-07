@@ -2584,12 +2584,19 @@ public class ClassDeclaration extends InstanceDeclaration
 	public Value[] getConvertedTypes(Value[] args)
 	{
 		GenericTypeParameterList params = getGenericTypeParameterDeclaration();
-		Value[] types = new Value[params.getNumParameters()];
+		Value[] types = new Value[args.length];
 		
 		boolean isPrimitive = false;
 		
-		for (int i = 0; i < params.getNumParameters(); i++)
+		for (int i = 0; i < types.length; i++)
 		{
+			if (i >= params.getNumParameters())
+			{
+				types[i] = args[i];
+				
+				continue;
+			}
+			
 			GenericTypeParameter param = params.getParameter(i);
 			
 			if (i < args.length && !param.isPrimitiveType() && args[i].isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
