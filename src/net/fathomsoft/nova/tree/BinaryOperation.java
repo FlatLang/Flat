@@ -130,6 +130,7 @@ public class BinaryOperation extends IValue
 	{
 		Variable local = parent.getNearestScopeAncestor().getScope().createLocalVariable(root);
 		local.detach();
+		local.declaration.setProperty("userMade", false);
 		
 		BinaryOperation nullCheck = BinaryOperation.generateDefault(parent, value.getLocationIn());
 		
