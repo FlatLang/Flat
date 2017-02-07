@@ -1520,7 +1520,7 @@ public abstract class Value extends Node implements AbstractValue
 					{
 						decodeGenericTypeArguments(type, new Bounds(0, type.length()), true);
 					}
-					else
+					else if (!value.isGenericType())
 					{
 						if (getParentClass() == novaType)
 						{
