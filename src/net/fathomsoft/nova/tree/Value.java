@@ -1406,6 +1406,46 @@ public abstract class Value extends Node implements AbstractValue
 //		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
 	
+	public void replaceGenericArguments(Value target)
+	{
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		GenericTypeArgumentList targetArgs = target.getGenericTypeArgumentList();
+		
+		for (int i = 0; i < Math.min(args.getNumVisibleChildren(), targetArgs.getNumVisibleChildren()); i++)
+		{
+			GenericTypeArgument arg = args.getVisibleChild(i);
+			GenericTypeArgument targetArg = targetArgs.getVisibleChild(i);
+			
+			replaceGenericArguments(this, target.getParentClass(), arg, targetArg);
+		}
+	}
+	
+	private static void replaceGenericArguments(Value context, ClassDeclaration targetClass, GenericTypeArgument arg, GenericTypeArgument target)
+	{
+		if (target.isGenericType())
+		{
+			GenericTypeArgument a = SyntaxUtils.performWalk(context, context.getParentClass(), targetClass, target.getGenericTypeParameter(), true);
+			
+			if (a != null)
+			{
+				arg.setType(a);
+			}
+		}
+		else
+		{
+			GenericTypeArgumentList args = arg.getGenericTypeArgumentList();
+			GenericTypeArgumentList targetArgs = target.getGenericTypeArgumentList();
+			
+			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), targetArgs.getNumVisibleChildren()); i++)
+			{
+				GenericTypeArgument searchArg = args.getVisibleChild(i);
+				GenericTypeArgument targetArg = targetArgs.getVisibleChild(i);
+				
+				replaceGenericArguments(context, targetClass, searchArg, targetArg);
+			}
+		}
+	}
+	
 	public void importGenericArgumentTypesTo(FileDeclaration toFile)
 	{
 		GenericTypeArgumentList args = getGenericTypeArgumentList();
