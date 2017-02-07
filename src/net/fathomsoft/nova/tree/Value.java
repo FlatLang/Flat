@@ -1522,21 +1522,45 @@ public abstract class Value extends Node implements AbstractValue
 					}
 					else if (!value.isGenericType())
 					{
-						if (getParentClass() == novaType)
+						ClassDeclaration typeClass = getTypeClass();
+						
+						if (typeClass != null)
 						{
-							GenericTypeParameterList params = getParentClass().getGenericTypeParameterDeclaration();
+							GenericTypeParameterList params = typeClass.getGenericTypeParameterDeclaration();
 							
-							for (int i = 0; i < params.getNumParameters(); i++)
+							if (params.getNumParameters() > 0)
 							{
-								GenericTypeArgument arg = new GenericTypeArgument(args, args.getLocationIn());
-								arg.setType(params.getParameter(i).getType());
-								
-								args.addChild(arg);
+								for (int i = 0; i < params.getNumParameters(); i++)
+								{
+									GenericTypeParameter param = params.getParameter(i);
+									GenericTypeArgument arg = new GenericTypeArgument(args, args.getLocationIn());
+									
+									if (getParentClass() == typeClass)
+									{
+										arg.setType(params.getParameter(i).getType());
+									}
+									else if (clazz != null && typeClass.genericOverload == clazz)
+									{
+										int index = typeClass.genericOverload.getGenericTypeParameter(param.getName()).getVisibleIndex();
+										
+										if (typeClass.primitiveOverloadTypes[index] instanceof GenericTypeParameter)
+										{
+											arg = args.getVisibleChild(index);
+											arg = arg.clone(newArgs, arg.getLocationIn(), true, true);
+										}
+										else
+										{
+											arg.setType(typeClass.primitiveOverloadTypes[index]);
+										}
+									}
+									else
+									{
+										arg.setType(params.getParameter(i).getDefaultType());
+									}
+									
+									newArgs.addChild(arg);
+								}
 							}
-						}
-						else
-						{
-							
 						}
 					}
 					
