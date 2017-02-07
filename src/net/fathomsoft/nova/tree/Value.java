@@ -1514,7 +1514,7 @@ public abstract class Value extends Node implements AbstractValue
 				
 				if (args != null)
 				{
-					args.slaughterEveryLastVisibleChild();
+					GenericTypeArgumentList newArgs = new GenericTypeArgumentList(null, args.getLocationIn());
 					
 					if (type.length() > 0)
 					{
@@ -1539,6 +1539,8 @@ public abstract class Value extends Node implements AbstractValue
 							
 						}
 					}
+					
+					args.replaceWith(newArgs);
 				}
 			}
 		}
