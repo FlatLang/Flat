@@ -2871,13 +2871,14 @@ public class ClassDeclaration extends InstanceDeclaration
 		primitiveOverloads.add(c);
 		
 		c.genericOverload = this;
-		c.originalPrimitiveOverloadTypes = types;
+		c.originalPrimitiveOverloadTypes = new Value[types.length];
 		c.primitiveOverloadTypes = new Value[types.length];
 		
 		for (int i = 0; i < types.length; i++)
 		{
 			//IValue value = new IValue(types[i].getParent(), types[i].getLocationIn());
 			c.primitiveOverloadTypes[i] = (Value)types[i].clone(this, types[i].getLocationIn(), true, true);//types[i].cloneTo(value, true, true);
+			c.originalPrimitiveOverloadTypes[i] = (Value)types[i].clone(this, types[i].getLocationIn(), true, true);
 		}
 		
 		addChild(c);
