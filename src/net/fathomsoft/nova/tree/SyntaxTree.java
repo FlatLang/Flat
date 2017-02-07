@@ -1516,6 +1516,7 @@ public class SyntaxTree
 			}
 			else
 			{
+				SyntaxUtils.isVisible(parent.getParentClass(true), field);
 				SyntaxMessage.error("Field '" + field.getName() + "' is not accessible", parent);
 			}
 		}
