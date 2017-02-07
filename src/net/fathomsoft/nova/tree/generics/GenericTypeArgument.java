@@ -122,6 +122,10 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		{
 			getArgumentIndex();
 		}
+		else if (index >= ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getNumParameters())
+		{
+			getArgumentIndex();
+		}
 		
 		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(index).getDefaultType();
 	}
