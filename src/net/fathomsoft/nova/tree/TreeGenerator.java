@@ -209,6 +209,14 @@ public class TreeGenerator implements Runnable
 			decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
 			decodeScopeContents(node.getInnerClasses(), false, SyntaxTree.SECOND_PASS_CLASSES, true);
 			
+			for (ClassDeclaration inner : node.getInnerClasses())
+			{
+				decodeScopeContents(inner.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+				decodeScopeContents(inner.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+				decodeScopeContents(inner.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+				decodeScopeContents(inner.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+			}
+			
 			if (node.arrayBracketOverload != null)
 			{
 				decodeScopeContentsNode(node.arrayBracketOverload, false, SyntaxTree.ARRAY_BRACKET_OVERLOAD_DECODE, true);
