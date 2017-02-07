@@ -109,25 +109,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	 */
 	public String getDefaultType()
 	{
-		NovaMethodDeclaration method = getParentMethod();
-		
-		if (method != null && method.containsGenericTypeParameter(getType()))
-		{
-			return method.getGenericTypeParameter(getType()).getDefaultType();
-		}
-		
-		int index = getArgumentIndex();
-		
-		if (index < 0)
-		{
-			getArgumentIndex();
-		}
-		else if (index >= ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getNumParameters())
-		{
-			getArgumentIndex();
-		}
-		
-		return ((Value)getContext()).getTypeClass().getGenericTypeParameterDeclaration().getParameter(index).getDefaultType();
+		return getGenericTypeParameter().getDefaultType();
 	}
 //	
 //	@Override
