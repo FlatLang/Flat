@@ -386,6 +386,8 @@ public class ForEachLoop extends Loop
 		
 		Variable next = (Variable)((Accessible)SyntaxTree.decodeValue(this, s + ".next", location, require)).getLastAccessed();
 		
+		getFileDeclaration().addImport(next.getTypeClassLocation());
+		
 		String type = next.getNovaType(next);//.getIntelligentGenericTypeArgument(0);
 		
 		String declaration = type + " " + getIdentifier().getName();
