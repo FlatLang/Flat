@@ -119,6 +119,17 @@ public class Constructor extends BodyMethodDeclaration
 			n.setStatic(true);
 			n.setDataType(POINTER);
 			
+//			GenericTypeParameterList params = n.getMethodGenericTypeParameterDeclaration();
+//			GenericTypeParameterList classParams = n.getParentClass().getGenericTypeParameterDeclaration();
+//			
+//			for (int i = 0; i < classParams.getNumParameters(); i++)
+//			{
+//				GenericTypeParameter param = new GenericTypeParameter(params, Location.INVALID);
+//				param.setType(classParams.getParameter(i));
+//				
+//				params.addChild(param);
+//			}
+			
 			return n;
 		}
 		
@@ -172,6 +183,8 @@ public class Constructor extends BodyMethodDeclaration
 		
 		if (existing != null)
 		{
+			call.getFileDeclaration().addImport(existing.getClassLocation());
+			
 			return getExistingConvertedPrimitiveMethod(existing);
 		}
 		
