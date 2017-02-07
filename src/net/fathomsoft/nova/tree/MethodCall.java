@@ -1324,7 +1324,40 @@ public class MethodCall extends Variable
 			
 			if (converted != null)
 			{
+				GenericTypeParameterList convertedParams = converted.getMethodGenericTypeParameterDeclaration();
+				GenericTypeParameterList currentParams = method.getMethodGenericTypeParameterDeclaration();
+				
+				if (converted instanceof Constructor)
+				{
+					convertedParams = converted.getParentClass().getGenericTypeParameterDeclaration();
+					currentParams = method.getParentClass().getGenericTypeParameterDeclaration();
+				}
+					
 				declaration = converted;
+				
+				GenericTypeArgumentList args = getMethodGenericTypeArgumentList();
+				
+				if (convertedParams.getNumVisibleChildren() == 0)
+				{
+					args.slaughterEveryLastVisibleChild();
+				}
+				else if (convertedParams.getNumParameters() != args.getNumVisibleChildren())
+				{
+					GenericTypeArgumentList newArgs = new GenericTypeArgumentList(this, args.getLocationIn());
+					
+					int position = 0;
+					
+					for (int i = 0; i < currentParams.getNumParameters(); i++)
+					{
+						if (currentParams.getVisibleChild(i).getType().equals(convertedParams.getVisibleChild(position).getType()))
+						{
+							newArgs.addChild(args.getVisibleChild(i));
+							position++;
+						}
+					}
+					
+					args.replaceWith(newArgs);
+				}
 			}
 		}
 	}
