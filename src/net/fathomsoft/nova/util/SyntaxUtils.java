@@ -2456,7 +2456,7 @@ public class SyntaxUtils
 							
 							stack--;
 						}
-						else
+						else if (c != ',')
 						{
 							break;
 						}
