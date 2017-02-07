@@ -2650,7 +2650,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		return replacePrimitiveGenerics(types, original, value, false);
 	}
 	
-	public boolean replaceGenerics(final Value[] types, Value original, Value value, boolean allowSame)
+	public boolean replacePrimitiveGenerics(final Value[] types, Value original, Value value, boolean allowSame)
 	{
 		return replacePrimitiveGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
 	}
@@ -3526,6 +3526,17 @@ public class ClassDeclaration extends InstanceDeclaration
 					if (field.isGenericType())
 					{
 						clone.setType(field.getGenericTypeParameter().getCorrespondingArgument(clone), clone);
+					}
+					else
+					{
+//						Stack<IValue> path = SyntaxUtils.performWalk(this, field.getParentClass(), new Stack<>());
+//						
+//						while (!path.isEmpty())
+//						{
+//							
+//						}
+						
+						clone.replaceGenericArguments(field);
 					}
 					
 					addChild(clone);
