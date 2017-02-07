@@ -398,7 +398,11 @@ public class ForEachLoop extends Loop
 		}
 		
 		getArgumentList().replace(getIdentifier(), variable);
-		getArgumentList().addChild(getParent().getAncestorWithScope().getScope().registerLocalVariable(value.getReturnedNode(), this, true));
+		Variable local = getParent().getAncestorWithScope().getScope().registerLocalVariable(value.getReturnedNode(), this, true);
+		
+		local.declaration.setProperty("userMade", false);
+		
+		getArgumentList().addChild(local);
 		
 		return true;
 	}
