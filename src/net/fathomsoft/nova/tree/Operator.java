@@ -358,6 +358,11 @@ public class Operator extends IValue
 			operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER) || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ);
 	}
 	
+	public boolean isEquivalenceOperator()
+	{
+		return operator.equals(EQUALS) || operator.equals(NOT_EQUAL);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#generateNovaInput(StringBuilder, boolean)
 	 */
