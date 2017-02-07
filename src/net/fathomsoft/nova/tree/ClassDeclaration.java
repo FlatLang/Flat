@@ -2437,10 +2437,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		GenericTypeParameter param = getGenericTypeParameter(parameterName);
 		
-		ClassDeclaration clazz = this;
+		if (param == null && encapsulatingClass != null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap") && !isPrimitiveOverload())
+		{
+			param = encapsulatingClass.getGenericTypeParameter(parameterName, value);
+		}
 		
 		if (param == null)
 		{
+			ClassDeclaration clazz = this;
+			
 			if (clazz != this && this.isOfType(clazz))
 			{
 				if (this.doesExtendClass(clazz))
@@ -2480,8 +2485,6 @@ public class ClassDeclaration extends InstanceDeclaration
 				return clazz.getGenericTypeParameter(parameterName);
 			}
 		}
-		
-		
 		
 		return param;
 	}
