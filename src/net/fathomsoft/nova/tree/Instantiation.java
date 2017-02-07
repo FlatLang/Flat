@@ -58,9 +58,16 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
-		if (getNumChildren() > super.getNumDefaultChildren() + 1 && getIdentifier() instanceof MethodCall)
+		if (getNumChildren() > super.getNumDefaultChildren() + 1)
 		{
-			return ((MethodCall)getIdentifier()).getMethodGenericTypeArgumentList();
+			if (getIdentifier() instanceof MethodCall)
+			{
+				return ((MethodCall)getIdentifier()).getMethodGenericTypeArgumentList();
+			}
+			else
+			{
+				return getIdentifier().getGenericTypeArgumentList();
+			}
 		}
 		
 		return (GenericTypeArgumentList)getChild(super.getNumDefaultChildren() + 0);
