@@ -1117,19 +1117,28 @@ public class MethodCall extends Variable
 		
 		if (param != null && param == target)
 		{
+			Value required = parameter;
+			
+			if (required instanceof GenericTypeArgument)
+			{
+				required = ((GenericTypeArgument)required).getTangibleNode();
+				
+				corresponding = SyntaxUtils.performWalk(corresponding, corresponding.getTypeClass(), required.getTypeClass(), param);
+			}
+			
 			return new Pair<>(param, corresponding);
 		}
 		else
 		{
 			GenericTypeArgumentList params = parameter.getGenericTypeArgumentList();
-			GenericTypeArgumentList args = corresponding.getGenericTypeArgumentList();
+//			GenericTypeArgumentList args = corresponding.getGenericTypeArgumentList();
 			
 			// TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A, Out>(Pair<A, A> other, ...)
-			for (int i = 0; i < Math.min(args.getNumVisibleChildren(), params.getNumVisibleChildren()); i++)
+			for (int i = 0; i < /*Math.min(args.getNumVisibleChildren(), */params.getNumVisibleChildren()/*)*/; i++)
 			{
-				Value arg = args.getVisibleChild(i);
+//				Value arg = args.getVisibleChild(i);
 				
-				Pair<GenericTypeParameter, Value> p = recursiveGenericParamSearch(params.getVisibleChild(i), arg, target);
+				Pair<GenericTypeParameter, Value> p = recursiveGenericParamSearch(params.getVisibleChild(i), /*arg*/corresponding, target);
 				
 				if (p != null)
 				{
