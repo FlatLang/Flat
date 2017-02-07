@@ -1510,13 +1510,34 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				type = value.getNovaTypeValue(context).generateGenericType(context);
 				
-				if (getGenericTypeArgumentList() != null)
+				GenericTypeArgumentList args = getGenericTypeArgumentList();
+				
+				if (args != null)
 				{
-					getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
+					args.slaughterEveryLastVisibleChild();
 					
 					if (type.length() > 0)
 					{
 						decodeGenericTypeArguments(type, new Bounds(0, type.length()), true);
+					}
+					else
+					{
+						if (getParentClass() == novaType)
+						{
+							GenericTypeParameterList params = getParentClass().getGenericTypeParameterDeclaration();
+							
+							for (int i = 0; i < params.getNumParameters(); i++)
+							{
+								GenericTypeArgument arg = new GenericTypeArgument(args, args.getLocationIn());
+								arg.setType(params.getParameter(i).getType());
+								
+								args.addChild(arg);
+							}
+						}
+						else
+						{
+							
+						}
 					}
 				}
 			}
