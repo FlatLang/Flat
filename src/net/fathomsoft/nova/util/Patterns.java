@@ -256,7 +256,7 @@ public class Patterns
 	 * For example:<br>
 	 * "person.getAge()" would return the output of "person.getAge"
 	 */
-	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\w+?(<.+>)?\\s*\\(");
+	public static final Pattern PRE_METHOD_CALL			= Pattern.compile("\\w+?(<[^)]+?>)?\\s*\\(");
 
 //	/**
 //	 * Pattern that searches for 
