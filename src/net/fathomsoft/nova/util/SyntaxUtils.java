@@ -3279,6 +3279,67 @@ public class SyntaxUtils
 		return performWalk(context, current, required, parameter.getVisibleIndex());
 	}
 	
+	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, int parameterIndex)
+	{
+		Stack<IValue> path = new Stack<>();
+		
+		path = performWalk(current, required, path);
+		
+		if (path != null)
+		{
+			while (!path.isEmpty())
+			{
+				IValue value = path.pop();
+				ClassDeclaration type = value.getTypeClass();
+				
+				GenericTypeArgumentList args = value.getGenericTypeArgumentList();
+				GenericTypeArgument arg = null;
+				
+				if (type.isPrimitiveOverload())
+				{
+					GenericTypeParameter param = type.genericOverload.getGenericTypeParameter(parameterIndex);
+					
+					GenericTypeParameter corresponding = type.getGenericTypeParameter(param.getName());
+					
+					if (corresponding != null)
+					{
+						arg = value.getGenericTypeArgument(corresponding.getVisibleIndex());
+					}
+					else
+					{
+						arg = (GenericTypeArgument)type.primitiveOverloadTypes[parameterIndex];
+					}
+				}
+				else if (args.getNumVisibleChildren() <= parameterIndex)
+				{
+					return null;
+				}
+				else
+				{
+					arg = args.getVisibleChild(parameterIndex);
+				}
+				
+				if (!arg.isGenericType())
+				{
+					return arg;
+				}
+				else
+				{
+					GenericTypeParameter param = arg.getGenericTypeParameter();
+					
+					parameterIndex = param.getIndex();
+				}
+			}
+		}
+		
+		if (context.getGenericTypeArgumentList() != null && context.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex)
+		{
+			return context.getGenericTypeArgument(parameterIndex);
+		}
+		
+		return null;
+	}
+	
 	public static Stack<IValue> performWalk(ClassDeclaration current, ClassDeclaration required, Stack<IValue> path)
 	{
 		if (required instanceof Trait)
