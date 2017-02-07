@@ -3268,4 +3268,58 @@ public class SyntaxUtils
 		
 		generator.traverseCode(to, 0, null, false);
 	}
+	
+	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, GenericTypeArgument argument)
+	{
+		return performWalk(context, current, required, argument.getGenericTypeParameter());
+	}
+	
+	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter)
+	{
+		return performWalk(context, current, required, parameter.getVisibleIndex());
+	}
+	
+	public static Stack<IValue> performWalk(ClassDeclaration current, ClassDeclaration required, Stack<IValue> path)
+	{
+		if (required instanceof Trait)
+		{
+			TraitImplementation implementation = checkInterface(current, (Trait)required);
+			
+			if (implementation != null)
+			{
+				path.push(implementation);
+				
+				return path;
+			}
+		}
+		
+		ExtendedClass extended = current.getExtendedClass();
+		
+		if (extended != null)
+		{
+			path.push(extended);
+			
+			ClassDeclaration type = extended.getTypeClass();
+			
+			if (type != required && type.genericOverload != required)
+			{
+				return performWalk(type, required, path);
+			}
+			else
+			{
+				return path;
+			}
+		}
+		
+		return null;
+	}
+	
+	public static TraitImplementation checkInterface(ClassDeclaration current, Trait required)
+	{
+		return current.getInterfacesImplementationList().firstWhere(x -> {
+			ClassDeclaration type = x.getTypeClass();
+			
+			return type == required || type.genericOverload == required;
+		});
+	}
 }

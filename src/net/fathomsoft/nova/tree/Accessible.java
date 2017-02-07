@@ -164,7 +164,7 @@ public interface Accessible
 			
 			if (typeClass != type.getParentClass())
 			{
-				return performWalk(value, typeClass, type.getParentClass(), index);
+				return SyntaxUtils.performWalk(value, typeClass, type.getParentClass(), index);
 			}
 			
 			if (index >= 0 && !novaType.isGenericType())
@@ -197,84 +197,6 @@ public interface Accessible
 		}
 		
 		return null;
-	}
-	
-	default GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, int parameterIndex)
-	{
-		Stack<IValue> path = new Stack<>();
-		
-		path = performWalk(current, required, path);
-		
-		if (path != null)
-		{
-			while (!path.isEmpty())
-			{
-				GenericTypeArgumentList args = path.pop().getGenericTypeArgumentList();
-				
-				if (args.getNumVisibleChildren() <= parameterIndex)
-				{
-					return null;
-				}
-				
-				GenericTypeArgument arg = args.getVisibleChild(parameterIndex);
-				
-				if (!arg.isGenericType())
-				{
-					return arg;
-				}
-				else
-				{
-					GenericTypeParameter param = arg.getGenericTypeParameter();
-					
-					parameterIndex = param.getIndex();
-				}
-			}
-		}
-		
-		if (context.getGenericTypeArgumentList() != null && context.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex)
-		{
-			return context.getGenericTypeArgument(parameterIndex);
-		}
-		
-		return null;
-	}
-	
-	default Stack<IValue> performWalk(ClassDeclaration current, ClassDeclaration required, Stack<IValue> path)
-	{
-		if (required instanceof Trait)
-		{
-			TraitImplementation implementation = checkInterface(current, (Trait)required);
-			
-			if (implementation != null)
-			{
-				path.push(implementation);
-				
-				return path;
-			}
-		}
-		
-		ExtendedClass extended = current.getExtendedClass();
-		
-		if (extended != null)
-		{
-			path.push(extended);
-			
-			if (extended.getTypeClass() != required)
-			{
-				return performWalk(extended.getTypeClass(), required, path);
-			}
-			else
-			{
-				return path;
-			}
-		}
-		
-		return null;
-	}
-	
-	default TraitImplementation checkInterface(ClassDeclaration current, Trait required)
-	{
-		return current.getInterfacesImplementationList().firstWhere(x -> x.getTypeClass() == required);
 	}
 	
 	/**
