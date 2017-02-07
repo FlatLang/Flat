@@ -24,10 +24,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		super(temporaryParent, locationIn);
 		
-//		if (getParentGenericTypeArgumentList() == null)
-		{
-			addChild(new GenericTypeArgumentList(this, locationIn), this);
-		}
+		addChild(new GenericTypeArgumentList(this, locationIn), this);
 	}
 
 	/**
@@ -69,12 +66,8 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		}
 		else
 		{
-			implementation = (List)getParent();//getGenericTypeArgumentList();
+			implementation = (List)getParent();
 		}
-		/*else
-		{
-			implementation = ((GenericCompatible) getParent()).getGenericTypeArgumentList();
-		}*/
 		
 		for (int i = 0; i < implementation.getNumVisibleChildren(); i++)
 		{
@@ -111,21 +104,6 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		return getGenericTypeParameter().getDefaultType();
 	}
-//	
-//	@Override
-//	public byte getDataType()
-//	{
-//		return getAncestorOfType(ClosureDeclaration.class) == null ? POINTER : super.getDataType();
-//	}
-	
-//	@Override
-//	public void setPrimitive()
-//	{
-//		if (getAncestorOfType(ClosureDeclaration.class) != null)
-//		{
-//			super.setPrimitive();
-//		}
-//	}
 	
 	/**
 	 * Get the Value instance that this generic argument is manifested as.
@@ -221,18 +199,7 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, Value context)
 	{
-		//builder.append(getType());
-		
-		builder.append(getNovaType(context));// + (getDefaultType() != "Object" ? " extends " + getDefaultType() : ""));
-		
-		/*GenericTypeArgumentList args = getGenericTypeArgumentList();
-		
-		if (args != null && args.getNumVisibleChildren() > 0)
-		{
-			args.generateNovaInput(builder);
-		}*/
-		
-		return builder;
+		return builder.append(getNovaType(context));
 	}
 	
 	public Value getTangibleNode()
