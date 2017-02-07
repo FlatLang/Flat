@@ -57,6 +57,12 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	}
 	
 	@Override
+	public boolean doesConvertToPrimitive()
+	{
+		return false;
+	}
+	
+	@Override
 	public boolean isUserMade(boolean checkAncestor)
 	{
 		return false;
