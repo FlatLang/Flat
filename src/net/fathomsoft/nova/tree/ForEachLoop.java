@@ -376,6 +376,8 @@ public class ForEachLoop extends Loop
 		
 		Variable iteratorCall = (Variable)identifier.getReturnedNode();
 		
+		iteratorCall.importGenericArgumentTypesTo(getFileDeclaration());
+		
 		getFileDeclaration().addImport(iteratorCall.getTypeClassLocation());
 		
 		addChild(value, this);
