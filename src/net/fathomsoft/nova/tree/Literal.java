@@ -311,32 +311,6 @@ public class Literal extends IValue implements Accessible
 						return SyntaxTree.decodeValue(parent, expression, location, require);
 					}
 				}
-				else if (n.isNullLiteral())
-				{
-					if (parent.getParentMethod() != null && parent.getParentMethod().isPrimitiveOverload())
-					{
-						Return parentReturn = (Return)parent.getAncestorOfType(Return.class, true);
-						
-						if (parentReturn != null && parent.getAncestorOfType(MethodCallArgumentList.class, true) == null)
-						{
-							Value def = generateDefaultValue(parent, location, parent.getParentMethod());
-							
-							return def;
-						}
-						
-						Node base = parent.getBaseNode();
-						
-						if (base instanceof Assignment)
-						{
-							Assignment a = (Assignment)base;
-							
-							if (a.getAssignedNodeValue().getReturnedNode().isPrimitive())
-							{
-								return generateDefaultValue(parent, location, a.getAssignedNodeValue().getReturnedNode());
-							}
-						}
-					}
-				}
 			}
 			
 			return n;
@@ -452,7 +426,6 @@ public class Literal extends IValue implements Accessible
 			return result;
 		}
 		
-		
 		if (getType().equals("String"))
 		{
 			KeepWhitespaceAnnotation annotation = (KeepWhitespaceAnnotation)getAnnotationOfType(KeepWhitespaceAnnotation.class, true);
@@ -503,13 +476,60 @@ public class Literal extends IValue implements Accessible
 			{
 				setType(operand.getReturnedNode().getNovaTypeValue(operand.getReturnedNode()));
 			}
-			else if (getAncestorOfType(Return.class) != null)
+			else if (parent.getParentMethod() != null)
 			{
-				getParentMethod().cloneTo(this, false, false);
+				if (getAncestorOfType(Return.class) != null)
+				{
+					if (parent.getParentMethod().isPrimitiveOverload())
+					{
+						if (parent.getAncestorOfType(MethodCallArgumentList.class, true) == null)
+						{
+							Value def = generateDefaultValue(parent, getLocationIn(), parent.getParentMethod());
+							
+							replaceWith(def);
+							
+							result.returnedNode = def;
+						}
+					}
+					
+					if (result.returnedNode == this)
+					{
+						getParentMethod().cloneTo(this, false, false);
+					}
+				}
+				
+				if (result.returnedNode == this && parent.getParentMethod().isPrimitiveOverload())
+				{
+					Node base = parent.getBaseNode();
+					
+					if (base instanceof Assignment)
+					{
+						Assignment a = (Assignment)base;
+						
+						if (a.getAssignedNodeValue().getReturnedNode().isPrimitive())
+						{
+							Value def = generateDefaultValue(parent, getLocationIn(), a.getAssignedNodeValue().getReturnedNode());
+							
+							Value v = this;
+							
+							if (parent instanceof Cast)
+							{
+								v = (Value)parent;
+							}
+							
+							v.replaceWith(def);
+							
+							result.returnedNode = def;
+						}
+					}
+				}
 			}
 		}
 		
-		result.returnedNode = checkSafeNavigation();
+		if (result.returnedNode == this)
+		{
+			result.returnedNode = checkSafeNavigation();
+		}
 		
 		return result;
 	}
