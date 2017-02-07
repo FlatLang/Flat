@@ -3122,7 +3122,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void generateFunctionMap()
 	{
-		if (functionMap == null && !isPropertyTrue("functionMap") && !getFileDeclaration().isExternalFile())
+		if (functionMap == null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap") && !getFileDeclaration().isExternalFile())
 		{
 			functionMap = generateMap("FunctionMap");
 		}
@@ -3130,7 +3130,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public void generatePropertyMap()
 	{
-		if (propertyMap == null && !isPropertyTrue("functionMap") && !getFileDeclaration().isExternalFile())
+		if (propertyMap == null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap") && !getFileDeclaration().isExternalFile())
 		{
 			propertyMap = generateMap("PropertyMap");
 			
