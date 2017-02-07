@@ -1406,6 +1406,23 @@ public abstract class Value extends Node implements AbstractValue
 //		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
 	}
 	
+	public void importGenericArgumentTypesTo(FileDeclaration toFile)
+	{
+		GenericTypeArgumentList args = getGenericTypeArgumentList();
+		
+		for (int i = 0; args != null && i < args.getNumVisibleChildren(); i++)
+		{
+			GenericTypeArgument arg = args.getVisibleChild(i);
+			
+			if (!arg.isGenericType())
+			{
+				toFile.addImport(arg.getTypeClass().getClassLocation());
+			}
+			
+			arg.importGenericArgumentTypesTo(toFile);
+		}
+	}
+	
 	public final void setType(Value value)
 	{
 		setType(value, true);
