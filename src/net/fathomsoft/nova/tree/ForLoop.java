@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -22,6 +23,8 @@ public class ForLoop extends Loop
 {
 	public static final String	IDENTIFIER = "for";
 	
+	public LocalDeclaration elementDeclaration;
+	
 	/**
 	 * Instantiate a new ForLoop and initialize its default values.
 	 * 
@@ -34,6 +37,17 @@ public class ForLoop extends Loop
 		ArgumentList argumentsNode = new ArgumentList(this, locationIn);
 		
 		addChild(argumentsNode, this);
+	}
+	
+	@Override
+	public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors)
+	{
+		if (elementDeclaration != null && name.equals(elementDeclaration.getName()))
+		{
+			return elementDeclaration;
+		}
+		
+		return super.searchVariable(parent, scope, name, checkAncestors);
 	}
 	
 	/**
@@ -210,8 +224,13 @@ public class ForLoop extends Loop
 		initialization.onAfterDecoded();
 		getArgumentList().addChild(initialization);
 		
-		initialization.getAssignedNode().getDeclaration().setProperty("forLoopVariable", true);
-		initialization.getAssignedNode().getDeclaration().setProperty("userMade", false);
+		elementDeclaration = (LocalDeclaration)initialization.getAssignedNode().declaration;
+		
+		elementDeclaration.setProperty("forLoopVariable", true);
+		elementDeclaration.setProperty("userMade", false);
+		
+		elementDeclaration.detach();
+		elementDeclaration.parent = this;
 		
 		return true;
 	}
@@ -305,32 +324,6 @@ public class ForLoop extends Loop
 		}
 		
 		return true;
-	}
-	
-	@Override
-	public ValidationResult validate(int phase)
-	{
-		ValidationResult result = super.validate(phase);
-		
-		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
-		{
-			Variable   var      = getLoopInitialization().getAssignedNode();
-			Identifier existing = var.getDeclaration();
-			
-			if (var.getLocationIn().getBounds().equals(existing.getLocationIn().getBounds()))
-			{
-				LocalDeclaration declaration = (LocalDeclaration)existing;
-
-				if (declaration.getAncestorWithScope() == this)
-				{
-					declaration.getAncestorWithScope().getParent().getAncestorWithScope().addChild(declaration);
-					
-					declaration.setScopeID(getScope().getID());
-				}
-			}
-		}
-		
-		return result;
 	}
 	
 	@Override

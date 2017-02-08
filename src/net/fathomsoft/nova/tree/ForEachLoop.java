@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
 import net.fathomsoft.nova.util.*;
 
@@ -22,6 +23,8 @@ public class ForEachLoop extends Loop
 	
 	public Value givenIteratorValue;
 	
+	public LocalDeclaration elementDeclaration;
+	
 	/**
 	 * Instantiate a new ForLoop and initialize its default values.
 	 * 
@@ -34,6 +37,17 @@ public class ForEachLoop extends Loop
 		ArgumentList argumentsNode = new ArgumentList(this, locationIn);
 		
 		addChild(argumentsNode, this);
+	}
+	
+	@Override
+	public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors)
+	{
+		if (elementDeclaration != null && name.equals(elementDeclaration.getName()))
+		{
+			return elementDeclaration;
+		}
+		
+		return super.searchVariable(parent, scope, name, checkAncestors);
 	}
 	
 	@Override
@@ -275,9 +289,12 @@ public class ForEachLoop extends Loop
 		
 		getArgumentList().replace(decl, decl.generateUsableVariable(getArgumentList(), decl.getLocationIn()));
 		
-		VariableDeclarationList variables = getParent().getAncestorWithScope().getScope().getVariableList();
+		decl.parent = this;
+		elementDeclaration = decl;
 		
-		variables.addChild(decl);
+//		VariableDeclarationList variables = getParent().getAncestorWithScope().getScope().getVariableList();
+//		
+//		variables.addChild(decl);
 		
 		decl.setScopeID(getScope().getID());
 		//variables.addChild(getIterator().getDeclaration());
