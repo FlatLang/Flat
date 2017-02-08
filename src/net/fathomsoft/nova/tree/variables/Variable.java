@@ -768,9 +768,39 @@ public class Variable extends Identifier
 				
 				if (isPrimitiveType() && doesAccess())
 				{
-					if (getAccessedNode().getName().equals("class"))
+					Identifier accessed = getAccessedNode();
+					
+					if (accessed.getName().equals("class"))
 					{
-						Identifier newAccessed = getAccessedNode();
+						Identifier nextAccessed = accessed.getAccessedNode();
+						
+						if (nextAccessed instanceof MethodCall && nextAccessed.getName().equals("isOfType"))
+						{
+							MethodCall call = (MethodCall)nextAccessed;
+							MethodCallArgumentList argList = call.getArgumentList();
+							
+							Value[] args = argList.getArgumentsInOrder();
+							
+							if (args.length == 1 && args[0] instanceof StaticClassReference)
+							{
+								StaticClassReference ref = (StaticClassReference)args[0];
+								
+								String bool = getTypeClass().isOfType(ref.getTypeClass()) ? "true" : "false";
+								
+								Literal literal = (Literal)Literal.decodeStatement(parent, bool, getLocationIn(), true, true);
+								
+								if (call.doesAccess())
+								{
+									literal.setAccessedNode(call.getAccessedNode());
+								}
+								
+								replaceWith(literal);
+								
+								result.returnedNode = literal;
+								
+								return result;
+							}
+						}
 						
 						StaticClassReference replacement = StaticClassReference.decodeStatement(getParent(), getTypeClassName(), getLocationIn(), true);
 						
