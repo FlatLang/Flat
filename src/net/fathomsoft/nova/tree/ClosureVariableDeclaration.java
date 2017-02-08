@@ -27,6 +27,16 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 		setIsValueReference(true);
 	}
 	
+	public VariableDeclaration getRootDeclaration()
+	{
+		if (originalDeclaration instanceof ClosureVariableDeclaration)
+		{
+			return ((ClosureVariableDeclaration)originalDeclaration).getRootDeclaration();
+		}
+		
+		return originalDeclaration;
+	}
+	
 	@Override
 	public VariableDeclaration getOriginalDeclaration()
 	{
