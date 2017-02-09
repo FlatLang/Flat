@@ -24,6 +24,7 @@ public class ClosureContextDeclaration extends LocalDeclaration
 		super(temporaryParent, locationIn);
 		
 		this.context = context;
+		context.declaration = this;
 		id = idCounter++;
 	}
 	
