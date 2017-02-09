@@ -28,6 +28,7 @@ import java.util.ArrayList;
 public class VariableDeclaration extends IIdentifier
 {
 	private boolean            volatileVal, external, reference;
+	public ArrayList<ClosureVariableDeclaration> closureVariableDeclarations = new ArrayList<>();
 	
 	public  String[]           extraDeclarations;
 	
@@ -620,6 +621,13 @@ public class VariableDeclaration extends IIdentifier
 		node.external     = external;
 		node.volatileVal  = volatileVal;
 		node.reference    = reference;
+		
+		node.closureVariableDeclarations = new ArrayList<>(closureVariableDeclarations.size());
+		
+		for (ClosureVariableDeclaration c : closureVariableDeclarations)
+		{
+			node.closureVariableDeclarations.add(c);
+		}
 		
 		node.extraDeclarations = new String[extraDeclarations.length];
 		
