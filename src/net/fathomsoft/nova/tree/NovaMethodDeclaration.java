@@ -1032,7 +1032,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			if (varg.declaration != null)
 			{
-				ParameterList aParams = ((CallableMethod)varg.declaration).getParameterList();
+				ParameterList aParams = ((CallableMethod)varg.declaration.getOriginalDeclaration()).getParameterList();
 				ParameterList<Value> cParams = closure.getParameterList();
 				
 				Value[] closureValues = new Value[Math.min(aParams.getNumParameters(), cParams.getNumParameters())];
