@@ -17,6 +17,8 @@ import net.fathomsoft.nova.util.Location;
  */
 public class GenericTypeArgument extends IValue implements GenericCompatible
 {
+	public boolean allocatedOnHeap;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -26,7 +28,13 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		
 		addChild(new GenericTypeArgumentList(this, locationIn), this);
 	}
-
+	
+	@Override
+	public boolean isAllocatedOnHeap()
+	{
+		return allocatedOnHeap;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.GenericCompatible#getGenericTypeArgumentList()
 	 */
