@@ -8,6 +8,8 @@ import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Stack;
 
+import java.util.ArrayList;
+
 /**
  * MethodDeclaration extension that represents the declaration of a Constructor
  * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -221,6 +223,7 @@ public class Constructor extends BodyMethodDeclaration
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			initMethod.getScope().slaughterEveryLastVisibleChild();
+			initMethod.getScope().getVariableList().closureContextDeclarations = getScope().getVariableList().closureContextDeclarations;
 			initMethod.getScope().inheritChildren(getScope());
 			initMethod.setLocationIn(getLocationIn());
 			
@@ -233,6 +236,10 @@ public class Constructor extends BodyMethodDeclaration
 			result.returnedNode = initMethod;
 			
 			return result;
+		}
+		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			getScope().getVariableList().closureContextDeclarations = new ArrayList<>();
 		}
 		
 		return result;
