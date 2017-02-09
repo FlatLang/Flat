@@ -622,13 +622,6 @@ public class VariableDeclaration extends IIdentifier
 		node.volatileVal  = volatileVal;
 		node.reference    = reference;
 		
-		node.closureVariableDeclarations = new ArrayList<>(closureVariableDeclarations.size());
-		
-		for (ClosureVariableDeclaration c : closureVariableDeclarations)
-		{
-			node.closureVariableDeclarations.add(c);
-		}
-		
 		node.extraDeclarations = new String[extraDeclarations.length];
 		
 		for (int i = 0; i < extraDeclarations.length; i++)
