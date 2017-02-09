@@ -46,7 +46,7 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 	{
 		super.onRemoved(parent);
 		
-		originalDeclaration.closureVariableDeclarations.remove(this);
+		getRootDeclaration().closureVariableDeclarations.remove(this);
 	}
 	
 	public boolean requiresHeapAllocation()
