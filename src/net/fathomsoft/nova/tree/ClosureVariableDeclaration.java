@@ -34,6 +34,14 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 	}
 	
 	@Override
+	public void onReplaced(Node parent, Node replacement)
+	{
+		super.onReplaced(parent, replacement);
+		
+		getRootDeclaration().closureVariableDeclarations.add((ClosureVariableDeclaration)replacement);
+	}
+	
+	@Override
 	public void onRemoved(Node parent)
 	{
 		super.onRemoved(parent);
