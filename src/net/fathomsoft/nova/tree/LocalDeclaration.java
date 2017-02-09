@@ -23,6 +23,7 @@ public class LocalDeclaration extends VariableDeclaration
 	private int scopeID;
 
 	private boolean isImplicit;
+	public boolean allocatedOnHeap;
 	
 	public Value implicitType;
 	public Value correspondingImplicit;
@@ -49,6 +50,12 @@ public class LocalDeclaration extends VariableDeclaration
 	public int getScopeID()
 	{
 		return scopeID;
+	}
+	
+	@Override
+	public boolean isAllocatedOnHeap()
+	{
+		return allocatedOnHeap;
 	}
 	
 	/**
@@ -389,6 +396,8 @@ public class LocalDeclaration extends VariableDeclaration
 	public LocalDeclaration cloneTo(LocalDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
+		
+		node.allocatedOnHeap = allocatedOnHeap;
 		
 		return node;
 	}
