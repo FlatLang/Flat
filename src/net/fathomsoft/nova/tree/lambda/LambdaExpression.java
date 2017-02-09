@@ -286,7 +286,11 @@ public class LambdaExpression extends Value
 				
 				if (root != null)
 				{
-					root.getNearestScopeAncestor().addChild(c);
+					Node node = root.getParentMethod(true);
+					
+					node = node == null ? root.getNearestScopeAncestor() : node;
+					
+					node.addChild(c);
 					
 					replaceWith(methodReference);
 					
