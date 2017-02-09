@@ -38,7 +38,6 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 		declaration.cloneTo(var, true, true);
 		var.setIsValueReference(true);
 		var.requiresHeapAllocation = declaration instanceof LocalDeclaration && !declaration.isPrimitive();
-		declaration.closureVariableDeclarations.add(var);
 		
 		addChild(var);
 		
