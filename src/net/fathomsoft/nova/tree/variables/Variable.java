@@ -50,6 +50,16 @@ public class Variable extends Identifier
 		return true;
 	}
 	
+	public boolean isAllocatedOnHeap()
+	{
+		return declaration.isAllocatedOnHeap();
+	}
+	
+	public boolean requiresHeapAllocation()
+	{
+		return declaration.requiresHeapAllocation();
+	}
+	
 	@Override
 	public boolean isValid()
 	{

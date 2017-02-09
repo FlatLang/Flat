@@ -866,6 +866,16 @@ public abstract class Value extends Node implements AbstractValue
 		return false;
 	}
 	
+	public boolean isAllocatedOnHeap()
+	{
+		return false;
+	}
+	
+	public boolean requiresHeapAllocation()
+	{
+		return false;
+	}
+	
 	/**
 	 * Get whether or not the identifier is a reference.
 	 * 
