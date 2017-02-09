@@ -28,6 +28,14 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 		setIsValueReference(true);
 	}
 	
+	@Override
+	public void onRemoved(Node parent)
+	{
+		super.onRemoved(parent);
+		
+		originalDeclaration.closureVariableDeclarations.remove(this);
+	}
+	
 	public boolean requiresHeapAllocation()
 	{
 		return requiresHeapAllocation;
