@@ -49,6 +49,14 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 		getRootDeclaration().closureVariableDeclarations.remove(this);
 	}
 	
+	@Override
+	public void onAdded(Node parent)
+	{
+		super.onAdded(parent);
+		
+		getRootDeclaration().closureVariableDeclarations.add(this);
+	}
+	
 	public boolean requiresHeapAllocation()
 	{
 		return requiresHeapAllocation;
