@@ -12,6 +12,7 @@ import net.fathomsoft.nova.util.Location;
 public class ClosureVariableDeclaration extends VariableDeclaration
 {
 	public VariableDeclaration originalDeclaration;
+	public boolean requiresHeapAllocation;
 	
 	public static final String CONTEXT_VARIABLE_NAME = "context";
 	
@@ -25,6 +26,11 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 		this.originalDeclaration = originalDeclaration;
 		
 		setIsValueReference(true);
+	}
+	
+	public boolean requiresHeapAllocation()
+	{
+		return requiresHeapAllocation;
 	}
 	
 	public VariableDeclaration getRootDeclaration()
@@ -72,6 +78,8 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 	public ClosureVariableDeclaration cloneTo(ClosureVariableDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
+		
+		node.requiresHeapAllocation = requiresHeapAllocation;
 		
 		return node;
 	}
