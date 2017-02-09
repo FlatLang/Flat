@@ -1,11 +1,10 @@
 package net.fathomsoft.nova.tree.variables;
 
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.List;
-import net.fathomsoft.nova.tree.LocalDeclaration;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Scope;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
+
+import java.util.ArrayList;
 
 /**
  * Node that holds the LocalVariables that a method contains.
@@ -16,6 +15,8 @@ import net.fathomsoft.nova.util.Location;
  */
 public class VariableDeclarationList extends List
 {
+	public ArrayList<ClosureContextDeclaration> closureContextDeclarations = new ArrayList<>();
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -66,6 +67,20 @@ public class VariableDeclarationList extends List
 		}
 		
 		return valid;
+	}
+	
+	@Override
+	public void addChild(Node node)
+	{
+		if (node instanceof ClosureContextDeclaration)
+		{
+			node.parent = this;
+			closureContextDeclarations.add((ClosureContextDeclaration)node);
+		}
+		else
+		{
+			super.addChild(node);
+		}
 	}
 	
 	public void removeChildWithName(String variableName)
@@ -129,6 +144,13 @@ public class VariableDeclarationList extends List
 	public VariableDeclarationList cloneTo(VariableDeclarationList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
+		
+		node.closureContextDeclarations = new ArrayList<>(closureContextDeclarations.size());
+		
+		for (ClosureContextDeclaration c : closureContextDeclarations)
+		{
+			node.closureContextDeclarations.add(c);
+		}
 		
 		return node;
 	}
