@@ -46,6 +46,11 @@ public class VariableDeclaration extends IIdentifier
 		extraDeclarations = new String[0];
 	}
 	
+	public boolean requiresHeapAllocation()
+	{
+		return closureVariableDeclarations.stream().anyMatch(x -> x.requiresHeapAllocation());
+	}
+	
 	public boolean isValueReference()
 	{
 		return reference;
