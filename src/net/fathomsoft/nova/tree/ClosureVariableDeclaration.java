@@ -78,6 +78,18 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 		return originalDeclaration.getOriginalDeclaration();
 	}
 	
+	@Override
+	public String getType()
+	{
+		return originalDeclaration.getType();
+	}
+	
+	@Override
+	public String getType(boolean checkCast)
+	{
+		return originalDeclaration.getType(checkCast);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
