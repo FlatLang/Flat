@@ -87,6 +87,7 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.originalDeclaration = originalDeclaration;
 		node.requiresHeapAllocation = requiresHeapAllocation;
 		
 		return node;
