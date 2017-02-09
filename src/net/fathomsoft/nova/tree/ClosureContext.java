@@ -13,6 +13,8 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 {
 	public int id;
 	
+	public ClosureContextDeclaration declaration;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -35,6 +37,8 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 		
 		declaration.cloneTo(var, true, true);
 		var.setIsValueReference(true);
+		var.requiresHeapAllocation = declaration instanceof LocalDeclaration && !declaration.isPrimitive();
+		declaration.closureVariableDeclarations.add(var);
 		
 		addChild(var);
 		
