@@ -28,6 +28,11 @@ public class ClosureVariableDeclaration extends VariableDeclaration
 		setIsValueReference(true);
 	}
 	
+	public ClosureContext getClosureContext()
+	{
+		return (ClosureContext)parent;
+	}
+	
 	@Override
 	public void onRemoved(Node parent)
 	{
