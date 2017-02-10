@@ -178,15 +178,19 @@ public class LambdaExpression extends Value
 			
 			builder.append(builder.length() > 0 ? ", " : "").append(type).append(" ").append(name);
 			
-			if (refFile != null)
-			{
-				Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
-				
-				if (imp != null)
-				{
-					parent.getFileDeclaration().addImport(imp.getClassLocation());
-				}
-			}
+			getFileDeclaration().addImport(value.getTypeClassLocation());
+			
+			value.importGenericArgumentTypesTo(getFileDeclaration());
+			
+//			if (refFile != null)
+//			{
+//				Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
+//				
+//				if (imp != null)
+//				{
+//					parent.getFileDeclaration().addImport(imp.getClassLocation());
+//				}
+//			}
 		});
 		
 		String parameters = builder.toString();
