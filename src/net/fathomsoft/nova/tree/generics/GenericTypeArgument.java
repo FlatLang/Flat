@@ -26,6 +26,8 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	{
 		super(temporaryParent, locationIn);
 		
+		setDataType(POINTER);
+		
 		addChild(new GenericTypeArgumentList(this, locationIn), this);
 	}
 	
