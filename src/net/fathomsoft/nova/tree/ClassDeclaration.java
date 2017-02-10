@@ -2550,7 +2550,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					Value arg = args[i].getReturnedNode();
 					
 					if (arg.getDataType() != required.getDataType() ||
-						arg.getTypeClass() != required.getTypeClass())
+						arg.isPrimitive() && !arg.getType().equals(required.getType()))
 					{
 						compatible = false;
 					}
