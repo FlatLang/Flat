@@ -1404,7 +1404,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				for (NovaMethodDeclaration m : correspondingPrimitiveOverloads)
 				{
-					IValue value = new IValue(this, Location.INVALID);
+					GenericTypeArgument value = new GenericTypeArgument(this, Location.INVALID);
 					value.setType(this);
 					value.parent = m;
 					
