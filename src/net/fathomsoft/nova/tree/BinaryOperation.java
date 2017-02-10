@@ -284,7 +284,7 @@ public class BinaryOperation extends IValue
 		
 		if (operatorVal.equals(Operator.DIVIDE))
 		{
-			validateDivideByZero(rhn);
+//			validateDivideByZero(rhn);
 		}
 	}
 	
