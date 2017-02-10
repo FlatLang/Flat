@@ -1347,7 +1347,7 @@ public class MethodCall extends Variable
 					
 					int position = 0;
 					
-					for (int i = 0; i < currentParams.getNumParameters(); i++)
+					for (int i = 0; i < currentParams.getNumParameters() && position < convertedParams.getNumParameters(); i++)
 					{
 						if (currentParams.getVisibleChild(i).getType().equals(convertedParams.getVisibleChild(position).getType()))
 						{
