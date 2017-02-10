@@ -1464,7 +1464,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			GenericTypeArgument arg = args.getVisibleChild(i);
 			
-			if (!arg.isGenericType())
+			if (!arg.isGenericType() && arg.getTypeClass() != null)
 			{
 				toFile.addImport(arg.getTypeClass().getClassLocation());
 			}
