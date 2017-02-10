@@ -3570,7 +3570,10 @@ public class ClassDeclaration extends InstanceDeclaration
 						}
 					}
 					
-					clone.decodeArrowBinding(type);
+					if (!isPrimitiveOverload())
+					{
+						clone.decodeArrowBinding(type);
+					}
 					
 //					if (!clone.isTwoWayBinding())
 //					{
