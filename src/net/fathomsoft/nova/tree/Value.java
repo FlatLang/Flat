@@ -707,7 +707,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			Priority p = ((Accessible)this).getParentPriority();
 			
-			if (p.getContents().containsChild(this, true) && p.getContents() instanceof Cast)
+			if (p.getContents().getReturnedNode() == this && p.getContents() instanceof Cast)
 			{
 				return p.getContents().getTypeClassLocation();
 			}
