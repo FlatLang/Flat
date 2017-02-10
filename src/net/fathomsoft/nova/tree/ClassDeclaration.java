@@ -450,7 +450,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		for (Trait t : getImplementedInterfaces())
 		{
-			if (t.getExtendedClassDeclaration() != null && t.getExtendedClassDeclaration() == getExtendedClassDeclaration())
+			if (t.getExtendedClassDeclaration() != null && t.getExtendedClassDeclaration().isRelatedTo(getExtendedClassDeclaration()))
 			{
 				((ClassDeclaration)t).addVirtualMethods(methods, t.getMethodList(), false, false, true);
 				((ClassDeclaration)t).addVirtualMethods(methods, t.getPropertyMethodList(), false, false, true);
