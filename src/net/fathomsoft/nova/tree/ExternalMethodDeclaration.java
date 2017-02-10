@@ -102,56 +102,61 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	 */
 	public static ExternalMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		String methodSignature = findMethodSignature(statement, StringUtils.findWordBounds(statement, ExternalMethodDeclaration.PREFIX));
+		Bounds bounds = StringUtils.findWordBounds(statement, ExternalMethodDeclaration.PREFIX);
 		
-		if (methodSignature != null && methodSignature.length() > 0)
+		if (bounds.isValid() && bounds.getStart() < statement.indexOf('('))
 		{
-			ExternalMethodDeclaration n = new ExternalMethodDeclaration(parent, location);
+			String methodSignature = findMethodSignature(statement, bounds);
 			
-			int start = 0;
-			int end = StringUtils.findNextNonWhitespaceIndex(methodSignature, SyntaxUtils.findCharInBaseScope(methodSignature, '(') - 1, -1) + 1;
-			
-			boolean quotes = methodSignature.charAt(end - 1) == '"';
-			
-			if (quotes)
+			if (methodSignature != null && methodSignature.length() > 0)
 			{
-				start = StringUtils.findEndingQuote(methodSignature, end - 1, -1);
-			}
-			else
-			{
-				start = StringUtils.findNextWhitespaceIndex(methodSignature, end - 2, -1) + 1;
-			}
-			
-			String name = methodSignature.substring(start, end);
-			
-			if (quotes)
-			{
-				name = StringUtils.removeSurroundingQuotes(name);
-			}
-			
-			// TODO: 10/7/2016 make this name foolproof 
-			methodSignature = methodSignature.substring(0, start) + "__extMethod" + methodSignature.substring(end);
-			
-			String withAlias = methodSignature;
-			methodSignature  = trimAlias(methodSignature);
-			
-			statement        = methodSignature;
-			methodSignature  = n.formMethodSignature(methodSignature);
-			
-			MethodDeclaration method = NovaMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
-			
-			if (method != null)
-			{
-				method.cloneTo(n);
+				ExternalMethodDeclaration n = new ExternalMethodDeclaration(parent, location);
 				
-				n.setExternal(true);
-				n.setName(name);
-				n.alias = n.getName();
-				n.setLocationIn(location);
+				int start = 0;
+				int end = StringUtils.findNextNonWhitespaceIndex(methodSignature, SyntaxUtils.findCharInBaseScope(methodSignature, '(') - 1, -1) + 1;
 				
-				if (n.decodeAlias(withAlias, statement, require))
+				boolean quotes = methodSignature.charAt(end - 1) == '"';
+				
+				if (quotes)
 				{
-					return n;
+					start = StringUtils.findEndingQuote(methodSignature, end - 1, -1);
+				}
+				else
+				{
+					start = StringUtils.findNextWhitespaceIndex(methodSignature, end - 2, -1) + 1;
+				}
+				
+				String name = methodSignature.substring(start, end);
+				
+				if (quotes)
+				{
+					name = StringUtils.removeSurroundingQuotes(name);
+				}
+				
+				// TODO: 10/7/2016 make this name foolproof 
+				methodSignature = methodSignature.substring(0, start) + "__extMethod" + methodSignature.substring(end);
+				
+				String withAlias = methodSignature;
+				methodSignature = trimAlias(methodSignature);
+				
+				statement = methodSignature;
+				methodSignature = n.formMethodSignature(methodSignature);
+				
+				MethodDeclaration method = NovaMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
+				
+				if (method != null)
+				{
+					method.cloneTo(n);
+					
+					n.setExternal(true);
+					n.setName(name);
+					n.alias = n.getName();
+					n.setLocationIn(location);
+					
+					if (n.decodeAlias(withAlias, statement, require))
+					{
+						return n;
+					}
 				}
 			}
 		}
