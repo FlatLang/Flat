@@ -1404,9 +1404,13 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				for (NovaMethodDeclaration m : correspondingPrimitiveOverloads)
 				{
-					m.setType(this);
+					IValue value = new IValue(this, Location.INVALID);
+					value.setType(this);
+					value.parent = m;
 					
-					getParentClass().replacePrimitiveGenerics(m.getParentClass().primitiveOverloadTypes, this, m);
+					getParentClass().replacePrimitiveGenerics(m.getParentClass().primitiveOverloadTypes, this, value);
+					
+					m.setType(value);
 				}
 			}
 		}
