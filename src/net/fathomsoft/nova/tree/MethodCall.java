@@ -951,6 +951,8 @@ public class MethodCall extends Variable
 			
 			if (!skipArgumentChecks && !n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
 			{
+				SyntaxMessage.queryError("Invalid arguments passed in function call '" + statement + "'", n, require);
+				
 				return null;
 			}
 			
