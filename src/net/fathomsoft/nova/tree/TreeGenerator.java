@@ -502,6 +502,11 @@ public class TreeGenerator implements Runnable
 			}
 			
 			updateParents(node);
+			
+			if (statementEndIndex >= source.length())
+			{
+				return node;
+			}
 		}
 		
 		return null;
