@@ -259,48 +259,48 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 		return param != null && context.getParentClass() == param.getParentClass();
 	}
 	
-	@Override
-	public Value getNovaTypeValue(Value context)
-	{
-		if (context instanceof GenericTypeArgument)
-		{
-			context = ((GenericTypeArgument)context).getTangibleNode();
-		}
-		
-		if (isGenericType())
-		{
-			GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
-			
-			if (arg != null && arg != this && arg != getParent().getParent())
-			{
-				return arg.getNovaTypeValue(context);
-			}
-			
-			GenericTypeArgument value = clone(getParent(), getLocationIn(), false, true);
-			
-			if (context == null || getParentClass() != context.getParentClass())
-			{
-				value.setTypeValue(getDefaultType());
-			}
-			
-			return value;
-		}
-		
-		if (getGenericTypeArgumentList() != null && getGenericTypeArgumentList().getNumVisibleChildren() > 0)
-		{
-			GenericTypeArgument clone = clone(getParent(), getLocationIn(), true, true);
-			
-			for (int i = 0; i < clone.getGenericTypeArgumentList().getNumVisibleChildren(); i++)
-			{
-				clone.getGenericTypeArgumentList().getVisibleChild(i)
-					.replaceWith(getGenericTypeArgumentList().getVisibleChild(i).getNovaTypeValue(context).clone(getGenericTypeArgumentList(), getLocationIn(), true, true));
-			}
-			
-			return clone;
-		}
-		
-		return clone(getParent(), getLocationIn(), false, true);
-	}
+//	@Override
+//	public Value getNovaTypeValue(Value context)
+//	{
+//		if (context instanceof GenericTypeArgument)
+//		{
+//			context = ((GenericTypeArgument)context).getTangibleNode();
+//		}
+//		
+//		if (isGenericType())
+//		{
+//			GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
+//			
+//			if (arg != null && arg != this && arg != getParent().getParent())
+//			{
+//				return arg.getNovaTypeValue(context);
+//			}
+//			
+//			GenericTypeArgument value = clone(getParent(), getLocationIn(), false, true);
+//			
+//			if (context == null || getParentClass() != context.getParentClass())
+//			{
+//				value.setTypeValue(getDefaultType());
+//			}
+//			
+//			return value;
+//		}
+//		
+//		if (getGenericTypeArgumentList() != null && getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+//		{
+//			GenericTypeArgument clone = clone(getParent(), getLocationIn(), true, true);
+//			
+//			for (int i = 0; i < clone.getGenericTypeArgumentList().getNumVisibleChildren(); i++)
+//			{
+//				clone.getGenericTypeArgumentList().getVisibleChild(i)
+//					.replaceWith(getGenericTypeArgumentList().getVisibleChild(i).getNovaTypeValue(context).clone(getGenericTypeArgumentList(), getLocationIn(), true, true));
+//			}
+//			
+//			return clone;
+//		}
+//		
+//		return clone(getParent(), getLocationIn(), false, true);
+//	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
