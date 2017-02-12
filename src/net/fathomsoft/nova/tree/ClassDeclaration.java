@@ -3589,24 +3589,26 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					Value type = clone;
 					
-					if (field.getVisibility() == FieldDeclaration.VISIBLE && !field.isGenericType())
-					{
-						type = field.getClonedNovaTypeValue(clone);
-						
-						if (type.getGenericTypeArgumentList() != null)
-						{
-							for (GenericTypeArgument arg : type.getGenericTypeArgumentList())
-							{
-								if (!arg.isGenericType())
-								{
-									if (!getFileDeclaration().containsImport(arg.getTypeClassLocation()))
-									{
-										getFileDeclaration().addImport(arg.getTypeClassLocation());
-									}
-								}
-							}
-						}
-					}
+					field.importGenericArgumentTypesTo(getFileDeclaration());
+					
+//					if (field.getVisibility() == FieldDeclaration.VISIBLE && !field.isGenericType())
+//					{
+//						type = field.getClonedNovaTypeValue(clone);
+//						
+//						if (type.getGenericTypeArgumentList() != null)
+//						{
+//							for (GenericTypeArgument arg : type.getGenericTypeArgumentList())
+//							{
+//								if (!arg.isGenericType())
+//								{
+//									if (!getFileDeclaration().containsImport(arg.getTypeClassLocation()))
+//									{
+//										getFileDeclaration().addImport(arg.getTypeClassLocation());
+//									}
+//								}
+//							}
+//						}
+//					}
 					
 					if (!isPrimitiveOverload())
 					{
