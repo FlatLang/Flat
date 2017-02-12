@@ -1010,7 +1010,7 @@ public class MethodCall extends Variable
 	}
 	
 	@Override
-	public GenericTypeParameter getGenericTypeParameter()
+	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
 	{
 		if (getNovaMethod() != null)
 		{
@@ -1022,7 +1022,7 @@ public class MethodCall extends Variable
 			}
 		}
 		
-		return super.getGenericTypeParameter();
+		return super.getGenericTypeParameter(checkArray);
 	}
 	
 	/**

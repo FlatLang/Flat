@@ -82,14 +82,14 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
-	public GenericTypeParameter getGenericTypeParameter()
+	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
 	{
 		if (!doesAccess())
 		{
-			return getReturnedContents().getGenericTypeParameter();
+			return getReturnedContents().getGenericTypeParameter(checkArray);
 		}
 		
-		return super.getGenericTypeParameter();
+		return super.getGenericTypeParameter(checkArray);
 	}
 	
 	@Override
