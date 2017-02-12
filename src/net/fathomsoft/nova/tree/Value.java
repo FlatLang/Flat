@@ -1094,13 +1094,41 @@ public abstract class Value extends Node implements AbstractValue
 			
 			if (param != null)
 			{
-				arg = param.getCorrespondingArgument(context);
+//				if (context != null && context.getParentClass() != null && param.getParentClass().encapsulates(context.getParentClass()))
+//				{
+//
+//				}
+//				else if (context != null && context.getParentClass() != null && context.getParentClass().isOfType(param.getParentClass()))
+//				{
+//					arg = SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param);
+//				}
+				if (!param.isMethodGenericParameter() && context != null && context.getParentClass() != null && context.getParentClass().isOfType(param.getParentClass()))
+				{
+					if (context.getParentClass() != param.getParentClass())
+					{
+						arg = SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
+						
+						return builder.append(arg.getType());
+					}
+					else
+					{
+						defaultGeneric = false;
+					}
+				}
+				else
+				{
+					arg = param.getCorrespondingArgument(context);
+				}
 			}
 		}
 		
 		if (arg != null && !arg.isGenericType())
 		{
-			builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType().toString()));
+			return builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType(context).toString()));
+		}
+		else if (arg != null && context != null && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true))
+		{
+			builder.append(arg.getType());
 		}
 		else if (defaultGeneric && param != null)
 		{
@@ -1313,45 +1341,45 @@ public abstract class Value extends Node implements AbstractValue
 		return getNovaType();
 	}
 	
-	public GenericTypeParameter getGenericTypeParameter()
-	{
-		return getGenericTypeParameter(true);
-	}
-	
-	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
-	{
-		if (getParentMethod(true) != null)
-		{
-			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType(checkArray));
-			
-			if (param != null)
-			{
-				return param;
-			}
-		}
-		if (getAncestorOfType(MethodCall.class) != null)
-		{
-			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
-			
-			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
-			
-			if (clazz != null)
-			{
-				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
-				
-				if (param != null)
-				{
-					return param;
-				}
-			}
-		}
-		if (getParentClass() == null)
-		{
-			return null;
-		}
-		
-		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
-	}
+//	public final GenericTypeParameter getGenericTypeParameter()
+//	{
+//		return getGenericTypeParameter(true);
+//	}
+//
+//	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
+//	{
+//		if (getParentMethod(true) != null)
+//		{
+//			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType(checkArray));
+//
+//			if (param != null)
+//			{
+//				return param;
+//			}
+//		}
+//		if (getAncestorOfType(MethodCall.class) != null)
+//		{
+//			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
+//
+//			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
+//
+//			if (clazz != null)
+//			{
+//				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
+//
+//				if (param != null)
+//				{
+//					return param;
+//				}
+//			}
+//		}
+//		if (getParentClass() == null)
+//		{
+//			return null;
+//		}
+//
+//		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
+//	}
     
 	public final boolean isGenericType()
 	{

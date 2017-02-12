@@ -632,15 +632,6 @@ public class Variable extends Identifier
 		super.onAdded(parent);
 	}
 	
-	/**
-	 * @see net.fathomsoft.nova.tree.Value#getGenericTypeParameter()
-	 */
-	@Override
-	public GenericTypeParameter getGenericTypeParameter()
-	{
-		return getGenericTypeParameter(true);
-	}
-	
 	public GenericTypeParameter getGenericTypeParameter(boolean checkCast)
 	{
 		if (declaration == null)
