@@ -202,6 +202,22 @@ public class GenericTypeArgument extends IValue implements GenericCompatible
 	}
 	
 	@Override
+	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
+	{
+//		if (getParentGenericTypeArgumentList() != null && getParentGenericTypeArgumentList().parent instanceof GenericTypeArgument)
+//		{
+//			GenericTypeArgument arg = (GenericTypeArgument)getParentGenericTypeArgumentList().parent;
+//			
+//			if (arg.getTypeClass() != null)
+//			{
+//				return arg.getTypeClass().getGenericTypeParameter(getIndex());
+//			}
+//		}
+		
+		return super.getGenericTypeParameter(checkArray);
+	}
+	
+	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		return generateNovaInput(builder, outputChildren, null);
