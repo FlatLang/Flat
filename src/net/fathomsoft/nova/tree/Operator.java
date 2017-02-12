@@ -295,7 +295,10 @@ public class Operator extends IValue
 		else if (!isDecoding())
 		{
 			Value l = getLeftOperand().getReturnedNode();
+			l = l.getNovaTypeValue(l);
+			
 			Value r = getRightOperand().getReturnedNode();
+			r = r.getNovaTypeValue(r);
 			
 			if (r instanceof BinaryOperation)
 			{

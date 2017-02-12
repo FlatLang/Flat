@@ -302,7 +302,10 @@ public class BinaryOperation extends IValue
 		if (!parent.isWithinExternalContext() && !lhn.isExternalType() && !rhn.isExternalType())
 		{
 			Value returnedLeft  = lhn.getReturnedNode();
+			returnedLeft = returnedLeft.getNovaTypeValue(returnedLeft);
+			
 			Value returnedRight = rhn.getReturnedNode();
+			returnedRight = returnedRight.getNovaTypeValue(returnedRight);
 			
 			ClassDeclaration common = SyntaxUtils.getTypeInCommon(returnedLeft, returnedRight);
 			
