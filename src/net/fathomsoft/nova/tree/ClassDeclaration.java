@@ -135,7 +135,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public boolean encapsulates(ClassDeclaration other)
 	{
-		return other.encapsulatingClass == this || other.encapsulatingClass != null && encapsulates(other.encapsulatingClass);
+		return encapsulates(other, false);
+	}
+	
+	public boolean encapsulates(ClassDeclaration other, boolean inclusive)
+	{
+		return (inclusive && this == other) || other.encapsulatingClass == this || other.encapsulatingClass != null && encapsulates(other.encapsulatingClass);
 	}
 	
 	@Override
