@@ -3223,12 +3223,12 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void addMapFunction(ClassDeclaration reference, InstanceDeclaration instance, String functionName, TypeList<Parameter> parameterList, QuadFunction<InstanceDeclaration, Identifier, String, Identifier> generator)
 	{
-		ArrayList<String> genericParameters = new ArrayList<>();
+//		ArrayList<String> genericParameters = new ArrayList<>();
 		String parameters = "(";
 		
 		if (!instance.isStatic())
 		{
-			parameters += reference.getName() + " reference";
+			parameters += reference.generateNovaType() + " reference";
 		}
 		
 		for (Parameter p : parameterList)
@@ -3238,11 +3238,11 @@ public class ClassDeclaration extends InstanceDeclaration
 				parameters += ", ";
 			}
 			
-			if (p.isGenericType() && !genericParameters.contains(p.getType()))
+			/*if (p.isGenericType() && !genericParameters.contains(p.getType()))
 			{
 				genericParameters.add(p.getType());
 			}
-			else if (p.isExternalType())
+			else */if (p.isExternalType())
 			{
 				return;
 			}
@@ -3264,16 +3264,49 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		String returnType = instance.getType() != null ? " -> " + instance.getNovaType() : "";
 		
-		if (instance.isGenericType() && !genericParameters.contains(instance.getType()))
-		{
-			genericParameters.add(instance.getType());
-		}
+//		if (instance.isGenericType() && !genericParameters.contains(instance.getType()))
+//		{
+//			genericParameters.add(instance.getType());
+//		}
+		
+		GenericTypeParameterList referenceParameters = reference.getGenericTypeParameterDeclaration();
 		
 		String genericParams = "";
 		
-		if (genericParameters.size() > 0)
+		if (instance instanceof NovaMethodDeclaration)
 		{
-			genericParams = "<" + String.join(", ", genericParameters) + ">";
+			GenericTypeParameterList instanceParameters = ((NovaMethodDeclaration)instance).getMethodGenericTypeParameterDeclaration();
+			
+			if (instanceParameters.getNumParameters() > 0 || referenceParameters.getNumParameters() > 0)
+			{
+				for (int i = 0; i < instanceParameters.getNumParameters(); i++)
+				{
+					if (i > 0)
+					{
+						genericParams += ", ";
+					}
+					
+					genericParams += instanceParameters.getParameter(i).getType();
+				}
+			}
+		}
+		
+		if (genericParams.length() > 0 || referenceParameters.getNumParameters() > 0)
+		{
+			for (int i = 0; i < referenceParameters.getNumParameters(); i++)
+			{
+				if (genericParams.length() > 0)
+				{
+					genericParams += ", ";
+				}
+				
+				genericParams += referenceParameters.getParameter(i).getType();
+			}
+		}
+		
+		if (genericParams.length() > 0)
+		{
+			genericParams = "<" + genericParams + ">";
 		}
 		
 		String staticValue = instance.isStatic() ? "static " : "";
