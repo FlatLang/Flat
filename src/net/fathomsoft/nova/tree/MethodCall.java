@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxErrorException;
@@ -966,10 +967,28 @@ public class MethodCall extends Variable
 				n.getArgumentList().getVisibleChild(i).onAfterDecoded();
 			}
 			
+			n.parseGenericTypeArguments();
+			
 			return n;
 		}
 		
 		return null;
+	}
+	
+	public void parseGenericTypeArguments()
+	{
+		Nova.debuggingBreakpoint(getParentClass().getName().equals("Node"));
+		String type = generateNovaType(this).toString();
+		
+		int index = type.indexOf('<');
+		
+		if (index > 0)
+		{
+			generateNovaType(this);
+			genericTypeArgumentList = new GenericTypeArgumentList(this, Location.INVALID);
+			decodeGenericTypeArguments(type.substring(index + 1, type.length() - 1), genericTypeArgumentList);
+			generateNovaType(this);
+		}
 	}
 	
 	@Override
