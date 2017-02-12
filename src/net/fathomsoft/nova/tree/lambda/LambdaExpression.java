@@ -164,7 +164,7 @@ public class LambdaExpression extends Value
 			
 			Value value = closure.getParameterList().getParameter(id).getNovaTypeValue(context);
 			
-			String type = value.getNovaType();
+			String type = value.getNovaType(context);
 			String name = "";
 			
 			if (variables.length > id)
