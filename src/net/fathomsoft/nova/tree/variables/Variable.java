@@ -12,6 +12,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.AbstractMap;
 
@@ -668,6 +669,10 @@ public class Variable extends Identifier
 	
 	public GenericTypeParameter getGenericTypeParameter(boolean checkCast)
 	{
+		if (genericParameter != null)
+		{
+			return genericParameter;
+		}
 		if (declaration == null)
 		{
 			return null;
