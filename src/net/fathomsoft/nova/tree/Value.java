@@ -1398,7 +1398,7 @@ public abstract class Value extends Node implements AbstractValue
 		return getNovaType();
 	}
 	
-	public GenericTypeParameter getGenericTypeParameter()
+	public final GenericTypeParameter getGenericTypeParameter()
 	{
 		return getGenericTypeParameter(true);
 	}
