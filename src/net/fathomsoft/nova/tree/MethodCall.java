@@ -1594,7 +1594,7 @@ public class MethodCall extends Variable
 			
 			if (common == null)
 			{
-				arg.setTypeValue(param.getNovaType(this));
+				arg.setTypeValue(param.getDefaultType());//.getNovaType(this));
 			}
 			else
 			{
