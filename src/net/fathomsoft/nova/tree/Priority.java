@@ -81,16 +81,16 @@ public class Priority extends Value implements Accessible
 		return getContents().getReturnedNode().getGenericTypeArgumentList();
 	}
 	
-	@Override
-	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
-	{
-		if (!doesAccess())
-		{
-			return getReturnedContents().getGenericTypeParameter(checkArray);
-		}
-		
-		return super.getGenericTypeParameter(checkArray);
-	}
+//	@Override
+//	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
+//	{
+//		if (!doesAccess())
+//		{
+//			return getReturnedContents().getGenericTypeParameter(checkArray);
+//		}
+//		
+//		return super.getGenericTypeParameter(checkArray);
+//	}
 	
 	@Override
 	public String getGenericReturnType()
