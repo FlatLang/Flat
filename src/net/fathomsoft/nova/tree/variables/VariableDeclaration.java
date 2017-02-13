@@ -488,7 +488,14 @@ public class VariableDeclaration extends IIdentifier
 					
 					if (extracted != null)
 					{
-						args.getVisibleChild(i).setType(extracted);
+						if (extracted.isGenericType() && extracted.getGenericTypeParameter().getParentClass() != toVar.getParentClass())
+						{
+							args.getVisibleChild(i).setType(extracted.getDefaultType());
+						}
+						else
+						{
+							args.getVisibleChild(i).setType(extracted);
+						}
 						
 						changed = true;
 					}
