@@ -1688,7 +1688,8 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		
 		node.arrayAccess = arrayAccess;
-		
+		node.genericParameter = genericParameter;
+
 		return node;
 	}
 	
