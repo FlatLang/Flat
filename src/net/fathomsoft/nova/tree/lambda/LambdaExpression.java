@@ -182,6 +182,17 @@ public class LambdaExpression extends Value
 			
 			value.importGenericArgumentTypesTo(getFileDeclaration());
 			
+			if (value.isGenericType())
+			{
+				GenericTypeArgument arg = value.getGenericTypeParameter().getCorrespondingArgument(context);
+				
+				if (arg != null)
+				{
+					getFileDeclaration().addImport(arg.getTypeClassLocation());
+					arg.importGenericArgumentTypesTo(getFileDeclaration());
+				}
+			}
+			
 //			if (refFile != null)
 //			{
 //				Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
