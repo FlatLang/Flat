@@ -2970,6 +2970,13 @@ public class ClassDeclaration extends InstanceDeclaration
 				SyntaxTree.validateNodes(this, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 			}
 			
+			if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+			{
+				getConstructorList().forEachNovaMethod(x -> x.checkOverrides());
+				getMethodList().forEachNovaMethod(x -> x.checkOverrides());
+				getPropertyMethodList().forEachNovaMethod(x -> x.checkOverrides());
+			}
+			
 			setMethodReferences();
 		}
 	}
