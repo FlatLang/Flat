@@ -977,7 +977,6 @@ public class MethodCall extends Variable
 	
 	public void parseGenericTypeArguments()
 	{
-		Nova.debuggingBreakpoint(getParentClass().getName().equals("Node"));
 		String type = generateNovaType(this).toString();
 		
 		int index = type.indexOf('<');
