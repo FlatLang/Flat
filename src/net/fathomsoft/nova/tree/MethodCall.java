@@ -1198,6 +1198,13 @@ public class MethodCall extends Variable
 			Value[] args = getArgumentList().getArgumentsInOrder();
 			Value[] types = genParams.getTypes();
 			
+			// Find least common denominator type for nth method generic type argument
+			// e.g.   public reduce<Out>(func(Out, Type, Int, List) -> Out, Out initialValue) -> Out
+			//        
+			//        let x = reduce({ _.hashCodeLong + 5 }, "asdf")
+			//        
+			//        when searching for Out's type, it checks lambda's return type of Int and
+			//        the type of initialValue which is String. The common type between those is Object.
 			for (int n = 0; n < genParams.getNumVisibleChildren(); n++)
 			{
 				Value common = types[n];
