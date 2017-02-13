@@ -1403,7 +1403,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isGenericType(boolean checkArray, boolean checkCast)
 	{
-		return genericParameter != null;
+		return getGenericTypeParameter() != null;
 	}
 	
 	public boolean isPrimitiveGenericType()
@@ -1514,9 +1514,9 @@ public abstract class Value extends Node implements AbstractValue
 		Value original = value;
 		Value novaType = value.getNovaTypeValue(context);
 		
-		if (novaType.isGenericType() && !getParentClass().isOfType(original.genericParameter.getParentClass()))
+		if (novaType.isGenericType() && !getParentClass().isOfType(original.getGenericTypeParameter().getParentClass()))
 		{
-			setTypeValue(original.genericParameter.getDefaultType());
+			setTypeValue(original.getGenericTypeParameter().getDefaultType());
 		}
 		else if (value.getType() != null)
 		{
