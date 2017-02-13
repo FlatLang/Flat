@@ -38,7 +38,7 @@ import static java.util.Arrays.stream;
 public abstract class Node implements Listenable, Annotatable
 {
 	public long id = ++idcount;
-	private static long idcount = 0;
+	public static long idcount = 0;
 	
 	private Location		locationIn;
 	
