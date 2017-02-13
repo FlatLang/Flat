@@ -182,7 +182,39 @@ public class Variable extends Identifier
 		
 		throw new RuntimeException("Generic return type requested from non-generic type.");
 	}
-
+	
+	@Override
+	public GenericTypeParameter getExtendedGenericParameter(GenericTypeParameter type)
+	{
+//		if (genericParameter == null)
+		{
+			ClassDeclaration refClass = getReferenceNode().toValue().getTypeClass();
+			
+			if (refClass != null && refClass != type.getParentClass() && refClass.isOfType(type.getParentClass()))
+			{
+				GenericTypeArgument arg = SyntaxUtils.performWalk(this, refClass, type.getParentClass(), type, true);
+				
+				if (arg != null)
+				{
+//					genericParameter = arg.getGenericTypeParameter();
+//					
+//					if (genericParameter != null)
+//					{
+//						return genericParameter;
+//					}
+					GenericTypeParameter extracted = arg.getGenericTypeParameter();
+					
+					if (extracted != null)
+					{
+						return extracted;
+					}
+				}
+			}
+		}
+		
+		return type;
+	}
+	
 	@Override
 	public void onReplaced(Node parent, Node replacement)
 	{
