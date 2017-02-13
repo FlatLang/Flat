@@ -120,7 +120,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public GenericTypeParameterList getMethodGenericTypeParameterDeclaration()
 	{
-		if (getNumChildren() > super.getNumDefaultChildren())// && super.getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeParameterList)
+		if (getNumChildren() > super.getNumDefaultChildren() && super.getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeParameterList)
 		{
 			return (GenericTypeParameterList)super.getChild(super.getNumDefaultChildren() + 0);
 		}
@@ -729,7 +729,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	public NovaMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types, final Value[] methodTypes)
 	{
 		ClassDeclaration referenceClass = getParentClass();
-		
+
 		NovaMethodDeclaration clone = clone(parent, getLocationIn(), false, true);
 		clone.overridenMethod = null;
 		clone.overridingMethods = new ArrayList<>();
@@ -778,7 +778,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		ParameterList<Parameter> parameterList = originalParameterList.clone(clone, getLocationIn(), true, true);
 		
 		clone.getParameterList().replaceWith(parameterList);
-		
+
 		boolean changed = false;
 		
 		for (int i = 0; i < parameterList.getNumParameters(); i++)
