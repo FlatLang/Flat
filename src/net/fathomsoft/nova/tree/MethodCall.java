@@ -983,10 +983,10 @@ public class MethodCall extends Variable
 		
 		if (index > 0)
 		{
-			generateNovaType(this);
+			importNovaType(getFileDeclaration(), this);
+			
 			genericTypeArgumentList = new GenericTypeArgumentList(this, Location.INVALID);
 			decodeGenericTypeArguments(type.substring(index + 1, type.length() - 1), genericTypeArgumentList);
-			generateNovaType(this);
 		}
 	}
 	
