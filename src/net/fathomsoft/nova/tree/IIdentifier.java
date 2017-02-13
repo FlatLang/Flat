@@ -125,6 +125,8 @@ public class IIdentifier extends Identifier
 	public void setTypeValue(String type)
 	{
 		this.type = type;
+		
+		genericParameter = searchGenericTypeParameter();
 	}
 	
 	/**

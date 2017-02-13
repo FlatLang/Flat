@@ -75,6 +75,8 @@ public class IValue extends Value
 	public void setTypeValue(String type)
 	{
 		this.type = type;
+		
+		genericParameter = searchGenericTypeParameter();
 	}
 	
 	/**
