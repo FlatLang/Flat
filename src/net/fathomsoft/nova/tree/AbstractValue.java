@@ -58,15 +58,18 @@ public interface AbstractValue extends GenericCompatible
 		
 		if (checkType)
 		{
-			if (!n.checkType(type, require))
-			{
-				return false;
-			}
-			
 			type = SyntaxUtils.getValidType(n, type);
 		}
 		
 		setTypeValue(type);
+		
+		if (checkType)
+		{
+			if (!n.checkType(type, require))
+			{
+				return false;
+			}
+		}
 		
 		if (checkDataType)
 		{

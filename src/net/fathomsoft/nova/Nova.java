@@ -64,8 +64,8 @@ public class Nova
 	public boolean				isTesting     = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
-	public static final boolean	DEBUG         = false;
-//	public static final boolean	DEBUG         = true;
+//	public static final boolean	DEBUG         = false;
+	public static final boolean	DEBUG         = true;
 
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
@@ -386,10 +386,12 @@ public class Nova
 			
 			args = new String[]
 			{
+				"../Novac",
+				"../Astro",
 				"../Spectra",
 //				"../Nova.c",
-				"../Misc/example",
-				"../Misc/stabilitytest",
+//				"../Misc/example",
+//				"../Misc/stabilitytest",
 				"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
@@ -406,12 +408,13 @@ public class Nova
 //				"-keepc",
 //				"-qp",
 				"-main",
-				"example/Lab",
+//				"example/Lab",
 //				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
 //				"spectra/Spectra",
+				"novex/novac/Novac",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
