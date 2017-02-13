@@ -1553,7 +1553,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			//TODO: Is this necessary?
 			getParameterList().validate(phase);
 			
-			checkOverrides();
+			if (genericOverload == null || !genericOverload.usedShorthandAction)
+			{
+				checkOverrides();
+			}
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
