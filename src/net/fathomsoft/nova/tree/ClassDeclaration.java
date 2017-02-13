@@ -2864,8 +2864,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			t.decodeGenericTypeArguments(formatGenericArguments(traitValues));
 			
 			replacePrimitiveGenerics(types, t);
-
+			
 			c.getInterfacesImplementationList().addChild(t);
+			
+			t.onAfterDecoded();
 		}
 	}
 
@@ -2948,6 +2950,7 @@ public class ClassDeclaration extends InstanceDeclaration
 						
 						genericOverload.replacePrimitiveGenerics(originalPrimitiveOverloadTypes, field, clone);
 						
+						clone.onAfterDecoded();
 						addChild(clone);
 					}
 				});
@@ -3320,6 +3323,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			BodyMethodDeclaration.decodeStatement(this, visibility + " " + staticValue + functionName + genericParams + parameters + returnType, instance.getLocationIn(), true);
 			SyntaxMessage.error("Could not generate function map handle for function '" + reference.getClassLocation() + "." + instance.getName() + "'", instance);
 		}
+		
+		method.onAfterDecoded();
 		
 		Parameter referenceParameter = null;
 		

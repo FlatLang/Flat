@@ -832,6 +832,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					clone.addChild(init);
 				}
 				
+				clone.onAfterDecoded();
+				
 				return clone;
 			}
 		}
@@ -1407,6 +1409,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					GenericTypeArgument value = new GenericTypeArgument(this, Location.INVALID);
 					value.setType(this);
 					value.parent = m;
+					value.onAfterDecoded();
 					
 					getParentClass().replacePrimitiveGenerics(m.getParentClass().primitiveOverloadTypes, this, value);
 					
