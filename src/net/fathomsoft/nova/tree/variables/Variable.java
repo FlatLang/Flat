@@ -639,22 +639,22 @@ public class Variable extends Identifier
 			return null;
 		}
 		
-		Accessible ref = getReferenceNode();
-		
-		if (ref != null)
-		{
-			ClassDeclaration type = ref.toValue().getTypeClass();
-			
-			if (type != null && type.isOfType(getReferenceDeclaration().getParentClass()))
-			{
-				GenericTypeParameter param = type.getGenericTypeParameter(getType(checkCast), this);
-				
-				if (param != null)
-				{
-					return param;
-				}
-			}
-		}
+//		Accessible ref = getReferenceNode();
+//		
+//		if (ref != null)
+//		{
+//			ClassDeclaration type = ref.toValue().getTypeClass();
+//			
+//			if (type != null && type.isOfType(getReferenceDeclaration().getParentClass()))
+//			{
+//				GenericTypeParameter param = type.getGenericTypeParameter(getType(checkCast), this);
+//				
+//				if (param != null)
+//				{
+//					return param;
+//				}
+//			}
+//		}
 		
 		return declaration.getGenericTypeParameter();
 	}
