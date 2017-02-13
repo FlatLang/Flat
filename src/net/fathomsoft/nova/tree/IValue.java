@@ -1,5 +1,6 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.util.Location;
 
@@ -141,7 +142,18 @@ public class IValue extends Value
 		return node;
 	}
 	
-//	@Override
+	@Override
+	public boolean onAfterDecoded()
+	{
+		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			genericParameter = searchGenericTypeParameter();
+		}
+		
+		return super.onAfterDecoded();
+	}
+	
+	//	@Override
 //	public String toString()
 //	{
 //		return getTypeStringValue();

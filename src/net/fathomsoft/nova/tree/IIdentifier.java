@@ -193,6 +193,17 @@ public class IIdentifier extends Identifier
 		return node;
 	}
 	
+	@Override
+	public boolean onAfterDecoded()
+	{
+		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			genericParameter = searchGenericTypeParameter();
+		}
+		
+		return super.onAfterDecoded();
+	}
+	
 	/**
 	 * Test the IIdentifier class type to make sure everything
 	 * is working properly.
