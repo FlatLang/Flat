@@ -119,24 +119,19 @@ public class GenericTypeParameter extends IValue
 	@Override
 	public String getNovaType(Value context)
 	{
-		if (isGenericType())
+		if (context instanceof MethodCall)
 		{
-			if (context instanceof MethodCall)
-			{
-				GenericTypeArgumentList args = ((MethodCall)context).getMethodGenericTypeArgumentList();
-				
-				if (args.getNumVisibleChildren() > getIndex())
-				{
-					GenericTypeArgument arg = args.getVisibleChild(getIndex());
-					
-					return arg.getNovaType();
-				}
-			}
+			GenericTypeArgumentList args = ((MethodCall)context).getMethodGenericTypeArgumentList();
 			
-			return getDefaultType();
+			if (args.getNumVisibleChildren() > getIndex())
+			{
+				GenericTypeArgument arg = args.getVisibleChild(getIndex());
+				
+				return arg.getNovaType();
+			}
 		}
 		
-		return super.getNovaType(context);
+		return getDefaultType();
 	}
 	
 	@Override
