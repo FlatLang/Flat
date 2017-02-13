@@ -31,6 +31,8 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ArrayAccess arrayAccess;
 	
+	public GenericTypeParameter genericParameter;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -1090,8 +1092,6 @@ public abstract class Value extends Node implements AbstractValue
 		
 		if (isGenericType())
 		{
-			param = getGenericTypeParameter();
-			
 			if (param != null)
 			{
 //				if (context != null && context.getParentClass() != null && param.getParentClass().encapsulates(context.getParentClass()))
@@ -1126,7 +1126,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			return builder.append(SyntaxUtils.getPrimitiveNovaType(arg.generateNovaType(context).toString()));
 		}
-		else if (arg != null && context != null && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true))
+		else if (arg != null && context != null && context.getParentClass() != null && arg.genericParameter.getParentClass().encapsulates(context.getParentClass(), true))
 		{
 			builder.append(arg.getType());
 		}
@@ -1341,45 +1341,55 @@ public abstract class Value extends Node implements AbstractValue
 		return getNovaType();
 	}
 	
-//	public final GenericTypeParameter getGenericTypeParameter()
-//	{
-//		return getGenericTypeParameter(true);
-//	}
-//
-//	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
-//	{
-//		if (getParentMethod(true) != null)
-//		{
-//			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType(checkArray));
-//
-//			if (param != null)
-//			{
-//				return param;
-//			}
-//		}
-//		if (getAncestorOfType(MethodCall.class) != null)
-//		{
-//			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
-//
-//			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
-//
-//			if (clazz != null)
-//			{
-//				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
-//
-//				if (param != null)
-//				{
-//					return param;
-//				}
-//			}
-//		}
-//		if (getParentClass() == null)
-//		{
-//			return null;
-//		}
-//
-//		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
-//	}
+	public GenericTypeParameter getGenericTypeParameter()
+	{
+		return getGenericTypeParameter(true);
+	}
+	
+	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
+	{
+		return genericParameter;
+	}
+	
+	public final GenericTypeParameter searchGenericTypeParameter()
+	{
+		return searchGenericTypeParameter(true);
+	}
+
+	public GenericTypeParameter searchGenericTypeParameter(boolean checkArray)
+	{
+		if (getParentMethod(true) != null)
+		{
+			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType(checkArray));
+
+			if (param != null)
+			{
+				return param;
+			}
+		}
+		if (getAncestorOfType(MethodCall.class) != null)
+		{
+			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
+
+			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
+
+			if (clazz != null)
+			{
+				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
+
+				if (param != null)
+				{
+					return param;
+				}
+			}
+		}
+		if (getParentClass() == null)
+		{
+			return null;
+		}
+
+		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
+	}
     
 	public final boolean isGenericType()
 	{
@@ -1393,26 +1403,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isGenericType(boolean checkArray, boolean checkCast)
 	{
-		if (getGenericTypeParameter(checkCast) != null)
-		{
-			return true;
-		}
-		if (checkArray)
-		{
-			if (getTypeClass(checkCast) == getProgram().getClassDeclaration("nova/datastruct/list/Array"))
-			{
-				GenericTypeArgumentList list = getGenericTypeArgumentList();
-				
-				// TODO: do a deep search
-				
-				if (list != null)
-				{
-					return list.getNumVisibleChildren() > 0 && list.getVisibleChild(0).isGenericType();
-				}
-			}
-		}
-		
-		return false;
+		return genericParameter != null;
 	}
 	
 	public boolean isPrimitiveGenericType()
@@ -1427,11 +1418,11 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getGenericReturnType(boolean checkCast)
 	{
-		GenericTypeParameter param = getGenericTypeParameter(checkCast);//getParentClass().getGenericTypeParameter(getType(checkCast), this);
+//		GenericTypeParameter param = getGenericTypeParameter(checkCast);//getParentClass().getGenericTypeParameter(getType(checkCast), this);
 		
-		if (param != null)
+		if (genericParameter != null)
 		{
-			return param.getDefaultType();
+			return genericParameter.getDefaultType();
 		}
 		
 		return null;
@@ -1462,7 +1453,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		if (target.isGenericType())
 		{
-			GenericTypeArgument a = SyntaxUtils.performWalk(context, context.getParentClass(), targetClass, target.getGenericTypeParameter(), true);
+			GenericTypeArgument a = SyntaxUtils.performWalk(context, context.getParentClass(), targetClass, target.genericParameter, true);
 			
 			if (a != null)
 			{
@@ -1523,9 +1514,9 @@ public abstract class Value extends Node implements AbstractValue
 		Value original = value;
 		Value novaType = value.getNovaTypeValue(context);
 		
-		if (novaType.isGenericType() && !getParentClass().isOfType(original.getGenericTypeParameter().getParentClass()))
+		if (novaType.isGenericType() && !getParentClass().isOfType(original.genericParameter.getParentClass()))
 		{
-			setTypeValue(original.getGenericTypeParameter().getDefaultType());
+			setTypeValue(original.genericParameter.getDefaultType());
 		}
 		else if (value.getType() != null)
 		{
