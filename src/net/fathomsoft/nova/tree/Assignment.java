@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.error.UnimplementedOperationException;
+import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -132,6 +133,13 @@ public class Assignment extends Value
 	public String getType(boolean checkCast)
 	{
 		return getAssignmentNode().getReturnedNode().getType(checkCast);
+	}
+	
+	
+	@Override
+	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
+	{
+		return getAssignmentNode().getReturnedNode().getGenericTypeParameter(checkArray);
 	}
 	
 	@Override
