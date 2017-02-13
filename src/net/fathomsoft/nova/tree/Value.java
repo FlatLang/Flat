@@ -1191,6 +1191,66 @@ public abstract class Value extends Node implements AbstractValue
 		return value.generateNovaType(new StringBuilder(), context, checkArray, defaultGeneric).toString();
 	}
 	
+	public void importNovaType(FileDeclaration toFile, Value context)
+	{
+		importNovaType(toFile, context, true);
+	}
+	
+	public void importNovaType(FileDeclaration toFile, Value context, boolean checkArray)
+	{
+		importNovaType(toFile, context, checkArray, false);
+	}
+	
+	public void importNovaType(FileDeclaration toFile, Value context, boolean checkArray, boolean defaultGeneric)
+	{
+		Value type = getNovaTypeValue(context);
+		
+		GenericTypeArgument arg = null;
+		GenericTypeParameter param = getGenericTypeParameter();
+		
+		if (isGenericType())
+		{
+			if (param != null)
+			{
+				if (!param.isMethodGenericParameter() && context != null && context.getParentClass() != null && context.getParentClass().isOfType(param.getParentClass()))
+				{
+					if (context.getParentClass() != param.getParentClass())
+					{
+						arg = SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
+					}
+				}
+				else
+				{
+					arg = param.getCorrespondingArgument(context);
+				}
+			}
+		}
+		
+		if (arg != null && !arg.isGenericType())
+		{
+			toFile.addImport(arg.getTypeClassLocation());
+			arg.importGenericArgumentTypesTo(toFile);
+		}
+		else if (arg != null && context != null && context.getParentClass() != null && arg.genericParameter.getParentClass().encapsulates(context.getParentClass(), true))
+		{
+			toFile.addImport(arg.getTypeClassLocation());
+			arg.importGenericArgumentTypesTo(toFile);
+		}
+		else if (defaultGeneric && param != null)
+		{
+			toFile.addImport(param.getFileDeclaration().getImport(param.getDefaultType(), false).getClassLocation());
+		}
+		else
+		{
+			toFile.addImport(type.getTypeClassLocation());
+			
+			for (GenericTypeArgument a : type.getGenericTypeArgumentList())
+			{
+				a.importNovaType(toFile, context, checkArray, defaultGeneric);
+			}
+		}
+	}
+	
 	public Value getNovaTypeValue(Value context)
 	{
 		return this;
