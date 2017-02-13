@@ -175,6 +175,8 @@ public class Variable extends Identifier
 			GenericTypeParameter param = getGenericTypeParameter();
 			GenericTypeArgument arg = param.getCorrespondingArgument(this);
 			
+			param = arg != null && arg.isGenericType() ? arg.getGenericTypeParameter() : param;
+			
 			return arg != null && !arg.isGenericType() ? arg.getType() : param.getDefaultType();
 		}
 		
