@@ -184,6 +184,11 @@ public class IIdentifier extends Identifier
 		node.arrayDimensions = arrayDimensions;
 		node.type            = type;
 		node.dataType        = dataType;
+
+		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			node.genericParameter = node.searchGenericTypeParameter();
+		}
 		
 		return node;
 	}
