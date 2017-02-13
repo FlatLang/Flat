@@ -103,8 +103,15 @@ public interface Accessible
 		return list.toArray(new ClassDeclaration[0]);
 	}
 	
+	default GenericTypeParameter getExtendedGenericParameter(GenericTypeParameter type)
+	{
+		return type;
+	}
+	
 	default GenericTypeArgument getGenericTypeArgumentFromParameter(GenericTypeParameter type)
 	{
+		type = getExtendedGenericParameter(type);
+		
 		ClassDeclaration typeClass = null;
 		
 		Value value = (Value)getReferenceContext();
