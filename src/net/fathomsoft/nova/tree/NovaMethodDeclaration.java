@@ -916,13 +916,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 								
 								if (decl instanceof ReferenceParameter || decl instanceof InstanceDeclaration && decl.getParentClass() == getParentClass())
 								{
-									// TODO: Do I need to convert if not yet converted here??
-									addTo = call.getDeclaringClass();
-									
-									Parameter ref = method.getParameterList().getReferenceParameter();
-									
-									ref.getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
-									ref.setType((ClassDeclaration)addTo);
+									addTo = moveToClass(method, call);
 								}
 							}
 						}
@@ -939,6 +933,18 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		addTo.addChild(method);
 		
 		return method;
+	}
+	
+	private ClassDeclaration moveToClass(NovaMethodDeclaration original, Variable var)
+	{
+		ClassDeclaration newClass = var.getDeclaringClass();
+		
+		Parameter ref = original.getParameterList().getReferenceParameter();
+		
+		ref.getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
+		ref.setType(newClass);
+		
+		return newClass;
 	}
 	
 	public NovaMethodDeclaration getConvertedPrimitiveMethod(MethodCall call)
