@@ -1424,22 +1424,22 @@ public abstract class Value extends Node implements AbstractValue
 				return param;
 			}
 		}
-		if (getAncestorOfType(MethodCall.class) != null)
-		{
-			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
-
-			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
-
-			if (clazz != null)
-			{
-				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
-
-				if (param != null)
-				{
-					return param;
-				}
-			}
-		}
+//		if (getAncestorOfType(MethodCall.class) != null)
+//		{
+//			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
+//
+//			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
+//
+//			if (clazz != null)
+//			{
+//				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
+//
+//				if (param != null)
+//				{
+//					return param;
+//				}
+//			}
+//		}
 		if (getParentClass() == null)
 		{
 			return null;
