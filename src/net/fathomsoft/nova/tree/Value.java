@@ -1088,25 +1088,22 @@ public abstract class Value extends Node implements AbstractValue
 		Value type = getNovaTypeValue(context);
 		
 		GenericTypeArgument arg = null;
-		GenericTypeParameter param = null;
+		GenericTypeParameter param = getGenericTypeParameter();
 		
 		if (isGenericType())
 		{
 			if (param != null)
 			{
-//				if (context != null && context.getParentClass() != null && param.getParentClass().encapsulates(context.getParentClass()))
-//				{
-//
-//				}
-//				else if (context != null && context.getParentClass() != null && context.getParentClass().isOfType(param.getParentClass()))
-//				{
-//					arg = SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param);
-//				}
 				if (!param.isMethodGenericParameter() && context != null && context.getParentClass() != null && context.getParentClass().isOfType(param.getParentClass()))
 				{
 					if (context.getParentClass() != param.getParentClass())
 					{
 						arg = SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
+						
+						if (arg == null)
+						{
+							SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
+						}
 						
 						return builder.append(arg.getType());
 					}
