@@ -276,6 +276,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		
 		if (accessorIndex > 0)
 		{
+			accessorIndex = n.twoWayBinding ? accessorIndex - 1 : accessorIndex;
 			declaration = declaration.substring(0, accessorIndex).trim();
 			
 			localDeclaration.setEnd(declaration.length());
