@@ -1153,7 +1153,7 @@ public class MethodCall extends Variable
 			GenericTypeArgumentList params = parameter.getGenericTypeArgumentList();
 //			GenericTypeArgumentList args = corresponding.getGenericTypeArgumentList();
 			
-			// TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A, Out>(Pair<A, A> other, ...)
+			// TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A, Out>(ValueDistance<A, A> other, ...)
 			for (int i = 0; i < /*Math.min(args.getNumVisibleChildren(), */params.getNumVisibleChildren()/*)*/; i++)
 			{
 //				Value arg = args.getVisibleChild(i);

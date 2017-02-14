@@ -5,11 +5,8 @@ import net.fathomsoft.nova.tree.annotations.ImpureFunctionAnnotation;
 import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
-
-import java.util.function.Consumer;
 
 /**
  * 
@@ -193,7 +190,7 @@ public interface CallableMethod
 		{
 			if (filter != null && filter.requireExactMatch)
 			{
-				SyntaxUtils.Pair<Integer, Integer> pair = SyntaxUtils.getParametersDistance(contexts.length > 0 ? (Value)contexts[0] : null, required, given, filter.defaultGeneric);
+				SyntaxUtils.ValueDistance pair = SyntaxUtils.getParametersDistance(contexts.length > 0 ? (Value)contexts[0] : null, required, given, filter.defaultGeneric);
 				
 				if (pair.a > 0 || pair.b > 0)
 				{

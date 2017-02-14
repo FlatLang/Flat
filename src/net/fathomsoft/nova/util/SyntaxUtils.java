@@ -2480,31 +2480,31 @@ public class SyntaxUtils
 		return type;
 	}
 	
-	public static class Pair<A, B>
+	public static class ValueDistance
 	{
-		public A a;
-		public B b;
+		public int a;
+		public int b;
 		
-		public Pair(A a, B b)
+		public ValueDistance(int a, int b)
 		{
 			this.a = a;
 			this.b = b;
 		}
 	}
 	
-	public static Pair<Integer, Integer> getParametersDistance(Value[] required, Value[] given)
+	public static ValueDistance getParametersDistance(Value[] required, Value[] given)
 	{
 		return getParametersDistance(null, required, given);
 	}
 	
-	public static Pair<Integer, Integer> getParametersDistance(Value context, Value[] required, Value[] given)
+	public static ValueDistance getParametersDistance(Value context, Value[] required, Value[] given)
 	{
 		return getParametersDistance(context, required, given, false);
 	}
 	
-	public static Pair<Integer, Integer> getParametersDistance(Value context, Value[] required, Value[] given, boolean defaultGeneric)
+	public static ValueDistance getParametersDistance(Value context, Value[] required, Value[] given, boolean defaultGeneric)
 	{
-		Pair<Integer, Integer> pair = new Pair<>(0, 0);
+		ValueDistance pair = new ValueDistance(0, 0);
 		
 		for (int i = 0; i < Math.min(required.length, given.length); i++)
 		{
@@ -2523,17 +2523,17 @@ public class SyntaxUtils
 		return pair;
 	}
 	
-	public static Pair<Integer, Integer> getDistance(Value g, Value r)
+	public static ValueDistance getDistance(Value g, Value r)
 	{
 		return getDistance(null, g, r, false);
 	}
 	
-	public static Pair<Integer, Integer> getDistance(Value context, Value g, Value r, boolean defaultGeneric)
+	public static ValueDistance getDistance(Value context, Value g, Value r, boolean defaultGeneric)
 	{
-		return getDistance(context, g, r, defaultGeneric, new Pair<>(0, 0));
+		return getDistance(context, g, r, defaultGeneric, new ValueDistance(0, 0));
 	}
 	
-	public static Pair<Integer, Integer> getDistance(Value context, Value g, Value r, boolean defaultGeneric, Pair<Integer, Integer> pair)
+	public static ValueDistance getDistance(Value context, Value g, Value r, boolean defaultGeneric, ValueDistance pair)
 	{
 		if (g.isPrimitiveType() || r.isPrimitiveType())
 		{

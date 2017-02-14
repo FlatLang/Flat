@@ -1515,7 +1515,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		int max = -1;
 		int maxI = -1;
-		SyntaxUtils.Pair<Integer, Integer> distance = new SyntaxUtils.Pair<>(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		SyntaxUtils.ValueDistance distance = new SyntaxUtils.ValueDistance(Integer.MAX_VALUE, Integer.MAX_VALUE);
 		
 		ArrayList<MethodDeclaration> list = new ArrayList<>();
 		
