@@ -1536,9 +1536,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else if (count == max)
 			{
-				SyntaxUtils.Pair<Integer, Integer> dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+				SyntaxUtils.ValueDistance dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
 				
-				if (dist.a < distance.a || dist.a.intValue() == distance.a.intValue() && dist.b < distance.b)
+				if ((dist.a < distance.a || dist.a == distance.a && dist.b < distance.b) && dist.genericDistance == distance.genericDistance || dist.genericDistance < distance.genericDistance)
 				{
 					maxI = i;
 					distance = dist;
@@ -1546,7 +1546,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					list = new ArrayList<>();
 					list.add(method);
 				}
-				else if (dist.a.intValue() == distance.a.intValue() && dist.b.intValue() == distance.b.intValue())
+				else if (dist.a == distance.a && dist.b == distance.b && dist.genericDistance == distance.genericDistance)
 				{
 					boolean valid = true;
 					

@@ -2482,11 +2482,13 @@ public class SyntaxUtils
 	
 	public static class ValueDistance
 	{
+		public int genericDistance;
 		public int a;
 		public int b;
 		
 		public ValueDistance(int a, int b)
 		{
+			this.genericDistance = 0;
 			this.a = a;
 			this.b = b;
 		}
@@ -2516,6 +2518,10 @@ public class SyntaxUtils
 				if (g != null && r != null)
 				{
 					getDistance(context, g, r, defaultGeneric, pair);
+				}
+				else if (given[i].isGenericType() != required[i].isGenericType())
+				{
+					pair.genericDistance++;
 				}
 			}
 		}
