@@ -64,8 +64,8 @@ public class Nova
 	public boolean				isTesting     = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
-//	public static final boolean	DEBUG         = false;
-	public static final boolean	DEBUG         = true;
+	public static final boolean	DEBUG         = false;
+//	public static final boolean	DEBUG         = true;
 
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
@@ -91,7 +91,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.3.5";
+	public static final String	VERSION       = "v0.3.6";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -390,8 +390,8 @@ public class Nova
 				"../Astro",
 				"../Spectra",
 //				"../Nova.c",
-//				"../Misc/example",
-//				"../Misc/stabilitytest",
+				"../Misc/example",
+				"../Misc/stabilitytest",
 				"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
@@ -409,12 +409,12 @@ public class Nova
 //				"-qp",
 				"-main",
 //				"example/Lab",
-//				"stabilitytest/StabilityTest",
+				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
 //				"spectra/Spectra",
-				"novex/novac/Novac",
+//				"novex/novac/Novac",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
@@ -428,6 +428,12 @@ public class Nova
 //				"-library",
  				"-o", formatPath(directory + "bin/Executable")
 			};
+			
+//			args = new String[] {
+//				"C:/Users/Braden/test.nova",
+//				"-o",
+//				"C:/Users/Braden/test"
+//			};
 		}
 		else if (ANDROID_DEBUG)
 		{
