@@ -1538,7 +1538,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				SyntaxUtils.Pair<Integer, Integer> dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
 				
-				if (dist.a < distance.a)
+				if (dist.a < distance.a || dist.a.intValue() == distance.a.intValue() && dist.b < distance.b)
 				{
 					maxI = i;
 					distance = dist;
@@ -1546,7 +1546,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					list = new ArrayList<>();
 					list.add(method);
 				}
-				else if (dist == distance)
+				else if (dist.a.intValue() == distance.a.intValue() && dist.b.intValue() == distance.b.intValue())
 				{
 					boolean valid = true;
 					
