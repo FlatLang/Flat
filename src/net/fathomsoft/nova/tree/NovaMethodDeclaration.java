@@ -877,7 +877,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			param.setDefaultType(methodTypes[i].getType());
 		}
 		
-		addTo = addTo == null ? getParent() : addTo;
+		addTo = addTo == null ? /*call.getReferenceNode().toValue().getTypeClass()*/getParent() : addTo;
 		
 		int closureIndex = 0;
 		
@@ -994,7 +994,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		
 		Value returnType = call;
-		Node addTo = getParent();
+		Node addTo = call.getInferredDeclaration().getParentClass();//call.getReferenceNode().toValue().getTypeClass();//getParent();
 		
 		if (call.getType() != null && call.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
 		{
