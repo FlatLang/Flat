@@ -927,6 +927,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			method.getParameterList().addChild(param);
 		}
 		
+		for (int i = types.length; i < getParameterList().getNumParameters(); i++)
+		{
+			method.getParameterList().addChild(getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true));
+		}
+		
 		primitiveOverloads.add(method);
 		method.genericOverload = this;
 		
