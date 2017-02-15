@@ -50,6 +50,17 @@ public class Case extends MatchCase
 		return null;
 	}
 	
+	@Override
+	public boolean pendingScopeFragment(Node node)
+	{
+		if (returningCase != null)
+		{
+			return returningCase.pendingScopeFragment(node);
+		}
+		
+		return super.pendingScopeFragment(node);
+	}
+	
 	public Case getReturningCase()
 	{
 		return returningCase != null ? returningCase.getReturningCase() : this;
