@@ -814,10 +814,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			filter.checkInterfaces = false;
 			filter.checkAncestor = false;
 			filter.defaultGeneric = true;
+			filter.checkProperties = true;
 			
 			MethodDeclaration[] found = parent.getMethods(new GenericCompatible[] { parent }, clone.getName(), filter, clone.getParameterList().getTypes(), false);
 			
-			if (found.length == 0)
+			if (found.length == 0)// && (clone instanceof PropertyMethod == false || parent.getField(clone.getName(), false) == null))
 			{
 				parent.addChild(clone);
 				
