@@ -18,6 +18,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class Case extends MatchCase
 {
+	public Case returningCase;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -46,6 +48,11 @@ public class Case extends MatchCase
 		}
 		
 		return null;
+	}
+	
+	public Case getReturningCase()
+	{
+		return returningCase != null ? returningCase.getReturningCase() : this;
 	}
 	
 	/**
