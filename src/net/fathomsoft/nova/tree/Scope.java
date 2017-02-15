@@ -28,7 +28,7 @@ import java.util.ArrayList;
  */
 public class Scope extends Node
 {
-	private int localVariableID;
+	public int localVariableID;
 	
 	public int	id;
 	
