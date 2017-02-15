@@ -66,6 +66,23 @@ public class Case extends MatchCase
 		return returningCase != null ? returningCase.getReturningCase() : this;
 	}
 	
+	@Override
+	public Node getDecodedParent()
+	{
+		return getReturningCase();
+	}
+	
+	@Override
+	public void onAdded(Node parent)
+	{
+		if (returningCase != null)
+		{
+			getAncestorOfType(Match.class).addChild(returningCase);
+		}
+		
+		super.onAdded(parent);
+	}
+	
 	/**
 	 * Get whether or not the specified switch case contains a fallthrough.
 	 * 
@@ -160,13 +177,20 @@ public class Case extends MatchCase
 	 */
 	public static Case decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (parent instanceof Match)
+		int index = SyntaxUtils.findStringInBaseScope(statement, "=>");
+		
+		if (index > 0)
 		{
 			Case n = new Case(parent, location);
 			
-			int index = SyntaxUtils.findStringInBaseScope(statement, "=>");
-			
-			if (index > 0)
+			if (parent instanceof Case && parent.parent instanceof Match && parent.containsScope() && parent.getScope().getNumVisibleChildren() == 0)
+			{
+				parent.addChild(new Fallthrough(parent, parent.getLocationIn()));
+				((Case)parent).returningCase = n;
+				
+				parent = parent.parent;
+			}
+			if (parent instanceof Match)
 			{
 				String contents = statement.substring(0, index).trim();
 				
