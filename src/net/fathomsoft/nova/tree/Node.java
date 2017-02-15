@@ -1698,8 +1698,10 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public boolean onAfterDecoded()
 	{
-		for (Node n : children)
+		for (int i = children.size() - 1; i >= 0; i--)
 		{
+			Node n = children.get(i);
+			
 			if (!n.onAfterDecoded())
 			{
 				return false;
