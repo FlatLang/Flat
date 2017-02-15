@@ -256,7 +256,7 @@ public class Scope extends Node
 		}
 		
 		//Nova.debuggingBreakpoint(addBefore.getParentClass().getName().equals("Node") && getParentMethod().getName().equals("inorder"));
-		String     decl   = type + " nova_local_" + scope.localVariableID++ + " = null";
+		String     decl   = type + " nova_local_" + scope.localVariableID++ + " = " + virtual.getDefaultLiteralValue();
 		Assignment assign = Assignment.decodeStatement(addBefore.getParent(), decl, getLocationIn(), require, true, null, virtual, false);
 		
 		if (assign == null)
