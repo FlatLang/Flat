@@ -226,6 +226,7 @@ public class Constructor extends BodyMethodDeclaration
 			initMethod.getScope().getVariableList().closureContextDeclarations = getScope().getVariableList().closureContextDeclarations;
 			initMethod.getScope().inheritChildren(getScope());
 			initMethod.setLocationIn(getLocationIn());
+			initMethod.getScope().localVariableID = getScope().localVariableID;
 			
 			String args = generateParameterOutput(this);
 			
