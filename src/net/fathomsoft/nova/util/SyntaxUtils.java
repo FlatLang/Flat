@@ -2334,7 +2334,12 @@ public class SyntaxUtils
 	
 	public static String getTypeClassLocation(Node node, String type)
 	{
-		FileDeclaration file = node.getReferenceFile();
+		return getTypeClassLocation(node, type, true);
+	}
+	
+	public static String getTypeClassLocation(Node node, String type, boolean checkCast)
+	{
+		FileDeclaration file = node.getReferenceFile(checkCast);
 		
 		if (file != null)
 		{

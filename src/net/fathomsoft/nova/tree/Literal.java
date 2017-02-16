@@ -570,7 +570,7 @@ public class Literal extends IValue implements Accessible
 	}
 	
 	@Override
-	public FileDeclaration getReferenceFile()
+	public FileDeclaration getReferenceFile(boolean checkCast)
 	{
 		if (isNullLiteral())
 		{
@@ -578,11 +578,11 @@ public class Literal extends IValue implements Accessible
 			
 			if (operand != null && !isNullLiteral(operand))
 			{
-				return operand.getReturnedNode().getReferenceFile();
+				return operand.getReturnedNode().getReferenceFile(checkCast);
 			}
 		}
 		
-		return super.getReferenceFile();
+		return super.getReferenceFile(checkCast);
 	}
 	
 	/**

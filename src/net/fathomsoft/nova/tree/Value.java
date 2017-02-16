@@ -702,7 +702,7 @@ public abstract class Value extends Node implements AbstractValue
 			
 			if (c != null)
 			{
-				return SyntaxUtils.getTypeClassLocation(c, c.getType());
+				return SyntaxUtils.getTypeClassLocation(c, c.getType(), true);
 			}
 		}
 		else if (this instanceof Accessible && ((Accessible)this).getParentPriority() != null)
@@ -726,17 +726,17 @@ public abstract class Value extends Node implements AbstractValue
 			type = SyntaxUtils.getPrimitiveNovaType(getType(checkCast));
 		}
 		
-		return SyntaxUtils.getTypeClassLocation(this, type);
+		return SyntaxUtils.getTypeClassLocation(this, type, checkCast);
 	}
 	
 	@Override
-	public FileDeclaration getReferenceFile()
+	public FileDeclaration getReferenceFile(boolean checkCast)
 	{
 		if (this instanceof Accessible)
 		{
 			Accessible id = (Accessible)this;
 			
-			if (id.getCast() != null)
+			if (checkCast && id.getCast() != null)
 			{
 				return getFileDeclaration();
 			}

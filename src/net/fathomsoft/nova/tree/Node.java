@@ -1865,7 +1865,12 @@ public abstract class Node implements Listenable, Annotatable
 		return current instanceof Program;
 	}
 	
-	public FileDeclaration getReferenceFile()
+	public final FileDeclaration getReferenceFile()
+	{
+		return getReferenceFile(true);
+	}
+	
+	public FileDeclaration getReferenceFile(boolean checkCast)
 	{
 		return getFileDeclaration();
 	}
