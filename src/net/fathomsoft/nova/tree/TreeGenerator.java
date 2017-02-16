@@ -867,7 +867,7 @@ public class TreeGenerator implements Runnable
 				current = null;				
 			}
 			
-			if (!node.pendingScopeFragment(current) && node.getDecodedParent() == parentStack.peek())
+			if (!node.pendingScopeFragment(current))// && node == parentStack.peek())
 			{
 				parentStack.pop();
 				pendingScopeFragment.pop();
