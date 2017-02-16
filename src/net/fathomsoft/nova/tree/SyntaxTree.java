@@ -942,7 +942,11 @@ public class SyntaxTree
 		{
 			Node access = ArrayAccess.decodeStatement(node, accessString, location, require);
 			
-			if (access instanceof ArrayAccess)
+			if (access == null)
+			{
+				SyntaxMessage.queryError("Could not parse array access", node, require);
+			}
+			else if (access instanceof ArrayAccess)
 			{
 				((Value)node).getReturnedNode().arrayAccess = (ArrayAccess)access;
 			}
