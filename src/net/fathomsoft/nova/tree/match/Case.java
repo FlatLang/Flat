@@ -110,12 +110,18 @@ public class Case extends MatchCase
 	@Override
 	public void addChild(Node node)
 	{
-		if (containsFallthrough())
+		if (node instanceof Case)
+		{
+//			getAncestorOfType(Match.class).addChild(node);
+		}
+		else if (containsFallthrough())
 		{
 			SyntaxMessage.error("Fallthrough statement must be the last statement within a case statement", getFallthrough());
 		}
-		
-		super.addChild(node);
+		else
+		{
+			super.addChild(node);
+		}
 	}
 	
 	/**
@@ -183,12 +189,12 @@ public class Case extends MatchCase
 		{
 			Case n = new Case(parent, location);
 			
-			if (parent instanceof Case && parent.parent instanceof Match && parent.containsScope() && parent.getScope().getNumVisibleChildren() == 0)
+			if (parent instanceof Case && parent.containsScope() && parent.getScope().getNumVisibleChildren() == 0)
 			{
 				parent.addChild(new Fallthrough(parent, parent.getLocationIn()));
 				((Case)parent).returningCase = n;
 				
-				parent = parent.parent;
+				parent = parent.getAncestorOfType(Match.class);
 			}
 			if (parent instanceof Match)
 			{
@@ -200,6 +206,7 @@ public class Case extends MatchCase
 				}
 			}
 		}
+		
 		
 		return null;
 	}
