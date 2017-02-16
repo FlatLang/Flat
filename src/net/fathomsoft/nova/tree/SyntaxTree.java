@@ -940,7 +940,7 @@ public class SyntaxTree
 		
 		if (accessString != null && node instanceof Value)
 		{
-			Node access = ArrayAccess.decodeStatement(node, accessString, location, require);
+			Node access = ArrayAccess.decodeStatement(((Value)node).getReturnedNode(), accessString, location, require);
 			
 			if (access == null)
 			{
