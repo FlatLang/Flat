@@ -2490,6 +2490,7 @@ public class SyntaxUtils
 		public int genericDistance;
 		public int a;
 		public int b;
+		public int exactTypeDistance;
 		
 		public ValueDistance(int a, int b)
 		{
@@ -2553,6 +2554,11 @@ public class SyntaxUtils
 				int dist = getPrimitiveDistance(r.getType(), g.getType());
 				
 				pair.b += dist > 0 ? 1 : (dist < 0 ? -1 : 0);
+				
+				if (dist == 0 && !g.getType().equals(r.getType()))
+				{
+					pair.exactTypeDistance++;
+				}
 			}
 			else
 			{
