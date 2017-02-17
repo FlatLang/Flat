@@ -1059,12 +1059,12 @@ public class BinaryOperation extends IValue
 			if (operator.isConjunction())
 			{
 				if ((parent instanceof BinaryOperation == false || ((BinaryOperation)parent).getOperator().isConjunction()) &&
-					!lhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(lhn))
+					!"Bool".equals(lhn.getReturnedNode().getType()) && !Literal.isNullLiteral(lhn))
 				{
 					lhn.replaceWithNullCheck();
 				}
 				if ((rhn instanceof BinaryOperation == false || ((BinaryOperation)rhn).getOperator().isConjunction()) &&
-					!rhn.getReturnedNode().isPrimitive() && !Literal.isNullLiteral(rhn))
+					!"Bool".equals(rhn.getReturnedNode().getType()) && !Literal.isNullLiteral(rhn))
 				{
 					rhn.replaceWithNullCheck();
 				}

@@ -140,7 +140,7 @@ public class IfStatement extends ControlStatement
 		
 		addChild(condition, this);
 		
-		if (!condition.getReturnedNode().isPrimitive())
+		if (!"Bool".equals(condition.getReturnedNode().getType()))
 		{
 			condition.replaceWithNullCheck();
 		}

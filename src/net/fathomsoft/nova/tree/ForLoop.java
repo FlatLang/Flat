@@ -278,7 +278,7 @@ public class ForLoop extends Loop
 		
 		getArgumentList().addChild(condition);
 		
-		if (!condition.getReturnedNode().isPrimitive())
+		if (!"Bool".equals(condition.getReturnedNode().getType()))
 		{
 			condition.replaceWithNullCheck();
 		}

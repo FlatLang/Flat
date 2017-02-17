@@ -173,7 +173,7 @@ public class TernaryOperation extends IValue implements Accessible
 				n.addChild(trueValue);
 				n.addChild(falseValue);
 				
-				if (traditional && !condition.getReturnedNode().isPrimitive())
+				if (traditional && !"Bool".equals(condition.getReturnedNode().getType()))
 				{
 					condition.replaceWithNullCheck();
 				}

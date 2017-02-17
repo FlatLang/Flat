@@ -114,7 +114,7 @@ public class Until extends IfStatement
 		
 		addChild(condition, this);
 		
-		if (!condition.getReturnedNode().isPrimitive())
+		if (!"Bool".equals(condition.getReturnedNode().getType()))
 		{
 			condition.replaceWithNullCheck();
 		}

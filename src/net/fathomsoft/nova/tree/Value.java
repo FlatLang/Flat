@@ -1154,7 +1154,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		BinaryOperation operation = BinaryOperation.generateDefault(parent, getLocationIn());
 		operation.getOperator().setOperator(Operator.NOT_EQUAL);
-		operation.getRightOperand().replaceWith(Literal.decodeStatement(parent, Literal.NULL_IDENTIFIER, getLocationIn(), true, true));
+		operation.getRightOperand().replaceWith(Literal.decodeStatement(parent, getDefaultLiteralValue(), getLocationIn(), true, true));
 		
 		replaceWith(operation);
 		
