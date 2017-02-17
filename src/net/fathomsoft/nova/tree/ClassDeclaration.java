@@ -1550,15 +1550,42 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					boolean valid = true;
 					
-					for (MethodDeclaration m : list)
+					for (int n = 0; n < list.size(); n++)
 					{
-						if (!(m instanceof NovaMethodDeclaration && method instanceof NovaMethodDeclaration &&
-							((NovaMethodDeclaration)m).containsOverridingMethod((NovaMethodDeclaration)method)))
+						MethodDeclaration m = list.get(n);
+
+						if (m instanceof NovaMethodDeclaration && method instanceof NovaMethodDeclaration)
+						{
+							if (((NovaMethodDeclaration)m).containsOverridingMethod((NovaMethodDeclaration)method))
+							{
+								valid = false;
+								list.set(n, method);
+								break;
+							}
+							else if (((NovaMethodDeclaration)method).containsOverridingMethod((NovaMethodDeclaration)m))
+							{
+								valid = false;
+								break;
+							}
+							else if (method == m || method instanceof InitializationMethod)
+							{
+								valid = false;
+							}
+						}
+						else
 						{
 							valid = false;
 						}
 					}
-					
+//					for (MethodDeclaration m : list)
+//					{
+//						if (!(m instanceof NovaMethodDeclaration && method instanceof NovaMethodDeclaration &&
+//							((NovaMethodDeclaration)m).containsOverridingMethod((NovaMethodDeclaration)method)))
+//						{
+//							valid = false;
+//						}
+//					}
+
 					if (valid)
 					{
 						list.add(method);
