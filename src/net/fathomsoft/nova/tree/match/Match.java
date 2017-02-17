@@ -119,7 +119,7 @@ public class Match extends ControlStatement
 				
 				Case c = (Case)node;
 				
-				if (!c.getValue().isConstant() || (c.getValue() instanceof Literal && ((Literal)c.getValue()).isStringInstantiation()))
+				if (c.getValue() instanceof Literal == false || ((Literal)c.getValue()).isStringInstantiation())
 				{
 					if (strict)
 					{
