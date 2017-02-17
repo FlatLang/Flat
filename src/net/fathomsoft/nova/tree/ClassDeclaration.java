@@ -1538,7 +1538,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				SyntaxUtils.ValueDistance dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
 				
-				if ((dist.a < distance.a || dist.a == distance.a && dist.b < distance.b) && dist.genericDistance == distance.genericDistance || dist.genericDistance < distance.genericDistance)
+				if (((dist.a < distance.a || dist.a == distance.a && dist.b < distance.b) && dist.genericDistance == distance.genericDistance || dist.genericDistance < distance.genericDistance) ||
+					(dist.a == distance.a && dist.b == distance.b && dist.genericDistance == distance.genericDistance && dist.exactTypeDistance < distance.exactTypeDistance))
 				{
 					maxI = i;
 					distance = dist;
@@ -1550,41 +1551,14 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					boolean valid = true;
 					
-					for (int n = 0; n < list.size(); n++)
+					for (MethodDeclaration m : list)
 					{
-						MethodDeclaration m = list.get(n);
-
-						if (m instanceof NovaMethodDeclaration && method instanceof NovaMethodDeclaration)
-						{
-							if (((NovaMethodDeclaration)m).containsOverridingMethod((NovaMethodDeclaration)method))
-							{
-								valid = false;
-								list.set(n, method);
-								break;
-							}
-							else if (((NovaMethodDeclaration)method).containsOverridingMethod((NovaMethodDeclaration)m))
-							{
-								valid = false;
-								break;
-							}
-							else if (method == m || method instanceof InitializationMethod)
-							{
-								valid = false;
-							}
-						}
-						else
+						if (!(m instanceof NovaMethodDeclaration && method instanceof NovaMethodDeclaration &&
+							((NovaMethodDeclaration)m).containsOverridingMethod((NovaMethodDeclaration)method)))
 						{
 							valid = false;
 						}
 					}
-//					for (MethodDeclaration m : list)
-//					{
-//						if (!(m instanceof NovaMethodDeclaration && method instanceof NovaMethodDeclaration &&
-//							((NovaMethodDeclaration)m).containsOverridingMethod((NovaMethodDeclaration)method)))
-//						{
-//							valid = false;
-//						}
-//					}
 
 					if (valid)
 					{
