@@ -1194,7 +1194,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			data.decrementGenericsRemaining();
 		}
 		
-		return true;
+		return getName() != null;
 	}
 	
 	/**
@@ -1295,7 +1295,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		MethodData data = (MethodData)extra;
 		
-		if (data.error != null || !setAttribute(word, extra.getWordNumber()))
+		if (data.error != null || extra.isLastWord() || !setAttribute(word, extra.getWordNumber()))
 		{
 			if (leftDelimiter.equals("->") || (getType() != null && leftDelimiter.equals(",")))
 			{
