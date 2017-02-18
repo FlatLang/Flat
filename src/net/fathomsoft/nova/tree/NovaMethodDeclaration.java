@@ -17,8 +17,8 @@ import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.regex.Matcher;
 
 /**
  * Declaration extension that represents the declaration of a method
@@ -1163,6 +1163,14 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		String signature = findMethodSignature(statement);
 		MethodData data  = new MethodData(signature);
 		
+		String returnType = null;
+		int returnIndex = signature.indexOf("->");
+		
+		if (returnIndex > 0) {
+			returnType = signature.substring(returnIndex + 2).trim();
+			signature = signature.substring(0, returnIndex).trim();
+		}
+		
 		GenericTypeParameterList.searchGenerics(signature, data);
 		
 		iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, data, require);
@@ -1172,26 +1180,59 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			return SyntaxMessage.queryError(data.error, this, require);
 		}
 		
-		int returnIndex = signature.indexOf("->");
-		
 		while (data.getGenericsRemaining() > 0)
 		{
 			Bounds bounds = data.getSkipBounds(data.getGenericsRemaining() - 1);
-
+			
 			String arg = bounds.extractString(signature);
 			
 			arg = arg.substring(GENERIC_START.length(), arg.length() - GENERIC_END.length());
 			
-			if (returnIndex > 0 && bounds.getStart() > returnIndex)
-			{
-				Arrays.stream(StringUtils.splitCommas(arg)).forEach(x -> addGenericTypeArgumentName(x));
-			}
-			else
-			{
-				getMethodGenericTypeParameterDeclaration().decodeMethodGenericTypeParameters(arg);
-			}
+			getMethodGenericTypeParameterDeclaration().decodeMethodGenericTypeParameters(arg);
 			
 			data.decrementGenericsRemaining();
+		}
+		
+		if (returnType != null)
+		{
+			int bracketIndex = returnType.indexOf('[');
+			
+			if (bracketIndex > 0)
+			{
+				setArrayDimensions(SyntaxUtils.findArrayDimensions(returnType, bracketIndex, false));
+				
+				returnType = returnType.substring(0, bracketIndex).trim();
+			}
+			
+			Matcher m = Patterns.IDENTIFIER.matcher(returnType);
+			String symbol = "";
+			
+			if (m.find())
+			{
+				int i = m.end();
+				
+				while (i < returnType.length() && (StringUtils.isSymbol(returnType.charAt(i)) || StringUtils.isWhitespace(returnType.charAt(i))) && returnType.charAt(i) != '<')
+				{
+					i++;
+				}
+				
+				symbol = returnType.substring(m.end(), i).trim();
+				returnType = returnType.substring(0, m.end()) + returnType.substring(i);
+			}
+			
+			setType(returnType, true, false);
+			
+			if (symbol.equals("*"))
+			{
+				if (getDataType() == POINTER)
+				{
+					setDataType(DOUBLE_POINTER);
+				}
+				else
+				{
+					setDataType(POINTER);
+				}
+			}
 		}
 		
 		return getName() != null;
