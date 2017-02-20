@@ -373,7 +373,7 @@ public class Assignment extends Value
 				getAssignedNode().getDeclaration().onAfterDecoded();
 			}
 			
-			if (getAssignedNodeValue().isImmutable() && getAssignedNodeValue() instanceof Variable)
+			if (getAssignedNodeValue().getType() != null && getAssignedNodeValue().isImmutable() && getAssignedNodeValue() instanceof Variable)
 			{
 				if (getAssignedNode().getImmutableAnnotation() != null)
 				{
