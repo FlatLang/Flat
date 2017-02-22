@@ -1217,7 +1217,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				}
 				
 				symbol = returnType.substring(m.end(), i).trim();
-				returnType = returnType.substring(0, m.end()) + returnType.substring(i);
+				
+				if (!symbol.startsWith("("))
+				{
+					returnType = returnType.substring(0, m.end()) + returnType.substring(i);
+				}
 			}
 			
 			setType(returnType, true, false);
