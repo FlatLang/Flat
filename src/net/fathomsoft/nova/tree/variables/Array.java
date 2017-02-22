@@ -148,9 +148,9 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	{
 		setName(type);
 		
-		checkDataType(type);
-		
 		super.setTypeValue(type);
+		
+		checkDataType(type);
 	}
 	
 	/**
