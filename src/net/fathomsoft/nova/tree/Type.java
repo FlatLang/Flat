@@ -17,6 +17,21 @@ public class Type
 		this.value = value;
 	}
 	
+	public static Type parse(Node parent, String value)
+	{
+		FunctionType funcType = FunctionType.parse(parent, value);
+		
+		if (funcType != null)
+		{
+			return funcType;
+		}
+		
+		Type type = new Type();
+		type.value = value;
+		
+		return type;
+	}
+	
 	public Type cloneTo(Type clone)
 	{
 		clone.value = value;
