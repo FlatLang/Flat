@@ -469,7 +469,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		if (outputType && getType() != null)
 		{
-			builder.append(" -> ").append(getType());
+			builder.append(" -> ").append(getTypeObject().toNova());
 		}
 		
 		builder.append('\n');
@@ -1407,9 +1407,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		signature += getName() + getMethodGenericTypeParameterDeclaration().generateNovaInput();
 		signature += '(' + getParameterList().generateNovaInput().toString() + ')';
 		
-		if (getType() != null)
+		if (getTypeObject() != null)
 		{
-			signature += " -> " + getType();
+			signature += " -> " + getTypeObject().toNova();
 		}
 		
 		signature += getGenericTypeArgumentList().generateNovaInput();
