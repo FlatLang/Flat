@@ -5,6 +5,7 @@ public class Type
 	public String value;
 	
 	public byte dataType;
+	public int arrayDimensions;
 	
 	public Type()
 	{
@@ -20,6 +21,7 @@ public class Type
 	{
 		clone.value = value;
 		clone.dataType = dataType;
+		clone.arrayDimensions = arrayDimensions;
 		
 		return clone;
 	}
