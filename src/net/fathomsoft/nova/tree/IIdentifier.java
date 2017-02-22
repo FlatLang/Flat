@@ -20,11 +20,13 @@ public class IIdentifier extends Identifier
 	
 	// Value data..... ...
 	// Dont forget about IValue!!!!
-	private byte	dataType;
+//	private byte	dataType;
+//	
+//	private int		arrayDimensions;
+//	
+//	private String	type;
 	
-	private int		arrayDimensions;
-	
-	private String	type;
+	public Type type;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -143,7 +145,7 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue.getTypeStringValue()!!!!
 	public String getTypeStringValue()
 	{
-		return type;
+		return type.value;
 	}
 	
 	/**
@@ -182,7 +184,7 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue!!!!
 	public void setDataType(byte type)
 	{
-		this.dataType = type;
+		this.type.dataType = type;
 	}
 	
 	/**

@@ -16,11 +16,13 @@ import net.fathomsoft.nova.util.Location;
 public class IValue extends Value
 {
 	// Dont forget about IIdentifier!!!!
-	private byte	dataType;
+//	private byte	dataType;
+//
+//	private int		arrayDimensions;
+//
+//	private String	type;
 	
-	private int		arrayDimensions;
-	
-	private String	type;
+	public Type type;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#Value(Node, Location)
@@ -88,13 +90,13 @@ public class IValue extends Value
 	// Dont forget about IIdentifier!!!!
 	public String getType(boolean checkCast)
 	{
-		return type;
+		return type != null ? type.value : null;
 	}
 	
 	@Override
 	public String getTypeStringValue()
 	{
-		return type != null ? type.value : null;
+		return type.value;
 	}
 	
 	/**
@@ -123,7 +125,7 @@ public class IValue extends Value
 	// Dont forget about IIdentifier!!!!
 	public byte getDataType(boolean checkGeneric)
 	{
-		return dataType;
+		return type.dataType;
 	}
 	
 	/**
@@ -133,7 +135,7 @@ public class IValue extends Value
 	// Dont forget about IIdentifier!!!!
 	public void setDataType(byte type)
 	{
-		this.dataType = type;
+		this.type.dataType = type;
 	}
 	
 	/**
