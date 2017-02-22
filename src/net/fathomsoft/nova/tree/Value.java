@@ -595,17 +595,24 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public void checkDataType(String type)
 	{
-		if (type != null && !isExternalType())
+		if (type != null)
 		{
-			boolean primitive = SyntaxUtils.isPrimitiveType(type) || SyntaxUtils.isExternalPrimitiveType(type);
-			
-			if (primitive)
+			if (isExternalType() && isDecoding())
 			{
-				setPrimitive();
+				setDataType(VALUE);
 			}
-			else if (getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
+			else
 			{
-				setDataType(Value.POINTER);
+				boolean primitive = SyntaxUtils.isPrimitiveType(type) || SyntaxUtils.isExternalPrimitiveType(type);
+				
+				if (primitive)
+				{
+					setPrimitive();
+				}
+				else if (getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
+				{
+					setDataType(Value.POINTER);
+				}
 			}
 		}
 	}
