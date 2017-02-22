@@ -236,11 +236,11 @@ public abstract class Identifier extends Value implements Accessible
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
-		node.setName(getName());
-		node.setForceOriginalName(doesForceOriginalName());
-		node.setArrayDimensions(getArrayDimensions());
-		node.setTypeValue(getType());
-		node.setDataType(getDataType());
+//		node.setName(getName());
+//		node.setForceOriginalName(doesForceOriginalName());
+//		node.setArrayDimensions(getArrayDimensions());
+//		node.setTypeValue(getType());
+//		node.setDataType(getDataType());
 		node.safeNavigation = safeNavigation;
 		
 		return node;
