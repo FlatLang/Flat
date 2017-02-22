@@ -24,8 +24,6 @@ public class MethodGenericTypeParameter extends GenericTypeParameter
 	public MethodGenericTypeParameter(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		setDataType(POINTER);
 	}
 	
 	public boolean containsReference(Value value)

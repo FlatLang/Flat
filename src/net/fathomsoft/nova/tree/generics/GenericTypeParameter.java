@@ -26,7 +26,6 @@ public class GenericTypeParameter extends IValue
 	{
 		super(temporaryParent, locationIn);
 		
-		setDataType(POINTER);
 		defaultType = "Object";
 	}
 	
@@ -49,14 +48,14 @@ public class GenericTypeParameter extends IValue
 	{
 		this.defaultType = type;
 		
-		if (SyntaxUtils.isPrimitiveType(type))
-		{
-			setDataType(VALUE);
-		}
-		else
-		{
-			setDataType(POINTER);
-		}
+//		if (SyntaxUtils.isPrimitiveType(type))
+//		{
+//			setDataType(VALUE);
+//		}
+//		else
+//		{
+//			setDataType(POINTER);
+//		}
 	}
 	
 	public boolean isMethodGenericParameter()

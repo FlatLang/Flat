@@ -29,8 +29,6 @@ public class IValue extends Value
 	public IValue(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		setDataType(VALUE);
 	}
 	
 	/**

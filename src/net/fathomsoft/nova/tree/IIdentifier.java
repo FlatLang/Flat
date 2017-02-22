@@ -33,8 +33,6 @@ public class IIdentifier extends Identifier
 	public IIdentifier(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		setDataType(VALUE);
 	}
 	
 	public GenericCompatible getContext()
