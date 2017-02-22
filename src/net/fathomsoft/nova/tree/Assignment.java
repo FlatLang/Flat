@@ -135,6 +135,12 @@ public class Assignment extends Value
 		return getAssignmentNode().getReturnedNode().getType(checkCast);
 	}
 	
+	@Override
+	public Type getTypeObject()
+	{
+		return getAssignmentNode().getReturnedNode().getTypeObject();
+	}
+	
 	
 	@Override
 	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)

@@ -918,6 +918,8 @@ public abstract class Value extends Node implements AbstractValue
 		return getDataType(checkGeneric) == Value.DOUBLE_POINTER;
 	}
 	
+	public abstract Type getTypeObject();
+	
 	/**
 	 * Get the data type that is required within the context that the
 	 * specified Value is within.

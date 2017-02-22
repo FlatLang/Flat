@@ -40,6 +40,12 @@ public class Variable extends Identifier
 	}
 	
 	@Override
+	public Type getTypeObject()
+	{
+		return declaration.getTypeObject();
+	}
+	
+	@Override
 	public boolean isConstant()
 	{
 		return false;

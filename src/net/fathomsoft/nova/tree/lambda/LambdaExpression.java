@@ -502,6 +502,19 @@ public class LambdaExpression extends Value
 	}
 	
 	@Override
+	public Type getTypeObject()
+	{
+		Value returned = getReturnedNode();
+		
+		if (returned == null)
+		{
+			return null;
+		}
+		
+		return returned.getTypeObject();
+	}
+	
+	@Override
 	public String getTypeStringValue()
 	{
 		Value returned = getReturnedNode();

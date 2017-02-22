@@ -80,6 +80,12 @@ public class IValue extends Value
 		genericParameter = searchGenericTypeParameter();
 	}
 	
+	@Override
+	public Type getTypeObject()
+	{
+		return type;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#getDataType()
 	 */

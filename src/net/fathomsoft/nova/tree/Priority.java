@@ -52,6 +52,12 @@ public class Priority extends Value implements Accessible
 	}
 	
 	@Override
+	public Type getTypeObject()
+	{
+		return getReturnedContents().getTypeObject();
+	}
+	
+	@Override
 	public boolean isConstant()
 	{
 		return getContents().isConstant();

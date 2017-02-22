@@ -129,6 +129,12 @@ public class IIdentifier extends Identifier
 		genericParameter = searchGenericTypeParameter();
 	}
 	
+	@Override
+	public Type getTypeObject()
+	{
+		return type;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Value#getDataType()
 	 */
