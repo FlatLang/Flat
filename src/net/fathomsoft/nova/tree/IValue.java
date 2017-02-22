@@ -105,9 +105,16 @@ public class IValue extends Value
 	@Override
 	public void setTypeValue(String type)
 	{
-		this.type = this.type == null ? new Type() : this.type;
-		
-		this.type.setType(type);
+		if (this.type == null)
+		{
+			this.type = Type.parse(this, type);
+		}
+		else
+		{
+			this.type = this.type == null ? new Type() : this.type;
+			
+			this.type.setType(type);
+		}
 		
 		genericParameter = searchGenericTypeParameter();
 	}
