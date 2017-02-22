@@ -88,7 +88,7 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue!!!!
 	public int getArrayDimensions()
 	{
-		return arrayDimensions - getArrayAccessDimensions();
+		return type != null ? type.arrayDimensions : 0;//type instanceof ArrayType ? ((ArrayType)type).arrayDimensions - getArrayAccessDimensions() : 0;
 	}
 
 	/**
@@ -98,7 +98,37 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue!!!!
 	public void setArrayDimensions(int arrayDimensions)
 	{
-		this.arrayDimensions = arrayDimensions;
+		/*if (arrayDimensions > 0)
+		{
+			String value = type != null ? type.value : null;
+			byte dataType = type != null ? type.dataType : -1;
+			
+			if (type instanceof ArrayType == false)
+			{
+				ArrayType newType = new ArrayType();
+				newType.type = type;
+				
+				type = newType;
+			}
+			
+			((ArrayType)type).arrayDimensions = arrayDimensions;
+			
+//			if (value != null && dataType == VALUE)
+//			{
+				type.value = value;
+//			}
+//			else
+//			{
+//				type.value = "Array";
+//			}
+		}
+		else if (type instanceof ArrayType)
+		{
+			type = ((ArrayType)type).type;
+		}*/
+		type = type == null ? new Type() : type;
+		
+		type.arrayDimensions = arrayDimensions;
 	}
 
 	/**
@@ -108,7 +138,7 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue.getType()!!!!
 	public String getType(boolean checkCast)
 	{
-		return type;
+		return type != null ? type.value : null;
 	}
 	
 	@Override
@@ -124,7 +154,9 @@ public class IIdentifier extends Identifier
 	@Override
 	public void setTypeValue(String type)
 	{
-		this.type = type;
+		this.type = this.type == null ? new Type() : this.type;
+		
+		this.type.setType(type);
 		
 		genericParameter = searchGenericTypeParameter();
 	}
@@ -142,7 +174,7 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue!!!!
 	public byte getDataType(boolean checkGeneric)
 	{
-		return dataType;
+		return type != null ? type.dataType : 0;
 	}
 	
 	/**
@@ -187,9 +219,7 @@ public class IIdentifier extends Identifier
 		
 		node.name            = name;
 		node.forceOriginal   = forceOriginal;
-		node.arrayDimensions = arrayDimensions;
-		node.type            = type;
-		node.dataType        = dataType;
+		node.type            = type != null ? type.clone() : null;
 
 		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
 		{

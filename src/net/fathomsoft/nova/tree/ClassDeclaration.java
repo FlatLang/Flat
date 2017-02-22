@@ -3719,10 +3719,18 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				for (int i = 0; i < params.getNumParameters(); i++)
 				{
-					method.getParameter(i + offset).setDataType(params.getParameter(i).getDataType());
+					Value param = params.getParameter(i);
+					
+					if (param.getType() != null)
+					{
+						method.getParameter(i + offset).setDataType(param.getDataType());
+					}
 				}
 				
-				method.setDataType(corresponding.getDataType());
+				if (corresponding.getType() != null)
+				{
+					method.setDataType(corresponding.getDataType());
+				}
 				
 //				if (getScope().getNumVisibleChildren() > 0)
 //				{

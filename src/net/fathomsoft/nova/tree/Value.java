@@ -358,7 +358,7 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public boolean isPrimitive()
 	{
-		return getDataType() == VALUE && (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray() && getArrayDimensions() == 0;
+		return getType() != null && getDataType() == VALUE && (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray() && getArrayDimensions() == 0;
 	}
 	
 	public void setPrimitiveWrapperType()
@@ -518,7 +518,11 @@ public abstract class Value extends Node implements AbstractValue
 		
 		value.setArrayDimensions(getArrayDimensions());
 		value.setTypeValue(getType());
-		value.setDataType(getDataType());
+		
+		if (getType() != null)
+		{
+			value.setDataType(getDataType());
+		}
 		
 		GenericTypeArgumentList args = getGenericTypeArgumentList();
 		GenericTypeArgumentList thisArgs = value.getGenericTypeArgumentList();
@@ -890,7 +894,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isReference(boolean checkGeneric)
 	{
-		return getDataType(checkGeneric) == REFERENCE;
+		return getTypeObject() != null && getDataType(checkGeneric) == REFERENCE;
 	}
 	
 	/**
@@ -905,7 +909,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isPointer(boolean checkGeneric)
 	{
-		return getDataType(checkGeneric) == POINTER;
+		return getTypeObject() != null && getDataType(checkGeneric) == POINTER;
 	}
 	
 	public boolean isDoublePointer()
@@ -915,7 +919,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isDoublePointer(boolean checkGeneric)
 	{
-		return getDataType(checkGeneric) == Value.DOUBLE_POINTER;
+		return getTypeObject() != null && getDataType(checkGeneric) == Value.DOUBLE_POINTER;
 	}
 	
 	public abstract Type getTypeObject();
@@ -1661,7 +1665,10 @@ public abstract class Value extends Node implements AbstractValue
 			}
 		}
 		
-		setDataType(novaType.getDataType());
+		if (novaType.getType() != null)
+		{
+			setDataType(novaType.getDataType());
+		}
 	}
 	
 	public Value replaceWithAutoboxedValue()

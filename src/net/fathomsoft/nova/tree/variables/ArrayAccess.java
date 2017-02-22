@@ -103,6 +103,7 @@ public class ArrayAccess extends Node implements ArrayCompatible
 					if (!clazz.containsArrayBracketOverload())
 					{
 						reference.getTypeClass(false);
+						clazz.containsArrayBracketOverload();
 						SyntaxMessage.error("Type '" + clazz.getName() + "' does not implement array brackets", n);
 					}
 					

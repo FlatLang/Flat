@@ -91,7 +91,10 @@ public class Parameter extends LocalDeclaration
 	
 	public void updateGenericParameter(Parameter other)
 	{
-		setDataType(other.getDataType());
+		if (other.getType() != null)
+		{
+			setDataType(other.getDataType());
+		}
 	}
 	
 	private static Integer tryParse(String text)

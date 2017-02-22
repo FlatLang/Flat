@@ -1026,7 +1026,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		boolean isPrimitive = false;
 		
 		if (arg instanceof DefaultArgument == false &&
-			(arg.isPrimitive() && !param.isPrimitive() ||
+			arg.getType() != null && (arg.isPrimitive() && !param.isPrimitive() ||
 				!param.isGenericType() && param.getTypeClass() != null && !param.getTypeClass().isPrimitiveOverload() &&
 					arg.getTypeClass() != null && arg.getTypeClass().isPrimitiveOverload()))
 		{
@@ -1524,7 +1524,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				getParameterList().getParameter(i).updateGenericParameter(params.getParameter(i));
 			}
 			
-			setDataType(overridenMethod.getDataType());
+			if (overridenMethod.getType() != null)
+			{
+				setDataType(overridenMethod.getDataType());
+			}
 			
 			if (getScope().getNumVisibleChildren() > 0)
 			{
