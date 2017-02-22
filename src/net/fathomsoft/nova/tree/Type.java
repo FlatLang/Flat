@@ -32,6 +32,11 @@ public class Type
 		return type;
 	}
 	
+	public String toNova()
+	{
+		return value;
+	}
+	
 	public Type cloneTo(Type clone)
 	{
 		clone.value = value;
