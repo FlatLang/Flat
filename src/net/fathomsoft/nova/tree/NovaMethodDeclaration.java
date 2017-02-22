@@ -1546,7 +1546,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				{
 					Assignment assign = (Assignment)n;
 					
-					if (assign.getAssignedNodeValue().getReturnedNode().isPrimitive() && !isPrimitive())
+					if (getTypeObject() != null && assign.getAssignedNodeValue().getReturnedNode().isPrimitive() && !isPrimitive())
 					{
 						assign.getAssignmentNode().replaceWithUnboxedValue();
 					}
