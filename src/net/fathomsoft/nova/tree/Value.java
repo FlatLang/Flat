@@ -1670,6 +1670,7 @@ public abstract class Value extends Node implements AbstractValue
 					}
 					
 					args.replaceWith(newArgs);
+					newArgs.forEachVisibleListChild(x -> x.genericParameter = x.searchGenericTypeParameter());
 				}
 			}
 		}
