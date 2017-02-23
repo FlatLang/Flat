@@ -4,6 +4,7 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.util.*;
 
 import java.util.ArrayList;
@@ -535,6 +536,16 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 						}
 						
 						classes[i].addFieldInitialization(assignment);
+					}
+					
+					for (FieldDeclaration f : correspondingPrimitiveOverloads)
+					{
+						AssignmentMethod method = f.getParentClass().getAssignmentMethodNode();
+						
+						Assignment value = assignment.clone(method, f.getLocationIn(), true, true);
+						getParentClass().replacePrimitiveGenerics(method.getParentClass().primitiveOverloadTypes, this, value.getAssignmentNode().getReturnedNode());
+						method.addChild(value);
+						value.onAfterDecoded();
 					}
 				}
 			}
