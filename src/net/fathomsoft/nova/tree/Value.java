@@ -1322,7 +1322,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		ClassDeclaration c = getTypeClass();
 		
-		if (c != null)
+		if (c != null && getGenericTypeArgumentList() != null)
 		{
 			ClassDeclaration converted = c.getConvertedPrimitiveClass(getGenericTypeArgumentList().getTypes());
 			
