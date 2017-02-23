@@ -619,7 +619,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public void setPrimitive()
 	{
-		if (getArrayDimensions() == 0)
+//		if (getArrayDimensions() == 0)
 		{
 			setDataType(Value.VALUE);
 		}
