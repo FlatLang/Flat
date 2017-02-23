@@ -1115,10 +1115,12 @@ public abstract class Value extends Node implements AbstractValue
 						
 						if (arg == null)
 						{
-							SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
+//							SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
 						}
-						
-						return builder.append(arg.getType());
+						else
+						{
+							return builder.append(arg.getType());
+						}
 					}
 					else
 					{
