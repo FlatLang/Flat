@@ -132,7 +132,9 @@ public interface Accessible
 			typeClass = value.getTypeClass();
 		}
 		
-		GenericTypeParameterList params = type.getParentClass().getGenericTypeParameterDeclaration();
+		ClassDeclaration paramClass = type.getParentClass();
+		
+		GenericTypeParameterList params = paramClass.getGenericTypeParameterDeclaration();
 		
 		if (params == null)
 		{
