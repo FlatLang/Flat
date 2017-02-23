@@ -72,7 +72,8 @@ public class ClosureVariable extends NovaMethodDeclaration
 			getParameterList().getReferenceParameter().setTypeValue("void");
 		}
 		
-		return super.validate(phase);
+		return new ValidationResult(this);
+//		return super.validate(phase);
 	}
 	
 	/**
