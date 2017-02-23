@@ -1237,7 +1237,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				}
 			}
 			
-			setType(returnType, true, false);
+			setType(returnType, true);
 			
 			if (symbol.equals("*"))
 			{
