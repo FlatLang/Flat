@@ -1113,7 +1113,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 */
 	public boolean containsExternalType(String typeName)
 	{
-		return getExternalTypeListNode().containsType(typeName);
+		return getExternalTypeListNode().containsType(typeName) || encapsulatingClass != null && encapsulatingClass.containsExternalType(typeName);
 	}
 	
 	/**
