@@ -1910,6 +1910,11 @@ public class SyntaxUtils
 		
 		value = getValidValue(value);
 		
+		if (type.indexOf('(') > 0)
+		{
+			return type;
+		}
+		
 		if (value.isWithinExternalContext() || value instanceof Literal ||
 				value instanceof Operator || value instanceof ClassDeclaration)
 		{
