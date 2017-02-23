@@ -601,7 +601,7 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				setDataType(VALUE);
 			}
-			else
+			else if (!isExternalType())
 			{
 				boolean primitive = SyntaxUtils.isPrimitiveType(type) || SyntaxUtils.isExternalPrimitiveType(type);
 				
