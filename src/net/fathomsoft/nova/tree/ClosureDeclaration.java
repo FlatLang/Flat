@@ -17,7 +17,7 @@ import net.fathomsoft.nova.util.*;
  * @since	v0.2.14 Jul 5, 2014 at 9:02:42 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class ClosureDeclaration extends Parameter implements CallableMethod
+public class ClosureDeclaration extends Parameter implements CallableMethod, ClosureCompatible
 {
 	public int id;
 	
@@ -31,6 +31,12 @@ public class ClosureDeclaration extends Parameter implements CallableMethod
 	public ObjectReference getObjectReference()
 	{
 		return null;
+	}
+	
+	@Override
+	public ClosureDeclaration getClosureDeclaration()
+	{
+		return this;
 	}
 	
 	/**

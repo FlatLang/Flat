@@ -29,7 +29,7 @@ import java.util.regex.Matcher;
  * @since	v0.2.21 Jul 30, 2014 at 1:45:00 PM
  * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
-public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor
+public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAncestor, ClosureCompatible
 {
 	public boolean usedShorthandAction;
 	
@@ -89,6 +89,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		
 		return false;
+	}
+	
+	@Override
+	public ClosureDeclaration getClosureDeclaration()
+	{
+		return type instanceof FunctionType ? ((FunctionType)type).closure : null;
 	}
 	
 	@Override
