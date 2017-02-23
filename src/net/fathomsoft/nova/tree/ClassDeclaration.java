@@ -2948,6 +2948,7 @@ public class ClassDeclaration extends InstanceDeclaration
 						clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
 						clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
 						clone.accessorValue = null;
+						clone.initializationValue = null;
 						clone.genericOverload = field;
 						field.correspondingPrimitiveOverloads.add(clone);
 						clone.setProperty("genericOverload", field);
