@@ -3364,7 +3364,22 @@ public class SyntaxUtils
 			}
 		}
 		
-		if (context.getGenericTypeArgumentList() != null && context.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex)
+		if (current.isPrimitiveOverload() && current.genericOverload == required)
+		{
+			GenericTypeParameter param = current.genericOverload.getGenericTypeParameter(parameterIndex);
+			
+			GenericTypeParameter corresponding = current.getGenericTypeParameter(param.getName());
+			
+			if (corresponding != null)
+			{
+//				arg = value.getGenericTypeArgument(corresponding.getVisibleIndex());
+			}
+			else
+			{
+				return (GenericTypeArgument)current.primitiveOverloadTypes[parameterIndex];
+			}
+		}
+		else if (context.getGenericTypeArgumentList() != null && context.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex)
 		{
 			return context.getGenericTypeArgument(parameterIndex);
 		}
