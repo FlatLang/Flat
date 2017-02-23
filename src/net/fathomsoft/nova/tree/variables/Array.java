@@ -133,7 +133,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
-		builder.append(getName());
+		builder.append(getName()).append(generateGenericType(this));
 		
 		if (generateArray)
 		{
