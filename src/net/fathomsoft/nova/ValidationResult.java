@@ -52,7 +52,7 @@ public class ValidationResult
 	 */
 	public ValidationResult errorOccurred(Node remove)
 	{
-		remove.detach();
+//		remove.detach();
 		
 		return errorOccurred();
 	}
