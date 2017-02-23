@@ -369,6 +369,8 @@ public class Assignment extends Value
 	{
 		if (super.onAfterDecoded())
 		{
+			getAssignmentNode().convertToPrimitiveType();
+			
 			if (getAssignedNodeValue() instanceof Variable && getAssignedNode().getDeclaration() instanceof ArrayAccessorMethod)
 			{
 				return true;
