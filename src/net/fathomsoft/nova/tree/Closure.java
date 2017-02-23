@@ -307,19 +307,19 @@ public class Closure extends Variable
 		
 		if (call != null)
 		{
-			ClassDeclaration type = call.getReferenceNode().toValue().getTypeClass();
-			
-			if (type.isPrimitiveOverload())
-			{
-				MethodDeclaration[] methods = type.getMethods(call.getName());
-				
-				for (MethodDeclaration m : methods)
-				{
-					NovaMethodDeclaration method = (NovaMethodDeclaration)m;
-					
-					method.checkConvertToClass(type);
-				}
-			}
+//			ClassDeclaration type = call.getReferenceNode().toValue().getTypeClass();
+//			
+//			if (type.isPrimitiveOverload())
+//			{
+//				MethodDeclaration[] methods = type.getMethods(call.getName());
+//				
+//				for (MethodDeclaration m : methods)
+//				{
+//					NovaMethodDeclaration method = (NovaMethodDeclaration)m;
+//					
+//					method.checkConvertToClass(type);
+//				}
+//			}
 		}
 		
 		if (closureDeclaration == null)
