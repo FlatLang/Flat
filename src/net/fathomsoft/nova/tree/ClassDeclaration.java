@@ -2782,7 +2782,10 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				NovaMethodDeclaration novaMethod = (NovaMethodDeclaration)method;
 				
-				novaMethod.convertToClass(addTo, types, novaMethod.getMethodGenericTypeParameterDeclaration().getTypes());
+				if (!novaMethod.isPrimitiveOverload())
+				{
+					novaMethod.convertToClass(addTo, types, novaMethod.getMethodGenericTypeParameterDeclaration().getTypes());
+				}
 			}
 		});
 	}
