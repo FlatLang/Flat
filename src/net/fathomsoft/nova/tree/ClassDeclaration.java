@@ -2967,6 +2967,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getConstructorList(), this);
 			genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getMethodList(), this);
 			genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getPropertyMethodList(), this);
+			genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getHiddenMethodList(), this);
 			
 			validate(SyntaxTree.PHASE_CLASS_DECLARATION);
 			
