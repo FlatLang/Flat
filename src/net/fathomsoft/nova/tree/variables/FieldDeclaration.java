@@ -22,7 +22,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 {
 	public boolean twoWayBinding;
 	
-	public String   initializationValue, accessorValue;
+	public Object initializationValue;
+	public String accessorValue;
 	
 	public FieldDeclaration genericOverload;
 	public ArrayList<FieldDeclaration> correspondingPrimitiveOverloads;
@@ -519,6 +520,14 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 					parents[0] = getParentClass().getAssignmentMethodNode();
 				}
 			}
+	public void decodeInitializationValue()
+	{
+		if (initializationValue instanceof String)
+		{
+			InitializationContext context = getInitializationContext();
+			
+			Node[] parents = context.parents;
+			ClassDeclaration[] classes = context.classes;
 			
 			if (parents.length > 0)
 			{
@@ -537,6 +546,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 						
 						classes[i].addFieldInitialization(assignment);
 					}
+					
+					initializationValue = assignment.getAssignmentNode();
 					
 					for (FieldDeclaration f : correspondingPrimitiveOverloads)
 					{
