@@ -2627,18 +2627,42 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public ClassDeclaration getConvertedPrimitiveClass(Value[] args)
 	{
-		ClassDeclaration c = getExistingConvertedPrimitiveClass(args);
-		
-		if (c != null)
+		if (args.length > 0)
 		{
-			return c;
-		}
-		
-		Value[] types = getConvertedTypes(args);
-		
-		if (types != null)
-		{
-			return convertToPrimitive(types);
+			if (isPrimitiveOverload())
+			{
+				Value[] originalArgs = new Value[originalPrimitiveOverloadTypes.length];
+				
+				int position = 0;
+				
+				for (int i = 0; i < originalArgs.length; i++)
+				{
+					if (originalPrimitiveOverloadTypes[i] instanceof GenericTypeParameter == false)
+					{
+						originalArgs[i] = (Value)originalPrimitiveOverloadTypes[i].clone(this, originalPrimitiveOverloadTypes[i].getLocationIn(), true, true);
+					}
+					else
+					{
+						originalArgs[i] = args[position++];
+					}
+				}
+				
+				return genericOverload.getConvertedPrimitiveClass(originalArgs);
+			}
+			
+			ClassDeclaration c = getExistingConvertedPrimitiveClass(args);
+			
+			if (c != null)
+			{
+				return c;
+			}
+			
+			Value[] types = getConvertedTypes(args);
+			
+			if (types != null)
+			{
+				return convertToPrimitive(types);
+			}
 		}
 		
 		return null;
