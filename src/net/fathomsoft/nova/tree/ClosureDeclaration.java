@@ -346,6 +346,12 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 		}
 	}
 	
+	@Override
+	public void propagateToMethod(NovaMethodDeclaration overload)
+	{
+		
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
 	 */
