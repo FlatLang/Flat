@@ -371,9 +371,14 @@ public class Assignment extends Value
 		{
 			getAssignmentNode().convertToPrimitiveType();
 			
-			if (getAssignedNodeValue() instanceof Variable && getAssignedNode().getDeclaration() instanceof ArrayAccessorMethod)
+			if (getAssignedNodeValue() instanceof Variable)
 			{
-				return true;
+				getAssignedNode().getDeclaration().convertToPrimitiveType();
+				
+				if (getAssignedNode().getDeclaration() instanceof ArrayAccessorMethod)
+				{
+					return true;
+				}
 			}
 			
 			if (getAssignedNodeValue() instanceof Variable)
