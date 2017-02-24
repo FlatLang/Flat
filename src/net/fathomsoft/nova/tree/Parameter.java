@@ -439,6 +439,17 @@ public class Parameter extends LocalDeclaration
 		return node;
 	}
 	
+	@Override
+	public void setPrimitive()
+	{
+		super.setPrimitive();
+		
+		if (isPrimitive() && "null".equals(defaultValueString))
+		{
+			defaultValueString = getDefaultLiteralValue();
+		}
+	}
+	
 	/**
 	 * Test the Parameter class type to make sure everything
 	 * is working properly.
