@@ -5,6 +5,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -339,7 +340,7 @@ public class Parameter extends LocalDeclaration
 		{
 			checkFunctionMapParameter();
 			
-			if (defaultValueString != null)
+			if (defaultValueString != null && !getParentClass().isPrimitiveOverload())
 			{
 				defaultValue = SyntaxTree.decodeValue(this, defaultValueString, getLocationIn(), true);
 				defaultValue.onAfterDecoded();
@@ -352,6 +353,8 @@ public class Parameter extends LocalDeclaration
 		if (defaultValue != null)
 		{
 			SyntaxTree.validateNodes(defaultValue, phase);
+			
+			propagateToPrimitiveOverloads();
 		}
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
@@ -401,6 +404,37 @@ public class Parameter extends LocalDeclaration
 		}
 		
 		return result;
+	}
+	
+	public void propagateToPrimitiveOverloads()
+	{
+		NovaMethodDeclaration method = getParentMethod();
+		
+		if (method != null && method.correspondingPrimitiveOverloads.size() > 0)
+		{
+			for (NovaMethodDeclaration overload : method.correspondingPrimitiveOverloads)
+			{
+				propagateToMethod(overload);
+			}
+		}
+	}
+	
+	public void propagateToMethod(NovaMethodDeclaration overload)
+	{
+		Parameter corresponding = overload.getParameter(getIndex());
+		
+		Value clone = (Value)defaultValue.clone(overload, defaultValue.getLocationIn(), true, true);
+		
+		clone.convertConvertedTypes(getParentMethod());
+		
+		corresponding.defaultValue = clone;
+		
+		clone.onAfterDecoded();
+		
+		if (overload instanceof Constructor)
+		{
+			propagateToMethod(((Constructor)overload).initMethod);
+		}
 	}
 	
 	/**
