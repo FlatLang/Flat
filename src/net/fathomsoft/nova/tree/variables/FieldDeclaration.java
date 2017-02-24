@@ -482,19 +482,20 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		return result;
 	}
 	
-	public void decodeInitializationValue()
+	public static class InitializationContext
 	{
-		if (initializationValue != null)
+		public Node[] parents;
+		public ClassDeclaration[] classes;
+		
+		public InitializationContext(Node[] parents, ClassDeclaration[] classes)
 		{
-			Node[] parents = new Node[] { null };
-			
-			ClassDeclaration[] classes = new ClassDeclaration[] { getParentClass() };
-			
-			if (isStatic())
-			{
-				parents[0] = getParentClass().getStaticAssignmentBlock();
-			}
-			else
+			this.parents = parents;
+			this.classes = classes;
+		}
+	}
+	
+	public InitializationContext getInitializationContext()
+	{
 			{
 				if (getParentClass() instanceof Trait)
 				{
