@@ -2647,7 +2647,14 @@ public class ClassDeclaration extends InstanceDeclaration
 					}
 				}
 				
-				return genericOverload.getConvertedPrimitiveClass(originalArgs);
+				ClassDeclaration c = genericOverload.getConvertedPrimitiveClass(originalArgs);
+				
+				if (c == this)
+				{
+					return null;
+				}
+				
+				return c;
 			}
 			
 			ClassDeclaration c = getExistingConvertedPrimitiveClass(args);
