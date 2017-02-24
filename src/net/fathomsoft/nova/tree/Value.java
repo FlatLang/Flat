@@ -1586,7 +1586,7 @@ public abstract class Value extends Node implements AbstractValue
 		Value original = value;
 		Value novaType = value.getNovaTypeValue(context);
 		
-		if (novaType.isGenericType() && !getParentClass().isOfType(original.getGenericTypeParameter().getParentClass()))
+		if (novaType.isGenericType() && !getParentClass().isOfType(novaType.getGenericTypeParameter().getParentClass()))
 		{
 			setTypeValue(original.getGenericTypeParameter().getDefaultType());
 		}
