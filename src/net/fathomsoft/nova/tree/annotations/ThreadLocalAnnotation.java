@@ -11,8 +11,6 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 {
 	public String aliasUsed;
 	
-	private static NovaMethodDeclaration constructor, accessorFunction, mutatorFunction;
-	
 	@Override
 	public String getAliasUsed()
 	{
@@ -40,42 +38,6 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 		}
 		
 		return null;
-	}
-	
-	public NovaMethodDeclaration getConstructor()
-	{
-		if (constructor == null)
-		{
-			ClassDeclaration threadLocal = getProgram().getClassDeclaration("nova/thread/ThreadLocal");
-			
-			constructor = (NovaMethodDeclaration)threadLocal.getConstructorList().getVisibleChild(0);
-		}
-		
-		return constructor;
-	}
-	
-	public NovaMethodDeclaration getAccessorFunction()
-	{
-		if (accessorFunction == null)
-		{
-			ClassDeclaration threadLocal = getProgram().getClassDeclaration("nova/thread/ThreadLocal");
-			
-			accessorFunction = (NovaMethodDeclaration)threadLocal.getMethod((GenericCompatible)null, "get");
-		}
-		
-		return accessorFunction;
-	}
-	
-	public NovaMethodDeclaration getMutatorFunction()
-	{
-		if (mutatorFunction == null)
-		{
-			ClassDeclaration threadLocal = getProgram().getClassDeclaration("nova/thread/ThreadLocal");
-			
-			mutatorFunction = (NovaMethodDeclaration)threadLocal.getMethod((GenericCompatible)null, "set");
-		}
-		
-		return mutatorFunction;
 	}
 	
 	@Override
