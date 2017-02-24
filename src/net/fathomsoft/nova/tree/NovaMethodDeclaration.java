@@ -789,7 +789,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		for (int i = 0; i < parameterList.getNumParameters(); i++)
 		{
-			changed |= referenceClass.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+			Parameter param = parameterList.getParameter(i);
+			
+			changed |= referenceClass.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), param);
 		}
 		
 		referenceClass.replacePrimitiveGenerics(types, this, clone);
