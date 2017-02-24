@@ -425,28 +425,6 @@ public class Scope extends Node
 		}
 	}
 	
-	public void convertConvertedTypes(NovaMethodDeclaration context)
-	{
-		Node[] nodes = getChildrenOfType(Value.class);
-		
-		ClassDeclaration targetContext = getParentClass();
-		
-		Value[] types = context.getParentClass().primitiveOverloadTypes;
-		
-		for (Node n : nodes)
-		{
-			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array || n instanceof Cast)
-			{
-				if (types != null)
-				{
-					targetContext.replacePrimitiveGenerics(types, (Value)n);
-				}
-				
-				targetContext.replacePrimitiveGenerics(getParentMethod().getMethodGenericTypeParameterDeclaration(), context.getMethodGenericTypeParameterDeclaration().getTypes(), (Value)n);
-			}
-		}
-	}
-	
 	public String getNovaContents()
 	{
 		String code = generateNovaInput().toString().trim();

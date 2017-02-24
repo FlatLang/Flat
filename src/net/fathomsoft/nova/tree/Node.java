@@ -9,8 +9,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.tree.variables.VariableDeclarationList;
+import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.*;
 
 import java.lang.reflect.*;
@@ -828,6 +827,28 @@ public abstract class Node implements Listenable, Annotatable
 	public void addReference(Node node)
 	{
 		addChild(getNumChildren(), node, this, false);
+	}
+	
+	public void convertConvertedTypes(NovaMethodDeclaration context)
+	{
+		Node[] nodes = getChildrenOfType(Value.class);
+		
+		ClassDeclaration targetContext = getParentClass();
+		
+		Value[] types = context.getParentClass().primitiveOverloadTypes;
+		
+		for (Node n : nodes)
+		{
+			if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof net.fathomsoft.nova.tree.variables.Array || n instanceof Cast)
+			{
+				if (types != null)
+				{
+					targetContext.replacePrimitiveGenerics(types, (Value)n);
+				}
+				
+				targetContext.replacePrimitiveGenerics(getParentMethod().getMethodGenericTypeParameterDeclaration(), context.getMethodGenericTypeParameterDeclaration().getTypes(), (Value)n);
+			}
+		}
 	}
 	
 	/**
