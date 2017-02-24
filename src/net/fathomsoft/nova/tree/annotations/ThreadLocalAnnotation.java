@@ -5,6 +5,7 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotation
@@ -93,7 +94,7 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 					if (var.isBeingModified())
 					{
 						call = MethodCall.decodeStatement(var, "set(" + arg.getDefaultLiteralValue() + ")", var.getLocationIn(), true, false);
-
+						
 						if (var.parent.parent instanceof Assignment)
 						{
 							Assignment ass = (Assignment)var.parent.parent;
@@ -114,9 +115,27 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 					}
 					
 					Identifier temp = var.getAccessedNode();
-
+					
 					var.setAccessedNode(call);
 					call.setAccessedNode(temp);
+					
+					if (var.getAncestorOfType(Assignment.class) != null)
+					{
+						Assignment ass = (Assignment)var.getAncestorOfType(Assignment.class);
+						
+						if (ass.getAssignmentNode().getReturnedNode().parent == var)
+						{
+							if (ass.getAssignedNodeValue() instanceof Variable)
+							{
+								VariableDeclaration decl = ass.getAssignedNode().declaration;
+								
+								if (decl instanceof LocalDeclaration && ((LocalDeclaration)decl).isImplicit())
+								{
+									((LocalDeclaration)decl).implicitType = call.getReturnedNode();
+								}
+							}
+						}
+					}
 				}
 			}
 		}
