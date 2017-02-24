@@ -496,31 +496,44 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	
 	public InitializationContext getInitializationContext()
 	{
+		Node[] parents = new Node[] { null };
+		
+		ClassDeclaration[] classes = new ClassDeclaration[] { getParentClass() };
+		
+		if (isStatic())
+		{
+			parents[0] = getParentClass().getStaticAssignmentBlock();
+		}
+		else
+		{
+			if (getParentClass() instanceof Trait)
 			{
-				if (getParentClass() instanceof Trait)
+				Trait i = (Trait)getParentClass();
+				
+				ArrayList<Node> tempParents = new ArrayList<>();
+				ArrayList<ClassDeclaration> temp = new ArrayList<>();
+				
+				for (ClassDeclaration c : i.implementingClasses)
 				{
-					Trait i = (Trait)getParentClass();
-					
-					ArrayList<Node> tempParents = new ArrayList<>();
-					ArrayList<ClassDeclaration> temp = new ArrayList<>();
-					
-					for (ClassDeclaration c : i.implementingClasses)
+					if (!c.containsField(getName(), false))
 					{
-						if (!c.containsField(getName(), false))
-						{
-							temp.add(c);
-							tempParents.add(c.getAssignmentMethodNode());
-						}
+						temp.add(c);
+						tempParents.add(c.getAssignmentMethodNode());
 					}
-					
-					classes = temp.toArray(new ClassDeclaration[0]);
-					parents = tempParents.toArray(new Node[0]);
 				}
-				else
-				{
-					parents[0] = getParentClass().getAssignmentMethodNode();
-				}
+				
+				classes = temp.toArray(new ClassDeclaration[0]);
+				parents = tempParents.toArray(new Node[0]);
 			}
+			else
+			{
+				parents[0] = getParentClass().getAssignmentMethodNode();
+			}
+		}
+		
+		return new InitializationContext(parents, classes);
+	}
+	
 	public void decodeInitializationValue()
 	{
 		if (initializationValue instanceof String)
