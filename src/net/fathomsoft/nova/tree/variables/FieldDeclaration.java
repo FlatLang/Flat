@@ -543,6 +543,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 						AssignmentMethod method = f.getParentClass().getAssignmentMethodNode();
 						
 						Assignment value = assignment.clone(method, f.getLocationIn(), true, true);
+						value.getAssignedNode().declaration = f;
 						getParentClass().replacePrimitiveGenerics(method.getParentClass().primitiveOverloadTypes, this, value.getAssignmentNode().getReturnedNode());
 						method.addChild(value);
 						value.onAfterDecoded();
