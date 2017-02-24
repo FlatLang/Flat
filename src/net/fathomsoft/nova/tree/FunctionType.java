@@ -8,7 +8,7 @@ public class FunctionType extends Type
 	
 	public static FunctionType parse(Node parent, String value)
 	{
-		if (value.indexOf('(') > 0)
+		if (value != null && value.indexOf('(') > 0)
 		{
 			ClosureDeclaration c = ClosureDeclaration.decodeStatement(parent, value, parent.getLocationIn(), false);
 			
