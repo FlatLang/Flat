@@ -19,7 +19,7 @@ import net.fathomsoft.nova.util.*;
  */
 public class ClosureDeclaration extends Parameter implements CallableMethod, ClosureCompatible
 {
-	public int id;
+	public int id = -1;
 	
 	@Override
 	public NovaMethodDeclaration getRootDeclaration()
@@ -73,7 +73,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 	{
 		NovaMethodDeclaration method = (NovaMethodDeclaration)this.getAncestorOfType(NovaMethodDeclaration.class);
 		
-		return method.getVisibility() != InstanceDeclaration.PRIVATE;
+		return method == null || method.getVisibility() != InstanceDeclaration.PRIVATE;
 	}
 	
 	/**
@@ -191,7 +191,6 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 			if (n.decodeSignature(statement, require) && n.validateDeclaration(statement, bounds, require))
 			{
 				n.checkExternalType();
-				n.register();
 				
 				return n;
 			}
@@ -373,6 +372,14 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 				}
 				
 				defaultValueString = null;
+			}
+		}
+		
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (id == -1)
+			{
+				register();
 			}
 		}
 		
