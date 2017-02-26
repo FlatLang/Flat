@@ -14,8 +14,6 @@ import net.fathomsoft.nova.util.Location;
  */
 public class IIdentifier extends Identifier
 {
-	private boolean	forceOriginal;
-	
 	private String	name;
 	
 	// Value data..... ...
@@ -60,9 +58,12 @@ public class IIdentifier extends Identifier
 	 */
 	public void setName(String name, boolean forceOriginal)
 	{
-		this.forceOriginal = forceOriginal;
-		
 		this.name = name;
+		
+		if (forceOriginal)
+		{
+			setProperty("externalName", name);
+		}
 	}
 	
 	/**
@@ -70,7 +71,7 @@ public class IIdentifier extends Identifier
 	 */
 	public boolean doesForceOriginalName()
 	{
-		return forceOriginal;
+		return containsProperty("externalName");
 	}
 	
 	/**
@@ -78,7 +79,7 @@ public class IIdentifier extends Identifier
 	 */
 	public void setForceOriginalName(boolean forceOriginal)
 	{
-		this.forceOriginal = forceOriginal;
+		setProperty("externalName", name);
 	}
 	
 	/**
@@ -225,7 +226,6 @@ public class IIdentifier extends Identifier
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.name            = name;
-		node.forceOriginal   = forceOriginal;
 		node.type            = type != null ? type.clone() : null;
 
 		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
