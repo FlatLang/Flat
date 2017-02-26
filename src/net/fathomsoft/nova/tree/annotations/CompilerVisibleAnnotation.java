@@ -4,6 +4,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -59,7 +60,23 @@ public class CompilerVisibleAnnotation extends Annotation implements ModifierAnn
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			((InstanceDeclaration)parent).setVisibility(InstanceDeclaration.PUBLIC);
+			InstanceDeclaration instance = (InstanceDeclaration)parent;
+			
+			if (parent instanceof FieldDeclaration)
+			{
+				FieldList fields = (FieldList)parent.parent.parent;
+				
+				if (instance.isStatic())
+				{
+					fields.getPublicStaticFieldList().addChild(parent);
+				}
+				else
+				{
+					fields.getPublicFieldList().addChild(parent);
+				}
+			}
+			
+			instance.setVisibility(InstanceDeclaration.PUBLIC);
 			
 			PublicAnnotation a = new PublicAnnotation(parent, getLocationIn());
 			
