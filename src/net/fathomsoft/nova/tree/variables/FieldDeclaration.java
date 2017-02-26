@@ -477,6 +477,11 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			{
 				setVisibility(PUBLIC);
 			}
+			
+			if (genericOverload != null && genericOverload.initializationValue instanceof Value && initializationValue == null)
+			{
+				genericOverload.addInitializationToCorrespondingPrimitiveOverload(this);
+			}
 		}
 		
 		return result;
@@ -565,17 +570,22 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 					
 					for (FieldDeclaration f : correspondingPrimitiveOverloads)
 					{
-						AssignmentMethod method = f.getParentClass().getAssignmentMethodNode();
-						
-						Assignment value = assignment.clone(method, f.getLocationIn(), true, true);
-						value.getAssignedNode().declaration = f;
-						getParentClass().replacePrimitiveGenerics(method.getParentClass().primitiveOverloadTypes, this, value.getAssignmentNode().getReturnedNode());
-						method.addChild(value);
-						value.onAfterDecoded();
+						addInitializationToCorrespondingPrimitiveOverload(f);
 					}
 				}
 			}
 		}
+	}
+	
+	public void addInitializationToCorrespondingPrimitiveOverload(FieldDeclaration corresponding)
+	{
+		AssignmentMethod method = corresponding.getParentClass().getAssignmentMethodNode();
+		
+		Assignment value = (Assignment)((Node)initializationValue).getAncestorOfType(Assignment.class).clone(method, corresponding.getLocationIn(), true, true);
+		value.getAssignedNode().declaration = corresponding;
+		getParentClass().replacePrimitiveGenerics(method.getParentClass().primitiveOverloadTypes, this, value.getAssignmentNode().getReturnedNode());
+		method.addChild(value);
+		value.onAfterDecoded();
 	}
 	
 	@Override
