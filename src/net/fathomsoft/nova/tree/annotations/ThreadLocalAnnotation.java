@@ -48,6 +48,32 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 		super.onAdded(parent);
 	}
 	
+	private void initializeField(FieldDeclaration field, GenericTypeArgument arg)
+	{
+		FieldDeclaration.InitializationContext context = field.getInitializationContext();
+		
+		Instantiation replacement = Instantiation.decodeStatement(context.parents[0], "new " + field.generateNovaType(field) + "(" + arg.getDefaultLiteralValue() + ")", Location.INVALID, true, false);
+		
+		if (field.initializationValue != null)
+		{
+			Node parent = ((Node)field.initializationValue).parent;
+			
+			((MethodCall)replacement.getIdentifier()).getArgumentList().getVisibleChild(0).replaceWith((Value)field.initializationValue);
+			
+			parent.addChild(replacement);
+		}
+		else
+		{
+			Assignment a = Assignment.generateDefault(context.parents[0], Location.INVALID);
+			a.getAssigneeNodes().addChild(field.generateUsableVariable(a, Location.INVALID));
+			a.addChild(replacement);
+			
+			context.parents[0].addChild(a);
+		}
+		
+		field.initializationValue = replacement;
+	}
+	
 	@Override
 	public ValidationResult validate(int phase)
 	{
@@ -69,19 +95,7 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 			field.setTypeValue("ThreadLocal");
 			field.convertToPrimitiveType();
 			
-			if (field.initializationValue != null)
-			{
-				FieldDeclaration.InitializationContext context = field.getInitializationContext();
-				
-				Instantiation replacement = Instantiation.decodeStatement(context.parents[0], "new " + field.generateNovaType(field) + "(" + arg.getDefaultLiteralValue() + ")", Location.INVALID, true, false);
-				
-				Node parent = ((Node)field.initializationValue).parent;
-				
-				((MethodCall)replacement.getIdentifier()).getArgumentList().getVisibleChild(0).replaceWith((Value)field.initializationValue);
-				
-				parent.addChild(replacement);
-				field.initializationValue = replacement;
-			}
+			initializeField(field, arg);
 			
 			for (int i = field.references.size() - 1; i >= 0; i--)
 			{
