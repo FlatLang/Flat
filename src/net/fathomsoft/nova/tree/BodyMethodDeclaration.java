@@ -21,6 +21,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
  */
 public class BodyMethodDeclaration extends NovaMethodDeclaration
 {
+	private boolean parsedConvertedContext;
+	
 	/**
 	 * Instantiate and initialize default data.
 	 * 
@@ -187,13 +189,18 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			convertFunctionContents();
 			
-			if (genericOverload == null)
+			if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && genericOverload == null)
 			{
 				moveShorthandActionToEnd();
+			}
+			
+			if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+			{
+				SyntaxTree.validateNodes(getScope(), SyntaxTree.PHASE_METHOD_CONTENTS);
 			}
 		}
 		
@@ -224,9 +231,11 @@ public class BodyMethodDeclaration extends NovaMethodDeclaration
 	
 	public boolean convertFunctionContents()
 	{
-		if (doesConvertToPrimitive())
+		if (!parsedConvertedContext && doesConvertToPrimitive() && getConversionTargetContext().isInTree() && getConversionTarget().getScope() != null)
 		{
 			SyntaxUtils.parseConvertedContentsTo(getConversionTarget().getScope(), getConversionTargetContext(), this, this);
+			
+			parsedConvertedContext = true;
 			
 			return true;
 		}
