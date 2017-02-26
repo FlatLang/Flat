@@ -925,8 +925,15 @@ public abstract class Node implements Listenable, Annotatable
 			
 			// Set this instance as the new parent.
 			node.parent = this;
-
-			toNode.children.add(index, node);
+			
+			if (node instanceof Annotation)
+			{
+				toNode.addAnnotation((Annotation)node);
+			}
+			else
+			{
+				toNode.children.add(index, node);
+			}
 		}
 		else
 		{
