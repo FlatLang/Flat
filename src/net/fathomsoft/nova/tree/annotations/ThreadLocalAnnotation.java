@@ -83,7 +83,7 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 		{
 			return result;
 		}
-		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && !getProgram().getController().target.equals("c"))
 		{
 			FieldDeclaration field = (FieldDeclaration)parent;
 			
