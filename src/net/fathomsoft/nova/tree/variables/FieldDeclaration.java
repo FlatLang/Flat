@@ -554,6 +554,14 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 				
 				if (assignment != null)
 				{
+					if (getTypeClass().isPrimitiveOverload() && assignment.getAssignmentNode().getReturnedNode() instanceof Instantiation)
+					{
+						Instantiation instantiation = (Instantiation)assignment.getAssignmentNode().getReturnedNode();
+						
+						instantiation.setTypeValue(getTypeClass().getName());
+						instantiation.getGenericTypeArgumentList().replaceWith(getGenericTypeArgumentList().clone(parent, getLocationIn()));
+					}
+					
 					assignment.onAfterDecoded();
 					
 					for (int i = 0; i < classes.length; i++)
