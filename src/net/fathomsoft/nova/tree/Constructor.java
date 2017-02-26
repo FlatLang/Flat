@@ -23,6 +23,8 @@ public class Constructor extends BodyMethodDeclaration
 {
 	public static final String	IDENTIFIER = "construct";
 	
+	private boolean initializedInitMethod;
+	
 	public InitializationMethod	initMethod;
 	
 	/**
@@ -220,27 +222,31 @@ public class Constructor extends BodyMethodDeclaration
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			initMethod.getScope().slaughterEveryLastVisibleChild();
-			initMethod.getScope().getVariableList().closureContextDeclarations = getScope().getVariableList().closureContextDeclarations;
-			initMethod.getScope().inheritChildren(getScope());
-			initMethod.setLocationIn(getLocationIn());
-			initMethod.getScope().localVariableID = getScope().localVariableID;
+			if (!initializedInitMethod)
+			{
+				initMethod.getScope().slaughterEveryLastVisibleChild();
+				initMethod.getScope().getVariableList().closureContextDeclarations = getScope().getVariableList().closureContextDeclarations;
+				initMethod.getScope().inheritChildren(getScope());
+				initMethod.setLocationIn(getLocationIn());
+				initMethod.getScope().localVariableID = getScope().localVariableID;
+				
+				String args = generateParameterOutput(this);
+				
+				MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true, false, initMethod);
+				addChild(init);
+				
+				SyntaxTree.validateNodes(getParameterList(), phase);
+				result.returnedNode = initMethod;
+				
+				initializedInitMethod = true;
+			}
 			
-			String args = generateParameterOutput(this);
-			
-			MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true, false, initMethod);
-			addChild(init);
-			
-			SyntaxTree.validateNodes(getParameterList(), phase);
-			result.returnedNode = initMethod;
-			
-			return result;
-		}
-		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
-		{
-			getScope().getVariableList().closureContextDeclarations = new ArrayList<>();
+			if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+			{
+				getScope().getVariableList().closureContextDeclarations = new ArrayList<>();
+			}
 		}
 		
 		return result;
