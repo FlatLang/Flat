@@ -181,11 +181,27 @@ public class Annotation extends Node
 			return SyntaxMessage.queryError("Invalid annotation parameter name '" + assigned + "'", this, true);
 		}
 		
-		Value value = SyntaxTree.decodeValue(getParent(), assignment, getLocationIn(), true);
+		Object value;
 		
-		if (value == null)
+		if (defaultParameterTypes()[index].equals("Identifier"))
 		{
-			return SyntaxMessage.queryError("Invalid annotation parameter value '" + assignment + "'", this, true);
+			if (SyntaxUtils.isValidIdentifier(assignment))
+			{
+				value = assignment;
+			}
+			else
+			{
+				return SyntaxMessage.queryError("Invalid annotation parameter value '" + assignment + "'", this, true);
+			}
+		}
+		else
+		{
+			value = SyntaxTree.decodeValue(getParent(), assignment, getLocationIn(), true);
+			
+			if (value == null)
+			{
+				return SyntaxMessage.queryError("Invalid annotation parameter value '" + assignment + "'", this, true);
+			}
 		}
 		
 		parameters.put(assigned, value);
