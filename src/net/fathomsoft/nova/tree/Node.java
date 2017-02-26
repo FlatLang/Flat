@@ -587,6 +587,16 @@ public abstract class Node implements Listenable, Annotatable
 		return current == this;
 	}
 	
+	public FieldDeclaration getExceptionData()
+	{
+		return getProgram().getClassDeclaration("nova/System").getField("exceptionData");
+	}
+	
+	public Variable getExceptionDataVariable(Node parent, Location location)
+	{
+		return getExceptionData().generateUsableVariable(parent, location);
+	}
+	
 	/**
 	 * Get the number of children that the specified Node has.
 	 * 

@@ -47,18 +47,11 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	{
 		super(temporaryParent, locationIn);
 		
-		if (temporaryParent instanceof StaticBlock)
+		if (temporaryParent instanceof StaticBlock == false && !getMethodDeclaration().isExternal())
 		{
-			Parameter exceptionData = generateExceptionDataParameter(locationIn);
-			addChild(exceptionData);
-		}
-		else if (!getMethodDeclaration().isExternal())
-		{
-			Parameter reference     = generateReferenceParameter();
-			Parameter exceptionData = generateExceptionDataParameter(locationIn);
+			Parameter reference = generateReferenceParameter();
 			
 			addChild(reference);
-			addChild(exceptionData);
 		}
 	}
 
@@ -84,22 +77,13 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		return reference;
 	}
 	
-	private Parameter generateExceptionDataParameter(Location locationIn)
-	{
-		Parameter exceptionData = new ExceptionDataParameter(this, locationIn);
-		exceptionData.setName(Exception.EXCEPTION_DATA_IDENTIFIER, true);
-		exceptionData.setType("ExceptionData", true, false);
-		
-		return exceptionData;
-	}
-	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 2;
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -151,17 +135,6 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	public Parameter getObjectReference()
 	{
 		return (Parameter)getChild(super.getNumDefaultChildren() + 0);
-	}
-	
-	/**
-	 * Get the ExceptionData Parameter that is being passed, if the
-	 * containing MethodDeclaration is not external.
-	 * 
-	 * @return The ExceptionData Parameter.
-	 */
-	public Parameter getExceptionData()
-	{
-		return (Parameter)getChild(super.getNumDefaultChildren() + 1);
 	}
 	
 	/**
@@ -356,7 +329,7 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	 * Get the offset used to access the 'visible' data of the method.
 	 * For example, external methods do not have any extra parameters
 	 * such as 'this' and 'exceptionData' to deal with, so 0 is returned.
-	 * However, if it is an instance method, 2 is returned because the
+	 * However, if it is an instance method, 1 is returned because the
 	 * formerly mentioned parameters are present.
 	 * 
 	 * @return The offset to search the parameters at.
@@ -366,16 +339,12 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		CallableMethod methodDeclaration = getMethodDeclaration();
 		
 		// If static block
-		if (methodDeclaration == null)
-		{
-			return 1;
-		}
-		else if (methodDeclaration.isExternal())
+		if (methodDeclaration == null || methodDeclaration.isExternal())
 		{
 			return 0;
 		}
 		
-		return 2;
+		return 1;
 	}
 	
 	/**

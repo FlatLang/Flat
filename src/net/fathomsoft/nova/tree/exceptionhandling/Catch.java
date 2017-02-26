@@ -192,7 +192,7 @@ public class Catch extends ExceptionHandler
 			assign.setProperty("userMade", false);
 			assign.getAssignedNode().setProperty("userMade", false);
 			
-			Variable exceptionData = getParentMethod().getParameterList().getExceptionData().generateUsableVariable(this, Location.INVALID);
+			Variable exceptionData = getExceptionDataVariable(this, Location.INVALID);
 			Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
 			exceptionData.addChild(thrownException);
 			
