@@ -2966,6 +2966,9 @@ public class ClassDeclaration extends InstanceDeclaration
 				arrayBracketOverload = genericOverload.arrayBracketOverload.clone(this, genericOverload.arrayBracketOverload.getLocationIn(), true, true);
 			}
 			
+			final int phase = getProgram().getPhase();
+			final boolean finished = getProgram().getTree().finishedPhase;
+			
 			genericOverload.getFieldList().forEachChild(list ->
 			{
 				list.forEachChild(node ->
@@ -3002,19 +3005,22 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			validate(SyntaxTree.PHASE_CLASS_DECLARATION);
 			
-			if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS || getProgram().getTree().finishedPhase)
-			{
-				SyntaxTree.validateNodes(this, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
-			}
-			
-			if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
-			{
-				getConstructorList().forEachNovaMethod(x -> x.checkOverrides());
-				getMethodList().forEachNovaMethod(x -> x.checkOverrides());
-				getPropertyMethodList().forEachNovaMethod(x -> x.checkOverrides());
-			}
-			
 			setMethodReferences();
+			
+			if (phase > SyntaxTree.PHASE_INSTANCE_DECLARATIONS || finished)
+			{
+				if (phase > SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+				{
+					getConstructorList().forEachNovaMethod(x -> x.checkOverrides());
+					getMethodList().forEachNovaMethod(x -> x.checkOverrides());
+					getPropertyMethodList().forEachNovaMethod(x -> x.checkOverrides());
+				}
+				
+				for (int i = SyntaxTree.PHASE_INSTANCE_DECLARATIONS; i <=SyntaxTree.PHASE_INSTANCE_DECLARATIONS/* phase || i == phase && finished*/; i++)
+				{
+					SyntaxTree.validateNodes(this, i);
+				}
+			}
 		}
 	}
 	
