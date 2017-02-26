@@ -200,6 +200,6 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 	@Override
 	public String[] getAliases()
 	{
-		return new String[] { "thread" };
+		return new String[] { "thread_local" };
 	}
 }
