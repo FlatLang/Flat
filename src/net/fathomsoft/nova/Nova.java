@@ -91,7 +91,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.3.6";
+	public static final String	VERSION       = "v0.3.7";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -386,9 +386,9 @@ public class Nova
 			
 			args = new String[]
 			{
-				"../Novac",
-				"../Astro",
-				"../Spectra",
+//				"../Novac",
+//				"../Astro",
+//				"../Spectra",
 //				"../Nova.c",
 				"../Misc/example",
 				"../Misc/stabilitytest",
@@ -409,8 +409,9 @@ public class Nova
 //				"-qp",
 				"-main",
 //				"example/Lab",
-				"stabilitytest/StabilityTest",
+//				"stabilitytest/StabilityTest",
 //				"example/SvgChart",
+				"example/SvgFractal",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
 //				"spectra/Spectra",
