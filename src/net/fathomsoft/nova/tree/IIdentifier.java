@@ -139,14 +139,14 @@ public class IIdentifier extends Identifier
 	// Dont forget about IValue.getType()!!!!
 	public String getType(boolean checkCast)
 	{
-		return type != null ? type.value : null;
+		return type != null ? type.toNova() : null;
 	}
 	
 	@Override
 	// Dont forget about IValue.getTypeStringValue()!!!!
 	public String getTypeStringValue()
 	{
-		return type.value;
+		return type.toNova();
 	}
 	
 	/**
@@ -155,7 +155,7 @@ public class IIdentifier extends Identifier
 	@Override
 	public void setTypeValue(String type)
 	{
-		if (this.type == null)
+		if (this.type == null || this.type.value == null && this.type.arrayDimensions == 0)
 		{
 			this.type = Type.parse(this, type);
 		}

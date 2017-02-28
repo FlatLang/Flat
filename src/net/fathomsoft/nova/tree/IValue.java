@@ -90,13 +90,13 @@ public class IValue extends Value
 	// Dont forget about IIdentifier!!!!
 	public String getType(boolean checkCast)
 	{
-		return type != null ? type.value : null;
+		return type != null ? type.toNova() : null;
 	}
 	
 	@Override
 	public String getTypeStringValue()
 	{
-		return type.value;
+		return type.toNova();
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class IValue extends Value
 	@Override
 	public void setTypeValue(String type)
 	{
-		if (this.type == null)
+		if (this.type == null || this.type.value == null && this.type.arrayDimensions == 0)
 		{
 			this.type = Type.parse(this, type);
 		}
