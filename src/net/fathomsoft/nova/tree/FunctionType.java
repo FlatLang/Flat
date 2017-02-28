@@ -1,5 +1,7 @@
 package net.fathomsoft.nova.tree;
 
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+
 public class FunctionType extends Type
 {
 	public Type type;
@@ -16,9 +18,13 @@ public class FunctionType extends Type
 			{
 				FunctionType type = new FunctionType();
 				
+				FirstClassClosureDeclaration firstClass = new FirstClassClosureDeclaration(parent, c.getLocationIn());
+				
 				type.value = c.getName();
 				type.type = c.getTypeObject();
-				type.closure = c;
+				type.closure = c.cloneTo(firstClass);
+				
+				firstClass.reference = (VariableDeclaration)parent;
 				
 				return type;
 			}
