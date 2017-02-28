@@ -440,6 +440,10 @@ public class MethodCall extends Variable
 		{
 			return (ClosureDeclaration)closure;
 		}
+		else if (closure != null && closure.getTypeObject() instanceof FunctionType)
+		{
+			return ((FunctionType)closure.getTypeObject()).closure;
+		}
 		
 		return null;
 	}
