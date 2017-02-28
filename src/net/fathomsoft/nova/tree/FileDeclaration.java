@@ -167,7 +167,7 @@ public class FileDeclaration extends Node
 	 */
 	public Import addImport(String loc)
 	{
-		if (containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc) && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc))
+		if (loc == null || containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc) && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc))
 		{
 			return null;
 		}
