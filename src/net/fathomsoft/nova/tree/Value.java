@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.NovaParameterList.ReturnParameterList;
 import net.fathomsoft.nova.tree.annotations.NativeAnnotation;
 import net.fathomsoft.nova.tree.annotations.RequireGenericTypeAnnotation;
@@ -187,6 +188,27 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (getTypeObject() instanceof FunctionType)
+			{
+				((FunctionType)getTypeObject()).closure.register();
+			}
+		}
+		
+		return result;
 	}
 	
 	public void convertArrays()
