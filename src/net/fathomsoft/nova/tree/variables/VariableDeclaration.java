@@ -547,11 +547,6 @@ public class VariableDeclaration extends IIdentifier
 		return !isUserMade() || references.size() > 0;
 	}
 	
-	public String getContextName()
-	{
-		return getName() + "_" + ClosureVariableDeclaration.CONTEXT_VARIABLE_NAME;
-	}
-	
 	public void addDefaultGenericTypeArguments()
 	{
 		addDefaultGenericTypeArguments(false);
