@@ -4,7 +4,7 @@ public class FunctionType extends Type
 {
 	public Type type;
 	
-	ClosureDeclaration closure;
+	public ClosureDeclaration closure;
 	
 	public static FunctionType parse(Node parent, String value)
 	{
