@@ -3281,7 +3281,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (!instance.isStatic())
 		{
-			parameters += reference.generateNovaType() + " reference";
+			String paramName = "reference";
+			
+			while (paramName.equals(instance.getName()) || (instance instanceof NovaMethodDeclaration &&
+				((NovaMethodDeclaration)instance).getParameter(paramName) != null))
+			{
+				paramName += "_";
+			}
+			
+			parameters += reference.generateNovaType() + " " + paramName;
 		}
 		
 		for (Parameter p : parameterList)
