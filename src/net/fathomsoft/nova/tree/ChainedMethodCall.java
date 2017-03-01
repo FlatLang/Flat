@@ -1,7 +1,11 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.variables.Variable;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 
 /**
  * {@link MethodCall} extension that represents
@@ -41,7 +45,39 @@ public class ChainedMethodCall extends MethodCall
 	 */
 	public static ChainedMethodCall decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		
+		if (statement.endsWith(")"))
+		{
+			int match = StringUtils.findEndingMatch(statement, statement.length() - 1, '(', ')', -1);
+			
+			if (match > 0)
+			{
+				String preChain = statement.substring(0, match).trim();
+				
+				MethodCall call = MethodCall.decodeStatement(parent, preChain, location, require);
+				
+				if (call != null)
+				{
+					ChainedMethodCall ref = new ChainedMethodCall(parent, call.getLocationIn());
+					call.cloneTo(ref);
+					
+					ChainedMethodCall n = new ChainedMethodCall(call, location);
+					
+					VariableDeclaration declaration = call.getCallableDeclaration().toDeclaration();
+					
+					if (declaration.getTypeObject() instanceof FunctionType == false)
+					{
+						SyntaxMessage.error("Function '" + declaration.getName() + "' does not return a function reference and cannot be called as a function chain", n);
+					}
+					
+					FunctionType type = (FunctionType)declaration.getTypeObject();
+					
+					n.setDeclaration(type.closure);
+					ref.chained = n;
+					
+					return ref;
+				}
+			}
+		}
 		
 		return null;
 	}
