@@ -36,6 +36,12 @@ public class ChainedMethodCall extends MethodCall
 		return ((FirstClassClosureDeclaration)getChainBase().declaration).reference;
 	}
 	
+	@Override
+	public Value getReturnedNode()
+	{
+		return chained != null ? chained.getReturnedNode() : this;
+	}
+	
 	public ChainedMethodCall getChainBase()
 	{
 		ChainedMethodCall current = this;
@@ -86,7 +92,7 @@ public class ChainedMethodCall extends MethodCall
 					
 					if (call instanceof ChainedMethodCall)
 					{
-						ref = ((ChainedMethodCall)call).chained;
+						ref = (ChainedMethodCall)call.getReturnedNode();
 					}
 					else
 					{
