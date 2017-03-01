@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -15,6 +16,7 @@ import net.fathomsoft.nova.util.StringUtils;
 public class ChainedMethodCall extends MethodCall
 {
 	public ChainedMethodCall chained;
+	public Variable variable;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -83,6 +85,32 @@ public class ChainedMethodCall extends MethodCall
 	}
 	
 	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 *
+	 * @param phase The phase that the node is being validated in.
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (chained != null)
+			{
+				variable = getAncestorWithScope().getScope().createLocalVariable(chained);
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
 	@Override
@@ -113,6 +141,7 @@ public class ChainedMethodCall extends MethodCall
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.chained = chained;
+		node.variable = variable;
 		
 		return node;
 	}
