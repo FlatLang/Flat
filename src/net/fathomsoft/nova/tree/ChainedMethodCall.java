@@ -103,7 +103,7 @@ public class ChainedMethodCall extends MethodCall
 		{
 			if (chained != null)
 			{
-				variable = getAncestorWithScope().getScope().createLocalVariable(chained);
+				variable = getAncestorWithScope().getScope().createLocalVariable(this);
 			}
 		}
 		
