@@ -109,6 +109,11 @@ public class ChainedMethodCall extends MethodCall
 			return result;
 		}
 		
+		if (chained != null)
+		{
+			result = SyntaxTree.validateNodes(chained, phase);
+		}
+		
 		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
 			if (chained != null)
