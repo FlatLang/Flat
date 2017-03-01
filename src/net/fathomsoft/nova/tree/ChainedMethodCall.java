@@ -10,6 +10,8 @@ import net.fathomsoft.nova.util.Location;
  */
 public class ChainedMethodCall extends MethodCall
 {
+	public ChainedMethodCall chained;
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -73,6 +75,8 @@ public class ChainedMethodCall extends MethodCall
 	public ChainedMethodCall cloneTo(ChainedMethodCall node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
+		
+		node.chained = chained;
 		
 		return node;
 	}
