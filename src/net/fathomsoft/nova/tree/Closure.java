@@ -407,7 +407,7 @@ public class Closure extends Variable
 	{
 		ClosureDeclaration declaration = getClosureDeclaration();
 		
-		if (declaration.getType() != null && (method.getTypeClass(true, true) == null || !method.getTypeClass(true, true).isOfType(declaration.getTypeClass(true, true))))
+		if (declaration.getType() != null && declaration.getTypeObject() instanceof FunctionType == false && (method.getTypeClass(true, true) == null || !method.getTypeClass(true, true).isOfType(declaration.getTypeClass(true, true))))
 		{
 			method.getTypeClass(true, true).isOfType(declaration.getTypeClass(true, true));
 			SyntaxMessage.error("The method '" + method.getName() + "()' return type of '" + method.getType() + "' is not compatible with required closure type of '" + declaration.getType() + "'", this);
