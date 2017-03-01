@@ -5,6 +5,7 @@ import net.fathomsoft.nova.tree.annotations.ImpureFunctionAnnotation;
 import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Patterns;
 import net.fathomsoft.nova.util.StringUtils;
@@ -22,6 +23,11 @@ import java.util.regex.Matcher;
 public interface CallableMethod
 {
 	ClassDeclaration getTypeClass();
+	
+	public default VariableDeclaration toDeclaration()
+	{
+		return (VariableDeclaration)this;
+	}
 	
 	/**
 	 * Get whether or not a call to the method would need to pass a
