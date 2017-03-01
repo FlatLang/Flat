@@ -36,6 +36,18 @@ public class ChainedMethodCall extends MethodCall
 		return ((FirstClassClosureDeclaration)((Variable)parent).declaration).reference;
 	}
 	
+	public ChainedMethodCall getChainBase()
+	{
+		ChainedMethodCall current = this;
+		
+		while (current.parent instanceof ChainedMethodCall)
+		{
+			current = (ChainedMethodCall)current.parent;
+		}
+		
+		return current;
+	}
+	
 	/**
 	 * Decode the given statement into a {@link ChainedMethodCall} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
@@ -65,12 +77,22 @@ public class ChainedMethodCall extends MethodCall
 			{
 				String preChain = statement.substring(0, match).trim();
 				
-				MethodCall call = MethodCall.decodeStatement(parent, preChain, location, require);
+				Value value = SyntaxTree.decodeValue(parent, preChain, location, require);
 				
-				if (call != null)
+				if (value instanceof MethodCall)
 				{
-					ChainedMethodCall ref = new ChainedMethodCall(parent, call.getLocationIn());
-					call.cloneTo(ref);
+					MethodCall call = (MethodCall)value;
+					ChainedMethodCall ref = null;
+					
+					if (call instanceof ChainedMethodCall)
+					{
+						ref = ((ChainedMethodCall)call).chained;
+					}
+					else
+					{
+						ref = new ChainedMethodCall(parent, call.getLocationIn());
+						call.cloneTo(ref);
+					}
 					
 					ChainedMethodCall n = new ChainedMethodCall(call, location);
 					
@@ -85,8 +107,9 @@ public class ChainedMethodCall extends MethodCall
 					
 					n.setDeclaration(type.closure);
 					ref.chained = n;
+					n.parent = ref;
 					
-					return ref;
+					return ref.getChainBase();
 				}
 			}
 		}
