@@ -142,6 +142,7 @@ public class ChainedMethodCall extends MethodCall
 			if (chained != null)
 			{
 				variable = getAncestorWithScope().getScope().createLocalVariable(this);
+				variable.declaration.setType(this);
 			}
 		}
 		
