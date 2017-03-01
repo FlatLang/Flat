@@ -26,6 +26,16 @@ public class ChainedMethodCall extends MethodCall
 		super(temporaryParent, locationIn);
 	}
 	
+	public Identifier getChainReference()
+	{
+		if (variable != null)
+		{
+			return variable;
+		}
+		
+		return ((FirstClassClosureDeclaration)((Variable)parent).declaration).reference;
+	}
+	
 	/**
 	 * Decode the given statement into a {@link ChainedMethodCall} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
