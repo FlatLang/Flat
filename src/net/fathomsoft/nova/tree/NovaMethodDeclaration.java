@@ -1502,7 +1502,53 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		Value returned = contents.getReturnedNode();
 		
-		if (returned.getType() == null)
+		if (returned instanceof Closure)
+		{
+			Closure closure = (Closure)returned;
+			
+			if (setType)
+			{
+				if (closure.declarations.length == 1)
+				{
+					MethodDeclaration method = closure.declarations[0];
+					
+					String params = "";
+					
+					for (int i = 0; i < method.getParameterList().getNumParameters(); i++)
+					{
+						if (i > 0)
+						{
+							params += ", ";
+						}
+						
+						Value param = method.getParameter(i);
+						
+						params += param.generateNovaType(param);
+					}
+					
+					String returnType = "";
+					
+					if (method.getType() != null)
+					{
+						returnType += " -> " + method.generateNovaType(method);
+					}
+					
+					setType(method.getName() + "(" + params + ")" + returnType);
+				}
+				else if (closure.declarations.length > 1)
+				{
+					SyntaxMessage.error("Ambiguous function '" + action + "'. Explicitly specify the type of function that is returned by function '" + getName() + "' to resolve this", this);
+				}
+				else
+				{
+					SyntaxMessage.error("Could not find function '" + action + "'", this);
+				}
+			}
+			
+			closure.findDeclaration();
+		}
+		
+		if (returned instanceof Closure == false && returned.getType() == null)
 		{
 			if (returned instanceof MethodCall)
 			{
@@ -1516,7 +1562,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		else
 		{
-			if (setType)
+			if (returned instanceof Closure == false && setType)
 			{
 				setType(returned);//returned.getNovaTypeValue(returned));
 			}

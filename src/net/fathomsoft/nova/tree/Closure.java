@@ -280,7 +280,7 @@ public class Closure extends Variable
 		
 		Node base = getBaseNode();
 		
-		if (base instanceof Return)
+		if (base instanceof Return || parent instanceof NovaMethodDeclaration)
 		{
 			Type type = getParentMethod().getTypeObject();
 			
