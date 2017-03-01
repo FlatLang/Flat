@@ -204,7 +204,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			if (getTypeObject() instanceof FunctionType)
 			{
-				((FunctionType)getTypeObject()).closure.register();
+				((FunctionType)getTypeObject()).closure.validate(phase);
 			}
 		}
 		
