@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -45,6 +46,39 @@ public class FirstClassClosureDeclaration extends ClosureDeclaration
 		
 		
 		return null;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Node#validate(int)
+	 *
+	 * @param phase The phase that the node is being validated in.
+	 */
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		register();
+		
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			if (reference instanceof ClosureDeclaration)
+			{
+				ClosureDeclaration c = (ClosureDeclaration)reference;
+				
+				if (c.id == -1)
+				{
+					c.register();
+				}
+			}
+		}
+		
+		return result;
 	}
 	
 	/**
