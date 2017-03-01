@@ -6,7 +6,7 @@ public class FunctionType extends Type
 {
 	public Type type;
 	
-	public ClosureDeclaration closure;
+	public FirstClassClosureDeclaration closure;
 	
 	public static FunctionType parse(Node parent, String value)
 	{
@@ -22,7 +22,7 @@ public class FunctionType extends Type
 				
 				type.value = c.getName();
 				type.type = c.getTypeObject();
-				type.closure = c.cloneTo(firstClass);
+				type.closure = (FirstClassClosureDeclaration)c.cloneTo(firstClass);
 				
 				firstClass.reference = (VariableDeclaration)parent;
 				
