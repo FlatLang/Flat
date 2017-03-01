@@ -278,6 +278,17 @@ public class Closure extends Variable
 			}
 		}
 		
+		Node base = getBaseNode();
+		
+		if (base instanceof Return)
+		{
+			Type type = getParentMethod().getTypeObject();
+			
+			if (type instanceof FunctionType)
+			{
+				return ((FunctionType)type).closure;
+			}
+		}
 		if (getMethodCall() == null)
 		{
 			return null;
