@@ -1208,51 +1208,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			data.decrementGenericsRemaining();
 		}
 		
-		if (returnType != null)
-		{
-			int bracketIndex = returnType.indexOf('[');
-			
-			if (bracketIndex > 0)
-			{
-				setArrayDimensions(SyntaxUtils.findArrayDimensions(returnType, bracketIndex, false));
-				
-				returnType = returnType.substring(0, bracketIndex).trim();
-			}
-			
-			Matcher m = Patterns.IDENTIFIER.matcher(returnType);
-			String symbol = "";
-			
-			if (m.find())
-			{
-				int i = m.end();
-				
-				while (i < returnType.length() && (StringUtils.isSymbol(returnType.charAt(i)) || StringUtils.isWhitespace(returnType.charAt(i))) && returnType.charAt(i) != '<')
-				{
-					i++;
-				}
-				
-				symbol = returnType.substring(m.end(), i).trim();
-				
-				if (!symbol.startsWith("("))
-				{
-					returnType = returnType.substring(0, m.end()) + returnType.substring(i);
-				}
-			}
-			
-			setType(returnType, true);
-			
-			if (symbol.equals("*"))
-			{
-				if (getDataType() == POINTER)
-				{
-					setDataType(DOUBLE_POINTER);
-				}
-				else
-				{
-					setDataType(POINTER);
-				}
-			}
-		}
+		setReturnType(returnType);
 		
 		return getName() != null;
 	}
