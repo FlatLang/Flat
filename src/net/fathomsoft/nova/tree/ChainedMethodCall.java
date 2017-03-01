@@ -33,7 +33,7 @@ public class ChainedMethodCall extends MethodCall
 			return variable;
 		}
 		
-		return ((FirstClassClosureDeclaration)((Variable)parent).declaration).reference;
+		return ((FirstClassClosureDeclaration)getChainBase().declaration).reference;
 	}
 	
 	public ChainedMethodCall getChainBase()
