@@ -6,7 +6,11 @@ import net.fathomsoft.nova.tree.annotations.PureFunctionAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.Patterns;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
+
+import java.util.regex.Matcher;
 
 /**
  * 
@@ -26,6 +30,55 @@ public interface CallableMethod
 	 * @return Whether or not a method call needs to pass a reference.
 	 */
 	public boolean isInstance();
+	
+	default void setReturnType(String returnType)
+	{
+		if (returnType != null)
+		{
+			int bracketIndex = returnType.indexOf('[');
+			
+			if (bracketIndex > 0)
+			{
+				((Value)this).setArrayDimensions(SyntaxUtils.findArrayDimensions(returnType, bracketIndex, false));
+				
+				returnType = returnType.substring(0, bracketIndex).trim();
+			}
+			
+			Matcher m = Patterns.IDENTIFIER.matcher(returnType);
+			String symbol = "";
+			
+			if (m.find())
+			{
+				int i = m.end();
+				
+				while (i < returnType.length() && (StringUtils.isSymbol(returnType.charAt(i)) || StringUtils.isWhitespace(returnType.charAt(i))) && returnType.charAt(i) != '<')
+				{
+					i++;
+				}
+				
+				symbol = returnType.substring(m.end(), i).trim();
+				
+				if (!symbol.startsWith("("))
+				{
+					returnType = returnType.substring(0, m.end()) + returnType.substring(i);
+				}
+			}
+			
+			((Value)this).setType(returnType, true);
+			
+			if (symbol.equals("*"))
+			{
+				if (((Value)this).getDataType() == Value.POINTER)
+				{
+					((Value)this).setDataType(Value.DOUBLE_POINTER);
+				}
+				else
+				{
+					((Value)this).setDataType(Value.POINTER);
+				}
+			}
+		}
+	}
 	
 	default PureFunctionAnnotation getPureAnnotation()
 	{
