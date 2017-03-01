@@ -227,12 +227,22 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 	{
 		String signature = NovaMethodDeclaration.findMethodSignature(statement);
 		
+		String returnType = null;
+		int returnIndex = signature.indexOf("->");
+		
+		if (returnIndex > 0) {
+			returnType = signature.substring(returnIndex + 2).trim();
+			signature = signature.substring(0, returnIndex).trim();
+		}
+		
 		ExtraData data   = iterateWords(signature, Patterns.IDENTIFIER_BOUNDARIES, require);
 		
 		if (data.error != null)
 		{
 			return SyntaxMessage.queryError(data.error, this, require);
 		}
+		
+		setReturnType(returnType);
 		
 		return true;
 	}
