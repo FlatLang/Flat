@@ -235,6 +235,12 @@ public class Return extends IValue
 					skipCompatible = true;
 				}
 			}
+			else if (value.getReturnedNode() instanceof Closure)
+			{
+				((Closure)value.getReturnedNode()).findDeclaration();
+				
+				skipCompatible = true;
+			}
 			
 			if (!skipCompatible && validateType && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
 			{
