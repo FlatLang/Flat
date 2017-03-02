@@ -30,6 +30,12 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	}
 	
 	@Override
+	public boolean isExternalType()
+	{
+		return false;
+	}
+	
+	@Override
 	public boolean isAllocatedOnHeap()
 	{
 		return allocatedOnHeap;
