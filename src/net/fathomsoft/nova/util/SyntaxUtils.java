@@ -1161,14 +1161,62 @@ public class SyntaxUtils
 	 */
 	public static boolean isMethodCall(String statement)
 	{
-		Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
+//		Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
+//		
+//		if (bounds.getStart() == 0)
+//		{
+//			return StringUtils.findEndingMatch(statement, bounds.getEnd() - 1, '(', ')') == statement.length() - 1;
+//		}
 		
-		if (bounds.getStart() == 0)
+		boolean checkedIdentifier = false;
+		int index = statement.indexOf('<');
+		int paren = statement.indexOf('(');
+		
+		index = paren >= 0 && paren < index ? -1 : index;
+		
+		if (index == 0)
 		{
-			return StringUtils.findEndingMatch(statement, bounds.getEnd() - 1, '(', ')') == statement.length() - 1;
+			return false;
+		}
+		else if (index > 0)
+		{
+			if (!SyntaxUtils.isValidIdentifier(statement.substring(0, index).trim()))
+			{
+				return false;
+			}
+			
+			checkedIdentifier = true;
+			
+			index = StringUtils.findEndingMatch(statement, index, '<', '>');
+			index = index > 0 ? index + 1 : index;
+		}
+		else
+		{
+			index = 0;
 		}
 		
-		return false;
+		if (index < 0)
+		{
+			return false;
+		}
+		else
+		{
+			index = statement.indexOf('(', index);
+			
+			if (index < 0 || !checkedIdentifier && !SyntaxUtils.isValidIdentifier(statement.substring(0, index).trim()))
+			{
+				return false;
+			}
+			
+			index = StringUtils.findEndingMatch(statement, index, '(', ')');
+			
+			if (index != statement.length() - 1)
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
