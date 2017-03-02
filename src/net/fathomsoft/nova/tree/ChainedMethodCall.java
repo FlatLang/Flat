@@ -26,7 +26,7 @@ public class ChainedMethodCall extends MethodCall
 		super(temporaryParent, locationIn);
 	}
 	
-	public Value getChainReference()
+	public Identifier getChainReference()
 	{
 		if (variable != null)
 		{

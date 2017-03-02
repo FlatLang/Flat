@@ -12,7 +12,7 @@ import net.fathomsoft.nova.util.Location;
  */
 public class FirstClassClosureDeclaration extends ClosureDeclaration
 {
-	public Value reference;
+	public Identifier reference;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
