@@ -24,7 +24,7 @@ public class FunctionType extends Type
 				type.type = c.getTypeObject();
 				type.closure = (FirstClassClosureDeclaration)c.cloneTo(firstClass);
 				
-				firstClass.reference = (VariableDeclaration)parent;
+				firstClass.reference = (Value)parent;
 				
 				return type;
 			}
