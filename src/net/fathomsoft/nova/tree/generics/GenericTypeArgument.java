@@ -15,7 +15,7 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.2.41 Dec 7, 2014 at 10:22:46 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class GenericTypeArgument extends IValue implements GenericCompatible
+public class GenericTypeArgument extends IIdentifier implements GenericCompatible
 {
 	public boolean allocatedOnHeap;
 	
