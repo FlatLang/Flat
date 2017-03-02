@@ -36,6 +36,12 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	}
 	
 	@Override
+	public String getName()
+	{
+		return getType();
+	}
+	
+	@Override
 	public boolean isAllocatedOnHeap()
 	{
 		return allocatedOnHeap;
