@@ -296,7 +296,35 @@ public class Closure extends Variable
 		
 		Parameter param = (Parameter)getMethodCall().getCorrespondingParameter((Value)getRootNode());
 		
-		return param instanceof ClosureDeclaration ? (ClosureDeclaration)param : null;
+		if (param instanceof ClosureDeclaration)
+		{
+			return (ClosureDeclaration)param;
+		}
+		
+		if (base instanceof Value && parent instanceof MethodCallArgumentList)
+		{
+			Value value = (Value)base;
+			MethodCall call = (MethodCall)parent.parent;
+			
+			NovaMethodDeclaration method = call.getNovaMethod();
+			
+			if (method != null)
+			{
+				param = method.getParameter(getVisibleIndex());
+				
+				if (param != null && param.isGenericType())
+				{
+					GenericTypeArgument arg = param.getGenericTypeParameter().getCorrespondingArgument(call);
+					
+					if (arg != null && arg.getTypeObject() instanceof FunctionType)
+					{
+						return ((FunctionType)arg.getTypeObject()).closure;
+					}
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	@Override
