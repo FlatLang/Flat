@@ -6,6 +6,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.*;
 
 /**
@@ -197,6 +198,24 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public Variable generateUsableVariable(Node parent, Location location)
+	{
+		ClosureVariable var = new ClosureVariable(parent, location);
+		
+		return generateUsableVariable(var);
+	}
+	
+	@Override
+	public Variable generateUsableVariable(Variable toVar)
+	{
+		super.generateUsableVariable(toVar);
+		
+		toVar.setType(generateNovaInput().toString());
+		
+		return toVar;
 	}
 	
 	/**
