@@ -1466,30 +1466,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				if (closure.declarations.length == 1)
 				{
-					MethodDeclaration method = closure.declarations[0];
-					
-					String params = "";
-					
-					for (int i = 0; i < method.getParameterList().getNumParameters(); i++)
-					{
-						if (i > 0)
-						{
-							params += ", ";
-						}
-						
-						Value param = method.getParameter(i);
-						
-						params += param.generateNovaType(param);
-					}
-					
-					String returnType = "";
-					
-					if (method.getType() != null)
-					{
-						returnType += " -> " + method.generateNovaType(method);
-					}
-					
-					setType(method.getName() + "(" + params + ")" + returnType);
+					setType(closure.declarations[0].getFunctionReferenceType());
 				}
 				else if (closure.declarations.length > 1)
 				{
