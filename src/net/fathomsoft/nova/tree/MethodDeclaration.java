@@ -28,6 +28,32 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
 		addChild(parameterList, this);
 	}
 	
+	public String getFunctionReferenceType()
+	{
+		String params = "";
+		
+		for (int i = 0; i < getParameterList().getNumParameters(); i++)
+		{
+			if (i > 0)
+			{
+				params += ", ";
+			}
+			
+			Value param = getParameter(i);
+			
+			params += param.generateNovaType(param);
+		}
+		
+		String returnType = "";
+		
+		if (getType() != null)
+		{
+			returnType += " -> " + generateNovaType(this);
+		}
+		
+		return getName() + "(" + params + ")" + returnType;
+	}
+	
 	/**
 	 * Get whether or not the specified MethodDeclaration contains a body
 	 * or not. The default is false.
