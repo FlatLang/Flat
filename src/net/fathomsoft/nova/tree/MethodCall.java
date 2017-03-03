@@ -11,10 +11,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
-import net.fathomsoft.nova.tree.variables.Array;
-import net.fathomsoft.nova.tree.variables.Super;
-import net.fathomsoft.nova.tree.variables.Variable;
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.tree.variables.*;
 import net.fathomsoft.nova.util.*;
 
 import java.util.regex.Matcher;
@@ -406,6 +403,27 @@ public class MethodCall extends Variable
 			if (method != null)
 			{
 				return method;
+			}
+		}
+		
+		for (ClassDeclaration clazz : classes)
+		{
+			FieldDeclaration field = clazz.getField(name);
+			
+			if (field != null && field.isGenericType())
+			{
+				GenericTypeParameter param = field.getGenericTypeParameter();
+				
+				GenericTypeArgument arg = param.getCorrespondingArgument(this);
+				
+				if (arg != null && arg.getTypeObject() instanceof FunctionType)
+				{
+					return ((FunctionType)arg.getTypeObject()).closure;
+				}
+			}
+			else if (field.getTypeObject() instanceof FunctionType)
+			{
+				return ((FunctionType)field.getTypeObject()).closure;
 			}
 		}
 		
