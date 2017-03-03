@@ -1482,7 +1482,7 @@ public class SyntaxTree
 				
 				if (field == null)
 				{
-					field = clazz.getClosureVariable(statement);
+//					field = clazz.getClosureVariable(statement);
 				}
 				
 				if (validateAccess)
