@@ -42,7 +42,7 @@ public class Variable extends Identifier
 	@Override
 	public Type getTypeObject()
 	{
-		return declaration.getTypeObject();
+		return declaration != null ? declaration.getTypeObject() : null;
 	}
 	
 	@Override
