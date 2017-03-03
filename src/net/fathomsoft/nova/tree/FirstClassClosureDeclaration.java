@@ -23,32 +23,6 @@ public class FirstClassClosureDeclaration extends ClosureDeclaration
 	}
 	
 	/**
-	 * Decode the given statement into a {@link FirstClassClosureDeclaration} instance, if
-	 * possible. If it is not possible, this method returns null.<br>
-	 * <br>
-	 * Example inputs include:<br>
-	 * <ul>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * 	<li></li>
-	 * </ul>
-	 *
-	 * @param parent The parent node of the statement.
-	 * @param statement The statement to try to decode into a
-	 * 		{@link FirstClassClosureDeclaration} instance.
-	 * @param location The location of the statement in the source code.
-	 * @param require Whether or not to throw an error if anything goes wrong.
-	 * @return The generated node, if it was possible to translated it
-	 * 		into a {@link FirstClassClosureDeclaration}.
-	 */
-	public static FirstClassClosureDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
-	{
-		
-		
-		return null;
-	}
-	
-	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 *
 	 * @param phase The phase that the node is being validated in.
