@@ -9,6 +9,7 @@ import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 
@@ -242,10 +243,12 @@ public class Parameter extends LocalDeclaration
 		
 		statement = n.parseModifiers(statement);
 		
-		if (statement.contains("="))
+		int index = SyntaxUtils.findCharInBaseScope(statement, '=');
+		
+		if (index > 0)
 		{
-			defaultValue = statement.substring(statement.indexOf('=') + 1).trim();
-			statement = statement.substring(0, statement.indexOf('=')).trim();
+			defaultValue = statement.substring(index + 1).trim();
+			statement = statement.substring(0, index).trim();
 		}
 		
 		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require, checkName, checkType);
