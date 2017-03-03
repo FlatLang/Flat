@@ -1080,12 +1080,12 @@ public abstract class Value extends Node implements AbstractValue
 	 * 
 	 * @return The Nova syntax for the type of the Value.
 	 */
-	public StringBuilder generateNovaType()
+	public final StringBuilder generateNovaType()
 	{
 		return generateNovaType((Value)null);
 	}
 	
-	public StringBuilder generateNovaType(Value context)
+	public final StringBuilder generateNovaType(Value context)
 	{
 		return generateNovaType(new StringBuilder(), context);
 	}
@@ -1096,12 +1096,12 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param builder The StringBuider to append the data to.
 	 * @return The Nova syntax for the type of the Value.
 	 */
-	public StringBuilder generateNovaType(StringBuilder builder)
+	public final StringBuilder generateNovaType(StringBuilder builder)
 	{
 		return generateNovaType(builder, null);
 	}
 	
-	public StringBuilder generateNovaType(StringBuilder builder, Value context)
+	public final StringBuilder generateNovaType(StringBuilder builder, Value context)
 	{
 		return generateNovaType(builder, context, true);
 	}
@@ -1113,7 +1113,7 @@ public abstract class Value extends Node implements AbstractValue
 	 * @param checkArray Whether or not to check if the type is an array.
 	 * @return The Nova syntax for the type of the Value.
 	 */
-	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray)
+	public final StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray)
 	{
 		return generateNovaType(builder, context, checkArray, false);
 	}
