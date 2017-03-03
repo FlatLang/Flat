@@ -1780,6 +1780,17 @@ public class MethodCall extends Variable
 		return (CallableMethod)getDeclaration();
 	}
 	
+	@Override
+	public String getName()
+	{
+		if (declaration instanceof FirstClassClosureDeclaration)
+		{
+			return ((Identifier)declaration.parent).getName();
+		}
+		
+		return super.getName();
+	}
+	
 	/**
 	 * Check to see if a local declaration is required to keep a virtual
 	 * method from being called too many times.
