@@ -1120,6 +1120,11 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray, boolean defaultGeneric)
 	{
+		if (getTypeObject() instanceof FunctionType)
+		{
+			return ((FunctionType)getTypeObject()).closure.generateNovaInput(builder);
+		}
+		
 		Value type = getNovaTypeValue(context);
 		
 		GenericTypeArgument arg = null;
