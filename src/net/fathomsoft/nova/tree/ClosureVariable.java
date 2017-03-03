@@ -5,6 +5,8 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.annotations.VarAnnotation;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 
@@ -13,8 +15,10 @@ import net.fathomsoft.nova.util.Location;
  *
  * @author	Braden Steffaniak
  */
-public class ClosureVariable extends NovaMethodDeclaration
+public class ClosureVariable extends Variable
 {
+	public FunctionType type;	
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -42,7 +46,7 @@ public class ClosureVariable extends NovaMethodDeclaration
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a {@link ClosureVariable}.
 	 */
-	public static ClosureVariable decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static VariableDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
 		NovaMethodDeclaration method = NovaMethodDeclaration.decodeStatement(parent, statement, location, false);
 		
@@ -53,11 +57,28 @@ public class ClosureVariable extends NovaMethodDeclaration
 			
 			if (var != null || fin != null && (fin.getAliasUsed() == null || !fin.getAliasUsed().equals("final")))
 			{
-				ClosureVariable variable = new ClosureVariable(parent, location);
+				Node scopeAncestor = parent.getAncestorWithScope();
 				
-				method.cloneTo(variable);
-				
-				return variable;
+				if (scopeAncestor != null)
+				{
+					LocalDeclaration node = new LocalDeclaration(scopeAncestor, location);
+					node.setName(method.getName());
+					node.setType(method.getFunctionReferenceType());
+					
+					node.inheritAnnotations(method);
+					
+					return node;
+				}
+				else
+				{
+					FieldDeclaration node = new FieldDeclaration(parent, location);
+					node.setName(method.getName());
+					node.setType(method.getFunctionReferenceType());
+					
+					node.inheritAnnotations(method);
+					
+					return node;
+				}
 			}
 		}
 		
@@ -65,15 +86,24 @@ public class ClosureVariable extends NovaMethodDeclaration
 	}
 	
 	@Override
-	public ValidationResult validate(int phase)
+	public Type getTypeObject()
 	{
-		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
-		{
-			getParameterList().getReferenceParameter().setTypeValue("void");
-		}
+		return type;
+	}
+	
+	/**
+	 * @see net.fathomsoft.nova.tree.Value#setDataType(byte)
+	 */
+	@Override
+	public void setDataType(byte type)
+	{
 		
-		return new ValidationResult(this);
-//		return super.validate(phase);
+	}
+	
+	@Override
+	public void setTypeValue(String type)
+	{
+		this.type = FunctionType.parse(this, type);
 	}
 	
 	/**
@@ -105,6 +135,8 @@ public class ClosureVariable extends NovaMethodDeclaration
 	public ClosureVariable cloneTo(ClosureVariable node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
+		
+		node.type = type;
 		
 		return node;
 	}
