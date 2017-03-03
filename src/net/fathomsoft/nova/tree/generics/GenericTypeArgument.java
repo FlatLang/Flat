@@ -38,6 +38,11 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	@Override
 	public String getName()
 	{
+		if (type instanceof FunctionType)
+		{
+			return ((FunctionType)type).value;
+		}
+		
 		return getType();
 	}
 	
