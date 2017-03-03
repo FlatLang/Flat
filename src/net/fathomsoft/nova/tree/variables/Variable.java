@@ -479,7 +479,14 @@ public class Variable extends Identifier
 	@Override
 	public boolean setType(String type, boolean require, boolean checkType, boolean checkExternal)
 	{
-		return declaration.setType(type, require, checkType, checkExternal);
+		if (this instanceof ClosureVariable)
+		{
+			return super.setType(type, require, checkType, checkExternal);
+		}
+		else
+		{
+			return declaration.setType(type, require, checkType, checkExternal);
+		}
 	}
 	
 	public byte getDataType(boolean checkGeneric)
