@@ -255,8 +255,16 @@ public class Scope extends Node
 			SyntaxMessage.error("Error trying to create local variable", this);
 		}
 		
+		String localName = "nova_local_" + scope.localVariableID++;
+		
 		//Nova.debuggingBreakpoint(addBefore.getParentClass().getName().equals("Node") && getParentMethod().getName().equals("inorder"));
-		String     decl   = type + " nova_local_" + scope.localVariableID++ + " = " + virtual.getDefaultLiteralValue();
+		String     decl   = "var " + type + " " + localName + " = " + virtual.getDefaultLiteralValue();
+		
+		if (type.contains("("))
+		{
+			decl = "var " + localName + type.substring(type.indexOf('(')) + " = null";
+		}
+		
 		Assignment assign = Assignment.decodeStatement(addBefore.getParent(), decl, getLocationIn(), require, true, null, virtual, false);
 		
 		if (assign == null)
@@ -272,7 +280,7 @@ public class Scope extends Node
 		VirtualLocalDeclaration localDecl = new VirtualLocalDeclaration(assigneeDecl.getParent(), assigneeDecl.getLocationIn());
 		assigneeDecl.cloneTo(localDecl);
 		localDecl.setReference(returned instanceof Accessible ? (Value)((Accessible)returned).getReferenceNode() : returned);
-		localDecl.setType(localDecl.getType(), require);
+		localDecl.setType(assigneeDecl);
 		
 		assign.setAssigneeNode(localDecl.generateUsableVariable(assignee.getParent(), assignee.getLocationIn()));
 		
