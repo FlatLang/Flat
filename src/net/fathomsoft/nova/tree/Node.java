@@ -2254,6 +2254,20 @@ public abstract class Node implements Listenable, Annotatable
 		//forEachChild(x -> node.addChild(x.clone(node, x.getLocationIn())));
 	}
 	
+	public void inheritAnnotations(Node from)
+	{
+		if (from.annotations != null)
+		{
+			for (int i = from.annotations.size() - 1; i >= 0; i--)
+			{
+				Annotation a = from.annotations.get(i);
+				
+				addAnnotation(a);
+				a.onAdded(this);
+			}
+		}
+	}
+	
 	/**
 	 * Generate a String that represents the Node as how it
 	 * was decoded.
