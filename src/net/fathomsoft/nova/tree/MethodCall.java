@@ -1770,6 +1770,19 @@ public class MethodCall extends Variable
 		return result;
 	}
 	
+	@Override
+	public StringBuilder generateNovaType(StringBuilder builder, Value context, boolean checkArray, boolean defaultGeneric)
+	{
+		if (declaration instanceof FirstClassClosureDeclaration && declaration.parent instanceof GenericTypeArgument)
+		{
+			FirstClassClosureDeclaration f = (FirstClassClosureDeclaration)declaration;
+			
+			return f.generateNovaInput(builder);
+		}
+		
+		return super.generateNovaType(builder, context, checkArray, defaultGeneric);
+	}
+	
 	public CallableMethod getRootDeclaration()
 	{
 		if (getDeclaration() instanceof NovaMethodDeclaration)
