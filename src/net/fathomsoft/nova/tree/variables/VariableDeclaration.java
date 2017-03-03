@@ -73,7 +73,7 @@ public class VariableDeclaration extends IIdentifier
 			return false;
 		}
 		
-		return getTypeClass().isImmutable() || getImmutableAnnotation() != null;
+		return getTypeClass() != null && getTypeClass().isImmutable() || getImmutableAnnotation() != null;
 	}
 	
 	public ImmutableAnnotation getImmutableAnnotation()
