@@ -319,7 +319,7 @@ public class Assignment extends Value
 		Location varLoc = location.asNew();
 		varLoc.getBounds().setEnd(varLoc.getStart() + endIndex);
 		
-		String[] assigneesStr = StringUtils.splitCommas(variable, true);
+		String[] assigneesStr = StringUtils.splitCommas(variable, 1);
 		
 //		if (!n.decodeAssignee(assignees[0], varLoc, require, addDeclaration))
 //		{

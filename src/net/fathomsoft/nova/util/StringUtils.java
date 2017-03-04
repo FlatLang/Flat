@@ -1555,15 +1555,15 @@ public class StringUtils
 	 */
 	public static String[] splitCommas(String src)
 	{
-		return splitCommas(src, false);
+		return splitCommas(src, 0);
 	}
 	
-	public static String[] splitCommas(String src, boolean searchGenerics)
+	public static String[] splitCommas(String src, int searchGenerics)
 	{
 		return splitCommas(src, searchGenerics, false);
 	}
 	
-	public static String[] splitCommas(String src, boolean searchGenerics, boolean allowTrailing)
+	public static String[] splitCommas(String src, int searchGenerics, boolean allowTrailing)
 	{
 		ArrayList<String> strs = new ArrayList<String>();
 		

@@ -368,7 +368,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 		
 		TypeList<Value> initValues = new TypeList<>(this, getLocationIn().asNew());
 		
-		String values[] = StringUtils.splitCommas(contents, false, true);
+		String values[] = StringUtils.splitCommas(contents, 0, true);
 		
 		VariableDeclaration arrayDeclaration = getArrayDeclaration();
 		Value arrayType = arrayDeclaration != null ? arrayDeclaration.getArrayTypeValue() : null;

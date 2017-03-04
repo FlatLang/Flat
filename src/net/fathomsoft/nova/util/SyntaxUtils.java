@@ -398,10 +398,10 @@ public class SyntaxUtils
 	 */
 	public static int findCharInBaseScope(String haystack, char needle, int start)
 	{
-		return findCharInBaseScope(haystack, needle, start, false);
+		return findCharInBaseScope(haystack, needle, start, 0);
 	}
 	
-	public static int findCharInBaseScope(String haystack, char needle, int start, boolean searchGenerics)
+	public static int findCharInBaseScope(String haystack, char needle, int start, int searchGenerics)
 	{
 		return findCharInBaseScope(haystack, new char[] { needle }, start, searchGenerics);
 	}
@@ -419,10 +419,10 @@ public class SyntaxUtils
 	 */
 	public static int findCharInBaseScope(String haystack, char needles[], int start)
 	{
-		return findCharInBaseScope(haystack, needles, start, false);
+		return findCharInBaseScope(haystack, needles, start, 0);
 	}
 	
-	public static int findCharInBaseScope(String haystack, char needles[], int start, boolean searchGenerics)
+	public static int findCharInBaseScope(String haystack, char needles[], int start, int searchGenerics)
 	{
 		return findStringInBaseScope(haystack, StringUtils.toString(needles), start, searchGenerics);
 	}
@@ -471,10 +471,10 @@ public class SyntaxUtils
 	 */
 	public static int findStringInBaseScope(String haystack, String needles[], int start)
 	{
-		return findStringInBaseScope(haystack, needles, start, false);
+		return findStringInBaseScope(haystack, needles, start, 0);
 	}
 	
-	public static int findStringInBaseScope(String haystack, String needles[], int start, boolean searchGenerics)
+	public static int findStringInBaseScope(String haystack, String needles[], int start, int searchGenerics)
 	{
 		while (start < haystack.length())
 		{
@@ -520,13 +520,38 @@ public class SyntaxUtils
 					return -1;
 				}
 			}
-			else if (searchGenerics && c == '<')
+			else if (searchGenerics != 0 && c == '<')
 			{
-				start = StringUtils.findEndingMatch(haystack, start, '<', '>') + 1;
-				
-				if (start <= 0)
+				if (searchGenerics == 1)
 				{
-					return -1;
+					start = StringUtils.findEndingMatch(haystack, start, '<', '>') + 1;
+					
+					if (start <= 0)
+					{
+						return -1;
+					}
+				}
+				else if (searchGenerics == 2)
+				{
+					int i = StringUtils.findEndingMatch(haystack, start, '<', '>') + 1;
+					
+					if (i > 0)
+					{
+						char e = i < haystack.length() ? StringUtils.findNextNonWhitespaceChar(haystack, i) : 0;
+						
+						if (i >= haystack.length() || e == '(' || e == ',')
+						{
+							start = i;
+						}
+						else
+						{
+							start++;
+						}
+					}
+					else
+					{
+						start++;
+					}
 				}
 			}
 //			else if (c == '=')
@@ -3232,7 +3257,7 @@ public class SyntaxUtils
 	
 	public static GenericTypeArgument[] getGenericTypeArguments(Node parent, String params)
 	{
-		String paramsList[] = StringUtils.splitCommas(params, true);
+		String paramsList[] = StringUtils.splitCommas(params, 1);
 		
 		ArrayList<GenericTypeArgument> args = new ArrayList<>();
 		

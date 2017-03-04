@@ -1225,7 +1225,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		if (parameterList.length() > 0)
 		{
-			String parameters[] = StringUtils.splitCommas(parameterList, true);
+			String parameters[] = StringUtils.splitCommas(parameterList, 1);
 			
 			Location location = new Location(getLocationIn());
 			

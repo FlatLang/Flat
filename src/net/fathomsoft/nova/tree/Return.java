@@ -165,7 +165,7 @@ public class Return extends IValue
 		
 		if (postReturn != null)
 		{
-			String values[] = StringUtils.splitCommas(postReturn, true);
+			String values[] = StringUtils.splitCommas(postReturn, 2);
 			
 			Location newLoc = location.asNew();
 			newLoc.addBounds(statement.indexOf(postReturn), statement.length());

@@ -310,7 +310,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 			return true;
 		}
 		
-		String parameters[] = StringUtils.splitCommas(parameterList, true);
+		String parameters[] = StringUtils.splitCommas(parameterList, 1);
 		
 		Location location = new Location(getLocationIn());
 		
