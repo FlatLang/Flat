@@ -1608,6 +1608,13 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public void setType(Value value, Value context, boolean extractType)
 	{
+		if (value == null)
+		{
+			setTypeValue(null);
+			
+			return;
+		}
+		
 		setArrayDimensions(value.getArrayDimensions());
 
 		Value original = value;
