@@ -106,6 +106,17 @@ public class ClosureVariable extends Variable
 		this.type = FunctionType.parse(this, type);
 	}
 	
+	@Override
+	public String getType(boolean checkCast)
+	{
+		if (type == null)
+		{
+			return super.getType(checkCast);
+		}
+		
+		return type.closure.generateNovaInput().toString();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
