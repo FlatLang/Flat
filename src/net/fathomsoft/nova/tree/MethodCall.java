@@ -1131,7 +1131,7 @@ public class MethodCall extends Variable
 			return true;
 		}
 		
-		String arguments[] = StringUtils.splitCommas(argumentList, true);
+		String arguments[] = StringUtils.splitCommas(argumentList, 2);
 		
 		Location argsLocation = new Location(getLocationIn());
 		argsLocation.addBounds(bounds.getStart(), bounds.getEnd());
