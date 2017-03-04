@@ -83,7 +83,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation
 			{
 				Literal message = (Literal)parameters.get("message");
 				
-				if (!message.isNullLiteral() && message.value.length() > 2)
+				if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length() > 2)
 				{
 					char c = message.value.charAt(message.value.length() - 2);
 					
