@@ -188,7 +188,25 @@ public class Annotation extends Node
 		
 		Object value;
 		
-		if (defaultParameterTypes()[index].equals("Identifier"))
+		if (defaultParameterTypes()[index][0].equals("list"))
+		{
+			if (assignment.startsWith("["))
+			{
+				int end = StringUtils.findEndingMatch(assignment, 0, '[', ']');
+				
+				if (end != assignment.length() - 1)
+				{
+					return SyntaxMessage.queryError("Invalid annotation parameter value '" + assignment + "'", this, true);
+				}
+				
+				value = StringUtils.splitCommas(assignment.substring(1, end).trim(), 1);
+			}
+			else
+			{
+				value = new String[] { assignment };
+			}
+		}
+		else if (defaultParameterTypes()[index][0].equals("Identifier"))
 		{
 			if (SyntaxUtils.isValidIdentifier(assignment))
 			{
