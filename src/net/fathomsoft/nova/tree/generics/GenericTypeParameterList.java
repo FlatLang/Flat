@@ -117,12 +117,12 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 		addGenericParameterName(new GenericTypeParameter((Node)this, Location.INVALID), parameterName);
 	}
 	
-	private void addMethodGenericParameterName(String parameterName)
+	private boolean addMethodGenericParameterName(String parameterName)
 	{
-		addGenericParameterName(new MethodGenericTypeParameter((Node)this, Location.INVALID), parameterName);
+		return addGenericParameterName(new MethodGenericTypeParameter((Node)this, Location.INVALID), parameterName);
 	}
 	
-	private void addGenericParameterName(GenericTypeParameter type, String parameterName)
+	private boolean addGenericParameterName(GenericTypeParameter type, String parameterName)
 	{
 		int numWords = StringUtils.findNumWords(parameterName);
 		
@@ -149,7 +149,7 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 			
 			if (failed)
 			{
-				SyntaxMessage.error("Could not decode Generic Parameter Declaration '" + parameterName + "'", this);
+				return false;//SyntaxMessage.error("Could not decode Generic Parameter Declaration '" + parameterName + "'", this);
 			}
 		}
 		
@@ -166,6 +166,8 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 		}
 		
 		addChild(type);
+		
+		return true;
 	}
 	
 	public void decodeGenericTypeParameters(String params)
@@ -178,14 +180,19 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 		}
 	}
 	
-	public void decodeMethodGenericTypeParameters(String params)
+	public boolean decodeMethodGenericTypeParameters(String params)
 	{
 		String paramsList[] = StringUtils.splitCommas(params);
 		
 		for (String param : paramsList)
 		{
-			addMethodGenericParameterName(param);
+			if (!addMethodGenericParameterName(param))
+			{
+				return false;
+			}
 		}
+		
+		return true;
 	}
 	
 	@Override
