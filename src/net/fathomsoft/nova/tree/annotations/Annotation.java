@@ -370,43 +370,48 @@ public class Annotation extends Node
 																					
 																					if (n == null)
 																					{
-																						n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
+																						n = TestSuiteAnnotation.decodeStatement(parent, name, arguments, location, require);
 																						
 																						if (n == null)
 																						{
-																							n = InitTestAnnotation.decodeStatement(parent, name, arguments, location, require);
+																							n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
 																							
 																							if (n == null)
 																							{
-																								n = CleanTestAnnotation.decodeStatement(parent, name, arguments, location, require);
+																								n = InitTestAnnotation.decodeStatement(parent, name, arguments, location, require);
 																								
 																								if (n == null)
 																								{
-																									n = InitTestClassAnnotation.decodeStatement(parent, name, arguments, location, require);
+																									n = CleanTestAnnotation.decodeStatement(parent, name, arguments, location, require);
 																									
 																									if (n == null)
 																									{
-																										n = CleanTestClassAnnotation.decodeStatement(parent, name, arguments, location, require);
+																										n = InitTestClassAnnotation.decodeStatement(parent, name, arguments, location, require);
 																										
 																										if (n == null)
 																										{
-																											n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+																											n = CleanTestClassAnnotation.decodeStatement(parent, name, arguments, location, require);
 																											
 																											if (n == null)
 																											{
-																												n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+																												n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
 																												
 																												if (n == null)
 																												{
-																													n = AutoFinalAnnotation.decodeStatement(parent, name, arguments, location, require);
+																													n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
 																													
 																													if (n == null)
 																													{
-																														n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+																														n = AutoFinalAnnotation.decodeStatement(parent, name, arguments, location, require);
 																														
 																														if (n == null)
 																														{
-																															n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																															n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+																															
+																															if (n == null)
+																															{
+																																n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																															}
 																														}
 																													}
 																												}
