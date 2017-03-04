@@ -2266,6 +2266,15 @@ public class ClassDeclaration extends InstanceDeclaration
 		// If contains 'class' in the statement.
 		if (index >= 0 && IDENTIFIER.equals(StringUtils.findNextWord(statement, index)))
 		{
+			if (index > 0 && !StringUtils.isWhitespace(statement.charAt(index - 1)))
+			{
+				return null;
+			}
+			else if (index + IDENTIFIER.length() < statement.length() && !StringUtils.isWhitespace(statement.charAt(index + IDENTIFIER.length())))
+			{
+				return null;
+			}
+			
 			ClassDeclaration n = new ClassDeclaration(parent, location);
 			n.setVisibility(PUBLIC);
 			
