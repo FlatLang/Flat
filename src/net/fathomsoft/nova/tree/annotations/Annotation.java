@@ -6,7 +6,6 @@ import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.SyntaxTree;
-import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -52,7 +51,7 @@ public class Annotation extends Node
 			CompilerVisibleAnnotation.class,
 			ExternalNameAnnotation.class,
 			TestAnnotation.class,
-			TestSuiteAnnotation.class,
+			TestableAnnotation.class,
 			InitTestAnnotation.class,
 			CleanTestAnnotation.class,
 			InitTestClassAnnotation.class,
@@ -367,7 +366,7 @@ public class Annotation extends Node
 																				
 																				if (n == null)
 																				{
-																					n = TestSuiteAnnotation.decodeStatement(parent, name, arguments, location, require);
+																					n = TestableAnnotation.decodeStatement(parent, name, arguments, location, require);
 																					
 																					if (n == null)
 																					{
