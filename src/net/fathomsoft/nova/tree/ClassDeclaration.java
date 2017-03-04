@@ -143,6 +143,21 @@ public class ClassDeclaration extends InstanceDeclaration
 		return (inclusive && this == other) || other.encapsulatingClass == this || other.encapsulatingClass != null && encapsulates(other.encapsulatingClass);
 	}
 	
+	public ClassDeclaration[] getEncapsulatedClasses()
+	{
+		ArrayList<ClassDeclaration> classes = new ArrayList<>();
+		
+		for (ClassDeclaration c : getFileDeclaration().getClassDeclarations())
+		{
+			if (encapsulates(c))
+			{
+				classes.add(c);
+			}
+		}
+		
+		return classes.toArray(new ClassDeclaration[0]);
+	}
+	
 	@Override
 	public boolean isImmutable()
 	{
