@@ -182,7 +182,7 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 	
 	public boolean decodeMethodGenericTypeParameters(String params)
 	{
-		String paramsList[] = StringUtils.splitCommas(params);
+		String paramsList[] = StringUtils.splitCommas(params, true);
 		
 		for (String param : paramsList)
 		{
