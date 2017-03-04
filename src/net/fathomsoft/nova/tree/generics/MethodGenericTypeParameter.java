@@ -1,10 +1,7 @@
 package net.fathomsoft.nova.tree.generics;
 
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.tree.GenericCompatible;
-import net.fathomsoft.nova.tree.IValue;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Value;
+import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
@@ -45,7 +42,7 @@ public class MethodGenericTypeParameter extends GenericTypeParameter
 	public Value getTypeValue(GenericCompatible context)
 	{
 		// TODO: update this when defaultType is an actual Value type
-		Value value = new IValue(this, Location.INVALID);
+		IIdentifier value = new IIdentifier(this, Location.INVALID);
 		
 		GenericTypeArgument arg = getCorrespondingArgument(context);
 		

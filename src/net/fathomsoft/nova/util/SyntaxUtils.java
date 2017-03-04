@@ -2161,7 +2161,7 @@ public class SyntaxUtils
 		{
 			if (type1.isOfType(type2))
 			{
-				IValue value = new IValue(value2.getParent(), value2.getLocationIn());
+				IIdentifier value = new IIdentifier(value2.getParent(), value2.getLocationIn());
 				value.setType(value1);
 				value.setTypeValue(type2.getType());
 				
