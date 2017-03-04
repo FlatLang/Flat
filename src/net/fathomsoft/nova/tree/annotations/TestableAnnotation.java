@@ -7,7 +7,7 @@ import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
 
-public class TestSuiteAnnotation extends Annotation implements ModifierAnnotation
+public class TestableAnnotation extends Annotation implements ModifierAnnotation
 {
 	public String aliasUsed;
 	public boolean generatedRunTestsMethod, writeMessage;
@@ -24,7 +24,7 @@ public class TestSuiteAnnotation extends Annotation implements ModifierAnnotatio
 		this.aliasUsed = aliasUsed;
 	}
 	
-	public TestSuiteAnnotation(Node temporaryParent, Location locationIn)
+	public TestableAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 	}
@@ -41,11 +41,11 @@ public class TestSuiteAnnotation extends Annotation implements ModifierAnnotatio
 		return new String[][] { { "Literal" } };
 	}
 	
-	public static TestSuiteAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
+	public static TestableAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
 	{
-		if (name.equals("TestSuite"))
+		if (name.equals("Testable"))
 		{
-			TestSuiteAnnotation n = new TestSuiteAnnotation(parent, location);
+			TestableAnnotation n = new TestableAnnotation(parent, location);
 			
 			n.parseParameters(parameters);
 			
@@ -148,7 +148,7 @@ public class TestSuiteAnnotation extends Annotation implements ModifierAnnotatio
 		{
 			Literal message = (Literal)parameters.get("message");
 			
-			if (!message.isNullLiteral() && message.value.length() > 2)
+			if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length() > 2)
 			{
 				message.value = "\"================== " + message.value.substring(1, message.value.length() - 1) + " ==================\"";
 				
@@ -221,6 +221,10 @@ public class TestSuiteAnnotation extends Annotation implements ModifierAnnotatio
 		});
 		
 		callMethodsWithAnnotationOfType(CleanTestClassAnnotation.class);
+		
+		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(runMethod, "Console.writeLine()", Location.INVALID, true);
+		
+		runMethod.addChild(write);
 	}
 	
 	@Override
@@ -242,19 +246,19 @@ public class TestSuiteAnnotation extends Annotation implements ModifierAnnotatio
 	}
 	
 	@Override
-	public TestSuiteAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
+	public TestableAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		TestSuiteAnnotation node = new TestSuiteAnnotation(temporaryParent, locationIn);
+		TestableAnnotation node = new TestableAnnotation(temporaryParent, locationIn);
 		
 		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
-	public TestSuiteAnnotation cloneTo(TestSuiteAnnotation node)
+	public TestableAnnotation cloneTo(TestableAnnotation node)
 	{
 		return cloneTo(node, true, true);
 	}
 	
-	public TestSuiteAnnotation cloneTo(TestSuiteAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
+	public TestableAnnotation cloneTo(TestableAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
@@ -264,6 +268,6 @@ public class TestSuiteAnnotation extends Annotation implements ModifierAnnotatio
 	@Override
 	public String[] getAliases()
 	{
-		return new String[] { "test_suite" };
+		return new String[] { "testable" };
 	}
 }
