@@ -152,6 +152,7 @@ public class TernaryOperation extends IValue implements Accessible
 					BinaryOperation nullCheck = BinaryOperation.generateNullCheck(n, condition);
 					
 					Variable local = getLocalVariableFromNullCheck(nullCheck);
+					local.declaration.setProperty("userMade", true);
 					
 					trueValue = local.getDeclaration().generateUsableVariable(n, condition.getLocationIn());
 					
