@@ -1301,9 +1301,9 @@ public class SyntaxTree
 					
 					node = id;
 				}
-				else if (parent.getFileDeclaration().containsImport(statement, false) || parent.getFileDeclaration().containsClass(statement))
+				else if (parent.getFileDeclaration(true).containsImport(statement, false) || parent.getFileDeclaration(true).containsClass(statement))
 				{
-					ClassDeclaration clazz = SyntaxUtils.getImportedClass(parent.getFileDeclaration(), statement);
+					ClassDeclaration clazz = SyntaxUtils.getImportedClass(parent.getFileDeclaration(true), statement);
 					
 					if (clazz != null)
 					{
