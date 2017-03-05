@@ -3897,20 +3897,20 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			ArrayList<NovaMethodDeclaration> errors = new ArrayList<>();
 			
-			if (doesExtendClass() && getExtendedClassDeclaration() != null)
-			{
-				for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods())
-				{
-					if (!doesOverrideMethod(method) && method.isUserMade())
-					{
-						doesOverrideMethod(method);
-						errors.add(method);
-					}
-				}
-			}
-			
 			if (!isAbstract())
 			{
+				if (doesExtendClass() && getExtendedClassDeclaration() != null)
+				{
+					for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods())
+					{
+						if (!doesOverrideMethod(method) && method.isUserMade())
+						{
+							doesOverrideMethod(method);
+							errors.add(method);
+						}
+					}
+				}
+			
 				ClassDeclaration clazz = this;
 				
 				while (clazz != null)
