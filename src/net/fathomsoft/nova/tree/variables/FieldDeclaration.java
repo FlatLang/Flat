@@ -373,6 +373,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			String name = extraDeclarations[i];
 			
 			FieldDeclaration field = FieldDeclaration.decodeStatement(getParent(), generateNovaType() + " " + name, getLocationIn(), true);
+			cloneAnnotationsTo(field);
 			
 			field.setVisibility(getVisibility());
 			field.setVolatile(isVolatile());

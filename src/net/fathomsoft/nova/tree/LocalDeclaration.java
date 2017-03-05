@@ -93,6 +93,7 @@ public class LocalDeclaration extends VariableDeclaration
 			}
 			
 			LocalDeclaration local = LocalDeclaration.decodeStatement(getParent(), type + " " + name, getLocationIn(), true);
+			cloneAnnotationsTo(local);
 			
 			local.setVolatile(isVolatile());
 			
