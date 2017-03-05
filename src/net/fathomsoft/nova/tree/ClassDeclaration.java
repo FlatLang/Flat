@@ -1543,9 +1543,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return nonOverride;
 	}
 	
+	public static ArrayList<MethodDeclaration> filterPrimitiverOverloads(ArrayList<MethodDeclaration> methods)
+	{
 		ArrayList<MethodDeclaration> nonOverload = new ArrayList<>();
 		
-		for (MethodDeclaration m : compatible)
+		for (MethodDeclaration m : methods)
 		{
 			if (m instanceof NovaMethodDeclaration)
 			{
@@ -1560,9 +1562,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (nonOverload.size() > 0)
 		{
-			compatible = nonOverload;
+			methods = nonOverload;
 		}
 		
+		return methods;
+	}
+	
 		int max = -1;
 		int maxI = -1;
 		SyntaxUtils.ValueDistance distance = new SyntaxUtils.ValueDistance(Integer.MAX_VALUE, Integer.MAX_VALUE);
