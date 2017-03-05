@@ -350,7 +350,7 @@ public class LocalDeclaration extends VariableDeclaration
 
 		if (isImplicit())
 		{
-			if (implicitType != null)
+			if (getType() == null && implicitType != null)
 			{
 				setType(implicitType);
 			}
