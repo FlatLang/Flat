@@ -536,7 +536,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public Value getTypeValue()
 	{
-		Value value = new IValue(this, getLocationIn());
+		Value value = new IIdentifier(this, getLocationIn());
 		
 		value.setArrayDimensions(getArrayDimensions());
 		value.setTypeValue(getType());
