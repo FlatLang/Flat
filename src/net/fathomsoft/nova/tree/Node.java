@@ -2198,6 +2198,33 @@ public abstract class Node implements Listenable, Annotatable
 		return cloneTo(node, cloneChildren, true);
 	}
 	
+	public void cloneAnnotationsTo(Node node)
+	{
+		if (annotations != null)
+		{
+			ArrayList<Annotation> cloned = new ArrayList<>(annotations.size());
+			
+			for (Annotation a : annotations)
+			{
+				cloned.add(a.clone(node, node.getLocationIn(), true, true));
+			}
+			
+			cloned.forEach(a -> a.onAdded(node));
+			
+			if (node.annotations == null)
+			{
+				node.annotations = cloned;
+			}
+			else
+			{
+				for (Annotation a : cloned)
+				{
+					node.annotations.add(a);
+				}
+			}
+		}
+	}
+	
 	public Node cloneTo(Node node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		if (locationIn != null)
@@ -2212,18 +2239,9 @@ public abstract class Node implements Listenable, Annotatable
 			cloneChildrenTo(node);
 		}
 		
-		if (cloneAnnotations && annotations != null)
+		if (cloneAnnotations)
 		{
-			ArrayList<Annotation> cloned = new ArrayList<>(annotations.size());
-			
-			for (Annotation a : annotations)
-			{
-				cloned.add(a.clone(node, node.getLocationIn(), cloneAnnotations, true));
-			}
-			
-			cloned.forEach(a -> a.onAdded(node));
-			
-			node.annotations = cloned;
+			cloneAnnotationsTo(node);
 		}
 		
 		if (properties != null)
