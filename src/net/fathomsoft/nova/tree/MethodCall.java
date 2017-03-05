@@ -981,6 +981,7 @@ public class MethodCall extends Variable
 				return null;
 			}
 			
+			n.setMethodCallGenericArgumentTypes();
 			n.addDefaultGenericTypeArguments();
 			
 			if (!skipArgumentChecks && !n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
