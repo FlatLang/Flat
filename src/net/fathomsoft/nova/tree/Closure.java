@@ -12,6 +12,9 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * Identifier extension that represents the use of a variable
  * type. Harnesses the needed information of each variable, such as
@@ -172,7 +175,7 @@ public class Closure extends Variable
 		
 		if (closure != null)
 		{
-			return (NovaMethodDeclaration)declaringClass.getMethod(contexts, name, filter, closure.getParameterList().getTypes());
+			return (NovaMethodDeclaration)declaringClass.getMethod(contexts, name, filter, closure.getParameterList().getTypes(), false, true);
 		}
 		
 		return null;
