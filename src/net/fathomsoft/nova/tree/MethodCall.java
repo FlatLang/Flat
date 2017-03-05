@@ -1254,6 +1254,7 @@ public class MethodCall extends Variable
 							if (common == types[n])
 							{
 								common = pair.b;
+								common = common instanceof ClosureVariable ? ((FunctionType)common.getTypeObject()).closure : common;
 							}
 							else
 							{
@@ -1621,6 +1622,7 @@ public class MethodCall extends Variable
 				if (p instanceof ClosureDeclaration)
 				{
 					Value v = (Value)getArgumentList().getVisibleChild(n);
+					v = v instanceof ClosureVariable ? ((FunctionType)v.getTypeObject()).closure : v;
 					
 					common = common == null ? v : SyntaxUtils.getTypeInCommon(common, v);
 				}
