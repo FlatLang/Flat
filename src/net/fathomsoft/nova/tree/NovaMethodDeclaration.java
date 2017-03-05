@@ -1509,6 +1509,23 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return contents;
 	}
 	
+	public boolean overrides(NovaMethodDeclaration other)
+	{
+		NovaMethodDeclaration method = overridenMethod;
+		
+		while (method != null)
+		{
+			if (method == other)
+			{
+				return true;
+			}
+			
+			method = method.overridenMethod;
+		}
+		
+		return false;
+	}
+	
 	public void updateGenericParameters()
 	{
 		if (overridenMethod != null)
