@@ -443,7 +443,10 @@ public class Closure extends Variable
 		
 		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			closureDeclaration = searchClosureDeclaration();
+			if (closureDeclaration instanceof FirstClassClosureDeclaration == false)
+			{
+				closureDeclaration = searchClosureDeclaration();
+			}
 		}
 		
 		return result;
