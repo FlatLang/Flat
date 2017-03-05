@@ -64,18 +64,25 @@ public class ExternalNameAnnotation extends Annotation implements ModifierAnnota
 	}
 	
 	@Override
-	public boolean onNextStatementDecoded(Node next)
+	public ValidationResult validate(int phase)
 	{
-		String name = ((Identifier)next).getName();
+		ValidationResult result = super.validate(phase);
+		
+		if (result.skipValidation())
+		{
+			return result;
+		}
+		
+		String name = ((Identifier)parent).getName();
 		
 		if (parameters.get("name") != null)
 		{
 			name = (String)parameters.get("name");
 		}
 		
-		next.setProperty("externalName", name);
+		parent.setProperty("externalName", name);
 		
-		return super.onNextStatementDecoded(next);
+		return result;
 	}
 	
 	@Override
