@@ -218,6 +218,28 @@ public class Closure extends Variable
 		return null;
 	}
 	
+	@Override
+	public Type getTypeObject()
+	{
+		if (closureDeclaration instanceof FirstClassClosureDeclaration)
+		{
+			return ((FirstClassClosureDeclaration)closureDeclaration).reference.getTypeObject();
+		}
+		
+		return super.getTypeObject();
+	}
+	
+	@Override
+	public String getType(boolean checkCast)
+	{
+		if (closureDeclaration instanceof FirstClassClosureDeclaration)
+		{
+			return ((FirstClassClosureDeclaration)closureDeclaration).reference.getType(checkCast);
+		}
+		
+		return super.getType(checkCast);
+	}
+	
 	/**
 	 * Decode the name of the Closure. Validate that the closure is a
 	 * valid representation for the ClosureDeclaration.
