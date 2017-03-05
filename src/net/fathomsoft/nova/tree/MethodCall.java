@@ -1646,6 +1646,11 @@ public class MethodCall extends Variable
 		return declaration instanceof FirstClassClosureDeclaration && ((FirstClassClosureDeclaration)declaration).reference instanceof ClosureVariable;
 	}
 	
+	public ClosureVariable getClosureVariable()
+	{
+		return (ClosureVariable)((FirstClassClosureDeclaration)declaration).reference;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 * 
