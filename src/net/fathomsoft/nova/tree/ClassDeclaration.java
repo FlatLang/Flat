@@ -1514,20 +1514,35 @@ public class ClassDeclaration extends InstanceDeclaration
 		return null;
 	}
 	
-	public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
+	public static ArrayList<MethodDeclaration> filterOverrides(ArrayList<MethodDeclaration> methods)
 	{
-		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
+		methods = filterPrimitiverOverloads(methods);
 		
-		ArrayList<MethodDeclaration> compatible = new ArrayList<>();
+		ArrayList<MethodDeclaration> nonOverride = new ArrayList<>();
 		
-		for (MethodDeclaration method : methods)
+		for (MethodDeclaration m : methods)
 		{
-			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes, reverse))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+			if (m instanceof NovaMethodDeclaration)
 			{
-				compatible.add(method);
+				NovaMethodDeclaration method = (NovaMethodDeclaration)m;
+				
+				if (!methods.stream().anyMatch(x -> {
+					if (x instanceof NovaMethodDeclaration)
+					{
+						return ((NovaMethodDeclaration)x).overrides(method);
+					}
+					
+					return false;
+				}))
+				{
+					nonOverride.add(method);
+				}
 			}
 		}
 		
+		return nonOverride;
+	}
+	
 		ArrayList<MethodDeclaration> nonOverload = new ArrayList<>();
 		
 		for (MethodDeclaration m : compatible)
