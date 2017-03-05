@@ -410,20 +410,31 @@ public class MethodCall extends Variable
 		{
 			FieldDeclaration field = clazz.getField(name);
 			
-			if (field != null && field.isGenericType())
+			if (field != null)
 			{
-				GenericTypeParameter param = field.getGenericTypeParameter();
-				
-				GenericTypeArgument arg = param.getCorrespondingArgument(this);
-				
-				if (arg != null && arg.getTypeObject() instanceof FunctionType)
+				if (field.isGenericType())
 				{
-					return ((FunctionType)arg.getTypeObject()).closure;
+					GenericTypeParameter param = field.getGenericTypeParameter();
+					
+					GenericTypeArgument arg = param.getCorrespondingArgument(this);
+					
+					if (arg != null && arg.getTypeObject() instanceof FunctionType)
+					{
+						ClosureVariable v = new ClosureVariable(parent, getLocationIn());
+						v.setDeclaration(field);
+						v.setType(arg.generateNovaType(arg).toString());
+						
+						return v.type.closure;//((FunctionType)arg.getTypeObject()).closure;
+					}
 				}
-			}
-			else if (field.getTypeObject() instanceof FunctionType)
-			{
-				return ((FunctionType)field.getTypeObject()).closure;
+				else if (field.getTypeObject() instanceof FunctionType)
+				{
+	//				ClosureVariable v = new ClosureVariable(parent, getLocationIn());
+	//				v.setDeclaration(field);
+	//				v.setType(field.generateNovaType(field).toString());
+					
+					return ((FunctionType)field.getTypeObject()).closure;
+				}
 			}
 		}
 		
