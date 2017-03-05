@@ -3252,13 +3252,13 @@ public class ClassDeclaration extends InstanceDeclaration
 	private void addPropertyMapProperties(ClassDeclaration reference)
 	{
 		Consumer<MethodDeclaration> addProperty = m -> {
-			if (m instanceof PropertyMethod && m.isUserMade())
+			if (m instanceof PropertyMethod && m.isUserMade() && !m.isExternalType())
 			{
 				addPropertyMapProperty(reference, (PropertyMethod)m);
 			}
 		};
 		Consumer<Node> addField = m -> {
-			if (m instanceof FieldDeclaration && m.isUserMade())
+			if (m instanceof FieldDeclaration && m.isUserMade() && !((FieldDeclaration)m).isExternalType())
 			{
 				addPropertyMapProperty(reference, (FieldDeclaration)m);
 			}
