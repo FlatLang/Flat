@@ -305,17 +305,59 @@ public class Closure extends Variable
 		
 		Node base = getBaseNode();
 		
-		if (base instanceof Return || parent instanceof NovaMethodDeclaration)
-		{
-			Type type = getParentMethod().getTypeObject();
-			
-			if (type instanceof FunctionType)
-			{
-				return ((FunctionType)type).closure;
-			}
-		}
 		if (getMethodCall() == null)
 		{
+			if (base instanceof Assignment)
+			{
+				Assignment a = (Assignment)base;
+				
+				if (this == a.getAssignmentNode().getReturnedNode())
+				{
+					if (a.getAssignedNodeValue() instanceof Variable &&
+						a.getAssignedNode().declaration instanceof LocalDeclaration)
+					{
+						LocalDeclaration local = (LocalDeclaration)a.getAssignedNode().declaration;
+						
+						if (local.isImplicit())
+						{
+							ClassDeclaration ref = getReferenceNode().toValue().getTypeClass();
+							
+							if (ref != null)
+							{
+								ArrayList<MethodDeclaration> methods = new ArrayList<>(Arrays.asList(ref.getMethods(declarations[0].getName())));
+								
+								methods = ClassDeclaration.filterOverrides(methods);
+								
+								if (methods.size() > 1)
+								{
+									SyntaxMessage.error("Ambiguous function '" + methods.get(0).getName() + "' required for function reference", this);
+								}
+								else if (methods.size() == 1)
+								{
+									NovaMethodDeclaration method = (NovaMethodDeclaration)methods.get(0);
+									
+									String type = method.getFunctionReferenceType();
+									
+									local.setType(type);
+									
+									return ((FunctionType)local.getTypeObject()).closure;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			if (base instanceof Return || parent instanceof NovaMethodDeclaration)
+			{
+				Type type = getParentMethod().getTypeObject();
+				
+				if (type instanceof FunctionType)
+				{
+					return ((FunctionType)type).closure;
+				}
+			}
+			
 			return null;
 		}
 		
