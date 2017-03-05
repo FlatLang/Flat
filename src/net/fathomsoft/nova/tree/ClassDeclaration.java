@@ -1494,11 +1494,21 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
 	{
-		MethodDeclaration methods[] = getMethods(contexts, methodName, filter, parameterTypes, reverse);
+		return getMethod(contexts, methodName, filter, parameterTypes, reverse, false);
+	}
+	
+	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides)
+	{
+		ArrayList<MethodDeclaration> methods = new ArrayList<>(Arrays.asList(getMethods(contexts, methodName, filter, parameterTypes, reverse)));
 		
-		if (methods.length == 1)
+		if (filterOverrides)
 		{
-			return methods[0];
+			methods = ClassDeclaration.filterOverrides(methods);
+		}
+		
+		if (methods.size() == 1)
+		{
+			return methods.get(0);
 		}
 		
 		return null;
