@@ -559,6 +559,10 @@ public class Assignment extends Value
 		{
 			return false;
 		}
+		if (returnedLeft.getTypeObject() instanceof FunctionType)
+		{
+			return true;
+		}
 		
 		String leftType  = returnedLeft.getNovaType();
 		String rightType = returnedRight.getNovaType();
