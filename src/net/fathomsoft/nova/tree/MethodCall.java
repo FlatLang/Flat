@@ -1651,6 +1651,19 @@ public class MethodCall extends Variable
 		return (ClosureVariable)((FirstClassClosureDeclaration)declaration).reference;
 	}
 	
+	@Override
+	public void onAdded(Node parent)
+	{
+		super.onAdded(parent);
+		
+		if (isCallingClosureVariable())
+		{
+			ClosureVariable var = getClosureVariable();
+			
+			var.declaration.references.add(var);
+		}
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 * 
