@@ -93,6 +93,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		addChild(blocks, this);
 	}
 	
+	public ClassDeclaration getRootOverloadedClass()
+	{
+		if (genericOverload != null)
+		{
+			return genericOverload.getRootOverloadedClass();
+		}
+		
+		return this;
+	}
+	
 	@Override
 	public byte getDataType()
 	{
