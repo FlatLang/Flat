@@ -249,10 +249,9 @@ public class Return extends IValue
 			}
 			else if (getParentMethod().getType() != null)
 			{
-				ClassDeclaration type = getParentMethod().getTypeClass();
 				Value returned = value.getReturnedNode();
 				
-				if (returned instanceof Instantiation && returned.getType().equals(getParentMethod().getType()))
+				if (returned instanceof Instantiation && returned.getTypeClass().getRootOverloadedClass() == getParentMethod().getTypeClass().getRootOverloadedClass())
 				{
 					returned.setType(getParentMethod());
 				}
