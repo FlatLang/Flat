@@ -1685,6 +1685,23 @@ public class MethodCall extends Variable
 		Accessible accessing = returned.getAccessingNode();
 		Identifier accessed  = returned.getAccessedNode();
 		
+		if (isCallingClosureVariable())
+		{
+			ClosureVariable var = getClosureVariable();
+			
+			if (var.declaration instanceof FieldDeclaration)
+			{
+				FieldDeclaration field = (FieldDeclaration)var.declaration;
+				
+				if (field.getAccessorMethod() != null && !field.getAccessorMethod().isDisabled())
+				{
+					var.declaration = field.getAccessorMethod();
+				}
+			}
+			
+			SyntaxTree.validateNodes(declaration, phase);
+		}
+		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 //			// TODO: Update to never do this
