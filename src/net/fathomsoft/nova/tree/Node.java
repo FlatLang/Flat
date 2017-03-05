@@ -1175,7 +1175,13 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public void onReplaced(Node parent, Node replacement)
 	{
-		
+		if (replacement != null)
+		{
+			for (int i = 0; i < Math.min(getNumChildren(), replacement.getNumChildren()); i++)
+			{
+				getChild(i).onReplaced(this, replacement.getChild(i));
+			}
+		}
 	}
 	
 	/**
