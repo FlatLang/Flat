@@ -30,6 +30,17 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	}
 	
 	@Override
+	public void onReplaced(Node parent, Node replacement)
+	{
+		if (getTypeObject() instanceof FunctionType)
+		{
+			((FunctionType)getTypeObject()).closure.reference = (Identifier)replacement;
+		}
+		
+		super.onReplaced(parent, replacement);
+	}
+	
+	@Override
 	public boolean isExternalType()
 	{
 		return false;
