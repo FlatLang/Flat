@@ -1568,6 +1568,22 @@ public class ClassDeclaration extends InstanceDeclaration
 		return methods;
 	}
 	
+	public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
+	{
+		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
+		
+		ArrayList<MethodDeclaration> compatible = new ArrayList<>();
+		
+		for (MethodDeclaration method : methods)
+		{
+			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes, reverse))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+			{
+				compatible.add(method);
+			}
+		}
+		
+		compatible = filterPrimitiverOverloads(compatible);
+		
 		int max = -1;
 		int maxI = -1;
 		SyntaxUtils.ValueDistance distance = new SyntaxUtils.ValueDistance(Integer.MAX_VALUE, Integer.MAX_VALUE);
