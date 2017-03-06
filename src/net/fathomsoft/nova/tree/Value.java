@@ -1490,6 +1490,11 @@ public abstract class Value extends Node implements AbstractValue
 		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
 	}
     
+	public boolean isFunctionType()
+	{
+		return getTypeObject() instanceof FunctionType;
+	}
+	
 	public final boolean isGenericType()
 	{
 		return isGenericType(false);
