@@ -32,9 +32,12 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	@Override
 	public void onReplaced(Node parent, Node replacement)
 	{
-		if (getTypeObject() instanceof FunctionType)
+		if (this != replacement && getTypeObject() instanceof FunctionType)
 		{
-			((FunctionType)getTypeObject()).closure.reference = (Identifier)replacement;
+			FunctionType type = (FunctionType)getTypeObject();
+			
+			type.closure.reference = (Identifier)replacement;
+			type.closure.unregister();
 		}
 		
 		super.onReplaced(parent, replacement);
