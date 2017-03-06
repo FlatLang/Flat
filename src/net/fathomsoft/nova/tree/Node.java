@@ -1116,9 +1116,17 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public Node detach(Node fromNode, boolean detachChildren)
 	{
+		return detach(fromNode, detachChildren, false);
+	}
+	
+	public Node detach(Node fromNode, boolean detachChildren, boolean soft)
+	{
 		fromNode.children.remove(this);
 		
-		parent = null;
+		if (!soft)
+		{
+			parent = null;
+		}
 		
 		onRemoved(fromNode);
 		fromNode.onChildRemoved(this);
