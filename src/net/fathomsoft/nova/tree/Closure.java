@@ -6,6 +6,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.MethodList.SearchFilter;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.lambda.LambdaMethodDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
@@ -437,15 +438,22 @@ public class Closure extends Variable
 		{
 			return true;
 		}
-
+		
 		MethodDeclaration declaration = getMethodDeclaration(call, declarations[0].getName(), declaringClass);
-
+		
 		if (declaration == null)
 		{
-			getMethodDeclaration(call, declarations[0].getName(), declaringClass);
-			SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
-			
-			return false;
+			if (declarations[0] instanceof LambdaMethodDeclaration)
+			{
+				declaration = declarations[0];
+			}
+			else
+			{
+				getMethodDeclaration(call, declarations[0].getName(), declaringClass);
+				SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
+				
+				return false;
+			}
 		}
 		
 		setDeclaration(declaration);
