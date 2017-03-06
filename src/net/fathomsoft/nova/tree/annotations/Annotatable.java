@@ -91,8 +91,8 @@ public interface Annotatable
 				
 				if (c.isAssignableFrom(a.getClass()))
 				{
-					a.detach();
 					annotations.remove(i);
+					a.detach();
 				}
 			}
 		}
