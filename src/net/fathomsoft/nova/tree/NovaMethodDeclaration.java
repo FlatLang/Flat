@@ -293,7 +293,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	private NovaMethodDeclaration getOverriddenMethod(SearchFilter filter)
 	{
-		if (getVisibility() == PRIVATE)
+		if (getVisibility() == PRIVATE && (this instanceof PropertyMethod == false || getParentClass().getField(getName()) == null || !getParentClass().getField(getName()).isPropertyTrue("inheritedFromTrait")))
 		{
 			return null;
 		}
