@@ -7,6 +7,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
@@ -236,7 +237,16 @@ public class Trait extends ClassDeclaration
 		}
 		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			getPropertyMethodList().forEachNovaMethod(m -> m.setVisibility(PUBLIC));
+			getPropertyMethodList().forEachNovaMethod(m -> {
+				m.setVisibility(PUBLIC);
+				
+				if (m.getVirtualMethod() != null)
+				{
+					m.getVirtualMethod().setVisibility(PUBLIC);
+				}
+				
+				Arrays.stream(m.getOverridingMethods()).forEach(x -> x.setVisibility(PUBLIC));
+			});
 		}
 		
 		return result;
