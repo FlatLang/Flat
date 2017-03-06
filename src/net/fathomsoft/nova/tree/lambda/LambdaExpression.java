@@ -305,6 +305,8 @@ public class LambdaExpression extends Value
 				method.contextDeclaration = c;
 				method.closure = methodReference;
 				
+				updatePassedFunctionReferences(method);
+				
 				Node root = parent.getStatementRootNode();
 				
 				parent.getStatementRootNode();
@@ -325,6 +327,44 @@ public class LambdaExpression extends Value
 		}
 		
 		return null;
+	}
+	
+	private void updatePassedFunctionReferences(LambdaMethodDeclaration method)
+	{
+		method.getParameterList().forEachVisibleListChild(param -> {
+			if (param instanceof ClosureDeclaration && method.methodCall != null)
+			{
+				Value value = method.methodCall.getCallableMethodBase().getParameterList().getParameter(method.index);
+				
+				if (value instanceof ClosureDeclaration)
+				{
+					ClosureDeclaration closure = (ClosureDeclaration)value;
+					
+					Value corresponding = closure.getParameterList().getParameter(param.getIndex());
+					
+					if (corresponding.isGenericType())
+					{
+						Parameter replacement = new Parameter(param.parent, param.getLocationIn());
+						param.cloneTo(replacement, true, true);
+						
+						replacement.setType(param.generateNovaInput().toString());
+						
+						param.replaceWith(replacement);
+						
+						final FunctionType funcType = (FunctionType)replacement.getTypeObject();
+						
+						param.references.forEach(var -> {
+							if (var instanceof MethodCall)
+							{
+								MethodCall call = (MethodCall)var;
+								
+								call.declaration = funcType.closure;
+							}
+						});
+					}
+				}
+			}
+		});
 	}
 	
 	private static Value findContext(Node parent)
