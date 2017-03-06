@@ -247,6 +247,12 @@ public class Trait extends ClassDeclaration
 				
 				Arrays.stream(m.getOverridingMethods()).forEach(x -> x.setVisibility(PUBLIC));
 			});
+			getFieldList().getPrivateStaticFieldList().forEachVisibleChild(x -> {
+				FieldDeclaration field = (FieldDeclaration)x;
+				
+				field.setVisibility(PUBLIC);
+				getFieldList().getPublicStaticFieldList().addChild(field);
+			});
 		}
 		
 		return result;
