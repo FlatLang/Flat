@@ -1286,7 +1286,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		Consumer<Node> remove = x -> {
 			if (x instanceof VariableDeclaration && !((VariableDeclaration)x).isTangible())// && x instanceof ClassInstanceDeclaration == false)
 			{
-				x.detach();
+				x.detach(x.parent, false, true);
 			}
 		};
 		
