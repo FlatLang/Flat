@@ -7,6 +7,7 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link Node} extension that represents
@@ -239,7 +240,7 @@ public class Match extends ControlStatement
 	{
 		String type = StringUtils.findNextWord(statement);
 		
-		if (type.equals("match") || type.equals("switch"))
+		if ((type.equals("match") || type.equals("switch")) && SyntaxUtils.findStringInBaseScope(statement, type) >= 0)
 		{
 			int index = StringUtils.findNextNonWhitespaceIndex(statement, type.length());//statement.indexOf('(', IDENTIFIER.length());
 			
