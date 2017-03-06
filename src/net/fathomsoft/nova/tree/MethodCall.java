@@ -1778,44 +1778,23 @@ public class MethodCall extends Variable
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			if (localDeclarationRequired())
+			if (isCallingClosureVariable() && (parent instanceof Assignment == false || !parent.containsProperty("userMade")))
 			{
-				if (reference instanceof Instantiation)
-				{
-					reference = reference.getAccessedNode();
-				}
+				ClosureVariable var = getClosureVariable();
 				
-				MethodCall calling   = (MethodCall)reference;
-				Node ancestor = returned.getAncestorWithScope();
-				Node addBefore = calling.getBaseNode();
+				Variable v = getAncestorWithScope().getScope().createLocalVariable(var);
+				v.setType(var);
 				
-				/*if (ancestor instanceof ForEachLoop)
-				{
-					ForEachLoop loop = (ForEachLoop)ancestor;
-					
-					Accessible root = getContextNode();
-					
-					if (loop.getIteratorValue() == root)
-					{
-						ancestor = ancestor.getParent().getAncestorWithScope();
-						addBefore = loop;
-					}
-				}*/
+				Assignment a = Assignment.generateDefault(parent, getLocationIn());
+				a.setProperty("userMade", false);
+				a.getAssigneeNodes().addChild(v);
+				a.addChild(Literal.decodeStatement(a, "null", getLocationIn(), true, true));
 				
-				Variable replacement = ancestor.getScope().registerLocalVariable(calling, addBefore, false);
+				replaceWith(a);
 				
-				if (replacement == null)
-				{
-					return result.errorOccurred();
-				}
+				a.getAssignmentNode().replaceWith(this);
 				
-				Node replacing = (Node)calling.getRootReferenceNode(true);
-				
-				replacing.replaceWith(replacement);
-				
-				replacement.setAccessedNode(this);
-				
-				result.returnedNode = this;
+				result.returnedNode = a;
 				
 				return result;
 			}
