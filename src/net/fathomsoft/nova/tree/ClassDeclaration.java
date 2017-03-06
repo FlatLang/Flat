@@ -3284,7 +3284,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	private void addFunctionMapFunctions(ClassDeclaration reference)
 	{
 		Consumer<MethodDeclaration> addFunction = m -> {
-			if (m instanceof NovaMethodDeclaration && m.isUserMade() && m instanceof Destructor == false)
+			if (m instanceof NovaMethodDeclaration && m.isUserMade() && m instanceof Destructor == false && !m.isExternalType())
 			{
 				addFunctionMapFunction(reference, (NovaMethodDeclaration)m);
 			}
