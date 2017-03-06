@@ -459,7 +459,7 @@ public class MethodCall extends Variable
 			return null;
 		}
 		
-		VariableDeclaration closure = searchVariable(getParent(), getAncestorWithScope().getScope(), name);
+		VariableDeclaration closure = SyntaxTree.findDeclaration(parent, name);//searchVariable(getParent(), getAncestorWithScope().getScope(), name);
 		
 		closure = closure != null ? closure.getOriginalDeclaration() : null;
 		
