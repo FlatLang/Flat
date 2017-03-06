@@ -251,11 +251,11 @@ public class Parameter extends LocalDeclaration
 			statement = statement.substring(0, index).trim();
 		}
 		
-		VariableDeclaration node = LocalDeclaration.decodeStatement(parent, statement, location, require, checkName, checkType);
+		VariableDeclaration node = ClosureDeclaration.decodeStatement(parent, statement, location, false);
 		
 		if (node == null)
 		{
-			node = ClosureDeclaration.decodeStatement(parent, statement, location, require);
+			node = LocalDeclaration.decodeStatement(parent, statement, location, require, checkName, checkType);
 			
 			if (node == null)
 			{
