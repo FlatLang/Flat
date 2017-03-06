@@ -642,10 +642,10 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	private void checkExternalType()
 	{
-		if (getParentClass().containsExternalType(getType()))
-		{
-			setDataType(IValue.POINTER);
-		}
+//		if (getParentClass().containsExternalType(getType()))
+//		{
+//			setDataType(IValue.POINTER);
+//		}
 	}
 	
 	public NovaMethodDeclaration getExistingConvertedPrimitiveMethod(Value[] args)
