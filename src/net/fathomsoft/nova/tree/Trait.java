@@ -7,6 +7,7 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 /**
  * {@link ClassDeclaration} extension that represents
@@ -207,7 +208,7 @@ public class Trait extends ClassDeclaration
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			getFieldList().getPublicFieldList().forEachVisibleChild(n -> {
+			Consumer<Node> addDefaultPropertyFunctions = n -> {
 				if (n.isUserMade() || n.containsProperty("genericOverload"))
 				{
 					FieldDeclaration field = (FieldDeclaration)n;
@@ -215,10 +216,10 @@ public class Trait extends ClassDeclaration
 					if (field.getShorthandAccessor() == null && !field.containsAccessorMethod() && !field.containsMutatorMethod() && !isPrimitiveOverload())
 					{
 						field.addDefaultAccessor();
-						
+
 //						if (field.getVisibility() == PUBLIC)
 //						{
-							field.addDefaultMutator();
+						field.addDefaultMutator();
 //						}
 //						else
 //						{
@@ -228,7 +229,10 @@ public class Trait extends ClassDeclaration
 						field.setProperty("addedDefaultInterfaceFunctions", true);
 					}
 				}
-			});
+			};
+			
+			getFieldList().getPublicFieldList().forEachVisibleChild(addDefaultPropertyFunctions);
+			getFieldList().getPrivateFieldList().forEachVisibleChild(addDefaultPropertyFunctions);
 		}
 		
 		return result;
