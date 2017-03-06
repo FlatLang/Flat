@@ -167,7 +167,7 @@ public class LocalDeclaration extends VariableDeclaration
 			statement = extraDeclarations.extractPreString(statement);
 		}
 		
-		if (!SyntaxUtils.isLiteral(n, statement) && StringUtils.containsMultipleWords(statement) && !StringUtils.containsChar(statement, StringUtils.INVALID_DECLARATION_CHARS))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
+		if (!SyntaxUtils.isLiteral(n, statement) && StringUtils.containsMultipleWords(statement) && !containsParenthesis(statement))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
 		{
 			DeclarationData  data = new DeclarationData();
 			
@@ -198,7 +198,7 @@ public class LocalDeclaration extends VariableDeclaration
 				{
 					GenericTypeArgument type = n.getGenericTypeArgument(i);
 
-					if (!type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
+					if (!type.isFunctionType() && !type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation()))
 					{
 						type.isGenericType();
 						SyntaxUtils.validateImported(n, type.getTypeClassLocation());
