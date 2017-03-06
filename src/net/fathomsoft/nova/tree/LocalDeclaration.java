@@ -106,7 +106,12 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		super.onAdded(parent);
 	}
-
+	
+	private static boolean containsParenthesis(String statement)
+	{
+		return SyntaxUtils.findCharInBaseScope(statement, '(', 0, 1) >= 0;
+	}
+	
 	/**
 	 * Decode the given statement into a LocalDeclaration instance, if
 	 * possible. If it is not possible, this method returns null.
