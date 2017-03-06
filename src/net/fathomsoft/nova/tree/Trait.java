@@ -234,6 +234,10 @@ public class Trait extends ClassDeclaration
 			getFieldList().getPublicFieldList().forEachVisibleChild(addDefaultPropertyFunctions);
 			getFieldList().getPrivateFieldList().forEachVisibleChild(addDefaultPropertyFunctions);
 		}
+		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
+		{
+			getPropertyMethodList().forEachNovaMethod(m -> m.setVisibility(PUBLIC));
+		}
 		
 		return result;
 	}
