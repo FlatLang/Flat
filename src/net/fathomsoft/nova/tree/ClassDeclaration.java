@@ -3681,7 +3681,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	private void addFieldsFromInterface(Trait i)
 	{
-		i.getFieldList().getPublicFieldList().forEachVisibleChild(n -> {
+		Consumer<Node> convertField = n -> {
 			FieldDeclaration field = (FieldDeclaration)n;
 			
 			if (field.isPropertyTrue("addedDefaultInterfaceFunctions") || (field.isUserMade() || field.containsProperty("genericOverload")) && !field.containsAccessorMethod() && !field.containsMutatorMethod() && field.getShorthandAccessor() == null)
@@ -3705,6 +3705,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					
 					clone.setTwoWayBinding(true);//field.getVisibility() == PUBLIC);
 					clone.setShorthandAccessor(field.getName());
+					clone.setProperty("inheritedFromTrait", true);
 					
 					if (field.isGenericType())
 					{
@@ -3732,7 +3733,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					Value type = clone;
 					
 					field.importGenericArgumentTypesTo(getFileDeclaration());
-					
+
 //					if (field.getVisibility() == FieldDeclaration.VISIBLE && !field.isGenericType())
 //					{
 //						type = field.getClonedNovaTypeValue(clone);
@@ -3756,7 +3757,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					{
 						clone.decodeArrowBinding(type);
 					}
-					
+
 //					if (!clone.isTwoWayBinding())
 //					{
 //						MutatorMethod method = (MutatorMethod)clone.addDefaultMutator(field.getClonedNovaTypeValue(clone));
@@ -3770,7 +3771,10 @@ public class ClassDeclaration extends InstanceDeclaration
 //					}
 				}
 			}
-		});
+		};
+		
+		i.getFieldList().getPublicFieldList().forEachVisibleChild(convertField);
+		i.getFieldList().getPrivateFieldList().forEachVisibleChild(convertField);
 		
 		for (Trait extended : i.getImplementedInterfaces(false))
 		{
