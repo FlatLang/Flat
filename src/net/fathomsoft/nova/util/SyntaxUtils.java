@@ -2761,7 +2761,7 @@ public class SyntaxUtils
 //			}
 //		}
 		
-		if (given instanceof Closure)
+		if (given instanceof Closure || given instanceof ClosureVariable)
 		{
 			return true;
 		}
