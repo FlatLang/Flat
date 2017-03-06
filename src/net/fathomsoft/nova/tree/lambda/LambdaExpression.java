@@ -176,7 +176,17 @@ public class LambdaExpression extends Value
 				name = "_" + (id + 1);
 			}
 			
-			builder.append(builder.length() > 0 ? ", " : "").append(type).append(" ").append(name);
+			if (type.endsWith(")"))
+			{
+				type = name + type.substring(type.indexOf('('));
+			}
+			
+			builder.append(builder.length() > 0 ? ", " : "").append(type);
+			
+			if (!type.endsWith(")"))
+			{
+				builder.append(" ").append(name);
+			}
 			
 			getFileDeclaration().addImport(value.getTypeClassLocation());
 			
