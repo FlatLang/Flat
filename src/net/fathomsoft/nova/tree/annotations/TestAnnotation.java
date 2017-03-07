@@ -2,12 +2,14 @@ package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 
 public class TestAnnotation extends Annotation implements ModifierAnnotation, RunnableTests
 {
 	public String aliasUsed;
 	public boolean writeMessage;
+	public FieldDeclaration testCase;
 	
 	@Override
 	public String getAliasUsed()
@@ -69,6 +71,23 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 			return result;
 		}
 		
+		NovaMethodDeclaration method = (NovaMethodDeclaration)parent;
+		
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			getFileDeclaration().addImport("novex/nest/TestCase");
+			
+			String name = method.getScope().getUniqueName("_" + method.getName() + "TestCase");
+			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateNovaInput() : "";
+			
+			FieldDeclaration testCase = FieldDeclaration.decodeStatement(getParentClass(), "compiler_visible TestCase " + name + " = new TestCase(\"" + method.getName() + "\", " + method.getName() + description + ")", Location.INVALID, true);
+			
+			getParentClass().addChild(testCase);
+			testCase.onAfterDecoded();
+			testCase.validate(phase);
+			
+			this.testCase = testCase;
+		}
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			if (parameters.containsKey("message"))
@@ -89,8 +108,6 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 			}
 			else
 			{
-				NovaMethodDeclaration method = (NovaMethodDeclaration)parent;
-				
 				writeMessage((Literal)Literal.decodeStatement(parent, "\"Testing " + method.getName() + " \"", Location.INVALID, true, true));
 			}
 		}
