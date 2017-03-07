@@ -8,7 +8,7 @@ import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
 
-public class TestSuiteAnnotation extends Annotation
+public class TestSuiteAnnotation extends Annotation implements RunnableTests
 {
 	public boolean generatedRunTestsMethod, writeMessage;
 	
@@ -41,48 +41,6 @@ public class TestSuiteAnnotation extends Annotation
 		}
 		
 		return null;
-	}
-	
-	public NovaMethodDeclaration getRunTestsMethod()
-	{
-		ClassDeclaration clazz = (ClassDeclaration)parent;
-		
-		MethodList.SearchFilter filter = new MethodList.SearchFilter();
-		filter.checkAncestor = false;
-		
-		return (NovaMethodDeclaration)clazz.getMethod(clazz, "runTests", filter, new Value[0]);
-	}
-	
-	public ArrayList<NovaMethodDeclaration> getMethodsWithTypeAnnotation(Class type)
-	{
-		final ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
-		
-		ClassDeclaration clazz = (ClassDeclaration)parent;
-		
-		clazz.getMethodList().forEachNovaMethod(method -> {
-			if (method.containsAnnotationOfType(type))
-			{
-				methods.add(method);
-			}
-		});
-		
-		return methods;
-	}
-	
-	public void callMethodsWithAnnotationOfType(Class type)
-	{
-		NovaMethodDeclaration runMethod = getRunTestsMethod();
-		
-		getMethodsWithTypeAnnotation(type).forEach(method -> {
-			if (method.getParameterList().getNumParameters() != 0)
-			{
-				SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
-			}
-			
-			MethodCall call = MethodCall.decodeStatement(runMethod, method.getName() + "()", Location.INVALID, true, false, method);
-			
-			runMethod.addChild(call);
-		});
 	}
 	
 	@Override
@@ -152,22 +110,7 @@ public class TestSuiteAnnotation extends Annotation
 	
 	public void writeMessage(Literal message)
 	{
-		NovaMethodDeclaration method = getRunTestsMethod();
-		
-		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(method, "Console.writeLine(\"\")", Location.INVALID, true);
-		
-		((MethodCall)write.getReturnedNode()).getArgumentList().getVisibleChild(0).replaceWith(message);
-		
-		Node first = method.getScope().getFirstStatement();
-		
-		if (first != null)
-		{
-			method.getScope().addChildBefore(first, write);
-		}
-		else
-		{
-			method.getScope().addChild(write);
-		}
+		RunnableTests.super.writeMessage(message);
 		
 		writeMessage = true;
 	}

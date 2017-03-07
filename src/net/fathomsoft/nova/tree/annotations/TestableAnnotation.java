@@ -9,7 +9,7 @@ import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
 
-public class TestableAnnotation extends Annotation implements ModifierAnnotation
+public class TestableAnnotation extends Annotation implements ModifierAnnotation, RunnableTests
 {
 	public String aliasUsed;
 	public boolean generatedRunTestsMethod, writeMessage;
@@ -62,48 +62,6 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 	{
 		ModifierAnnotation.super.onAdded(parent);
 		super.onAdded(parent);
-	}
-	
-	public NovaMethodDeclaration getRunTestsMethod()
-	{
-		ClassDeclaration clazz = (ClassDeclaration)parent;
-		
-		MethodList.SearchFilter filter = new MethodList.SearchFilter();
-		filter.checkAncestor = false;
-		
-		return (NovaMethodDeclaration)clazz.getMethod(clazz, "runTests", filter, new Value[0]);
-	}
-	
-	public ArrayList<NovaMethodDeclaration> getMethodsWithTypeAnnotation(Class type)
-	{
-		final ArrayList<NovaMethodDeclaration> methods = new ArrayList<>();
-		
-		ClassDeclaration clazz = (ClassDeclaration)parent;
-		
-		clazz.getMethodList().forEachNovaMethod(method -> {
-			if (method.containsAnnotationOfType(type))
-			{
-				methods.add(method);
-			}
-		});
-		
-		return methods;
-	}
-	
-	public void callMethodsWithAnnotationOfType(Class type)
-	{
-		NovaMethodDeclaration runMethod = getRunTestsMethod();
-		
-		getMethodsWithTypeAnnotation(type).forEach(method -> {
-			if (method.getParameterList().getNumParameters() != 0)
-			{
-				SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
-			}
-			
-			MethodCall call = MethodCall.decodeStatement(runMethod, method.getName() + "()", Location.INVALID, true, false, method);
-			
-			runMethod.addChild(call);
-		});
 	}
 	
 	@Override
@@ -167,22 +125,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 	
 	public void writeMessage(Literal message)
 	{
-		NovaMethodDeclaration method = getRunTestsMethod();
-		
-		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(method, "Console.writeLine(\"\")", Location.INVALID, true);
-		
-		((MethodCall)write.getReturnedNode()).getArgumentList().getVisibleChild(0).replaceWith(message);
-		
-		Node first = method.getScope().getFirstStatement();
-		
-		if (first != null)
-		{
-			method.getScope().addChildBefore(first, write);
-		}
-		else
-		{
-			method.getScope().addChild(write);
-		}
+		RunnableTests.super.writeMessage(message);
 		
 		writeMessage = true;
 	}
@@ -227,8 +170,6 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 					StaticClassReference failure = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(catchBlock, "Console.writeLine(\"- Failure\")", Location.INVALID, true);
 					catchBlock.addChild(failure);
 				}
-				
-				
 				
 				callMethodsWithAnnotationOfType(CleanTestAnnotation.class);
 			}
