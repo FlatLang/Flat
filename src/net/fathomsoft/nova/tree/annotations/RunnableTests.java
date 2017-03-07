@@ -204,9 +204,9 @@ interface RunnableTests
 		
 		getMethodsWithTypeAnnotation(TestResultAnnotation.class).forEach(callFunction);
 		
-		if (parent.getParentMethod(true).getParameter("propagateFunc") != null)
+		if (parent.getParentMethod(true).getParameter("onResult") != null)
 		{
-			MethodCall call = MethodCall.decodeStatement(parent, "propagateFunc(" + name + ")", Location.INVALID, true, false);
+			MethodCall call = MethodCall.decodeStatement(parent, "onResult(" + name + ")", Location.INVALID, true, false);
 			
 			parent.addChild(call);
 			call.onAfterDecoded();
