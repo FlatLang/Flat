@@ -119,7 +119,23 @@ interface RunnableTests
 			call.onAfterDecoded();
 		};
 		
-		getMethodsWithTypeAnnotation(TestSuccessAnnotation.class).forEach(callFunction);
+		if (success)
+		{
+			getMethodsWithTypeAnnotation(TestSuccessAnnotation.class).forEach(callFunction);
+		}
+		else
+		{
+			getMethodsWithTypeAnnotation(TestFailureAnnotation.class).forEach(callFunction);
+		}
+		
 		getMethodsWithTypeAnnotation(TestResultAnnotation.class).forEach(callFunction);
+		
+		if (parent.getParentMethod(true).getParameter("propagateFunc") != null)
+		{
+			MethodCall call = MethodCall.decodeStatement(parent, "propagateFunc(" + name + ")", Location.INVALID, true, false);
+			
+			parent.addChild(call);
+			call.onAfterDecoded();
+		}
 	}
 }
