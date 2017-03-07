@@ -40,6 +40,22 @@ public interface Annotatable
 	
 	default Annotation getAnnotationOfType(Class c, boolean checkAncestors, boolean checkPending)
 	{
+		return getAnnotationsOfType(c, checkAncestors, checkPending).stream().findFirst().orElse(null);
+	}
+	
+	default ArrayList<Annotation> getAnnotationsOfType(Class c)
+	{
+		return getAnnotationsOfType(c, false);
+	}
+	
+	default ArrayList<Annotation> getAnnotationsOfType(Class c, boolean checkAncestors)
+	{
+		return getAnnotationsOfType(c, checkAncestors, false);
+	}
+	
+	default ArrayList<Annotation> getAnnotationsOfType(Class c, boolean checkAncestors, boolean checkPending)
+	{
+		ArrayList<Annotation> list = new ArrayList<>();
 		ArrayList<Annotation> annotations = getAnnotations();
 		
 		if (annotations != null)
@@ -48,7 +64,7 @@ public interface Annotatable
 			{
 				if (c.isAssignableFrom(a.getClass()))
 				{
-					return a;
+					list.add(a);
 				}
 			}
 		}
@@ -62,11 +78,14 @@ public interface Annotatable
 			
 			if (checkPending && ((Node)this).getFileDeclaration() != null)
 			{
-				return ((Node)this).getFileDeclaration().getPendingAnnotationOfType(c);
+				for (Annotation a : ((Node)this).getFileDeclaration().getPendingAnnotationsOfType(c))
+				{
+					list.add(a);
+				}
 			}
 		}
 		
-		return null;
+		return list;
 	}
 	
 	default Annotation removeAnnotationOfType(Class c)

@@ -100,22 +100,29 @@ public class FileDeclaration extends Node
 	
 	public Annotation getPendingAnnotationOfType(Class type)
 	{
+		return getPendingAnnotationsOfType(type).stream().findFirst().orElse(null);
+	}
+	
+	public ArrayList<Annotation> getPendingAnnotationsOfType(Class type)
+	{
+		ArrayList<Annotation> list = new ArrayList<>();
+		
 		for (Annotation a : pendingAnnotations)
 		{
 			if (type.isAssignableFrom(a.getClass()))
 			{
-				return a;
+				list.add(a);
 			}
 			
 			Annotation b = a.getAnnotationOfType(type);
 			
 			if (b != null)
 			{
-				return b;
+				list.add(b);
 			}
 		}
 		
-		return null;
+		return list;
 	}
 	
 	/**
