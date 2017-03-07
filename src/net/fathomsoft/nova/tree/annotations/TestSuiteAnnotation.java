@@ -57,7 +57,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			
+			implementTestRunner();
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{

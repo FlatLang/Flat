@@ -75,6 +75,10 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			return result;
 		}
 		
+		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			implementTestRunner();
+		}
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			NovaMethodDeclaration method = getRunTestsMethod();
