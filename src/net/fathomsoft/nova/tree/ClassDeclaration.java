@@ -1319,8 +1319,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		
 		MethodDeclaration methods[] = getMethods(methodName, SearchFilter.getDefault());
-		
-		ArrayList<MethodDeclaration> compatible = checkCompatible(methods, arguments);
+			
+			ArrayList<MethodDeclaration> compatible = checkCompatible(methods, arguments);
 		
 		if (compatible.size() > 1)
 		{
@@ -1494,7 +1494,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
 	{
-		return getMethod(contexts, methodName, filter, parameterTypes, reverse, false);
+		return getMethod(contexts, methodName, filter, parameterTypes, reverse, true);
 	}
 	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides)
@@ -1538,6 +1538,10 @@ public class ClassDeclaration extends InstanceDeclaration
 					nonOverride.add(method);
 				}
 			}
+			else
+			{
+				nonOverride.add(m);
+			}
 		}
 		
 		return nonOverride;
@@ -1557,6 +1561,10 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					nonOverload.add(method);
 				}
+			}
+			else
+			{
+				nonOverload.add(m);
 			}
 		}
 		
