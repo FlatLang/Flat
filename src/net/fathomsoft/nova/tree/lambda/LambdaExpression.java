@@ -391,21 +391,24 @@ public class LambdaExpression extends Value
 		
 		for (ClassDeclaration c : classes)
 		{
-			MethodDeclaration[] methods = c.getMethods(call.getName());
-			
-			for (MethodDeclaration m : methods)
+			if (c != null)
 			{
-				if (type.isPrimitiveOverload() && m instanceof NovaMethodDeclaration)
-				{
-					NovaMethodDeclaration converted = ((NovaMethodDeclaration)m).checkConvertToClass(type);
-					
-					if (converted != null)
-					{
-						m = converted;
-					}
-				}
+				MethodDeclaration[] methods = c.getMethods(call.getName());
 				
-				temp.add(m);
+				for (MethodDeclaration m : methods)
+				{
+					if (type.isPrimitiveOverload() && m instanceof NovaMethodDeclaration)
+					{
+						NovaMethodDeclaration converted = ((NovaMethodDeclaration)m).checkConvertToClass(type);
+						
+						if (converted != null)
+						{
+							m = converted;
+						}
+					}
+					
+					temp.add(m);
+				}
 			}
 		}
 		
