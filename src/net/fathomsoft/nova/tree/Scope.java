@@ -56,7 +56,14 @@ public class Scope extends Node
 	
 	public String getUniqueName(String value)
 	{
-		while (searchVariable(this, this, value, true) instanceof LocalDeclaration)
+		return getUniqueName(value, false);
+	}
+	
+	public String getUniqueName(String value, boolean localOnly)
+	{
+		VariableDeclaration var = null;
+		
+		while ((var = searchVariable(this, this, value, true)) != null && (!localOnly || var instanceof LocalDeclaration))
 		{
 			value += "_";
 		}
