@@ -3,6 +3,8 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.exceptionhandling.Catch;
+import net.fathomsoft.nova.tree.exceptionhandling.Try;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
@@ -205,16 +207,28 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 				
 				callMethodsWithAnnotationOfType(InitTestAnnotation.class);
 				
-				MethodCall call = MethodCall.decodeStatement(runMethod, method.getName() + "()", Location.INVALID, true, false, method);
+				Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
 				
-				runMethod.addChild(call);
+				MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "()", Location.INVALID, true, false, method);
+				
+				tryBlock.addChild(call);
+				
+				runMethod.addChild(tryBlock);
+				
+				Catch catchBlock = Catch.decodeStatement(runMethod, "catch (Exception e)", Location.INVALID, true);
+				
+				runMethod.addChild(catchBlock);
 				
 				if (test.writeMessage)
 				{
-					StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(method, "Console.writeLine(\"- Success\")", Location.INVALID, true);
+					StaticClassReference success = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(tryBlock, "Console.writeLine(\"- Success\")", Location.INVALID, true);
+					tryBlock.addChild(success);
 					
-					runMethod.addChild(write);
+					StaticClassReference failure = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(catchBlock, "Console.writeLine(\"- Failure\")", Location.INVALID, true);
+					catchBlock.addChild(failure);
 				}
+				
+				
 				
 				callMethodsWithAnnotationOfType(CleanTestAnnotation.class);
 			}
