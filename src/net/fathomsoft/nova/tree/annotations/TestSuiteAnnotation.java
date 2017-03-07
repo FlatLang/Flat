@@ -93,7 +93,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 				
 				TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
 				
-				if (containsResultFunction && testable.generatedRunTestsMethod)
+				if (testable.generatedRunTestsMethod)
 				{
 					NovaMethodDeclaration method = testable.getRunTestsMethod();
 					
@@ -182,6 +182,8 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 	
 	public void addTestCalls()
 	{
+		ClassDeclaration clazz = (ClassDeclaration)parent;
+		
 		final NovaMethodDeclaration runMethod = getRunTestsMethod();
 		
 		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
