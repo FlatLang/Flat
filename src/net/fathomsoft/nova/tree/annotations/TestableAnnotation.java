@@ -5,6 +5,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.exceptionhandling.Catch;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
@@ -138,6 +139,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		
 		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
 		
+		getFileDeclaration().addImport("nova/time/Timer");
+		
 		clazz.getMethodList().forEachNovaMethod(method -> {
 			if (method.containsAnnotationOfType(TestAnnotation.class))
 			{
@@ -150,6 +153,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 				
 				callMethodsWithAnnotationOfType(InitTestAnnotation.class);
 				
+				Variable timer = generateTimer(runMethod, method);
+				
 				Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
 				
 				MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "()", Location.INVALID, true, false, method);
@@ -157,10 +162,12 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 				tryBlock.addChild(call);
 				
 				runMethod.addChild(tryBlock);
+				stopTimer(tryBlock, timer);
 				
 				Catch catchBlock = Catch.decodeStatement(runMethod, "catch (Exception e)", Location.INVALID, true);
 				
 				runMethod.addChild(catchBlock);
+				stopTimer(catchBlock, timer);
 				
 				if (test.writeMessage)
 				{
@@ -180,6 +187,28 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(runMethod, "Console.writeLine()", Location.INVALID, true);
 		
 		runMethod.addChild(write);
+	}
+	
+	public Variable generateTimer(Node parent, NovaMethodDeclaration method)
+	{
+		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(method.getName() + "Timer");
+		
+		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = new Timer().start()", Location.INVALID, true);
+		
+		parent.addChild(a);
+		a.onAfterDecoded();
+		
+		return a.getAssignedNode();
+	}
+	
+	public Variable stopTimer(Node parent, Variable timer)
+	{
+		Variable stopped = (Variable)SyntaxTree.decodeIdentifierAccess(parent, timer.getName() + ".stop()", Location.INVALID, true, false, true);
+		
+		parent.addChild(stopped);
+		stopped.onAfterDecoded();
+		
+		return stopped;
 	}
 	
 	@Override
