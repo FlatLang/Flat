@@ -138,6 +138,21 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		return runner;
 	}
 	
+	public String getTestCaseInitializer()
+	{
+		String initializerValues = "[" + String.join(", ", getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
+			.map(x -> (TestAnnotation)x.getAnnotationOfType(TestAnnotation.class))
+			.map(x -> x.generateTestCase().getName())
+			.collect(Collectors.toList())) + "]";
+		
+		if (initializerValues.length() == 2)
+		{
+			initializerValues = "new TestCase[0]";
+		}
+		
+		return initializerValues;
+	}
+	
 	public void insertMessage()
 	{
 		if (parameters.containsKey("message"))
