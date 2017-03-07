@@ -48,12 +48,15 @@ public class ClosureVariable extends Variable
 	 */
 	public static VariableDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		FieldDeclaration temp = new FieldDeclaration(parent, location);
+		statement = temp.parseModifiers(statement);
+		
 		NovaMethodDeclaration method = NovaMethodDeclaration.decodeStatement(parent, statement, location, false);
 		
 		if (method != null)
 		{
-			VarAnnotation var = (VarAnnotation)method.getAnnotationOfType(VarAnnotation.class, false, true);
-			FinalAnnotation fin = (FinalAnnotation)method.getAnnotationOfType(FinalAnnotation.class, false, true);
+			VarAnnotation var = (VarAnnotation)temp.getAnnotationOfType(VarAnnotation.class, false, true);
+			FinalAnnotation fin = (FinalAnnotation)temp.getAnnotationOfType(FinalAnnotation.class, false, true);
 			
 			if (var != null || fin != null && (fin.getAliasUsed() == null || !fin.getAliasUsed().equals("final")))
 			{
@@ -64,6 +67,7 @@ public class ClosureVariable extends Variable
 					LocalDeclaration node = new LocalDeclaration(scopeAncestor, location);
 					node.setName(method.getName());
 					node.setType(method.getFunctionReferenceType());
+					node.inheritAnnotations(temp);
 					
 					node.inheritAnnotations(method);
 					
@@ -74,6 +78,7 @@ public class ClosureVariable extends Variable
 					FieldDeclaration node = new FieldDeclaration(parent, location);
 					node.setName(method.getName());
 					node.setType(method.getFunctionReferenceType());
+					node.inheritAnnotations(temp);
 					
 					node.inheritAnnotations(method);
 					
