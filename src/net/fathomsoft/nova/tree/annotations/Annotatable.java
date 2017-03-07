@@ -73,7 +73,10 @@ public interface Annotatable
 		{
 			if (((Node)this).getParent() != null && ((Node)this).getParent() instanceof FileDeclaration == false)
 			{
-				return ((Node)this).getParent().getAnnotationOfType(c, true, checkPending);
+				for (Annotation a : ((Node)this).getParent().getAnnotationsOfType(c, true, checkPending))
+				{
+					list.add(a);
+				}
 			}
 			
 			if (checkPending && ((Node)this).getFileDeclaration() != null)
