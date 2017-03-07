@@ -443,7 +443,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 					passedValues.add(value);
 					
 					Parameter param = new Parameter(func.getParameterList(), Location.INVALID);
-					param.setType(value);
+					param.setType(value.getReturnedNode());
 					param.setName("value" + i);
 					func.getParameterList().addChild(param);
 					
