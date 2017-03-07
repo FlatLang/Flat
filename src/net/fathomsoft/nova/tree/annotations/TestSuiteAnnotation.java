@@ -15,6 +15,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 {
 	public boolean generatedRunTestsMethod, writeMessage;
 	public AnonymousCompilerMethod propagationFunction;
+	public String suiteInitializer;
 	public FieldDeclaration suiteRunner;
 	
 	public TestSuiteAnnotation(Node temporaryParent, Location locationIn)
@@ -190,6 +191,22 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		return null;
 	}
 	
+	public String getTestSuiteInitializer()
+	{
+		String initializerValues = "[" + String.join(", ", Arrays.stream((String[])parameters.get("classes"))
+			.map(x -> getFileDeclaration().getImportedClass(this, x))
+			.map(x -> (TestableAnnotation)x.getAnnotationOfType(TestableAnnotation.class))
+			.map(x -> x.getParentClass().getName() + "." + x.generateTestRunner().getName())
+			.collect(Collectors.toList())) + "]";
+		
+		if (initializerValues.length() == 2)
+		{
+			initializerValues = "new TestRunner[0]";
+		}
+		
+		return initializerValues;
+	}
+	
 	public void insertMessage()
 	{
 //		if (parameters.containsKey("message"))
@@ -242,7 +259,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			c.getMethodList().forEachNovaMethod(x -> {
 				if (x instanceof InitializationMethod)
 				{
-					initializeTestCases((InitializationMethod)x);
+//					initializeTestCases((InitializationMethod)x);
 				}
 			});
 		}
