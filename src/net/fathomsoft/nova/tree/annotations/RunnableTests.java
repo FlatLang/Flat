@@ -87,11 +87,9 @@ interface RunnableTests
 		});
 	}
 	
-	default void writeMessage(Literal message)
+	default void writeMessage(Literal message, NovaMethodDeclaration method, boolean newLine)
 	{
-		NovaMethodDeclaration method = getRunTestsMethod();
-		
-		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(method, "Console.writeLine(\"\")", Location.INVALID, true);
+		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(method, "Console.write" + (newLine ? "Line" : "") + "(\"\")", Location.INVALID, true);
 		
 		((MethodCall)write.getReturnedNode()).getArgumentList().getVisibleChild(0).replaceWith(message);
 		
