@@ -10,6 +10,20 @@ import java.util.function.Consumer;
 
 interface RunnableTests
 {
+	default void implementTestRunner()
+	{
+		ClassDeclaration clazz = (ClassDeclaration)((Node)this).parent;
+		
+		if (!clazz.implementsInterface(((Node)this).getProgram().getClassDeclaration("novex/nest/TestRunner")))
+		{
+			((Node)this).getFileDeclaration().addImport("novex/nest/TestRunner");
+			
+			TraitImplementation implementation = TraitImplementation.decodeStatement(clazz, "TestRunner", Location.INVALID, true);
+			
+			clazz.getInterfacesImplementationList().addChild(implementation);
+		}
+	}
+	
 	default NovaMethodDeclaration getRunTestsMethod()
 	{
 		ClassDeclaration clazz = (ClassDeclaration)((Node)this).parent;
