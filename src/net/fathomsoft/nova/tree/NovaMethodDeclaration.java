@@ -447,6 +447,16 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		return overloadID != -1;
 	}
 	
+	public void addDefaultParameterInitializations()
+	{
+		for (Parameter p : getParameterList().getOptionalParameters())
+		{
+			DefaultParameterInitialization init = new DefaultParameterInitialization(this, getLocationIn(), p);
+			
+			addChild(init);
+		}
+	}
+	
 	@Override
 	public NovaParameterList getParameterList()
 	{
