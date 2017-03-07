@@ -24,6 +24,24 @@ interface RunnableTests
 		}
 	}
 	
+	default Assignment initializeTestCount(InitializationMethod parent, int count)
+	{
+		Assignment a = Assignment.decodeStatement(parent, "this.testCount = " + count, Location.INVALID, true);
+		
+		if (parent.getScope().getFirstStatement() == null)
+		{
+			parent.getScope().addChild(a);
+		}
+		else
+		{
+			parent.getScope().addChildBefore(parent.getScope().getFirstStatement(), a);
+		}
+		
+		a.onAfterDecoded();
+		
+		return a;
+	}
+	
 	default NovaMethodDeclaration getRunTestsMethod()
 	{
 		ClassDeclaration clazz = (ClassDeclaration)((Node)this).parent;

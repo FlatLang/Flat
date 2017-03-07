@@ -194,6 +194,17 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			runMethod.addChild(call);
 			call.onAfterDecoded();
+			
+			ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
+			
+			TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
+			
+			clazz.getMethodList().forEachNovaMethod(x -> {
+				if (x instanceof InitializationMethod)
+				{
+					initializeTestCount((InitializationMethod)x, testable.getMethodsWithTypeAnnotation(TestAnnotation.class).size());
+				}
+			});
 		}
 		
 		for (String className : classNames)
