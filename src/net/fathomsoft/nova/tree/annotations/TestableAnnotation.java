@@ -139,47 +139,46 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		
 		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
 		
-		getFileDeclaration().addImport("nova/time/Timer");
-		
-		clazz.getMethodList().forEachNovaMethod(method -> {
-			if (method.containsAnnotationOfType(TestAnnotation.class))
+		getMethodsWithTypeAnnotation(TestAnnotation.class).forEach(method -> {
+			getFileDeclaration().addImport("nova/time/Timer");
+			
+			TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
+			
+			if (method.getParameterList().getNumParameters() > 0)
 			{
-				TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
-				
-				if (method.getParameterList().getNumParameters() > 0)
-				{
-					SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
-				}
-				
-				callMethodsWithAnnotationOfType(InitTestAnnotation.class);
-				
-				Variable timer = generateTimer(runMethod, method.getName());
-				
-				Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
-				
-				MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "()", Location.INVALID, true, false, method);
-				
-				tryBlock.addChild(call);
-				
-				runMethod.addChild(tryBlock);
-				stopTimer(tryBlock, timer);
-				
-				Catch catchBlock = Catch.decodeStatement(runMethod, "catch (Exception e)", Location.INVALID, true);
-				
-				runMethod.addChild(catchBlock);
-				stopTimer(catchBlock, timer);
-				
-				if (test.writeMessage)
-				{
-					StaticClassReference success = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(tryBlock, "Console.writeLine(\"- Success\")", Location.INVALID, true);
-					tryBlock.addChild(success);
-					
-					StaticClassReference failure = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(catchBlock, "Console.writeLine(\"- Failure\")", Location.INVALID, true);
-					catchBlock.addChild(failure);
-				}
-				
-				callMethodsWithAnnotationOfType(CleanTestAnnotation.class);
+				SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
 			}
+			
+			callMethodsWithAnnotationOfType(InitTestAnnotation.class);
+			
+			Variable timer = generateTimer(runMethod, method.getName());
+			
+			Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
+			
+			MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "()", Location.INVALID, true, false, method);
+			
+			tryBlock.addChild(call);
+			
+			runMethod.addChild(tryBlock);
+			stopTimer(tryBlock, timer);
+			
+			Catch catchBlock = Catch.decodeStatement(runMethod, "catch (Exception e)", Location.INVALID, true);
+			
+			runMethod.addChild(catchBlock);
+			stopTimer(catchBlock, timer);
+			
+			if (test.writeMessage)
+			{
+				StaticClassReference success = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(tryBlock, "Console.writeLine(\"- Success\")", Location.INVALID, true);
+				tryBlock.addChild(success);
+				addResultCall(tryBlock, true);
+				
+				StaticClassReference failure = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(catchBlock, "Console.writeLine(\"- Failure\")", Location.INVALID, true);
+				catchBlock.addChild(failure);
+				addResultCall(tryBlock, false);
+			}
+			
+			callMethodsWithAnnotationOfType(CleanTestAnnotation.class);
 		});
 		
 		callMethodsWithAnnotationOfType(CleanTestClassAnnotation.class);
