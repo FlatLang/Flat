@@ -71,7 +71,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			if (method == null)
 			{
-				method = BodyMethodDeclaration.decodeStatement(parent, "public runTests()", Location.INVALID, true);
+				method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {})", Location.INVALID, true);
 				
 				parent.addChild(method);
 				
@@ -274,7 +274,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			String propFunc = propagationFunction != null ? propagationFunction.getName() : "";
 			
-			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(" + propFunc + ")", getLocationIn(), true);
+			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult)", getLocationIn(), true);
 			runMethod.addChild(call);
 		}
 	}
