@@ -26,6 +26,23 @@ interface RunnableTests
 	}
 	
 	default Assignment initializeTestCases(InitializationMethod parent)
+	default MethodCall.Pair<FieldDeclaration, FieldDeclaration> generateTestRunnerFields(String testRunnerType, String name, String initializer)
+	{
+		((Annotation)this).getFileDeclaration().addImport("novex/nest/TestRunnerModel");
+		
+		FieldDeclaration runner = addFieldInitialization(testRunnerType, name, initializer);
+		runner.validate(((Annotation)this).getProgram().getPhase());
+		
+		FieldDeclaration override = FieldDeclaration.decodeStatement(((Annotation)this).parent, "visible TestRunnerModel model => " + name, Location.INVALID, true);
+		
+		((Annotation)this).parent.addChild(override);
+		override.onAfterDecoded();
+		override.validate(SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
+		override.validate(SyntaxTree.PHASE_METHOD_CONTENTS);
+		
+		return new MethodCall.Pair<>(runner, override);
+	}
+	
 	{
 		((Node)this).getFileDeclaration().addImport("novex/nest/TestCase");
 		
