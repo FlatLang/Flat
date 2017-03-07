@@ -153,7 +153,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 				
 				callMethodsWithAnnotationOfType(InitTestAnnotation.class);
 				
-				Variable timer = generateTimer(runMethod, method);
+				Variable timer = generateTimer(runMethod, method.getName());
 				
 				Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
 				
@@ -189,9 +189,9 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		runMethod.addChild(write);
 	}
 	
-	public Variable generateTimer(Node parent, NovaMethodDeclaration method)
+	public Variable generateTimer(Node parent, String prefix)
 	{
-		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(method.getName() + "Timer");
+		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer");
 		
 		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = new Timer().start()", Location.INVALID, true);
 		
