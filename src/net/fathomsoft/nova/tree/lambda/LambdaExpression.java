@@ -231,7 +231,9 @@ public class LambdaExpression extends Value
 			
 			NovaMethodDeclaration parentMethod = parent.getParentMethod();
 			
-			int scopeId = parent.getAncestorWithScope().getScope().getID();
+			Node ancestor = parent.getAncestorWithScope();
+			
+			int scopeId = ancestor != null ? ancestor.getScope().getID() : 0;
 			bodyMethod.cloneTo(method);
 			method.getScope().slaughterEveryLastVisibleChild();
 			method.getScope().id = scopeId;
