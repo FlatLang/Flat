@@ -109,7 +109,9 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		
 		if (method == null)
 		{
-			method = BodyMethodDeclaration.decodeStatement(parent, "public runTests()", Location.INVALID, true);
+			getFileDeclaration().addImport("novex/nest/TestResult");
+			
+			method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {})", Location.INVALID, true);
 			
 			parent.addChild(method);
 			
