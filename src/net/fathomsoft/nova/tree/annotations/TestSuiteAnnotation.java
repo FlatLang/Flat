@@ -201,7 +201,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
 			
-			clazz.getMethodList().forEachNovaMethod(x -> {
+			c.getMethodList().forEachNovaMethod(x -> {
 				if (x instanceof InitializationMethod)
 				{
 					initializeTestCount((InitializationMethod)x, testable.getMethodsWithTypeAnnotation(TestAnnotation.class).size());
