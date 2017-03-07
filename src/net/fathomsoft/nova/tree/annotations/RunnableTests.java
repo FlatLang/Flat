@@ -152,7 +152,7 @@ interface RunnableTests
 	{
 		parent.getFileDeclaration().addImport("nova/time/Timer");
 		
-		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer");
+		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer", true);
 		
 		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = new Timer().start()", Location.INVALID, true);
 		
@@ -180,8 +180,8 @@ interface RunnableTests
 		
 		String description = test.parameters.containsKey("message") && ((Literal)test.parameters.get("message")).isStringInstantiation() ? ", " + ((Node)test.parameters.get("message")).generateNovaInput() : "";
 		
-		String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult");
-		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = new TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", " + test.testCase.getName() + ")", Location.INVALID, true);
+		String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult", true);
+		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = new TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", " + test.generateTestCase().getName() + ")", Location.INVALID, true);
 		
 		parent.addChild(a);
 		a.onAfterDecoded();
