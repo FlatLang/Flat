@@ -1,18 +1,10 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.*;
-import net.fathomsoft.nova.tree.variables.FieldDeclaration;
-import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.function.Consumer;
-
-public class TestAnnotation extends Annotation implements ModifierAnnotation
+public class TestAnnotation extends Annotation implements ModifierAnnotation, RunnableTests
 {
 	public String aliasUsed;
 	public boolean writeMessage;
@@ -108,22 +100,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation
 	
 	public void writeMessage(Literal message)
 	{
-		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(parent, "Console.write(\"\")", Location.INVALID, true);
-		
-		((MethodCall)write.getReturnedNode()).getArgumentList().getVisibleChild(0).replaceWith(message);
-		
-		NovaMethodDeclaration method = (NovaMethodDeclaration)parent;
-		
-		Node first = method.getScope().getFirstStatement();
-		
-		if (first != null)
-		{
-			method.getScope().addChildBefore(first, write);
-		}
-		else
-		{
-			method.getScope().addChild(write);
-		}
+		RunnableTests.super.writeMessage(message);
 		
 		writeMessage = true;
 	}
