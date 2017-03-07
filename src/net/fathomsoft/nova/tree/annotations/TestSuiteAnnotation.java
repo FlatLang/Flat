@@ -167,6 +167,29 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		}
 	}
 	
+	public FieldDeclaration checkGenerateField()
+	{
+		if (getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream().map(x -> (TestSuiteAnnotation)x).allMatch(x -> x.suiteInitializer != null))
+		{
+			getFileDeclaration().addImport("novex/nest/TestSuiteRunnerModel");
+			getFileDeclaration().addImport("novex/nest/TestSuite");
+			NovaMethodDeclaration method = getRunTestsMethod();
+			
+			String name = method.getScope().getUniqueName("_" + method.getName() + "TestSuite");
+			
+			String initializer = "[" + String.join(", ", getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream()
+				.map(x -> (TestSuiteAnnotation)x)
+				.map(x -> "new TestSuite(" + x.suiteInitializer + ")")
+				.collect(Collectors.toList())) + "]";
+			
+			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestSuiteRunnerModel", name, "new TestSuiteRunnerModel(" + initializer + ")");
+			
+			return fields.a;
+		}
+		
+		return null;
+	}
+	
 	public void insertMessage()
 	{
 //		if (parameters.containsKey("message"))
