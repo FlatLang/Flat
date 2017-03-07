@@ -6,6 +6,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 interface RunnableTests
 {
@@ -73,6 +74,8 @@ interface RunnableTests
 	
 	default Variable generateTimer(Node parent, String prefix)
 	{
+		parent.getFileDeclaration().addImport("nova/time/Timer");
+		
 		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer");
 		
 		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = new Timer().start()", Location.INVALID, true);

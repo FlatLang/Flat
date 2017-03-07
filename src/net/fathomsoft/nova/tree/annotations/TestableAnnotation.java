@@ -140,7 +140,6 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
 		
 		getMethodsWithTypeAnnotation(TestAnnotation.class).forEach(method -> {
-			getFileDeclaration().addImport("nova/time/Timer");
 			getFileDeclaration().addImport("novex/nest/NestException");
 			
 			TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
