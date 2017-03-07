@@ -96,8 +96,28 @@ interface RunnableTests
 		return stopped;
 	}
 	
-	default void addResultCall(Node parent, boolean success)
+	default void addResultCall(Node parent, boolean success, Variable timer, NovaMethodDeclaration method)
 	{
+		parent.getFileDeclaration().addImport("novex/nest/TestResult");
 		
+		TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
+		
+		String description = test.parameters.containsKey("message") ? ", " + ((Node)test.parameters.get("message")).generateNovaInput() : "";
+		
+		String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult");
+		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = new TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", \"" + method.getName() + "\"" + description + ")", Location.INVALID, true);
+		
+		parent.addChild(a);
+		a.onAfterDecoded();
+		
+		Consumer<NovaMethodDeclaration> callFunction = m -> {
+			MethodCall call = MethodCall.decodeStatement(parent, m.getName() + "(" + name + ")", Location.INVALID, true, false, m);
+			
+			parent.addChild(call);
+			call.onAfterDecoded();
+		};
+		
+		getMethodsWithTypeAnnotation(TestSuccessAnnotation.class).forEach(callFunction);
+		getMethodsWithTypeAnnotation(TestResultAnnotation.class).forEach(callFunction);
 	}
 }
