@@ -44,7 +44,7 @@ interface RunnableTests
 	
 	default NovaMethodDeclaration getRunTestsMethod()
 	{
-		ClassDeclaration clazz = (ClassDeclaration)((Node)this).parent;
+		ClassDeclaration clazz = ((Node)this).getParentClass(true);
 		
 		MethodList.SearchFilter filter = new MethodList.SearchFilter();
 		filter.checkAncestor = false;
