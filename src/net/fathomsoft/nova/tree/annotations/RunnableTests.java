@@ -2,10 +2,13 @@ package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -52,20 +55,21 @@ interface RunnableTests
 		return new MethodCall.Pair<>(runner, override);
 	}
 	
+	
+	default Assignment initializeTestSuiteRunners(InitializationMethod parent, TestSuiteAnnotation suite)
 	{
 		((Node)this).getFileDeclaration().addImport("novex/nest/TestCase");
 		
-		String initializerValues = "[" + String.join(", ", ((TestableAnnotation)parent.getParentClass().getAnnotationOfType(TestableAnnotation.class))
-			.getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
-			.map(x -> (TestAnnotation)x.getAnnotationOfType(TestAnnotation.class))
-			.map(x -> x.testCase.getName()).collect(Collectors.toList())) + "]";
+		String initializerValues = "[" /*+ String.join(", ", Arrays.stream((String[])suite.parameters.get("classes"))
+			.map(x -> suite.getFileDeclaration().getImportedClass(parent, x))
+			.collect(Collectors.toList()))*/ + "]";
 		
 		if (initializerValues.length() == 2)
 		{
-			initializerValues = "new TestCase[0]";
+			initializerValues = "new TestRunner[0]";
 		}
 		
-		Assignment a = Assignment.decodeStatement(parent, "this.testCases = " + initializerValues, Location.INVALID, true);
+		Assignment a = Assignment.decodeStatement(parent, "this.testRunners = " + initializerValues, Location.INVALID, true);
 		
 		if (parent.getScope().getFirstStatement() == null)
 		{
