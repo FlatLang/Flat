@@ -75,18 +75,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			getFileDeclaration().addImport("novex/nest/TestCase");
 			
-			String name = method.getScope().getUniqueName("_" + method.getName() + "TestCase");
-			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateNovaInput() : "";
-			
-			FieldDeclaration testCase = FieldDeclaration.decodeStatement(getParentClass(), "static compiler_visible TestCase " + name + " = new TestCase(\"" + method.getName() + "\"" + description + ")", Location.INVALID, true);
-			
-			getParentClass().addChild(testCase);
-			testCase.onAfterDecoded();
-			testCase.validate(phase);
-			
-			this.testCase = testCase;
 		}
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
@@ -113,6 +102,24 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 		}
 		
 		return result;
+	}
+	
+	public FieldDeclaration generateTestCase()
+	{
+		if (testCase == null)
+		{
+			NovaMethodDeclaration method = (NovaMethodDeclaration)parent;
+			
+			getFileDeclaration().addImport("novex/nest/TestCase");
+			
+			String name = method.getScope().getUniqueName("_" + method.getName() + "TestCase");
+			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateNovaInput() : "";
+			
+			testCase = addFieldInitialization("TestCase", name, "new TestCase(\"" + method.getName() + "\"" + description + ")");
+			testCase.validate(getProgram().getPhase());
+		}
+		
+		return testCase;
 	}
 	
 	public void writeMessage(Literal message)
