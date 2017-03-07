@@ -48,6 +48,7 @@ interface RunnableTests
 		
 		MethodList.SearchFilter filter = new MethodList.SearchFilter();
 		filter.checkAncestor = false;
+		filter.checkInterfaces = false;
 		
 		MethodDeclaration[] methods = clazz.getMethods("runTests", filter);
 		
