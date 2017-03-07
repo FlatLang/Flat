@@ -2,6 +2,7 @@ package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
@@ -68,5 +69,27 @@ interface RunnableTests
 		{
 			method.getScope().addChild(write);
 		}
+	}
+	
+	default Variable generateTimer(Node parent, String prefix)
+	{
+		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer");
+		
+		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = new Timer().start()", Location.INVALID, true);
+		
+		parent.addChild(a);
+		a.onAfterDecoded();
+		
+		return a.getAssignedNode();
+	}
+	
+	default Variable stopTimer(Node parent, Variable timer)
+	{
+		Variable stopped = (Variable)SyntaxTree.decodeIdentifierAccess(parent, timer.getName() + ".stop()", Location.INVALID, true, false, true);
+		
+		parent.addChild(stopped);
+		stopped.onAfterDecoded();
+		
+		return stopped;
 	}
 }

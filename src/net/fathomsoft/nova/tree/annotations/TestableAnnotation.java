@@ -189,28 +189,6 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		runMethod.addChild(write);
 	}
 	
-	public Variable generateTimer(Node parent, String prefix)
-	{
-		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer");
-		
-		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = new Timer().start()", Location.INVALID, true);
-		
-		parent.addChild(a);
-		a.onAfterDecoded();
-		
-		return a.getAssignedNode();
-	}
-	
-	public Variable stopTimer(Node parent, Variable timer)
-	{
-		Variable stopped = (Variable)SyntaxTree.decodeIdentifierAccess(parent, timer.getName() + ".stop()", Location.INVALID, true, false, true);
-		
-		parent.addChild(stopped);
-		stopped.onAfterDecoded();
-		
-		return stopped;
-	}
-	
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
