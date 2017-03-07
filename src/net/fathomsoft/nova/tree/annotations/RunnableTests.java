@@ -25,7 +25,16 @@ interface RunnableTests
 		}
 	}
 	
-	default Assignment initializeTestCases(InitializationMethod parent)
+	default FieldDeclaration addFieldInitialization(String type, String name, String initialization)
+	{
+		FieldDeclaration field = FieldDeclaration.decodeStatement(((Node)this).getParentClass(true), "static visible " + type + " " + name + " = " + initialization, Location.INVALID, true);
+		
+		((Node)this).getParentClass().addChild(field);
+		field.onAfterDecoded();
+		
+		return field;
+	}
+	
 	default MethodCall.Pair<FieldDeclaration, FieldDeclaration> generateTestRunnerFields(String testRunnerType, String name, String initializer)
 	{
 		((Annotation)this).getFileDeclaration().addImport("novex/nest/TestRunnerModel");
