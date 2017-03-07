@@ -80,7 +80,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 			String name = method.getScope().getUniqueName("_" + method.getName() + "TestCase");
 			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateNovaInput() : "";
 			
-			FieldDeclaration testCase = FieldDeclaration.decodeStatement(getParentClass(), "compiler_visible TestCase " + name + " = new TestCase(\"" + method.getName() + "\", " + method.getName() + description + ")", Location.INVALID, true);
+			FieldDeclaration testCase = FieldDeclaration.decodeStatement(getParentClass(), "static compiler_visible TestCase " + name + " = new TestCase(\"" + method.getName() + "\"" + description + ")", Location.INVALID, true);
 			
 			getParentClass().addChild(testCase);
 			testCase.onAfterDecoded();
