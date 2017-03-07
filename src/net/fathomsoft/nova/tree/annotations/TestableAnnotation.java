@@ -18,6 +18,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 {
 	public String aliasUsed;
 	public boolean generatedRunTestsMethod, writeMessage;
+	public FieldDeclaration runner;
 	
 	@Override
 	public String getAliasUsed()
@@ -116,6 +117,25 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		}
 		
 		return method;
+	}
+	
+	public FieldDeclaration generateTestRunner()
+	{
+		if (runner == null)
+		{
+			getFileDeclaration().addImport("novex/nest/TestCase");
+			getFileDeclaration().addImport("novex/nest/TestRunnerModel");
+			NovaMethodDeclaration method = searchRunTestsMethod();
+			
+			String name = method.getScope().getUniqueName("_" + method.getName() + "TestRunner");
+			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateNovaInput() : "";
+			
+			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestRunnerModel", name, "new TestRunnerModel(" + getTestCaseInitializer() + description + ")");
+			
+			runner = fields.a;
+		}
+		
+		return runner;
 	}
 	
 	public void insertMessage()
