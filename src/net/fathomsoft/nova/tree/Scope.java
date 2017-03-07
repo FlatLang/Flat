@@ -54,6 +54,16 @@ public class Scope extends Node
 		id = getNextScopeAncestor(false).generateUniqueID(this);
 	}
 	
+	public String getUniqueName(String value)
+	{
+		while (searchVariable(this, this, value, true) instanceof LocalDeclaration)
+		{
+			value += "_";
+		}
+		
+		return value;
+	}
+	
 	public DefaultParameterInitialization[] getDefaultParameterInitializations()
 	{
 		ArrayList<DefaultParameterInitialization> list = new ArrayList<>();
