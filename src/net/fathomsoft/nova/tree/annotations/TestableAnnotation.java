@@ -141,6 +141,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		
 		getMethodsWithTypeAnnotation(TestAnnotation.class).forEach(method -> {
 			getFileDeclaration().addImport("nova/time/Timer");
+			getFileDeclaration().addImport("novex/nest/NestException");
 			
 			TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
 			
@@ -162,7 +163,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			runMethod.addChild(tryBlock);
 			stopTimer(tryBlock, timer);
 			
-			Catch catchBlock = Catch.decodeStatement(runMethod, "catch (Exception e)", Location.INVALID, true);
+			Catch catchBlock = Catch.decodeStatement(runMethod, "catch (NestException e)", Location.INVALID, true);
 			
 			runMethod.addChild(catchBlock);
 			stopTimer(catchBlock, timer);
