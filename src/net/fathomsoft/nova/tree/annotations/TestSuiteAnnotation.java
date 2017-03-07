@@ -7,10 +7,12 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public class TestSuiteAnnotation extends Annotation implements RunnableTests
 {
 	public boolean generatedRunTestsMethod, writeMessage;
+	public AnonymousCompilerMethod propagationFunction;
 	
 	public TestSuiteAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -102,7 +104,39 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 					method.getParameterList().addChild(param);
 					param.onAfterDecoded();
 					param.validate(phase);
+					method.addDefaultParameterInitializations();
 				}
+			}
+			
+			if (containsResultFunction)
+			{
+				getFileDeclaration().addImport("novex/nest/TestResult");
+				propagationFunction = getParentClass(true).generateAnonymousFunction();
+				
+				Parameter param = Parameter.decodeStatement(propagationFunction.getParameterList(), "TestResult result", Location.INVALID, true);
+				propagationFunction.getParameterList().addChild(param);
+				
+				getParentClass(true).addChild(propagationFunction);
+				
+				IfStatement ifStatement = IfStatement.decodeStatement(propagationFunction, "if (result.success)", Location.INVALID, true);
+				propagationFunction.addChild(ifStatement);
+				
+				ElseStatement elseStatement = ElseStatement.decodeStatement(propagationFunction, "else", Location.INVALID, true);
+				propagationFunction.addChild(elseStatement);
+				
+				Function<NovaMethodDeclaration, MethodCall> generateCall = m -> {
+					return MethodCall.decodeStatement(propagationFunction, m.getName() + "(result)", Location.INVALID, true);
+				};
+				
+				getMethodsWithTypeAnnotation(TestSuccessAnnotation.class).forEach(m -> {
+					ifStatement.addChild(generateCall.apply(m));
+				});
+				getMethodsWithTypeAnnotation(TestFailureAnnotation.class).forEach(m -> {
+					elseStatement.addChild(generateCall.apply(m));
+				});
+				getMethodsWithTypeAnnotation(TestResultAnnotation.class).forEach(m -> {
+					propagationFunction.addChild(generateCall.apply(m));
+				});
 			}
 			
 			insertMessage();
@@ -170,7 +204,9 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			NovaMethodDeclaration method = testable.getRunTestsMethod();
 			
-			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "()", getLocationIn(), true);
+			String propFunc = propagationFunction != null ? propagationFunction.getName() : "";
+			
+			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(" + propFunc + ")", getLocationIn(), true);
 			runMethod.addChild(call);
 		}
 	}
