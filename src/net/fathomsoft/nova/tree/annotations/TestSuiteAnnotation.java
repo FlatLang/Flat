@@ -74,6 +74,17 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
+			String[] classNames = (String[])parameters.get("classes");
+			
+			for (String className : classNames)
+			{
+				ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
+				
+				SyntaxMessage.queryError("Class '" + className + "' is not imported", this, c == null);
+				SyntaxMessage.queryError("Class '" + className + "' is does not contain Testable annotation", this, !c.containsAnnotationOfType(TestableAnnotation.class));
+				SyntaxMessage.queryError("Testable class '" + className + "' requires a default constructor", this, !c.containsDefaultConstructor());
+			}
+			
 			insertMessage();
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
@@ -125,16 +136,9 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		
 		for (String className : classNames)
 		{
-			ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
-			
-			SyntaxMessage.queryError("Class '" + className + "' is not imported", this, c == null);
-			SyntaxMessage.queryError("Class '" + className + "' is does not contain Testable annotation", this, !c.containsAnnotationOfType(TestableAnnotation.class));
-			SyntaxMessage.queryError("Testable class '" + className + "' requires a default constructor", this, !c.containsDefaultConstructor());
-			
 			Assignment call = Assignment.decodeStatement(runMethod, "let test" + className + " = new " + className + "()", getLocationIn(), true);
 			
 			runMethod.addChild(call);
-			
 			call.onAfterDecoded();
 		}
 		
@@ -147,7 +151,6 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			NovaMethodDeclaration method = testable.getRunTestsMethod();
 			
 			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "()", getLocationIn(), true);
-			
 			runMethod.addChild(call);
 		}
 	}
