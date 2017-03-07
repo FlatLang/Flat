@@ -104,7 +104,7 @@ interface RunnableTests
 		
 		TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
 		
-		String description = test.parameters.containsKey("message") ? ", " + ((Node)test.parameters.get("message")).generateNovaInput() : "";
+		String description = test.parameters.containsKey("message") && ((Literal)test.parameters.get("message")).isStringInstantiation() ? ", " + ((Node)test.parameters.get("message")).generateNovaInput() : "";
 		
 		String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult");
 		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = new TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", \"" + method.getName() + "\"" + description + ")", Location.INVALID, true);
