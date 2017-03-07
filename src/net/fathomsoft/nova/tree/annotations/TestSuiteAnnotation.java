@@ -3,15 +3,19 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
+import java.util.Arrays;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TestSuiteAnnotation extends Annotation implements RunnableTests
 {
 	public boolean generatedRunTestsMethod, writeMessage;
 	public AnonymousCompilerMethod propagationFunction;
+	public FieldDeclaration suiteRunner;
 	
 	public TestSuiteAnnotation(Node temporaryParent, Location locationIn)
 	{
@@ -72,6 +76,8 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 				
 				method.setProperty("generated", true);
 			}
+			
+			generateSuiteRunner();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
@@ -149,6 +155,16 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		}
 		
 		return result;
+	}
+	
+	public void generateSuiteRunner()
+	{
+		if (suiteRunner == null && suiteInitializer == null)
+		{
+			suiteInitializer = getTestSuiteInitializer();
+			
+			suiteRunner = checkGenerateField();
+		}
 	}
 	
 	public void insertMessage()
