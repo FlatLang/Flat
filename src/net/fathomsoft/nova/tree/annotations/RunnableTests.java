@@ -92,4 +92,9 @@ interface RunnableTests
 		
 		return stopped;
 	}
+	
+	default void addResultCall(Node parent, boolean success)
+	{
+		
+	}
 }
