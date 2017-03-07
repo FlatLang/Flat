@@ -5,10 +5,14 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.exceptionhandling.Catch;
 import net.fathomsoft.nova.tree.exceptionhandling.Try;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 public class TestableAnnotation extends Annotation implements ModifierAnnotation, RunnableTests
 {
@@ -81,16 +85,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		}
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			NovaMethodDeclaration method = getRunTestsMethod();
-			
-			if (method == null)
-			{
-				method = BodyMethodDeclaration.decodeStatement(parent, "public runTests()", Location.INVALID, true);
-				
-				parent.addChild(method);
-				
-				generatedRunTestsMethod = true;
-			}
+			searchRunTestsMethod();
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
@@ -105,6 +100,22 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		}
 		
 		return result;
+	}
+	
+	public NovaMethodDeclaration searchRunTestsMethod()
+	{
+		NovaMethodDeclaration method = getRunTestsMethod();
+		
+		if (method == null)
+		{
+			method = BodyMethodDeclaration.decodeStatement(parent, "public runTests()", Location.INVALID, true);
+			
+			parent.addChild(method);
+			
+			generatedRunTestsMethod = true;
+		}
+		
+		return method;
 	}
 	
 	public void insertMessage()
