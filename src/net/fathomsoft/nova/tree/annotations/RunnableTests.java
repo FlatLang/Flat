@@ -17,7 +17,9 @@ interface RunnableTests
 		MethodList.SearchFilter filter = new MethodList.SearchFilter();
 		filter.checkAncestor = false;
 		
-		return (NovaMethodDeclaration)clazz.getMethod(clazz, "runTests", filter, new Value[0]);
+		MethodDeclaration[] methods = clazz.getMethods("runTests", filter);
+		
+		return methods.length == 1 ? (NovaMethodDeclaration)methods[0] : null;
 	}
 	
 	default ArrayList<NovaMethodDeclaration> getMethodsWithTypeAnnotation(Class type)
