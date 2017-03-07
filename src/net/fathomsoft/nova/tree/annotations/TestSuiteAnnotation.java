@@ -76,6 +76,11 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		{
 			String[] classNames = (String[])parameters.get("classes");
 			
+			boolean containsResultFunction =
+				getMethodsWithTypeAnnotation(TestSuccessAnnotation.class).size() > 0 ||
+				getMethodsWithTypeAnnotation(TestFailureAnnotation.class).size() > 0 ||
+				getMethodsWithTypeAnnotation(TestResultAnnotation.class).size() > 0;
+			
 			for (String className : classNames)
 			{
 				ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
@@ -83,6 +88,21 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 				SyntaxMessage.queryError("Class '" + className + "' is not imported", this, c == null);
 				SyntaxMessage.queryError("Class '" + className + "' is does not contain Testable annotation", this, !c.containsAnnotationOfType(TestableAnnotation.class));
 				SyntaxMessage.queryError("Testable class '" + className + "' requires a default constructor", this, !c.containsDefaultConstructor());
+				
+				TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
+				
+				if (containsResultFunction && testable.generatedRunTestsMethod)
+				{
+					NovaMethodDeclaration method = testable.getRunTestsMethod();
+					
+					method.getFileDeclaration().addImport("novex/nest/TestResult");
+					
+					ClosureDeclaration param = (ClosureDeclaration)Parameter.decodeStatement(method.getParameterList(), "propagateFunc(TestResult) = {}", Location.INVALID, true);
+					
+					method.getParameterList().addChild(param);
+					param.onAfterDecoded();
+					param.validate(phase);
+				}
 			}
 			
 			insertMessage();
