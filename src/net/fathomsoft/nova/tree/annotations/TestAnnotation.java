@@ -100,7 +100,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 	
 	public void writeMessage(Literal message)
 	{
-		RunnableTests.super.writeMessage(message);
+		RunnableTests.super.writeMessage(message, (NovaMethodDeclaration)parent, false);
 		
 		writeMessage = true;
 	}

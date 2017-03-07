@@ -130,7 +130,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 	
 	public void writeMessage(Literal message)
 	{
-		RunnableTests.super.writeMessage(message);
+		RunnableTests.super.writeMessage(message, getRunTestsMethod(), true);
 		
 		writeMessage = true;
 	}

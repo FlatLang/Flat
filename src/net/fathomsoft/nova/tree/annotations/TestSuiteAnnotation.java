@@ -175,7 +175,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 	
 	public void writeMessage(Literal message)
 	{
-		RunnableTests.super.writeMessage(message);
+		RunnableTests.super.writeMessage(message, getRunTestsMethod(), true);
 		
 		writeMessage = true;
 	}
