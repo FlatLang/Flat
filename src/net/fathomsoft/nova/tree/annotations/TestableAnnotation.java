@@ -171,14 +171,15 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			{
 				StaticClassReference success = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(tryBlock, "Console.writeLine(\"- Success\")", Location.INVALID, true);
 				tryBlock.addChild(success);
-				addResultCall(tryBlock, true, timer, method);
 				
 				StaticClassReference failure = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(catchBlock, "Console.writeLine(\"- Failure\")", Location.INVALID, true);
 				catchBlock.addChild(failure);
-				addResultCall(catchBlock, false, timer, method);
 			}
 			
 			callMethodsWithAnnotationOfType(CleanTestAnnotation.class);
+			
+			addResultCall(tryBlock, true, timer, method);
+			addResultCall(catchBlock, false, timer, method);
 		});
 		
 		callMethodsWithAnnotationOfType(CleanTestClassAnnotation.class);
