@@ -7,6 +7,7 @@ import net.fathomsoft.nova.util.Location;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 interface RunnableTests
 {
@@ -24,9 +25,21 @@ interface RunnableTests
 		}
 	}
 	
-	default Assignment initializeTestCount(InitializationMethod parent, int count)
+	default Assignment initializeTestCases(InitializationMethod parent)
 	{
-		Assignment a = Assignment.decodeStatement(parent, "this.testCount = " + count, Location.INVALID, true);
+		((Node)this).getFileDeclaration().addImport("novex/nest/TestCase");
+		
+		String initializerValues = "[" + String.join(", ", ((TestableAnnotation)parent.getParentClass().getAnnotationOfType(TestableAnnotation.class))
+			.getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
+			.map(x -> (TestAnnotation)x.getAnnotationOfType(TestAnnotation.class))
+			.map(x -> x.testCase.getName()).collect(Collectors.toList())) + "]";
+		
+		if (initializerValues.length() == 2)
+		{
+			initializerValues = "new TestCase[0]";
+		}
+		
+		Assignment a = Assignment.decodeStatement(parent, "this.testCases = " + initializerValues, Location.INVALID, true);
 		
 		if (parent.getScope().getFirstStatement() == null)
 		{

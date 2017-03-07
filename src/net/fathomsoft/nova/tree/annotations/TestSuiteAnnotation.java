@@ -6,7 +6,6 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
-import java.util.ArrayList;
 import java.util.function.Function;
 
 public class TestSuiteAnnotation extends Annotation implements RunnableTests
@@ -204,7 +203,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			c.getMethodList().forEachNovaMethod(x -> {
 				if (x instanceof InitializationMethod)
 				{
-					initializeTestCount((InitializationMethod)x, testable.getMethodsWithTypeAnnotation(TestAnnotation.class).size());
+					initializeTestCases((InitializationMethod)x);
 				}
 			});
 		}
