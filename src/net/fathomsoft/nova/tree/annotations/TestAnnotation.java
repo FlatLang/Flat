@@ -5,7 +5,7 @@ import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.Location;
 
-public class TestAnnotation extends Annotation implements ModifierAnnotation, RunnableTests
+public class TestAnnotation extends Annotation implements ModifierAnnotation, RunnableTests, NestAnnotation
 {
 	public String aliasUsed;
 	public boolean writeMessage;
@@ -75,7 +75,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 		
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			
+			addOutputStreamParameter(method);
 		}
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
@@ -124,7 +124,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 	
 	public void writeMessage(Literal message)
 	{
-		RunnableTests.super.writeMessage(message, (NovaMethodDeclaration)parent, false);
+		RunnableTests.super.writeMessage(message, (NovaMethodDeclaration)parent, false, "out");
 		
 		writeMessage = true;
 	}

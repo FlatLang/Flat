@@ -4,7 +4,7 @@ import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.util.Location;
 
-public class InitTestAnnotation extends Annotation implements ModifierAnnotation
+public class InitTestAnnotation extends Annotation implements ModifierAnnotation, NestAnnotation
 {
 	public String aliasUsed;
 	
@@ -54,9 +54,9 @@ public class InitTestAnnotation extends Annotation implements ModifierAnnotation
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			
+			addOutputStreamParameter((NovaMethodDeclaration)parent);
 		}
 		
 		return result;

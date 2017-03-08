@@ -71,7 +71,9 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			if (method == null)
 			{
-				method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {})", Location.INVALID, true);
+				parent.getFileDeclaration().addImport("nova/io/OutputStream");
+				
+				method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
 				
 				parent.addChild(method);
 				
@@ -230,7 +232,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 	
 	public void writeMessage(Literal message)
 	{
-		RunnableTests.super.writeMessage(message, getRunTestsMethod(), true);
+		RunnableTests.super.writeMessage(message, getRunTestsMethod(), true, "out");
 		
 		writeMessage = true;
 	}
@@ -274,7 +276,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			String propFunc = propagationFunction != null ? propagationFunction.getName() : "";
 			
-			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult)", getLocationIn(), true);
+			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
 			runMethod.addChild(call);
 		}
 	}

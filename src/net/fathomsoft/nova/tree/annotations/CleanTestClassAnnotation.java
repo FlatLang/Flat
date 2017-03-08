@@ -6,7 +6,7 @@ import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 
-public class CleanTestClassAnnotation extends Annotation implements ModifierAnnotation
+public class CleanTestClassAnnotation extends Annotation implements ModifierAnnotation, NestAnnotation
 {
 	public String aliasUsed;
 	
@@ -56,9 +56,9 @@ public class CleanTestClassAnnotation extends Annotation implements ModifierAnno
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
-			
+			addOutputStreamParameter((NovaMethodDeclaration)parent);
 		}
 		
 		return result;

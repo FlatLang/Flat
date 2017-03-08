@@ -110,8 +110,9 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		if (method == null)
 		{
 			getFileDeclaration().addImport("novex/nest/TestResult");
+			getFileDeclaration().addImport("nova/io/OutputStream");
 			
-			method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {})", Location.INVALID, true);
+			method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
 			
 			parent.addChild(method);
 			
@@ -178,7 +179,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 	
 	public void writeMessage(Literal message)
 	{
-		RunnableTests.super.writeMessage(message, getRunTestsMethod(), true);
+		RunnableTests.super.writeMessage(message, getRunTestsMethod(), true, "out");
 		
 		writeMessage = true;
 	}
@@ -196,7 +197,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			
 			TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
 			
-			if (method.getParameterList().getNumParameters() > 0)
+			if (method.getParameterList().any(x -> x.isUserMade()))
 			{
 				SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
 			}
@@ -207,7 +208,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			
 			Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
 			
-			MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "()", Location.INVALID, true, false, method);
+			MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "(out)", Location.INVALID, true, false, method);
 			
 			tryBlock.addChild(call);
 			
@@ -221,10 +222,10 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			
 			if (test.writeMessage)
 			{
-				StaticClassReference success = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(tryBlock, "Console.writeLine(\"- Success\")", Location.INVALID, true);
+				Variable success = (Variable)SyntaxTree.decodeIdentifierAccess(tryBlock, "out.write(\"- Success\\n\")", Location.INVALID, true);
 				tryBlock.addChild(success);
 				
-				StaticClassReference failure = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(catchBlock, "Console.writeLine(\"- Failure\")", Location.INVALID, true);
+				Variable failure = (Variable)SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure\\n\")", Location.INVALID, true);
 				catchBlock.addChild(failure);
 			}
 			
@@ -236,7 +237,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		
 		callMethodsWithAnnotationOfType(CleanTestClassAnnotation.class);
 		
-		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(runMethod, "Console.writeLine()", Location.INVALID, true);
+		Variable write = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod, "out.write(\"\\n\")", Location.INVALID, true);
 		
 		runMethod.addChild(write);
 	}

@@ -119,22 +119,20 @@ interface RunnableTests
 		NovaMethodDeclaration runMethod = getRunTestsMethod();
 		
 		getMethodsWithTypeAnnotation(type).forEach(method -> {
-			if (method.getParameterList().getNumParameters() != 0)
+			if (method.getParameterList().any(x -> x.isUserMade()))
 			{
 				SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
 			}
 			
-			MethodCall call = MethodCall.decodeStatement(runMethod, method.getName() + "()", Location.INVALID, true, false, method);
+			MethodCall call = MethodCall.decodeStatement(runMethod, method.getName() + "(out)", Location.INVALID, true, false, method);
 			
 			runMethod.addChild(call);
 		});
 	}
 	
-	default void writeMessage(Literal message, NovaMethodDeclaration method, boolean newLine)
+	default void writeMessage(Literal message, NovaMethodDeclaration method, boolean newLine, String outputStream)
 	{
-		StaticClassReference write = (StaticClassReference)SyntaxTree.decodeIdentifierAccess(method, "Console.write" + (newLine ? "Line" : "") + "(\"\")", Location.INVALID, true);
-		
-		((MethodCall)write.getReturnedNode()).getArgumentList().getVisibleChild(0).replaceWith(message);
+		Node write = (Node)SyntaxTree.decodeIdentifierAccess(method, outputStream + ".write(" + message.generateNovaInput() + (newLine ? " + \"\\n\"" : "") + ")", Location.INVALID, true);
 		
 		Node first = method.getScope().getFirstStatement();
 		
