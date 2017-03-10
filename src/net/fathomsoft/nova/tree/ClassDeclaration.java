@@ -1313,14 +1313,19 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public MethodDeclaration getMethod(GenericCompatible context, String methodName, MethodCallArgumentList arguments)
 	{
+		return getMethod(context, methodName, SearchFilter.getDefault(), arguments);
+	}
+		
+	public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, MethodCallArgumentList arguments)
+	{
 		if (!arguments.containsNamedArguments())
 		{
-			return getMethod(context, methodName, arguments.getTypes());
+			return getMethod(context, methodName, filter, arguments.getTypes());
 		}
 		
-		MethodDeclaration methods[] = getMethods(methodName, SearchFilter.getDefault());
+		MethodDeclaration methods[] = getMethods(methodName, filter);
 			
-			ArrayList<MethodDeclaration> compatible = checkCompatible(methods, arguments);
+		ArrayList<MethodDeclaration> compatible = checkCompatible(methods, arguments);
 		
 		if (compatible.size() > 1)
 		{
