@@ -1462,6 +1462,33 @@ public class ClassDeclaration extends InstanceDeclaration
 		return doesExtendClass() ? getExtendedClassDeclaration().getArrayBracketOverload() : null;
 	}
 	
+	public Value getValueFromPrimitiveOverloadParameter(int index)
+	{
+		int position = 0;
+		int aligned = 0;
+		
+		GenericTypeParameterList params = genericOverload.getGenericTypeParameterDeclaration();
+		
+		for (int current = 0; current < params.getNumParameters(); current++)
+		{
+			if (current == index)
+			{
+				return primitiveOverloadTypes[position];
+			}
+			
+			if (getGenericTypeParameterDeclaration().getNumParameters() >= aligned && getGenericTypeParameter(aligned).getName().equals(params.getParameter(current).getName()))
+			{
+				aligned++;
+			}
+			else
+			{
+				position++;
+			}
+		}
+		
+		return null;
+	}
+	
 	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, Value ... parameterTypes)
 	{
 		return getMethod(contexts, methodName, SearchFilter.getDefault(), parameterTypes);
