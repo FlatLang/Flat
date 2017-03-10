@@ -703,7 +703,12 @@ public abstract class Value extends Node implements AbstractValue
 			
 			if (type != null)
 			{
-				return getFileDeclaration().getImport(type, false).getClassDeclaration();
+				Import impor = getFileDeclaration().getImport(type, false);
+				
+				if (impor != null)
+				{
+					return impor.getClassDeclaration();
+				}
 			}
 		}
 		
