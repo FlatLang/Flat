@@ -3,7 +3,9 @@ package net.fathomsoft.nova.tree.annotations;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.ClassDeclaration;
 import net.fathomsoft.nova.tree.Node;
+import net.fathomsoft.nova.tree.Value;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
@@ -121,8 +123,29 @@ public class RequireGenericTypeAnnotation extends Annotation
 				{
 					int index = decl.getParentClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
 					
-					// FIXME:
-					GenericTypeArgument given = v.getGenericTypeArgument(index);
+					ClassDeclaration type = v.getTypeClass();
+					
+					Value given = null;
+					
+					if (type.isPrimitiveOverload())
+					{
+						if (type.getGenericTypeParameter(required.getName()) != null)
+						{
+							index = type.getGenericTypeParameter(required.getName()).getIndex();
+						}
+						else
+						{
+							given = type.getValueFromPrimitiveOverloadParameter(index);
+							
+							index = -1;
+						}
+					}
+					
+					if (index >= 0)
+					{
+						// FIXME:
+						given = v.getGenericTypeArgument(index);
+					}
 					
 					if (!SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass()))
 					{
