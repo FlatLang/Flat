@@ -121,7 +121,7 @@ public class RequireGenericTypeAnnotation extends Annotation
 				
 				for (GenericTypeParameter required : getGenericTypeParameterDeclaration())
 				{
-					int index = decl.getParentClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
+					int index = decl.getParentClass().getRootOverloadedClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
 					
 					ClassDeclaration type = v.getTypeClass();
 					
