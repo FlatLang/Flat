@@ -56,6 +56,11 @@ public class MethodCall extends Variable
 		return ((Value)getReferenceNode()).getTypeClass(false);
 	}
 	
+	public boolean isPrimitiveOverload()
+	{
+		return getNovaMethod() != null && getNovaMethod().isPrimitiveOverload();
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
