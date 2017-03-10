@@ -721,6 +721,24 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 		}
 		
+		for (Parameter param : getParameterList())
+		{
+			if (param.isGenericType())
+			{
+				return null;
+			}
+		}
+		
+//		RequireGenericTypeAnnotation require = (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+//		
+//		if (require != null)
+//		{
+//			if (!SyntaxUtils.areTypesCompatible(new GenericCompatible[] { this }, require.getGenericTypeParameterDeclaration().getTypes(), types))
+//			{
+//				return null;
+//			}
+//		}
+		
 		return null;
 	}
 	
@@ -1018,6 +1036,16 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			isPrimitive |= checkType(argTypes, types, i, arg, param, closureTypes);
 		}
+		
+//		RequireGenericTypeAnnotation require = (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+//		
+//		if (require != null)
+//		{
+//			for (GenericTypeParameter param : require.getGenericTypeParameterDeclaration())
+//			{
+//				isPrimitive |= SyntaxUtils.isPrimitiveType(param.getDefaultType());
+//			}
+//		}
 		
 		GenericTypeParameterList methodGenParams = getMethodGenericTypeParameterDeclaration();
 		
