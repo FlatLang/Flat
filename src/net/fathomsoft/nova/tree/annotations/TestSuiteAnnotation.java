@@ -72,6 +72,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			if (method == null)
 			{
 				parent.getFileDeclaration().addImport("nova/io/OutputStream");
+				parent.getFileDeclaration().addImport("novex/nest/TestResult");
 				
 				method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
 				
