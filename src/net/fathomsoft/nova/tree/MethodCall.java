@@ -61,6 +61,22 @@ public class MethodCall extends Variable
 		return getNovaMethod() != null && getNovaMethod().isPrimitiveOverload();
 	}
 	
+	@Override
+	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
+	{
+		if (isPrimitiveOverload() && getNovaMethod().genericOverload != null && getNovaMethod().genericOverload.getFileDeclaration() != null)
+		{
+			ClassDeclaration d = getNovaMethod().genericOverload.getFileDeclaration().getClassDeclaration(getType());
+			
+			if (d != null)
+			{
+				return d;
+			}
+		}
+		
+		return super.getTypeClass(checkCast, defaultGenericType);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getNumDefaultChildren()
 	 */
