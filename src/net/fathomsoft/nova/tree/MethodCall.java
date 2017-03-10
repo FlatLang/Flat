@@ -1274,12 +1274,12 @@ public class MethodCall extends Variable
 						{
 							if (common == types[n])
 							{
-								common = pair.b;
+								common = pair.b.getReturnedNode();
 								common = common instanceof ClosureVariable ? ((FunctionType)common.getTypeObject()).closure : common;
 							}
 							else
 							{
-								common = SyntaxUtils.getValueInCommon(common, pair.b);
+								common = SyntaxUtils.getValueInCommon(common, pair.b.getReturnedNode());
 							}
 						}
 					}
