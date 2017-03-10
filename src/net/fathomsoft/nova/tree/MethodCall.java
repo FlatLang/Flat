@@ -1521,6 +1521,11 @@ public class MethodCall extends Variable
 				//arg = new MethodCallArgument(parent, location, (Value)arg);
 				
 				parent.addChild(arg);
+				
+				if (arg instanceof Assignment)
+				{
+					arg.onAfterDecoded();
+				}
 			}
 			else
 			{
