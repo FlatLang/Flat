@@ -683,7 +683,8 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					{
 						compatible = false;
 					}
-					else if (arg.isPrimitive() && param.isPrimitive() && !arg.getType().equals(param.getType()))
+					else if ((genericOverload != null && genericOverload.getParameter(i).isGenericType()) &&
+						arg.isPrimitive() && param.isPrimitive() && !arg.getType().equals(param.getType()))
 					{
 						compatible = false;
 					}
