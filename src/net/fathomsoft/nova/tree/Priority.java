@@ -88,6 +88,13 @@ public class Priority extends Value implements Accessible
 	}
 	
 //	@Override
+	@Override
+	public String getGenericReturnType(boolean checkCast)
+	{
+		return getReturnedContents().getGenericReturnType(checkCast);
+	}
+	
+	//	@Override
 //	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
 //	{
 //		if (!doesAccess())
