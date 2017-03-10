@@ -2700,6 +2700,11 @@ public class SyntaxUtils
 	 */
 	public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric, int arrayDifference)
 	{
+		if (required == null ^ given == null)
+		{
+			return false;
+		}
+		
 		if (given instanceof NovaMethodDeclaration && ((NovaMethodDeclaration)given).shorthandAction != null || required instanceof NovaMethodDeclaration && ((NovaMethodDeclaration)required).shorthandAction != null)
 		{
 			return true;
