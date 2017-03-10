@@ -149,6 +149,12 @@ public class Assignment extends Value
 	}
 	
 	@Override
+	public Value getReturnedNode()
+	{
+		return getAssignmentNode().getReturnedNode();
+	}
+	
+	@Override
 	public Value getNovaTypeValue(Value context)
 	{
 		return getAssignmentNode().getReturnedNode().getNovaTypeValue(getAssignmentNode().getReturnedNode());
