@@ -782,6 +782,13 @@ public abstract class Value extends Node implements AbstractValue
 			{
 				if (isGenericType())
 				{
+					GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(this);
+					
+					if (arg != null)
+					{
+						return arg.getFileDeclaration();
+					}
+					
 					Value ref = id.getReferenceNode().toValue();
 					
 					if (ref instanceof Variable)
