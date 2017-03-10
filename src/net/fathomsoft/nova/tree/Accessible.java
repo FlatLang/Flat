@@ -84,23 +84,26 @@ public interface Accessible
 		return ((Value)getReferenceNode()).getTypeClass(false);
 	}
 	
-	default ClassDeclaration[] getDeclaringClasses()
+	default MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] getDeclaringClasses()
 	{
-		ArrayList<ClassDeclaration> list = new ArrayList<>();
+		ArrayList<MethodCall.Pair> list = new ArrayList<>();
 		
 		for (ClassDeclaration c : toValue().getExtensionClasses())
 		{
-			list.add(c);
+			list.add(new MethodCall.Pair(c, MethodList.SearchFilter.getDefault()));
 		}
+		
+		MethodList.SearchFilter filter = new MethodList.SearchFilter();
+		filter.checkStatic(true);
 		
 		for (ClassDeclaration c : toValue().getStaticImports())
 		{
-			list.add(c);
+			list.add(new MethodCall.Pair(c, filter));
 		}
 		
-		list.add(getDeclaringClass());
+		list.add(new MethodCall.Pair(getDeclaringClass(), MethodList.SearchFilter.getDefault()));
 		
-		return list.toArray(new ClassDeclaration[0]);
+		return list.toArray(new MethodCall.Pair[0]);
 	}
 	
 	default GenericTypeParameter getExtendedGenericParameter(GenericTypeParameter type)

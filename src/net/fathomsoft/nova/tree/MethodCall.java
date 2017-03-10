@@ -404,14 +404,14 @@ public class MethodCall extends Variable
 			return ((Super)getParent()).getTypeClass().getMethod((GenericCompatible)null, name, getArgumentList().getTypes());
 		}
 		
-		ClassDeclaration[] classes = getDeclaringClasses();
+		Pair<ClassDeclaration, SearchFilter>[] classes = getDeclaringClasses();
 		
 		if (classes == null || classes.length == 0)
 		{
 			return null;
 		}
 		
-		for (ClassDeclaration clazz : classes)
+		for (Pair<ClassDeclaration, SearchFilter> clazz : classes)
 		{
 			if (clazz == null)
 			{
@@ -419,7 +419,7 @@ public class MethodCall extends Variable
 				SyntaxMessage.error("Could not find declaring class for '" + name + "'", this);
 			}
 			
-			MethodDeclaration method = clazz.getMethod(getContext(), name, getArgumentList());
+			MethodDeclaration method = clazz.a.getMethod(getContext(), name, clazz.b, getArgumentList());
 			
 			if (method != null)
 			{
@@ -427,9 +427,9 @@ public class MethodCall extends Variable
 			}
 		}
 		
-		for (ClassDeclaration clazz : classes)
+		for (Pair<ClassDeclaration, SearchFilter> clazz : classes)
 		{
-			FieldDeclaration field = clazz.getField(name);
+			FieldDeclaration field = clazz.a.getField(name);
 			
 			if (field != null)
 			{

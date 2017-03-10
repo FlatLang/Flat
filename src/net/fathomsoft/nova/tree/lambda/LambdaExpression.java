@@ -378,7 +378,7 @@ public class LambdaExpression extends Value
 	{
 		MethodCall call = (MethodCall)context;
 		
-		ClassDeclaration[] classes = call.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
+		MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] classes = call.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
 		
 		if (classes == null || classes.length == 0)
 		{
@@ -389,11 +389,11 @@ public class LambdaExpression extends Value
 		
 		ArrayList<MethodDeclaration> temp = new ArrayList<>();
 		
-		for (ClassDeclaration c : classes)
+		for (MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter> c : classes)
 		{
 			if (c != null)
 			{
-				MethodDeclaration[] methods = c.getMethods(call.getName());
+				MethodDeclaration[] methods = c.a.getMethods(call.getName(), c.b);
 				
 				for (MethodDeclaration m : methods)
 				{
