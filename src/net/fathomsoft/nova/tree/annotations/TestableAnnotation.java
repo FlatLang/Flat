@@ -225,7 +225,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 				Variable success = (Variable)SyntaxTree.decodeIdentifierAccess(tryBlock, "out.write(\"- Success\\n\")", Location.INVALID, true);
 				tryBlock.addChild(success);
 				
-				Variable failure = (Variable)SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure\\n\")", Location.INVALID, true);
+				Variable failure = (Variable)SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure: #e.message\\n\")", Location.INVALID, true);
 				catchBlock.addChild(failure);
 			}
 			
