@@ -907,6 +907,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		int closureIndex = 0;
 		
+		if (isInstance())// && call.isPrimitiveOverload())
+		{
+			addTo = moveToClass(method, call);
+		}
+		
 		for (int i = 0; i < types.length; i++)
 		{
 			Parameter param = getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
@@ -970,6 +975,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		ClassDeclaration newClass = var.getDeclaringClass();
 		
+		if (!newClass.isPrimitiveOverload() && newClass != getDeclaringClass() && newClass.isOfType(getDeclaringClass()))
+		{
+			newClass = getDeclaringClass();
+		}
+		
 		Parameter ref = original.getParameterList().getReferenceParameter();
 		
 		ref.getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
@@ -1020,7 +1030,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		
 		Value returnType = call;
-		Node addTo = call.getInferredDeclaration().getParentClass();//call.getReferenceNode().toValue().getTypeClass();//getParent();
+		Node addTo = isInstance() ? ref.toValue().getTypeClass() : call.getInferredDeclaration().getParentClass();//call.getReferenceNode().toValue().getTypeClass();//getParent();
 		
 		if (call.getType() != null && call.getGenericTypeArgumentList().getNumVisibleChildren() > 0)
 		{
