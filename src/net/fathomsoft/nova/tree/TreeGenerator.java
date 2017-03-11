@@ -268,6 +268,8 @@ public class TreeGenerator implements Runnable
 		{
 			decodeScopeContentsNode(scopeAncestors.getChild(i), requiresScope, searchTypes, skipScopes);
 		}
+		
+		popParents();
 	}
 	
 	private void decodeScopeContentsNode(Node node, boolean requiresScope, Class<?>[] searchTypes, boolean skipScopes)
