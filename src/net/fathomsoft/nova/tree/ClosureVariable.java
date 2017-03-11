@@ -1,8 +1,6 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.ValidationResult;
-import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.annotations.VarAnnotation;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
@@ -84,7 +82,7 @@ public class ClosureVariable extends Variable
 					parameterNames[i] = method.getParameter(i).getName();
 				}
 				
-				((FunctionType)node.getTypeObject()).paramterNames = parameterNames;
+				((FunctionType)node.getTypeObject()).parameterNames = parameterNames;
 				
 				node.inheritAnnotations(method);
 				

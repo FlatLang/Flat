@@ -1,10 +1,10 @@
 package net.fathomsoft.nova.tree;
 
-import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-
 public class FunctionType extends Type
 {
 	public Type type;
+	
+	public String[] parameterNames;
 	
 	public FirstClassClosureDeclaration closure;
 	
@@ -43,6 +43,7 @@ public class FunctionType extends Type
 	{
 		clone.type = type != null ? type.clone() : null;
 		clone.closure = closure;
+		clone.parameterNames = parameterNames;
 		
 		return clone;
 	}
