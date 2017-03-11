@@ -143,27 +143,36 @@ public class LambdaExpression extends IIdentifier
 				{
 					block = true;
 					
-					operation = operation.substring(1, operation.length() - 1).trim();
+					endingIndex = StringUtils.findEndingMatch(operation, 0, '{', '}');
+					
+					if (endingIndex > 0)
+					{
+						operation = operation.substring(1, operation.length() - 1).trim();
+					}
 				}
 				
-				if (closure != null || (context = findContext(parent)) != null && (closure = findDeclaration(context, variables)) != null)
+				if (endingIndex > 0)
 				{
-					Accessible refNode = context != null ? ((Accessible)context).getReferenceNode() : null;
-					ClassDeclaration refClass = refNode != null ? refNode.toValue().getTypeClass() : null;
-					final FileDeclaration refFile = refClass != null ? refClass.getFileDeclaration() : null;
-					
-					n.closure = closure;
-					n.context = context;
-					n.block = block;
-					n.operation = operation;
-					n.refFile = refFile;
-					n.variables = variables;
-					
-					return n;
+					if (closure != null || (context = findContext(parent)) != null && (closure = findDeclaration(context, variables)) != null)
+					{
+						Accessible refNode = context != null ? ((Accessible)context).getReferenceNode() : null;
+						ClassDeclaration refClass = refNode != null ? refNode.toValue().getTypeClass() : null;
+						final FileDeclaration refFile = refClass != null ? refClass.getFileDeclaration() : null;
+						
+						n.closure = closure;
+						n.context = context;
+						n.block = block;
+						n.operation = operation;
+						n.refFile = refFile;
+						n.variables = variables;
+						
+						return n;
+					}
 				}
 			}
 		}
-		else if (block)
+		
+		if (block)
 		{
 			n.pending = true;
 			n.setName("function");
