@@ -95,6 +95,12 @@ public class Return extends IValue
 		return builder;
 	}
 	
+	@Override
+	public Node getDecodedParent()
+	{
+		return getReturnedNode();
+	}
+	
 	/**
 	 * Decode the given statement into a Return instance, if
 	 * possible. If it is not possible, this method returns null.<br>
