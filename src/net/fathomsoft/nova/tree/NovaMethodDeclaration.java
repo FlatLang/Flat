@@ -11,6 +11,7 @@ import net.fathomsoft.nova.tree.annotations.RequireGenericTypeAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameter;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
@@ -1485,6 +1486,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			if (contents instanceof Value)
 			{
+				if (contents instanceof LambdaExpression)
+				{
+					contents = ((LambdaExpression)contents).generateClosure();
+				}
+				
 				contents = inferShorthandActionType(action, (Value)contents);
 			}
 			
