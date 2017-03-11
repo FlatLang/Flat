@@ -1,13 +1,9 @@
 package net.fathomsoft.nova.tree.lambda;
 
-import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
-import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
-import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
-import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
@@ -168,7 +164,7 @@ public class LambdaExpression extends IIdentifier
 				
 				if (endingIndex > 0)
 				{
-					if (closure != null || (context = findContext(parent)) != null && (closure = findDeclaration(context, variables)) != null)
+					if (closure != null || (context = findContext(parent)) != null && (closure = n.findDeclaration(context, variables)) != null)
 					{
 						Accessible refNode = context != null ? ((Accessible)context).getReferenceNode() : null;
 						ClassDeclaration refClass = refNode != null ? refNode.toValue().getTypeClass() : null;
@@ -182,6 +178,8 @@ public class LambdaExpression extends IIdentifier
 						
 						return n;
 					}
+					
+					return null;
 				}
 			}
 		}
@@ -189,63 +187,75 @@ public class LambdaExpression extends IIdentifier
 		if (block)
 		{
 			n.pending = true;
-			n.setName("function");
 			
-			String params = "";
-			
-			if (n.variables != null)
-			{
-				n.parameters = new Parameter[n.variables.length];
-				
-				Return r = (Return)parent.getAncestorOfType(Return.class, true);
-				
-				for (int i = 0; i < n.variables.length; i++)
-				{
-					if (SyntaxUtils.isValidIdentifier(n.variables[i]))
-					{
-						if (r != null)
-						{
-							Type type = r.getParentMethod().getTypeObject();
-							
-							if (type instanceof FunctionType)
-							{
-								FunctionType func = (FunctionType)type;
-								
-								ParameterList ps = func.closure.getParameterList();
-								
-								for (int j = 0; j < ps.getNumParameters(); j++)
-								{
-									n.variables[j] = ps.getParameter(j).generateNovaType() + " " + n.variables[j];
-								}
-							}
-							else
-							{
-								SyntaxMessage.error("Function '" + r.getParentMethod().getName() + "' does not return a function type", r);
-							}
-						}
-						else
-						{
-							SyntaxMessage.error("Types must be specified for local lambda expression parameters", n);
-						}
-					}
-					
-					n.parameters[i] = Parameter.decodeStatement(n, n.variables[i], location, require);
-					
-					if (i > 0)
-					{
-						params += ", ";
-					}
-					
-					params += n.parameters[i].generateNovaType();
-				}
-			}
-			
-			n.setType("function(" + params + ")");
+			n.setToInferredType();
 			
 			return n;
 		}
 		
 		return null;
+	}
+	
+	private void setToInferredType()
+	{
+		setName("function");
+		setType("function(" + parseParameters() + ")");
+		
+		pending = true;
+	}
+	
+	private String parseParameters()
+	{
+		String params = "";
+		
+		if (variables != null)
+		{
+			parameters = new Parameter[variables.length];
+			
+			Return r = (Return)parent.getAncestorOfType(Return.class, true);
+			
+			for (int i = 0; i < variables.length; i++)
+			{
+				if (SyntaxUtils.isValidIdentifier(variables[i]))
+				{
+					if (r != null)
+					{
+						Type type = r.getParentMethod().getTypeObject();
+						
+						if (type instanceof FunctionType)
+						{
+							FunctionType func = (FunctionType)type;
+							
+							ParameterList ps = func.closure.getParameterList();
+							
+							for (int j = 0; j < ps.getNumParameters(); j++)
+							{
+								variables[j] = ps.getParameter(j).generateNovaType() + " " + variables[j];
+							}
+						}
+						else
+						{
+							SyntaxMessage.error("Function '" + r.getParentMethod().getName() + "' does not return a function type", r);
+						}
+					}
+					else
+					{
+						SyntaxMessage.error("Types must be specified for local lambda expression parameters", this);
+					}
+				}
+				
+				parameters[i] = Parameter.decodeStatement(this, variables[i], getLocationIn(), true);
+				
+				if (i > 0)
+				{
+					params += ", ";
+				}
+				
+				params += parameters[i].generateNovaType();
+			}
+		}
+		
+		return params;
 	}
 	
 	@Override
@@ -390,69 +400,70 @@ public class LambdaExpression extends IIdentifier
 	
 	public Closure generateClosure()
 	{
-		final int[] i = new int[] { 0 };
-		
 		final StringBuilder builder = new StringBuilder();
 		
-		closure.getParameterList().forEach(x ->
+		if (parameters == null)
 		{
-			int id = i[0]++;
+			final int[] i = new int[] { 0 };
 			
-			Value value = closure.getParameterList().getParameter(id).getNovaTypeValue(context);
-			
-			String type = value.getNovaType(context);
-			String name = "";
-			
-			if (variables.length > id)
+			closure.getParameterList().forEach(x ->
 			{
-				name = variables[id];
-			}
-			else
-			{
-				name = "_" + (id + 1);
-			}
-			
-			if (type.endsWith(")"))
-			{
-				type = name + type.substring(type.indexOf('('));
-			}
-			
-			builder.append(builder.length() > 0 ? ", " : "").append(type);
-			
-			if (!type.endsWith(")"))
-			{
-				builder.append(" ").append(name);
-			}
-			
-			getFileDeclaration().addImport(value.getTypeClassLocation());
-			
-			value.importGenericArgumentTypesTo(getFileDeclaration());
-			
-			if (value.isGenericType())
-			{
-				GenericTypeArgument arg = value.getGenericTypeParameter().getCorrespondingArgument(context);
+				int id = i[0]++;
 				
-				if (arg != null)
+				Value value = closure.getParameterList().getParameter(id).getNovaTypeValue(context);
+				
+				String type = value.getNovaType(context);
+				String name = "";
+				
+				if (variables.length > id)
 				{
-					getFileDeclaration().addImport(arg.getTypeClassLocation());
-					arg.importGenericArgumentTypesTo(getFileDeclaration());
+					name = variables[id];
 				}
-			}
-			
-//			if (refFile != null)
-//			{
-//				Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
-//				
-//				if (imp != null)
-//				{
-//					parent.getFileDeclaration().addImport(imp.getClassLocation());
-//				}
-//			}
-		});
+				else
+				{
+					name = "_" + (id + 1);
+				}
+				
+				if (type.endsWith(")"))
+				{
+					type = name + type.substring(type.indexOf('('));
+				}
+				
+				builder.append(builder.length() > 0 ? ", " : "").append(type);
+				
+				if (!type.endsWith(")"))
+				{
+					builder.append(" ").append(name);
+				}
+				
+				getFileDeclaration().addImport(value.getTypeClassLocation());
+				
+				value.importGenericArgumentTypesTo(getFileDeclaration());
+				
+				if (value.isGenericType())
+				{
+					GenericTypeArgument arg = value.getGenericTypeParameter().getCorrespondingArgument(context);
+					
+					if (arg != null)
+					{
+						getFileDeclaration().addImport(arg.getTypeClassLocation());
+						arg.importGenericArgumentTypesTo(getFileDeclaration());
+					}
+				}
+				
+				//			if (refFile != null)
+				//			{
+				//				Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
+				//				
+				//				if (imp != null)
+				//				{
+				//					parent.getFileDeclaration().addImport(imp.getClassLocation());
+				//				}
+				//			}
+			});
+		}
 		
-		String parameters = builder.toString();
-		
-		String methodDeclaration = "static lambda" + id++ + "(" + parameters + ")";
+		String methodDeclaration = "static lambda" + id++ + "(" + builder.toString() + ")";
 		
 		if (closure.getType() != null)
 		{
@@ -463,6 +474,14 @@ public class LambdaExpression extends IIdentifier
 		
 		if (bodyMethod != null)
 		{
+			if (parameters != null)
+			{
+				for (int i = 0; i < parameters.length; i++)
+				{
+					bodyMethod.getParameterList().addChild(parameters[i]);
+				}
+			}
+			
 			LambdaMethodDeclaration method = generateLambdaMethod(bodyMethod, bodyMethod);
 			
 //			for (int n = 0; n < params.getNumVisibleChildren(); n++)
@@ -484,7 +503,7 @@ public class LambdaExpression extends IIdentifier
 				method.addChild(node);
 			}
 			
-			if (method.getType() != null && method.getScope().getNumVisibleChildren() == 1)
+			if ((pending || method.getType() != null) && method.getScope().getNumVisibleChildren() == 1)
 			{
 				Node returned = method.getScope().getLastChild();
 				
@@ -495,6 +514,14 @@ public class LambdaExpression extends IIdentifier
 					r.getReturnValues().addChild(returned);
 					
 					method.getScope().addChild(r);
+					
+					if (pending)
+					{
+						FunctionType type = (FunctionType)getTypeObject();
+						
+						type.type = Type.parse(this, r.getReturnedNode().generateNovaType().toString());
+						type.closure.setType(r.getReturnedNode());
+					}
 				}
 			}
 			
@@ -515,7 +542,15 @@ public class LambdaExpression extends IIdentifier
 				if (root != null)
 				{
 					addClosureContext(method, root);
-					replaceWith(methodReference);
+					
+					if (pending)
+					{
+						((FunctionType)getTypeObject()).closure.reference = method;
+					}
+					else
+					{
+						replaceWith(methodReference);
+					}
 					
 					return methodReference;
 				}
@@ -618,21 +653,72 @@ public class LambdaExpression extends IIdentifier
 	
 	private static Value findContext(Node parent)
 	{
-		return (MethodCall)parent.getAncestorOfType(MethodCall.class);
+		MethodCall call = (MethodCall)parent.getAncestorOfType(MethodCall.class);
+		
+		if (call != null)
+		{
+			return call;
+		}
+		else
+		{
+			NovaMethodDeclaration method = parent.getParentMethod(true);
+			
+			if (method != null)
+			{
+				return method;
+			}
+		}
+		
+		return null;
 	}
 	
-	private static ClosureDeclaration findDeclaration(Value context, final String[] variables)
+	private ClosureDeclaration findDeclaration(Value context, final String[] variables)
 	{
-		MethodCall call = (MethodCall)context;
+		if (context instanceof MethodCall)
+		{
+			return findDeclarationFromFunctionCall((MethodCall)context, variables);
+		}
+		else if (context instanceof NovaMethodDeclaration)
+		{
+			return findDeclarationFromFunctionDeclaration((NovaMethodDeclaration)context, variables);
+		}
 		
-		MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] classes = call.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
+		return null;
+	}
+	
+	private ClosureDeclaration findDeclarationFromFunctionDeclaration(NovaMethodDeclaration context, final String[] variables)
+	{
+		if (context.getType() != null)
+		{
+			if (context.isFunctionType())
+			{
+				return ((FunctionType)context.getTypeObject()).closure;
+			}
+			else
+			{
+				SyntaxMessage.error("Function with return type '" + context.generateNovaType() + "' cannot return a lambda expression", this);
+			}
+		}
+		
+		setToInferredType();
+		
+		FunctionType type = ((FunctionType)getTypeObject());
+		
+//		context.setType(type.closure.generateNovaInput().toString());
+		
+		return type.closure;//((FunctionType)context.getTypeObject()).closure;
+	}
+	
+	private ClosureDeclaration findDeclarationFromFunctionCall(MethodCall context, final String[] variables)
+	{
+		MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] classes = context.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
 		
 		if (classes == null || classes.length == 0)
 		{
 			return null;
 		}
 		
-		ClassDeclaration type = call.getReferenceNode().toValue().getTypeClass();
+		ClassDeclaration type = context.getReferenceNode().toValue().getTypeClass();
 		
 		ArrayList<MethodDeclaration> temp = new ArrayList<>();
 		
@@ -640,7 +726,7 @@ public class LambdaExpression extends IIdentifier
 		{
 			if (c != null)
 			{
-				MethodDeclaration[] methods = c.a.getMethods(call.getName(), c.b);
+				MethodDeclaration[] methods = c.a.getMethods(context.getName(), c.b);
 				
 				for (MethodDeclaration m : methods)
 				{
@@ -663,7 +749,7 @@ public class LambdaExpression extends IIdentifier
 		
 		if (methods.length > 0)
 		{
-			final int index = call.getArgumentList().getNumVisibleChildren();
+			final int index = context.getArgumentList().getNumVisibleChildren();
 			
 			ArrayList<NovaMethodDeclaration> tempMethods = new ArrayList<>();
 			
@@ -726,9 +812,9 @@ public class LambdaExpression extends IIdentifier
 			
 			if (validMethods.length > maxI)
 			{
-				call.setDeclaration(validMethods[maxI]);
+				context.setDeclaration(validMethods[maxI]);
 				
-				return (ClosureDeclaration)((NovaMethodDeclaration)call.getDeclaration()).getParameter(index);
+				return (ClosureDeclaration)((NovaMethodDeclaration)context.getDeclaration()).getParameter(index);
 			}
 		}
 		
