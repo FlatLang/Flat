@@ -541,6 +541,19 @@ public class TreeGenerator implements Runnable
 		int prevCharIndex = StringUtils.findNextNonWhitespaceIndex(source, currentEnd - 1, -1);
 		int nextCharIndex = StringUtils.findNextNonWhitespaceIndex(source, currentEnd + 1);
 		
+		if (fileDeclaration != null && fileDeclaration.getProgram().getPhase() == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		{
+			if (prevCharIndex > 3 && source.charAt(currentEnd) == '{' && source.substring(prevCharIndex - 1, prevCharIndex + 1).equals("=>"))
+			{
+				int end = SyntaxUtils.findEndingBrace(source, currentEnd + 1) + 1;
+				
+				if (end > currentEnd)
+				{
+					return end;
+				}
+			}
+		}
+		
 		return calculateReturnValue(currentEnd, nextCharIndex, prevCharIndex);
 	}
 	
