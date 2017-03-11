@@ -269,6 +269,29 @@ public class LambdaExpression extends IIdentifier
 			}
 		}
 		
+		if (method.getScope().getNumVisibleChildren() == 1)
+		{
+			Node child = method.getScope().getVisibleChild(0);
+			
+			if (child instanceof Value && child instanceof Return == false)
+			{
+				Return r = new Return(method, child.getLocationIn());
+				
+				child.replaceWith(r);
+				
+				r.getReturnValues().addChild(child);
+				
+				if (method.getType() == null)
+				{
+					method.setType(r.getReturnedNode());
+				}
+				else if (!SyntaxUtils.isTypeCompatible(this, method, r))
+				{
+					SyntaxMessage.error("Lambda expression must return type '" + method.generateNovaType() + "'", r);
+				}
+			}
+		}
+		
 		addClosureContext(method);
 		
 		Node scopeAncestor = getParentMethod();
