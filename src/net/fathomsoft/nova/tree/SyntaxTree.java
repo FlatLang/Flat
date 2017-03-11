@@ -78,13 +78,13 @@ public class SyntaxTree
 	
 	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		Annotation.class, Import.class, ClassDeclaration.class, Trait.class, ExtensionDeclaration.class,
+		Annotation.class, Import.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class, ExtensionDeclaration.class,
 		Package.class, ExternalCodeBlock.class
 	};
 	
 	public static final Class<?> SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		ArrayBracketOverload.class, Annotation.class, StaticBlock.class, ClassDeclaration.class, Trait.class, AbstractMethodDeclaration.class,
+		ArrayBracketOverload.class, Annotation.class, StaticBlock.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class, AbstractMethodDeclaration.class,
 		ExternalMethodDeclaration.class, ClosureVariable.class, ExtensionMethodDeclaration.class,
 		ExtensionFieldDeclaration.class, Destructor.class, Constructor.class, BodyMethodDeclaration.class,
 		ExternalType.class, FieldDeclaration.class, ExternalCodeBlock.class
@@ -588,6 +588,7 @@ public class SyntaxTree
 				else if (node == null && type == IfStatement.class) node = IfStatement.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Import.class) node = Import.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Instantiation.class) node = Instantiation.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == InterfaceDeclaration.class) node = InterfaceDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Trait.class) node = Trait.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == IntRange.class) node = IntRange.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == LambdaExpression.class) node = LambdaExpression.decodeStatement(parent, statement, location, require);
@@ -697,6 +698,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(ExternalType.class) && (node = ExternalType.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Fallthrough.class) && (node = Fallthrough.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Import.class) && (node = Import.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(InterfaceDeclaration.class) && (node = InterfaceDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Trait.class) && (node = Trait.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(IntRange.class) && (node = IntRange.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(LambdaExpression.class) && (node = LambdaExpression.decodeStatement(parent, statement, location, require)) != null);
