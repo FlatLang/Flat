@@ -826,7 +826,7 @@ public class TreeGenerator implements Runnable
 		
 		checkPendingScopeFragment(current);
 		
-		if (start < statementStart)
+		if (start < statementStart && (parentStack.peek() instanceof ClassDeclaration == false || current instanceof BodyMethodDeclaration == false))
 		{
 			String sub = source.substring(start, statementStart);
 			
