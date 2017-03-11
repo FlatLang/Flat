@@ -62,28 +62,24 @@ public class ClosureVariable extends Variable
 			{
 				Node scopeAncestor = parent.getAncestorWithScope();
 				
+				VariableDeclaration node;
+				
 				if (scopeAncestor != null)
 				{
-					LocalDeclaration node = new LocalDeclaration(scopeAncestor, location);
-					node.setName(method.getName());
-					node.setType(method.getFunctionReferenceType());
-					node.inheritAnnotations(temp);
-					
-					node.inheritAnnotations(method);
-					
-					return node;
+					node = new LocalDeclaration(scopeAncestor, location);
 				}
 				else
 				{
-					FieldDeclaration node = new FieldDeclaration(parent, location);
-					node.setName(method.getName());
-					node.setType(method.getFunctionReferenceType());
-					node.inheritAnnotations(temp);
-					
-					node.inheritAnnotations(method);
-					
-					return node;
+					node = new FieldDeclaration(parent, location);
 				}
+				
+				node.setName(method.getName());
+				node.setType(method.getFunctionReferenceType());
+				node.inheritAnnotations(temp);
+				
+				node.inheritAnnotations(method);
+				
+				return node;
 			}
 		}
 		
