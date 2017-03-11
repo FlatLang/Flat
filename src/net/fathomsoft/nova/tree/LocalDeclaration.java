@@ -256,6 +256,7 @@ public class LocalDeclaration extends VariableDeclaration
 	{
 		if (isFunctionType())
 		{
+			isImplicit = true;
 			getAncestorWithScope().addChild(this);
 			
 			Assignment replacement = Assignment.generateDefault(parent, getLocationIn());
