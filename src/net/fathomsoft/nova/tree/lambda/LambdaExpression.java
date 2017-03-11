@@ -23,7 +23,7 @@ import java.util.Arrays;
  * @since	v0.2.45 Jun 5, 2014 at 9:00:04 PM
  * @version	v0.2.45 Jun 5, 2016 at 11:43:17 PM
  */
-public class LambdaExpression extends Value
+public class LambdaExpression extends IIdentifier
 {
 	public String[] variables; 
 	
@@ -36,7 +36,7 @@ public class LambdaExpression extends Value
 	
 	public Value context;
 	
-	public boolean block;
+	public boolean block, pending;
 	
 	public String operation;
 	
@@ -47,7 +47,22 @@ public class LambdaExpression extends Value
 	 */
 	public LambdaExpression(Node temporaryParent, Location locationIn)
 	{
-		super(temporaryParent, locationIn);
+		super(temporaryParent, locationIn);;
+		
+		Scope scope = new Scope(this, locationIn.asNew());
+		setScope(scope);
+	}
+	
+	@Override
+	public Scope getScope()
+	{
+		return (Scope)getChild(super.getNumDefaultChildren() + 0);
+	}
+	
+	@Override
+	public int getNumDefaultChildren()
+	{
+		return super.getNumDefaultChildren() + 1;
 	}
 	
 	/**
@@ -102,6 +117,8 @@ public class LambdaExpression extends Value
 			endingIndex = variables[0].length();
 		}
 		
+		LambdaExpression n = new LambdaExpression(parent, location);
+		
 		if (endingIndex > 0)
 		{
 			String operation = null;
@@ -135,8 +152,6 @@ public class LambdaExpression extends Value
 					ClassDeclaration refClass = refNode != null ? refNode.toValue().getTypeClass() : null;
 					final FileDeclaration refFile = refClass != null ? refClass.getFileDeclaration() : null;
 					
-					LambdaExpression n = new LambdaExpression(parent, location);
-					
 					n.closure = closure;
 					n.context = context;
 					n.block = block;
@@ -148,8 +163,109 @@ public class LambdaExpression extends Value
 				}
 			}
 		}
+		else if (block)
+		{
+			n.pending = true;
+			n.setName("function");
+			n.setType("function()");
+			
+			return n;
+		}
 		
 		return null;
+	}
+	
+	private void replaceAccessedLocals(Node scopeAncestor, LambdaMethodDeclaration method)
+	{
+		Node[] vars = method.getScope().getChildrenOfType(Variable.class);
+		
+		for (Node n : vars)
+		{
+			Variable v = (Variable)n;
+			
+			if (v.declaration.getParentMethod() == scopeAncestor || v.declaration.getAncestorOfType(StaticBlock.class) == scopeAncestor)
+			{
+				v.declaration = method.context.addDeclaration(v.declaration);
+			}
+		}
+	}
+	
+	public void constructPendingLambda()
+	{
+		LambdaMethodDeclaration method = generateLambdaMethod(parent);
+		
+		method.setName("localLambda" + id++);
+		
+		method.getParentClass().addChild(method);
+		
+		method.scope = getScope();
+		method.getScope().replaceWith(getScope());
+		
+		NovaParameterList params = method.getParameterList();
+		
+		addClosureContext(method);
+		
+		Node scopeAncestor = getParentMethod();
+		scopeAncestor = scopeAncestor == null ? getAncestorOfType(StaticBlock.class) : scopeAncestor;
+		
+		replaceAccessedLocals(scopeAncestor, method);
+		
+		replaceWith(generateMethodReference(method));
+	}
+	
+	@Override
+	public void onStackPopped(Node parent)
+	{
+		if (parent == this && pending)
+		{
+			constructPendingLambda();
+		}
+		
+		super.onStackPopped(parent);
+	}
+	
+	public LambdaMethodDeclaration generateLambdaMethod(Node parent)
+	{
+		return generateLambdaMethod(parent, null);
+	}
+	
+	public LambdaMethodDeclaration generateLambdaMethod(Node p, BodyMethodDeclaration bodyMethod)
+	{
+		LambdaMethodDeclaration method = new LambdaMethodDeclaration(p.getParent(), p.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
+		
+		NovaMethodDeclaration parentMethod = parent.getParentMethod();
+		
+		Node ancestor = parent.getAncestorWithScope();
+		
+		int scopeId = ancestor != null ? ancestor.getScope().getID() : 0;
+		
+		if (bodyMethod != null)
+		{
+			bodyMethod.cloneTo(method);
+		}
+		
+		method.getScope().slaughterEveryLastVisibleChild();
+		method.getScope().id = scopeId;
+		method.uniqueID = scopeId;
+		method.isInstance = parentMethod != null && parentMethod.isInstance();//parentMethod.isStatic();
+		method.objectReference = parentMethod != null ? parentMethod.objectReference : null;
+		method.index = getIndex();//methodCall.getArgumentList().getNumVisibleChildren()
+		
+		if (context instanceof MethodCall)
+		{
+			method.methodCall = (MethodCall)context;
+		}
+		
+		NovaParameterList params = method.getParameterList();
+		
+		if (parentMethod != null)
+		{
+			params.getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+		}
+		
+		method.contextDeclaration = new ClosureContextDeclaration(parent, getLocationIn(), method.context);
+		
+		return method;
 	}
 	
 	public Closure generateClosure()
@@ -227,32 +343,7 @@ public class LambdaExpression extends Value
 		
 		if (bodyMethod != null)
 		{
-			LambdaMethodDeclaration method = new LambdaMethodDeclaration(bodyMethod.getParent(), bodyMethod.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
-			
-			NovaMethodDeclaration parentMethod = parent.getParentMethod();
-			
-			Node ancestor = parent.getAncestorWithScope();
-			
-			int scopeId = ancestor != null ? ancestor.getScope().getID() : 0;
-			bodyMethod.cloneTo(method);
-			method.getScope().slaughterEveryLastVisibleChild();
-			method.getScope().id = scopeId;
-			method.uniqueID = scopeId;
-			method.isInstance = parentMethod != null && parentMethod.isInstance();//parentMethod.isStatic();
-			method.objectReference = parentMethod != null ? parentMethod.objectReference : null;
-			method.index = getIndex();//methodCall.getArgumentList().getNumVisibleChildren()
-			
-			if (context instanceof MethodCall)
-			{
-				method.methodCall = (MethodCall)context;
-			}
-			
-			NovaParameterList params = method.getParameterList();
-			
-			if (parentMethod != null)
-			{
-				params.getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
-			}
+			LambdaMethodDeclaration method = generateLambdaMethod(bodyMethod, bodyMethod);
 			
 //			for (int n = 0; n < params.getNumVisibleChildren(); n++)
 //			{
@@ -287,8 +378,6 @@ public class LambdaExpression extends Value
 				}
 			}
 			
-			ClosureContextDeclaration c = new ClosureContextDeclaration(parent, getLocationIn(), method.context);
-			
 			if (method.getScope().getLastChild() instanceof Return && ((Return)method.getScope().getLastChild()).getValueNode() != null)
 			{
 				//if (call.isGenericType())
@@ -297,30 +386,15 @@ public class LambdaExpression extends Value
 				}
 			}
 			
-			Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), getLocationIn().asNew(), true, method.getParentClass());
+			Closure methodReference = generateMethodReference(method);
 			
 			if (methodReference != null)
 			{
-				methodReference.closureDeclaration = closure;
-				methodReference.findDeclaration(method.getParentClass());
-				
-				method.contextDeclaration = c;
-				method.closure = methodReference;
-				
-				updatePassedFunctionReferences(method);
-				
 				Node root = parent.getStatementRootNode();
-				
-				parent.getStatementRootNode();
 				
 				if (root != null)
 				{
-					Node node = root.getParentMethod(true);
-					
-					node = node == null ? root.getNearestScopeAncestor() : node;
-					
-					node.addChild(c);
-					
+					addClosureContext(method, root);
 					replaceWith(methodReference);
 					
 					return methodReference;
@@ -329,6 +403,47 @@ public class LambdaExpression extends Value
 		}
 		
 		return null;
+	}
+	
+	public Closure generateMethodReference(LambdaMethodDeclaration method)
+	{
+		Closure methodReference = Closure.decodeStatement(parent, method.generateNovaClosureReference(method.getParentClass()), getLocationIn().asNew(), true, method.getParentClass());
+		
+		if (methodReference != null)
+		{
+			if (closure != null)
+			{
+				methodReference.closureDeclaration = closure;
+				methodReference.findDeclaration(method.getParentClass());
+			}
+			else
+			{
+				methodReference.declaration = method;
+			}
+			
+			method.closure = methodReference;
+			
+			updatePassedFunctionReferences(method);
+		}
+		
+		return methodReference;
+	}
+	
+	public void addClosureContext(LambdaMethodDeclaration method)
+	{
+		addClosureContext(method, parent.getStatementRootNode());
+	}
+	
+	public void addClosureContext(LambdaMethodDeclaration method, Node root)
+	{
+		if (root != null)
+		{
+			Node node = root.getParentMethod(true);
+			
+			node = node == null ? root.getNearestScopeAncestor() : node;
+			
+			node.addChild(method.contextDeclaration);
+		}
 	}
 	
 	private void updatePassedFunctionReferences(LambdaMethodDeclaration method)
@@ -537,113 +652,107 @@ public class LambdaExpression extends Value
 		return null;
 	}
 	
-	@Override
-	public Value getReturnedNode()
-	{
-		return null;
-	}
-	
-	@Override
-	public String getType(boolean checkCast)
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return null;
-		}
-		
-		return getReturnedNode().getType(checkCast);
-	}
-	
-	@Override
-	public Type getTypeObject()
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return null;
-		}
-		
-		return returned.getTypeObject();
-	}
-	
-	@Override
-	public String getTypeStringValue()
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return null;
-		}
-		
-		return getReturnedNode().getTypeStringValue();
-	}
-	
-	@Override
-	public void setTypeValue(String type)
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return;
-		}
-		
-		getReturnedNode().setTypeValue(type);
-	}
-
-	@Override
-	public int getArrayDimensions()
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return 0;
-		}
-		
-		return getReturnedNode().getArrayDimensions() - getReturnedNode().getArrayAccessDimensions();
-	}
-
-	@Override
-	public void setArrayDimensions(int arrayDimensions)
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return;
-		}
-		
-		returned.setArrayDimensions(returned.getArrayDimensions());
-	}
-
-	@Override
-	public byte getDataType(boolean checkGeneric)
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return 0;
-		}
-		
-		return getReturnedNode().getDataType();
-	}
-
-	@Override
-	public void setDataType(byte type)
-	{
-		Value returned = getReturnedNode();
-		
-		if (returned == null)
-		{
-			return;
-		}
-		
-		getReturnedNode().setDataType(type);
-	}
+//	@Override
+//	public String getType(boolean checkCast)
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return null;
+//		}
+//		
+//		return getReturnedNode().getType(checkCast);
+//	}
+//	
+//	@Override
+//	public Type getTypeObject()
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return null;
+//		}
+//		
+//		return returned.getTypeObject();
+//	}
+//	
+//	@Override
+//	public String getTypeStringValue()
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return null;
+//		}
+//		
+//		return getReturnedNode().getTypeStringValue();
+//	}
+//	
+//	@Override
+//	public void setTypeValue(String type)
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return;
+//		}
+//		
+//		getReturnedNode().setTypeValue(type);
+//	}
+//
+//	@Override
+//	public int getArrayDimensions()
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return 0;
+//		}
+//		
+//		return getReturnedNode().getArrayDimensions() - getReturnedNode().getArrayAccessDimensions();
+//	}
+//
+//	@Override
+//	public void setArrayDimensions(int arrayDimensions)
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return;
+//		}
+//		
+//		returned.setArrayDimensions(returned.getArrayDimensions());
+//	}
+//
+//	@Override
+//	public byte getDataType(boolean checkGeneric)
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return 0;
+//		}
+//		
+//		return getReturnedNode().getDataType();
+//	}
+//
+//	@Override
+//	public void setDataType(byte type)
+//	{
+//		Value returned = getReturnedNode();
+//		
+//		if (returned == null)
+//		{
+//			return;
+//		}
+//		
+//		getReturnedNode().setDataType(type);
+//	}
 }
