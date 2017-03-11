@@ -77,6 +77,15 @@ public class ClosureVariable extends Variable
 				node.setType(method.getFunctionReferenceType());
 				node.inheritAnnotations(temp);
 				
+				String[] parameterNames = new String[method.getParameterList().getNumParameters()];
+				
+				for (int i = 0; i < parameterNames.length; i++)
+				{
+					parameterNames[i] = method.getParameter(i).getName();
+				}
+				
+				((FunctionType)node.getTypeObject()).paramterNames = parameterNames;
+				
 				node.inheritAnnotations(method);
 				
 				return node;
