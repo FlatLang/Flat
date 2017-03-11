@@ -164,16 +164,17 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			
 			if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length() > 2)
 			{
-				message.value = "\"================== " + message.value.substring(1, message.value.length() - 1) + " ==================\"";
+				message.value = "\"" + message.value.substring(1, message.value.length() - 1) + "\"";
 				
-				writeMessage(message);
+				writeMessage(message, getRunTestsMethod(), false, "Nest.out", "writeHeader");
 			}
 		}
 		else
 		{
 			ClassDeclaration clazz = (ClassDeclaration)parent;
+			getFileDeclaration().addImport("novex/nest/Nest");
 			
-			writeMessage((Literal)Literal.decodeStatement(parent, "\"================== Testing " + clazz.getName() + " ==================\"", Location.INVALID, true, true));
+			writeMessage((Literal)Literal.decodeStatement(parent, "\"Testing " + clazz.getName() + "\"", Location.INVALID, true, true), getRunTestsMethod(), false, "Nest.out", "writeHeader");
 		}
 	}
 	
