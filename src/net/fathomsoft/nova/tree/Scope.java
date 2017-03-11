@@ -121,7 +121,7 @@ public class Scope extends Node
 	}
 
 	@Override
-	public void onStackPopped()
+	public void onStackPopped(Node parent)
 	{
 		if (assignedImplicitVariables != null)
 		{
@@ -138,7 +138,7 @@ public class Scope extends Node
 			});
 		}
 
-		super.onStackPopped();
+		super.onStackPopped(parent);
 	}
 	
 	public Node getFirstStatement()
