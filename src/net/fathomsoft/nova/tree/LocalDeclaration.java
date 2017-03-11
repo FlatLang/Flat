@@ -7,6 +7,7 @@ import net.fathomsoft.nova.tree.annotations.FinalAnnotation;
 import net.fathomsoft.nova.tree.annotations.VarAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.*;
 
@@ -248,6 +249,29 @@ public class LocalDeclaration extends VariableDeclaration
 		}
 		
 		return true;
+	}
+	
+	@Override
+	public Node followedByScope(boolean scope)
+	{
+		if (isFunctionType())
+		{
+			getAncestorWithScope().addChild(this);
+			
+			Assignment replacement = Assignment.generateDefault(parent, getLocationIn());
+			replacement.wasDeclaration = true;
+			
+			FunctionType type = (FunctionType)getTypeObject();
+			
+			String params = "()";//type.;
+			
+			replacement.getAssigneeNodes().addChild(generateUsableVariable(parent, getLocationIn()));
+			replacement.addChild(LambdaExpression.decodeStatement(parent, params + " => {", getLocationIn(), true));
+			
+			return replacement;
+		}
+		
+		return super.followedByScope(scope);
 	}
 	
 	/**
