@@ -15,6 +15,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * {@link Node} extension that represents a lambda expression.
@@ -26,6 +27,7 @@ import java.util.Arrays;
 public class LambdaExpression extends IIdentifier
 {
 	public String[] variables; 
+	public Parameter[] parameters;
 	
 	public static final String OPERATOR = "=>";
 	public static final String UNNAMED_PARAMETER = "_";
@@ -107,6 +109,11 @@ public class LambdaExpression extends IIdentifier
 			endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')') + 1;
 			
 			variables = StringUtils.splitCommas(statement.substring(1, endingIndex - 1));
+			
+			if (variables.length == 1 && variables[0].length() == 0)
+			{
+				variables = new String[0];
+			}
 		}
 		else if (statement.startsWith("{"))
 		{
@@ -124,12 +131,13 @@ public class LambdaExpression extends IIdentifier
 		}
 		
 		LambdaExpression n = new LambdaExpression(parent, location);
+		n.variables = variables;
 		
 		if (endingIndex > 0)
 		{
 			String operation = null;
 			
-			if (variables.length > 0)
+			if (variables.length > 0 || statement.startsWith("("))
 			{
 				operation = statement.substring(endingIndex).trim();
 			}
@@ -170,7 +178,6 @@ public class LambdaExpression extends IIdentifier
 						n.block = block;
 						n.operation = operation;
 						n.refFile = refFile;
-						n.variables = variables;
 						
 						return n;
 					}
@@ -182,7 +189,27 @@ public class LambdaExpression extends IIdentifier
 		{
 			n.pending = true;
 			n.setName("function");
-			n.setType("function()");
+			
+			String params = "";
+			
+			if (n.variables != null)
+			{
+				n.parameters = new Parameter[n.variables.length];
+				
+				for (int i = 0; i < n.variables.length; i++)
+				{
+					n.parameters[i] = Parameter.decodeStatement(n, n.variables[i], location, require);
+					
+					if (i > 0)
+					{
+						params += ", ";
+					}
+					
+					params += n.parameters[i].generateNovaType();
+				}
+			}
+			
+			n.setType("function(" + params + ")");
 			
 			return n;
 		}
@@ -216,7 +243,15 @@ public class LambdaExpression extends IIdentifier
 		method.scope = getScope();
 		method.getScope().replaceWith(getScope());
 		
-		NovaParameterList params = method.getParameterList();
+		if (parameters != null)
+		{
+			NovaParameterList params = method.getParameterList();
+			
+			for (int i = 0; i < parameters.length; i++)
+			{
+				params.addChild(parameters[i]);
+			}
+		}
 		
 		addClosureContext(method);
 		
