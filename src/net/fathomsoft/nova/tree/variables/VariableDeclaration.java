@@ -523,7 +523,15 @@ public class VariableDeclaration extends IIdentifier
 		{
 			return result;
 		}
-		
+
+		if (getVarAnnotation() == null && getFinalAnnotation() == null)
+		{
+			FinalAnnotation finalAnnotation = new FinalAnnotation(this, getLocationIn());
+
+			finalAnnotation.onApplied(this);
+			addAnnotation(finalAnnotation);
+		}
+
 		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			if (!validateType())
