@@ -132,7 +132,12 @@ interface RunnableTests
 	
 	default void writeMessage(Literal message, NovaMethodDeclaration method, boolean newLine, String outputStream)
 	{
-		Node write = (Node)SyntaxTree.decodeIdentifierAccess(method, outputStream + ".write(" + message.generateNovaInput() + (newLine ? " + \"\\n\"" : "") + ")", Location.INVALID, true);
+		writeMessage(message, method, newLine, outputStream, "write");
+	}
+	
+	default void writeMessage(Literal message, NovaMethodDeclaration method, boolean newLine, String outputStream, String functionName)
+	{
+		Node write = (Node)SyntaxTree.decodeIdentifierAccess(method, outputStream + "." + functionName + "(" + message.generateNovaInput() + (newLine ? " + \"\\n\"" : "") + ")", Location.INVALID, true);
 		
 		Node first = method.getScope().getFirstStatement();
 		
