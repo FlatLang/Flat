@@ -826,26 +826,35 @@ public class TreeGenerator implements Runnable
 					break;
 				}
 				
-				if (!parentStack.isEmpty())
-				{
-					Node parent = parentStack.pop();
-
-					while (parent.equals(pendingScopeFragment.check()))
-					{
-						pendingScopeFragment.pop();
-
-						parent.onStackPopped(parent);
-
-						parent = parentStack.pop();
-					}
-
-					parent.onStackPopped(parent);
-					
-					popped = true;
-				}
+				popped = popParents();
 				
 				checkPendingScopeFragment(current);
 			}
+		}
+		
+		return popped;
+	}
+	
+	public boolean popParents()
+	{
+		boolean popped = false;
+		
+		if (!parentStack.isEmpty())
+		{
+			Node parent = parentStack.pop();
+			
+			while (parent.equals(pendingScopeFragment.check()))
+			{
+				pendingScopeFragment.pop();
+				
+				parent.onStackPopped(parent);
+				
+				parent = parentStack.pop();
+			}
+			
+			parent.onStackPopped(parent);
+			
+			popped = true;
 		}
 		
 		return popped;
