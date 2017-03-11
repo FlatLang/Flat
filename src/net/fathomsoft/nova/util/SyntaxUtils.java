@@ -520,6 +520,15 @@ public class SyntaxUtils
 					return -1;
 				}
 			}
+//			else if (c == '{')
+//			{
+//				start = StringUtils.findEndingMatch(haystack, start, '{', '}') + 1;
+//				
+//				if (start <= 0)
+//				{
+//					return -1;
+//				}
+//			}
 			else if (searchGenerics != 0 && c == '<')
 			{
 				if (searchGenerics == 1)
@@ -1094,7 +1103,14 @@ public class SyntaxUtils
 		
 		int binary = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, index - 1).getStart();
 		
-		return binary - 1 != index && binary != index && binary != index - 1;
+		if (binary - 1 != index && binary != index && binary != index - 1)
+		{
+			binary = StringUtils.findStrings(statement, new String[] { "=>" }, index - 1).getStart();
+			
+			return binary - 1 != index && binary != index && binary != index - 1;
+		}
+		
+		return false;
 	}
 	
 	/**

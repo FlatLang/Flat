@@ -228,6 +228,11 @@ public class BinaryOperation extends IValue
 		operatorLoc.setBounds(operatorBounds);
 		operatorLoc.setLineNumber(location.getLineNumber());
 		
+		if (statement.charAt(operatorLoc.getStart()) == '>' && statement.charAt(operatorLoc.getStart() - 1) == '=')
+		{
+			return null;
+		}
+		
 		try
 		{
 			if (operatorBounds.isValid())
