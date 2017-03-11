@@ -413,7 +413,7 @@ public class MethodCall extends Variable
 		
 		for (Pair<ClassDeclaration, SearchFilter> clazz : classes)
 		{
-			if (clazz == null)
+			if (clazz.a == null)
 			{
 				getDeclaringClasses();
 				SyntaxMessage.error("Could not find declaring class for '" + name + "'", this);
