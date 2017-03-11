@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -187,6 +188,10 @@ public class Return extends IValue
 				
 				getReturnValues().addChild(value);
 			}
+		}
+		else if (getParentMethod().isFunctionType())
+		{
+			getReturnValues().addChild(LambdaExpression.decodeStatement(this, "{", location, require));
 		}
 		else if (getParentMethod().getType() != null)
 		{
