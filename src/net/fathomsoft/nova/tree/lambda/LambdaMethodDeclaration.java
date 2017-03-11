@@ -26,7 +26,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	
 	public MethodCall methodCall;
 	
-	private Scope scope;
+	public Scope scope;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
