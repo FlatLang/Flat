@@ -252,6 +252,10 @@ public class Return extends IValue
 				
 				skipCompatible = true;
 			}
+			else if (value.getReturnedNode().isFunctionType() && method.isFunctionType())
+			{
+				skipCompatible = true;
+			}
 			
 			if (!skipCompatible && validateType && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode()))
 			{
@@ -274,13 +278,16 @@ public class Return extends IValue
 	
 	private Value checkPrimitiveType(Value node)
 	{
-		if (!node.getReturnedNode().isPrimitive() && getParentMethod().isPrimitive() && !Literal.isNullLiteral(node))
+		if (!getParentMethod().isFunctionType())
 		{
-			return SyntaxUtils.unboxPrimitive(node);
-		}
-		if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive() && !Literal.isNullLiteral(node))
-		{
-			return SyntaxUtils.autoboxPrimitive(node);
+			if (!node.getReturnedNode().isPrimitive() && getParentMethod().isPrimitive() && !Literal.isNullLiteral(node))
+			{
+				return SyntaxUtils.unboxPrimitive(node);
+			}
+			if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive() && !Literal.isNullLiteral(node))
+			{
+				return SyntaxUtils.autoboxPrimitive(node);
+			}
 		}
 		
 		return node;
