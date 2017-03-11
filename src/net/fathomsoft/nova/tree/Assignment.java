@@ -227,6 +227,12 @@ public class Assignment extends Value
 		return n;
 	}
 	
+	@Override
+	public Node getDecodedParent()
+	{
+		return getReturnedNode();
+	}
+	
 	/**
 	 * Decode the given statement into an Assignment if possible. If
 	 * it is not possible, then null is returned.<br>
