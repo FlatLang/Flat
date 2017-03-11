@@ -3,6 +3,7 @@ package net.fathomsoft.nova.tree.lambda;
 import net.fathomsoft.nova.Nova;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.*;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
@@ -196,8 +197,38 @@ public class LambdaExpression extends IIdentifier
 			{
 				n.parameters = new Parameter[n.variables.length];
 				
+				Return r = (Return)parent.getAncestorOfType(Return.class, true);
+				
 				for (int i = 0; i < n.variables.length; i++)
 				{
+					if (SyntaxUtils.isValidIdentifier(n.variables[i]))
+					{
+						if (r != null)
+						{
+							Type type = r.getParentMethod().getTypeObject();
+							
+							if (type instanceof FunctionType)
+							{
+								FunctionType func = (FunctionType)type;
+								
+								ParameterList ps = func.closure.getParameterList();
+								
+								for (int j = 0; j < ps.getNumParameters(); j++)
+								{
+									n.variables[j] = ps.getParameter(j).generateNovaType() + " " + n.variables[j];
+								}
+							}
+							else
+							{
+								SyntaxMessage.error("Function '" + r.getParentMethod().getName() + "' does not return a function type", r);
+							}
+						}
+						else
+						{
+							SyntaxMessage.error("Types must be specified for local lambda expression parameters", n);
+						}
+					}
+					
 					n.parameters[i] = Parameter.decodeStatement(n, n.variables[i], location, require);
 					
 					if (i > 0)
