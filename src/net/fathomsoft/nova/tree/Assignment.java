@@ -350,30 +350,35 @@ public class Assignment extends Value
 		
 		int rhsIndex = StringUtils.findNextNonWhitespaceIndex(statement, equalsIndex + 1);
 		
-		// Right-hand side of the equation.
-		String rhs   = statement.substring(rhsIndex);
-		
-		Location newLoc = location.asNew();
-		newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
-		
-		if (assignment == null)
+		if (rhsIndex > 0)
 		{
-			assignment = n.decodeRightHandSide(n, rhs, newLoc, require);
-		}
-		
-		if (assignment == null)
-		{
-			if (addDeclaration)
+			// Right-hand side of the equation.
+			String rhs = statement.substring(rhsIndex);
+			
+			Location newLoc = location.asNew();
+			newLoc.setBounds(location.getStart() + rhsIndex, location.getStart() + statement.length());
+			
+			if (assignment == null)
 			{
-				n.removeDeclaration();
+				assignment = n.decodeRightHandSide(n, rhs, newLoc, require);
 			}
 			
-			return null;
+			if (assignment == null)
+			{
+				if (addDeclaration)
+				{
+					n.removeDeclaration();
+				}
+				
+				return null;
+			}
+			
+			n.addChild(assignment);
+			
+			return n;
 		}
 		
-		n.addChild(assignment);
-		
-		return n;
+		return null;
 	}
 	
 	@Override
