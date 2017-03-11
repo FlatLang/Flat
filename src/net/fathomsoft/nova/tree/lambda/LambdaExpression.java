@@ -507,6 +507,18 @@ public class LambdaExpression extends IIdentifier
 			}
 			else
 			{
+				if (getAncestorOfType(Return.class) != null)
+				{
+					if (!getParentMethod().isFunctionType())
+					{
+						SyntaxMessage.error("Function '" + getParentMethod().getName() + "' must declare a first-class function return type to return a lambda expression", this);
+					}
+					
+					FunctionType func = (FunctionType)getParentMethod().getTypeObject();
+					
+					methodReference.closureDeclaration = func.closure;
+				}
+				
 				methodReference.declaration = method;
 			}
 			
