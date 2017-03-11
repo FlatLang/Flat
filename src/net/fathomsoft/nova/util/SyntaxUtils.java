@@ -2795,6 +2795,12 @@ public class SyntaxUtils
 		VariableDeclaration givenDeclaration = given instanceof VariableDeclaration ? (VariableDeclaration)given : (given instanceof  Variable ? ((Variable)given).getDeclaration() : null);
 		VariableDeclaration requiredDeclaration = required instanceof VariableDeclaration ? (VariableDeclaration)required : (required instanceof  Variable ? ((Variable)required).getDeclaration() : null);
 
+		if (requiredDeclaration instanceof ClosureDeclaration && givenDeclaration instanceof ClosureDeclaration == false &&
+			given.isFunctionType())
+		{
+			givenDeclaration = ((FunctionType)given.getTypeObject()).closure;
+		}
+		
 		if (givenDeclaration instanceof ClosureDeclaration && requiredDeclaration instanceof ClosureDeclaration)
 		{
 			ClassDeclaration requiredClass = requiredDeclaration.getTypeClass();
