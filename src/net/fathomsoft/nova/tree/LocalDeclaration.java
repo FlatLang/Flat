@@ -264,7 +264,19 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			FunctionType type = (FunctionType)getTypeObject();
 			
-			String params = "()";//type.;
+			String params = "()";
+			
+			if (type.parameterNames != null)
+			{
+				params = "(";
+				
+				for (int i = 0; i < type.parameterNames.length; i++)
+				{
+					params += type.closure.getParameterList().getParameter(i).generateNovaType() + " " + type.parameterNames[i];
+				}
+				
+				params += ")";
+			}
 			
 			replacement.getAssigneeNodes().addChild(generateUsableVariable(parent, getLocationIn()));
 			replacement.addChild(LambdaExpression.decodeStatement(parent, params + " => {", getLocationIn(), true));
