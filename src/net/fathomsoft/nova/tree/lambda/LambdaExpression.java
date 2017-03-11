@@ -217,6 +217,22 @@ public class LambdaExpression extends IIdentifier
 		return null;
 	}
 	
+	@Override
+	public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors)
+	{
+		if (parameters != null)
+		{
+			Optional<Parameter> param = Arrays.stream(parameters).filter(x -> x != null && x.getName().equals(name)).findFirst();
+			
+			if (param.isPresent())
+			{
+				return param.get();
+			}
+		}
+		
+		return super.searchVariable(parent, scope, name, checkAncestors);
+	}
+	
 	private void replaceAccessedLocals(Node scopeAncestor, LambdaMethodDeclaration method)
 	{
 		Node[] vars = method.getScope().getChildrenOfType(Variable.class);
