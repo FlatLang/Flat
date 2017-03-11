@@ -59,7 +59,7 @@ public class SyntaxTree
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
 		Annotation.class, Break.class, Default.class, Case.class, Match.class,
-		Fallthrough.class, Continue.class, ExceptionHandler.class, Assignment.class,
+		Fallthrough.class, Continue.class, LambdaExpression.class, CodeBlock.class, ExceptionHandler.class, Assignment.class,
 		Instantiation.class, ElseStatement.class, IfStatement.class, 
 		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
 		ChainedMethodCall.class, MethodCall.class, LocalDeclaration.class,
@@ -577,6 +577,7 @@ public class SyntaxTree
 				else if (node == null && type == Continue.class) node = Continue.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == MethodCall.class) node = MethodCall.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ClassDeclaration.class) node = ClassDeclaration.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == CodeBlock.class) node = CodeBlock.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Constructor.class) node = Constructor.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Default.class) node = Default.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Destructor.class) node = Destructor.decodeStatement(parent, statement, location, require);
@@ -589,6 +590,7 @@ public class SyntaxTree
 				else if (node == null && type == Instantiation.class) node = Instantiation.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Trait.class) node = Trait.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == IntRange.class) node = IntRange.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == LambdaExpression.class) node = LambdaExpression.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Literal.class) node = Literal.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Loop.class) node = Loop.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == MutatorMethod.class) node = MutatorMethod.decodeStatement(parent, statement, location, require);
@@ -684,6 +686,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Continue.class) && (node = Continue.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(BinaryOperation.class) && (node = BinaryOperation.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ClassDeclaration.class) && (node = ClassDeclaration.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(CodeBlock.class) && (node = CodeBlock.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Constructor.class) && (node = Constructor.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Default.class) && (node = Default.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Destructor.class) && (node = Destructor.decodeStatement(parent, statement, location, require)) != null);
@@ -696,6 +699,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Import.class) && (node = Import.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Trait.class) && (node = Trait.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(IntRange.class) && (node = IntRange.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(LambdaExpression.class) && (node = LambdaExpression.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Literal.class) && (node = Literal.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);
 //		else if (type.isAssignableFrom(Null.class) && (node = Null.decodeStatement(parent, statement, location, require)) != null);
@@ -749,10 +753,12 @@ public class SyntaxTree
 		else if (type2.isAssignableFrom(ClassDeclaration.class) == declaration && type.isAssignableFrom(ClassDeclaration.class) && (node = ClassDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(Closure.class) == declaration && type.isAssignableFrom(Closure.class) && (node = Closure.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(ClosureVariable.class) == declaration && type.isAssignableFrom(ClosureVariable.class) && (node = ClosureVariable.decodeStatement(parent, statement, location, require)) != null);
+		else if (type2.isAssignableFrom(CodeBlock.class) == declaration && type.isAssignableFrom(CodeBlock.class) && (node = CodeBlock.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(Constructor.class) == declaration && type.isAssignableFrom(Constructor.class) && (node = Constructor.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(Destructor.class) == declaration && type.isAssignableFrom(Destructor.class) && (node = Destructor.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(ExternalMethodDeclaration.class) == declaration && type.isAssignableFrom(ExternalMethodDeclaration.class) && (node = ExternalMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(Instantiation.class) == declaration && type.isAssignableFrom(Instantiation.class) && (node = Instantiation.decodeStatement(parent, statement, location, require)) != null);
+		else if (type2.isAssignableFrom(LambdaExpression.class) == declaration && type.isAssignableFrom(LambdaExpression.class) && (node = LambdaExpression.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(LocalDeclaration.class) == declaration && type.isAssignableFrom(LocalDeclaration.class) && (node = LocalDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(MethodCall.class) == declaration && type.isAssignableFrom(MethodCall.class) && (node = MethodCall.decodeStatement(parent, statement, location, require)) != null);
 		else if (type2.isAssignableFrom(BodyMethodDeclaration.class) == declaration && type.isAssignableFrom(BodyMethodDeclaration.class) && (node = BodyMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
