@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
+import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.match.Match;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.*;
@@ -726,7 +727,8 @@ public class TreeGenerator implements Runnable
 			parentStack.peek().addChild(node);
 		}
 		
-		if ((statementEndIndex >= 0 && statementEndIndex < source.length() && !skipScopes && source.charAt(statementEndIndex) == '{') || (pendingScopeFragment.check() == node && node.pendingScopeFragment(null)))
+		if (((statementEndIndex >= 0 && statementEndIndex < source.length() && !skipScopes && source.charAt(statementEndIndex) == '{') || (pendingScopeFragment.check() == node && node.pendingScopeFragment(null))) ||
+			(!skipScopes && node.getDecodedParent() instanceof LambdaExpression))
 		{
 			parentStack.push(node.getDecodedParent());
 		}
@@ -834,12 +836,12 @@ public class TreeGenerator implements Runnable
 					{
 						pendingScopeFragment.pop();
 
-						parent.onStackPopped();
+						parent.onStackPopped(parent);
 
 						parent = parentStack.pop();
 					}
 
-					parent.onStackPopped();
+					parent.onStackPopped(parent);
 					
 					popped = true;
 				}
