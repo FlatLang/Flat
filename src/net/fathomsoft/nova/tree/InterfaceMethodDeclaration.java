@@ -37,11 +37,11 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration
 	}
 	
 	@Override
-	public void followedByScope(boolean scope)
+	public Node followedByScope(boolean scope)
 	{
 		containsScope = scope || shorthandAction != null;
 		
-		super.followedByScope(scope);
+		return super.followedByScope(scope);
 	}
 	
 	@Override

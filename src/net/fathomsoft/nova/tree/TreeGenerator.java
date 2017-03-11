@@ -493,9 +493,7 @@ public class TreeGenerator implements Runnable
 			
 			if (node != null)
 			{
-				node.followedByScope(scope);
-				
-				return node;
+				return node.followedByScope(scope);
 			}
 			else if (skipScopes)
 			{
