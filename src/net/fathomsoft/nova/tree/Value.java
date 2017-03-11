@@ -1027,6 +1027,11 @@ public abstract class Value extends Node implements AbstractValue
 	 */
 	public String generateDataTypeOutput(byte dataType)
 	{
+		if (isFunctionType())
+		{
+			return "";
+		}
+		
 		byte required = getRequiredDataType();
 		
 		if (required == dataType)
