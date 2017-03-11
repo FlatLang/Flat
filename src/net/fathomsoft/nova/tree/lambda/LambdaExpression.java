@@ -60,6 +60,12 @@ public class LambdaExpression extends IIdentifier
 	}
 	
 	@Override
+	public boolean canAccess()
+	{
+		return false;
+	}
+	
+	@Override
 	public int getNumDefaultChildren()
 	{
 		return super.getNumDefaultChildren() + 1;
