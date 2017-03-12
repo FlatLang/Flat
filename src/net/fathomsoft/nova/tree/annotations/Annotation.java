@@ -58,7 +58,8 @@ public class Annotation extends Node
 			CleanTestClassAnnotation.class,
 			TestSuccessAnnotation.class,
 			TestFailureAnnotation.class,
-			TestResultAnnotation.class
+			TestResultAnnotation.class,
+			ThisModifier.class
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
