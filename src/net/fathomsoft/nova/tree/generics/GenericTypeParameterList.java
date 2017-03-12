@@ -78,7 +78,7 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 		
 		do
 		{
-			bounds = StringUtils.findContentBoundsWithin(statement, GenericCompatible.GENERIC_START, GenericCompatible.GENERIC_END, index);
+			bounds = StringUtils.findContentBoundsWithin(statement, GenericCompatible.GENERIC_START, GenericCompatible.GENERIC_END, index, true, '-');
 			
 			if (bounds.isValid())
 			{

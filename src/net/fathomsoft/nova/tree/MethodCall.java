@@ -941,12 +941,12 @@ public class MethodCall extends Variable
 		{
 			MethodCall n  = new MethodCall(parent, location);
 			
-			Bounds genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false);
+			Bounds genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false, '-');
 			
 			if (genericBounds.isValid())
 			{
 				String params = genericBounds.extractString(statement);
-				genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0);
+				genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, true, '-');
 				
 				statement = genericBounds.trimString(statement);
 				
