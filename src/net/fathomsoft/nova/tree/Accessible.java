@@ -810,7 +810,7 @@ public interface Accessible
 		
 		if (lastAccessed != null)
 		{
-			return lastAccessed;
+			return lastAccessed.getReturnedNode();
 		}
 		
 		return (Value)this;
