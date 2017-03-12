@@ -84,7 +84,7 @@ public class ChainedMethodCall extends MethodCall
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a {@link ChainedMethodCall}.
 	 */
-	public static ChainedMethodCall decodeStatement(Node parent, String statement, Location location, boolean require)
+	public static Identifier decodeStatementValue(Node parent, String statement, Location location, boolean require)
 	{
 		if (statement.endsWith(")"))
 		{
@@ -96,9 +96,9 @@ public class ChainedMethodCall extends MethodCall
 				
 				Value value = SyntaxTree.decodeValue(parent, preChain, location, require);
 				
-				if (value instanceof MethodCall)
+				if (value != null && value.getReturnedNode() instanceof MethodCall)
 				{
-					MethodCall call = (MethodCall)value;
+					MethodCall call = (MethodCall)value.getReturnedNode();
 					ChainedMethodCall ref = null;
 					
 					if (call instanceof ChainedMethodCall)
@@ -113,20 +113,31 @@ public class ChainedMethodCall extends MethodCall
 					
 					ChainedMethodCall n = new ChainedMethodCall(call, location);
 					
-					VariableDeclaration declaration = call.getCallableDeclaration().toDeclaration();
+//					VariableDeclaration declaration = call.getCallableDeclaration().toDeclaration();
 					
-					if (declaration.getTypeObject() instanceof FunctionType == false)
+					Value funcType = call.getNovaTypeValue(call);
+					
+					if (!funcType.isFunctionType())
 					{
-						SyntaxMessage.error("Function '" + declaration.getName() + "' does not return a function reference and cannot be called as a function chain", n);
+						SyntaxMessage.error("Function '" + call.getCallableDeclaration().toDeclaration().getName() + "' does not return a function reference and cannot be called as a function chain", n);
 					}
 					
-					FunctionType type = (FunctionType)declaration.getTypeObject();
+					FunctionType type = (FunctionType)funcType.getTypeObject();
 					
 					n.setDeclaration(type.closure);
 					ref.chained = n;
 					n.parent = ref;
 					
-					return ref.getChainBase();
+					ChainedMethodCall base = ref.getChainBase();
+					
+					if (value != call)
+					{
+						call.getAccessingNode().setAccessedNode(ref);
+						
+						return (Identifier)value;
+					}
+					
+					return base;
 				}
 			}
 		}
