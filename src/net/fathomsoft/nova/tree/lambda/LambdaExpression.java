@@ -688,6 +688,8 @@ public class LambdaExpression extends IIdentifier
 	
 	private ClosureDeclaration findDeclarationFromFunctionDeclaration(NovaMethodDeclaration context, final String[] variables)
 	{
+		setToInferredType();
+		
 		if (context.getType() != null)
 		{
 			if (context.isFunctionType())
@@ -699,8 +701,6 @@ public class LambdaExpression extends IIdentifier
 				SyntaxMessage.error("Function with return type '" + context.generateNovaType() + "' cannot return a lambda expression", this);
 			}
 		}
-		
-		setToInferredType();
 		
 		FunctionType type = ((FunctionType)getTypeObject());
 		
