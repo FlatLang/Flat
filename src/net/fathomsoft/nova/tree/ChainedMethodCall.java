@@ -146,6 +146,12 @@ public class ChainedMethodCall extends MethodCall
 	}
 	
 	@Override
+	public Identifier getAccessedNode()
+	{
+		return chained == null ? super.getAccessedNode() : null;
+	}
+	
+	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
 		super.generateNovaInput(builder, outputChildren);
