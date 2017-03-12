@@ -549,7 +549,9 @@ public class TreeGenerator implements Runnable
 				
 				if (end > currentEnd)
 				{
-					return end;
+					end = SyntaxUtils.findCharInBaseScope(source, EITHER_STATEMENT_END_CHARS, end);
+					
+					return end < 0 ? source.length() : end;
 				}
 			}
 		}
