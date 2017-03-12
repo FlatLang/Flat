@@ -1804,21 +1804,40 @@ public class MethodCall extends Variable
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			if (isCallingClosureVariable() && (parent instanceof Assignment == false || !parent.containsProperty("userMade")))
+			if (isCallingClosureVariable() && (getBaseNode() instanceof Assignment == false || !getBaseNode().containsProperty("userMade")))
 			{
 				ClosureVariable var = getClosureVariable();
 				
 				Variable v = getAncestorWithScope().getScope().createLocalVariable(var);
 				v.setType(var);
 				
-				Assignment a = Assignment.generateDefault(parent, getLocationIn());
+				Accessible root = getRootAccessNode();
+				
+				Assignment a = Assignment.generateDefault(root.toValue().parent, getLocationIn());
 				a.setProperty("userMade", false);
 				a.getAssigneeNodes().addChild(v);
 				a.addChild(Literal.decodeStatement(a, "null", getLocationIn(), true, true));
+
+				String nova = "";
 				
-				replaceWith(a);
+				if (isAccessed())
+				{
+					nova = root.generateNovaInputUntil(getAccessingNode()).toString();
+				}
 				
-				a.getAssignmentNode().replaceWith(this);
+				nova += (nova.length() > 0 ? "." : "") + getName();
+				
+//				root.toValue().replaceWith(a);
+				Node n = SyntaxTree.decodeScopeContents(getBaseNode(), nova, getLocationIn(), true);
+				
+				a.getAssignmentNode().replaceWith(n);//root.toValue());
+				root.toValue().replaceWith(a);
+				
+				a.setProperty("methodCall", this);
+				
+				root.toValue().parent = a.parent;
+				
+				((FirstClassClosureDeclaration)getCallableMethodBase()).reference = a.getAssignedNode();
 				
 				result.returnedNode = a;
 				
