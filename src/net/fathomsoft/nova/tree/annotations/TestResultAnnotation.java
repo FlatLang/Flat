@@ -99,6 +99,8 @@ public class TestResultAnnotation extends Annotation implements ModifierAnnotati
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

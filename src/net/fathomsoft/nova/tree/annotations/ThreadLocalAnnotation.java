@@ -194,6 +194,8 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

@@ -99,6 +99,8 @@ public class InitTestClassAnnotation extends Annotation implements ModifierAnnot
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

@@ -164,6 +164,8 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

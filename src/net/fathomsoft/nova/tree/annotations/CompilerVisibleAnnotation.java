@@ -121,6 +121,8 @@ public class CompilerVisibleAnnotation extends Annotation implements ModifierAnn
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

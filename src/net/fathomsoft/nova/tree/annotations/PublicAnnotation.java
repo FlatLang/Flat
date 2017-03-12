@@ -122,6 +122,8 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

@@ -99,6 +99,8 @@ public class CleanTestAnnotation extends Annotation implements ModifierAnnotatio
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

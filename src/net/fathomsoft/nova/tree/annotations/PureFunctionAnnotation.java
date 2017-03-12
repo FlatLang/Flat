@@ -386,6 +386,8 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

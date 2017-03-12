@@ -120,6 +120,8 @@ public class ExternalNameAnnotation extends Annotation implements ModifierAnnota
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

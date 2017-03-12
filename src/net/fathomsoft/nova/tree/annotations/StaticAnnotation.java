@@ -99,6 +99,8 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

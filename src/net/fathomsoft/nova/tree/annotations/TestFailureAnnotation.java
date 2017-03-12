@@ -99,6 +99,8 @@ public class TestFailureAnnotation extends Annotation implements ModifierAnnotat
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

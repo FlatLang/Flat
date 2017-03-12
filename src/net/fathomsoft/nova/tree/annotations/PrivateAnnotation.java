@@ -123,6 +123,8 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	

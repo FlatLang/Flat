@@ -117,6 +117,8 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.aliasUsed = aliasUsed;
+		
 		return node;
 	}
 	
