@@ -48,6 +48,17 @@ public class ChainedMethodCall extends MethodCall
 	}
 	
 	@Override
+	public StringBuilder generateNovaInputUntil(StringBuilder builder, Accessible stopAt)
+	{
+		if (stopAt instanceof ChainedMethodCall)
+		{
+			throw new UnimplementedOperationException("Unimplemented");
+		}
+		
+		return super.generateNovaInputUntil(builder, stopAt);
+	}
+	
+	@Override
 	public Value getReturnedNode()
 	{
 		return chained != null ? chained.getReturnedNode() : this;
