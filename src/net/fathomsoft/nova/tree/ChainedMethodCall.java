@@ -33,7 +33,18 @@ public class ChainedMethodCall extends MethodCall
 			return variable;
 		}
 		
-		return ((FirstClassClosureDeclaration)getChainBase().declaration).reference;
+		ChainedMethodCall base = getChainBase();
+		
+		if (base.declaration instanceof FirstClassClosureDeclaration)
+		{
+			return ((FirstClassClosureDeclaration)base.declaration).reference;
+		}
+		else
+		{
+			FunctionType type = (FunctionType)base.getNovaTypeValue(base).getTypeObject();
+			
+			return type.closure.reference;
+		}
 	}
 	
 	@Override
