@@ -145,6 +145,28 @@ public class ChainedMethodCall extends MethodCall
 		return null;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
+	{
+		super.generateNovaInput(builder, outputChildren);
+		
+		return generateChain(builder);
+	}
+	
+	public StringBuilder generateChain(StringBuilder builder)
+	{
+		if (chained != null)
+		{
+			builder.append("(");
+			chained.getArgumentList().generateNovaInput(builder);
+			builder.append(")");
+			
+			chained.generateChain(builder);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 *
