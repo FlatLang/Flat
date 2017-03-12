@@ -155,7 +155,7 @@ public class IIdentifier extends Identifier
 	@Override
 	public void setTypeValue(String type)
 	{
-		if (this.type == null || this.type.value == null && this.type.arrayDimensions == 0)
+		if (this.type == null || this.type.value == null && this.type.arrayDimensions == 0 && !isFunctionType())
 		{
 			this.type = Type.parse(this, type);
 		}

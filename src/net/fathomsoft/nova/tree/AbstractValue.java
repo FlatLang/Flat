@@ -61,6 +61,11 @@ public interface AbstractValue extends GenericCompatible
 			type = SyntaxUtils.getValidType(n, type);
 		}
 		
+		if (getTypeObject() != null && type != null && type.contains("("))
+		{
+			getTypeObject().value = null;
+		}
+		
 		setTypeValue(type);
 		
 		if (checkType)
