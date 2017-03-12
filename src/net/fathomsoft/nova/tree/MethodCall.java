@@ -1155,7 +1155,7 @@ public class MethodCall extends Variable
 	 * @param require Whether or not to throw an error if anything goes wrong.
 	 * @return Whether or not the arguments decoded successfully.
 	 */
-	private boolean decodeArguments(String statement, Bounds bounds, boolean require)
+	public boolean decodeArguments(String statement, Bounds bounds, boolean require)
 	{
 		String argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
 		

@@ -124,6 +124,11 @@ public class ChainedMethodCall extends MethodCall
 					
 					FunctionType type = (FunctionType)funcType.getTypeObject();
 					
+					if (!n.decodeArguments(statement, SyntaxUtils.findInnerParenthesesBounds(n, statement), true))//statement.substring(match + 1, statement.length() - 1).trim())
+					{
+						return null;
+					}
+					
 					n.setDeclaration(type.closure);
 					ref.chained = n;
 					n.parent = ref;
