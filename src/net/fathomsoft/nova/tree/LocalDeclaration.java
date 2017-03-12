@@ -194,7 +194,6 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			if (!checkName || n.validateDeclaration())
 			{
-				
 				for (int i = 0; i < n.getNumGenericTypeArguments(); i++)
 				{
 					GenericTypeArgument type = n.getGenericTypeArgument(i);
