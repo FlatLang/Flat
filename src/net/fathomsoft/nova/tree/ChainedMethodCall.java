@@ -3,10 +3,12 @@ package net.fathomsoft.nova.tree;
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
+import net.fathomsoft.nova.error.UnimplementedOperationException;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
+import net.fathomsoft.nova.util.SyntaxUtils;
 
 /**
  * {@link MethodCall} extension that represents
@@ -45,6 +47,20 @@ public class ChainedMethodCall extends MethodCall
 			
 			return type.closure.reference;
 		}
+	}
+	
+	public boolean requiresLocal()
+	{
+		if (chained != null)
+		{
+			return true;
+		}
+		else if (getChainBase().declaration instanceof FirstClassClosureDeclaration == false)
+		{
+			return true;
+		}
+		
+		return false;
 	}
 	
 	@Override
@@ -213,10 +229,18 @@ public class ChainedMethodCall extends MethodCall
 		
 		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			if (chained != null)
+			if (requiresLocal())//chained != null)
 			{
 				variable = getAncestorWithScope().getScope().createLocalVariable(this);
-				variable.declaration.setType(this);
+				
+				if (chained == null)
+				{
+					variable.declaration.setType(declaration.generateNovaInput().toString());
+				}
+				else
+				{
+					variable.declaration.setType(this);
+				}
 			}
 		}
 		
