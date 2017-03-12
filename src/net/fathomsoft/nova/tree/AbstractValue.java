@@ -101,6 +101,8 @@ public interface AbstractValue extends GenericCompatible
 	
 	public String getTypeStringValue();
 	
+	public abstract Type getTypeObject();
+	
 	/**
 	 * Set the value of the type variable without checking any
 	 * precautions. Should not be used outside of the IValue and
