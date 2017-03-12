@@ -745,7 +745,7 @@ public class Assignment extends Value
 			{
 				LocalDeclaration local = (LocalDeclaration)v.declaration;
 				
-				if (local.isImplicit())
+				if (local.isImplicit() && !replacement.containsProperty("methodCall"))
 				{
 					local.implicitType = ((Value)replacement).getReturnedNode();
 					local.setType(local.implicitType);

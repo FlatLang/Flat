@@ -1830,10 +1830,10 @@ public class MethodCall extends Variable
 //				root.toValue().replaceWith(a);
 				Node n = SyntaxTree.decodeScopeContents(getBaseNode(), nova, getLocationIn(), true);
 				
+				a.setProperty("methodCall", this);
+				
 				a.getAssignmentNode().replaceWith(n);//root.toValue());
 				root.toValue().replaceWith(a);
-				
-				a.setProperty("methodCall", this);
 				
 				root.toValue().parent = a.parent;
 				
