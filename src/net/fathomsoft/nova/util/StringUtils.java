@@ -838,9 +838,9 @@ public class StringUtils
 			{
 				if (index < str.length() - 1)
 				{
-					if (StringUtils.containsString(str, start, index + 1) || StringUtils.containsString(str, start, index + 1))
+					if (StringUtils.containsString(str, end, index + 1) || StringUtils.containsString(str, end, index + 1))
 					{
-						index++;
+						index += end.length();
 					}
 				}
 			}
@@ -1076,9 +1076,14 @@ public class StringUtils
 	
 	public static Bounds findContentBoundsWithin(String source, String start, String end, int index, boolean includeEndings)
 	{
+		return findContentBoundsWithin(source, start, end, index, includeEndings, (char)0);
+	}
+	
+	public static Bounds findContentBoundsWithin(String source, String start, String end, int index, boolean includeEndings, char escapeChar)
+	{
 		// Start and end bounds.
 		int s = SyntaxUtils.findStringInBaseScope(source, start, index);
-		int e = StringUtils.findEndingMatch(source, s, start, end);
+		int e = StringUtils.findEndingMatch(source, s, start, end, escapeChar);
 		
 		if (includeEndings)
 		{
