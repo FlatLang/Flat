@@ -99,24 +99,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 				SyntaxMessage.queryError("Class '" + className + "' is not imported", this, c == null);
 				SyntaxMessage.queryError("Class '" + className + "' is does not contain Testable annotation", this, !c.containsAnnotationOfType(TestableAnnotation.class));
 				SyntaxMessage.queryError("Testable class '" + className + "' requires a default constructor", this, !c.containsDefaultConstructor());
-				
-				TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
-				
-				if (testable.generatedRunTestsMethod)
-				{
-					NovaMethodDeclaration method = testable.getRunTestsMethod();
-					
-					method.getFileDeclaration().addImport("novex/nest/TestResult");
-					
-					ClosureDeclaration param = (ClosureDeclaration)Parameter.decodeStatement(method.getParameterList(), "propagateFunc(TestResult) = {}", Location.INVALID, true);
-					
-					method.getParameterList().addChild(param);
-					param.onAfterDecoded();
-					param.validate(phase);
-					method.addDefaultParameterInitializations();
-				}
 			}
-			
 			if (containsResultFunction)
 			{
 				getFileDeclaration().addImport("novex/nest/TestResult");
@@ -265,6 +248,8 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 //					initializeTestCases((InitializationMethod)x);
 				}
 			});
+			
+			
 		}
 		
 		for (String className : classNames)

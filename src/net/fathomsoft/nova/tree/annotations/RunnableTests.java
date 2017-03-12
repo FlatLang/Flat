@@ -55,6 +55,27 @@ interface RunnableTests
 		return new MethodCall.Pair<>(runner, override);
 	}
 	
+//	default Assignment initializeTestCases(InitializationMethod parent)
+//	{
+//		((Node)this).getFileDeclaration().addImport("novex/nest/TestCase");
+//		
+//		String initializerValues = ((TestableAnnotation)parent.getParentClass(true).getAnnotationOfType(TestableAnnotation.class)).getTestCaseInitializer();
+//		
+//		Assignment a = Assignment.decodeStatement(parent, "this.testCases = " + initializerValues, Location.INVALID, true);
+//		
+//		if (parent.getScope().getFirstStatement() == null)
+//		{
+//			parent.getScope().addChild(a);
+//		}
+//		else
+//		{
+//			parent.getScope().addChildBefore(parent.getScope().getFirstStatement(), a);
+//		}
+//		
+//		a.onAfterDecoded();
+//		
+//		return a;
+//	}
 	
 	default Assignment initializeTestSuiteRunners(InitializationMethod parent, TestSuiteAnnotation suite)
 	{
