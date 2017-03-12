@@ -154,9 +154,11 @@ public class ChainedMethodCall extends MethodCall
 	@Override
 	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren)
 	{
-		super.generateNovaInput(builder, outputChildren);
+		super.generateNovaInput(builder, false);
 		
-		return generateChain(builder);
+		generateChain(builder);
+		
+		return generateAccessedNode(builder, safeNavigation);
 	}
 	
 	public StringBuilder generateChain(StringBuilder builder)
