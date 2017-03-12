@@ -4191,7 +4191,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			MethodDeclaration methodDeclaration = (MethodDeclaration)root.getChild(i);
 			
-			if (methodDeclaration.isStatic() == staticVal && methodDeclaration.getName().equals(methodName) && (methodDeclaration.getType() == null && type == null || methodDeclaration.getType().equals(type)))
+			if (methodDeclaration.isStatic() == staticVal && methodDeclaration.getName() != null && methodDeclaration.getName().equals(methodName) && (methodDeclaration.getType() == null && type == null || methodDeclaration.getType().equals(type)))
 			{
 				return true;
 			}
