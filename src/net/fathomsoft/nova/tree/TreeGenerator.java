@@ -799,6 +799,21 @@ public class TreeGenerator implements Runnable
 		statementEndIndex      = end;
 	}
 	
+	public boolean skipPoppingParent(String arrowBinding)
+	{
+		if (arrowBinding != null)
+		{
+			int start = SyntaxUtils.findCharInBaseScope(arrowBinding, '{');
+			
+			if (start >= 0 && StringUtils.findEndingMatch(arrowBinding, start, '{', '}') > start)
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Check to see if an ending curly brace has been parsed. If so,
 	 * pop the last parent off the stack.
@@ -826,7 +841,7 @@ public class TreeGenerator implements Runnable
 		
 		checkPendingScopeFragment(current);
 		
-		if (start < statementStart && (parentStack.peek() instanceof ClassDeclaration == false || current instanceof BodyMethodDeclaration == false))
+		if (start < statementStart && (current instanceof BodyMethodDeclaration == false || !skipPoppingParent(((BodyMethodDeclaration)current).shorthandAction)))
 		{
 			String sub = source.substring(start, statementStart);
 			
