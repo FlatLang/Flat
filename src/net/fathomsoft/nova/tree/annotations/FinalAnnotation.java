@@ -73,10 +73,11 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 					variable.getParentMethod() instanceof MutatorMethod == false &&
 					variable.getAncestorOfType(StaticBlock.class) == null)
 				{
-					if (variable.isUserMade() && variable.isInTree() && variable.isBeingModified())
+					if (variable.isUserMade() && variable.isInTree() && variable.isBeingModified() && !variable.declaration.isPropertyTrue("elvis"))
 					{
 						variable.isUserMade();
 						variable.isBeingModified();
+						variable.declaration.isPropertyTrue("elvis");
 						SyntaxMessage.error("Final variable '" + declaration.getName() + "' cannot be modified in this context", variable, false);
 						
 						result.errorOccurred = true;

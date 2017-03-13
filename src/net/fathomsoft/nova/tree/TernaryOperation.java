@@ -153,6 +153,7 @@ public class TernaryOperation extends IValue implements Accessible
 					
 					Variable local = getLocalVariableFromNullCheck(nullCheck);
 					local.declaration.setProperty("userMade", true);
+					local.declaration.setProperty("elvis", true);
 					
 					trueValue = local.getDeclaration().generateUsableVariable(n, condition.getLocationIn());
 					
