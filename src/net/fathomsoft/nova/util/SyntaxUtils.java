@@ -2720,6 +2720,10 @@ public class SyntaxUtils
 		{
 			return false;
 		}
+		else if (given != null && given.isFunctionType() && required.getTypeClass() != null && required.getTypeClass().getClassLocation().equals("nova/Object"))
+		{
+			return true;
+		}
 		
 		if (given instanceof NovaMethodDeclaration && ((NovaMethodDeclaration)given).shorthandAction != null || required instanceof NovaMethodDeclaration && ((NovaMethodDeclaration)required).shorthandAction != null)
 		{
