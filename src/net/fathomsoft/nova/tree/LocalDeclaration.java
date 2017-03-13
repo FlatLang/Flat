@@ -253,7 +253,7 @@ public class LocalDeclaration extends VariableDeclaration
 	@Override
 	public Node followedByScope(boolean scope)
 	{
-		if (isFunctionType())
+		if (scope && isFunctionType())
 		{
 			isImplicit = true;
 			getAncestorWithScope().addChild(this);
