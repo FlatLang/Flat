@@ -263,7 +263,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 		
 		setReturnType(returnType);
 		
-		return true;
+		return SyntaxUtils.isValidIdentifier(signature);
 	}
 	
 	/**
