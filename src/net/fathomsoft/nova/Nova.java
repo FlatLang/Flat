@@ -64,8 +64,8 @@ public class Nova
 	public boolean				isTesting     = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
-	public static final boolean	DEBUG         = false;
-//	public static final boolean	DEBUG         = true;
+//	public static final boolean	DEBUG         = false;
+	public static final boolean	DEBUG         = true;
 
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
@@ -91,7 +91,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.3.7";
+	public static final String	VERSION       = "v0.3.8";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -388,8 +388,10 @@ public class Nova
 			{
 //				"../Novac",
 //				"../Astro",
+				"../Nest",
 //				"../Spectra",
 //				"../Nova.c",
+				"../plumber/plumbercalc",
 				"../Misc/example",
 				"../Misc/stabilitytest",
 				"-d", "../NovaCompilerOutput/" + target,
@@ -409,9 +411,11 @@ public class Nova
 //				"-qp",
 				"-main",
 //				"example/Lab",
-//				"stabilitytest/StabilityTest",
+				"stabilitytest/StabilityTest",
+//				"plumbercalc/tests/AllTestsRunner",
+//				"example/NestTest",
 //				"example/SvgChart",
-				"example/SvgFractal",
+//				"example/SvgFractal",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
 //				"spectra/Spectra",
