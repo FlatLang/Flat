@@ -71,6 +71,85 @@ public class Scope extends Node
 		return value;
 	}
 	
+	public ClassDeclaration[] getDependencies()
+	{
+		ArrayList<ClassDeclaration> list = new ArrayList<>();
+		
+		addVariableDependencies(list, getChildrenOfType(Variable.class));
+		
+		Node[] calls = getChildrenOfType(MethodCall.class);
+		
+		for (Node n : calls)
+		{
+			MethodCall call = (MethodCall)n;
+			
+			NovaMethodDeclaration method = call.getNovaMethod();
+			
+			if (method != null && method.containsScope())
+			{
+				ClassDeclaration[] cs = method.getScope().getDependencies();
+				
+				for (ClassDeclaration c : cs)
+				{
+					if (!list.contains(c) && c != getParentClass())
+					{
+						list.add(c);
+					}
+				}
+				
+				if (method instanceof Constructor && ((Constructor)method).initMethod != null)
+				{
+					cs = ((Constructor)method).initMethod.getScope().getDependencies();
+					
+					for (ClassDeclaration c : cs)
+					{
+						if (!list.contains(c) && c != getParentClass())
+						{
+							list.add(c);
+						}
+					}
+				}
+			}
+		}
+		
+		Node[] inits = getChildrenOfType(DefaultParameterInitialization.class);
+		
+		for (Node n : inits)
+		{
+			DefaultParameterInitialization init = (DefaultParameterInitialization)n;
+			
+			if (init.parameter.defaultValue != null)
+			{
+				addVariableDependencies(list, init.parameter.defaultValue.getChildrenOfType(Variable.class, true));
+			}
+		}
+		
+		return list.toArray(new ClassDeclaration[0]);
+	}
+	
+	private void addVariableDependencies(ArrayList<ClassDeclaration> list, Node[] vars)
+	{
+		for (Node n : vars)
+		{
+			Variable v = (Variable)n;
+			
+			if (v.declaration instanceof InstanceDeclaration)
+			{
+				InstanceDeclaration i = (InstanceDeclaration)v.declaration;
+				
+				if (i.isStatic())
+				{
+					ClassDeclaration c = i.getParentClass();
+					
+					if (!list.contains(c) && c != getParentClass())
+					{
+						list.add(c);
+					}
+				}
+			}
+		}
+	}
+	
 	public DefaultParameterInitialization[] getDefaultParameterInitializations()
 	{
 		ArrayList<DefaultParameterInitialization> list = new ArrayList<>();
