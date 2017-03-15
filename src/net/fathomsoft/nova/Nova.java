@@ -41,7 +41,7 @@ public class Nova
 	
 	private SyntaxTree			tree;
 	
-	public ArrayList<String>	externalImports, externalIncludes;
+	public ArrayList<String>	externalImports, externalIncludes, libraries;
 	private ArrayList<String> errors, warnings, messages;
 	
 	private String[] postArgs;
@@ -53,6 +53,8 @@ public class Nova
 	
 	public HashSet<String> includeDirectories;
 	public ArrayList<File>		inputFiles;//, includeDirectories;
+	
+	public HashMap<File, ArrayList<File>> libraryFiles;
 	
 	public CodeGeneratorEngine codeGeneratorEngine;
 	public CompileEngine compileEngine;
@@ -218,8 +220,10 @@ public class Nova
 		}
 		
 		inputFiles         = new ArrayList<>();
+		libraryFiles       = new HashMap<>();
 		externalImports    = new ArrayList<>();
 		externalIncludes   = new ArrayList<>();
+		libraries          = new ArrayList<>();
 		errors             = new ArrayList<>();
 		warnings           = new ArrayList<>();
 		messages           = new ArrayList<>();
@@ -388,7 +392,7 @@ public class Nova
 			{
 //				"../Novac",
 //				"../Astro",
-				"../Nest",
+				"-l", "../Nest",
 //				"../Spectra",
 //				"../Nova.c",
 				"../plumber/plumbercalc",
@@ -483,6 +487,8 @@ public class Nova
 		postArgsList.add("-v");
 		postArgsList.add("-target");
 		postArgsList.add("c");
+		postArgsList.add("-l");
+		postArgsList.add(standardLibraryPath);
 		
 		postArgs = postArgsList.toArray(new String[0]);
 		
@@ -493,7 +499,7 @@ public class Nova
 //			inputFiles.add(new File(location));
 //		}
 		
-		args = prependArguments(args, new String[] { standardLibraryPath + "/nova" });
+//		args = prependArguments(args, new String[] { standardLibraryPath + "/nova" });
 		args = appendArguments(args, postArgs);
 		
 		parseArguments(args);
@@ -550,7 +556,15 @@ public class Nova
 				{
 					long before = System.currentTimeMillis();
 					
-					tree = new SyntaxTree(inputFiles.toArray(new File[0]), this);
+					ArrayList<File> allFiles = new ArrayList<>();
+					allFiles.addAll(inputFiles);
+					
+					for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
+					{
+						allFiles.addAll(entry.getValue());
+					}
+					
+					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
 					
 					codeGeneratorEngine.tree = tree;
 					compileEngine.tree = tree;
@@ -888,6 +902,23 @@ public class Nova
 			{
 				enableFlag(LIBRARY);
 			}
+			// If the user wants to output a library instead of an
+			// executable.
+			else if (arg.equals("-l"))
+			{
+				validateArgumentSize(args, i + 1, arg);
+				
+				libraries.add(args[i + 1]);
+				
+				File file = new File(args[i + 1]).getAbsoluteFile();
+				
+				ArrayList<File> list = new ArrayList<>();
+				list.add(file);
+				
+				libraryFiles.put(file, list);
+				
+				skip = 1;
+			}
 			// Specify a custom output directory.
 			else if (arg.equals("-output-directory") || arg.equals("-d"))
 			{
@@ -946,7 +977,25 @@ public class Nova
 			System.exit(1);
 		}
 		
-		validateInputFiles();
+		validateFiles(inputFiles);
+		
+		for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
+		{
+			validateFiles(entry.getValue());
+		}
+	}
+	
+	public File getLibrary(File file)
+	{
+		for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
+		{
+			if (entry.getValue().contains(file))
+			{
+				return entry.getKey();
+			}
+		}
+		
+		return null;
 	}
 	
 	private void validateArgumentSize(String[] args, int size, String arg)
@@ -964,10 +1013,10 @@ public class Nova
 		}
 	}
 	
-	private void addFilesFromDirectory(File directory)
+	private void addFilesFromDirectory(ArrayList<File> files, File directory)
 	{
-		stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova")).forEach(x -> inputFiles.add(x));
-		stream(directory.listFiles()).filter(x -> x.isDirectory()).forEach(this::addFilesFromDirectory);
+		stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova")).forEach(x -> files.add(x));
+		stream(directory.listFiles()).filter(x -> x.isDirectory()).forEach(x -> addFilesFromDirectory(files, x));
 	}
 	
 	/**
@@ -975,19 +1024,19 @@ public class Nova
 	 * do not, an error will be output. Also outputs an error if the
 	 * input file does not exist or is a directory.
 	 */
-	private void validateInputFiles()
+	private void validateFiles(ArrayList<File> files)
 	{
 		boolean working = true;
 		
-		for (int i = 0; i < inputFiles.size(); i++)
+		for (int i = 0; i < files.size(); i++)
 		{
-			File f = inputFiles.get(i);
+			File f = files.get(i);
 			
 			if (!f.isFile())
 			{
 				if (f.isDirectory())
 				{
-					addFilesFromDirectory(f);
+					addFilesFromDirectory(files, f);
 					
 					includeDirectories.add(f.getParentFile().getAbsolutePath());
 				}
@@ -1012,11 +1061,11 @@ public class Nova
 			}
 		}
 		
-		for (int i = inputFiles.size() - 1; i >= 0; i--)
+		for (int i = files.size() - 1; i >= 0; i--)
 		{
-			if (inputFiles.get(i).isDirectory())
+			if (files.get(i).isDirectory())
 			{
-				inputFiles.remove(i);
+				files.remove(i);
 			}
 		}
 		
