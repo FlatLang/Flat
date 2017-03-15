@@ -157,6 +157,11 @@ public class FileDeclaration extends Node
 		return super.getNumDefaultChildren() + 2;
 	}
 	
+	public File getLibrary()
+	{
+		return getController().getLibrary(file);
+	}
+	
 	/**
 	 * Add all of the imports of the classes that are within the same
 	 * directory of the specified file.
