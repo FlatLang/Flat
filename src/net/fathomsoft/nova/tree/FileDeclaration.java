@@ -157,6 +157,11 @@ public class FileDeclaration extends Node
 		return super.getNumDefaultChildren() + 2;
 	}
 	
+	public boolean isLibraryFile()
+	{
+		return getLibrary() != null;
+	}
+	
 	public File getLibrary()
 	{
 		return getController().getLibrary(file);
