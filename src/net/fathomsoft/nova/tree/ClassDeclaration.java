@@ -3191,8 +3191,8 @@ public class ClassDeclaration extends InstanceDeclaration
 			
 			if (!isPrimitiveOverload())
 			{
-				generateFunctionMap();
-				generatePropertyMap();
+//				generateFunctionMap();
+//				generatePropertyMap();
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
