@@ -1015,8 +1015,11 @@ public class Nova
 	
 	private void addFilesFromDirectory(ArrayList<File> files, File directory)
 	{
-		stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova")).forEach(x -> files.add(x));
-		stream(directory.listFiles()).filter(x -> x.isDirectory()).forEach(x -> addFilesFromDirectory(files, x));
+		if (!directory.getName().equalsIgnoreCase(".novalib"))
+		{
+			stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova")).forEach(x -> files.add(x));
+			stream(directory.listFiles()).filter(x -> x.isDirectory()).forEach(x -> addFilesFromDirectory(files, x));
+		}
 	}
 	
 	/**
