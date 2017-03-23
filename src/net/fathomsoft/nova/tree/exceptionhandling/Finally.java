@@ -49,6 +49,21 @@ public class Finally extends ExceptionHandler
 		return null;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		builder.append("finally");
+		
+		if (outputChildren)
+		{
+			builder.append(" ");
+			
+			getScope().generateNovaInput(builder, true);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
