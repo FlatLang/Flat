@@ -80,6 +80,20 @@ public class Try extends ExceptionHandler
 		return null;
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		builder.append("try");
+		
+		if (outputChildren)
+		{
+			builder.append(" ");
+			getScope().generateNovaInput(builder, true);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * Check for a finally node following the try statement. If one does
 	 * not exist, add a default one.
