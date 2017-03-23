@@ -408,6 +408,11 @@ public class VariableDeclaration extends IIdentifier
 	{
 		generateNovaAnnotations(builder);
 		
+		if (isFunctionType())
+		{
+			return generateNovaType(builder, this);
+		}
+		
 		return generateNovaType(builder, this).append(' ').append(getName());
 	}
 	
