@@ -264,6 +264,31 @@ public class Catch extends ExceptionHandler
 //		}
 	}
 	
+	@Override
+	public StringBuilder generateNovaInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
+	{
+		builder.append("catch ");
+		
+		if (soft)
+		{
+			builder.append("all ");
+		}
+		
+		builder.append("(");
+		
+		getExceptionDeclaration().generateNovaInput(builder);
+		
+		builder.append(")");
+		
+		if (outputChildren)
+		{
+			builder.append(" ");
+			getScope().generateNovaInput(builder, true);
+		}
+		
+		return builder;
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
