@@ -17,8 +17,8 @@ import java.util.function.BiFunction;
  */
 public class ExternalCodeBlock extends Node implements ScopeAncestor
 {
-	private String ending = "";
-	private String[] bounds;
+	public String ending = "";
+	public String[] bounds;
 	
 	public ArrayList<Boolean> expressions;
 	
