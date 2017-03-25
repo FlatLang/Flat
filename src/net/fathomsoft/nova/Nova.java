@@ -68,7 +68,11 @@ public class Nova
 	public static final boolean	ANDROID_DEBUG = false;
 //	public static final boolean	DEBUG         = false;
 	public static final boolean	DEBUG         = true;
-
+//	public static final boolean USE_INSTALLED_TARGET = false;
+	public static final boolean USE_INSTALLED_TARGET = true;
+//	public static final boolean USE_INSTALLED_STDLIB = false;
+	public static final boolean USE_INSTALLED_STDLIB = true;
+	
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 
@@ -242,7 +246,7 @@ public class Nova
 		{
 			String enginePath = null;
 			
-			if (DEBUG)
+			if (!USE_INSTALLED_TARGET)
 			{
 				enginePath = "..";
 			}
@@ -382,6 +386,22 @@ public class Nova
 		
 		String standardLibraryPath = "../StandardLibrary";
 		
+		if (USE_INSTALLED_STDLIB)
+		{
+			if (OS == WINDOWS)
+			{
+				standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
+			}
+			else if (OS == MACOSX)
+			{
+				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
+			}
+			else if (OS == LINUX)
+			{
+				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
+			}
+		}
+		
 		if (DEBUG)
 		{
 			testClasses();
@@ -450,19 +470,6 @@ public class Nova
 		}
 		else
 		{
-			if (OS == WINDOWS)
-			{
-				standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
-			}
-			else if (OS == MACOSX)
-			{
-				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
-			}
-			else if (OS == LINUX)
-			{
-				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
-			}
-			
 			if (args.length == 0 || args[0].equals("-version"))
 			{
 				System.out.println("Nova " + VERSION);
@@ -1156,7 +1163,7 @@ public class Nova
 	{
 		endTime = System.currentTimeMillis();
 	}
-	 
+	
 	/**
 	 * Get the time the compiler took to compile the input files.
 	 * 
