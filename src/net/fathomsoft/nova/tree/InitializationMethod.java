@@ -132,6 +132,8 @@ public class InitializationMethod extends BodyMethodDeclaration
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
+		node.constructor = constructor;
+		
 		return node;
 	}
 	
