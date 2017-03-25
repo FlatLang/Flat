@@ -9,6 +9,8 @@ import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
+import java.util.ArrayList;
+
 /**
  * ExceptionHandler extension that represents the declaration of a
  * catch node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -187,23 +189,38 @@ public class Catch extends ExceptionHandler
 		
 		if (targetC)
 		{
-			Assignment assign = Assignment.decodeStatement(this, exceptionDeclaration.getName() + " = null", Location.INVALID, true);
+//			Assignment assign = Assignment.decodeStatement(this, exceptionDeclaration.getName() + " = null", Location.INVALID, true);
+//			
+//			assign.setProperty("userMade", false);
+//			assign.getAssignedNode().setProperty("userMade", false);
+//			
+//			Variable exceptionData = getExceptionDataVariable(this, Location.INVALID);
+//			Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
+//			exceptionData.addChild(thrownException);
+//			
+//			Cast c = new Cast(assign, assign.getLocationIn());
+//			c.setType(exceptionDeclaration.getTypeStringValue());
+//			c.addChild(exceptionData);
+//			
+//			assign.replace(assign.getAssignmentNode(), c);
+//			assign.getAssignedNode().setDataType(c.getDataType());
+//			
+//			addChild(assign);
 			
-			assign.setProperty("userMade", false);
-			assign.getAssignedNode().setProperty("userMade", false);
+			ExternalCodeBlock block = ExternalCodeBlock.decodeStatement(this, "external c", location, true);
+			block.bounds = new String[] {""};
+			block.expressions = new ArrayList<>();
+			block.expressions.add(true);
+			block.addChild(SyntaxTree.getUsableExistingNode(this, exceptionDeclaration.getName(), Location.INVALID, false));
+			block.ending = " = (void*)thrownData->nova_exception_Nova_ExceptionData_Nova_thrownException;";
 			
-			Variable exceptionData = getExceptionDataVariable(this, Location.INVALID);
-			Variable thrownException = SyntaxTree.getUsableExistingNode(exceptionData, "thrownException", Location.INVALID);
-			exceptionData.addChild(thrownException);
+			addChild(block);
 			
-			Cast c = new Cast(assign, assign.getLocationIn());
-			c.setType(exceptionDeclaration.getTypeStringValue());
-			c.addChild(exceptionData);
+//			ExternalCodeBlock block = ExternalCodeBlock.decodeStatement(this, "external c", location, true);
 			
-			assign.replace(assign.getAssignmentNode(), c);
-			assign.getAssignedNode().setDataType(c.getDataType());
+//			block.ending = "exceptionData = exceptionData->nova_exception_Nova_ExceptionData_Nova_parent;";
 			
-			addChild(assign);
+//			addChild(block);
 		}
 		
 		addChild(exceptionDeclaration, this);
