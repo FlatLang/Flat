@@ -140,6 +140,10 @@ public class Operator extends IValue
 			case "+=": return (Trait)getProgram().getClassDeclaration("nova/operators/PlusEqualsOperator");
 			case "-": return (Trait)getProgram().getClassDeclaration("nova/operators/MinusOperator");
 			case "-=": return (Trait)getProgram().getClassDeclaration("nova/operators/MinusEqualsOperator");
+			case "<": return (Trait)getProgram().getClassDeclaration("nova/operators/LessThanOperator");
+			case "<=": return (Trait)getProgram().getClassDeclaration("nova/operators/LessThanOrEqualToOperator");
+			case ">": return (Trait)getProgram().getClassDeclaration("nova/operators/GreaterThanOperator");
+			case ">=": return (Trait)getProgram().getClassDeclaration("nova/operators/GreaterThanOrEqualToOperator");
 			default: return null;
 		}
 	}
