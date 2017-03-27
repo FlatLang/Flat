@@ -32,20 +32,30 @@ public class ElseStatement extends ControlStatement
 	
 	public Node getDecodedParent()
 	{
-		if (getNumChildren() >= 2 && getChild(1) instanceof IfStatement)
+		if (getInlineStatement() != null)//instanceof IfStatement)
 		{
-			return getChild(1);
+			return getInlineStatement();
 		}
 		
 		return super.getDecodedParent();
 	}
 	
+	public Node getInlineStatement()
+	{
+		if (getNumChildren() >= 2)
+		{
+			return getChild(1);
+		}
+		
+		return null;
+	}
+	
 	@Override
 	public boolean pendingScopeFragment(Node node)
 	{
-		if (getDecodedParent() != this)
+		if (getInlineStatement() != null)
 		{
-			return getDecodedParent().pendingScopeFragment(node);
+			return getInlineStatement().pendingScopeFragment(node);
 		}
 		
 		return super.pendingScopeFragment(node);
