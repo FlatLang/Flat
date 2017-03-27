@@ -199,7 +199,7 @@ public class TernaryOperation extends IValue implements Accessible
 						return null;
 					}
 					
-					commonClass = trueValue.getReturnedNode().getTypeClass().getCommonAncestor(falseValue.getReturnedNode().getTypeClass());
+					commonClass = SyntaxUtils.getTypeInCommon(trueValue.getReturnedNode(), falseValue.getReturnedNode());
 				}
 				
 				n.setType(v); // Set the array type data and stuff like that
