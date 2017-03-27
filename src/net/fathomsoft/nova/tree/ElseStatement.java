@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -125,6 +126,17 @@ public class ElseStatement extends ControlStatement
 		}
 		
 		return builder;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		if (getInlineStatement() != null && getInlineStatement() instanceof IfStatement == false)
+		{
+			getScope().addChild(getInlineStatement());
+		}
+		
+		return super.validate(phase);
 	}
 	
 	/**
