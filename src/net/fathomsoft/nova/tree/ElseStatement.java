@@ -39,6 +39,17 @@ public class ElseStatement extends ControlStatement
 		return super.getDecodedParent();
 	}
 	
+	@Override
+	public boolean pendingScopeFragment(Node node)
+	{
+		if (getDecodedParent() != this)
+		{
+			return getDecodedParent().pendingScopeFragment(node);
+		}
+		
+		return super.pendingScopeFragment(node);
+	}
+	
 	/**
 	 * Decode the given statement into a ElseStatement instance, if
 	 * possible. If it is not possible, this method returns null.<br>
