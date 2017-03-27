@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.util.Location;
 
 /**
@@ -72,6 +73,7 @@ public class InitializationMethod extends BodyMethodDeclaration
 		{
 			method.setName(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
 			method.cloneTo(this);
+			setType(constructor);
 		}
 		else
 		{
@@ -100,6 +102,13 @@ public class InitializationMethod extends BodyMethodDeclaration
 	public boolean doesConvertToPrimitive()
 	{
 		return getConversionTarget() != null;
+	}
+	
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		setDataType(POINTER);
+		return super.validate(phase);
 	}
 	
 	/**
