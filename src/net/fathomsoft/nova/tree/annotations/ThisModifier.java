@@ -58,16 +58,21 @@ public class ThisModifier extends Annotation implements ModifierAnnotation
 						
 						Constructor constructor = (Constructor)param.getParentMethod();
 						
-						Node assignment = SyntaxTree.decodeScopeContents(param.getParentMethod(), "this." + param.getName() + " = " + param.getName(), param.getLocationIn(), true);
+						Node preAssignment = SyntaxTree.decodeScopeContents(param.getParentMethod(), "this." + param.getName() + " = " + param.getName(), param.getLocationIn(), true);
+						Node postAssignment = SyntaxTree.decodeScopeContents(param.getParentMethod(), "this." + param.getName() + " = " + param.getName(), param.getLocationIn(), true);
 						
-						if (assignment != null)
+						if (preAssignment != null)
 						{
-							constructor.initMethod.getScope().addChild(assignment);
+							Scope s = constructor.initMethod.getScope();
+							
+							s.addChildBefore(s.getFirstStatement(), preAssignment);
 						}
 						else
 						{
 							SyntaxMessage.error("Unable to assign '" + param.getName() + "' field's value from parameter", param);
 						}
+						
+						constructor.initMethod.getScope().addChild(postAssignment);
 					}
 				}
 			}
