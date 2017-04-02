@@ -278,7 +278,7 @@ public class MethodCallArgumentList extends ArgumentList
 							}
 						}
 					}
-					else
+					else if (context.getType() != null)
 					{
 						context.replaceWithBoxedValue(param, type);
 					}
