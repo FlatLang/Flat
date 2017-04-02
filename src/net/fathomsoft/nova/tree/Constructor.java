@@ -286,7 +286,7 @@ public class Constructor extends BodyMethodDeclaration
 					args.append(", ");
 				}
 				
-				args.append(method.getParameter(i).getName());
+				args.append(method.getParameter(i).getName()).append(": ").append(method.getParameter(i).getName());
 			}
 		}
 		
