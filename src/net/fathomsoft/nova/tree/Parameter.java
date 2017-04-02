@@ -9,6 +9,7 @@ import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 import net.fathomsoft.nova.util.Location;
+import net.fathomsoft.nova.util.StringUtils;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
 import java.util.ArrayList;
@@ -26,6 +27,8 @@ public class Parameter extends LocalDeclaration
 {
 	public String  defaultValueString;
 	public Value	defaultValue;
+	
+	public boolean requireNamed;
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
@@ -153,7 +156,14 @@ public class Parameter extends LocalDeclaration
 	{
 		generateNovaAnnotations(builder);
 		
-		builder.append(generateNovaType()).append(' ').append(getName());
+		builder.append(generateNovaType());
+		
+		if (requireNamed)
+		{
+			builder.append(":");
+		}
+		
+		builder.append(' ').append(getName());
 		
 		if (outputDefaultValue && isOptional())
 		{
@@ -249,6 +259,15 @@ public class Parameter extends LocalDeclaration
 		{
 			defaultValue = statement.substring(index + 1).trim();
 			statement = statement.substring(0, index).trim();
+		}
+		
+		index = SyntaxUtils.findCharInBaseScope(statement, ':');
+		
+		if (index > 0 && StringUtils.findNextWhitespaceIndex(statement.substring(index + 1).trim(), 0) < 0)
+		{
+			n.requireNamed = true;
+			
+			statement = statement.substring(0, index) + statement.substring(index + 1);
 		}
 		
 		VariableDeclaration node = ClosureDeclaration.decodeStatement(parent, statement, location, false);
@@ -472,6 +491,7 @@ public class Parameter extends LocalDeclaration
         
 		node.defaultValueString = defaultValueString;
 		node.defaultValue = defaultValue;
+		node.requireNamed = requireNamed;
 		
 		return node;
 	}
