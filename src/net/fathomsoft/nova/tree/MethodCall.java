@@ -1373,7 +1373,7 @@ public class MethodCall extends Variable
 			return SyntaxMessage.queryError("Incompatible arguments for method call '" + getName() + "'", this, require);
 		}
 		
-		ParameterList<Value> parameters = methodDeclaration.getParameterList();
+		ParameterList parameters = methodDeclaration.getParameterList();
 		MethodCallArgumentList arguments = getArgumentList();
 		
 		int argCount = arguments.getNumVisibleChildren();
@@ -1385,6 +1385,26 @@ public class MethodCall extends Variable
 		else if (argCount > parameters.getNumVisibleChildren())
 		{
 			SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
+		}
+		
+		Value[] order = getArgumentList().getArgumentsInOrder();
+		int position = 0;
+		
+		for (int i = 0; i < order.length; i++)
+		{
+			if (parameters.getParameter(i) instanceof Parameter)
+			{
+				Parameter param = (Parameter)parameters.getParameter(i);
+				Value arg = order[i];
+				
+				if (arg instanceof DefaultArgument == false && getArgumentList().getArgumentName(position++) == null)
+				{
+					if (param.requireNamed)
+					{
+						SyntaxMessage.error("Argument '" + arg.generateNovaInput() + "' requires name '" + param.getName() + "'. E.g.: '" + param.getName() + ": " + arg.generateNovaInput() + "'", arg);
+					}
+				}
+			}
 		}
 		
 		if (!methodDeclaration.areCompatibleParameterTypes(this, methodDeclaration instanceof NovaMethodDeclaration ? arguments.getTypes((NovaMethodDeclaration)methodDeclaration) : arguments.getTypes()))
