@@ -1476,10 +1476,14 @@ public class MethodCall extends Variable
 	{
 		MethodCallArgumentList parent = getArgumentList();
 		
+		boolean requiresName;
+		Value previous = null;
+		
 		for (int i = 0; i < arguments.length; i++)
 		{
 			String argument = arguments[i];
 			
+			requiresName = false;
 			Matcher named = Patterns.NAMED_ARGUMENT.matcher(argument);
 			
 			if (named.find() && named.start() == 0)
@@ -1490,6 +1494,10 @@ public class MethodCall extends Variable
 				parent.setArgumentName(i, name);
 				
 				argument = argument.substring(named.group().length()).trim();
+			}
+			else if (previous != null && parent.getFirstArgumentNameIndex() >= 0)
+			{
+				requiresName = true;
 			}
 			
 			if (argument.length() > 0)
@@ -1541,10 +1549,16 @@ public class MethodCall extends Variable
 				//arg = new MethodCallArgument(parent, location, (Value)arg);
 				
 				parent.addChild(arg);
+				previous = (Value)arg;
 				
 				if (arg instanceof Assignment)
 				{
 					arg.onAfterDecoded();
+				}
+				
+				if (requiresName)
+				{
+					SyntaxMessage.error("Once a named argument is used, all of the following arguments must be named as well.", arg);
 				}
 			}
 			else
