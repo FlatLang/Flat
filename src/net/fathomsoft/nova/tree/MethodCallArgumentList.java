@@ -88,11 +88,6 @@ public class MethodCallArgumentList extends ArgumentList
 			argumentNames.add(null);
 		}
 		
-		if (getFirstArgumentNameIndex() >= 0 && argumentNames.get(index - 1) == null)
-		{
-			SyntaxMessage.error("Once a named argument is used, all of the following arguments must be named as well.", this);
-		}
-		
 		argumentNames.set(index, name);
 	}
 	
