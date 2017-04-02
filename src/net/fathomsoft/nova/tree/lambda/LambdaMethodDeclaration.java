@@ -43,7 +43,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 	
 	public ClassDeclaration getContextDeclaringClass()
 	{
-		return methodCall != null ? methodCall.getDeclaringClass() : getParentClass();
+		return methodCall != null && methodCall.isInTree() ? methodCall.getDeclaringClass() : getParentClass();
 	}
 	
 	public ClosureDeclaration getCorrespondingClosureDeclaration()
