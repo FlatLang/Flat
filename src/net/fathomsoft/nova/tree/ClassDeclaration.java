@@ -1548,7 +1548,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public static ArrayList<MethodDeclaration> filterOverrides(ArrayList<MethodDeclaration> methods)
 	{
-		methods = filterPrimitiverOverloads(methods);
+		methods = filterPrimitiveOverloads(methods);
 		
 		ArrayList<MethodDeclaration> nonOverride = new ArrayList<>();
 		
@@ -1579,7 +1579,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		return nonOverride;
 	}
 	
-	public static ArrayList<MethodDeclaration> filterPrimitiverOverloads(ArrayList<MethodDeclaration> methods)
+	public static ArrayList<MethodDeclaration> filterPrimitiveOverloads(ArrayList<MethodDeclaration> methods)
 	{
 		ArrayList<MethodDeclaration> nonOverload = new ArrayList<>();
 		
@@ -1622,7 +1622,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 		}
 		
-		compatible = filterPrimitiverOverloads(compatible);
+		compatible = filterPrimitiveOverloads(compatible);
 		
 		int max = -1;
 		int maxI = -1;
