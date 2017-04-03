@@ -303,7 +303,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		if (extension != null)
 		{
-			NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
+			String name = this instanceof Constructor ? extension.getName() : getName();
+			
+			NovaMethodDeclaration method = (NovaMethodDeclaration)extension.getMethod(getContext(), name, filter, getParameterList().getTypes());
 			
 			if (method != null && method != this && SyntaxUtils.isTypeCompatible(this, method, this))
 			{
