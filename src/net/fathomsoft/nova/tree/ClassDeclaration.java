@@ -4055,31 +4055,34 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (extended != null)
 		{
-			ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
-			
-			if (clazz == null)
+			if (encapsulatingClass == null || phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 			{
-				SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
-				SyntaxMessage.error("Class '" + extended.getType() + "' is not imported", this);
-			}
-			else if (clazz instanceof Trait)
-			{
-				SyntaxMessage.error("Cannot extend trait '" + extended.getType() + "'", this);
-			}
-			
-			GenericTypeArgumentList existing = extended.getGenericTypeArgumentList();
-			GenericTypeParameterList required = extended.getTypeClass().getGenericTypeParameterDeclaration();
-			
-			for (int i = existing.getNumVisibleChildren(); i < required.getNumParameters(); i++)
-			{
-				GenericTypeArgument arg = new GenericTypeArgument(existing, Location.INVALID);
+				ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
 				
-				arg.setType(required.getParameter(i).getDefaultType());
+				if (clazz == null)
+				{
+					SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
+					SyntaxMessage.error("Class '" + extended.getType() + "' is not imported", this);
+				}
+				else if (clazz instanceof Trait)
+				{
+					SyntaxMessage.error("Cannot extend trait '" + extended.getType() + "'", this);
+				}
+				
+				GenericTypeArgumentList existing = extended.getGenericTypeArgumentList();
+				GenericTypeParameterList required = extended.getTypeClass().getGenericTypeParameterDeclaration();
+				
+				for (int i = existing.getNumVisibleChildren(); i < required.getNumParameters(); i++)
+				{
+					GenericTypeArgument arg = new GenericTypeArgument(existing, Location.INVALID);
 					
-				existing.addChild(arg);
+					arg.setType(required.getParameter(i).getDefaultType());
+					
+					existing.addChild(arg);
+				}
+				
+				// TODO: Add extension reference here
 			}
-			
-			// TODO: Add extension reference here
 		}
 	}
 	
