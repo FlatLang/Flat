@@ -6,13 +6,11 @@ class Color {
     visible static final Color GREEN = new Color(0, 255, 0)
     visible static final Color BLUE = new Color(0, 0, 255)
     
-    public Int r
-    public Int g
-    public Int b
+    public Int r, g, b
     
     public construct() => this(0, 0, 0)
     public construct(Int grayscale) => this(grayscale, grayscale, grayscale)
-    public construct(public Int r, public Int g, public Int b) {}
+    public construct(this Int r, this Int g, this Int b) {}
     
     public toImmutable() => new ImmutableColor(this)
 }
