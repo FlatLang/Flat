@@ -8,7 +8,7 @@ class Color {
     
     public Int r, g, b
     
-    public construct() => this(0, 0, 0)
+    public construct() => this(0)
     public construct(Int grayscale) => this(grayscale, grayscale, grayscale)
     public construct(this Int r, this Int g, this Int b) {}
     
