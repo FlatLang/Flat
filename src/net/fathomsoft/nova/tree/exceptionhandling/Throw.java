@@ -2,10 +2,8 @@ package net.fathomsoft.nova.tree.exceptionhandling;
 
 import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxMessage;
-import net.fathomsoft.nova.tree.Identifier;
-import net.fathomsoft.nova.tree.Node;
-import net.fathomsoft.nova.tree.Scope;
-import net.fathomsoft.nova.tree.SyntaxTree;
+import net.fathomsoft.nova.tree.*;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.util.Bounds;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.StringUtils;
@@ -19,7 +17,7 @@ import net.fathomsoft.nova.util.StringUtils;
  * @since	v0.1 Mar 22, 2014 at 11:02:52 PM
  * @version	v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
-public class Throw extends ExceptionHandler
+public class Throw extends Value
 {
 	public boolean soft = false;
 	
@@ -32,12 +30,6 @@ public class Throw extends ExceptionHandler
 	public Throw(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-	}
-	
-	@Override
-	public Scope getScope()
-	{
-		return null;
 	}
 	
 	/**
@@ -208,6 +200,12 @@ public class Throw extends ExceptionHandler
 		return node;
 	}
 	
+	@Override
+	public GenericTypeArgumentList getGenericTypeArgumentList()
+	{
+		return null;
+	}
+	
 	/**
 	 * Test the Throw class type to make sure everything
 	 * is working properly.
@@ -220,5 +218,59 @@ public class Throw extends ExceptionHandler
 		
 		
 		return null;
+	}
+	
+	@Override
+	public String getType(boolean checkCast)
+	{
+		return "Object";
+	}
+	
+	@Override
+	public Value getArrayTypeValue()
+	{
+		return null;
+	}
+	
+	@Override
+	public String getTypeStringValue()
+	{
+		return "Object";
+	}
+	
+	@Override
+	public Type getTypeObject()
+	{
+		return null;
+	}
+	
+	@Override
+	public void setTypeValue(String type)
+	{
+		
+	}
+	
+	@Override
+	public int getArrayDimensions()
+	{
+		return 0;
+	}
+	
+	@Override
+	public void setArrayDimensions(int arrayDimensions)
+	{
+		
+	}
+	
+	@Override
+	public byte getDataType(boolean checkGeneric)
+	{
+		return 0;
+	}
+	
+	@Override
+	public void setDataType(byte type)
+	{
+		
 	}
 }

@@ -59,8 +59,8 @@ public class SyntaxTree
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
 	{
 		Annotation.class, Break.class, Default.class, Case.class, Match.class,
-		Fallthrough.class, Continue.class, LambdaExpression.class, CodeBlock.class, ExceptionHandler.class, Assignment.class,
-		Instantiation.class, ElseStatement.class, IfStatement.class, 
+		Fallthrough.class, Continue.class, LambdaExpression.class, CodeBlock.class, ExceptionHandler.class,
+		Throw.class, Assignment.class, Instantiation.class, ElseStatement.class, IfStatement.class,
 		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
 		ChainedMethodCall.class, MethodCall.class, LocalDeclaration.class,
 		ExternalCodeBlock.class, Array.class, ClosureVariable.class,

@@ -77,11 +77,6 @@ public class ExceptionHandler extends Node
 			if (node == null)
 			{
 				node = Finally.decodeStatement(parent, statement, location, require);
-				
-				if (node == null)
-				{
-					node = Throw.decodeStatement(parent, statement, location, require);
-				}
 			}
 		}
 		
