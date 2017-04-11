@@ -60,7 +60,8 @@ public class Annotation extends Node
 			TestFailureAnnotation.class,
 			TestResultAnnotation.class,
 			ThisModifier.class,
-			SuperParameterModifier.class
+			SuperParameterModifier.class,
+			NamedArgumentModifier.class
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
