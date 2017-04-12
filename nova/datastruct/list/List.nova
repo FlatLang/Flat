@@ -123,6 +123,20 @@ trait List<Type> implements Iterable<Type> {
         return list
     }
     
+    public filterNot(filterFunc(Type, Int, List<Type>) -> Bool) -> List<Type> {
+        let list = new Type[]
+        
+        var Int i = 0
+        
+        for (value in this) {
+            if (!filterFunc(value, i++, this)) {
+                list.add(value)
+            }
+        }
+        
+        return list
+    }
+    
     public filterNull() => filter({ _ != null })
     
     [RequireGenericType Type extends String]
