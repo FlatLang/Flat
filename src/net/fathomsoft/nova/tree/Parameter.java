@@ -345,6 +345,13 @@ public class Parameter extends LocalDeclaration
 		}
 	}
 	
+	public void addDefaultParameterInitialization()
+	{
+		DefaultParameterInitialization init = new DefaultParameterInitialization(getParentMethod(), getLocationIn(), this);
+		
+		getParentMethod().addChild(init);
+	}
+	
 	/**
 	 * @see net.fathomsoft.nova.tree.variables.VariableDeclaration#validate(int)
 	 */

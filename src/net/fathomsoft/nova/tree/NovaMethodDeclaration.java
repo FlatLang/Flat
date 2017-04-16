@@ -454,9 +454,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		for (Parameter p : getParameterList().getOptionalParameters())
 		{
-			DefaultParameterInitialization init = new DefaultParameterInitialization(this, getLocationIn(), p);
-			
-			addChild(init);
+			p.addDefaultParameterInitialization();
 		}
 	}
 	
