@@ -66,6 +66,7 @@ public class SuperParameterModifier extends Annotation implements ModifierAnnota
 					if (param.defaultValueString == null)
 					{
 						param.defaultValueString = corresponding.defaultValueString;
+						param.addDefaultParameterInitialization();
 					}
 					
 					if (corresponding.getAnnotations() != null)
