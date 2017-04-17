@@ -6,18 +6,18 @@ import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 
-public class ExpectSyntaxErrorAnnotation extends Annotation
+public class ExpectCompileErrorAnnotation extends Annotation
 {
-	public ExpectSyntaxErrorAnnotation(Node temporaryParent, Location locationIn)
+	public ExpectCompileErrorAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
 	}
 	
-	public static ExpectSyntaxErrorAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
+	public static ExpectCompileErrorAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
 	{
-		if (name.equals("ExpectSyntaxError"))
+		if (name.equals("ExpectCompileError"))
 		{
-			ExpectSyntaxErrorAnnotation n = new ExpectSyntaxErrorAnnotation(parent, location);
+			ExpectCompileErrorAnnotation n = new ExpectCompileErrorAnnotation(parent, location);
 			
 			return n;
 		}
@@ -80,19 +80,19 @@ public class ExpectSyntaxErrorAnnotation extends Annotation
 	}
 	
 	@Override
-	public ExpectSyntaxErrorAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
+	public ExpectCompileErrorAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
-		ExpectSyntaxErrorAnnotation node = new ExpectSyntaxErrorAnnotation(temporaryParent, locationIn);
+		ExpectCompileErrorAnnotation node = new ExpectCompileErrorAnnotation(temporaryParent, locationIn);
 		
 		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
 	
-	public ExpectSyntaxErrorAnnotation cloneTo(ExpectSyntaxErrorAnnotation node)
+	public ExpectCompileErrorAnnotation cloneTo(ExpectCompileErrorAnnotation node)
 	{
 		return cloneTo(node, true, true);
 	}
 	
-	public ExpectSyntaxErrorAnnotation cloneTo(ExpectSyntaxErrorAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
+	public ExpectCompileErrorAnnotation cloneTo(ExpectCompileErrorAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
