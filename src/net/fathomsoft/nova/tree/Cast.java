@@ -189,7 +189,9 @@ public class Cast extends IValue
 			type = getProgram().getClassDeclaration("nova/Object");
 		}
 		
-		if (!getTypeClass().isRelatedTo(type) && !type.containsArrayBracketOverload())
+		boolean array = type != null && type.containsArrayBracketOverload();
+		
+		if (!getTypeClass().isRelatedTo(type) && !array)
 		{
 			if (!getProgram().getController().isTesting)
 			{
@@ -200,7 +202,12 @@ public class Cast extends IValue
 			SyntaxMessage.error("Cannot cast from type '" + node.getReturnedNode().getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
 		}
 		
-		addChild(checkPrimitiveType(node));
+		if (!array)
+		{
+			node = checkPrimitiveType(node);
+		}
+		
+		addChild(node);
 		
 		return true;
 	}
