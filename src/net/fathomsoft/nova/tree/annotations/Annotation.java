@@ -446,7 +446,12 @@ public class Annotation extends Node
 																																		
 																																		if (n == null)
 																																		{
-																																			n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																			n = ExpectCompileErrorAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																			
+																																			if (n == null)
+																																			{
+																																				n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																			}
 																																		}
 																																	}
 																																}

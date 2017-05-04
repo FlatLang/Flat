@@ -5,17 +5,20 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.error.SyntaxErrorException;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.annotations.ExpectCompileErrorAnnotation;
 import net.fathomsoft.nova.tree.annotations.ModifierAnnotation;
 import net.fathomsoft.nova.tree.annotations.TargetAnnotation;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgument;
 import net.fathomsoft.nova.tree.lambda.LambdaExpression;
 import net.fathomsoft.nova.tree.match.Match;
+import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.util.*;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 /**
  * Class that is used to generate syntax tree data for a given file
@@ -28,6 +31,8 @@ import java.util.regex.Matcher;
 public class TreeGenerator implements Runnable
 {
 	private boolean			skipNextStatement;
+	
+	private ExpectCompileErrorAnnotation expectCompileError;
 	
 	private int				statementStartIndex, statementEndIndex, oldStatementStartIndex;
 	private int				lineNumber;
@@ -436,7 +441,46 @@ public class TreeGenerator implements Runnable
 				return null;
 			}
 			
-			Node node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
+			Node node = null;
+			
+			if (expectCompileError != null)
+			{
+				boolean hitExpected = false;
+				
+				try
+				{
+					node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes, false);
+					
+					if (node != null)
+					{
+						node.validate(tree.getPhase());
+					}
+				}
+				catch (SyntaxErrorException e)
+				{
+					if (expectCompileError.types.stream().anyMatch(x -> x.isAssignableFrom(e.getClass())))
+					{
+						hitExpected = true;
+					}
+				}
+				
+				if (!hitExpected)
+				{
+					SyntaxMessage.error("Expected '" + String.join(", ", expectCompileError.types.stream().map(Class::getSimpleName).collect(Collectors.toList())) + "'", expectCompileError, location);
+				}
+				else
+				{
+					ArrayList errors = tree.getRoot().getProgram().getController().errors;
+					
+					errors.remove(errors.size() - 1);
+				}
+				
+				expectCompileError = null;
+			}
+			else
+			{
+				node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
+			}
 			
 			ArrayList<ModifierAnnotation> modifiers = new ArrayList<>();
 			
@@ -447,6 +491,13 @@ public class TreeGenerator implements Runnable
 				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation && !((TargetAnnotation)a).currentTarget());
 				
 				statement = Annotation.getFragment(statement);
+				
+				
+				
+				if (a instanceof ExpectCompileErrorAnnotation)
+				{
+					expectCompileError = (ExpectCompileErrorAnnotation)a;
+				}
 				
 				if (statement.length() > 0)
 				{
@@ -671,6 +722,11 @@ public class TreeGenerator implements Runnable
 	 */
 	private Node decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[], boolean skipScopes)
 	{
+		return decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes, true);
+	}
+	
+	private Node decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[], boolean skipScopes, boolean catchException)
+	{
 		if (skipNextStatement)
 		{
 			skipNextStatement = false;
@@ -681,6 +737,11 @@ public class TreeGenerator implements Runnable
 			}
 			
 			return null;
+		}
+		
+		if (!catchException)
+		{
+			return decodeStatement(statement, location, searchTypes);
 		}
 		
 		try

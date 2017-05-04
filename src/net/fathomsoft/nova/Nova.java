@@ -42,7 +42,7 @@ public class Nova
 	private SyntaxTree			tree;
 	
 	public ArrayList<String>	externalImports, externalIncludes, libraries;
-	private ArrayList<String> errors, warnings, messages;
+	public ArrayList<String> errors, warnings, messages;
 	
 	private String[] postArgs;
 	

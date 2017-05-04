@@ -1,13 +1,31 @@
 package net.fathomsoft.nova.tree.annotations;
 
 import net.fathomsoft.nova.ValidationResult;
+import net.fathomsoft.nova.error.SyntaxErrorException;
+import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.tree.NovaMethodDeclaration;
 import net.fathomsoft.nova.tree.SyntaxTree;
 import net.fathomsoft.nova.util.Location;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 public class ExpectCompileErrorAnnotation extends Annotation
 {
+	public List<Class> types;
+	
+	public static final List<String> ERROR_PACKAGES;
+	
+	static
+	{
+		ERROR_PACKAGES = Arrays.stream(Package.getPackages()).filter(p -> {
+				return p.getName().startsWith(SyntaxErrorException.class.getPackage().getName());
+			}).map(p -> {
+				return p.getName();
+			}).collect(Collectors.toList());
+	}
+	
 	public ExpectCompileErrorAnnotation(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
@@ -19,10 +37,35 @@ public class ExpectCompileErrorAnnotation extends Annotation
 		{
 			ExpectCompileErrorAnnotation n = new ExpectCompileErrorAnnotation(parent, location);
 			
+			n.parseParameters(parameters);
+			
+			SyntaxMessage.queryError("Must supply error type argument", n, n.parameters.get("type") == null);
+			
+			n.types = new ArrayList<>();
+			n.types.add(n.getErrorClass((String)n.parameters.get("type")));
+			
 			return n;
 		}
 		
 		return null;
+	}
+	
+	public Class getErrorClass(String name)
+	{
+		Optional<Class> c = ERROR_PACKAGES.stream().map(p -> {
+			try
+			{
+				return (Class)Class.forName(p + "." + name);
+			}
+			catch (ClassNotFoundException e)
+			{
+				return null;
+			}
+		}).filter(Objects::nonNull).findFirst();
+		
+		SyntaxMessage.queryError("Could not find error type of '" + name + "'", this, !c.isPresent());
+		
+		return c.get();
 	}
 	
 	@Override
@@ -34,7 +77,7 @@ public class ExpectCompileErrorAnnotation extends Annotation
 	@Override
 	public String[][] defaultParameterTypes()
 	{
-		return new String[][] { { "identifier" } };
+		return new String[][] { { "Identifier" } };
 	}
 	
 	@Override
