@@ -231,6 +231,7 @@ public class Nova
 		errors             = new ArrayList<>();
 		warnings           = new ArrayList<>();
 		messages           = new ArrayList<>();
+		flagsStack         = new Stack<>();
 		
 //		cSourceFiles       = new ArrayList<>();
 //		cHeaderFiles       = new ArrayList<>();
@@ -1088,6 +1089,14 @@ public class Nova
 			
 			completed(false);
 		}
+	}
+
+	public void pushFlags() {
+		flagsStack.push(flags);
+	}
+
+	public void popFlags() {
+		flags = flagsStack.pop();
 	}
 	
 	/**
