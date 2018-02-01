@@ -446,7 +446,8 @@ public class TreeGenerator implements Runnable
 			if (expectCompileError != null)
 			{
 				boolean hitExpected = false;
-				
+				controller.pushFlags();
+
 				try
 				{
 					node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes, false);
@@ -473,6 +474,8 @@ public class TreeGenerator implements Runnable
 					ArrayList errors = tree.getRoot().getProgram().getController().errors;
 					
 					errors.remove(errors.size() - 1);
+
+					controller.popFlags();
 				}
 				
 				expectCompileError = null;
