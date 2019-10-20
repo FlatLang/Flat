@@ -233,14 +233,9 @@ public class Constructor extends BodyMethodDeclaration
 				initMethod.getScope().localVariableID = getScope().localVariableID;
 				
 				String args = generateParameterOutput(this);
-
-				Return r = new Return(this, Location.INVALID);
-
-				MethodCall init = MethodCall.decodeStatement(r, "this(" + args + ")", Location.INVALID, true, false, initMethod);
-
-				r.getReturnValues().addChild(init);
-
-				addChild(r);
+				
+				MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true, false, initMethod);
+				addChild(init);
 				
 				SyntaxTree.validateNodes(getParameterList(), phase);
 				result.returnedNode = initMethod;
