@@ -164,6 +164,10 @@ public class TreeGenerator implements Runnable
 		
 		fileDeclaration = new FileDeclaration(tree.getRoot(), location, file);
 		
+		if (fileDeclaration.isExcludedExternalFile(controller.targetFileExtension)) {
+			return;
+		}
+		
 		controller.log("Phase one for '" + fileDeclaration.getName() + "'...");
 		
 		if (source.trim().length() > 0)
