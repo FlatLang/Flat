@@ -46,12 +46,6 @@ public class ClassInstanceDeclaration extends FieldDeclaration
 		return false;
 	}
 	
-	@Override
-	public boolean allowsPropertyMethods()
-	{
-		return false;
-	}
-	
 	/**
 	 * Decode the given statement into a {@link ClassInstanceDeclaration} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
