@@ -5,7 +5,7 @@ import "nova/meta/Field"
 [AutoFinal]
 immutable class Class<Type> {
     visible Class extension
-    visible immutable Class[] interfaces
+    visible immutable Class[] interfaces = new Array()
     
     visible immutable Field[] fields = new Field[0]
     
