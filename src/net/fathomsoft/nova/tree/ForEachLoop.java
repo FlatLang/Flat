@@ -184,13 +184,15 @@ public class ForEachLoop extends Loop
 				
 				if (iterator instanceof IntRange)
 				{
-					IntRange range = (IntRange)iterator; 
-					
+					IntRange range = (IntRange)iterator;
+
 					String name = n.getIdentifier().getName();
 					String type = range.getStartValue().getType();
-					
-					ForLoop loop = ForLoop.decodeStatement(parent, "for (" + type + " " + name + " = " + range.getStartValue().generateNovaInput() + "; " + name + " < " + range.getEndValue().generateNovaInput() + "; " + name + "++)" + statement.substring(bounds.getEnd() + 1), location, require);
-					
+
+					String forLoopDeclaration = "for (" + type + " " + name + " = " + range.getStartValue().generateNovaInput() + "; " + name + " < " + range.getEndValue().generateNovaInput() + "; " + name + "++)" + statement.substring(bounds.getEnd() + 1);
+
+					ForLoop loop = ForLoop.decodeStatement(parent, forLoopDeclaration, location, require);
+
 					return loop;
 				}
 				else if (iterator != null)
