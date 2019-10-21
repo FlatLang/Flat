@@ -51,7 +51,7 @@ class Window {
     [Target c] public external_name DEVICE_CONTEXT hdc
     [Target c] public external_name PAINT_CONTEXT ps
     
-    [Target c] public external_name WindowThread thread
+    public external_name WindowThread thread
     
     static {
         external c {
@@ -59,7 +59,13 @@ class Window {
         }
     }
     
-    public construct(public String title = null, public Int x = 0, public Int y = 0, public Int width = 0, public Int height = 0) {
+    public construct(
+        public String title = null,
+        public Int x = 0,
+        public Int y = 0,
+        public Int width = 0,
+        public Int height = 0
+    ) {
         frame = new Frame(this)
         frame.width = clientWidth
         frame.height = clientHeight
@@ -90,6 +96,7 @@ class Window {
         refreshPosition()
     }
     
+    [Target c]
     public repaint() {
         if (hwnd != NULL) { // If the window has been loaded
             external c {
@@ -98,5 +105,10 @@ class Window {
                 #endif
             }
         }
+    }
+    
+    [Target not c]
+    public repaint() {
+    
     }
 }
