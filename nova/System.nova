@@ -12,6 +12,7 @@ import "nova/NativeSystem.h"
 [AutoFinal]
 immutable class System {
     external type FILE
+    external type thing
     
     external int NULL
     
@@ -74,6 +75,7 @@ immutable class System {
         exit(code)
     }
     
+    [Target c]
     public static execute(String command) -> Process {
         FILE* pipe = getPipe(command.chars.data, exit)
         
@@ -84,6 +86,14 @@ immutable class System {
         return new Process(new FileReader(pipe))
     }
     
+    [Target not c]
+    public static execute(String command) -> Process {
+        // not supported yet
+    
+        return null
+    }
+    
+    [Target c]
     public static execute(String[] arguments) =>
         execute(arguments.map(arg => {
             arg.contains(/[ &]/) ? "\"#arg\"" : arg
@@ -155,4 +165,7 @@ immutable class System {
         
         GC.collect()
     }
+    
+    [Target not c]
+    public static execute(String[] arguments) {}
 }
