@@ -7,12 +7,17 @@ import "nova/Substring"
 
 class Console {
     external type FILE
+    external type thing
 
-    external FILE* stdin
-    external FILE* stdout
-    external int   SEEK_END
+    [Target c] external FILE* stdin
+    [Target c] external FILE* stdout
+    [Target c] external int   SEEK_END
 
-    public static OutputStream out = new FileWriter(stdout)
+    [Target java] external thing stdin
+    [Target java] external thing stdout
+
+    [Target js] public static OutputStream out = new FileWriter()
+    [Target not js] public static OutputStream out = new FileWriter(stdout)
     
     [Target c] external void fgets(char buf[], int size, FILE* stream) as extReadLine
     external void fseek(FILE* stream, int offset, int origin)
