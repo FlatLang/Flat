@@ -277,6 +277,20 @@ public class SyntaxTree
 		if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
 			root.decodeShorthandActions = true;
+
+			root.forEachVisibleListChild(file -> {
+				Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+					c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
+					c.classInstanceDeclaration.setShorthandAccessor("new Class(\"" + c.getClassLocation() + "\", false)");
+					c.getFieldList().addChild(c.classInstanceDeclaration);
+
+					if (!c.classInstanceDeclaration.containsAccessorMethod()) {
+						c.classInstanceDeclaration.decodeArrowBinding();
+					}
+
+					c.classInstanceDeclaration.accessorValue = null;
+				});
+			});
 			
 			controller.log("Compiling function map functions...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
@@ -286,7 +300,7 @@ public class SyntaxTree
 			
 			controller.log("Compiling arrow bindings...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
-			
+
 			controller.log("Compiling interface field overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.autoAddInterfaceFieldOverrides()));
 			
