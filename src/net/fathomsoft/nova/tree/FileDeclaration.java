@@ -498,7 +498,7 @@ public class FileDeclaration extends Node
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.skipValidation())
+		if (result.skipValidation() || isExcludedExternalFile(getController().targetFileExtension))
 		{
 			return result;
 		}
