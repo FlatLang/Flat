@@ -5,7 +5,19 @@ class StringCharArray {
     
     visible native Char[] data
     
-    this[Int index] => data[index]
+    [Target not js] this[Int index] => data[index]
+
+    [Target js] this[Int index] -> Char {
+        get {
+            return data[index]
+        }
+
+        set {
+            external {
+                #{data} = #{data}.substr(0, #{index}) + #{value} + #{data}.substr(#{index} + #{value}.length);
+            }
+        }
+    }
     
     visible Char first => count > 0 ? data[0] : 0
     visible Char last => count > 0 ? data[count - 1] : 0
@@ -18,10 +30,37 @@ class StringCharArray {
             #{this.data} = #{data.data}.join("");
         }
     }
-    
+
+    [Target not js]
     public construct(Int count) {
         this.count = count
         this.data = new Char[count]
+    }
+
+    [Target js]
+    public construct(Int count) {
+        this.count = count
+
+        native Char[] buf
+
+        external js {
+            if (#{count} == 0) {
+                return "";
+            }
+
+            var count2 = #{count} / 2;
+            var result = '\0';
+
+            // double the input until it is long enough.
+            while (result.length <= count2) {
+                result += result;
+            }
+            // use substring to hit the precise length target without
+            // using extra memory
+            #{buf} = result + result.substring(0, #{count} - result.length);
+        }
+
+        this.data = buf
     }
 
     public construct(native Char[] data, Int count) {
@@ -35,10 +74,10 @@ class StringCharArray {
     
     // [Override]
     public reverse() -> StringCharArray {
-        var array = new StringCharArray(count)
-        
+        let array = new StringCharArray(count)
+
         for (i in 0..count) {
-            array.data[count - i - 1] = data[i]
+            array[count - i - 1] = this[i]
         }
         
         return array
@@ -55,13 +94,15 @@ class StringCharArray {
         
         return array
     }
+
+    public toString() => new String(this)
     
-    [Target js]
-    public get(Int index) -> Char {
-        external {
-            return #{data}.charAt(#{index});
-        }
-    }
+//    [Target js]
+//    public get(Int index) -> Char {
+//        external {
+//            return #{data}.charAt(#{index});
+//        }
+//    }
     
     // [Override]
     // visible CharArrayIterator iterator => new CharArrayIterator(this, indexSize)
