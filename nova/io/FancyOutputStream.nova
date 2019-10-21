@@ -5,7 +5,11 @@ class FancyOutputStream implements OutputStream {
     
     public var String headerPattern = "="
     
-    public construct(public OutputStream out = Console.out, public Int contentWidth = 80, public String headerPattern = "=") {}
+    public construct(
+        public OutputStream out = Console.out,
+        public Int contentWidth = 80,
+        public String headerPattern = "="
+    ) {}
     
     public writeHeader(Object message) => writeHeader(message.toString())
     public writeHeader(String message, String pattern = headerPattern, var String rightPattern = pattern, Bool symmetrical = false) => this {
