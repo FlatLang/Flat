@@ -1,7 +1,10 @@
 package "nova/io"
 
+import "nova/regex/Pattern"
+
 class FileWriter implements OutputStream {
     external type FILE
+    external type thing
     
     var FILE* fp
     
@@ -23,6 +26,8 @@ class FileWriter implements OutputStream {
     visible Bool isOpen => fp != 0
     
     external char EOF
+
+    [Target js] private var String buffer = ""
     
     public construct(visible File file) {
         external c {
@@ -33,6 +38,14 @@ class FileWriter implements OutputStream {
     [Target c]
     public construct(FILE* fp) {
         this.fp = fp
+    }
+    
+    [Target java]
+    public construct(thing fp) {
+    }
+    
+    [Target js]
+    public construct() {
     }
     
     public construct(String location) => this(new File(location))
@@ -70,12 +83,42 @@ class FileWriter implements OutputStream {
     
     public writeLine(String line = "") => write("#line\n")
 
+    [Target not js]
     public write(String data) => this {
         external c {
             if (fwrite(#{data.chars.data}, 1, #{data.count}, #{fp}) != EOF && #{flush()})
         }
     }
+
+    [Target js]
+    public write(String data) => this {
+        let split = data.split(new Pattern("\n"))
+
+        if (split.count > 1) {
+            let dataToPrint = buffer + split.skipLast(1).join("\n")
+
+            buffer = split.last
+
+            external js {
+                console.log(#{dataToPrint.chars.data});
+            }
+        } else {
+            buffer += data
+        }
+    }
     
-    public flush() => fflush(fp) == 0
-    public close() => isOpen && fclose(fp) == 0
+    [Target c] public flush() => fflush(fp) == 0
+    [Target c] public close() => isOpen && fclose(fp) == 0
+
+    [Target js] public flush() {
+        if (buffer.count > 0) {
+            external js {
+                console.log(#{buffer.chars.data});
+            }
+
+            buffer = ""
+        }
+    }
+
+    [Target js] public close() => false
 }
