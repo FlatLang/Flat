@@ -21,6 +21,7 @@ class Exception {
         
     }
 
+    [Target not js]
     public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Bool {
         if (soft) {
             try {
@@ -40,6 +41,29 @@ class Exception {
             }
         }
         
+        return false
+    }
+
+    [Target js]
+    public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Bool {
+        if (soft) {
+            try {
+                func()
+            } catch all (Exception e) {
+                if (e.class.location == exceptionType.location) {
+                    return true
+                }
+            }
+        } else {
+            try {
+                func()
+            } catch (Exception e) {
+                if (e.class.location == exceptionType.location) {
+                    return true
+                }
+            }
+        }
+
         return false
     }
 }
