@@ -12,7 +12,7 @@ class Substring extends String {
     visible Int end => start + count
     
     public Long hashCodeLong => chars.hashCodeLong
-    
+
     public construct(String source, Int start, Int end) {
         this.source = source
         this.start = start

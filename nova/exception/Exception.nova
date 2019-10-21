@@ -20,7 +20,7 @@ class Exception {
     public onThrown(Bool soft) {
         
     }
-    
+
     public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Bool {
         if (soft) {
             try {

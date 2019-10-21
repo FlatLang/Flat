@@ -203,60 +203,60 @@ class HashMap<K extends EqualsOperator, V> implements List<Pair<K, V>> {
     public clone() => new HashMap<K, V>(this)
     
     public toImmutable() => new ImmutableHashMap<K, V>(this)
-    
+
     public toString() => this.class.location + " {" + map(p => { p.key + ": " + p.value }).join(", ") + "}"
-    
+
     [AutoFinal]
     class HashMapIterator<K, V> implements Iterator<Pair<K, V>> {
         visible var Int position
         var Int bucketIndex
         var Int index
-        
+
         var Pair<K, V>[][] buckets
         var Pair<K, V>[] bucket
-        
+
         visible Bool hasNext => position < map.count
-        
+
         visible Pair<K, V> next {
             get {
                 if (hasNext) {
                     var Pair<K, V> value
-                    
+
                     while (!value) {
                         for (i in index..bucket.count) {
                             value = bucket[i]
-                            
+
                             if (value) {
                                 index = i + 1
-                                
+
                                 break
                             }
                         }
-                        
+
                         if (!value) {
                              bucket = buckets[++bucketIndex]
                              index = 0
                         }
                     }
-                    
+
                     position++
-                    
+
                     return value
                 }
-                
+
                 throw new NoSuchElementException()
             }
-            
+
             no set
         }
-        
+
         public construct(visible HashMap<K, V> map) {
             reset()
-            
+
             buckets = map.buckets
             bucket = buckets[0]
         }
-        
+
         public reset() => this {
             position = 0
             index = 0

@@ -365,7 +365,7 @@ immutable class String implements Comparable<String>,
                 }
             }
         }
-        
+
         return new String(reversed)
     }
     
@@ -383,7 +383,7 @@ immutable class String implements Comparable<String>,
 
         return count - other.count
     }
-    
+
     public split(Pattern regex) -> String[] {
     	String[] strs = new Array()
     	
