@@ -2796,7 +2796,7 @@ public class SyntaxUtils
 		}
 		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
 		{
-			if (required.getTypeClassLocation().equals("nova/primitive/number/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals("nova/String"))
+			if (required.isExternalType() || (required.getTypeClassLocation().equals("nova/primitive/number/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals("nova/String")))
 			{
 				return true;
 			}
