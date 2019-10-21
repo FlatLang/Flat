@@ -53,8 +53,10 @@ class Math {
     public static acos(Double number) => extAcos(number)
     public static atan(Double number) => extAtan(number)
     public static round(Double number) => floor(number + 0.5)
-    public static floor(Double number) => (Long)(number < 0 && (Long)number != number ? number - 1 : number)
-    public static ceil(Double number) => (Long)(number >= 0 && (Long)number != number ? number + 1 : number)
+    [Target not js] public static floor(Double number) => (Long)(number < 0 && (Long)number != number ? number - 1 : number)
+    [Target js] public static floor(Double number) => extFloor(number)
+    [Target not js] public static ceil(Double number) => (Long)(number >= 0 && (Long)number != number ? number + 1 : number)
+    [Target js] public static ceil(Double number) => extCeil(number)
     public static gcd(Int a, Int b) -> Int {
         let r = a % b
         
