@@ -3162,9 +3162,6 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			classInstanceDeclaration = new ClassInstanceDeclaration(this, Location.INVALID);
-			getFieldList().addChild(classInstanceDeclaration);
-			
 			getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
 			
 			if (!isPropertyTrue("functionMap"))
@@ -4261,6 +4258,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		node.extendedClass = extendedClass;
 		node.abstractValue = abstractValue;
 		node.genericOverload = genericOverload;
+
+		if (classInstanceDeclaration != null) {
+			node.classInstanceDeclaration = classInstanceDeclaration.clone(node, Location.INVALID, true, true);
+		}
 		
 		if (arrayBracketOverload != null)
 		{
