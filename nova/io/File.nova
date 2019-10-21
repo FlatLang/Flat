@@ -34,6 +34,9 @@ class File {
         no set
     }
     
+    [Target not c]
+    visible Bool isDirectory => false
+    
     visible Bool isFile => exists && !isDirectory
     
     [Target c]
@@ -81,6 +84,13 @@ class File {
         }
     }
     
+    [Target not c]
+    visible File[] files {
+        get {
+            return new File[]
+        }
+    }
+    
     static {
         File exitLog = new File("log#Time.currentTimeMillis")
     }
@@ -110,16 +120,23 @@ class File {
         }
     }
     
-    public getChildFiles(Bool recursive = false, Bool includeHidden = false) -> File[] {
-        var list = files
-        
-        var directories = list.filter(file => { file.isDirectory && (includeHidden || !file.isHidden) && file.name != "." && file.name != ".." })
+    public getChildFiles(
+        Bool recursive = false,
+        Bool includeHidden = false
+    ) -> File[] {
+        let list = files
+    
+        let directories = list.filter({ _.isDirectory })
+            .filter({ includeHidden || !_.isHidden })
+            .filter({ _.name != "." })
+            .filter({ _.name != ".." })
         
         if (recursive) {
             directories.forEach({ list.addAll(_.getChildFiles(recursive: true)) })
         }
-        
-        return list.filter(file => { !file.isDirectory && (includeHidden || !file.isHidden) })
+
+        return list.filter({ !_.isDirectory })
+            .filter({ includeHidden || !_.isHidden })
     }
     
     public toString() => "{File \"#location\"}"
