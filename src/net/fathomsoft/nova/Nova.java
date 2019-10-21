@@ -37,7 +37,7 @@ public class Nova
 	
 	public File					workingDir, targetEngineWorkingDir;
 	
-	public String target = "c", formattedTarget, targetFileExtension;
+	public String target = "js", formattedTarget, targetFileExtension;
 	
 	private SyntaxTree			tree;
 	
@@ -68,10 +68,10 @@ public class Nova
 	public static final boolean	ANDROID_DEBUG = false;
 //	public static final boolean	DEBUG         = false;
 	public static final boolean	DEBUG         = true;
-//	public static final boolean USE_INSTALLED_TARGET = false;
-	public static final boolean USE_INSTALLED_TARGET = true;
-//	public static final boolean USE_INSTALLED_STDLIB = false;
-	public static final boolean USE_INSTALLED_STDLIB = true;
+	public static final boolean USE_INSTALLED_TARGET = false;
+//	public static final boolean USE_INSTALLED_TARGET = true;
+	public static final boolean USE_INSTALLED_STDLIB = false;
+//	public static final boolean USE_INSTALLED_STDLIB = true;
 	
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
@@ -188,7 +188,7 @@ public class Nova
 		
 		if (DEBUG)
 		{
-			installDirectory = new File("../Misc/example");
+			installDirectory = new File("../Nova-Testing/example");
 		}
 		else if (OS == WINDOWS)
 		{
@@ -222,7 +222,7 @@ public class Nova
 
 			System.exit(1);
 		}
-		
+
 		inputFiles         = new ArrayList<>();
 		libraryFiles       = new HashMap<>();
 		externalImports    = new ArrayList<>();
@@ -383,23 +383,23 @@ public class Nova
 	public void compile(String args[], boolean generateCode)
 	{
 		String workingPath = getWorkingDirectoryPath();
-		String directory = workingPath + "../Misc/example/";
+		String directory = workingPath + "../Nova-Testing/example/";
 		
-		String standardLibraryPath = "../StandardLibrary";
+		String standardLibraryPath = "../Standard-Library";
 		
 		if (USE_INSTALLED_STDLIB)
 		{
 			if (OS == WINDOWS)
 			{
-				standardLibraryPath = System.getenv("APPDATA") + "/Nova/StandardLibrary";
+				standardLibraryPath = System.getenv("APPDATA") + "/Nova/Standard-Library";
 			}
 			else if (OS == MACOSX)
 			{
-				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
+				standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
 			}
 			else if (OS == LINUX)
 			{
-				standardLibraryPath = installDirectory.getAbsolutePath() + "/StandardLibrary";
+				standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
 			}
 		}
 		
@@ -407,18 +407,18 @@ public class Nova
 		{
 			testClasses();
 			
-			String target = "c";
+			String target = "js";
 			
 			args = new String[]
 			{
 //				"../Novac",
 //				"../Astro",
-				"-l", "../Nest",
 //				"../Spectra",
 //				"../Nova.c",
-				"../plumber/plumbercalc",
-				"../Misc/example",
-				"../Misc/stabilitytest",
+//				"../plumber/plumbercalc",
+				"../Nova-Testing/example",
+				"../Nova-Testing/stabilitytest",
+				"-l", "../Nest",
 				"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
@@ -490,11 +490,11 @@ public class Nova
 		
 		postArgsList.add("-single-thread");
 		postArgsList.add("-single-file");
-		postArgsList.add("-line-numbers");
+//		postArgsList.add("-line-numbers");
 		postArgsList.add("-no-optimize");
 		postArgsList.add("-v");
 		postArgsList.add("-target");
-		postArgsList.add("c");
+		postArgsList.add("js");
 		postArgsList.add("-l");
 		postArgsList.add(standardLibraryPath);
 		
@@ -736,7 +736,7 @@ public class Nova
 		if (!StringUtils.containsString(location, FileDeclaration.DEFAULT_IMPORTS))
 		{
 //			location = file.getFile().getParent() + "/" + location;
-			String absoluteLocation = location.substring(0, location.length() - 1) + "c";
+			String absoluteLocation = location.substring(0, location.length() - 1) + target;
 			absoluteLocation = FileUtils.findFileLocation(absoluteLocation, includeDirectories.toArray(new String[0]));
 			
 			if (absoluteLocation != null && !StringUtils.containsString(externalImports, absoluteLocation))
@@ -1104,7 +1104,7 @@ public class Nova
 	 * 
 	 * @param flag The flag to set enable.
 	 */
-	private void enableFlag(long flag)
+	public void enableFlag(long flag)
 	{
 		flags |= flag;
 	}
@@ -1114,7 +1114,7 @@ public class Nova
 	 * 
 	 * @param flag The flag to disable.
 	 */
-	private void disableFlag(long flag)
+	public void disableFlag(long flag)
 	{
 		flags = flags & (~flag);
 	}
