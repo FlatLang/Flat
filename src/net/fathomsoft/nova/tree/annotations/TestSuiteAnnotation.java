@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -180,7 +181,16 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 	public String getTestSuiteInitializer()
 	{
 		String initializerValues = "[" + String.join(", ", Arrays.stream((String[])parameters.get("classes"))
-			.map(x -> getFileDeclaration().getImportedClass(this, x))
+			.map(x -> {
+				ClassDeclaration c = getFileDeclaration().getImportedClass(this, x);
+				
+				if (c == null) {
+					SyntaxMessage.error("Test file " + x + " not found", getController());
+				}
+				
+				return c;
+			})
+			.filter(Objects::nonNull)
 			.map(x -> (TestableAnnotation)x.getAnnotationOfType(TestableAnnotation.class))
 			.map(x -> x.getParentClass().getName() + "." + x.generateTestRunner().getName())
 			.collect(Collectors.toList())) + "]";
