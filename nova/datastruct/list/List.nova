@@ -30,11 +30,13 @@ trait List<Type> implements Iterable<Type> {
     /// 
     /// value: The value to search for.
     /// return: Whether the List contains it.
-    public contains(Type value) => any(x => {
-        value.class.isOfType(EqualsOperator) && x.class.isOfType(EqualsOperator) ?
-            ((EqualsOperator)x).equals((EqualsOperator)value) :
-            x == value
-    })
+//    public contains(Type value) => any(x => {
+//        value.class.isOfType(EqualsOperator) && x.class.isOfType(EqualsOperator) ?
+//            ((EqualsOperator)x).equals((EqualsOperator)value) :
+//            x == value
+//    })
+
+    public contains(Type value) => any({ _ == value })
     
     /// Check to see if this List contains any of the values that are
     /// 
