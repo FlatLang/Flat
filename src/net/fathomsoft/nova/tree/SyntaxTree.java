@@ -263,6 +263,7 @@ public class SyntaxTree
 		if (phase == PHASE_CLASS_DECLARATION)
 		{
 			root.addAutoImports();
+			root.addClassesToImports();
 		}
 		else if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
