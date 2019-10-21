@@ -73,6 +73,12 @@ immutable class String implements Comparable<String>,
         this(chars, count)
     }
     
+    [Target js]
+    public construct(native Char[] chars, Int count) {
+        this.count = count
+        this.chars = new StringCharArray(chars, count)
+    }
+    
     [Target not js]
     public construct(native Char[] chars, Int count) {
         this.count = count
@@ -161,11 +167,13 @@ immutable class String implements Comparable<String>,
     
     [Target js]
     public concat(String str) -> String {
+        native Char[] buf
+
         external {
-            var newData = #{chars.data}.slice(0, #{count}).concat(#{str.chars.data});
-            
-            return new novaConstructors.newString1(newData);
+            #{buf} = #{this.chars.data} + #{str.chars.data};
         }
+
+        return new String(buf)
     }
     
     [Override]
@@ -328,7 +336,7 @@ immutable class String implements Comparable<String>,
     public trim(var Int start = 0, var Int end = count - 1, Char[] charsToTrim = WHITESPACE) -> String {
         while (start <= end && charsToTrim.contains(chars[start])) start++
         while (end >= start && charsToTrim.contains(chars[end])) end--
-        
+
         return start > end ? "" : substring(start, end + 1)
     }
     
@@ -389,6 +397,7 @@ immutable class String implements Comparable<String>,
         return count - other.count
     }
 
+    [Target not js]
     public split(Pattern regex) -> String[] {
     	String[] strs = new Array()
     	
@@ -403,6 +412,31 @@ immutable class String implements Comparable<String>,
     	strs.add(substring(start))
     	
     	return strs
+    }
+
+    [Target js]
+    public split(Pattern regex) -> String[] {
+        native Char[][] nativeStrs
+        native Int count
+
+        external js {
+            #{nativeStrs} = #{this.chars.data}.split(new RegExp(#{regex.pattern.chars.data}));
+            #{count} = #{nativeStrs}.length;
+        }
+
+        return new Array(count).map({
+            native Char[] buf
+            native Int length
+
+            external js {
+                #{buf} = #{nativeStrs[_2]};
+                #{length} = #{buf}.length;
+            }
+
+            let array = new StringCharArray(buf, length)
+
+            return new String(array)
+        })
     }
     
     public getGroupedChars(Char[] chars, Int start = 0, Int end = count, Bool opposite = false) -> String {
