@@ -184,7 +184,7 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
     
     [Target not c]
     increaseSize(Int count) => this {
-        
+        capacity = count
     }
     
     [Target c]
