@@ -13,6 +13,7 @@ class Substring extends String {
     
     public Long hashCodeLong => chars.hashCodeLong
 
+    [Target not js]
     public construct(String source, Int start, Int end) {
         this.source = source
         this.start = start
@@ -24,6 +25,21 @@ class Substring extends String {
             #{buf} = &((char*)#{source.chars.data})[#{start}];
         }
         
+        this.chars = new StringCharArray(buf, count)
+    }
+
+    [Target js]
+    public construct(String source, Int start, Int end) {
+        this.source = source
+        this.start = start
+        this.count = end - start
+
+        native Char[] buf
+
+        external js {
+            #{buf} = #{source.chars.data}.substr(#{this.start}, #{this.count});
+        }
+
         this.chars = new StringCharArray(buf, count)
     }
     
