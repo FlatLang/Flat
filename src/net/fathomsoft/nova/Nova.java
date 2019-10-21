@@ -53,7 +53,8 @@ public class Nova
 	
 	public HashSet<String> includeDirectories;
 	public ArrayList<File>		inputFiles;//, includeDirectories;
-	
+	public Stack<Long> flagsStack;
+
 	public HashMap<File, ArrayList<File>> libraryFiles;
 	
 	public CodeGeneratorEngine codeGeneratorEngine;
