@@ -162,6 +162,20 @@ public class FileDeclaration extends Node
 		return getLibrary() != null;
 	}
 	
+	public boolean isExcludedExternalFile(String targetFileExtension) {
+		if (isExternalFile())
+		{
+			String extension = getExternalExtension();
+			
+			if (!extension.equals(targetFileExtension))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public File getLibrary()
 	{
 		return getController().getLibrary(file);
