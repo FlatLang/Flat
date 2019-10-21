@@ -127,7 +127,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	{
 		if (node instanceof AccessorMethod || node instanceof MutatorMethod)
 		{
-			getParentClass().addChild(node);
+			getParentClass(true).addChild(node);
 		}
 		else
 		{
