@@ -69,11 +69,15 @@ public class StaticClassReference extends IIdentifier
 		
 		return getFileDeclaration().getClassDeclaration(super.getType(true));
 	}
+
+	public boolean isMetaClass() {
+		return !isDecoding() && !doesAccess() && (parent instanceof MethodCallArgumentList == false || parent.parent.isDecoding() || !((MethodCallArgumentList)parent).getMethodDeclaration().getParentClass().getClassLocation().equals("nova/meta/Class"));
+	}
 	
 	@Override
 	public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType)
 	{
-		if (!isDecoding() && !doesAccess())
+		if (isMetaClass())
 		{
 			return getProgram().getClassDeclaration("nova/meta/Class");
 		}
@@ -84,7 +88,7 @@ public class StaticClassReference extends IIdentifier
 	@Override
 	public String getType(boolean checkCast)
 	{
-		if (!isDecoding() && !doesAccess() && (parent instanceof MethodCallArgumentList == false || parent.parent.isDecoding() || !((MethodCallArgumentList)parent).getMethodDeclaration().getParentClass().getClassLocation().equals("nova/meta/Class")))
+		if (isMetaClass())
 		{
 			return "Class";
 		}
