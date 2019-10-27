@@ -25,7 +25,7 @@ public class TestContext
 	
 	public TestContext()
 	{
-		controller = Nova.generateTemporaryController();
+		controller = Nova.generateTemporaryController(new String[] {});
 		
 		reset();
 	}
