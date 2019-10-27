@@ -18,7 +18,7 @@ class Substring extends String {
         this.source = source
         this.start = start
 
-        external js {
+        external {
             #{this.count} = #{end - start};
         }
         
@@ -27,8 +27,10 @@ class Substring extends String {
         external c {
             #{buf} = &((char*)#{source.chars.data})[#{start}];
         }
-        
-        this.chars = new StringCharArray(buf, count)
+
+        external {
+            #{this.chars} = #{new StringCharArray(buf, count)}
+        }
     }
 
     [Target js]
@@ -36,7 +38,7 @@ class Substring extends String {
         this.source = source
         this.start = start
 
-        external js {
+        external {
             #{this.count} = #{end - start};
         }
 
@@ -46,7 +48,9 @@ class Substring extends String {
             #{buf} = #{source.chars.data}.substr(#{this.start}, #{this.count});
         }
 
-        this.chars = new StringCharArray(buf, count)
+        external {
+            #{this.chars} = #{new StringCharArray(buf, count)}
+        }
     }
     
     [Override]
