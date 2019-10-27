@@ -573,9 +573,8 @@ public class Nova
 				for (int i = 0; i < times; i++)
 				{
 					long before = System.currentTimeMillis();
-					
-					ArrayList<File> allFiles = new ArrayList<>();
-					allFiles.addAll(inputFiles);
+
+					ArrayList<File> allFiles = new ArrayList<>(inputFiles);
 					
 					for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
 					{
