@@ -402,8 +402,14 @@ public class ForEachLoop extends Loop
 		addChild(value, this);
 		
 		String s = identifier.getRootAccessNode().toValue().generateNovaInput().toString();
-		
-		Variable next = (Variable)((Accessible)SyntaxTree.decodeValue(this, s + ".next", location, require)).getLastAccessed();
+
+		Accessible nextVarAccessor = (Accessible)SyntaxTree.decodeValue(this, s + ".next", location, require);
+
+		if (nextVarAccessor == null) {
+			return false;
+		}
+
+		Variable next =  (Variable)nextVarAccessor.getLastAccessed();
 		
 		getFileDeclaration().addImport(next.getTypeClassLocation());
 		
