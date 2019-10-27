@@ -52,9 +52,17 @@ immutable class System {
     }
     
     visible static CumulativeTimer overheadTimer = new CumulativeTimer()
-    
+
+    [Target c]
     public static exit(Int code) {
         externalExit(code)
+    }
+
+    [Target js]
+    public static exit(Int code) {
+        external {
+            process.exit(#{code});
+        }
     }
     
     public static exit(Int code, String message) {
