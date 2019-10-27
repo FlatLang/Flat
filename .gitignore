@@ -6,7 +6,16 @@
 /Execute.exe
 /bin/
 /out/
-/.idea/
+/.idea/datasources*
+/.idea/dataSources.local.xml
+/.idea/dataSources.xml
+/.idea/dictionaries
+/.idea/labraries
+/.idea/modules
+/.idea/modules.xml
+/.idea/shelf
+/.idea/tasks.xml
+/.idea/workspace.xml
 /Nova.iml
 /doc/
 src/META-INF/MANIFEST.MF
