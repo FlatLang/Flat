@@ -581,6 +581,8 @@ public class Nova
 					{
 						allFiles.addAll(entry.getValue());
 					}
+
+					allFiles.sort(Comparator.comparing(File::getAbsolutePath));
 					
 					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
 					
