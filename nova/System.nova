@@ -195,4 +195,21 @@ immutable class System {
             return str
         })
     }
+
+    [Target js]
+    public static jsCreateInstance<T>(String className, Int overloadId = -1) -> T {
+        var T instance = null
+
+        var String constructorName = "new#className"
+
+        if (overloadId >= 0) {
+            constructorName += overloadId
+        }
+
+        external {
+            #{instance} = novaConstructors[#{constructorName.chars.data}]();
+        }
+
+        return instance
+    }
 }
