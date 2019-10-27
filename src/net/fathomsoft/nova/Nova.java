@@ -833,7 +833,7 @@ public class Nova
 				
 				skip = 1;
 			}
-			else if (arg.equals("-installDir"))
+			else if (arg.equals("-install-dir"))
 			{
 				validateArgumentSize(args, i + 1, arg);
 
