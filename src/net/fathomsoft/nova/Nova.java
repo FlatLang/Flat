@@ -837,7 +837,7 @@ public class Nova
 			{
 				validateArgumentSize(args, i + 1, arg);
 
-				installDirectoryArg = formatPath(args[i + 1]);
+				installDirectoryArg = args[i + 1];
 
 				skip = 1;
 			}
