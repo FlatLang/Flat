@@ -176,4 +176,23 @@ immutable class System {
     
     [Target not c]
     public static execute(String[] arguments) {}
+
+    [Target js]
+    public static jsStringArrayToNovaArray(Object value) -> String[] {
+        var Int count = 0
+
+        external {
+            #{count} = #{value}.length;
+        }
+
+        return new Array(count).map((x, i) => {
+            let str = new String("")
+
+            external {
+                #{str.chars.data} = #{value}[#{i}];
+            }
+
+            return str
+        })
+    }
 }
