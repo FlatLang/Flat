@@ -17,7 +17,10 @@ class Substring extends String {
     public construct(String source, Int start, Int end) {
         this.source = source
         this.start = start
-        this.count = end - start
+
+        external js {
+            #{this.count} = #{end - start};
+        }
         
         native Char[] buf
         
@@ -32,7 +35,10 @@ class Substring extends String {
     public construct(String source, Int start, Int end) {
         this.source = source
         this.start = start
-        this.count = end - start
+
+        external js {
+            #{this.count} = #{end - start};
+        }
 
         native Char[] buf
 
