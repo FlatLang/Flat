@@ -45,7 +45,8 @@ public class Nova
 	public ArrayList<String> errors, warnings, messages;
 	
 	private String[] postArgs;
-	
+
+	public String installDirectoryArg;
 	public File outputDirectory, installDirectory;
 	
 	public HashMap<String, String> outputDirectories;
@@ -142,7 +143,7 @@ public class Nova
 	 */
 	public static void main(String args[])
 	{
-		Nova nova = new Nova();
+		Nova nova = new Nova(args);
 		
 //		if (args.length > 0)
 //		{
@@ -167,7 +168,7 @@ public class Nova
 	 * Method used to initialize the compiler data and start the
 	 * compilation process.
 	 */
-	public Nova()
+	public Nova(String[] args)
 	{
 		if (BENCHMARK > 0)
 		{
@@ -186,8 +187,14 @@ public class Nova
 			
 			enableFlag(DRY_RUN);
 		}
-		
-		if (DEBUG)
+
+		readCliArgs(args);
+
+		if (installDirectoryArg != null)
+		{
+			installDirectory = new File(installDirectoryArg);
+		}
+		else if (DEBUG)
 		{
 			installDirectory = new File("../Nova-Testing/example");
 		}
@@ -374,20 +381,13 @@ public class Nova
 		
 		return condition;
 	}
-	
-	/**
-	 * Compile the input files given within the args.
-	 * 
-	 * @param args The String array containing the locations of the files
-	 * 		to compile, as well as other compiler arguments.
-	 */
-	public void compile(String args[], boolean generateCode)
-	{
+
+	public void readCliArgs(String[] args) {
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Nova-Testing/example/";
-		
+
 		String standardLibraryPath = "../Standard-Library";
-		
+
 		if (USE_INSTALLED_STDLIB)
 		{
 			if (OS == WINDOWS)
@@ -403,24 +403,24 @@ public class Nova
 				standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
 			}
 		}
-		
+
 		if (DEBUG)
 		{
 			testClasses();
-			
+
 			String target = "js";
-			
+
 			args = new String[]
-			{
+					{
 //				"../Novac",
 //				"../Astro",
 //				"../Spectra",
 //				"../Nova.c",
 //				"../plumber/plumbercalc",
-				"../Nova-Testing/example",
-				"../Nova-Testing/stabilitytest",
-				"-l", "../Nest",
-				"-d", "../NovaCompilerOutput/" + target,
+							"../Nova-Testing/example",
+							"../Nova-Testing/stabilitytest",
+							"-l", "../Nest",
+							"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -435,9 +435,9 @@ public class Nova
 //				"-cargs",
 //				"-keepc",
 //				"-qp",
-				"-main",
+							"-main",
 //				"example/Lab",
-				"stabilitytest/StabilityTest",
+							"stabilitytest/StabilityTest",
 //				"plumbercalc/tests/AllTestsRunner",
 //				"example/NestTest",
 //				"example/SvgChart",
@@ -457,9 +457,9 @@ public class Nova
 //				"-no-optimize",
 //				"-target", target,
 //				"-library",
- 				"-o", formatPath(directory + "bin/Executable")
-			};
-			
+							"-o", formatPath(directory + "bin/Executable")
+					};
+
 //			args = new String[] {
 //				"C:/Users/Braden/test.nova",
 //				"-o",
@@ -486,9 +486,9 @@ public class Nova
 				System.exit(0);
 			}
 		}
-		
+
 		ArrayList<String> postArgsList = new ArrayList<>();
-		
+
 		postArgsList.add("-single-thread");
 		postArgsList.add("-single-file");
 //		postArgsList.add("-line-numbers");
@@ -498,21 +498,30 @@ public class Nova
 		postArgsList.add("js");
 		postArgsList.add("-l");
 		postArgsList.add(standardLibraryPath);
-		
+
 		postArgs = postArgsList.toArray(new String[0]);
-		
+
 //		for (String location : standardFiles)
 //		{
 //			location = removeSurroundingQuotes(location);
-//			
+//
 //			inputFiles.add(new File(location));
 //		}
-		
+
 //		args = prependArguments(args, new String[] { standardLibraryPath + "/nova" });
 		args = appendArguments(args, postArgs);
-		
+
 		parseArguments(args);
-		
+	}
+	
+	/**
+	 * Compile the input files given within the args.
+	 * 
+	 * @param args The String array containing the locations of the files
+	 * 		to compile, as well as other compiler arguments.
+	 */
+	public void compile(String args[], boolean generateCode)
+	{
 		codeGeneratorEngine.initializeOutputDirectory();
 		
 //		log("Nova " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
@@ -822,6 +831,14 @@ public class Nova
 				
 				includeDirectories.add(formatPath(args[i + 1]));
 				
+				skip = 1;
+			}
+			else if (arg.equals("-installDir"))
+			{
+				validateArgumentSize(args, i + 1, arg);
+
+				installDirectoryArg = formatPath(args[i + 1]);
+
 				skip = 1;
 			}
 			// If the user wants to run the application after compilation.
@@ -1340,9 +1357,9 @@ public class Nova
 		}
 	}
 	
-	public static Nova generateTemporaryController()
+	public static Nova generateTemporaryController(String[] args)
 	{
-		Nova controller = new Nova();
+		Nova controller = new Nova(args);
 		controller.isTesting = true;
 		controller.setTestClasses(false);
 		controller.compile(new String[0], false);
