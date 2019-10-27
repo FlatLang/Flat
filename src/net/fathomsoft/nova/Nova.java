@@ -990,7 +990,7 @@ public class Nova
 				}
 				else
 				{
-					error("Unknown argument '" + args[i] + "'");
+					error("Unknown smargument '" + args[i] + "'");
 					completed(false);
 				}
 			}
