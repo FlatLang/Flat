@@ -188,6 +188,23 @@ public class Nova
 			enableFlag(DRY_RUN);
 		}
 
+		inputFiles         = new ArrayList<>();
+		libraryFiles       = new HashMap<>();
+		externalImports    = new ArrayList<>();
+		externalIncludes   = new ArrayList<>();
+		libraries          = new ArrayList<>();
+		errors             = new ArrayList<>();
+		warnings           = new ArrayList<>();
+		messages           = new ArrayList<>();
+		flagsStack         = new Stack<>();
+
+//		cSourceFiles       = new ArrayList<>();
+//		cHeaderFiles       = new ArrayList<>();
+		includeDirectories = new HashSet<>();
+		outputDirectories  = new HashMap<>();
+
+		testClasses = false;//BENCHMARK <= 0;
+
 		readCliArgs(args);
 
 		if (installDirectoryArg != null)
@@ -230,23 +247,6 @@ public class Nova
 
 			System.exit(1);
 		}
-
-		inputFiles         = new ArrayList<>();
-		libraryFiles       = new HashMap<>();
-		externalImports    = new ArrayList<>();
-		externalIncludes   = new ArrayList<>();
-		libraries          = new ArrayList<>();
-		errors             = new ArrayList<>();
-		warnings           = new ArrayList<>();
-		messages           = new ArrayList<>();
-		flagsStack         = new Stack<>();
-		
-//		cSourceFiles       = new ArrayList<>();
-//		cHeaderFiles       = new ArrayList<>();
-		includeDirectories = new HashSet<>();
-		outputDirectories  = new HashMap<>();
-		
-		testClasses = false;//BENCHMARK <= 0;
 	}
 	
 	private void startEngines()
