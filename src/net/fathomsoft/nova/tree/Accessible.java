@@ -7,6 +7,7 @@ import net.fathomsoft.nova.tree.generics.GenericTypeParameterList;
 import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
+import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.Stack;
 import net.fathomsoft.nova.util.SyntaxUtils;
 
@@ -638,8 +639,8 @@ public interface Accessible
 				t.getFalseValue().replaceWith(Literal.generateDefaultValue(t, t.getLocationIn(), local.getReturnedNode()));
 				
 				t.setType(local.getReturnedNode().getNovaTypeValue(local.getReturnedNode()));
-				
-				n = t;
+
+				n = Priority.generateFrom(t);
 			}
 			else
 			{
