@@ -866,9 +866,9 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				
 				for (Parameter p : clone.getParameterList().getOptionalParameters())
 				{
-					DefaultParameterInitialization init = new DefaultParameterInitialization(clone, p.getLocationIn(), p);
-					
-					clone.addChild(init);
+//					DefaultParameterInitialization init = new DefaultParameterInitialization(clone, p.getLocationIn(), p);
+//
+//					clone.getScope().getDefaultParameterInitializations().addChild(init);
 				}
 				
 				clone.onAfterDecoded();

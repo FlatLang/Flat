@@ -32,7 +32,9 @@ public class Nova
 	
 	private long				flags;
 	private long				startTime, endTime;
-	
+
+	private Stack<Long> flagsStack;
+
 	public File				outputFile;
 	
 	public File					workingDir, targetEngineWorkingDir;
@@ -68,10 +70,10 @@ public class Nova
 	public static final boolean	ANDROID_DEBUG = false;
 //	public static final boolean	DEBUG         = false;
 	public static final boolean	DEBUG         = true;
-//	public static final boolean USE_INSTALLED_TARGET = false;
-	public static final boolean USE_INSTALLED_TARGET = true;
-//	public static final boolean USE_INSTALLED_STDLIB = false;
-	public static final boolean USE_INSTALLED_STDLIB = true;
+//	public static final boolean USE_INSTALLED_TARGET = true;
+	public static final boolean USE_INSTALLED_STDLIB = false;
+//	public static final boolean USE_INSTALLED_STDLIB = true;
+	public static final boolean USE_INSTALLED_TARGET = false;
 	
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
@@ -97,7 +99,7 @@ public class Nova
 	public static final int		LINUX         = 3;
 	
 	public static final String	LANGUAGE_NAME = "Nova";
-	public static final String	VERSION       = "v0.3.8";
+	public static final String	VERSION       = "v0.3.9";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -411,14 +413,18 @@ public class Nova
 			
 			args = new String[]
 			{
-//				"../Novac",
-//				"../Astro",
-				"-l", "../Nest",
-//				"../Spectra",
+				"../Novac",
+				"../Astro",
+				"../Spectra",
+				"../Nebula",
 //				"../Nova.c",
-				"../plumber/plumbercalc",
-				"../Misc/example",
-				"../Misc/stabilitytest",
+//				"../ParseNova",
+//				"../WriteNova",
+//				"../plumber/plumbercalc",
+//				"../Misc/example",
+//				"../Misc/stabilitytest",
+//				"../Crime-Stats",
+				"-l", "../Nest",
 				"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
@@ -431,12 +437,12 @@ public class Nova
 //				"-gcc",
 //				"-tcc",
 //				"-small",
-//				"-cargs",
+				"-cargs",
 //				"-keepc",
 //				"-qp",
 				"-main",
 //				"example/Lab",
-				"stabilitytest/StabilityTest",
+//				"stabilitytest/StabilityTest",
 //				"plumbercalc/tests/AllTestsRunner",
 //				"example/NestTest",
 //				"example/SvgChart",
@@ -444,7 +450,8 @@ public class Nova
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
 //				"spectra/Spectra",
-//				"novex/novac/Novac",
+//				"crimestats/CrimeStats",
+				"novex/novac/Novac",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",

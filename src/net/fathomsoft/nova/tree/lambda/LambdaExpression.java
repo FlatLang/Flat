@@ -514,7 +514,7 @@ public class LambdaExpression extends IIdentifier
 					r.getReturnValues().addChild(returned);
 					
 					method.getScope().addChild(r);
-					
+
 					if (pending)
 					{
 						FunctionType type = (FunctionType)getTypeObject();
@@ -724,7 +724,7 @@ public class LambdaExpression extends IIdentifier
 		
 		for (MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter> c : classes)
 		{
-			if (c != null)
+			if (c != null && c.a != null)
 			{
 				MethodDeclaration[] methods = c.a.getMethods(context.getName(), c.b);
 				

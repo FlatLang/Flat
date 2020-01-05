@@ -1149,7 +1149,7 @@ public class BinaryOperation extends IValue
 		
 		public BinarySyntaxException(String message, boolean require)
 		{
-			super(message, Message.ERROR);
+			super(message);
 			
 			this.require = require;
 		}

@@ -2821,7 +2821,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (genParam != null && (allowSame || genParam != valParam))
 		{
-			if (genParam.getParent() == params)
+			if (genParam.getParent() == params && types.length > genParam.getIndex())
 			{
 				Value type = types[genParam.getIndex()];
 				
@@ -3181,7 +3181,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				ClassDeclaration typeClass = SyntaxUtils.getImportedClass(getFileDeclaration(), param.getDefaultType());
 				
-				if (typeClass.isPrimitive())
+				if (typeClass != null && typeClass.isPrimitive())
 				{
 					
 				}

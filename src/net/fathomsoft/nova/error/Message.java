@@ -5,6 +5,7 @@ import net.fathomsoft.nova.tree.FileDeclaration;
 import net.fathomsoft.nova.tree.Node;
 import net.fathomsoft.nova.util.Location;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -93,9 +94,13 @@ public class Message
 			{
 				lineNumber += location.getLineNumber();
 			}
-			
-			info += " - in file \"" + file.getFile().getName() + '"';
-			
+
+			try {
+				info += " - in file \"" + file.file.getCanonicalPath() + '"';
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 			if (loc != null)
 			{
 				info += " on line number " + lineNumber + " at offset " + loc.getOffset() + " [" + loc.getStart() + ", " + loc.getEnd() + "]";
@@ -140,7 +145,7 @@ public class Message
 			}
 			else
 			{
-				e = new SyntaxErrorException(info, type);
+				e = new SyntaxErrorException(info);
 			}
 			
 			throw e;

@@ -10,8 +10,6 @@ package net.fathomsoft.nova.error;
  */
 public class SyntaxErrorException extends RuntimeException
 {
-	private int 	type;
-	
 	private String	info;
 	
 	/**
@@ -19,28 +17,11 @@ public class SyntaxErrorException extends RuntimeException
 	 * 
 	 * @param info The error message to be output.
 	 */
-	public SyntaxErrorException(String info, int type)
+	public SyntaxErrorException(String info)
 	{
 		super(info);
 		
 		this.info = info;
-		this.type = type;
-	}
-	
-	/**
-	 * Get the type that the SyntaxErrorException is.<br>
-	 * Possible values include:
-	 * <ul>
-	 * 	<li>{@link net.fathomsoft.nova.error.Message#ERROR}</li>
-	 * 	<li>{@link net.fathomsoft.nova.error.Message#WARNING}</li>
-	 * 	<li>{@link net.fathomsoft.nova.error.Message#MESSAGE}</li>
-	 * </ul>
-	 * 
-	 * @return The type that the SyntaxErrorException is.
-	 */
-	public int getType()
-	{
-		return type;
 	}
 	
 	/**

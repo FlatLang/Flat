@@ -349,7 +349,7 @@ public class Parameter extends LocalDeclaration
 	{
 		DefaultParameterInitialization init = new DefaultParameterInitialization(getParentMethod(), getLocationIn(), this);
 		
-		getParentMethod().addChild(init);
+		getParentMethod().getScope().getDefaultParameterInitializations().addChild(init);
 	}
 	
 	/**
@@ -359,12 +359,12 @@ public class Parameter extends LocalDeclaration
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
-		
+
 		if (result.skipValidation())
 		{
 			return result;
 		}
-		
+
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			checkFunctionMapParameter();

@@ -130,7 +130,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		{
 			return result;
 		}
-		
+
 		if (methodCall == null)
 		{
 //			detach();

@@ -519,7 +519,7 @@ public class Assignment extends Value
 				{
 					return SyntaxMessage.queryError("Incompatible array assignment. Assigned node has " + declaration.getArrayDimensions() + " dimensions, when assignment has " + assignment.getArrayDimensions() + " dimensions", this, require);
 				}
-				else if (previousType.getTypeClass().hasCommonAncestor(assignment.getTypeClass()))
+				else if (previousType.getTypeClass() != null && previousType.getTypeClass().hasCommonAncestor(assignment.getTypeClass()))
 				{
 					ClassDeclaration base = previousType.getTypeClass().getCommonAncestor(assignment.getTypeClass());
 					

@@ -43,9 +43,9 @@ public class DefaultParameterInitialization extends Node
         }
         
         // If methods arent same
-        if (getParent().getParent() != parameter.getParent().getParent())
+        if (getParentMethod() != parameter.getParentMethod())
         {
-            parameter = ((NovaMethodDeclaration)getParent().getParent()).getParameterList().getParameter(parameter.getIndex());
+            parameter = getParentMethod().getParameterList().getParameter(parameter.getIndex());
         }
         
         return result;
@@ -96,5 +96,10 @@ public class DefaultParameterInitialization extends Node
 
 
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return parameter.toString();
     }
 }

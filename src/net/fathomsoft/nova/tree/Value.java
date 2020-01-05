@@ -332,7 +332,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public String getDefaultLiteralValue()
 	{
-		if (isPrimitiveType()) // needed so native arrays are included
+		if (isPrimitiveType() && getType() != null) // needed so native arrays are included
 		{
 			switch (getType())
 			{

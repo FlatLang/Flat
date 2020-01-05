@@ -40,6 +40,10 @@ public class ClosureContext extends TypeList<ClosureVariableDeclaration>
 		var.requiresHeapAllocation = declaration instanceof LocalDeclaration;// && !declaration.isPrimitive();
 		
 		addChild(var);
+
+		if (var.originalDeclaration.getParentMethod() != null) {
+			var.originalDeclaration.getParentMethod().getScope().getClosureVariableAssignmentList().addChild(new ClosureVariableAssignment(parent, getLocationIn(), var));
+		}
 		
 		return var;
 	}

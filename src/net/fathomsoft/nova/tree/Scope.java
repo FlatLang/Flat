@@ -48,9 +48,20 @@ public class Scope extends Node
 		listeners = new ArrayList<>();
 		
 		VariableDeclarationList variablesNode = new VariableDeclarationList(this, locationIn);
-		
+		TypeList<DefaultParameterInitialization> defaultParameterInitializations = new TypeList<DefaultParameterInitialization>(this, locationIn) {
+			@Override
+			public void addChild(int index, Node node, Node toNode, boolean detach) {
+
+
+				super.addChild(index, node, toNode, detach);
+			}
+		};
+		TypeList<ClosureVariableAssignment> closureVariableAssignmentList = new TypeList<>(this, locationIn);
+
 		addChild(variablesNode, this);
-		
+		addChild(defaultParameterInitializations);
+		addChild(closureVariableAssignmentList);
+
 		id = getNextScopeAncestor(false).generateUniqueID(this);
 	}
 	
@@ -150,31 +161,6 @@ public class Scope extends Node
 		}
 	}
 	
-	public DefaultParameterInitialization[] getDefaultParameterInitializations()
-	{
-		ArrayList<DefaultParameterInitialization> list = new ArrayList<>();
-		
-		boolean started = false;
-		
-		for (int i = 0; i < getNumChildren(); i++)
-		{
-			Node n = getChild(i);
-			
-			if (n instanceof DefaultParameterInitialization)
-			{
-				started = true;
-				
-				list.add((DefaultParameterInitialization)n);
-			}
-			else if (started)
-			{
-				break;
-			}
-		}
-		
-		return list.toArray(new DefaultParameterInitialization[0]);
-	}
-	
 	private static class Triple<A, B, C>
 	{
 		A a;
@@ -251,7 +237,7 @@ public class Scope extends Node
 	@Override
 	public int getNumDefaultChildren()
 	{
-		return super.getNumDefaultChildren() + 1;
+		return super.getNumDefaultChildren() + 3;
 	}
 	
 	@Override
@@ -264,16 +250,26 @@ public class Scope extends Node
 		
 		return super.isEmpty();
 	}
-	
+
 	/**
 	 * Get the VariableList that contains all of the variables
 	 * that have been declared within this Scope.
-	 * 
+	 *
 	 * @return The VariableDeclarationList instance.
 	 */
 	public VariableDeclarationList getVariableList()
 	{
 		return (VariableDeclarationList)getChild(super.getNumDefaultChildren() + 0);
+	}
+
+	public TypeList<DefaultParameterInitialization> getDefaultParameterInitializations()
+	{
+		return (TypeList<DefaultParameterInitialization>)getChild(super.getNumDefaultChildren() + 1);
+	}
+
+	public TypeList<ClosureVariableAssignment> getClosureVariableAssignmentList()
+	{
+		return (TypeList<ClosureVariableAssignment>)getChild(super.getNumDefaultChildren() + 2);
 	}
 	
 	/**

@@ -8,14 +8,14 @@ package net.fathomsoft.nova.error;
  * @since	v0.2.8 May 26, 2014 at 4:24:19 PM
  * @version	v0.2.35 Oct 5, 2014 at 11:22:42 PM
  */
-public class TypeError extends SyntaxErrorException
+public class InvalidCastError extends SyntaxErrorException
 {
 	/**
 	 * Generate an exception that outputs a given error message.
 	 *
 	 * @param info The error message to be output.
 	 */
-	public TypeError(String info)
+	public InvalidCastError(String info)
 	{
 		super(info);
 	}
