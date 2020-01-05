@@ -215,6 +215,8 @@ trait List<Type> implements Iterable<Type> {
         }
     }
     
+    public firstOrNull(func(Type) -> Bool = {true}) -> Type => firstOr(null, func)
+    
     public firstOrThrow(Exception e, func(Type) -> Bool = {true}) -> Type {
         for (element in this) {
             if (func(element)) {
