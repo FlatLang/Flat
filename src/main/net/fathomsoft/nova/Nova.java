@@ -1376,7 +1376,7 @@ public class Nova
 		
 		if (!ANDROID_DEBUG)
 		{
-			System.exit(0);
+			System.exit(success ? 0 : 1);
 		}
 	}
 	
