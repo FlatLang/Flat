@@ -1533,7 +1533,7 @@ public class SyntaxUtils
 	 */
 	private static boolean isAccessibleFrom(ClassDeclaration accessedFrom, InstanceDeclaration declaration)
 	{
-		if (accessedFrom.isAncestorOf(declaration))
+		if (accessedFrom.isAncestorOf(declaration, true))
 		{
 			return true;
 		}
