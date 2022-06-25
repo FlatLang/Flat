@@ -1774,7 +1774,7 @@ public class SyntaxUtils
 
 			while (accessingClass != null)
 			{
-				System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation() + "\nisAncestorOf: " + accessingClass.isAncestorOf(clazz2, true) + " " + clazz2.isAncestorOf(accessingClass, true) + " " + accessingClass.encapsulates(clazz2, true) + " " + accessingClass.id + clazz2.id);
+				System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation() + "\nisAncestorOf: " + accessingClass.isAncestorOf(clazz2, true) + " " + clazz2.isAncestorOf(accessingClass, true) + " " + accessingClass.encapsulates(clazz2, true) + " " + accessingClass.id + " " + clazz2.id);
 				if (accessingClass.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(accessingClass, true) || accessingClass.encapsulates(clazz2, true))
 				{
 					return true;
