@@ -1,0 +1,5 @@
+package "nova/async"
+
+abstract class Future<T> {
+    abstract get() -> T
+}

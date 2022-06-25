@@ -1,0 +1,34 @@
+package "nova/async"
+
+class Promise<T> extends Future<T> {
+    [Target js] external type JsCallback
+    [Target js] external type JsPromise
+    [Target js] JsCallback resolveCb
+    [Target js] JsCallback rejectCb
+    [Target js] JsPromise promise
+
+    public construct() {
+        external js {
+            #{promise} = new Promise((resolve, reject) => {
+                #{resolveCb} = resolve;
+                #{rejectCb} = reject;
+            });
+        }
+    }
+
+    public override get() -> T {
+        return null
+    }
+
+    resolve(T data) => data {
+        external js {
+            #{resolveCb}(#{data});
+        }
+    }
+
+    reject() {
+        external js {
+            #{rejectCb}();
+        }
+    }
+}
