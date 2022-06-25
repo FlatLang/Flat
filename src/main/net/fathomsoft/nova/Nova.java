@@ -1092,7 +1092,15 @@ public class Nova
 	{
 		if (!directory.getName().equalsIgnoreCase(".novalib"))
 		{
-			stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova")).forEach(x -> files.add(x));
+			stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova"))
+					.filter(x -> files.stream().anyMatch(f -> {
+						try {
+							return !f.getCanonicalPath().equals(x.getCanonicalPath());
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}))
+					.forEach(x -> files.add(x));
 			stream(directory.listFiles()).filter(x -> x.isDirectory()).forEach(x -> addFilesFromDirectory(files, x));
 		}
 	}
