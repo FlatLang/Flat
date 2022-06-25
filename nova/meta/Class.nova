@@ -4,8 +4,6 @@ import "nova/meta/Field"
 
 [AutoFinal]
 immutable class Class<Type> {
-    visible immutable Class[] interfaces = new Array()
-
     visible immutable Field[] fields = new Field[0]
 
     visible FunctionMap functionMap
@@ -19,7 +17,12 @@ immutable class Class<Type> {
 
     visible static immutable Class[] ALL
 
-    public construct(visible String location, visible Bool isInterface, visible Class extension) {}
+    public construct(
+        let visible String location,
+        let visible Bool isInterface,
+        let visible Class extension,
+        let visible Class[] interfaces
+    ) {}
 
     public pure isOfType(Class other) =>
         other.isInterface ?
@@ -42,7 +45,7 @@ immutable class Class<Type> {
         var current = this
 
         while (current) {
-            if (current.interfaces.any(i => { i == other || i.isOfTypeInterface(other) })) {
+            if (current.interfaces.any(i => i == other || i.isOfTypeInterface(other))) {
                 return true
             }
 
