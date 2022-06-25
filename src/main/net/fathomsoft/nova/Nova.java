@@ -563,7 +563,7 @@ public class Nova
 					for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
 					{
 						entry.getValue().stream()
-								.filter(x -> !allFiles.stream().anyMatch(f -> {
+								.filter(x -> allFiles.stream().noneMatch(f -> {
 									try {
 										return f.getCanonicalPath().equals(x.getCanonicalPath());
 									} catch (IOException e) {
@@ -1101,7 +1101,7 @@ public class Nova
 		if (!directory.getName().equalsIgnoreCase(".novalib"))
 		{
 			stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova"))
-					.filter(x -> !files.stream().anyMatch(f -> {
+					.filter(x -> files.stream().noneMatch(f -> {
 						try {
 							return f.getCanonicalPath().equals(x.getCanonicalPath());
 						} catch (IOException e) {
@@ -1109,7 +1109,9 @@ public class Nova
 						}
 					}))
 					.forEach(x -> files.add(x));
-			stream(directory.listFiles()).filter(x -> x.isDirectory()).forEach(x -> addFilesFromDirectory(files, x));
+			stream(directory.listFiles())
+					.filter(x -> x.isDirectory())
+					.forEach(x -> addFilesFromDirectory(files, x));
 		}
 	}
 	
