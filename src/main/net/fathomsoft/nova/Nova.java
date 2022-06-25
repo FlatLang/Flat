@@ -867,6 +867,12 @@ public class Nova
 
 				skip = 1;
 			}
+			else if (arg.equals("-std-path"))
+			{
+				validateArgumentSize(args, i + 1, arg);
+
+				skip = 1;
+			}
 			// If the user wants to run the application after compilation.
 			else if (arg.equals("-run"))
 			{
