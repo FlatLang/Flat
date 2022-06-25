@@ -1,9 +1,10 @@
 package "nova/meta"
 
 import "nova/meta/Field"
+import "nova/operators/EqualsOperator"
 
 [AutoFinal]
-immutable class Class<Type> {
+immutable class Class<Type> implements EqualsOperator<Class> {
     visible immutable Field[] fields = new Field[0]
 
     visible FunctionMap functionMap
@@ -33,7 +34,7 @@ immutable class Class<Type> {
         var current = this
 
         while (current) {
-            if (current.location == other.location) {
+            if (current == other) {
                 return true
             }
 
@@ -55,5 +56,6 @@ immutable class Class<Type> {
 
     public immutable getClassesOfType(Class baseType) => ALL.filter({ _.isOfType(baseType) })
 
+    public equals(Class another) => this.location == another.location
     public toString() => "Class \"#location\""
 }
