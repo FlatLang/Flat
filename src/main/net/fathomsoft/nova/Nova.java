@@ -574,13 +574,6 @@ public class Nova
 					}
 
 					allFiles.sort(Comparator.comparing(File::getName));
-					allFiles.forEach(f -> {
-						try {
-							System.out.println(f.getCanonicalPath());
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					});
 					
 					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
 					
@@ -988,11 +981,6 @@ public class Nova
 				ArrayList<File> list = new ArrayList<>();
 				list.add(file);
 
-				try {
-					System.out.println("Adding library " + file.getCanonicalPath());
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
 				libraryFiles.put(file, list);
 				
 				skip = 1;
@@ -1032,11 +1020,6 @@ public class Nova
 				{
 					File file = new File(args[i]).getAbsoluteFile();
 
-					try {
-						System.out.println("Adding " + file.getCanonicalPath());
-					} catch (IOException e) {
-						throw new RuntimeException(e);
-					}
 					inputFiles.add(file);
 					
 					lastInput = i;
