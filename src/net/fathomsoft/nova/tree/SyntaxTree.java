@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 /**
  * Class that deconstructs a source code file and builds a Tree out of
@@ -284,7 +285,10 @@ public class SyntaxTree
 					c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
 					c.classInstanceDeclaration.setStatic(true);
 					String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
-					c.classInstanceDeclaration.setShorthandAccessor("new Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", false, " + extendedClassName + ")");
+					String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false)).map(i -> i.getName() + ".class").collect(Collectors.joining(", "));
+					String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "new Array()";
+					String isInterfaceValue = c instanceof Trait ? "true" : "false";
+					c.classInstanceDeclaration.setShorthandAccessor("new Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ")");
 					c.getFieldList().addChild(c.classInstanceDeclaration);
 
 				});
