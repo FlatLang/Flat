@@ -5,9 +5,9 @@ import "nova/regex/Pattern"
 class FileWriter implements OutputStream {
     external type FILE
     external type thing
-    
+
     var FILE* fp
-    
+
     external FILE* fopen(char location[], char operation[])
     external void perror(char name[])
     external FILE* freopen(char location[], char operation[], FILE* fp)
@@ -20,67 +20,67 @@ class FileWriter implements OutputStream {
     external char getc(FILE* fp)
     external void rewind(FILE* fp) as extRewind
     external int remove(char name[])
-    
+
     visible File file
-    
+
     visible Bool isOpen => fp != 0
-    
+
     external char EOF
 
     [Target js] private var String buffer = ""
-    
+
     public construct(visible File file) {
         external c {
             #{fp} = fopen((char*)#{file.location.chars.data}, "r+");
         }
     }
-    
+
     [Target c]
     public construct(FILE* fp) {
         this.fp = fp
     }
-    
+
     [Target java]
     public construct(thing fp) {
     }
-    
+
     [Target js]
     public construct() {
     }
-    
+
     public construct(String location) => this(new File(location))
-    
+
     public delete() => close() && remove(file.location.chars.data) == 0
-    
+
     public reopen() => fp != 0 {
         close()
-        
+
         fp = fopen(file.location.chars.data, "r+")
     }
-    
+
     public rewind() => extRewind(fp)
-    
+
     public clearContents() =>
         file.exists && (fp = fopen(file.location.chars.data, "w")) != 0
-    
+
     public create() => false {
         if (!file.exists) {
             fp = fopen(file.location.chars.data, "w")
-            
+
             if (!file.exists) {
                 throw new FileNotFoundException(file)
             }
-            
+
             reopen()
-            
+
             if (!file.exists) {
                 throw new FileNotFoundException(file)
             }
-            
+
             return true
         }
     }
-    
+
     public writeLine(String line = "") => write("#line\n")
 
     [Target not js]
@@ -106,9 +106,10 @@ class FileWriter implements OutputStream {
             buffer += data
         }
     }
-    
+
     [Target c] public flush() => fflush(fp) == 0
     [Target c] public close() => isOpen && fclose(fp) == 0
+    [Target java] public close() => false
 
     [Target js] public flush() {
         if (buffer.count > 0) {
