@@ -7,18 +7,16 @@ class RedisConnection {
     [Target js] static JsClient jsClient
     [Target js] static JsRedis jsRedis
 
-    [Target js]
-    static {
-        external {
-            #{jsRedis} = require("redis");
-        }
-    }
-
     [Target not js]
     public construct() {}
 
     [Target js]
     public construct() {
+        if (!jsRedis) {
+            external {
+                #{jsRedis} = require("redis");
+            }
+        }
         jsClient = jsRedis.createClient()
     }
 
