@@ -889,7 +889,7 @@ public class BinaryOperation extends IValue
 			{
 				NovaMethodDeclaration method = overload.getMethods()[0];
 				
-				if (getParentMethod() == null || !getParentMethod().getName().equals(method.getName()))
+				if (getParentMethod() == null || getParentMethod() != method)
 				{
 					MethodDeclaration[] methods = leftClass.getMethods(method.getName());
 					
