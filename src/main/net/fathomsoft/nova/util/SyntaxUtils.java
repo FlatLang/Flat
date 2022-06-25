@@ -1779,7 +1779,6 @@ public class SyntaxUtils
 				{
 					return true;
 				}
-				System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation() + "\nisAncestorOf: " + accessingClass.isAncestorOf(clazz2, true) + " " + clazz2.isAncestorOf(accessingClass, true) + " " + accessingClass.encapsulates(clazz2, true) + " " + accessingClass.toString() + " " + clazz2.toString());
 				
 				accessingClass = accessingClass.encapsulatingClass;
 			}
