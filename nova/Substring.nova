@@ -29,7 +29,7 @@ class Substring extends String {
         }
 
         external {
-            #{this.chars} = #{new StringCharArray(buf, count)}
+            #{this.chars} = #{new StringCharArray(buf, count)};
         }
     }
 
