@@ -1554,6 +1554,10 @@ public class SyntaxTree
 			{
 				return field;
 			}
+			else if (field.getParentClass().isAncestorOf(accessingClass, true))
+			{
+				return field;
+			}
 			else
 			{
 				SyntaxUtils.isVisible(parent.getParentClass(true), field);
