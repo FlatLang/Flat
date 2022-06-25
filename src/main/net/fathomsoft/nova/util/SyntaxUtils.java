@@ -1533,7 +1533,7 @@ public class SyntaxUtils
 	 */
 	private static boolean isAccessibleFrom(ClassDeclaration accessedFrom, InstanceDeclaration declaration)
 	{
-		if (accessedFrom.isAncestorOf(declaration, true))
+		if (declaration.getParentClass(true).isAncestorOf(accessedFrom, true))
 		{
 			return true;
 		}
@@ -1572,9 +1572,9 @@ public class SyntaxUtils
 			}
 		}
 		
-		if (!isAccessibleFrom(refClass, accessed))
+		if (!isAccessibleFrom(((Value)accessor).getParentClass(), accessed))
 		{
-			isAccessibleFrom(refClass, accessed);
+			isAccessibleFrom(((Value)accessor).getParentClass(), accessed);
 			SyntaxMessage.error("Method '" + accessed.getName() + "' is not visible", parent);
 		}
 	}
