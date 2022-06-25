@@ -1691,23 +1691,12 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			if (overloadID < 0)
-			{
-				SearchFilter filter = new SearchFilter();
-				filter.checkConstructors = false;
-				filter.checkAncestor = false;
-				filter.checkStatic(isStatic());
-				
-				MethodDeclaration methods[] = getParentClass().getMethods(getName(), filter);
-				
-				if (methods.length > 1)
-				{
-					setOverloadIDs(methods);
-				}
-			}
+			checkOverloads();
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
+			checkOverloads();
+
 			if (getParentClass().isPrimitiveType())
 			{
 				setVisibility(PUBLIC);
@@ -1720,6 +1709,24 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		
 		return result;
+	}
+
+	private void checkOverloads()
+	{
+		if (overloadID < 0)
+		{
+			SearchFilter filter = new SearchFilter();
+			filter.checkConstructors = false;
+			filter.checkAncestor = false;
+			filter.checkStatic(isStatic());
+
+			MethodDeclaration methods[] = getParentClass().getMethods(getName(), filter);
+
+			if (methods.length > 1)
+			{
+				setOverloadIDs(methods);
+			}
+		}
 	}
 	
 	public boolean isPrimitiveOverload()
