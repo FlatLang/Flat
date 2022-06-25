@@ -1,0 +1,83 @@
+name: Build Nova
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Nova CLI
+        uses: actions/checkout@master
+        with:
+          repository: BSteffaniak/Nova-Testing
+          path: Nova-Testing
+
+      - name: Checkout Nova JS Writer
+        uses: actions/checkout@master
+        with:
+          repository: NovaFoundation/Nova-js
+          path: Nova-JS
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build CLI
+        run: |
+          mvn -f Nova install install:install-file \
+          -Dfile="target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar" \
+          -DgroupId="net.fathomsoft" \
+          -DartifactId=nova \
+          -Dversion="1.0-SNAPSHOT" \
+          -Dpackaging=jar \
+          -DgeneratePom=true
+
+      - name: Build JS Writer
+        run: |
+          mvn -f Nova-JS install
+
+      - name: Checkout Standard library
+        uses: actions/checkout@master
+        with:
+          repository: NovaFoundation/Standard-Library
+          path: Standard-Library
+
+      - name: Checkout Nest library
+        uses: actions/checkout@master
+        with:
+          repository: NovaFoundation/Nest
+          path: Nest
+
+      - name: Build Stability Test
+        run: |
+          java -jar target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
+            Nova-Testing/example Nova-Testing/stabilitytest \
+            -l Nest \
+            -install-dir . \
+            -main stabilitytest/StabilityTest \
+            -o Nova-Testing/example/bin/ExecutableJS \
+            -target js
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ExecutableJS.js
+          path: Nova-Testing/example/bin/ExecutableJS.js
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+
+      - name: Run Stability Test
+        run: |
+          node Nova-Testing/example/bin/ExecutableJS.js
