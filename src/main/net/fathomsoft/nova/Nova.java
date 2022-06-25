@@ -562,7 +562,15 @@ public class Nova
 					
 					for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
 					{
-						allFiles.addAll(entry.getValue());
+						entry.getValue().stream()
+								.filter(x -> !allFiles.stream().anyMatch(f -> {
+									try {
+										return f.getCanonicalPath().equals(x.getCanonicalPath());
+									} catch (IOException e) {
+										throw new RuntimeException(e);
+									}
+								}))
+								.forEach(allFiles::add);
 					}
 
 					allFiles.sort(Comparator.comparing(File::getName));
@@ -1093,9 +1101,9 @@ public class Nova
 		if (!directory.getName().equalsIgnoreCase(".novalib"))
 		{
 			stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".nova"))
-					.filter(x -> files.stream().anyMatch(f -> {
+					.filter(x -> !files.stream().anyMatch(f -> {
 						try {
-							return !f.getCanonicalPath().equals(x.getCanonicalPath());
+							return f.getCanonicalPath().equals(x.getCanonicalPath());
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
