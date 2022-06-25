@@ -566,6 +566,13 @@ public class Nova
 					}
 
 					allFiles.sort(Comparator.comparing(File::getName));
+					allFiles.forEach(f -> {
+						try {
+							System.out.println(f.getCanonicalPath());
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					});
 					
 					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
 					
