@@ -1575,7 +1575,7 @@ public class SyntaxUtils
 		if (!isAccessibleFrom(((Value)accessor).getParentClass(), accessed))
 		{
 			isAccessibleFrom(((Value)accessor).getParentClass(), accessed);
-			SyntaxMessage.error("Method '" + accessed.getName() + "' is not visible", parent);
+			SyntaxMessage.error("Method '" + accessed.getName() + "' of class '" + accessed.getParentClass().classInstanceDeclaration + "' is not visible from class '" + ((Value)accessor).getParentClass().getClassLocation() + "'", parent);
 		}
 	}
 	
