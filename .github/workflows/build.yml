@@ -61,7 +61,7 @@ jobs:
 
       - name: Build Stability Test
         run: |
-          java -jar target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
+          java -jar Nova/target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
             Nova-Testing/example Nova-Testing/stabilitytest \
             -l Nest \
             -install-dir .. \
