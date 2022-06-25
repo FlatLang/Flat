@@ -292,30 +292,21 @@ public class Nova
 			targetEngineWorkingDir = existingFile.get().getCanonicalFile();
 
 			formattedTarget = targetEngineWorkingDir.getName().substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
+
+			File engineJar = new File(enginePath + "/Nova-" + formattedTarget + "/target/nova-" + formattedTarget.toLowerCase() + "-1.0-SNAPSHOT.jar");
 			
-			File targetDirectory = new File(targetEngineWorkingDir, "out/production/Nova-" + formattedTarget + "/nova");
-			
-			if (!targetDirectory.isDirectory())
+			if (!engineJar.isFile())
 			{
-				System.err.println("Could not find built target directory for " + target + " compilation target in '" + targetDirectory.getAbsolutePath() + "'");
+				System.err.println("Could not find built target jar for " + target + " compilation target in '" + engineJar.getAbsolutePath() + "'");
 				
 				System.exit(1);
 			}
 
-			Optional<File> dir = Arrays.stream(targetDirectory.listFiles()).filter(x -> x.isDirectory() && !x.isHidden()).findFirst();
-			
-			if (!dir.isPresent())
-			{
-				System.err.println("Could not find engine for target '" + formattedTarget + "' in directory '" + targetDirectory.getAbsolutePath() + "'");
-				
-				System.exit(1);
-			}
-			
-			targetFileExtension = dir.get().getName();
+			targetFileExtension = formattedTarget.toLowerCase();
 			
 			try
 			{
-				URL url = new File(enginePath + "/Nova-" + formattedTarget + "/target/Nova-" + formattedTarget + "-1.0-SNAPSHOT.jar").toURL();
+				URL url = engineJar.toURL();
 				
 				// Create a new class loader with the directory
 				ClassLoader cl = new URLClassLoader(new URL[] { url }, this.getClass().getClassLoader());
