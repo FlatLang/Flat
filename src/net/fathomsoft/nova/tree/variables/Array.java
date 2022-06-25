@@ -240,11 +240,12 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				}
 				else
 				{
-					Value type = n.getInitializerValues().getVisibleChild(0);
+					TypeList<Value> types = n.getInitializerValues();
+					Value type = types.getVisibleChild(0).getReturnedNode();
 					
-					for (int i = 1; i < n.getInitializerValues().getNumVisibleChildren(); i++)
+					for (int i = 1; i < types.getNumVisibleChildren(); i++)
 					{
-						type = SyntaxUtils.getTypeInCommon(type, n.getInitializerValues().getVisibleChild(i));
+						type = SyntaxUtils.getTypeInCommon(type, types.getVisibleChild(i).getReturnedNode());
 					}
 					
 					n.setType(type.getType());
