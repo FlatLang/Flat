@@ -63,8 +63,9 @@ jobs:
         run: |
           java -jar Nova/target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
             Nova-Testing/example Nova-Testing/stabilitytest \
+            -l Nest \
             -install-dir . \
-            -std-path . \
+            -std-path nova \
             -main stabilitytest/StabilityTest \
             -o Nova-Testing/example/bin/ExecutableJS \
             -target js
