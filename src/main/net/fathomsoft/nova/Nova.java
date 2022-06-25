@@ -297,7 +297,7 @@ public class Nova
 			
 			if (!targetDirectory.isDirectory())
 			{
-				System.err.println("Could not find target directory for " + target + " compilation target in '" + targetDirectory.getAbsolutePath() + "'");
+				System.err.println("Could not find built target directory for " + target + " compilation target in '" + targetDirectory.getAbsolutePath() + "'");
 				
 				System.exit(1);
 			}
