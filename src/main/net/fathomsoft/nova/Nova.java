@@ -315,10 +315,10 @@ public class Nova
 			
 			try
 			{
-				URL url = new File(enginePath + "/Nova-" + formattedTarget + "/out/production/Nova-" + formattedTarget).toURL();
+				URL url = new File(enginePath + "/Nova-" + formattedTarget + "/target/Nova-" + formattedTarget + "-1.0-SNAPSHOT.jar").toURL();
 				
 				// Create a new class loader with the directory
-				ClassLoader cl = new URLClassLoader(new URL[] { url });
+				ClassLoader cl = new URLClassLoader(new URL[] { url }, this.getClass().getClassLoader());
 				
 				Class codeGeneratorEngineClass = cl.loadClass("nova." + targetFileExtension + ".engines." + formattedTarget + "CodeGeneratorEngine");
 				Class compileEngineClass = cl.loadClass("nova." + targetFileExtension + ".engines." + formattedTarget + "CompileEngine");
