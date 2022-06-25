@@ -404,10 +404,10 @@ public class Nova
 //				"../Spectra",
 //				"../Nova.c",
 //				"../plumber/plumbercalc",
-							"../Nova-Testing/example",
-							"../Nova-Testing/stabilitytest",
-							"-l", "../Nest",
-							"-d", "../NovaCompilerOutput/" + target,
+//							"../Nova-Testing/example",
+//							"../Nova-Testing/stabilitytest",
+//							"-l", "../Nest",
+//							"-d", "../NovaCompilerOutput/" + target,
 //				"-package-output-directory", "nova", "../StandardLibrary/" + target,
 //				"-dir", formatPath(directory + "../example"),
 //				"-dir", formatPath(directory + "../stabilitytest"),
@@ -422,9 +422,9 @@ public class Nova
 //				"-cargs",
 //				"-keepc",
 //				"-qp",
-							"-main",
+//							"-main",
 //				"example/Lab",
-							"stabilitytest/StabilityTest",
+//							"stabilitytest/StabilityTest",
 //				"plumbercalc/tests/AllTestsRunner",
 //				"example/NestTest",
 //				"example/SvgChart",
@@ -444,7 +444,7 @@ public class Nova
 //				"-no-optimize",
 //				"-target", target,
 //				"-library",
-							"-o", formatPath(directory + "bin/Executable")
+//							"-o", formatPath(directory + "bin/Executable")
 					};
 
 //			args = new String[] {
