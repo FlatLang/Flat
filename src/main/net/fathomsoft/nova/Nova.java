@@ -72,8 +72,8 @@ public class Nova
 //	public static final boolean	DEBUG         = true;
 //	public static final boolean USE_INSTALLED_TARGET = false;
 	public static final boolean USE_INSTALLED_TARGET = true;
-	public static final boolean USE_INSTALLED_STDLIB = false;
-//	public static final boolean USE_INSTALLED_STDLIB = true;
+//	public static final boolean USE_INSTALLED_STDLIB = false;
+	public static final boolean USE_INSTALLED_STDLIB = true;
 	
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
@@ -209,11 +209,6 @@ public class Nova
 
 		if (installDirectoryArg != null)
 		{
-			installDirectory = new File(installDirectoryArg);
-		}
-		else if (DEBUG)
-		{
-			installDirectory = new File("../Nova-Testing/example");
 		}
 		else if (OS == WINDOWS)
 		{
@@ -374,6 +369,8 @@ public class Nova
 	}
 
 	public void readCliArgs(String[] args) {
+		parseInitialArguments(args);
+
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Nova-Testing/example/";
 
@@ -383,7 +380,8 @@ public class Nova
 		{
 			if (OS == WINDOWS)
 			{
-				standardLibraryPath = System.getenv("APPDATA") + "/Nova/Standard-Library";
+//				standardLibraryPath = System.getenv("APPDATA") + "/Nova/Standard-Library";
+				standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
 			}
 			else if (OS == MACOSX)
 			{
@@ -746,38 +744,21 @@ public class Nova
 			}
 		}
 	}
-	
-	/**
-	 * Parse the arguments passed to the compiler.
-	 * 
-	 * @param args The list of arguments to parse.
-	 */
-	private void parseArguments(String args[])
+
+	private void parseInitialArguments(String args[])
 	{
 		// Start off the lastInput index to -1 because it will start
 		// checking for (index - 1).
 		// (index starts at 0, therefore 0 - 1 = -1)
 		int lastInput = -1;
 		int skip = 0;
-		
+
 		for (int i = 0; i < args.length; i++)
 		{
 			if (args[i].startsWith("\""))
 			{
 				args[i] = StringUtils.removeSurroundingQuotes(args[i]);
 			}
-			
-			if (args[i].toLowerCase().equals("-target"))
-			{
-				validateArgumentSize(args, i + 1, args[i]);
-				
-				target = args[i + 1].toLowerCase();
-			}
-		}
-
-
-		for (int i = 0; i < args.length; i++)
-		{
 			if (skip > 0)
 			{
 				skip--;
@@ -808,8 +789,26 @@ public class Nova
 
 				skip = 1;
 			}
+			else if (arg.toLowerCase().equals("-target"))
+			{
+				validateArgumentSize(args, i + 1, args[i]);
+
+				target = args[i + 1].toLowerCase();
+				skip = 1;
+			}
 		}
-		
+	}
+	
+	/**
+	 * Parse the arguments passed to the compiler.
+	 * 
+	 * @param args The list of arguments to parse.
+	 */
+	private void parseArguments(String args[])
+	{
+		int lastInput = -1;
+		int skip = 0;
+
 		startEngines();
 		
 		// Iterate through all of the arguments.
