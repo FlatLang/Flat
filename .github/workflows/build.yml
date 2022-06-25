@@ -35,7 +35,7 @@ jobs:
 
       - name: Build CLI
         run: |
-          mvn -f Nova install install:install-file \
+          mvn install install:install-file \
           -Dfile="target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar" \
           -DgroupId="net.fathomsoft" \
           -DartifactId=nova \
