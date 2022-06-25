@@ -205,7 +205,8 @@ interface RunnableTests
 		String description = test.parameters.containsKey("message") && ((Literal)test.parameters.get("message")).isStringInstantiation() ? ", " + ((Node)test.parameters.get("message")).generateNovaInput() : "";
 		
 		String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult", true);
-		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = new TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", " + test.generateTestCase().getName() + ")", Location.INVALID, true);
+		String failureMessage = success ? "" : ", e.message";
+		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = new TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", " + test.generateTestCase().getName() + failureMessage + ")", Location.INVALID, true);
 		
 		parent.addChild(a);
 		a.onAfterDecoded();
