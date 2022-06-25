@@ -37,7 +37,7 @@ public class Nova
 	
 	public File					workingDir, targetEngineWorkingDir;
 	
-	public String target = "js", formattedTarget, targetFileExtension;
+	public String target, formattedTarget, targetFileExtension;
 	
 	private SyntaxTree			tree;
 	
@@ -492,8 +492,8 @@ public class Nova
 //		postArgsList.add("-line-numbers");
 		postArgsList.add("-no-optimize");
 		postArgsList.add("-v");
-		postArgsList.add("-target");
-		postArgsList.add(target);
+//		postArgsList.add("-target");
+//		postArgsList.add(target);
 		postArgsList.add("-l");
 		postArgsList.add(standardLibraryPath);
 
