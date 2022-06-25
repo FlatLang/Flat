@@ -1770,24 +1770,16 @@ public class SyntaxUtils
 	{
 		if (declaration.getVisibility() == InstanceDeclaration.PRIVATE)
 		{
-			ClassDeclaration clazz2 = declaration.getParentClass(true);
+			ClassDeclaration clazz2 = declaration.getParentClass(true).getRootOverloadedClass();
+			accessingClass = accessingClass.getRootOverloadedClass();
 
 			while (accessingClass != null)
 			{
-				System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation() + "\nisAncestorOf: " + accessingClass.isAncestorOf(clazz2, true) + " " + clazz2.isAncestorOf(accessingClass, true) + " " + accessingClass.encapsulates(clazz2, true) + " " + accessingClass.id + " " + clazz2.id);
 				if (checkClassCommonality(accessingClass, clazz2))
 				{
 					return true;
 				}
-				if (accessingClass.genericOverload != null && checkClassCommonality(accessingClass.genericOverload, clazz2)) {
-					return true;
-				}
-				if (clazz2.genericOverload != null && checkClassCommonality(accessingClass, clazz2.genericOverload)) {
-					return true;
-				}
-				if (accessingClass.genericOverload != null && clazz2.genericOverload != null && checkClassCommonality(accessingClass.genericOverload, clazz2.genericOverload)) {
-					return true;
-				}
+				System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation() + "\nisAncestorOf: " + accessingClass.isAncestorOf(clazz2, true) + " " + clazz2.isAncestorOf(accessingClass, true) + " " + accessingClass.encapsulates(clazz2, true) + " " + accessingClass.id + " " + clazz2.id);
 				
 				accessingClass = accessingClass.encapsulatingClass;
 			}
