@@ -4,54 +4,53 @@ import "nova/meta/Field"
 
 [AutoFinal]
 immutable class Class<Type> {
-    visible Class extension
     visible immutable Class[] interfaces = new Array()
-    
+
     visible immutable Field[] fields = new Field[0]
-    
+
     visible FunctionMap functionMap
     visible PropertyMap propertyMap
-    
+
     visible Bool isInterface
-    
+
     visible String location
     visible String package => location.substring(0, location.lastIndexOf("/", defaultReturnValue: 0))
     visible String name => location.substring(location.lastIndexOf("/") + 1)
-    
+
     visible static immutable Class[] ALL
-    
-    public construct(visible String location, visible Bool isInterface) {}
-    
+
+    public construct(visible String location, visible Bool isInterface, visible Class extension) {}
+
     public pure isOfType(Class other) =>
         other.isInterface ?
             isOfTypeInterface(other) || extension && extension.isOfType(other) :
             isOfTypeClass(other) || interfaces.any({ _.isOfTypeClass(other) })
-    
-    pure isOfTypeClass(Class other) => false {
+
+    public pure isOfTypeClass(Class other) => false {
         var current = this
-        
+
         while (current) {
-            if (current == other) {
+            if (current.location == other.location) {
                 return true
             }
-            
+
             current = current.extension
         }
     }
-    
-    pure isOfTypeInterface(Class other) => false {
+
+    public pure isOfTypeInterface(Class other) => false {
         var current = this
-        
+
         while (current) {
             if (current.interfaces.any(i => { i == other || i.isOfTypeInterface(other) })) {
                 return true
             }
-            
+
             current = current.extension
         }
     }
-    
+
     public immutable getClassesOfType(Class baseType) => ALL.filter({ _.isOfType(baseType) })
-    
+
     public toString() => "Class \"#location\""
 }
