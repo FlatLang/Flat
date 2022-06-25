@@ -70,8 +70,8 @@ public class Nova
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = false;
 //	public static final boolean	DEBUG         = true;
-	public static final boolean USE_INSTALLED_TARGET = false;
-//	public static final boolean USE_INSTALLED_TARGET = true;
+//	public static final boolean USE_INSTALLED_TARGET = false;
+	public static final boolean USE_INSTALLED_TARGET = true;
 	public static final boolean USE_INSTALLED_STDLIB = false;
 //	public static final boolean USE_INSTALLED_STDLIB = true;
 	
