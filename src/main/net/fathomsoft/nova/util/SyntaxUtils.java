@@ -1775,8 +1775,17 @@ public class SyntaxUtils
 			while (accessingClass != null)
 			{
 				System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation() + "\nisAncestorOf: " + accessingClass.isAncestorOf(clazz2, true) + " " + clazz2.isAncestorOf(accessingClass, true) + " " + accessingClass.encapsulates(clazz2, true) + " " + accessingClass.id + " " + clazz2.id);
-				if (accessingClass.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(accessingClass, true) || accessingClass.encapsulates(clazz2, true))
+				if (checkClassCommonality(accessingClass, clazz2))
 				{
+					return true;
+				}
+				if (accessingClass.genericOverload != null && checkClassCommonality(accessingClass.genericOverload, clazz2)) {
+					return true;
+				}
+				if (clazz2.genericOverload != null && checkClassCommonality(accessingClass, clazz2.genericOverload)) {
+					return true;
+				}
+				if (accessingClass.genericOverload != null && clazz2.genericOverload != null && checkClassCommonality(accessingClass.genericOverload, clazz2.genericOverload)) {
 					return true;
 				}
 				
@@ -1787,6 +1796,10 @@ public class SyntaxUtils
 		}
 		
 		return true;
+	}
+
+	private static boolean checkClassCommonality(ClassDeclaration class1, ClassDeclaration class2) {
+		return class1.isAncestorOf(class2, true) || class2.isAncestorOf(class1, true) || class1.encapsulates(class2, true);
 	}
 	
 	public static Identifier generatePrimitiveFacade(MethodCall call)
