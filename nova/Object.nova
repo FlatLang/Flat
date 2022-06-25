@@ -6,36 +6,49 @@ import "nova/operators/EqualsOperator"
 immutable class Object {//} implements EqualsOperator {
     external char[] hashCode(Object obj)
     /*char** endptr*/
-    
+
     public static default() => null
 
     external char* NULL
 
     external long strtol(char str[], char* a, int base)
-    
+
     [Target c]
     public String hashCode => new String(hashCode(this))
-    
+
     [Target not c]
     public String hashCode => "No hashcode available"
-    
+
+    [Target c]
     public Long hashCodeLong => strtol(hashCode(this), NULL, 16)
-    
+
+    [Target java]
+    public Long hashCodeLong {
+        get {
+            external { return hashCode(); }
+        }
+
+        no set
+    }
+
+    [Target js]
+    public Long hashCodeLong => 0
+
     public equals(Object another) => this == another
     public toString() => "{#this.class.name @#hashCode}"
-    
+
     // writeFields() =>
     //     this.class.getFields(true).count > 0 ?
     //         this.class.getFields(true).map(f => {
     //             "\n#f.name = #f.getValue(this)"
     //         }) + "\n" :
     //         ""
-        
+
     // writeFunctions() =>
     //     this.class.functions.map(f => {
     //         "\n#f"
     //     })
-    
+
     // public toString() =>
     //     "#this.class.name {" +
     //     writeFields() +
