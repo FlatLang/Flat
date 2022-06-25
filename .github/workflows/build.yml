@@ -65,6 +65,7 @@ jobs:
             Nova-Testing/example Nova-Testing/stabilitytest \
             -l Nest \
             -install-dir . \
+            -std-path . \
             -main stabilitytest/StabilityTest \
             -o Nova-Testing/example/bin/ExecutableJS \
             -target js
