@@ -1771,9 +1771,10 @@ public class SyntaxUtils
 		if (declaration.getVisibility() == InstanceDeclaration.PRIVATE)
 		{
 			ClassDeclaration clazz2 = declaration.getParentClass(true);
-			System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation());
+
 			while (accessingClass != null)
 			{
+				System.out.println("accessing: " + accessingClass.getClassLocation() + "\naccessed: " + clazz2.getClassLocation() + "\nisAncestorOf: " + accessingClass.isAncestorOf(clazz2, true) + " " + clazz2.isAncestorOf(accessingClass, true) + " " + accessingClass.encapsulates(clazz2, true));
 				if (accessingClass.isAncestorOf(clazz2, true) || clazz2.isAncestorOf(accessingClass, true) || accessingClass.encapsulates(clazz2, true))
 				{
 					return true;
