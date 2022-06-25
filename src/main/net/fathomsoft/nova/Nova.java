@@ -261,7 +261,7 @@ public class Nova
 			}
 			else if (OS == WINDOWS)
 			{
-				enginePath = System.getenv("APPDATA") + "/Nova";
+				enginePath = installDirectory.getAbsolutePath();//System.getenv("APPDATA") + "/Nova";
 			}
 			else if (OS == MACOSX)
 			{
@@ -783,6 +783,41 @@ public class Nova
 				target = args[i + 1].toLowerCase();
 			}
 		}
+
+
+		for (int i = 0; i < args.length; i++)
+		{
+			if (skip > 0)
+			{
+				skip--;
+
+				continue;
+			}
+
+			// Lowercase the argument for easier non-case-sensitive String
+			// matching.
+			String arg = args[i].toLowerCase();
+
+			if (arg.length() <= 0)
+			{
+				if (lastInput == i - 1)
+				{
+					lastInput = i;
+				}
+
+				continue;
+			}
+
+			if (arg.equals("-install-dir"))
+			{
+				validateArgumentSize(args, i + 1, arg);
+
+				installDirectoryArg = args[i + 1];
+				installDirectory = new File(installDirectoryArg);
+
+				skip = 1;
+			}
+		}
 		
 		startEngines();
 		
@@ -835,8 +870,6 @@ public class Nova
 			else if (arg.equals("-install-dir"))
 			{
 				validateArgumentSize(args, i + 1, arg);
-
-				installDirectoryArg = args[i + 1];
 
 				skip = 1;
 			}
