@@ -408,8 +408,6 @@ public class Nova
 		{
 			testClasses();
 
-			String target = "js";
-
 			args = new String[]
 					{
 //				"../Novac",
@@ -495,7 +493,7 @@ public class Nova
 		postArgsList.add("-no-optimize");
 		postArgsList.add("-v");
 		postArgsList.add("-target");
-		postArgsList.add("js");
+		postArgsList.add(target);
 		postArgsList.add("-l");
 		postArgsList.add(standardLibraryPath);
 
@@ -513,7 +511,7 @@ public class Nova
 
 		parseArguments(args);
 	}
-	
+
 	/**
 	 * Compile the input files given within the args.
 	 * 
@@ -535,7 +533,7 @@ public class Nova
 		
 		createSyntaxTree(generateCode);
 	}
-	
+
 	private String[] prependArguments(String args[], String ... newData)
 	{
 		String temp[] = new String[args.length + newData.length];
