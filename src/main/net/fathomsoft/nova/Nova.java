@@ -47,6 +47,7 @@ public class Nova
 	private String[] postArgs;
 
 	public String installDirectoryArg;
+	public String standardLibraryPath;
 	public File outputDirectory, installDirectory;
 	
 	public HashMap<String, String> outputDirectories;
@@ -374,22 +375,18 @@ public class Nova
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Nova-Testing/example/";
 
-		String standardLibraryPath = "../Standard-Library";
+		if (standardLibraryPath == null) {
+			standardLibraryPath = "../Standard-Library";
 
-		if (USE_INSTALLED_STDLIB)
-		{
-			if (OS == WINDOWS)
-			{
+			if (USE_INSTALLED_STDLIB) {
+				if (OS == WINDOWS) {
 //				standardLibraryPath = System.getenv("APPDATA") + "/Nova/Standard-Library";
-				standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
-			}
-			else if (OS == MACOSX)
-			{
-				standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
-			}
-			else if (OS == LINUX)
-			{
-				standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
+					standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
+				} else if (OS == MACOSX) {
+					standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
+				} else if (OS == LINUX) {
+					standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
+				}
 			}
 		}
 
@@ -568,13 +565,7 @@ public class Nova
 						allFiles.addAll(entry.getValue());
 					}
 
-					allFiles.sort(Comparator.comparing(f -> {
-						try {
-							return f.getCanonicalPath();
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}));
+					allFiles.sort(Comparator.comparing(File::getName));
 					
 					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
 					
@@ -802,6 +793,13 @@ public class Nova
 				target = args[i + 1].toLowerCase();
 				skip = 1;
 			}
+			else if (arg.toLowerCase().equals("-std-path"))
+			{
+				validateArgumentSize(args, i + 1, args[i]);
+
+				standardLibraryPath = args[i + 1];
+				skip = 1;
+			}
 		}
 	}
 	
@@ -968,7 +966,12 @@ public class Nova
 				
 				ArrayList<File> list = new ArrayList<>();
 				list.add(file);
-				
+
+				try {
+					System.out.println("Adding library " + file.getCanonicalPath());
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 				libraryFiles.put(file, list);
 				
 				skip = 1;
@@ -1007,7 +1010,12 @@ public class Nova
 				if (lastInput == i - 1)
 				{
 					File file = new File(args[i]).getAbsoluteFile();
-					
+
+					try {
+						System.out.println("Adding " + file.getCanonicalPath());
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 					inputFiles.add(file);
 					
 					lastInput = i;
