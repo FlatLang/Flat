@@ -282,9 +282,15 @@ public class SyntaxTree
 			root.forEachVisibleListChild(file -> {
 				Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
 					c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
-					c.classInstanceDeclaration.setShorthandAccessor("new Class(\"" + c.getClassLocation() + "\", false)");
+					c.classInstanceDeclaration.setStatic(true);
+					String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
+					c.classInstanceDeclaration.setShorthandAccessor("new Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", false, " + extendedClassName + ")");
 					c.getFieldList().addChild(c.classInstanceDeclaration);
 
+				});
+			});
+			root.forEachVisibleListChild(file -> {
+				Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
 					if (!c.classInstanceDeclaration.containsAccessorMethod()) {
 						c.classInstanceDeclaration.decodeArrowBinding();
 					}
