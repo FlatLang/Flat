@@ -35,13 +35,7 @@ jobs:
 
       - name: Build CLI
         run: |
-          mvn install install:install-file \
-          -Dfile="target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar" \
-          -DgroupId="net.fathomsoft" \
-          -DartifactId=nova \
-          -Dversion="1.0-SNAPSHOT" \
-          -Dpackaging=jar \
-          -DgeneratePom=true
+          mvn install
 
       - name: Build JS Writer
         run: |
