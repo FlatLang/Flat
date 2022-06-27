@@ -93,8 +93,14 @@ public class Message
 			{
 				lineNumber += location.getLineNumber();
 			}
+
+			String prefix = "";
+
+			if (file.getPackage() != null) {
+				prefix = file.getPackage().getLocation() + "/";
+			}
 			
-			info += " - in file \"" + file.getFile().getName() + '"';
+			info += " - in file \"" + prefix + file.getFile().getName() + '"';
 			
 			if (loc != null)
 			{
