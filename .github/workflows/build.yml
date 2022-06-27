@@ -59,10 +59,39 @@ jobs:
           repository: NovaFoundation/Nest
           path: Nest
 
+      - name: Checkout Astro library
+        uses: actions/checkout@master
+        with:
+          repository: NovaFoundation/Astro
+          path: Astro
+
+      - name: Checkout Novac library
+        uses: actions/checkout@master
+        with:
+          repository: NovaFoundation/Novac
+          path: Novac
+
+      - name: Checkout Spectra library
+        uses: actions/checkout@master
+        with:
+          repository: NovaFoundation/Spectra
+          path: Spectra
+
+      - name: Checkout Nebula library
+        uses: actions/checkout@master
+        with:
+          repository: NovaFoundation/Nebula
+          path: Nebula
+
       - name: Build Stability Test
         run: |
           java -jar target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
-            Nova-Testing/example Nova-Testing/stabilitytest \
+            Nova-Testing/example \
+            Nova-Testing/stabilitytest \
+            Astro \
+            Novac \
+            Spectra \
+            Nebula \
             -l Nest \
             -install-dir . \
             -main stabilitytest/StabilityTest \
