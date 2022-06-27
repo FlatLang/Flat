@@ -1,6 +1,6 @@
 Nova Programming Language
 ===========================
-[![Build status](https://badge.buildkite.com/62f518e943f80044b47b44c40b186b282aaa7b05f24353b9a1.svg)](https://buildkite.com/nova/test)
+[![Build Nova](https://github.com/NovaFoundation/Nova/actions/workflows/build.yml/badge.svg)](https://github.com/NovaFoundation/Nova/actions/workflows/build.yml)
 
 Nova is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
 
