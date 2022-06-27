@@ -2345,9 +2345,9 @@ public abstract class Node implements Listenable, Annotatable
 		
 		private Bounds	skipBounds[];
 		
-		private ArrayList<Bounds> bounds;
-		private ArrayList<String> words;
-		private ArrayList<String> delims;
+		protected ArrayList<Bounds> bounds;
+		protected ArrayList<String> words;
+		protected ArrayList<String> delims;
 		
 		public String	error;
 		public String	statement; 

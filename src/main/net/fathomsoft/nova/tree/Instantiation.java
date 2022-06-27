@@ -5,10 +5,7 @@ import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
-import net.fathomsoft.nova.util.Bounds;
-import net.fathomsoft.nova.util.Location;
-import net.fathomsoft.nova.util.StringUtils;
-import net.fathomsoft.nova.util.SyntaxUtils;
+import net.fathomsoft.nova.util.*;
 
 /**
  * Value extension that represents the declaration of an
@@ -232,19 +229,37 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	
 	public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod reference)
 	{
-		if (!SyntaxUtils.isInstantiation(statement))
+		Instantiation n = new Instantiation(parent, location);
+
+		ExtraData data = n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, null, require);
+
+		if (data.words.stream().noneMatch(w -> w.equals(IDENTIFIER)))
 		{
 			return null;
 		}
-		
-		Instantiation n = new Instantiation(parent, location);
-		
-		int startIndex  = StringUtils.findNextNonWhitespaceIndex(statement, IDENTIFIER.length() + 1);
-		
+
+		int i = 0;
+
+		for (String word : data.words) {
+			if (word.equals(IDENTIFIER)) {
+				break;
+			}
+
+			i++;
+
+			if (!n.parseModifier(word)) {
+				return null;
+			}
+		}
+
+		if (data.bounds.size() < i + 2) {
+			return null;
+		}
+
 		Location newLoc = location.asNew();
-		newLoc.addBounds(startIndex, statement.length());
-		
-		String instantiation = statement.substring(startIndex);
+		newLoc.addBounds(data.bounds.get(i + 1).getStart(), statement.length());
+
+		String instantiation = statement.substring(data.bounds.get(i + 1).getStart());
 		
 		return n.decodeInstantiation(instantiation, newLoc, require, validateAccess, reference);
 	}
@@ -415,7 +430,12 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		
 		return node;
 	}
-	
+
+	@Override
+	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+		super.interactWord(word, bounds, leftDelimiter, rightDelimiter, extra);
+	}
+
 	/**
 	 * Test the Instantiation class type to make sure everything
 	 * is working properly.
