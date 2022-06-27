@@ -12,6 +12,7 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Class used to organize the Files that are fed to the compiler.
@@ -663,6 +664,19 @@ public class FileDeclaration extends Node
 		}
 		else if (child instanceof ClassDeclaration)
 		{
+			ClassDeclaration c = (ClassDeclaration) child;
+
+			java.util.List<ClassDeclaration> dupes = getProgram().getVisibleListChildren().stream()
+					.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
+					.filter(c2 -> c2 != c)
+					.filter(c2 -> c2.getClassLocation().equals(c.getClassLocation()))
+					.filter(c2 -> c2.genericOverload == c.genericOverload)
+					.collect(Collectors.toList());
+
+			if (dupes.size() > 0) {
+				SyntaxMessage.error("Duplicate class declaration for class '" + c.getClassLocation() + "'", child);
+			}
+
 			super.addChild(child);
 		}
 		else
