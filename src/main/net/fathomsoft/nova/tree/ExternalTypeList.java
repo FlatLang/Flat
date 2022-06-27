@@ -11,7 +11,7 @@ import net.fathomsoft.nova.util.Location;
  * @since	v0.1 Jan 5, 2014 at 10:29:22 PM
  * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class ExternalTypeList extends List
+public class ExternalTypeList extends TypeList<ExternalType>
 {
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
