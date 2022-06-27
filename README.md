@@ -66,4 +66,4 @@ __Optional arguments to the Compiler Include__
   * `-small` Generate the smallest possible executable output.
   * `-single-thread` Compile the program with only a single thread.
 
-© 2014-2019 Nova
+© 2014-2022 Nova
