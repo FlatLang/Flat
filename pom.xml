@@ -56,6 +56,33 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+                    <execution>
+                        <id>Install File Local</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>mvn</executable>
+                            <arguments>
+                                <argument>install:install-file</argument>
+                                <argument>-Dfile="target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar"</argument>
+                                <argument>-DgroupId="net.fathomsoft"</argument>
+                                <argument>-DartifactId=nova</argument>
+                                <argument>-Dversion="1.0-SNAPSHOT"</argument>
+                                <argument>-Dpackaging=jar</argument>
+                                <argument>-DgeneratePom=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
