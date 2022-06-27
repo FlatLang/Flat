@@ -1508,19 +1508,6 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get whether or not the given statement is an instantiation. For
-	 * more details on what an instantiation consists of see
-	 * {@link net.fathomsoft.nova.tree.Instantiation#decodeStatement(Node, String, Location, boolean)}.
-	 * 
-	 * @param statement The statement to test.
-	 * @return Whether or not the given statement is an instantiation.
-	 */
-	public static boolean isInstantiation(String statement)
-	{
-		return StringUtils.startsWithWord(statement, Instantiation.IDENTIFIER);
-	}
-	
-	/**
 	 * Get whether or not the given Declaration is able to be accessed
 	 * from the given ClassDeclaration context.
 	 * 
