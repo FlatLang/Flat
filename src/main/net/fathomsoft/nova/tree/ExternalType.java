@@ -80,7 +80,12 @@ public class ExternalType extends IValue
 		
 		return null;
 	}
-	
+
+	@Override
+	public String toString() {
+		return PREFIX + " " + IDENTIFIER + " " + getType();
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */
