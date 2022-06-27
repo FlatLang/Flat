@@ -61,7 +61,9 @@ public class Annotation extends Node
 			TestResultAnnotation.class,
 			ThisModifier.class,
 			SuperParameterModifier.class,
-			NamedArgumentModifier.class
+			NamedArgumentModifier.class,
+			AsyncAnnotation.class,
+			AwaitAnnotation.class
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
@@ -451,6 +453,16 @@ public class Annotation extends Node
 																																			if (n == null)
 																																			{
 																																				n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+
+																																				if (n == null)
+																																				{
+																																					n = AsyncAnnotation.decodeStatement(parent, name, arguments, location, require);
+
+																																					if (n == null)
+																																					{
+																																						n = AwaitAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																					}
+																																				}
 																																			}
 																																		}
 																																	}
