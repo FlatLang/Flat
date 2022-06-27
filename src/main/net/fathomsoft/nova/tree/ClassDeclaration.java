@@ -2823,6 +2823,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (genParam.getParent() == params)
 			{
+				if (types.length <= genParam.getIndex()) {
+					return false;
+				}
+
 				Value type = types[genParam.getIndex()];
 				
 				if (type.isPrimitive())
