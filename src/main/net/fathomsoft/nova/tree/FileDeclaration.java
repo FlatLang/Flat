@@ -24,7 +24,8 @@ import java.util.Arrays;
  */
 public class FileDeclaration extends Node
 {
-	public StringBuilder	header, source;
+	public StringBuilder	header;
+	public String 			source;
 	
 	public File			file;
 	
@@ -687,7 +688,7 @@ public class FileDeclaration extends Node
 	 */
 	public void setSource(String source)
 	{
-		this.source = new StringBuilder(source);
+		this.source = source;
 	}
 	
 	/**
@@ -786,5 +787,9 @@ public class FileDeclaration extends Node
 		
 		
 		return null;
+	}
+
+	public String getSource() {
+		return source;
 	}
 }

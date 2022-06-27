@@ -163,6 +163,7 @@ public class TreeGenerator implements Runnable
 		Location location = new Location(1, 0, 0, 0);
 		
 		fileDeclaration = new FileDeclaration(tree.getRoot(), location, file);
+		fileDeclaration.setSource(source);
 		
 		if (fileDeclaration.isExcludedExternalFile(controller.targetFileExtension)) {
 			return;
@@ -287,6 +288,11 @@ public class TreeGenerator implements Runnable
 		{
 			if ((!requiresScope || node.containsScope()))
 			{
+				String oldSource = source;
+				Matcher oldMatcher = statementStartMatcher;
+				source = node.getOriginalFile() != null ? node.getOriginalFile().getSource() : source;
+				statementStartMatcher = node.getOriginalFile() != null ? Patterns.STATEMENT_START.matcher(source) : statementStartMatcher;
+
 				int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
 				int endingIndex = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 				
@@ -306,7 +312,9 @@ public class TreeGenerator implements Runnable
 							}
 						}
 					}
-					
+
+					statementStartMatcher = oldMatcher;
+					source = oldSource;
 					return;
 				}
 				
@@ -314,6 +322,9 @@ public class TreeGenerator implements Runnable
 				{
 					traverseCode(node, contentStart, searchTypes, skipScopes);
 				}
+
+				statementStartMatcher = oldMatcher;
+				source = oldSource;
 			}
 		}
 	}
