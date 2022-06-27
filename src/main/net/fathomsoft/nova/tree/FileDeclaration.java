@@ -5,6 +5,9 @@ import net.fathomsoft.nova.TestContext;
 import net.fathomsoft.nova.ValidationResult;
 import net.fathomsoft.nova.error.SyntaxMessage;
 import net.fathomsoft.nova.tree.annotations.Annotation;
+import net.fathomsoft.nova.tree.variables.Array;
+import net.fathomsoft.nova.tree.variables.FieldDeclaration;
+import net.fathomsoft.nova.tree.variables.FieldList;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -518,6 +521,11 @@ public class FileDeclaration extends Node
 		{
 			return result;
 		}
+
+		if (isExternalFile())
+		{
+			mergeFiles(getProgram().getFile(getClassDeclaration().getClassLocation(false)), phase);
+		}
 		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
@@ -544,8 +552,6 @@ public class FileDeclaration extends Node
 		{
 			if (isExternalFile())
 			{
-				mergeFiles(getProgram().getFile(getClassDeclaration().getClassLocation(false)), phase);
-				
 				detach();
 				
 				result.skipCycle = true;
@@ -563,38 +569,63 @@ public class FileDeclaration extends Node
 			
 			if (!other.getImportList().containsImport(im.location))
 			{
+				im.setOriginalFile(this);
 				other.getImportList().addChild(im);
 				
 				SyntaxTree.validateNodes(im, phase);
 			}
 		}
-		
+
 		ClassDeclaration thisClass = getClassDeclaration();
 		ClassDeclaration otherClass = other.getClassDeclaration();
-		
-		MethodList[] methodLists = new MethodList[] { thisClass.getMethodList() };//, thisClass.getPropertyMethodList() };
-		MethodList[] otherMethodLists = new MethodList[] { otherClass.getMethodList(), otherClass.getPropertyMethodList() };
-		
-		for (int i = 0; i < methodLists.length; i++)
-		{
-			MethodList thisList = methodLists[i];
-			MethodList otherList = otherMethodLists[i];
-			
-			for (NovaMethodDeclaration method : thisList.getMethods())
-			{
-				if (method.isUserMade())
-				{
-					MethodDeclaration otherMethod = otherClass.getMethod((GenericCompatible)null, method.getName(), method.getParameterList().getTypes());
-					
-					if (otherMethod != null)
-					{
-						otherMethod.replaceWith(method);
+
+		thisClass.getExternalTypeListNode().getVisibleListChildren().forEach(external -> {
+			external.setOriginalFile(this);
+			otherClass.getExternalTypeListNode().addChild(external);
+		});
+
+		List[] fieldLists = new List[] {
+				thisClass.getFieldList().getPublicFieldList(),
+				thisClass.getFieldList().getPublicStaticFieldList(),
+				thisClass.getFieldList().getPrivateFieldList(),
+				thisClass.getFieldList().getPrivateStaticFieldList()
+		};
+
+		for (List thisList : fieldLists) {
+			for (Node fieldNode : thisList.toArray()) {
+				FieldDeclaration field = (FieldDeclaration)fieldNode;
+
+				if (field.isUserMade()) {
+					field.setOriginalFile(this);
+
+					FieldDeclaration otherField = otherClass.getField(field.getName());
+
+					if (otherField != null) {
+						otherField.replaceWith(field);
+					} else {
+						otherClass.getFieldList().addChild(field);
 					}
-					else
-					{
+
+					SyntaxTree.validateNodes(field, phase);
+				}
+			}
+		}
+
+		MethodList[] methodLists = new MethodList[] { thisClass.getMethodList(), thisClass.getPropertyMethodList() };
+
+		for (MethodList thisList : methodLists) {
+			for (NovaMethodDeclaration method : thisList.getMethods()) {
+				if (method.isUserMade()) {
+					method.setOriginalFile(this);
+
+					MethodDeclaration otherMethod = otherClass.getMethod((GenericCompatible) null, method.getName(), method.getParameterList().getTypes());
+
+					if (otherMethod != null) {
+						otherMethod.replaceWith(method);
+					} else {
 						otherClass.addChild(method);
 					}
-					
+
 					SyntaxTree.validateNodes(method, phase);
 				}
 			}
