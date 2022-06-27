@@ -114,6 +114,18 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 		
 		return list;
 	}
+
+	public ArrayList<E> getVisibleListChildren()
+	{
+		ArrayList<E> list = new ArrayList<>();
+
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			list.add(getVisibleChild(i));
+		}
+
+		return list;
+	}
 	
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#getChild(int)
