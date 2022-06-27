@@ -47,7 +47,9 @@ public abstract class Node implements Listenable, Annotatable
 	private ArrayList<Annotation>	annotations;
 	
 	private HashMap<String, Object> properties;
-	
+
+	private FileDeclaration originalFile;
+
 	/**
 	 * Create a new Node. Initializes the data.
 	 * 
@@ -2265,7 +2267,9 @@ public abstract class Node implements Listenable, Annotatable
 				node.setProperty(entry.getKey(), entry.getValue());
 			}
 		}
-		
+
+		node.originalFile = originalFile;
+
 		return node;
 	}
 	
@@ -2329,7 +2333,15 @@ public abstract class Node implements Listenable, Annotatable
 			}
 		};
 	}
-	
+
+	public FileDeclaration getOriginalFile() {
+		return originalFile;
+	}
+
+	protected void setOriginalFile(FileDeclaration originalFile) {
+		this.originalFile = originalFile;
+	}
+
 	/**
 	 * Class used to pass data to the interactWord() methods.
 	 * 
