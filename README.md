@@ -1,6 +1,8 @@
 Nova Programming Language
 ===========================
 [![Build Nova](https://github.com/NovaFoundation/Nova/actions/workflows/build.yml/badge.svg)](https://github.com/NovaFoundation/Nova/actions/workflows/build.yml)
+[![Stability Test](https://github.com/BSteffaniak/Nova-Testing/actions/workflows/stability-test.yml/badge.svg)](https://github.com/BSteffaniak/Nova-Testing/actions/workflows/stability-test.yml)
+[![Build Standard Library](https://github.com/NovaFoundation/Standard-Library/actions/workflows/build.yml/badge.svg)](https://github.com/NovaFoundation/Standard-Library/actions/workflows/build.yml)
 
 Nova is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
 
