@@ -72,10 +72,10 @@
                             <executable>mvn</executable>
                             <arguments>
                                 <argument>install:install-file</argument>
-                                <argument>-Dfile="target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar"</argument>
-                                <argument>-DgroupId="net.fathomsoft"</argument>
+                                <argument>-Dfile=target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar</argument>
+                                <argument>-DgroupId=net.fathomsoft</argument>
                                 <argument>-DartifactId=nova</argument>
-                                <argument>-Dversion="1.0-SNAPSHOT"</argument>
+                                <argument>-Dversion=1.0-SNAPSHOT</argument>
                                 <argument>-Dpackaging=jar</argument>
                                 <argument>-DgeneratePom=true</argument>
                             </arguments>
