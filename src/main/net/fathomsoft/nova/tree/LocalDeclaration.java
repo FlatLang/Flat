@@ -178,11 +178,6 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, data, require);
 			
-			if (n.getType() == null && n.containsImplicitCompatibleAnnotation())
-			{
-				n.isImplicit = true;
-			}
-			
 			if (data.error != null)
 			{
 				SyntaxMessage.queryError(data.error, n, require);
@@ -307,33 +302,38 @@ public class LocalDeclaration extends VariableDeclaration
 		
 		if (extra.isLastWord())
 		{
+			if (getType() == null && containsImplicitCompatibleAnnotation()) {
+				isImplicit = true;
+			}
+
 			interactName(word, leftDelimiter, rightDelimiter, extra);
 		}
-		else if (!setAttribute(word, extra.getWordNumber()))
+		else if (setAttribute(word, extra.getWordNumber()))
 		{
-			if (getType() != null || isImplicit())
+
+		}
+		else if (getType() != null || isImplicit())
+		{
+			extra.error = "Invalid syntax '" + leftDelimiter + word + "'";
+		}
+		else
+		{
+			setType(leftDelimiter + word, true, false, true || extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
+
+			if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS && (!setType(getType(), false, extra.checkType) || getType() == null))
 			{
-				extra.error = "Invalid syntax '" + leftDelimiter + word + "'";
+				extra.error = "Type '" + leftDelimiter + word + "' does not exist";
 			}
-			else
+
+			if (rightDelimiter.equals("*"))
 			{
-				setType(leftDelimiter + word, true, false, true || extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
-				
-				if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS && !setType(getType(), false, extra.checkType))
+				if (getDataType() == POINTER)
 				{
-					extra.error = "Type '" + leftDelimiter + word + "' does not exist";
+					setDataType(DOUBLE_POINTER);
 				}
-				
-				if (rightDelimiter.equals("*"))
+				else
 				{
-					if (getDataType() == POINTER)
-					{
-						setDataType(DOUBLE_POINTER);
-					}
-					else
-					{
-						setDataType(POINTER);
-					}
+					setDataType(POINTER);
 				}
 			}
 		}
