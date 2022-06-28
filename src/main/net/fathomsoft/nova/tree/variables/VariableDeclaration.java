@@ -587,7 +587,12 @@ public class VariableDeclaration extends IIdentifier
 			}
 		}
 	}
-	
+
+	@Override
+	public boolean canAccess() {
+		return false;
+	}
+
 	public boolean validateType()
 	{
 		if (getType() != null && !setType(getType(), false, !isGenericType()))
