@@ -107,6 +107,10 @@ public class StaticClassReference extends IIdentifier
 	@Override
 	public ClassDeclaration getDeclaringClass()
 	{
+		if (isAccessed()) {
+			return getAccessingNode().getDeclaringClass();
+		}
+
 		return SyntaxUtils.getImportedClass(getFileDeclaration(), getName());
 	}
 	
