@@ -1,6 +1,7 @@
 package net.fathomsoft.nova.tree;
 
 import net.fathomsoft.nova.TestContext;
+import net.fathomsoft.nova.tree.generics.GenericTypeArgumentList;
 import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -45,7 +46,10 @@ public class StaticClassReference extends IIdentifier
 	 */
 	public static StaticClassReference decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
-		if (parent.getFileDeclaration().getClassDeclaration(statement) != null || parent.getFileDeclaration().containsImport(statement, false))
+		Node ref = parent instanceof Accessible && ((Accessible) parent).canAccess() ? ((Accessible) parent).toValue().getTypeClass() : parent;
+		ref = ref == null ? parent : ref;
+
+		if (ref.getFileDeclaration().getClassDeclaration(statement) != null || ref.getFileDeclaration().containsImport(statement, false))
 		{
 			StaticClassReference n = new StaticClassReference(parent, location);
 			
@@ -57,21 +61,9 @@ public class StaticClassReference extends IIdentifier
 		
 		return null;
 	}
-	
-	public ClassDeclaration getStaticTypeClass()
-	{
-		Import i = getFileDeclaration().getImport(super.getType(true), false);
-		
-		if (i != null)
-		{
-			return i.getClassDeclaration();//super.getTypeClass(false, false);
-		}
-		
-		return getFileDeclaration().getClassDeclaration(super.getType(true));
-	}
 
 	public boolean isMetaClass() {
-		return !isDecoding() && !doesAccess() && (parent instanceof MethodCallArgumentList == false || parent.parent.isDecoding() || !((MethodCallArgumentList)parent).getMethodDeclaration().getParentClass().getClassLocation().equals("nova/meta/Class"));
+		return !isDecoding() && !doesAccess() && (parent instanceof MethodCallArgumentList == false || parent.parent.isDecoding() || !((MethodCallArgumentList)parent).getMethodDeclaration().getParentClass().getClassLocation().equals("nova/meta/Class")) && parent.getAncestorOfType(GenericTypeArgumentList.class, true) != null;
 	}
 	
 	@Override
