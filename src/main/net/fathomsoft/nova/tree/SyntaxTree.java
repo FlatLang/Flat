@@ -1234,7 +1234,7 @@ public class SyntaxTree
 		if (node == null)
 		{
 			Node n = decodeVariable(parent, statement, location, false, false);
-			
+
 			if (n != null && !(n instanceof Identifier))
 			{
 				return null;
@@ -1281,6 +1281,11 @@ public class SyntaxTree
 					if (node == null)
 					{
 						node = (Accessible)Array.decodeStatement(parent, statement, location, false);
+
+						if (node == null)
+						{
+							node = StaticClassReference.decodeStatement(parent, statement, location, false);
+						}
 					}
 				}
 			}
