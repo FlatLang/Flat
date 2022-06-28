@@ -508,7 +508,12 @@ public class FileDeclaration extends Node
 	{
 		return FileUtils.removeFileExtension(file.getName());
 	}
-	
+
+	@Override
+	public FileDeclaration getOriginalFile() {
+		return this;
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#validate(int)
 	 */
