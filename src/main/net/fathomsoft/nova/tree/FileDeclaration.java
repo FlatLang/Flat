@@ -584,6 +584,11 @@ public class FileDeclaration extends Node
 		ClassDeclaration thisClass = getClassDeclaration();
 		ClassDeclaration otherClass = other.getClassDeclaration();
 
+		thisClass.getInnerClasses(false).getVisibleListChildren().forEach(innerClass -> {
+			innerClass.setOriginalFile(this);
+			otherClass.addChild(innerClass);
+		});
+
 		thisClass.getExternalTypeListNode().getVisibleListChildren().forEach(external -> {
 			external.setOriginalFile(this);
 			otherClass.getExternalTypeListNode().addChild(external);
