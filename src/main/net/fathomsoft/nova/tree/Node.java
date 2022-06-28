@@ -2335,7 +2335,15 @@ public abstract class Node implements Listenable, Annotatable
 	}
 
 	public FileDeclaration getOriginalFile() {
-		return originalFile;
+		if (originalFile != null) {
+			return originalFile;
+		}
+
+		if (parent != null) {
+			return parent.getOriginalFile();
+		}
+
+		return null;
 	}
 
 	protected void setOriginalFile(FileDeclaration originalFile) {
