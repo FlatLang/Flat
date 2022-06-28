@@ -12,7 +12,9 @@ import net.fathomsoft.nova.tree.variables.Variable;
 import net.fathomsoft.nova.tree.variables.VariableDeclaration;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import static net.fathomsoft.nova.tree.Value.POINTER;
 
@@ -2429,14 +2431,21 @@ public class SyntaxUtils
 		
 		if (file != null)
 		{
-			if (!file.getClassDeclaration().getName().equals(type))
+			java.util.List<ClassDeclaration> classes = Arrays.stream(file.getClassDeclarations())
+					.filter(c -> c.getName().equals(type))
+					.collect(Collectors.toList());
+
+			if (classes.size() > 1) {
+				// FIXME: Need to update to recursively check ancestor classes instead of just immediately jumping to root file and checking all classes.
+				SyntaxMessage.error("Cannot determine correct class to reference for value type. This is my fault...", node);
+				return null;
+			}
+
+			if (classes.size() == 1)
 			{
-				ClassDeclaration c = file.getClassDeclaration(type);
-				
-				if (c != null)
-				{
-					return file.getClassDeclaration().getClassLocation() + "." + type;
-				}
+				ClassDeclaration c = classes.get(0);
+
+				return c.getClassLocation();
 			}
 			
 			String location = file.getImportList().getAbsoluteClassLocation(type);
