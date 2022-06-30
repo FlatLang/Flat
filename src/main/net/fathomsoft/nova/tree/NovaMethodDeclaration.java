@@ -1774,12 +1774,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		node.virtualMethod = virtualMethod;
 		node.overridenMethod = overridenMethod;
 		node.genericOverload = genericOverload;
-		
-		for (NovaMethodDeclaration child : overridingMethods)
-		{
-			node.overridingMethods.add(child);//(NovaMethodDeclaration)child.clone(node, child.getLocationIn()));
-		}
-		
+		node.overridingMethods.addAll(overridingMethods);
 		node.types = new String[types.length];
 		
 		int i = 0;
@@ -1788,7 +1783,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			node.types[i++] = type;
 		}
-		
+
 		return node;
 	}
 	
