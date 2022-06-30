@@ -172,7 +172,7 @@ public class FileUtils
 		
 		path = formAbsolutePath(path);
 		
-		if (Nova.getOS() == Nova.WINDOWS)
+		if (Nova.OS == Nova.WINDOWS)
 		{
 			path = StringUtils.removeSurroundingQuotes(path);
 			
