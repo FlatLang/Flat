@@ -719,102 +719,88 @@ public class LambdaExpression extends IIdentifier
 		}
 		
 		ClassDeclaration type = context.getReferenceNode().toValue().getTypeClass();
-		
-		ArrayList<MethodDeclaration> temp = new ArrayList<>();
-		
-		for (MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter> c : classes)
-		{
-			if (c != null)
-			{
-				MethodDeclaration[] methods = c.a.getMethods(context.getName(), c.b);
-				
-				for (MethodDeclaration m : methods)
-				{
-					if (type.isPrimitiveOverload() && m instanceof NovaMethodDeclaration)
-					{
-						NovaMethodDeclaration converted = ((NovaMethodDeclaration)m).checkConvertToClass(type);
-						
-						if (converted != null)
-						{
-							m = converted;
+
+		if (type != null) {
+			ArrayList<MethodDeclaration> temp = new ArrayList<>();
+
+			for (MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter> c : classes) {
+				if (c != null) {
+					MethodDeclaration[] methods = c.a.getMethods(context.getName(), c.b);
+
+					for (MethodDeclaration m : methods) {
+						if (type.isPrimitiveOverload() && m instanceof NovaMethodDeclaration) {
+							NovaMethodDeclaration converted = ((NovaMethodDeclaration) m).checkConvertToClass(type);
+
+							if (converted != null) {
+								m = converted;
+							}
 						}
-					}
-					
-					temp.add(m);
-				}
-			}
-		}
-		
-		MethodDeclaration[] methods = temp.toArray(new MethodDeclaration[0]);
-		
-		if (methods.length > 0)
-		{
-			final int index = context.getArgumentList().getNumVisibleChildren();
-			
-			ArrayList<NovaMethodDeclaration> tempMethods = new ArrayList<>();
-			
-			Arrays.stream(methods)
-				.filter(x ->
-				{
-					if (x instanceof NovaMethodDeclaration &&
-						x.getParameterList().getNumVisibleChildren() > index &&
-						x.getParameter(index) instanceof ClosureDeclaration)
-					{
-						ClosureDeclaration closure = (ClosureDeclaration)x.getParameter(index);
-						
-						if (closure.getParameterList().getNumVisibleChildren() >= variables.length)
-						{
-							return true;
-						}
-					}
-					
-					return false;
-				})
-				.forEach(x -> tempMethods.add((NovaMethodDeclaration)x));
-			
-			ArrayList<NovaMethodDeclaration> clone = new ArrayList<>();
-			
-			for (NovaMethodDeclaration m : tempMethods)
-			{
-				clone.add(m);
-			}
-			for (NovaMethodDeclaration x : clone)
-			{
-				if (x.doesOverride() && tempMethods.contains(x.getOverriddenMethod()))
-				{
-					tempMethods.remove(x.getOverriddenMethod());
-				}
-			}
-			
-			NovaMethodDeclaration[] validMethods = tempMethods.toArray(new NovaMethodDeclaration[0]);
-			
-			int maxD = 0;
-			int maxI = 0;
-			
-			for (int i = 0; i < validMethods.length; i++)
-			{
-				for (int j = 0; j < validMethods.length; j++)
-				{
-					if (i != j)
-					{
-						int[] distances = validMethods[i].getDistancesFrom(validMethods[j].getParameterList());
-						
-						int distance = Arrays.stream(distances).sum();
-						
-						if (distance > maxD)
-						{
-							maxI = i;
-							maxD = distance;
-						}
+
+						temp.add(m);
 					}
 				}
 			}
-			
-			if (validMethods.length > maxI)
-			{
-				context.setDeclaration(validMethods[maxI]);
-				
-				return (ClosureDeclaration)((NovaMethodDeclaration)context.getDeclaration()).getParameter(index);
+
+			MethodDeclaration[] methods = temp.toArray(new MethodDeclaration[0]);
+
+			if (methods.length > 0) {
+				final int index = context.getArgumentList().getNumVisibleChildren();
+
+				ArrayList<NovaMethodDeclaration> tempMethods = new ArrayList<>();
+
+				Arrays.stream(methods)
+						.filter(x ->
+						{
+							if (x instanceof NovaMethodDeclaration &&
+									x.getParameterList().getNumVisibleChildren() > index &&
+									x.getParameter(index) instanceof ClosureDeclaration) {
+								ClosureDeclaration closure = (ClosureDeclaration) x.getParameter(index);
+
+								if (closure.getParameterList().getNumVisibleChildren() >= variables.length) {
+									return true;
+								}
+							}
+
+							return false;
+						})
+						.forEach(x -> tempMethods.add((NovaMethodDeclaration) x));
+
+				ArrayList<NovaMethodDeclaration> clone = new ArrayList<>();
+
+				for (NovaMethodDeclaration m : tempMethods) {
+					clone.add(m);
+				}
+				for (NovaMethodDeclaration x : clone) {
+					if (x.doesOverride() && tempMethods.contains(x.getOverriddenMethod())) {
+						tempMethods.remove(x.getOverriddenMethod());
+					}
+				}
+
+				NovaMethodDeclaration[] validMethods = tempMethods.toArray(new NovaMethodDeclaration[0]);
+
+				int maxD = 0;
+				int maxI = 0;
+
+				for (int i = 0; i < validMethods.length; i++) {
+					for (int j = 0; j < validMethods.length; j++) {
+						if (i != j) {
+							int[] distances = validMethods[i].getDistancesFrom(validMethods[j].getParameterList());
+
+							int distance = Arrays.stream(distances).sum();
+
+							if (distance > maxD) {
+								maxI = i;
+								maxD = distance;
+							}
+						}
+					}
+				}
+
+				if (validMethods.length > maxI) {
+					context.setDeclaration(validMethods[maxI]);
+
+					return (ClosureDeclaration) ((NovaMethodDeclaration) context.getDeclaration()).getParameter(index);
+				}
 			}
 		}
 		
