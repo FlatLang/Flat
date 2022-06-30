@@ -2406,7 +2406,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		ClassData data = (ClassData)extra;
 		
@@ -2420,7 +2420,7 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					SyntaxMessage.queryError("Could not decode class extension '" + word + "'", this, extra.require);
 					
-					return;
+					return false;
 				}
 				
 				setExtendedClass(extended);
@@ -2503,6 +2503,8 @@ public class ClassDeclaration extends InstanceDeclaration
 				}
 			}
 		}
+
+		return true;
 	}
 	
 	public boolean containsGenericTypeParameter(String parameterName)

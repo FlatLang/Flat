@@ -321,20 +321,21 @@ public class Constructor extends BodyMethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
-		super.interactWord(word, bounds, leftDelimiter, rightDelimiter, extra);
-		
-		if (extra.isLastWord())
-		{
-			if (!word.equals(IDENTIFIER))
-			{
-				extra.error = "Constructor must be named \"" + IDENTIFIER + '"';
+		if (super.interactWord(word, bounds, leftDelimiter, rightDelimiter, extra)) {
+
+			if (extra.isLastWord()) {
+				if (!word.equals(IDENTIFIER)) {
+					extra.error = "Constructor must be named \"" + IDENTIFIER + '"';
+				}
+			} else if (word.equals("static")) {
+				extra.error = "Constructor cannot be declared as static";
 			}
-		}
-		else if (word.equals("static"))
-		{
-			extra.error = "Constructor cannot be declared as static";
+
+			return true;
+		} else {
+			return false;
 		}
 	}
 	

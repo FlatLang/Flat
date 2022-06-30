@@ -325,7 +325,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		FieldData data = (FieldData)extra;
 		
@@ -336,6 +336,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 				data.localDeclaration.setStart(bounds.getStart());
 			}
 		}
+
+		return true;
 	}
 	
 	private Bounds findPreAssignment(String statement)

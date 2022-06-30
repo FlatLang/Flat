@@ -431,11 +431,6 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		return node;
 	}
 
-	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
-		super.interactWord(word, bounds, leftDelimiter, rightDelimiter, extra);
-	}
-
 	/**
 	 * Test the Instantiation class type to make sure everything
 	 * is working properly.
