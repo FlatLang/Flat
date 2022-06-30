@@ -200,7 +200,7 @@ public class Constructor extends BodyMethodDeclaration
 	public void onAdded(Node parent)
 	{
 		initMethod = new InitializationMethod(getParent(), Location.INVALID);
-		
+
 		initMethod.createFrom(this);
 		initMethod.constructor = this;
 		
@@ -208,7 +208,16 @@ public class Constructor extends BodyMethodDeclaration
 		
 		getParentClass().addChild(initMethod);
 	}
-	
+
+	@Override
+	public Node detach(Node fromNode, boolean detachChildren, boolean soft) {
+		if (initMethod != null) {
+			initMethod.detach();
+		}
+
+		return super.detach(fromNode, detachChildren, soft);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.NovaMethodDeclaration#validate(int)
 	 */
