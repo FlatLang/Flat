@@ -2,7 +2,7 @@
 /code-x.c
 /.classpath
 /.project
-/Nova.jar
+/Flat.jar
 /Execute.exe
 /bin/
 /out/
@@ -17,6 +17,6 @@ target/
 /.idea/shelf
 /.idea/tasks.xml
 /.idea/workspace.xml
-/Nova.iml
+/Flat.iml
 /doc/
 src/META-INF/MANIFEST.MF

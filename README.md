@@ -1,16 +1,16 @@
-Nova Programming Language
+Flat Programming Language
 ===========================
-[![Build Nova](https://github.com/NovaFoundation/Nova/actions/workflows/build.yml/badge.svg)](https://github.com/NovaFoundation/Nova/actions/workflows/build.yml)
+[![Build Flat](https://github.com/FlatLang/Flat/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Flat/actions/workflows/build.yml)
 
-[![Stability Test](https://github.com/BSteffaniak/Nova-Testing/actions/workflows/stability-test.yml/badge.svg)](https://github.com/BSteffaniak/Nova-Testing/actions/workflows/stability-test.yml)
+[![Stability Test](https://github.com/BSteffaniak/Flat-Testing/actions/workflows/stability-test.yml/badge.svg)](https://github.com/BSteffaniak/Flat-Testing/actions/workflows/stability-test.yml)
 
-[![Build Standard Library](https://github.com/NovaFoundation/Standard-Library/actions/workflows/build.yml/badge.svg)](https://github.com/NovaFoundation/Standard-Library/actions/workflows/build.yml)
+[![Build Standard Library](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml)
 
-Nova is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
+Flat is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
 
 __Aim__
 
-  * Generate fancy code analytics with the [Nova Reactor](https://github.com/NovaFoundation/Nova-Reactor)
+  * Generate fancy code analytics with the [Flat Reactor](https://github.com/FlatLang/Flat-Reactor)
   * Increase code reusability
   * Induce natrually parallelizable code
   * Ensure a smooth transition between running code on various operating systems
@@ -44,16 +44,16 @@ __Instructions for makefile__
 
 __Instructions of Use for the Jar__
 
-  * To run the compiler, first locate the Nova.jar file
+  * To run the compiler, first locate the Flat.jar file
   * In command line or terminal run the jar file with the required arguments
   * The required arguments include: The input files and the output destination
 
 __An Example command to compile a source from the Jar__
 
-`java -jar Nova.jar SourceFile1.nova SourceFile2.nova -o OutputExecutable.exe`
+`java -jar Flat.jar SourceFile1.flat SourceFile2.flat -o OutputExecutable.exe`
 
-  * The `java -jar Nova.jar` component of the command is needed to run the compiler program.
-  * The `SourceFile.nova SourceFile2.nova` components of the command are the input files to compile. There is no limit to how many source files can be compiled at a time, however at least one is required.
+  * The `java -jar Flat.jar` component of the command is needed to run the compiler program.
+  * The `SourceFile.flat SourceFile2.flat` components of the command are the input files to compile. There is no limit to how many source files can be compiled at a time, however at least one is required.
   * The `-o OutputExecutable.exe` component of the command specifies the name of the executable to produce. The extension of the executable will vary depending on the operating system you are compiling for.
 
 __Optional arguments to the Compiler Include__
@@ -70,4 +70,4 @@ __Optional arguments to the Compiler Include__
   * `-small` Generate the smallest possible executable output.
   * `-single-thread` Compile the program with only a single thread.
 
-© 2014-2022 Nova
+© 2014-2022 Flat
