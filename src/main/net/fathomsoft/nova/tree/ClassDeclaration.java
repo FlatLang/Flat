@@ -2389,7 +2389,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			
 			// TODO: Check for the standard library version of Object.
-			if (n.extendedClass == null && !n.getClassLocation().equals("nova/Object"))
+			if (n.extendedClass == null && !n.getClassLocation(false).equals("nova/Object"))
 			{
 				ExtendedClass extended = ExtendedClass.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
 				
