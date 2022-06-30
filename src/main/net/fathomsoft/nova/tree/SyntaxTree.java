@@ -1078,13 +1078,14 @@ public class SyntaxTree
 	{
 		Accessible root = null;
 		Accessible node = null;
-		
-		boolean safeNavigation = false;
+
 		int offset = 0;
-		int index  = SyntaxUtils.findDotOperator(statement);
+		int index  = SyntaxUtils.findDotOrChainOperator(statement);
 		
-		safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
-		
+		boolean safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
+		boolean chainNavigation = index >= 0 && statement.charAt(index) == ':';
+		boolean wasChainNavigation = false;
+
 		if (requireDot && index < 0)
 		{
 			return null;
@@ -1112,10 +1113,8 @@ public class SyntaxTree
 			
 			node = decodeAccessible(parent, current, location, require, validateAccess);
 			
-			if (node == null)
-			{
-				if (!require)
-				{
+			if (node == null) {
+				if (!require) {
 					return null;
 				}
 				
@@ -1124,63 +1123,53 @@ public class SyntaxTree
 				currentLoc.setLineNumber(location.getLineNumber());
 				
 				syntaxError(current, parent, currentLoc);
+				break;
 			}
-			
-			if (safeNavigation)
-			{
+
+			if (safeNavigation) {
 				node.setSafeNavigation(true);
 			}
-			
-			if (root == null)
-			{
-				root = node;
-				
-				((Node)node).setLocationIn(location);
-				parent = node.getReturnedNode();
+			if (wasChainNavigation) {
+				node.setChainNavigation(true);
 			}
-			else
-			{
-				if (parent instanceof StaticClassReference && node instanceof Super)
-				{
-					if (root == parent)
-					{
+
+			if (root == null) {
+				root = node;
+
+				((Node) node).setLocationIn(location);
+				parent = node.getReturnedNode();
+			} else {
+				if (parent instanceof StaticClassReference && node instanceof Super) {
+					if (root == parent) {
 						parent = root.getParent();
 						root = node;
-					}
-					else
-					{
-						parent.replaceWith((Node)node);
-						parent = (Node)node;
+					} else {
+						parent.replaceWith((Node) node);
+						parent = (Node) node;
 						//parent.addChild((Node)node);
 					}
+				} else {
+					parent.addChild((Node) node);
 				}
-				else
-				{
-					parent.addChild((Node)node);
-				}
-				
+
 				Accessible cast = null;
-				
-				if ((cast = checkAutoCasts((Node)node, (Value)parent, root, "FunctionMap")) != root ||
-					(cast = checkAutoCasts((Node)node, (Value)parent, root, "PropertyMap")) != root)
-				{
+
+				if ((cast = checkAutoCasts((Node) node, (Value) parent, root, "FunctionMap")) != root ||
+						(cast = checkAutoCasts((Node) node, (Value) parent, root, "PropertyMap")) != root) {
 					root = cast;
-					parent = (Node)cast;
-				}
-				else
-				{
+					parent = (Node) cast;
+				} else {
 					parent = node.getReturnedNode();
 				}
-				
-				if (index < 0)
-				{
+
+				if (index < 0) {
 					return root;
 				}
 			}
-			
+
 			location = location.asNew();
 			offset   = index + 1;
-			index    = SyntaxUtils.findDotOperator(statement, offset);
+			index    = SyntaxUtils.findDotOrChainOperator(statement, offset);
 			
 			if (index > 0)
 			{
@@ -1188,10 +1177,12 @@ public class SyntaxTree
 			}
 			else
 			{
-				current = statement.substring(offset, statement.length()).trim();
+				current = statement.substring(offset).trim();
 			}
 			
 			safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
+			wasChainNavigation = chainNavigation;
+			chainNavigation = index >= 0 && statement.charAt(index) == ':';
 
 			if (modifierData != null) {
 				for (int i = 0; i < modifierData[1].length; i++) {

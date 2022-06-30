@@ -974,7 +974,9 @@ public class Variable extends Identifier
 	{
 		node.declaration = declaration;
 		node.arrayAccess = arrayAccess;
-		
+		node.safeNavigation = safeNavigation;
+		node.chainNavigation = chainNavigation;
+
 		//super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		if (cloneChildren)

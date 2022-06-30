@@ -112,6 +112,10 @@ public class MethodCall extends Variable
 	@Override
 	public GenericTypeArgumentList getGenericTypeArgumentList()
 	{
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().getGenericTypeArgumentList();
+		}
+
 		if (getParent() instanceof Instantiation)
 		{
 //			return ((Instantiation)getParent()).getGenericTypeArgumentList();
@@ -1929,7 +1933,70 @@ public class MethodCall extends Variable
 	{
 		return false;//getInferredDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall;// && !getAccessingNode().isVirtualTypeKnown();
 	}
-	
+
+	@Override
+	public String getType(boolean checkCast) {
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().getType(checkCast);
+		}
+
+		return super.getType(checkCast);
+	}
+
+	@Override
+	public boolean isGenericType(boolean checkArray, boolean checkCast) {
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().isGenericType(checkArray, checkCast);
+		}
+
+		return super.isGenericType(checkArray, checkCast);
+	}
+
+	@Override
+	public GenericTypeArgument getGenericTypeArgument(int index, Node node, boolean require) {
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().getGenericTypeArgument(index, node, require);
+		}
+
+		return super.getGenericTypeArgument(index, node, require);
+	}
+
+	@Override
+	public GenericTypeArgument[] getGenericTypeArguments(String params) {
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().getGenericTypeArguments(params);
+		}
+
+		return super.getGenericTypeArguments(params);
+	}
+
+	@Override
+	public GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value, boolean require) {
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().getGenericTypeArgumentInstance(parameterName, value, require);
+		}
+
+		return super.getGenericTypeArgumentInstance(parameterName, value, require);
+	}
+
+	@Override
+	public String getNovaType(Value context, boolean checkArray, boolean defaultGeneric) {
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().getNovaType(context, checkArray, defaultGeneric);
+		}
+
+		return super.getNovaType(context, checkArray, defaultGeneric);
+	}
+
+	@Override
+	public Value getNovaTypeValue(Value context) {
+		if (this.isChainNavigation()) {
+			return getReferenceNode().toValue().getNovaTypeValue(context);
+		}
+
+		return super.getNovaTypeValue(context);
+	}
+
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#clone(Node, Location, boolean)
 	 */

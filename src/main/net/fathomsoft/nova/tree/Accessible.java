@@ -28,7 +28,9 @@ public interface Accessible
 	
 	public boolean isSafeNavigation();
 	public void setSafeNavigation(boolean safeNavigation);
-	
+	public boolean isChainNavigation();
+	public void setChainNavigation(boolean chainNavigation);
+
 	default GenericCompatible getReferenceContext()
 	{
 		return (GenericCompatible)getReferenceNode();
@@ -678,8 +680,14 @@ public interface Accessible
 			{
 				builder.append('?');
 			}
+
+			if (getAccessedNode().isChainNavigation()) {
+				builder.append(':');
+			} else {
+				builder.append('.');
+			}
 			
-			builder.append('.').append(getAccessedNode().generateNovaInput());
+			builder.append(getAccessedNode().generateNovaInput());
 		}
 		
 		return builder;
@@ -1033,7 +1041,13 @@ public interface Accessible
 		
 		while (current != stopAt)
 		{
-			((Node)current).generateNovaInput(builder, false).append('.');
+			((Node)current).generateNovaInput(builder, false);
+
+			if (current.doesAccess() && current.getAccessedNode().isChainNavigation()) {
+				builder.append(':');
+			} else {
+				builder.append('.');
+			}
 			
 			current = current.getAccessedNode();
 		}

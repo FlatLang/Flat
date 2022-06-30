@@ -19,7 +19,8 @@ import net.fathomsoft.nova.util.StringUtils;
 public class Priority extends Value implements Accessible
 {
 	public boolean safeNavigation;
-	
+	public boolean chainNavigation;
+
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -33,18 +34,30 @@ public class Priority extends Value implements Accessible
 	{
 		return safeNavigation;
 	}
-	
 	@Override
 	public void setSafeNavigation(boolean safeNavigation)
 	{
 		this.safeNavigation = safeNavigation;
 	}
-	
+
 	public GenericCompatible getContext()
 	{
 		return null;
 	}
-	
+
+	@Override
+	public boolean isChainNavigation()
+	{
+		return chainNavigation;
+	}
+
+	@Override
+	public void setChainNavigation(boolean chainNavigation)
+	{
+		this.chainNavigation = chainNavigation;
+	}
+
+
 	@Override
 	public int getNumDecodedChildren()
 	{
@@ -446,7 +459,8 @@ public class Priority extends Value implements Accessible
 		super.cloneTo((Node)node, cloneChildren);
 		
 		node.safeNavigation = safeNavigation;
-		
+		node.chainNavigation = chainNavigation;
+
 		return node;
 	}
 	
