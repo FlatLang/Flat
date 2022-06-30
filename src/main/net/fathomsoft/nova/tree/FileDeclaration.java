@@ -8,6 +8,7 @@ import net.fathomsoft.nova.tree.annotations.Annotation;
 import net.fathomsoft.nova.tree.variables.Array;
 import net.fathomsoft.nova.tree.variables.FieldDeclaration;
 import net.fathomsoft.nova.tree.variables.FieldList;
+import net.fathomsoft.nova.tree.variables.ObjectReference;
 import net.fathomsoft.nova.util.FileUtils;
 import net.fathomsoft.nova.util.Location;
 import net.fathomsoft.nova.util.SyntaxUtils;
@@ -594,11 +595,11 @@ public class FileDeclaration extends Node
 			otherClass.getExternalTypeListNode().addChild(external);
 		});
 
-		List[] fieldLists = new List[] {
-				thisClass.getFieldList().getPublicFieldList(),
-				thisClass.getFieldList().getPublicStaticFieldList(),
-				thisClass.getFieldList().getPrivateFieldList(),
-				thisClass.getFieldList().getPrivateStaticFieldList()
+		List[] fieldLists = new List[]{
+			thisClass.getFieldList().getPublicFieldList(),
+			thisClass.getFieldList().getPublicStaticFieldList(),
+			thisClass.getFieldList().getPrivateFieldList(),
+			thisClass.getFieldList().getPrivateStaticFieldList()
 		};
 
 		for (List thisList : fieldLists) {
@@ -621,7 +622,11 @@ public class FileDeclaration extends Node
 			}
 		}
 
-		MethodList[] methodLists = new MethodList[] { thisClass.getMethodList(), thisClass.getPropertyMethodList() };
+		MethodList[] methodLists = new MethodList[]{
+			thisClass.getConstructorList(),
+			thisClass.getMethodList(),
+			thisClass.getPropertyMethodList()
+		};
 
 		for (MethodList thisList : methodLists) {
 			for (NovaMethodDeclaration method : thisList.getMethods()) {
@@ -635,6 +640,8 @@ public class FileDeclaration extends Node
 					} else {
 						otherClass.addChild(method);
 					}
+
+					method.objectReference = new ObjectReference(method);
 
 					SyntaxTree.validateNodes(method, phase);
 				}
