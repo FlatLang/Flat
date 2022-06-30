@@ -3,20 +3,20 @@ package "nova/datastruct"
 [AutoFinal]
 class BinaryTree<E extends Comparable> extends Tree<E> {
     public var BinaryNode<E> root <=> (BinaryNode)super.root
-    
+
     public construct(Comparable[] data) {
         addNodes(data)
     }
-    
-    public addNode(Comparable data) => this {
+
+    public addNode(Comparable data) => data {
         if (root) {
             root.addChild(data)
         } else {
             root = new BinaryNode(data)
         }
     }
-    
-    public addNodes(Comparable[] data) => this {
+
+    public addNodes(Comparable[] data) => data {
         data.forEach(addNode)
     }
 }
