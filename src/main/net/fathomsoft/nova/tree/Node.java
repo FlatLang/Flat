@@ -1493,7 +1493,10 @@ public abstract class Node implements Listenable, Annotatable
 			String leftDelim  = extra.delims.get(extra.wordNumber);
 			String rightDelim = extra.delims.get(extra.wordNumber + 1);
 			
-			interactWord(word, bound, leftDelim, rightDelim, extra);
+			if (!interactWord(word, bound, leftDelim, rightDelim, extra)) {
+				extra.earlyReturn = true;
+				break;
+			}
 			
 			extra.wordNumber++;
 		}
@@ -1509,7 +1512,7 @@ public abstract class Node implements Listenable, Annotatable
 	 * @param extra The ExtraData containing the lists that will acquire the
 	 * 		words, delimiters, and bounds.
 	 */
-	private void findWords(String statement, Matcher matcher, ExtraData extra)
+	public static void findWords(String statement, Matcher matcher, ExtraData extra)
 	{
 		int index    = 0;
 		int oldIndex = 0;
@@ -1521,13 +1524,12 @@ public abstract class Node implements Listenable, Annotatable
 			{
 				Bounds bounds = new Bounds(oldIndex, index);
 				String delim = "";
-				
+
 				trimBounds(bounds, extra);
 				
 				if (bounds.isValid())
 				{
 					delim = bounds.extractString(statement);
-					delim = StringUtils.trimSurroundingWhitespace(delim);
 					
 					lastValidIndex = matcher.start();
 				}
@@ -1540,7 +1542,8 @@ public abstract class Node implements Listenable, Annotatable
 				
 				if (bounds.isValid())
 				{
-					extra.delims.add(delim);
+					extra.fullDelims.add(delim);
+					extra.delims.add(StringUtils.trimSurroundingWhitespace(delim));
 					extra.bounds.add(bounds);
 					extra.words.add(statement.substring(index, oldIndex));
 				}
@@ -1569,7 +1572,7 @@ public abstract class Node implements Listenable, Annotatable
 		extra.delims.add(statement.substring(lastValidIndex));
 	}
 	
-	private void trimBounds(Bounds bounds, ExtraData extra)
+	public static void trimBounds(Bounds bounds, ExtraData extra)
 	{
 		for (int i = 0; i < extra.skipBounds.length; i++)
 		{
@@ -1608,9 +1611,9 @@ public abstract class Node implements Listenable, Annotatable
 	 * @param extra The extra data that may or may not be needed for the
 	 * 		interactWord() methods.
 	 */
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
-		
+		return true;
 	}
 	
 	public final boolean isUserMade()
@@ -2360,15 +2363,17 @@ public abstract class Node implements Listenable, Annotatable
 	public static class ExtraData
 	{
 		public  boolean require, checkType;
+		public	boolean earlyReturn;
 		
 		private int		wordNumber;
 		
-		private Bounds	skipBounds[];
+		private Bounds[] skipBounds;
 		
 		protected ArrayList<Bounds> bounds;
 		protected ArrayList<String> words;
 		protected ArrayList<String> delims;
-		
+		protected ArrayList<String> fullDelims;
+
 		public String	error;
 		public String	statement; 
 		
@@ -2376,9 +2381,10 @@ public abstract class Node implements Listenable, Annotatable
 		{
 			skipBounds = new Bounds[0];
 			
-			bounds = new ArrayList<Bounds>();
-			words  = new ArrayList<String>();
-			delims = new ArrayList<String>();
+			bounds = new ArrayList<>();
+			words  = new ArrayList<>();
+			delims = new ArrayList<>();
+			fullDelims = new ArrayList<>();
 		}
 		
 		public int getWordNumber()
@@ -2420,25 +2426,45 @@ public abstract class Node implements Listenable, Annotatable
 			
 			return bounds.get(wordNumber - 1);
 		}
-		
+
 		public String getNextWord()
 		{
 			if (isLastWord())
 			{
 				return null;
 			}
-			
+
 			return words.get(wordNumber + 1);
 		}
-		
+
 		public String getPreviousWord()
 		{
 			if (isFirstWord())
 			{
 				return null;
 			}
-			
+
 			return words.get(wordNumber - 1);
+		}
+
+		public String getNextDelimiter()
+		{
+			if (isLastWord())
+			{
+				return null;
+			}
+
+			return delims.get(wordNumber + 1);
+		}
+
+		public String getPreviousDelimiter()
+		{
+			if (isFirstWord())
+			{
+				return null;
+			}
+
+			return delims.get(wordNumber - 1);
 		}
 		
 		public boolean isSkipBoundsNext()

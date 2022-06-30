@@ -1368,7 +1368,7 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		MethodData data = (MethodData)extra;
 		
@@ -1396,9 +1396,11 @@ public class NovaMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			{
 				data.error = "Unknown method definition";
 				
-				return;
+				return false;
 			}
 		}
+
+		return true;
 	}
 	
 	public void addType(String type)

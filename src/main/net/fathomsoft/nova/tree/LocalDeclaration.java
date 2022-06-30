@@ -296,7 +296,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#interactWord(String, Bounds, String, String, ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData data)
+	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData data)
 	{
 		DeclarationData extra = (DeclarationData)data;
 		
@@ -342,6 +342,8 @@ public class LocalDeclaration extends VariableDeclaration
 		{
 			extra.error = "Could not parse array brackets";
 		}
+
+		return true;
 	}
 	
 	/**

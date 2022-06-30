@@ -269,7 +269,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 	 * @see net.fathomsoft.nova.tree.Node#interactWord(java.lang.String, net.fathomsoft.nova.util.Bounds, java.lang.String, java.lang.String, net.fathomsoft.nova.tree.Node.ExtraData)
 	 */
 	@Override
-	public void interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
+	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra)
 	{
 		if (extra.getWordNumber() == 0)
 		{
@@ -289,6 +289,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration
 		{
 			fail(word, bounds);
 		}
+
+		return true;
 	}
 	
 	/**
