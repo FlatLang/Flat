@@ -1034,7 +1034,46 @@ public class SyntaxTree
 	{
 		return decodeIdentifierAccess(parent, statement, location, require, validateAccess, true);
 	}
-	
+
+	public static String[][] getPrecedingModifiers(String statement, Node parent, Location location) {
+		final IIdentifier n = new IIdentifier(parent, location) {
+			@Override
+			public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+				if (extra.isLastWord()) {
+					return false;
+				} else if (rightDelimiter.length() == 0) {
+					if (!parseModifier(word)) {
+						extra.error = "Invalid modifier " + word;
+						return false;
+					}
+				} else {
+					return false;
+				}
+
+				return true;
+			}
+		};
+
+		Node.ExtraData modifierData = n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, null, false);
+
+		if (modifierData.earlyReturn && modifierData.getWordNumber() > 0) {
+			statement = statement.substring(modifierData.getCurrentWordBounds().getStart());
+
+			String[] modifiers = new String[modifierData.getWordNumber()];
+
+			for (int i = 0; i < modifierData.getWordNumber(); i++) {
+				modifiers[i] = modifierData.words.get(i);
+			}
+
+			return new String[][] {
+				new String[] {statement},
+				modifiers
+			};
+		}
+
+		return null;
+	}
+
 	public static Accessible decodeIdentifierAccess(Node parent, String statement, Location location, boolean require, boolean validateAccess, boolean requireDot)
 	{
 		Accessible root = null;
@@ -1050,9 +1089,15 @@ public class SyntaxTree
 		{
 			return null;
 		}
-		
-		String current = statement.substring(offset, index);
-		
+
+		String current = statement.substring(offset, index).trim();
+
+		String[][] modifierData = getPrecedingModifiers(current, parent, location);
+
+		if (modifierData != null) {
+			current = modifierData[0][0];
+		}
+
 		while (current != null)
 		{
 			if (current.length() == 0)
@@ -1147,6 +1192,12 @@ public class SyntaxTree
 			}
 			
 			safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
+
+			if (modifierData != null) {
+				for (int i = 0; i < modifierData[1].length; i++) {
+					node.toValue().parseModifier(modifierData[1][i]);
+				}
+			}
 		}
 		
 		// Should never reach here...
@@ -1324,6 +1375,12 @@ public class SyntaxTree
 //		
 //		if (node == null)
 //		{
+			String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location);
+
+			if (modifierData != null) {
+				statement = modifierData[0][0];
+			}
+
 			Identifier node = SyntaxTree.getUsableExistingNode(parent, statement, location, validateAccess);
 			
 			if (node == null)
@@ -1350,6 +1407,8 @@ public class SyntaxTree
 						node = reference;
 					}
 				}
+			} else if (modifierData != null) {
+				Arrays.stream(modifierData[1]).forEach(node::parseModifier);
 			}
 //		}
 		
