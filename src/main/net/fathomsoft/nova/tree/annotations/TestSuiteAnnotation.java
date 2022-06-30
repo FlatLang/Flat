@@ -75,7 +75,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 				parent.getFileDeclaration().addImport("nova/io/OutputStream");
 				parent.getFileDeclaration().addImport("novex/nest/TestResult");
 				
-				method = BodyMethodDeclaration.decodeStatement(parent, "public runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
+				method = BodyMethodDeclaration.decodeStatement(parent, "public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
 				
 				parent.addChild(method);
 				
@@ -165,10 +165,10 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			String name = method.getScope().getUniqueName("_" + method.getName() + "TestSuite");
 			
-			String initializer = "[" + String.join(", ", getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream()
+			String initializer = "[" + getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream()
 				.map(x -> (TestSuiteAnnotation)x)
 				.map(x -> "new TestSuite(" + x.suiteInitializer + ")")
-				.collect(Collectors.toList())) + "]";
+				.collect(Collectors.joining(", ")) + "]";
 			
 			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestSuiteRunnerModel", name, "new TestSuiteRunnerModel(" + initializer + ")");
 			
@@ -180,20 +180,20 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 	
 	public String getTestSuiteInitializer()
 	{
-		String initializerValues = "[" + String.join(", ", Arrays.stream((String[])parameters.get("classes"))
+		String initializerValues = "[" + Arrays.stream((String[])parameters.get("classes"))
 			.map(x -> {
 				ClassDeclaration c = getFileDeclaration().getImportedClass(this, x);
-				
+
 				if (c == null) {
 					SyntaxMessage.error("Test file " + x + " not found", getController());
 				}
-				
+
 				return c;
 			})
 			.filter(Objects::nonNull)
 			.map(x -> (TestableAnnotation)x.getAnnotationOfType(TestableAnnotation.class))
 			.map(x -> x.getParentClass().getName() + "." + x.generateTestRunner().getName())
-			.collect(Collectors.toList())) + "]";
+			.collect(Collectors.joining(", ")) + "]";
 		
 		if (initializerValues.length() == 2)
 		{
@@ -273,6 +273,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			String propFunc = propagationFunction != null ? propagationFunction.getName() : "";
 			
 			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
+			call.parseModifier("await");
 			runMethod.addChild(call);
 		}
 	}
