@@ -19,7 +19,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public abstract class Identifier extends Value implements Accessible
 {
 	public boolean safeNavigation;
-	
+	public boolean chainNavigation;
+
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -38,6 +39,18 @@ public abstract class Identifier extends Value implements Accessible
 	public void setSafeNavigation(boolean safeNavigation)
 	{
 		this.safeNavigation = safeNavigation;
+	}
+
+	@Override
+	public boolean isChainNavigation()
+	{
+		return chainNavigation;
+	}
+
+	@Override
+	public void setChainNavigation(boolean chainNavigation)
+	{
+		this.chainNavigation = chainNavigation;
 	}
 	
 	/**
@@ -242,7 +255,8 @@ public abstract class Identifier extends Value implements Accessible
 //		node.setTypeValue(getType());
 //		node.setDataType(getDataType());
 		node.safeNavigation = safeNavigation;
-		
+		node.chainNavigation = chainNavigation;
+
 		return node;
 	}
 	

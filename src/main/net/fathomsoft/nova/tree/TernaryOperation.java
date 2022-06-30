@@ -18,7 +18,8 @@ import net.fathomsoft.nova.util.SyntaxUtils;
 public class TernaryOperation extends IValue implements Accessible
 {
 	public boolean safeNavigation;
-	
+	public boolean chainNavigation;
+
 	/**
 	 * @see net.fathomsoft.nova.tree.Node#Node(Node, Location)
 	 */
@@ -68,11 +69,23 @@ public class TernaryOperation extends IValue implements Accessible
 	{
 		return safeNavigation;
 	}
-	
+
 	@Override
 	public void setSafeNavigation(boolean safeNavigation)
 	{
 		this.safeNavigation = safeNavigation;
+	}
+
+	@Override
+	public boolean isChainNavigation()
+	{
+		return chainNavigation;
+	}
+
+	@Override
+	public void setChainNavigation(boolean chainNavigation)
+	{
+		this.chainNavigation = chainNavigation;
 	}
 	
 	public static TernaryOperation generateDefault(Node parent, Location location)
@@ -274,7 +287,8 @@ public class TernaryOperation extends IValue implements Accessible
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.safeNavigation = safeNavigation;
-		
+		node.chainNavigation = chainNavigation;
+
 		return node;
 	}
 	

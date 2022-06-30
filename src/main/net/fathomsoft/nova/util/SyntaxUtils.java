@@ -359,6 +359,56 @@ public class SyntaxUtils
 	}
 
 	/**
+	 * Find the next available chain operator index within the given String.
+	 *
+	 * @param str The String to find the chain operator within.
+	 * @return The index of the chain operator. If a chain operator is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findChainOperator(String str)
+	{
+		return findCharInBaseScope(str, ':', 0);
+	}
+
+	/**
+	 * Find the next available chain operator index within the given String.
+	 *
+	 * @param str The String to find the chain operator within.
+	 * @param start The index to start the search at.
+	 * @return The index of the chain operator. If a chain operator is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findChainOperator(String str, int start)
+	{
+		return findCharInBaseScope(str, ':', start);
+	}
+
+	/**
+	 * Find the next available dot or chain operator index within the given String.
+	 *
+	 * @param str The String to find the dot or chain operator within.
+	 * @return The index of the dot or chain operator. If a dot or chain operator is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findDotOrChainOperator(String str)
+	{
+		return findDotOrChainOperator(str, 0);
+	}
+
+	/**
+	 * Find the next available dot or chain operator index within the given String.
+	 *
+	 * @param str The String to find the dot or chain operator within.
+	 * @param start The index to start the search at.
+	 * @return The index of the dot or chain operator. If a dot or chain operator is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findDotOrChainOperator(String str, int start)
+	{
+		return findCharInBaseScope(str, new char[] {'.', ':'}, start);
+	}
+
+	/**
 	 * Check to see if the given char exists within the
 	 * base scope of the given haystack String. The base scope means
 	 * outside of any quotes, parenthesis, and/or brackets.
@@ -1788,7 +1838,15 @@ public class SyntaxUtils
 		
 		Accessible id = accessing.getRootAccessNode();
 		
-		String input = ((Value)accessing).getTypeClassName() + "." + call.getName() + "(" + id.generateNovaInputUntil(accessing);
+		String input = ((Value)accessing).getTypeClassName();
+
+		if (call.getAccessedNode().isChainNavigation()) {
+			input += ':';
+		} else {
+			input += '.';
+		}
+
+		input += call.getName() + "(" + id.generateNovaInputUntil(accessing);
 		
 		String params = call.getArgumentList().generateNovaInput().toString();
 		
@@ -1801,7 +1859,13 @@ public class SyntaxUtils
 		
 		if (call.doesAccess())
 		{
-			input += "." + call.getAccessedNode().generateNovaInput();
+			if (call.getAccessedNode().isChainNavigation()) {
+				input += ':';
+			} else {
+				input += '.';
+			}
+
+			input += call.getAccessedNode().generateNovaInput();
 		}
 		
 		Identifier output = (Identifier)SyntaxTree.decodeScopeContents(id.getParent(), input, call.getLocationIn(), true);

@@ -21,7 +21,8 @@ import java.util.regex.Matcher;
 public class Literal extends IValue implements Accessible
 {
 	public boolean safeNavigation;
-	
+	public boolean chainNavigation;
+
 	public String	value;
 	
 	public static final String	NULL_IDENTIFIER     = "null";
@@ -50,6 +51,18 @@ public class Literal extends IValue implements Accessible
 	public void setSafeNavigation(boolean safeNavigation)
 	{
 		this.safeNavigation = safeNavigation;
+	}
+
+	@Override
+	public boolean isChainNavigation()
+	{
+		return chainNavigation;
+	}
+
+	@Override
+	public void setChainNavigation(boolean chainNavigation)
+	{
+		this.chainNavigation = chainNavigation;
 	}
 	
 	@Override
@@ -616,7 +629,10 @@ public class Literal extends IValue implements Accessible
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.value = value;
-		
+		node.safeNavigation = safeNavigation;
+		node.chainNavigation = chainNavigation;
+
+
 		return node;
 	}
 	
