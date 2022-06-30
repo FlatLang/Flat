@@ -10,8 +10,8 @@
         <src.dir>src/main</src.dir>
     </properties>
 
-    <groupId>net.fathomsoft</groupId>
-    <artifactId>nova-cli</artifactId>
+    <groupId>org.flatlang</groupId>
+    <artifactId>flat-cli</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
@@ -28,7 +28,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>net.fathomsoft.nova.Nova</mainClass>
+                            <mainClass>org.flatlang.Flat</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -39,7 +39,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>net.fathomsoft.nova.Nova</mainClass>
+                            <mainClass>org.flatlang.Flat</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -72,9 +72,9 @@
                             <executable>mvn</executable>
                             <arguments>
                                 <argument>install:install-file</argument>
-                                <argument>-Dfile=target/nova-cli-1.0-SNAPSHOT-jar-with-dependencies.jar</argument>
-                                <argument>-DgroupId=net.fathomsoft</argument>
-                                <argument>-DartifactId=nova</argument>
+                                <argument>-Dfile=target/flat-cli-1.0-SNAPSHOT-jar-with-dependencies.jar</argument>
+                                <argument>-DgroupId=org.flatlang</argument>
+                                <argument>-DartifactId=flat</argument>
                                 <argument>-Dversion=1.0-SNAPSHOT</argument>
                                 <argument>-Dpackaging=jar</argument>
                                 <argument>-DgeneratePom=true</argument>
