@@ -1,0 +1,7 @@
+package "flatlang/database"
+
+class ResultSet {
+    visible Int numRows => rows.count
+
+    public construct(visible String[][] rows, visible Int numCols) {}
+}

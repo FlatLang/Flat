@@ -1,0 +1,5 @@
+package "flatlang/io"
+
+class ClosedStreamException extends Exception {
+    public construct(String message = "Trying to use closed stream") => super(message)
+}

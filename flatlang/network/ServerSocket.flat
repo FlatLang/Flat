@@ -1,0 +1,13 @@
+package "flatlang/network"
+
+import "flatlang/network/NativeServerSocket.h"
+import "flatlang/network/NativeSocket.h"
+import "flatlang/io/InputStream"
+import "flatlang/io/OutputStream"
+import "flatlang/io/ClosedStreamException"
+
+class ServerSocket extends Socket {
+    visible ConnectionSocket[] requests = new Array()
+
+    public construct() {}
+}

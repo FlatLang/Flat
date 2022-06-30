@@ -1,0 +1,5 @@
+package "flatlang/exception"
+
+class DivideByZeroException extends Exception {
+
+}

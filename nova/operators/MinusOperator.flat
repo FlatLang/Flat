@@ -1,5 +1,0 @@
-package "nova/operators"
-
-public trait MinusOperator<In, Out> {
-    public minus(In another) -> Out
-}

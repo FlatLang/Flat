@@ -1,6 +1,0 @@
-package "nova/meta"
-
-[AutoFinal]
-immutable class GenericParameter {
-    public construct(visible Type value, visible Type defaultValue) {}
-}

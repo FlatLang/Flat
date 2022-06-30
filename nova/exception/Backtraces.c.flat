@@ -1,5 +1,0 @@
-package "nova/exception"
-
-class Backtraces {
-	
-}

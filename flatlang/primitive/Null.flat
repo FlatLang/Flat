@@ -1,0 +1,8 @@
+package "flatlang/primitive"
+
+immutable class Null extends String {
+    public construct() {}
+
+    public concat(String other) => "null#other"
+    public toString() => "null"
+}

@@ -1,0 +1,11 @@
+package "flatlang/star"
+
+class Frame extends Panel {
+    public Window windowInstance
+
+    visible Window window => windowInstance
+
+    public construct(public Window windowInstance) {}
+
+    public draw() {}
+}

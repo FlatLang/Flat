@@ -1,0 +1,18 @@
+package "flatlang/math"
+
+class Sequence {
+    visible static Int INFINITE = -1
+
+    public construct(visible Double[] values) {}
+
+    //sum [public static] (Double[] values, Int num) -> Double
+    public static sum(Int num) -> Double {
+        var Double value = 0
+
+        for (i in 0..num) {
+            value = value + values.get(i)
+        }
+
+        return value
+    }
+}

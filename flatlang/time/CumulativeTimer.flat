@@ -1,0 +1,17 @@
+package "flatlang/time"
+
+class CumulativeTimer extends Timer {
+    visible var Long duration <=> duration
+
+    visible var Int iterations = 0
+
+    public construct() => super()
+
+    public stop() => this {
+        super.stop()
+
+        iterations++
+
+        duration = duration + super.duration
+    }
+}

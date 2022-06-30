@@ -1,0 +1,116 @@
+package "flatlang"
+
+import "flatlang/datastruct/Comparable"
+import "flatlang/datastruct/HashSet"
+import "flatlang/datastruct/list/StringCharArray"
+import "flatlang/operators/PlusOperator"
+import "flatlang/operators/EqualsOperator"
+import "flatlang/operators/MultiplyOperator"
+import "flatlang/regex/Regex"
+import "flatlang/regex/Match"
+import "flatlang/regex/Pattern"
+
+[AutoFinal]
+immutable class String {
+    external type CharSequence
+
+    external type wchar_t
+
+    external void strcpy(char dst[], char src[])
+    external void strncpy(char dst[], char src[], int count)
+    external void strcat(char dst[], char src[])
+    external void strncat(char dst[], char src[], int count)
+    external int strlen(char chars[])
+    external void memcpy(char dst[], char* src[], int count)
+
+    public construct(Char c) {
+        native Char[] chars = new Char[2]
+
+        chars[0] = c
+        chars[1] = '\0'
+
+        this(chars)
+    }
+
+    public construct(native Char[] chars) {
+        count = calculateSize(chars)
+
+        if (chars[count] != '\0') {
+            chars[count] = '\0'
+        }
+
+        this(chars, count)
+    }
+
+    public construct(native Char[] chars, Int count) {
+        this.count = count
+        this.chars = new StringCharArray(chars, count)
+    }
+
+    public native toWide() -> wchar_t[] {
+        external {
+            size_t size = #{count} + 1;
+            wchar_t* wa = (wchar_t*)NOVA_MALLOC(sizeof(wchar_t) * size);
+            mbstowcs(wa, #{chars.data}, size);
+
+            return wa;
+        }
+    }
+
+    public concat(String str) -> String {
+        if (str.count == 0) return this
+
+        Int sz = str.count + count + 1
+
+        var data1 = chars.data
+        var data2 = str.chars.data
+
+        if (this.class.isOfType(Substring)) {
+            external c {
+                char* c = malloc(#{count});
+
+                memcpy(c, #{data1}, #{count});
+
+                #{data1} = c;
+            }
+        }
+        if (str.class.isOfType(Substring)) {
+            external c {
+                char* c = malloc(#{str.count});
+
+                memcpy(c, #{data2}, #{str.count});
+
+                #{data2} = c;
+            }
+        }
+
+        native Char[] newData = new Char[sz]
+
+        strncpy(newData, data1, count)
+        strncat(newData, data2, str.count)
+
+        newData[sz - 1] = '\0'
+
+        return new String(newData, sz - 1)
+    }
+
+    public split(Pattern regex) -> String[] {
+    	String[] strs = new Array()
+
+    	Int start = 0
+
+    	Regex.getMatches(regex.pattern, this).forEach(match => {
+    		strs.add(substring(start, match.start))
+
+    		start = match.end
+    	})
+
+    	strs.add(substring(start))
+
+    	return strs
+    }
+
+    calculateSize(native Char[] chars) -> Int {
+        return strlen(chars)
+    }
+}

@@ -1,0 +1,5 @@
+package "flatlang/redis"
+
+trait JsRedis {
+    public createClient()
+}

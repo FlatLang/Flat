@@ -1,0 +1,37 @@
+package "flatlang/gc"
+
+import "flatlang/gc/NativeGC.h"
+
+class GC {
+    external void nova_gc_init()
+    external void nova_gc_collect()
+    external void nova_gc_enableIncremental()
+    external void nova_gc_dump()
+    external long nova_gc_getFreeBytes()
+    external long nova_gc_getTotalBytes()
+    external long nova_gc_getHeapSize()
+    external long nova_gc_getBytesSinceGC()
+
+//    external int GC_free_space_divisor
+
+    visible Int freeBytes => nova_gc_getFreeBytes()
+    visible Int totalBytes => nova_gc_getTotalBytes()
+    visible Int heapSize => nova_gc_getHeapSize()
+    visible Int bytesSinceGC => nova_gc_getBytesSinceGC()
+
+    public static init() {
+        nova_gc_init()
+
+//        enableIncremental()
+//
+//        setFreeSpaceDivisor(1)
+    }
+
+//    public static setFreeSpaceDivisor(Int divisor) {
+//        GC_free_space_divisor = divisor
+//    }
+
+    public static collect() => nova_gc_collect()
+    public static enableIncremental() => nova_gc_enableIncremental()
+    public static dump() => nova_gc_dump()
+}

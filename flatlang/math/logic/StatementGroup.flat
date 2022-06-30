@@ -1,0 +1,7 @@
+package "flatlang/math/logic"
+
+import "flatlang/datastruct/Bounds"
+
+class StatementGroup<Type> {
+    public construct(visible Type statement, visible Bounds bounds) {}
+}

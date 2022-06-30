@@ -1,0 +1,337 @@
+package "flatlang/datastruct/list"
+
+class StringCharArray {
+    visible Int count
+
+    visible native Char[] data
+
+    [Target not js] this[Int index] => data[index]
+
+    [Target js] this[Int index] -> Char {
+        get {
+            return data[index]
+        }
+
+        set {
+            external {
+                #{data} = #{data}.substr(0, #{index}) + #{value} + #{data}.substr(#{index} + #{value}.length);
+            }
+        }
+    }
+
+    visible Char first => count > 0 ? data[0] : 0
+    visible Char last => count > 0 ? data[count - 1] : 0
+
+    public construct(Char[] data) {
+        // this.data = data
+        this.count = data.count
+
+        external js {
+            #{this.data} = #{data.data}.join("");
+        }
+    }
+
+    [Target not js]
+    public construct(Int count) {
+        this.count = count
+        this.data = new Char[count]
+    }
+
+    [Target js]
+    public construct(Int count) {
+        this.count = count
+
+        native Char[] buf
+
+        external js {
+            if (#{count} == 0) {
+                return "";
+            }
+
+            var count2 = #{count} / 2;
+            var result = '\0';
+
+            // double the input until it is long enough.
+            while (result.length <= count2) {
+                result += result;
+            }
+            // use substring to hit the precise length target without
+            // using extra memory
+            #{buf} = result + result.substring(0, #{count} - result.length);
+        }
+
+        this.data = buf
+    }
+
+    public construct(native Char[] data, Int count) {
+        this.data = data
+        this.count = count
+
+        external js {
+            #{this.data} = typeof #{data} === 'string' ? #{data} : #{data}.join("");
+        }
+    }
+
+    // [Override]
+    public reverse() -> StringCharArray {
+        let array = new StringCharArray(count)
+
+        for (i in 0..count) {
+            array[count - i - 1] = this[i]
+        }
+
+        return array
+    }
+
+    public toCharArray() -> Char[] {
+        let array = new Char[count]
+
+        for (i in 0..count) {
+            let c = data[i]
+
+            array[i] = c
+        }
+
+        return array
+    }
+
+    public toString() => new String(this)
+
+//    [Target js]
+//    public get(Int index) -> Char {
+//        external {
+//            return #{data}.charAt(#{index});
+//        }
+//    }
+
+    // [Override]
+    // visible CharArrayIterator iterator => new CharArrayIterator(this, indexSize)
+
+    // [Override] public Char first => count > 0 ? this[0] : (Char)0 {
+    //     set {
+    //         if (count > 0) {
+    //             this[0] = value
+    //         } else {
+    //             add(value)
+    //         }
+    //     }
+    // }
+
+    // [Override] public Char last => count > 0 ? this[count - 1] : (Char)0 {
+    //     set {
+    //         if (count > 0) {
+    //             this[count - 1] = value
+    //         } else {
+    //             add(value)
+    //         }
+    //     }
+    // }
+
+    // public Long hashCodeLong => reduce((v, c) => 31 * v + (Int)c, 0)
+
+    // this[Int index] <=> (([Native] Char[])data)[index]
+
+    // visible Int indexSize
+
+    // public construct() {
+    //     super()
+
+    //     indexSize = 4
+    // }
+
+    // public construct(Int count) {
+    //     super(count)
+
+    //     indexSize = 4
+    // }
+
+    // public construct(native Char[] data, Int count) {
+    //     super(data, count)
+
+    //     indexSize = 1
+    // }
+
+    // public pure native cloneData() -> Char[] {
+    //     if (indexSize == 1) {
+    //         native Char[] d// = new Char[count]
+
+    //         external c {
+    //             #{d} = NOVA_MALLOC(sizeof(char) * #{count});
+
+    //             memcpy(#{d}, #{data}, sizeof(#{d}) * #{count});
+    //         }
+
+    //         return d
+    //     } else {
+    //         return super.cloneData()
+    //     }
+    // }
+
+    // public pure clone() => new CharArray(cloneData(), count)
+
+    // public sum(func(Char, Int, CharArray, Long) -> Long) -> Long {
+    //     Long sum = 0
+    //     Int i = 0
+
+    //     for (value in this) {
+    //         sum += func(value, i++, this, sum)
+    //     }
+
+    //     return sum
+    // }
+
+    // public reduce(func(Long, Char, Int, CharArray) -> Long, Long initialValue) -> Long {
+    //     Long value = initialValue
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         value = func(value, element, i++, this)
+    //     }
+
+    //     return value
+    // }
+
+    // [Override]
+    // public addUnique(Char element) => this {
+    //     if (!contains(element)) {
+    //         add(element)
+    //     }
+    // }
+
+    // [Override]
+    // public contains(Char value) -> Bool {
+    //     return any({ _ == value })
+    // }
+
+    // [Override]
+    // public map<Out>(mapFunc(Char, Int, CharArray) -> Out) -> Out[] {
+    //     Out[] array = new Array()
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         array.add(mapFunc(element, i++, this))
+    //     }
+
+    //     return array
+    // }
+
+    // [Override]
+    // public forEach(func(Char, Int, CharArray)) => this {
+    //     for (i in 0..count) {
+    //         func((Char)get(i), i, this)
+    //     }
+    // }
+
+    // [Override]
+    // public any(anyFunc(Char) -> Bool) -> Bool {
+    //     for (element in this) {
+    //         if (anyFunc(element)) {
+    //             return true
+    //         }
+    //     }
+
+    //     return false
+    // }
+
+    // [Override]
+    // public all(allFunc(Char) -> Bool, Bool stopOnContradiction = true) -> Bool {
+    //     var contradiction = false
+
+    //     for (element in this) {
+    //         if (!allFunc(element)) {
+    //             if (stopOnContradiction) {
+    //                 return false
+    //             }
+
+    //             contradiction = true
+    //         }
+    //     }
+
+    //     return !contradiction
+    // }
+
+    // [Override]
+    // public filter(filterFunc(Char, Int, CharArray) -> Bool) -> CharArray {
+    //     CharArray filtered = new CharArray()
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         if (filterFunc(element, i++, this)) {
+    //             filtered.add(element)
+    //         }
+    //     }
+
+    //     return filtered
+    // }
+
+    // [Override]
+    // public take(Int howMany) -> CharArray {
+    //     if (howMany > count) {
+    //         howMany = count
+    //     }
+
+    //     CharArray list = new CharArray()
+
+    //     for (i in 0..howMany) {
+    //         list.add(get(i))
+    //     }
+
+    //     return list
+    // }
+
+    // [Override]
+    // public skip(Int howMany) -> CharArray {
+    //     CharArray list = new CharArray()
+
+    //     for (i in howMany..count) {
+    //         list.add(get(i))
+    //     }
+
+    //     return list
+    // }
+
+    // [Override]
+    // public firstWhere(func(Char) -> Bool) -> Char {
+    //     for (element in this) {
+    //         if (func(element)) {
+    //             return element
+    //         }
+    //     }
+
+    //     return 0
+    // }
+
+    // [Override]
+    // public reverse() -> CharArray {
+    //     var array = new CharArray(count)
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         array.set(count - ++i, element)
+    //     }
+
+    //     return array
+    // }
+
+    // [Override]
+    // public join(String delimiter) -> String {
+    //     String str = ""
+
+    //     Bool passed = false
+
+    //     for (element in this) {
+    //         if (passed) {
+    //             str = str + delimiter
+    //         } else {
+    //             passed = true
+    //         }
+
+    //         str = str + element.toString()
+    //     }
+
+    //     return str
+    // }
+}

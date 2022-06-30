@@ -1,0 +1,5 @@
+package "flatlang/primitive/number"
+
+immutable trait RealNumber {
+
+}

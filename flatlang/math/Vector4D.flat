@@ -1,0 +1,18 @@
+package "flatlang/math"
+
+class Vector4D extends Vector {
+    public Double x <=> data[0]
+    public Double y <=> data[1]
+    public Double z <=> data[2]
+    public Double w <=> data[3]
+
+    public construct() => super(4)
+    public construct(Double x, Double y, Double z, Double w) {
+        this()
+
+        this.x = x
+        this.y = y
+        this.z = z
+        this.w = w
+    }
+}

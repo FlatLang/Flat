@@ -1,0 +1,49 @@
+package "flatlang/network"
+
+import "flatlang/io/InputStream"
+import "flatlang/io/OutputStream"
+import "flatlang/datastruct/list/Queue"
+
+class ConnectionSocket extends Socket {
+    external type SOCKET_ID_TYPE
+
+    external char[] nova_socket_receive(SOCKET_ID_TYPE socket)
+    external int nova_socket_send(SOCKET_ID_TYPE socket, char message[])
+    external void nova_socket_close(SOCKET_ID_TYPE s)
+
+    visible var Bool connected
+
+    visible InputStream  in
+    visible OutputStream out
+
+    public construct(private SOCKET_ID_TYPE socket) {
+        in = new NetworkInputStream(this)
+        out = new NetworkOutputStream(this)
+
+        connected = true
+    }
+
+    public close() {
+        connected = false
+
+        nova_socket_close(socket)
+    }
+
+    readString(Bool checkBuffer) -> String {
+        if (!checkBuffer || inputBuffer.empty) {
+            native Char[] data = nova_socket_receive(socket)
+
+            if (data == 0) {
+                connected = false
+
+                return null
+            }
+
+            return new String(data)
+        }
+
+        return inputBuffer.dequeue()
+    }
+
+    public write(String data) => nova_socket_send(socket, data.chars.data) == 1
+}

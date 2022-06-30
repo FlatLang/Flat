@@ -1,0 +1,150 @@
+package "flatlang/meta"
+
+import "flatlang/io/File"
+import "flatlang/meta/Class"
+import "flatlang/meta/NativeLibrary.h"
+
+class Library {
+    visible var File library, loadedLibrary
+
+    visible static final String EXTENSION
+
+    external type nova_library_handle
+    nova_library_handle handle
+
+    static {
+        if (System.TARGET == "C") {
+            match (System.OS_INT) {
+                System.WINDOWS => EXTENSION = ".dll"
+                System.LINUX => EXTENSION = ".so"
+                System.MAC_OSX => EXTENSION = ".dylib"
+            }
+        } else if (System.TARGET == "Java") {
+            EXTENSION = ".jar"
+        } else if (System.TARGET == "Javascript") {
+            EXTENSION = ".js"
+        }
+    }
+
+    public construct(String location) {
+        library = new File(location)
+    }
+
+    public getInstance(String classLocation) -> Object {
+        let constructor = getConstructor(classLocation)
+
+        return constructor()
+    }
+
+    public getConstructor(String classLocation) -> func() -> Object {
+        let constructor = getFunction("construct", classLocation)
+
+        // return constructor
+    }
+
+    formatFunctionName(String functionName, Object reference) -> String {
+        let static = reference.class.isOfType(Class)
+        let class = static ? (Class)reference : reference.class
+
+        return formatFunctionName(functionName, class.location, static)
+    }
+
+    formatFunctionName(String functionName, String classLocation, Bool static = true) -> String {
+        let location = "#{classLocation}.#{functionName}"
+        let dot = location.indexOf('.')
+
+        //nova/test/Test.staticFunc
+        //nova_test_Nova_Test_static_Nova_staticFunc
+        if (dot <= 0) {
+            throw new InvalidLibraryException("Invalid function request: { name: #functionName, location: #location }")
+        }
+
+        let packageEnd = location.lastIndexOf('/')
+
+        let package = packageEnd > 0 ? location.substring(end: packageEnd).replace("/", "_") + "_Nova_" : ""
+        let className = location.substring(packageEnd + 1, dot).replace("/", "_") + "_"
+        let name = "Nova_" + location.substring(dot + 1)
+
+        return package + className + (static ? "static_" : "") + name
+    }
+
+    public getFunction(String functionName, String classLocation) =>
+        getFunctionHandle(formatFunctionName(functionName, classLocation, true), null)
+
+    public getFunction(String functionName, Object reference) =>
+        getFunctionHandle(formatFunctionName(functionName, reference), reference)
+
+    getFunctionHandle(String location, Object reference) -> func() => null {
+        external c {
+            if (#{handle} != NULL) {
+                void* func = nova_get_function(#{handle}, #{location.chars.data});
+
+                if (func != NULL) {
+                    return nova_get_funcStruct2(func, #{reference});
+                }
+            } else {
+                #{throw new InvalidLibraryException("Cannot call getFunction before loading '#library.location'")};
+            }
+        }
+    }
+
+    public load() => this {
+        if (loadFile()) {
+            external c {
+                #{handle} = nova_load_library(#{loadedLibrary.location.chars.data});
+
+                if (#{handle} == NULL) {
+                    #{throw new InvalidLibraryException("Failed to call LoadLibrary for library at location #loadedLibrary.location")};
+                }
+            }
+        }
+    }
+
+    loadFile() -> File {
+        if (!library.exists) {
+            throw new InvalidLibraryException("Library '#library.name' does not exist at location '#library.location'")
+        }
+
+        var libFile = library
+
+        if (libFile.isDirectory) {
+            if (libFile = loadFromSource(libFile)) {
+                loadedLibrary = libFile
+            } else {
+                throw new InvalidLibraryException("Failed to load library '#library.location' from source")
+            }
+        } else {
+            loadedLibrary = libFile
+        }
+
+        if (!loadedLibrary) {
+            throw new InvalidLibraryException("Failed to load library '#library.location'")
+        }
+
+        return loadedLibrary
+    }
+
+    static loadFromSource(File source) -> File {
+        let path = source.location.substring(end: source.location.lastIndexOf('/') + 1)
+
+        let existingLibFile = new File(path + "lib#source.rootName" + EXTENSION)
+
+        if (existingLibFile.isFile) {
+            return existingLibFile
+        }
+
+        let process = System.execute("novac #source.location -library -o #{path}lib#source.rootName")
+
+        while (var char = process.reader.readChar()) {
+            Console.write(char)
+        }
+
+        let libFile = new File(path + "lib#source.rootName" + EXTENSION)
+
+        if (!libFile.isFile) {
+            throw new InvalidLibraryException("Failed to build library '#source.location' from nova source to '#libFile.location'")
+        }
+
+        return libFile
+    }
+}

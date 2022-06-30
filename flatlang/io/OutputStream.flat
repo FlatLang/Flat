@@ -1,0 +1,9 @@
+package "flatlang/io"
+
+trait OutputStream {
+    visible static final EmptyOutputStream EMPTY = new EmptyOutputStream()
+
+    public write(String value = "") => this
+    public writeLine(String value = "") => write(value + "\n")
+    //public write(Object value) => this
+}

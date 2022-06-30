@@ -1,0 +1,5 @@
+package "flatlang/datastruct/list"
+
+class NoSuchElementException extends Exception {
+    public construct(String message = "No such element") => super(message)
+}

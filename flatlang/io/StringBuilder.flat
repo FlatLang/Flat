@@ -1,0 +1,15 @@
+package "flatlang/io"
+
+class StringBuilder implements OutputStream {
+    var String value
+
+    public construct(private String value = "") {
+        value = value ?: ""
+    }
+
+    public write(String str) => this {
+        value += str
+    }
+
+    public toString() => value
+}

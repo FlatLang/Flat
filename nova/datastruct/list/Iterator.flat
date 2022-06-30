@@ -1,6 +1,0 @@
-package "nova/datastruct/list"
-
-public trait Iterator<E> {
-    visible Bool hasNext => false
-    visible E next => null
-}

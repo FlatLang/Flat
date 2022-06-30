@@ -1,0 +1,16 @@
+package "flatlang/math"
+
+class Vector2D extends Vector {
+    public Double x <=> data[0]
+    public Double y <=> data[1]
+
+    public construct() => super(2)
+    public construct(Double x, Double y) {
+        this()
+
+        this.x = x
+        this.y = y
+    }
+
+    public dotProduct(Vector3D other) => super.dotProduct(other)
+}

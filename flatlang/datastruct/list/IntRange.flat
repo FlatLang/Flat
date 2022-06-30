@@ -1,0 +1,137 @@
+package "flatlang/datastruct/list"
+
+class IntRange implements List<Int> {
+    visible Int size => end - start
+
+    [Override]
+    visible IntRangeIterator iterator => new IntRangeIterator(this)
+
+    public Int first <=> start
+    public Int last => end - 1 {
+        set {
+            end = value + 1
+        }
+    }
+
+    public construct() => this(0, 0)
+    public construct(public Int start, public Int end) {}
+
+    [Override]
+    public contains(Int value) => value >= start && value < end
+
+    public toArray() -> Int[] {
+        let ints = new Int[size]
+
+        var Int i = start
+
+        while (i < end) {
+            ints.set(i - start, i++)
+        }
+
+        return ints
+    }
+
+    // [Override]
+    // public forEach(func(Int, Int, IntRange)) {
+    //     Int i = 0
+
+    //     for (value in this) {
+    //         func(value, i++, this)
+    //     }
+    // }
+
+    // [Override]
+    // public map<Out>(mapFunc(Int, Int, IntRange) -> Out) -> Out[] {
+    //     Out[] array = new Array()
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         array.add(mapFunc(element, i++, this))
+    //     }
+
+    //     return array
+    // }
+
+    // [Override]
+    // public any(anyFunc(Int) -> Bool) -> Bool => false {
+    //     for (element in this) {
+    //         if (anyFunc(element)) {
+    //             return true
+    //         }
+    //     }
+    // }
+
+    // [Override]
+    // public all(allFunc(Int, Int, IntRange) -> Bool, Bool stopOnContradiction = true) => true {
+    //     for (element in this) {
+    //         if (!allFunc(element, i++)) {
+    //             return false
+    //         }
+    //     }
+    // }
+
+    // [Override]
+    // public filter(filterFunc(Int, Int, IntRange) -> Bool) -> Int[] {
+    //     Int[] list = new Int[]
+
+    //     Int i = 0
+
+    //     for (value in this) {
+    //         if (filterFunc(value, i++, this)) {
+    //             list.add(value)
+    //         }
+    //     }
+
+    //     return list
+    // }
+
+    // [Override]
+    // public take(Int howMany) -> IntRange {
+    //     return new IntRange(start, (Int)Math.min(start + howMany, end))
+    // }
+
+    // [Override]
+    // public skip(Int howMany) -> IntRange {
+    //     return new IntRange((Int)Math.min(start + howMany, end), end)
+    // }
+
+    // [Override]
+    // public firstWhere(func(Int) -> Bool) -> Int => null {
+    //     for (element in this) {
+    //         if (func(element)) {
+    //             return element
+    //         }
+    //     }
+    // }
+
+    //get(Int index) -> Int
+    //set(Int index, Int value) -> IntRange
+    //add(Int value) -> IntRange
+    //remove(Int value) -> IntRange
+    //clone() -> IntRange
+
+    [Override]
+    public reverse() => new IntRange(end, start)
+
+    // [Override]
+    // public join(String delimiter) -> String {
+    //     String str = ""
+
+    //     Bool passed = false
+
+    //     for (element in this) {
+    //         if (passed) {
+    //             str = str + delimiter
+    //         } else {
+    //             passed = true
+    //         }
+
+    //         str = str + element.toString()
+    //     }
+
+    //     return str
+    // }
+
+    public toString() => "#{start}..#{end}"
+}

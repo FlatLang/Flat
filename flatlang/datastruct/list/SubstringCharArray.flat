@@ -1,0 +1,33 @@
+package "flatlang/datastruct/list"
+
+class SubstringCharArray {//} extends StringCharArray {
+    // visible Int start
+    // visible Int end => start + count
+
+    // this[Int index] <=> (([Native] Char[])data)[index + start]
+
+    // public construct(Char[] data, Int start, Int end) {
+    //     super(data.data, data.count)
+    //     this.start = start
+    //     this.count = end - start
+
+    //     external js {
+    //         #{this.data} = #{data.data}.join("");
+    //     }
+    // }
+
+    // public construct([Native] Char[] data, Int count, Int start, Int end) {
+    //     super(data, count)
+    //     this.start = start
+    //     this.count = end - start
+
+    //     external js {
+    //         #{this.data} = typeof #{data} === 'string' ? #{data} : #{data}.join("");
+    //     }
+    // }
+
+    // [Target js]
+    // public get(Int index) -> Char {
+    //     super.get(index + start)
+    // }
+}

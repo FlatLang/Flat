@@ -1,0 +1,381 @@
+package "flatlang/datastruct/list"
+
+import "flatlang/primitive/number/Integer"
+import "flatlang/datastruct/Comparable"
+import "flatlang/operators/PlusOperator"
+import "flatlang/operators/PlusEqualsOperator"
+
+[AutoFinal]
+[Immutable "ImmutableArray"]
+class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<E>>, PlusEqualsOperator<Array<E>, Array<E>> {
+    pure external void arrayCopy(E dest[], int dIndex, E src[], int sIndex, int len, int destArrLen)
+
+    visible var Int capacity
+
+    visible var Int count <=> count
+    visible var Int position
+
+    visible native var E[] data
+
+    visible Bool empty => count <= 0
+
+    [Override]
+    visible ArrayIterator<E> iterator => new ArrayIterator(this)
+
+    public E first => count > 0 ? this[0] : null {
+        set {
+            if (count > 0) {
+                this[0] = value
+            } else {
+                add(value)
+            }
+        }
+    }
+
+    public E last => count > 0 ? this[count - 1] : null {
+        set {
+            if (count > 0) {
+                this[count - 1] = value
+            } else {
+                add(value)
+            }
+        }
+    }
+
+    this[Int index] <=> data[index]
+
+    public construct() {
+        this(0)
+
+        increaseSize(10)
+    }
+
+    public construct(Int count, Int initialCapacity = count) {
+        this.position = 0
+        this.capacity = 0
+
+        increaseSize(initialCapacity)
+
+        this.count = count
+
+        [Target js] data = new E[count]
+    }
+
+    public construct(native E[] data, Int count) {
+        this.data = data
+        this.count = count
+        this.capacity = count
+        this.position = count
+    }
+
+    public fillRemaining(E value) => this {
+        while (count < capacity) {
+            add(value)
+        }
+    }
+
+    [Override]
+    public plus(E[] other) => clone().plusEquals(other)
+
+    [Override]
+    public plusEquals(E[] other) => addAll(other)
+
+    public addAll(E[] data) => this {
+        for (d in data) {
+            add(d)
+        }
+    }
+
+    public addUnique(E element) => this {
+        if (!contains(element)) {
+            add(element)
+        }
+    }
+
+    public add(E element) => this {
+        if (position >= capacity) {
+            increaseSize()
+        }
+
+        data[position++] = element
+
+        count = Math.max(position, count)
+    }
+
+    public add(Int index, E element) => this {
+        if (index >= capacity) {
+            increaseSize(index + 1)
+        }
+
+        add(null)
+
+        shiftRight(index, position)
+
+        data[index] = element
+
+        if (index >= position - 1) {
+            position = index + 1
+        }
+
+        count = Math.max(position, count)
+    }
+
+    public remove(Int index) -> E {
+        E element = data[index]
+
+        shiftLeft(index + 1, position--)
+
+        count = count - 1
+
+        return element
+    }
+
+    public remove(E element) -> E => null {
+        Int index = indexOf(element)
+
+        if (index >= 0) {
+            shiftLeft(index + 1, position--)
+
+            count = count - 1
+
+            return element
+        }
+    }
+
+    public replace(E element, E other) -> E => null {
+        let index = indexOf(element)
+
+        if (index >= 0) {
+            this[index] = other
+
+            return other
+        }
+    }
+
+    shiftRight(Int left, Int right) => this {
+        var Int i = right - 1
+
+        while (i > left) {
+            data[i] = data[i - 1]
+
+            i--
+        }
+
+        data[left] = null
+    }
+
+    shiftLeft(Int left, Int right) => this {
+        for (i in left..right) {
+            data[i - 1] = data[i]
+        }
+
+        data[right - 1] = null
+    }
+
+    public swap(Int index1, Int index2) => this {
+        E temp = data[index1]
+        data[index1] = data[index2]
+        data[index2] = temp
+    }
+
+    increaseSize() => this {
+        increaseSize(capacity + 3)
+    }
+
+    [Target not c]
+    increaseSize(Int count) => this {
+        capacity = count
+    }
+
+    [Target c]
+    increaseSize(Int count) => this {
+        Int offset = count - capacity
+
+        capacity = count
+
+        native E[] tmp = new E[capacity]
+
+        arrayCopy(tmp, 0, data, 0, capacity - offset, capacity)
+
+        data = tmp
+
+        for (i in (capacity - offset)..capacity) {
+            data[i] = null
+        }
+    }
+
+    public pure native cloneData() -> E[] {
+        native var d = new E[count]
+
+        external c {
+            memcpy(#{d}, #{data}, sizeof(#{d}) * #{count});
+        }
+
+        return d
+    }
+
+    public pure clone() => new Array<E>(cloneData(), count)
+
+    [Override]
+    public pure toArray() => clone()
+
+    [Override]
+    public map<Out>(mapFunc(E, Int, Array<E>) -> Out) -> Out[] {
+        let array = new Out[count]
+
+        var Int i = 0
+
+        for (element in this) {
+            array.add(mapFunc(element, i++, this))
+        }
+
+        return array
+    }
+
+    [Override]
+    public forEach(func(E, Int, Array<E>)) => this {
+        for (i in 0..count) {
+            func(data[i], i, this)
+        }
+    }
+
+    [Override]
+    public filter(filterFunc(E, Int, Array<E>) -> Bool) -> E[] {
+        let filtered = new E[]
+
+        var Int i = 0
+
+        for (element in this) {
+            if (filterFunc(element, i++, this)) {
+                filtered.add(element)
+            }
+        }
+
+        return filtered
+    }
+
+    [Override]
+    public pure take(var Int howMany) -> E[] {
+        howMany = howMany > count ? count : howMany
+
+        let list = new E[]
+
+        for (i in 0..howMany) {
+            list.add(data[i])
+        }
+
+        return list
+    }
+
+    [Override]
+    public pure skip(Int howMany) -> E[] {
+        let list = new E[]
+
+        for (i in howMany..count) {
+            list.add(data[i])
+        }
+
+        return list
+    }
+
+    [RequireGenericType E extends String]
+    public sumSize() -> Long {
+        var Long sum = 0
+
+        for (value in this) {
+            sum += ((String)value).count
+        }
+
+        return sum
+    }
+
+    [Override]
+    public pure reverse() -> E[] {
+        let array = new E[count]
+
+        var Int i = 0
+
+        for (element in this) {
+            array.data[count - ++i] = element
+        }
+
+        return array
+    }
+
+    public mergeSort(comparator(E, E) -> Int) -> E[] {
+        let sorted = clone()
+
+        if (count > 1) {
+            let mid = count / 2
+            let lefthalf = take(mid).mergeSort(comparator)
+            let righthalf = skip(mid).mergeSort(comparator)
+
+            var Int l = 0
+            var Int r = 0
+            var Int i = 0
+
+            while (l < lefthalf.count && r < righthalf.count) {
+                if (comparator(lefthalf[l], righthalf[r]) < 1) {
+                    sorted[i++] = lefthalf[l++]
+                } else {
+                    sorted[i++] = righthalf[r++]
+                }
+            }
+
+            while (l < lefthalf.count) {
+                sorted[i++] = lefthalf[l++]
+            }
+
+            while (r < righthalf.count) {
+                sorted[i++] = righthalf[r++]
+            }
+        }
+
+        return sorted
+    }
+
+    public quickSort(comparator(E, E) -> Int) => quickSortHelper(clone(), 0, count - 1, comparator)
+
+    static quickSortHelper(E[] list, Int first, Int last, comparator(E, E) -> Int) => list {
+        if (first < last) {
+            let mid = partition(list, first, last, comparator)
+
+            quickSortHelper(list, first, mid - 1, comparator)
+            quickSortHelper(list, mid + 1, last, comparator)
+        }
+    }
+
+    static partition(E[] list, Int first, Int last, comparator(E, E) -> Int) -> Int {
+        let pivot = list[first]
+
+        var l = first + 1
+        var r = last
+
+        while (l <= r) {
+            while (l <= r && comparator(list[l], pivot) <= 0) l++
+            while (l <= r && comparator(list[r], pivot) >= 0) r--
+
+            if (l <= r) list.swap(l, r)
+        }
+
+        list.swap(first, r)
+
+        return r
+    }
+
+    [RequireGenericType E extends Comparable]
+    public mergeSort() => mergeSort({ ((Comparable)_).compareTo((Comparable)_) })
+
+    [RequireGenericType E extends Comparable]
+    public quickSort() => quickSort({ ((Comparable)_).compareTo((Comparable)_) })
+
+    [RequireGenericType E extends Comparable]
+    public sort() => mergeSort()
+
+    public sort(comparator(E, E) -> Int) => mergeSort(comparator)
+
+    public toImmutable() => new ImmutableArray<E>(this)
+
+    [Override]
+    public toString() => this.class.name + " [#{join(", ")}]"
+}

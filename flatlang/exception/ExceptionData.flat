@@ -1,0 +1,58 @@
+package "flatlang/exception"
+
+import "signal.h"
+import "NovaExceptionHandling.h"
+
+class ExceptionData {
+    external type buffer
+    external buffer* NULL
+
+    visible ExceptionData parent
+
+    visible CaughtException[] caught
+
+    public Exception thrownException
+
+    public construct(visible buffer* buf) {
+        this.caught = new CaughtException[]
+    }
+
+    public addCaught(Class type, Bool soft = false) {
+        caught.add(new CaughtException(type, soft))
+    }
+
+    getDataByException(Exception exception, Bool soft = false) -> ExceptionData {
+        var data = this
+
+        while (true) {
+            if (data.caught.any(c => { (!soft || c.soft) && exception.class.isOfType(c.type) })) {
+                return data
+            } else if (!data.parent) {
+                return soft ? null : data
+            }
+
+            data = data.parent
+        }
+    }
+
+    [Target c]
+    public throwException(ExceptionData* context, Exception exception, Bool soft) => false {
+        let catchExceptionData = getDataByException(exception, soft)
+
+        if (catchExceptionData) {
+            exception.onThrown(soft)
+
+            if (!catchExceptionData.parent) {
+                exception.stackTrace.trace()
+            }
+
+            external {
+                *context = #{catchExceptionData}; // need to set in case nested tries in same function
+                #{catchExceptionData}->nova_exception_Nova_ExceptionData_Nova_thrownException = #{exception};
+                jump(*#{catchExceptionData.buf}, (intptr_t)#{exception});
+            }
+        }
+    }
+
+    public toString() => "{Thrown: #thrownException, Caught: #caught}"
+}

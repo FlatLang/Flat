@@ -1,5 +1,0 @@
-package "nova/operators"
-
-public trait MultiplyOperator<In, Out> {
-    public multiply(In value) -> Out
-}

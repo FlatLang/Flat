@@ -1,0 +1,19 @@
+package "flatlang/datastruct"
+
+import "flatlang/operators/EqualsOperator"
+
+class ReversibleHashMap<K extends EqualsOperator, V extends EqualsOperator> extends HashMap<K, V> {
+    HashMap<V, K> rev
+
+    public construct() {
+        rev = new HashMap()
+    }
+
+    public add(K key, V value) => value {
+        /*super.add(key, value)
+        rev.add(value, key)*/
+    }
+
+    public getKey(V value) => rev.get(value)
+    public getValue(K key) => this[key]
+}

@@ -1,0 +1,42 @@
+package "flatlang/redis"
+
+import "flatlang/async/Promise"
+
+class RedisConnection {
+    [Target js] external type JsClient
+    [Target js] static JsClient jsClient
+    [Target js] static JsRedis jsRedis
+
+    [Target not js]
+    public construct() {}
+
+    [Target js]
+    public construct() {
+        if (!jsRedis) {
+            external {
+                #{jsRedis} = require("redis");
+            }
+        }
+        jsClient = jsRedis.createClient()
+    }
+
+    [Target not js]
+    get<T>(String key) -> T => null
+
+    [Target js]
+    get<T>(String key) -> T {
+        let promise = new Promise<T>()
+
+        external {
+            #{jsClient}.get(#{key.chars.data}, (error, reply) => {
+                if (error) {
+                    #{promise}.reject();
+                } else {
+                    #{promise}.resolve(reply);
+                }
+            });
+        }
+
+        return null
+    }
+}

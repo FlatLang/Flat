@@ -1,0 +1,53 @@
+package "flatlang/network"
+
+import "flatlang/network/NativeServerSocket.h"
+import "flatlang/network/NativeSocket.h"
+import "flatlang/io/InputStream"
+import "flatlang/io/OutputStream"
+import "flatlang/io/ClosedStreamException"
+
+class ServerSocket extends Socket {
+    external type SOCKET_ID_TYPE
+
+    external SOCKET_ID_TYPE nova_serversocket_start(int port)
+    external SOCKET_ID_TYPE nova_serversocket_accept(SOCKET_ID_TYPE serverSocket)
+    external int nova_socket_close(SOCKET_ID_TYPE serverSocket)
+    external char[] nova_socket_receive(SOCKET_ID_TYPE socket)
+    external int nova_socket_send(SOCKET_ID_TYPE socket, char message[])
+
+    var SOCKET_ID_TYPE serverSocket
+
+    visible Bool open => serverSocket != 0
+
+    public start(Int port) => this {
+        serverSocket = nova_serversocket_start(port)
+
+        if (serverSocket == 0) {
+            return null
+        }
+    }
+
+    public close() -> Bool {
+        Int result = nova_socket_close(serverSocket)
+
+        if (result == 0) {
+            return false
+        }
+
+        serverSocket = 0
+
+        return true
+    }
+
+    public acceptClient() -> ConnectionSocket => null {
+        if (!open) {
+            throw new ClosedStreamException("ServerSocket not started")
+        }
+
+        SOCKET_ID_TYPE clientSocket = nova_serversocket_accept(serverSocket)
+
+        if (clientSocket != 0) {
+            return new ConnectionSocket(clientSocket)
+        }
+    }
+}

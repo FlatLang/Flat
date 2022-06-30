@@ -1,0 +1,5 @@
+package "flatlang/operators"
+
+public trait PlusEqualsOperator<In, Out> {
+    public plusEquals(In another) -> Out
+}

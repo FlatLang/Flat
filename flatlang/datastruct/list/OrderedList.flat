@@ -1,0 +1,32 @@
+package "flatlang/datastruct/list"
+
+[AutoFinal]
+trait OrderedList<Type> implements List<Type> {
+    public findIndex(
+        condition(Type, Int, OrderedList<Type>) -> Bool,
+        Int defaultReturnValue = -1
+    ) -> Bool => defaultReturnValue {
+        var Int i = 0
+
+        for (element in this) {
+            if (condition(element, i++, this)) {
+                return i
+            }
+        }
+    }
+
+    public pure indexOf(
+        Type element,
+        Int defaultReturnValue = -1
+    ) => defaultReturnValue {
+        var Int i = 0
+
+        for (e in this) {
+            if (element == e) {
+                return i
+            }
+
+            i++
+        }
+    }
+}

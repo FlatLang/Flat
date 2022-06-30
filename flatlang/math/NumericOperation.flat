@@ -1,0 +1,175 @@
+package "flatlang/math"
+
+import "flatlang/datastruct/Bounds"
+import "flatlang/datastruct/Tuple2"
+
+class NumericOperation extends NumericOperand<Object> {
+    var NumericOperand leftOperand
+    var NumericOperand rightOperand
+
+    String operator
+
+    static Int GROUPING = 1, EXPONENT = 2, MULTIPLICATION = 3,
+                DIVISION = 3, ADDITION = 4, SUBTRACTION = 4,
+                MAX = 5, INVALID = -1
+
+    static Int OPERATOR = 1
+    static Char[] VALID_OPERATORS   = [ '-', '+', '!', '=', '%', '^', '*', '/', '>', '<', '[', ']', '(', ')' ]
+    static Char[] INVALID_OPERATORS = [ '`', '~', '@', '#', '$', '&', '_', ';', ':', '\'', '"', '|', '\\', ',', '.', '?' ]
+
+//    static Int WHITESPACE = 2
+    static Char[] WHITESPACE_CHARS = [ ' ', '\n', '\r', '\t' ]
+
+    static Int NUMBER = 3
+    static Char[] NUMERIC_CHARS = [ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' ]
+
+    static Int VARIABLE = 4
+
+    public construct(String operation) {
+        // Tuple2<Bounds, Int> bounds1, Int index1 = searchNextType(operation, 0)
+        // Bounds bounds2, Int index2 = searchNextType(operation, bounds1.end)
+        // Bounds bounds3 = null
+
+        // Console.writeLine(bounds1 + ", " + bounds2 + " and " + index1 + ", " + index2)
+
+        // String lh      = bounds1.extractString(operation)
+        // String op      = bounds2.extractString(operation)
+        // String rh      = null
+
+        // Int    type1   = getType(lh)
+        // Int    type2   = getType(op)
+
+        // if (type2 != OPERATOR) {
+        //     if (type1 == OPERATOR)
+        //         throw new InvalidNumericStatementException("Missing left hand operand in operation '#operation'")
+
+        //     rh = op
+        //     op = "*"
+
+        //     bounds3     = bounds2.clone()
+        //     bounds2.end = bounds2.start
+        // } else {
+        //     bounds3 = searchNextType(operation, bounds2.end).item1
+        //     rh      = bounds3.extractString(operation)
+        // }
+
+        // if (bounds3.end != operation.count) {
+
+        // }
+    }
+
+    public construct(String left, String operator, String right) {
+        NumericOperand leftOperator  = decodeOperand(left)
+        NumericOperand rightOperator = decodeOperand(right)
+
+        if (!left) {
+            throw new Exception("Left operand '#left' is invalid")
+        } else if (!right) {
+            throw new Exception("Right operand '#right' is invalid")
+        }
+
+        this(leftOperand, operator, rightOperand)
+    }
+
+    construct(NumericOperand left, String operator, NumericOperand right) {
+        this.leftOperand  = left
+        this.rightOperand = right
+        this.operator     = operator
+    }
+
+    decodeOperand(String operand) -> NumericOperand {
+        return null
+    }
+
+    static getType(String s) -> Int {
+        if (s.count <= 0) {
+            return 0
+        }
+
+        return getType(s.chars.first)
+    }
+
+    static getType(Char c) -> Int {
+        if (isNumeric(c)) {
+            return NUMBER
+        }
+        if (isOperator(c)) {
+            return OPERATOR
+        }
+//        if (isWhitespace(c)) {
+//            return WHITESPACE
+//        }
+        if (INVALID_OPERATORS.contains(c)) {
+            return 0
+        }
+
+        return VARIABLE
+    }
+
+    static searchNextType(String str, Int start) -> Tuple2<Bounds, Int> {
+        Int[] operators = new Int[]
+
+        var Int minIndex = Int.MAX_VALUE
+        var Int minRank  = Int.MIN_VALUE
+
+        var Int index = nextOperator(str, start)
+
+        while (index >= 0) {
+            Char operator = str.chars[index]
+            Int  rank     = getOperatorRank(operator)
+
+            if (rank > minRank) {
+                minIndex = index
+                minRank  = rank
+            }
+
+            index = nextOperator(str, index + 1)
+        }
+
+        if (minIndex >= str.count) {
+            return null
+        }
+
+        minIndex = nextNonWhitespaceIndex(str, minIndex - 1, -1) + 1
+
+        return new Tuple2(new Bounds(start, minIndex), index)
+    }
+
+    static nextOperator(String str, Int start) -> Int {
+        for (i in start..str.count) {
+            if (isOperator(str.chars[i])) {
+                return i
+            }
+        }
+
+        return -1
+    }
+
+    static getOperatorRank(Char operator) -> Int {
+        match operator
+            '-' => fallthrough
+            '+' => return ADDITION
+            '/' => fallthrough
+            '*' => return MULTIPLICATION
+            '^' => return EXPONENT
+            '[' => fallthrough
+            '(' => return GROUPING
+            default => return INVALID
+    }
+
+    static nextNonWhitespaceIndex(String str, var Int start, Int direction) -> Int {
+        while (start >= 0 && start < str.count && isWhitespace(str.chars[start])) start = start + direction
+
+        if (start < 0 || start >= str.count)
+            return -1
+        else
+            return start - direction
+    }
+
+    static isLetter(Char c) => !isOperator(c) && !isWhitespace(c)
+    static isNumeric(Char c) => NUMERIC_CHARS.contains(c)
+    static isOperator(Char c) => VALID_OPERATORS.contains(c)
+    static isWhitespace(Char c) => WHITESPACE_CHARS.contains(c)
+
+    public toString() => "#{leftOperand}#{operator}#{rightOperand}"
+}

@@ -1,0 +1,5 @@
+package "flatlang/math/logic"
+
+class StatementLetter extends StatementComponent {
+    public construct(private String letter, private String representation) {}
+}

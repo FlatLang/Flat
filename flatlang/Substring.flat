@@ -1,0 +1,68 @@
+package "flatlang"
+
+import "flatlang/datastruct/list/StringCharArray"
+import "flatlang/regex/Regex"
+import "flatlang/regex/Match"
+import "flatlang/regex/Pattern"
+
+class Substring extends String {
+    immutable visible String source
+
+    visible Int start
+    visible Int end => start + count
+
+    public Long hashCodeLong => chars.hashCodeLong
+
+    [Target not js]
+    public construct(String source, Int start, Int end) {
+        this.source = source
+        this.start = start
+
+        external {
+            #{this.count} = #{end - start};
+        }
+
+        native Char[] buf
+
+        external c {
+            #{buf} = &((char*)#{source.chars.data})[#{start}];
+        }
+
+        external {
+            #{this.chars} = #{new StringCharArray(buf, count)};
+        }
+    }
+
+    [Target js]
+    public construct(String source, Int start, Int end) {
+        this.source = source
+        this.start = start
+
+        external {
+            #{this.count} = #{end - start};
+        }
+
+        native Char[] buf
+
+        external js {
+            #{buf} = #{source.chars.data}.substr(#{this.start}, #{this.count});
+        }
+
+        external {
+            #{this.chars} = #{new StringCharArray(buf, count)}
+        }
+    }
+
+    [Override]
+    public substring(Int start = 0, Int end = count) -> String {
+        if (!validateSubstringBounds(start, end, true)) {
+            return null
+        } else if (start == end) {
+            return ""
+        } else if (start == 0 && end == count) {
+            return this
+        }
+
+        return new Substring(source, this.start + start, this.start + end)
+    }
+}

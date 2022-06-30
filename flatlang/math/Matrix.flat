@@ -1,0 +1,237 @@
+package "flatlang/math"
+
+import "flatlang/operators/MultiplyOperator"
+import "flatlang/operators/PlusOperator"
+import "flatlang/exception/InvalidArgumentException"
+import "flatlang/exception/InvalidOperationException"
+
+[AutoFinal]
+class Matrix implements MultiplyOperator<Matrix, Matrix>, PlusOperator<Matrix> {
+    Double[][] data
+
+    visible Bool isSquare => cols == rows
+    visible Int rows => data.count
+    visible Int cols => data[0].count
+
+    this[Int index] <=> data[index]
+
+    static Double TOLERANCE = 0.0001
+    static Double LOWER_TOLERANCE = 1 - TOLERANCE
+    static Double UPPER_TOLERANCE = 1 + TOLERANCE
+
+    visible Bool isIdentity {
+        get {
+            // return data.all({ _x == _y && (_d < LOWER_TOLERANCE || _d > UPPER_TOLERANCE) ... })
+            if (!isSquare) return false
+
+            for (row in 0..rows) {
+                for (col in 0..cols) {
+                    var d = data[row][col]
+
+                    if (row == col && (d < LOWER_TOLERANCE || d > UPPER_TOLERANCE) || // if diagonal make sure its 1
+                        row != col && (d < -TOLERANCE || d > TOLERANCE)) { // if not diagonal make sure its 0
+                        return false
+                    }
+                }
+            }
+
+            return true
+        }
+
+        no set
+    }
+
+    public construct(Int order) => this(order, order)
+    public construct(Int rows, Int cols) {
+        if (rows <= 0 || cols <= 0)
+            throw new InvalidArgumentException("Invalid matrix size #{rows}x#{cols}.
+                                                The number of rows and columns must both be positive.")
+
+        this(new Double[rows][cols])
+    }
+
+    public construct(private Double[][] data) {
+        if (!data || data.count == 0)
+            throw new InvalidArgumentException("Matrix size must be greater than 0 rows and columns")
+    }
+
+    public clone() => new Matrix(rows, cols).add(this)
+
+    public static identity(Int order) -> Matrix {
+        let data = new Double[order][order]
+
+        for (i in 0..order) {
+            data[i][i] = 1
+        }
+
+        return new Matrix(data)
+    }
+
+    public inverse() -> Matrix {
+        if (!isSquare)
+            throw new InvalidOperationException("Cannot take the inverse of a non-square matrix")
+
+        let i = identity(rows)
+        let current = clone()
+        var Int j = 0
+
+        while (!current.isIdentity) { // magic goes in here
+            //while (current)
+            i.swapRows(j % 2, j % 3)
+
+            if (j++ > 100) {
+                break
+            }
+        }
+
+        return i
+    }
+
+    public swapRows(Int row1, Int row2) {
+        if (row1 == row2) return
+
+        for (col in 0..cols) {
+            let temp = data[row1][col]
+            data[row1][col] = data[row2][col]
+            data[row2][col] = temp
+        }
+    }
+
+    public multiplyRow(Int sourceRow, Int destinationRow = sourceRow, Double scalar = 1) {
+        if (sourceRow == destinationRow) { // quick and easy multiply by scalar
+            for (col in 0..cols) {
+                data[sourceRow][col] *= scalar
+            }
+        } else { // multiply then add
+            for (col in 0..cols) {
+                data[destinationRow][col] += data[sourceRow][col] * scalar
+            }
+        }
+    }
+
+    public addRow(Int sourceRow, Int destinationRow = sourceRow) {
+        for (col in 0..cols) {
+            data[destinationRow][col] += data[sourceRow][col]
+        }
+    }
+
+    public subtractRow(Int sourceRow, Int destinationRow = sourceRow) {
+        for (col in 0..cols) {
+            data[destinationRow][col] -= data[sourceRow][col]
+        }
+    }
+
+    public add(Matrix other, Bool allowUnequalDimensions = false) -> Matrix {
+        if (!allowUnequalDimensions) checkUnequalDimensions(other)
+
+        //return new Matrix(data.zip(other, { _.zip(_, { _ + _ }) }))
+        var result = new Matrix(rows, cols)
+
+        for (row in 0..Math.min(rows, other.rows)) {
+            for (col in 0..Math.min(cols, other.cols)) {
+                result[row][col] = data[row][col] + other[row][col]
+            }
+        }
+
+        return result
+    }
+
+    public plus(Matrix other) => add(other, false)
+    public plus(Matrix other, Bool allowUnequalDimensions) => add(other, allowUnequalDimensions)
+
+    public subtract(Matrix other, Bool allowUnequalDimensions = false) -> Matrix {
+        if (!allowUnequalDimensions) checkUnequalDimensions(other)
+
+        //return new Matrix(data.zip(other, { _.zip(_, { _ - _ }) }))
+        let result = new Matrix(rows, cols)
+
+        for (row in 0..Math.min(rows, other.rows)) {
+            for (col in 0..Math.min(cols, other.cols)) {
+                result[row][col] = data[row][col] - other[row][col]
+            }
+        }
+
+        return result
+    }
+
+    public minus(Matrix other) => minus(other, false)
+    public minus(Matrix other, Bool allowUnequalDimensions) => subtract(other, allowUnequalDimensions)
+
+    checkUnequalDimensions(Matrix other) {
+        if (rows != other.rows || cols != other.cols)
+            throw new InvalidArgumentException("The matrices' sizes must be equal to perform this operation")
+    }
+
+    public multiply(Matrix other) -> Matrix {
+        if (cols != other.rows)
+            throw new InvalidArgumentException("Matrix with dimensions #{rows}x#{cols} cannot be multiplied with
+                                                matrix with dimensions #{other.rows}x#{other.cols}. #cols != #other.rows")
+
+        /*return new Matrix(
+            transpose().data.map((outRow, outR) => {
+                return other.data.map((row, r) => {
+                    outR
+                })
+            }))*/
+
+        let result = new Matrix(rows, other.cols)
+
+        result.data.forEach((outRow, outR) => {
+            data.forEach((row, r) => {
+                for (c in 0..cols) {
+                    result[r][outR] += row[c] * other[c][outR]
+                }
+            })
+        })
+
+        return result
+    }
+
+    public transpose() -> Matrix {
+        let result = new Matrix(cols, rows)
+
+        data.forEach((row, r) => {
+            for (c in 0..cols) {
+                result[c][r] = row[c]
+            }
+        })
+
+        return result
+    }
+
+    public determinant() -> Double => determinant(data) {
+        if (!isSquare) throw new InvalidArgumentException("Matrix must be square to calculate the determinant")
+    }
+
+    public static determinant(Double[][] data) -> Double {
+        let order = data.count
+
+        var Double det = 0
+
+        if (order == 1) {
+            det = data[0][0]
+        } else if (order == 2) {
+            det = data[0][0] * data[1][1] - data[1][0] * data[0][1]
+        } else {
+            for (j1 in 0..order) {
+                let m = new Double[order - 1][order - 1]
+
+                for (i in 1..order) {
+                    var Int j2 = 0
+
+                    for (j in 0..order) {
+                        if (j != j1) {
+                            m[i - 1][j2++] = data[i][j]
+                        }
+                    }
+                }
+
+                det += Math.pow(-1.0, 1.0 + j1 + 1.0) * data[0][j1] * determinant(m)
+            }
+        }
+
+        return det
+    }
+
+    public toString() => data.map({ "[ #{_.join("\t")} ]" }).join("\n")
+}

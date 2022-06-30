@@ -1,0 +1,16 @@
+package "flatlang/star"
+
+trait UIAction extends UIComponent {
+    Array<actionFunc()> listeners = new Array()
+
+    [Target c] static Int staticActionId = 0
+    [Target c] visible Int actionId = staticActionId++
+
+    public onAction() {
+        listeners.forEach({ _() })
+    }
+
+    public addActionListener(func()) {
+        listeners.add(func)
+    }
+}

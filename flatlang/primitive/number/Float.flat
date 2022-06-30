@@ -1,0 +1,66 @@
+package "flatlang/primitive/number"
+
+import "flatlang/datastruct/Comparable"
+import "flatlang/operators/EqualsOperator"
+import "flatlang/operators/MultiplyOperator"
+import "flatlang/operators/MultiplyEqualsOperator"
+
+class Float extends Number implements RealNumber {
+    public Double realValue => value
+    public Long integerValue => (Long)value
+
+    construct(public Float value) {}
+
+    public withinTolerance(Float target, passing Float tolerance) =>
+        withinTolerance(value, target, tolerance)
+
+    public static withinTolerance(Float value, Float target, Float tolerance = 0.00000001) =>
+        (value - target) < tolerance && (value - target) > -tolerance
+
+    public compareTo(Number other) => other.compareToReal(value)
+    public compareToReal(Double other) => this.value - other
+    public compareToInteger(Long other) => this.value - other
+
+    public static compareTo(Float value, Number other) => other.compareToReal(value)
+    public static compareToReal(Float value, Double other) => value - other
+    public static compareToInteger(Float value, Long other) => value - other
+
+    public plus(Number other) => other.plusReal(value)
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) => this.value + other
+
+    public plusEquals(Number other) => other.plusEqualsReal(value)
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) => this.value += other
+
+    public minus(Number other) => other.minusReal(value)
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) => this.value - other
+
+    public minusEquals(Number other) => other.minusEqualsReal(value)
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) => this.value -= other
+
+    public multiply(Number other) => other.multiplyReal(value)
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) => this.value * other
+
+    public multiplyEquals(Number other) => other.multiplyEqualsReal(value)
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) => this.value *= other
+
+    public equals(Number other) => other.equalsReal(value)
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+
+    public static equals(Float value, Number other) => other.equalsReal(value)
+    public static equalsReal(Float value, Double other) => value == other
+    public static equalsInteger(Float value, Long other) => value == other
+
+    public toString() => toString(value)
+
+    public static numDigits(Float number) => Double.numDigits(number)
+    public static toString(Float value) => Double.toString(value)
+    public static hashCodeLong(Float value) => Math.abs((Long)value)
+    public static plus(Float a, Double b) => a + b
+}

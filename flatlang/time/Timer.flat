@@ -1,0 +1,34 @@
+package "flatlang/time"
+
+class Timer {
+    visible var Long startTime, endTime
+
+    visible Long duration => endTime - startTime
+
+    public construct() {}
+
+    public start() => this {
+        startTime = Time.currentTimeMillis
+        endTime = 0
+    }
+
+    public stop() => this {
+        endTime = Time.currentTimeMillis
+    }
+
+    public reset() => this {
+        startTime = 0
+        endTime = 0
+    }
+
+    public toString() => "Timer { duration: #duration }"
+
+    public static time(action(), callback(Timer) = {}) -> Timer {
+        var t = new Timer().start()
+
+        action()
+        callback(t.stop())
+
+        return t
+    }
+}

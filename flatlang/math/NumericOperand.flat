@@ -1,0 +1,9 @@
+package "flatlang/math"
+
+class NumericOperand<Type> {
+    Type data
+
+    public construct(private Type data) {}
+
+    public toString() => "#data"
+}

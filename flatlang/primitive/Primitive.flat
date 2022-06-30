@@ -1,0 +1,5 @@
+package "flatlang/primitive"
+
+immutable class Primitive {
+
+}

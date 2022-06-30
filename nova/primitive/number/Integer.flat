@@ -1,5 +1,0 @@
-package "nova/primitive/number"
-
-immutable trait Integer {
-    
-}

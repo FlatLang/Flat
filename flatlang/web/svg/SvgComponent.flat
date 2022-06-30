@@ -1,0 +1,13 @@
+package "flatlang/web/svg"
+
+import "flatlang/io/FileWriter"
+
+class SvgComponent {
+    public SvgComponentList children
+
+    public construct() {
+        children = new SvgComponentList()
+    }
+
+    public generateOutput(FileWriter writer) => Console.writeLine("This is wrong")
+}

@@ -1,9 +1,0 @@
-package "nova/regex"
-
-immutable class Regex {
-    public static containsMatch(Pattern pattern, String search) => containsMatch(pattern.pattern, search)
-    public static containsMatch(String regex, String search) => getMatches(regex, search).count > 0
-    
-    public static getMatches(Pattern pattern, String search) => getMatches(pattern.pattern, search)
-    public static getMatches(String regex, String search) -> Match[] => new Array() {}
-}

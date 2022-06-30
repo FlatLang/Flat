@@ -1,7 +1,0 @@
-package "nova/regex"
-
-immutable class Pattern {
-    visible String pattern
-    
-    public construct(visible String pattern) {}
-}

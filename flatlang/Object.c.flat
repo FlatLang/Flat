@@ -1,0 +1,16 @@
+package "flatlang"
+
+import "flatlang/NativeObject.h"
+import "flatlang/operators/EqualsOperator"
+
+class Object {
+    external char[] hashCode(Object obj)
+
+    external char* NULL
+
+    external long strtol(char str[], char* a, int base)
+
+    public String hashCode => new String(hashCode(this))
+
+    public Long hashCodeLong => strtol(hashCode(this), NULL, 16)
+}

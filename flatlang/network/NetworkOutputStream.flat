@@ -1,0 +1,12 @@
+package "flatlang/network"
+
+import "flatlang/network/NativeSocket.h"
+import "flatlang/io/OutputStream"
+
+class NetworkOutputStream implements OutputStream {
+    public construct(private ConnectionSocket socket) {}
+
+    public write(String data) => this {
+        socket.write(data)
+    }
+}

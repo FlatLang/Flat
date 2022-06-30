@@ -1,5 +1,0 @@
-package "nova/redis"
-
-trait JsRedis {
-    public createClient()
-}

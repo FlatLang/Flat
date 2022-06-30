@@ -1,0 +1,21 @@
+package "flatlang/star"
+
+import "flatlang/star/NativeScrollBar.h"
+
+class ScrollBar extends UIComponent {
+    external type WINDOW_ID_TYPE
+    [Target c] public external_name WINDOW_ID_TYPE hwnd
+
+    public construct(passing Int x, passing Int y) =>
+        super(x, y)
+
+    public onAdded() {
+        external c {
+            #ifdef _WIN32
+                #{hwnd} = CreateWindow("EDIT", NULL,
+                    WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
+                    0, 0, 0, 0, #{window.hwnd}, 0, #{window.hinstance}, NULL);
+            #endif
+        }
+    }
+}

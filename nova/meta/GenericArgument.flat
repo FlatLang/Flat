@@ -1,6 +1,0 @@
-package "nova/meta"
-
-[AutoFinal]
-immutable class GenericArgument {
-    public construct(visible Type value) {}
-}

@@ -1,0 +1,25 @@
+package "flatlang/star"
+
+import "flatlang/thread/Thread"
+import "flatlang/star/NativeWindow.h"
+
+class WindowThread extends Thread {
+    Window window
+
+    public construct(private Window window) {}
+
+    public run() {
+        let paintFunc = window.frame.paint
+        let addedFunc = ((UIParent)window.frame).onAdded
+
+        external c {
+            #{window.hwnd} = nova_createWindow(#{window}, #{paintFunc}, #{addedFunc});
+        }
+    }
+
+    public show() => this {
+        external c {
+            nova_showWindow(#{window.hwnd});
+        }
+    }
+}

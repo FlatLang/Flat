@@ -1,0 +1,11 @@
+package "flatlang/math"
+
+class NumericTree {
+    NumericOperation root
+
+    public construct(String statement) {
+        root = new NumericOperation(statement)
+    }
+
+    public toString() => "#root"
+}

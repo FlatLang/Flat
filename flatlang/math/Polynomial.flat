@@ -1,0 +1,34 @@
+package "flatlang/math"
+
+class Polynomial {
+    visible Double[] coefficients
+    visible Double[] degrees
+    visible Byte[]   signs
+
+    static Char[] SYMBOLS_CHARS = [ '-', '+', '~', '!', '=', '%', '^', '&', '|', '*', '/', '>', '<', ',', '"', '\'', '[', ']', '{', '}', ';', '(', ')' ]
+    static Char[] WHITESPACE_CHARS = [ ' ', '\n', '\r', '\t' ]
+
+    public construct(String polynomial) {
+        Int start = 0
+        Bool reading = false
+
+        coefficients = new Double[]
+        degrees = new Double[]
+        signs = new Byte[]
+
+        for (i in 0..polynomial.count) {
+            if (!isLetter(polynomial.chars[i])) {
+                reading = false
+            } else if (!reading) {
+                start   = i
+                reading = true
+            } else {
+
+            }
+        }
+    }
+
+    static isLetter(Char c) => !isSymbol(c) && !isWhitespace(c)
+    static isSymbol(Char c) => SYMBOLS_CHARS.contains(c)
+    static isWhitespace(Char c) => WHITESPACE_CHARS.contains(c)
+}

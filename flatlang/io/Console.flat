@@ -1,0 +1,117 @@
+package "flatlang/io"
+
+import "stdio.h"
+import "stdlib.h"
+import "flatlang/io/NativeConsole.h"
+import "flatlang/Substring"
+
+class Console {
+    external type FILE
+    external type thing
+
+    [Target c] external FILE* stdin
+    [Target c] external FILE* stdout
+    [Target c] external int   SEEK_END
+
+    [Target java] external thing stdin
+    [Target java] external thing stdout
+
+    [Target js] public static OutputStream out = new FileWriter()
+    [Target not js] public static OutputStream out = new FileWriter(stdout)
+
+    [Target c] external void fgets(char buf[], int size, FILE* stream) as extReadLine
+    external void fseek(FILE* stream, int offset, int origin)
+    [Target c] external void fputs(char str[], FILE* stream) as writeExternal
+    [Target c] external void fwrite(char str[], int size, int count, FILE* stream)
+    [Target js] external void console.log(char str[]) as writeExternal
+    external char scanf(char buf[], double* num)
+    external char getchar()
+    external int atoi(char array[])
+    external char[] ufgets(FILE* stream)
+    external void nova_setEcho(Bool echo)
+    external void nova_clearScreen()
+    external void fflush(FILE* stream)
+
+    public static log(Object obj = "") => writeLine(obj)
+
+    public static writeLine() => writeLine("")
+    public static writeLine(String text) => write(text + "\n")
+    public static writeLine(Object obj) => writeLine(obj.toString())
+    public static writeLine(Double num) => writeLine(Double.toString(num))
+    public static writeLine(Float num) => writeLine(Double.toString(num))
+    public static writeLine(Long num) => writeLine(Long.toString(num))
+    public static writeLine(Int num) => writeLine(Int.toString(num))
+    public static writeLine(Short num) => writeLine(Int.toString(num))
+    public static writeLine(Byte num) => writeLine(Byte.toString(num))
+    public static writeLine(Char c) => writeLine(Char.toString(c))
+
+    public static write(String text) {
+        // let cText = text.chars
+
+        // [Target c] fwrite(cText.data, 1, text.count, stdout)
+        // [Target js] writeExternal(cText.data)
+        out.write(text)
+
+        flushOutput()
+    }
+
+    public static write(Object obj) => write(obj.toString())
+    public static write(Double num) => write(Double.toString(num))
+    public static write(Float num) => write(Double.toString(num))
+    public static write(Long num) => write(Long.toString(num))
+    public static write(Int num) => write(Int.toString(num))
+    public static write(Short num) => write(Int.toString(num))
+    public static write(Byte num) => write(Byte.toString(num))
+    public static write(Char c) => write(Char.toString(c))
+
+    public static readInt() => Int.parseInt(readLine())
+    public static readDouble() => Double.parseDouble(readLine())
+
+    public static readChar() -> Char {
+        Char c = getchar()
+
+        flushInput()
+
+        return c
+    }
+
+    static flushInput() {
+        [Target c] fseek(stdin, 0, SEEK_END)
+    }
+
+    static flushOutput() {
+//        fseek(stdout, 0, SEEK_END)
+        [Target c] fflush(stdout)
+    }
+
+    public static readLine() -> String {
+        native var Char[] line
+
+        [Target c] line = ufgets(stdin)
+
+        return new String(line)
+    }
+
+    public static readPassword() -> String {
+        setEcho(false)
+
+        String pass = readLine()
+
+        setEcho(true)
+
+        write("\n")
+
+        return pass
+    }
+
+    public static setEcho(Bool echo) => nova_setEcho(echo)
+    public static clearScreen() => nova_clearScreen()
+
+    public static waitForEnter() {
+        flushInput()
+
+        native Char[] c = new Char[2]
+
+        [Target c] extReadLine(c, 2, stdin)
+    }
+}

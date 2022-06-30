@@ -1,0 +1,5 @@
+package "flatlang/operators"
+
+public trait MultiplyOperator<In, Out> {
+    public multiply(In value) -> Out
+}

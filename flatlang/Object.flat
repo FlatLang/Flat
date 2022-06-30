@@ -1,0 +1,35 @@
+package "flatlang"
+
+import "flatlang/NativeObject.h"
+import "flatlang/operators/EqualsOperator"
+
+immutable class Object {
+    external char[] hashCode(Object obj)
+    /*char** endptr*/
+
+    public static default() => null
+
+    external char* NULL
+
+    external long strtol(char str[], char* a, int base)
+
+    public equals(Object another) => this == another
+    public toString() => "{#this.class.name @#hashCode}"
+
+    // writeFields() =>
+    //     this.class.getFields(true).count > 0 ?
+    //         this.class.getFields(true).map(f => {
+    //             "\n#f.name = #f.getValue(this)"
+    //         }) + "\n" :
+    //         ""
+
+    // writeFunctions() =>
+    //     this.class.functions.map(f => {
+    //         "\n#f"
+    //     })
+
+    // public toString() =>
+    //     "#this.class.name {" +
+    //     writeFields() +
+    //     "}"
+}

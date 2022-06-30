@@ -1,0 +1,8 @@
+package "flatlang/datastruct"
+
+class Tuple2<A, B> extends Tuple {
+    public A item1 <=> (A)items[0]
+    public B item2 <=> (B)items[1]
+
+    public construct(A item1, B item2) => super([item1, item2])
+}

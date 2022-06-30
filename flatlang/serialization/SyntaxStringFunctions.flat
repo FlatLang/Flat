@@ -1,0 +1,543 @@
+package "flatlang/serialization"
+
+import "flatlang/regex/Regex"
+import "flatlang/regex/Match"
+import "flatlang/datastruct/Tuple2"
+import "flatlang/datastruct/list/Stack"
+
+[AutoFinal]
+extension SyntaxStringFunctions {
+    static Char[] WHITESPACE = " \t\n\r".chars.toCharArray()
+
+    static Char[] EITHER_STATEMENT_END_CHARS = "\n;{}".chars.toCharArray()
+
+    static Char[] SYMBOLS_CHARS             = "-+~!=%^&|*/\\><,\"'[]{};:?()".chars.toCharArray()
+    static Char[] STMT_PRE_CONT_CHARS       = "-+~!=%^&|*/\\><,.[".chars.toCharArray()
+    static Char[] STMT_POST_CONT_CHARS      = "-+~!=%^&|*/\\><,.]".chars.toCharArray()
+    static Char[] INVALID_DECLARATION_CHARS = "-+~!=%^|/\"\\'{};()".chars.toCharArray()
+
+    static Char[] WORD_BOUNDARIES = " \t\n\r-+~!=%^&|*/\\><,\"'[]{};:?()".chars.toCharArray()
+
+    public Bool String.isIdentifier => count > 0 && matches(/[A-Za-z_][A-Za-z0-9_]*/)
+    public Bool String.isNumber => count > 0 && matches(/-?[0-9]+/)
+    public Bool String.isBool => this == "true" || this == "false"
+    public String String.firstWord => nextWord()
+
+    public containsAllWhitespaceAfter(String this, Int index, Int direction = 1) -> Bool {
+        for (var i = index; i < count && i >= 0; i += direction) {
+            if (!WHITESPACE.contains(chars[i])) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    public getArrayAccesses(String this) -> Tuple2<Array<String>, Int> {
+        var String[] array = null
+        var bracketIndex = count - 1
+
+        while (chars[bracketIndex] == ']') {
+            let start = findEndingMatch(bracketIndex, '[', ']', direction: -1)
+            let old = bracketIndex
+
+            bracketIndex = start - 1
+
+            if (start > 0) {
+                if (chars[bracketIndex] == ')' || chars[bracketIndex] == ']' || substring(end: start).isIdentifier) {
+                    array = array ?: new String[]
+                    array.add(0, substring(start + 1, old).trim())
+                } else if (array) {
+                    array = null
+                }
+            }
+
+            if (bracketIndex <= 1 || chars[bracketIndex] != ']') {
+                break
+            }
+        }
+
+        return new Tuple2(array, bracketIndex + 1)
+    }
+
+    /// If contains given search string surrounded by whitespace
+    public containsWord(String this, String search, Int start = 0) =>
+        nextWordIndex(search, start) >= 0
+
+    public nextWordIndex(String this, String search, Int start = 0, Int defaultReturnValue = -1) -> Int {
+        var index = indexOf(search, start)
+
+        while (index >= 0) {
+            if ((index == 0 || WHITESPACE.contains(chars[index - 1])) &&
+                (index + search.count >= count || WHITESPACE.contains(chars[index + search.count]))) {
+                return index
+            }
+
+            index = indexOf(search, index + search.count + 1)
+        }
+
+        return defaultReturnValue
+    }
+
+    public nextWord(String this, Int start = 0, Int direction = 1, String defaultReturnValue = null) -> String {
+        var wordStartIndex = nextNonWhitespaceIndex(start, direction: direction)
+
+        if (wordStartIndex >= 0) {
+            var wordEndIndex = nextWhitespaceIndex(wordStartIndex, direction: direction)
+
+            if (direction < 0) {
+                let temp = wordStartIndex + 1
+                wordStartIndex = wordEndIndex + 1
+                wordEndIndex = temp
+            }
+
+            return substring(wordStartIndex, wordEndIndex)
+        }
+
+        return defaultReturnValue
+    }
+
+    public nextNonWhitespaceChar(String this, Int start = 0, Char defaultReturnValue = 0) -> Char {
+        let index = nextNonWhitespaceIndex(start)
+
+        if (index >= 0) {
+            return chars[index]
+        }
+
+        return defaultReturnValue
+    }
+
+    public nextNonWhitespaceIndex(String this, Int start = 0, Int direction = 1, Int defaultReturnValue = -1) =>
+        nextIndexThatContains(WHITESPACE, start, true, direction, defaultReturnValue)
+
+    public nextWhitespaceIndex(String this, Int start = 0, Int direction = 1, Int defaultReturnValue = -1) =>
+        nextIndexThatContains(WHITESPACE, start, false, direction, defaultReturnValue)
+
+    public nextIndexThatDoesntContain(String this, Char[] searchChars, Int start = 0, Int direction = 1, Int defaultReturnValue = -1) =>
+        nextIndexThatContains(searchChars, start, true, direction, defaultReturnValue)
+
+    public nextIndexThatContains(String this, Char[] searchChars, Int start = 0, Bool opposite = false, Int direction = 1, Int defaultReturnValue = -1) -> Int {
+        while (start < count && start >= 0 && searchChars.contains(chars[start]) == opposite) start += direction
+
+        if (start <= count && start >= 0) {
+            return start
+        }
+
+        return defaultReturnValue
+    }
+
+    /**
+     * Find the next index in which a letter resides, starting at the
+     * given index. If there are no letters available, -1 is returned.
+     * However, if the <u>opposite</u> param is true, then the opposite
+     * of what was stated above is done. Passing true for the <u>bound</u>
+     * parameter makes sure that -1 is never returned (It will return the
+     * end-point of whichever direction that the method was searching
+     * in).<br>
+     * <br>
+     * A letter is anything besides whitespace and symbols.<br>
+     * <br>
+     * For example:
+     * <blockquote><pre>
+     * // Scenario 1
+     * findNextWord("number = ++num2", 11, 1, true);
+     *
+     * // Scenario 2
+     * findNextWord("number = ++num2", 4, -1, true, true);</pre></blockquote>
+     * Scenario 1 returns 15<br>
+     * Scenario 2 returns 0
+     *
+     * @param start The index to start the search.
+     * @param direction The direction to search for the word in.
+     * @param opposite Whether or not to search for anything that is NOT
+     *      a letter (instead of searching for a letter).
+     * @param bound Whether or not to bound the result returned if the a
+     *      result was not found.
+     * @return The next index in which a letter resides.
+     */
+    public nextLetterIndex(String this, Int start = 0, Int direction = 1, Bool opposite = false, Bool bound = false) -> Int {
+        while (start >= 0 && start < count) {
+            Char c = chars[start]
+
+            if ((WHITESPACE.contains(c) || SYMBOLS_CHARS.contains(c)) == opposite) {
+                return start
+            }
+
+            start += direction
+        }
+
+        if (bound) {
+            if (direction > 0) {
+                return count
+            }
+
+            return 0
+        }
+
+        return -1
+    }
+
+    public isSurroundedByQuotes(String this) =>
+        count >= 2 && chars.first == '"' && chars.last == '"'
+
+    /**
+     * Remove the surrounding double quotes from the given input String.<br>
+     * For example:
+     * <blockquote><pre>
+     * String s = "\"C:/myfile/test\""
+     * String out = removeSurroundingQuotes(s)</pre></blockquote>
+     * The out String would contain the data "C:/myfile/test" without
+     * the surrounding quotes.
+     *
+     * @param input The String to remove the surrounding quotes from.
+     * @return The String without the surrounding quotes.
+     */
+    public removeSurroundingQuotes(String this) -> String {
+        var input = this
+
+        while (input.isSurroundedByQuotes()) {
+            input = input.substring(1, input.count - 1)
+        }
+
+        return input
+    }
+
+    public containsString(String this, String[] needles, Int index = 0) =>
+        needles.any({ containsString(_, index) })
+
+    public containsString(String this, String needle, Int index = 0) -> Bool {
+        for (i in 0..needle.count) {
+            if (i + index >= count || chars[i + index] != needle[i]) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    public static defaultCharacterCheck(String value, Char c, Int start, Int direction = 1) -> Int {
+        start += direction
+
+        if (start > 0 && value[start - 1] == '\\' && value[start - 2] != '\\') {
+            return start + direction
+        }
+
+        return start
+    }
+
+    /**
+     * Find the index of the ending char that matches the given 'c' param,
+     * given the index of the start char.
+     *
+     * @param value The String to search within.
+     * @param c The char to search for an end for.
+     * @param start The index of the starting quote.
+     * @param direction The direction in which to search the given String.
+     * @return The index of the matching char. If an end is not found, -1
+     *      is returned instead.
+     */
+    public findEndingChar(String this, Char c, var Int start, Int direction = 1, advance(String, Char, Int, Int) -> Int = defaultCharacterCheck, Int defaultReturnValue = -1) -> Int {
+        if (start < 0 || start >= count) {
+            return -1
+        }
+
+        start = advance(this, chars[start], start, direction)
+
+        while (start >= 0 && start < count) {
+            if (chars[start] == c) {
+                return start
+            }
+
+            start = advance(this, chars[start], start, direction)
+        }
+
+        return defaultReturnValue
+    }
+
+    /**
+     * Find the index of the ending quote, given the index of the start
+     * quote.
+     *
+     * @param value The String to search within.
+     * @param start The index of the starting quote.
+     * @param direction The direction in which to search the given String.
+     * @return The index of the ending quote. If an end is not found, -1
+     *      is returned instead.
+     */
+    public findEndingQuote(String this, Int start, Int direction = 1) =>
+        findEndingStringChar('"', start, direction)
+
+    public findEndingSingleQuote(String this, Int start, Int direction = 1) =>
+        findEndingStringChar('\'', start, direction)
+
+    private findEndingStringChar(String this, Char c, Int start, Int direction = 1) =>
+        findEndingChar(c, start, direction, (str, c, i, dir) => {
+            i += dir
+
+            if (dir > 0 && i < str.count - 3 && str[i] == '#' && str[i + 1] == '{') {
+                return (i = str.findEndingChar('}', i + dir, dir)) >= 0 ? i + dir : i
+            }
+
+            return defaultCharacterCheck(str, c, i - dir, dir)
+        })
+
+    public findEndingMatch(String this, Int index, Char start, Char end, Int direction = 1, Char escapeChar = '\0') =>
+        findEndingMatch(index, "#start", "#end", direction, escapeChar)
+
+    /**
+     * Find the index of the ending String for the match. For instance, to
+     * search for an ending parenthesis, starting from the opening
+     * parenthesis, you would pass findEndingMatch(str, 0, "(", ")", '\\')
+     * <i>(The backslash would act to escape any parentheses. eg: \\(
+     * would not be counted.)</i> The method call would return the index
+     * of the ending parenthesis that is paired with the index of 0.
+     *
+     * @param str The String to search for the pair to the start String.
+     * @param index The index of the start String in the pair.
+     * @param start The String that starts off the pair. eg. "("
+     * @param end The String that ends the pair. eg: ")"
+     * @param escapeChar The char that escapes a start or end char, of
+     *      there is no escape char, pass '(char)0'.
+     * @param direction The direction in which to search for the match in.
+     * @return The index of the pair to the starting String, if no pair is
+     *      found then -1 is returned.
+     */
+    public findEndingMatch(String this, var Int index, var String start, var String end, Int direction = 1, Char escapeChar = '\0', Int defaultReturnValue = -1) -> Int {
+        if (direction < 0) {
+            String temp = start
+            start = end
+            end   = temp
+        }
+
+        var Int scope = 0
+
+        while (index >= 0 && index < count) {
+            Char c = chars[index]
+
+            if (c == escapeChar && direction > 0) {
+                if (index < count - 1) {
+                    if (containsString(start, index + 1)) {
+                        index++
+                    }
+                }
+            } else if (containsString(start, index) && (direction > 0 || index > 0 && chars[index - 1] != escapeChar) && (!start.equals(end) || scope == 0)) {
+                scope++
+            } else if (containsString(end, index) && (direction > 0 || index > 0 && chars[index - 1] != escapeChar)) {
+                scope--
+
+                if (scope == 0) {
+                    return index
+                }
+            } else if (c == '"') {
+                index = findEndingQuote(index, direction)
+
+                if (index < 0) {
+                    break
+                }
+            } else if (c == '\'') {
+                index = findEndingSingleQuote(index, direction)
+
+                if (index < 0) {
+                    break
+                }
+            }
+
+            index += direction
+        }
+
+        return defaultReturnValue
+    }
+
+    public splitAtDotOperator(String this, String[] defaultReturnValue = null) -> String[] {
+        var prev = 0
+        var dot  = findDotOperatorIndex()
+
+        let fragments = new String[]
+
+        while (dot > 0) {
+            fragments.add(substring(prev, dot))
+
+            prev = dot + 1
+            dot  = findDotOperatorIndex(prev)
+        }
+
+        if (prev > 0) {
+            fragments.add(substring(prev))
+
+            return fragments
+        } else {
+            return defaultReturnValue
+        }
+    }
+
+    public splitValues(String this) -> String[] {
+        return split(/\s+/)
+    }
+
+    /**
+     * Split the src by the commas. Makes sure not to split commas that
+     * are within parentheses and quotes.
+     *
+     * @param src The String to split the commas from.
+     * @return An array of Strings containing the Strings that were split.
+     */
+    public splitAtCommas(String this, Bool searchGenerics = false, Bool allowTrailing = false) -> String[] {
+        String[] strs = new String[]
+
+        if (trim().count == 0) {
+            return strs
+        }
+
+        var Int oldIndex =  0
+        var Int index    = -1
+
+        while ((index = findCharOnTopLevel(',', index + 1, searchGenerics)) >= 0) {
+            strs.add(substring(oldIndex, index).trim())
+
+            oldIndex = index + 1
+        }
+
+        let last = substring(oldIndex).trim()
+
+        if (!allowTrailing || last.count > 0) {
+            strs.add(last)
+        }
+
+        return strs
+    }
+
+    public findCharOnTopLevel(String this, Char needle, Int start = 0, Bool searchGenerics = false) -> Int {
+        String[] array = new Array(1)
+
+        array.add("#needle")
+
+        return findStringOnTopLevel(array, start, searchGenerics)
+    }
+
+    public findCharOnTopLevel(String this, Char[] needles, Int start = 0, Bool searchGenerics = false) -> Int {
+        String[] array = new Array(needles.count)
+
+        for (needle in needles) {
+            array.add("#needle")
+        }
+
+        return findStringOnTopLevel(array, start, searchGenerics)
+    }
+
+    public findWordOnTopLevel(String this, String word, Int start = 0, Bool searchGenerics = false, Int defaultReturnValue = -1) -> Int {
+        var index = findStringOnTopLevel(word, start, searchGenerics, defaultReturnValue)
+
+        while (index >= 0 && ((index > 0 && !WORD_BOUNDARIES.contains(chars[index - 1])) ||
+            (index + word.count < count - 1 && !WORD_BOUNDARIES.contains(chars[index + word.count])))) {
+            index = findStringOnTopLevel(word, index + word.count + 1, searchGenerics, defaultReturnValue)
+        }
+
+        return index
+    }
+
+    public findStringOnTopLevel(String this, String needle, Int start = 0, Bool searchGenerics = false, Int defaultReturnValue = -1) =>
+        findStringOnTopLevel([needle], start, searchGenerics, defaultReturnValue)
+
+    public findStringOnTopLevel(String this, String[] needles, var Int start = 0, Bool searchGenerics = false, Int defaultReturnValue = -1) => defaultReturnValue {
+        while (start < count) {
+            let c = chars[start]
+
+            if (containsString(needles, start)) {
+                return start
+            } else {
+                match (c) {
+                    '"'  => start = findEndingQuote(start) + 1
+                    '\'' => start = findEndingSingleQuote(start) + 1
+                    '('  => start = findEndingMatch(start, '(', ')') + 1
+                    '{'  => start = findEndingMatch(start, '{', '}') + 1
+                    '['  => start = findEndingMatch(start, '[', ']') + 1
+                    '<'  => {
+                        if (searchGenerics) {
+                            start = findEndingMatch(start, '<', '>')
+                        }
+                        fallthrough
+                    }
+                    default => start++
+                }
+
+                if (start <= 0) {
+                    return -1
+                }
+            }
+        }
+    }
+
+    public findGroupedSymbols(String this, Int start = 0, Int direction = 1) =>
+        findGroupedChars(SYMBOLS_CHARS, start, direction)
+
+    /**
+     * Get the next sequence of characters, if they are contained within
+     * the given chars array.<br>
+     * For example:
+     * <blockquote><pre>
+     * // Scenario 1
+     * findGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 9, 1);
+     *
+     * // Scenario 2
+     * findGroupedChars("number = ++num2", StringUtils.SYMBOLS_CHARS, 10, -1);</pre></blockquote>
+     * Scenario 1 and 2 both return the "++" String because they are
+     * searching the same symbols at opposite ends and directions.
+     *
+     * @param chars The chars to search for.
+     * @param start The index to start the search at.
+     * @param direction The direction to search for the characters at.
+     * @return A String containing the grouped chars. If there
+     *      were no grouped chars, then an empty String is returned.
+     */
+    public findGroupedChars(String this, Char[] chars, Int start = 0, Int direction = 1) -> String {
+        let index = start
+
+        while (index < count && index >= 0 && chars.contains(this.chars[index])) {
+            index += direction
+        }
+
+        if (direction < 0) {
+            return substring(index + 1, start + 1)
+        }
+
+        return substring(start, index)
+    }
+
+    public searchGenericType(String this, Int start, Bool backwards = true) -> String => null {
+        if (backwards) {
+            var Int stack = 0
+            var Int index = 0
+
+            for (var i = start; i >= 0; i--) {
+                let c = chars[i]
+
+                if (c == '>') {
+                    index = stack == 0 ? i : index
+                    stack++
+                } else if (c == '<') {
+                    stack--
+                }
+
+                if (stack == 0) {
+                    if (index > 0) {
+                        return substring(i + 1, index)
+                    }
+
+                    return null
+                }
+            }
+        } else {
+            // throw new UnimplementedOperationException("forwards checking not implemented yet... Looks like its time to do that.")
+        }
+    }
+
+    /**
+     * Find the next available dot operator index within the given String.
+     *
+     * @param str The String to find the dot operator within.
+     * @param start The index to start the search at.
+     * @return The index of the dot operator. If a dot operator is not
+     *      found, then -1 is returned instead.
+     */
+    public findDotOperatorIndex(String this, Int start = 0) => findCharOnTopLevel('.', start)
+}

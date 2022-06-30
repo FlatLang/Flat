@@ -1,0 +1,37 @@
+package "flatlang/network"
+
+import "flatlang/network/NativeClientSocket.h"
+import "flatlang/network/NativeSocket.h"
+import "flatlang/io/OutputStream"
+import "flatlang/io/InputStream"
+
+class ClientSocket extends Socket {
+    external type SOCKET_ID_TYPE
+
+    external SOCKET_ID_TYPE nova_clientsocket_connect(char ipAddress[], int port)
+    external int nova_socket_close(SOCKET_ID_TYPE serverSocket)
+
+    var SOCKET_ID_TYPE socket
+
+    public connect() -> Bool {
+        socket = nova_clientsocket_connect(ip.chars.data, port)
+
+        if (socket == 0) {
+            return false
+        }
+
+        connection = new ConnectionSocket(socket)
+
+        return true
+    }
+
+    public close() -> Bool {
+        Int result = nova_socket_close(socket)
+
+        if (result == 0) {
+            return false
+        }
+
+        return true
+    }
+}

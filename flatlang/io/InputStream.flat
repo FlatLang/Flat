@@ -1,0 +1,6 @@
+package "flatlang/io"
+
+public trait InputStream {
+    public readString() -> String
+    public readBytes() -> Byte[]
+}

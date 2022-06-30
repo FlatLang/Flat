@@ -1,0 +1,68 @@
+package "flatlang/datastruct"
+
+import "flatlang/datastruct/list/Queue"
+
+[AutoFinal]
+class Node<E> {
+    visible Node<E>[] children
+
+    this[Int index] <=> children[index]
+
+    public construct(public E data = null, Int numChildren = 5) {
+        children = new Node<E>[numChildren]
+    }
+
+    public preorder() => preorder(new E[])
+    public inorder() => inorder(new E[])
+    public postorder() => postorder(new E[])
+    public levelorder() => levelorder(new E[])
+
+    preorder(E[] array) => array {
+        array.add(data)
+
+        children
+            .filter({ _ != null })
+            :forEach({ _.preorder(array) })
+    }
+
+    inorder(E[] array) => array {
+        let Int half = children.count - children.count / 2
+
+        children
+            .take(half)
+            .filter({ _ != null })
+            :forEach({ _.inorder(array) })
+
+        array.add(data)
+
+        children
+            .skip(half)
+            .filter({ _ != null })
+            :forEach({ _.inorder(array) })
+    }
+
+    postorder(E[] array) => array {
+        children
+            .filter({ _ != null })
+            :forEach({ _.postorder(array) })
+
+        array.add(data)
+    }
+
+    levelorder(E[] array) => array {
+        let queue = new Queue<Node<E>>([this])
+
+        while (!queue.empty) {
+            let current = queue.dequeue()
+
+            array.add(current.data)
+
+            current.children
+                .filter({ _ != null })
+                :forEach({ queue.enqueue(_) })
+        }
+    }
+
+    [Override]
+    public toString() => "#data"
+}

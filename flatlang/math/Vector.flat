@@ -1,0 +1,20 @@
+package "flatlang/math"
+
+class Vector {
+    visible Double magnitude => Math.sqrt(data.sum(n => n * n))
+
+    visible Double[] data
+
+    public construct(Int size) => this(new Double[size])
+    public construct(visible Double[] data) {}
+
+    public dotProduct(Vector other) => data.sum((x, i) => x * other.data[i])
+    public innerProduct(Vector other) => dotProduct(other)
+    public scale(Double scalar) => data.forEach((n, i, d) => d[i] = n * scalar)
+    public normalize() =>
+        (let m = magnitude) > 0 ?
+            data.forEach((n, i, d) => d[i] = n / m) :
+            data.forEach((n, i, d) => d[i] = 0)
+
+    public toString() => "<#{data.join(", ")}>"
+}

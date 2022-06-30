@@ -1,0 +1,155 @@
+package "flatlang/datastruct/list"
+
+import "flatlang/primitive/number/Integer"
+
+class IntArray extends Array<Int> {
+    // [Override]
+    // visible IntArrayIterator iterator => new IntArrayIterator(this)
+
+    // [Override]
+    // public Int first => count > 0 ? this[0] : 0
+
+    // [Override]
+    // public Int last => count > 0 ? this[count - 1] : 0
+
+    // this[Int index] <=> (([Native] Int[])data)[index]
+
+    // public construct() => super()
+    // public construct(Int count) => super(count)
+    // public construct([Native] Int[] data, Int count) => super(data, count)
+
+    // public clone() => new IntArray(cloneData(), count)
+
+    // [Override]
+    // public map<Out>(mapFunc(Int, Int, IntArray) -> Out) -> Out[] {
+    //     Out[] array = new Array()
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         array.add(mapFunc(element, i++, this))
+    //     }
+
+    //     return array
+    // }
+
+    // [Override]
+    // public forEach(func(Int, Int, IntArray)) => this {
+    //     for (i in 0..count) {
+    //         func((Int)get(i), i, this)
+    //     }
+    // }
+
+    // [Override]
+    // public any(anyFunc(Int) -> Bool) -> Bool {
+    //     for (element in this) {
+    //         if (anyFunc(element)) {
+    //             return true
+    //         }
+    //     }
+
+    //     return false
+    // }
+
+    // [Override]
+    // public all(allFunc(Int, Int, IntArray) -> Bool, Bool stopOnContradiction = true) -> Bool {
+    //     Int i = 0
+
+    //     var contradiction = false
+
+    //     for (element in this) {
+    //         if (!allFunc(element, i++, this)) {
+    //             if (stopOnContradiction) return false
+
+    //             contradiction = true
+    //         }
+    //     }
+
+    //     return !contradiction
+    // }
+
+    // [Override]
+    // public filter(filterFunc(Int, Int, IntArray) -> Bool) -> IntArray {
+    //     IntArray filtered = new Int[]
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         if (filterFunc(element, i++, this)) {
+    //             filtered.add(element)
+    //         }
+    //     }
+
+    //     return filtered
+    // }
+
+    // [Override]
+    // public take(Int howMany) -> IntArray {
+    //     if (howMany > count) {
+    //         howMany = count
+    //     }
+
+    //     IntArray list = new Int[]
+
+    //     for (i in 0..howMany) {
+    //         list.add(data[i])
+    //     }
+
+    //     return list
+    // }
+
+    // [Override]
+    // public skip(Int howMany) -> IntArray {
+    //     IntArray list = new Int[]
+
+    //     for (i in howMany..count) {
+    //         list.add(data[i])
+    //     }
+
+    //     return list
+    // }
+
+    // [Override]
+    // public firstWhere(func(Int) -> Bool) -> Int {
+    //     for (element in this) {
+    //         if (func(element)) {
+    //             return element
+    //         }
+    //     }
+
+    //     return null
+    // }
+
+    // [Override]
+    // public reverse() -> IntArray {
+    //     IntArray array = new IntArray(count)
+    //     array.count = count
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         array.set(count - ++i, element)
+    //     }
+
+    //     return array
+    // }
+
+    // [Override]
+    // public join(String delimiter) -> String {
+    //     String str = ""
+
+    //     Bool passed = false
+
+    //     for (element in this) {
+    //         if (passed) {
+    //             str = str + delimiter
+    //         } else {
+    //             passed = true
+    //         }
+
+    //         str = str + element.toString()
+    //     }
+
+    //     return str
+    // }
+}

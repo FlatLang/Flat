@@ -1,0 +1,5 @@
+package "flatlang/math"
+
+class ArithmeticSequence extends Sequence {
+    public construct() {}
+}

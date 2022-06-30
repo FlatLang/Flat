@@ -1,5 +1,0 @@
-package "nova/primitive"
-
-immutable class Primitive {
-    
-}

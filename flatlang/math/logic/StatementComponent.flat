@@ -1,0 +1,5 @@
+package "flatlang/math/logic"
+
+class StatementComponent {
+
+}

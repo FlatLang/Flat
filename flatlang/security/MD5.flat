@@ -1,0 +1,19 @@
+package "flatlang/security"
+
+import "flatlang/security/NativeMD5.h"
+
+class MD5 {
+    external char[] nova_md5(char[] input)
+
+    public static encrypt(String str) -> String {
+        /*[Native]
+        Char[] data = nova_md5(str.chars.data)
+
+        if (data == 0) {
+            return null
+        }
+
+        return new String(data)*/
+        return null
+    }
+}

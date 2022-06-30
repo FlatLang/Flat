@@ -1,0 +1,191 @@
+package "flatlang/datastruct/list"
+
+import "flatlang/primitive/number/Double"
+
+class DoubleArray extends Array<Double> {
+    // [Override]
+    // visible DoubleArrayIterator iterator => new DoubleArrayIterator(this)
+
+    // [Override]
+    // public Double first => count > 0 ? this[0] : 0
+
+    // [Override]
+    // public Double last => count > 0 ? this[count - 1] : 0
+
+    // [Target not c]
+    // this[Int index] <=> (([Native] Double[])data)[index]
+
+    // [Target c]
+    // this[Int index] -> Double {
+    //     get {
+    //         external {
+    //             return ((double*)#{data})[#{index}];
+    //         }
+    //     }
+
+    //     set {
+    //         external {
+    //             ((double*)#{data})[#{index}] = #{value};
+    //         }
+    //     }
+    // }
+
+    // public construct() => super()
+    // public construct([Native] Double[] data, Int count) => super(data, count)
+    // public construct(Int count) {
+    //     super(count)
+
+    //     external c {
+    //         #{data} = (nova_Nova_Object**)NOVA_MALLOC(sizeof(double) * #{count});
+    //     }
+    //     external js {
+    //         for (var i = 0; i < #{count}; i++) {
+    //             #{data}[i] = 0;
+    //         }
+    //     }
+    // }
+
+    // public sum(func(Double, Int, DoubleArray) -> Double) -> Double {
+    //     Double sum = 0
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         sum += func(element, i++, this)
+    //     }
+
+    //     return sum
+    // }
+
+    // [Override]
+    // public map<Out>(mapFunc(Double, Int, DoubleArray) -> Out) -> Out[] {
+    //     Out[] array = new Array()
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         array.add(mapFunc(element, i++, this))
+    //     }
+
+    //     return array
+    // }
+
+    // [Override]
+    // public forEach(func(Double, Int, DoubleArray)) => this {
+    //     for (i in 0..count) {
+    //         func((Double)get(i), i, this)
+    //     }
+    // }
+
+    // [Override]
+    // public any(anyFunc(Double) -> Bool) -> Bool {
+    //     for (element in this) {
+    //         if (anyFunc(element)) {
+    //             return true
+    //         }
+    //     }
+
+    //     return false
+    // }
+
+    // [Override]
+    // public all(allFunc(Double) -> Bool, Bool stopOnContradiction = true) -> Bool {
+    //     var contradiction = false
+
+    //     for (element in this) {
+    //         if (!allFunc(element)) {
+    //             if (stopOnContradiction) {
+    //                 return false
+    //             }
+
+    //             contradiction = true
+    //         }
+    //     }
+
+    //     return !contradiction
+    // }
+
+    // [Override]
+    // public filter(filterFunc(Double, Int, DoubleArray) -> Bool) -> DoubleArray {
+    //     DoubleArray filtered = new DoubleArray()
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         if (filterFunc(element, i++, this)) {
+    //             filtered.add(element)
+    //         }
+    //     }
+
+    //     return filtered
+    // }
+
+    // [Override]
+    // public take(Int howMany) -> DoubleArray {
+    //     if (howMany > count) {
+    //         howMany = count
+    //     }
+
+    //     DoubleArray list = new DoubleArray()
+
+    //     for (i in 0..howMany) {
+    //         list.add(get(i))
+    //     }
+
+    //     return list
+    // }
+
+    // [Override]
+    // public skip(Int howMany) -> DoubleArray {
+    //     DoubleArray list = new DoubleArray()
+
+    //     for (i in howMany..count) {
+    //         list.add(get(i))
+    //     }
+
+    //     return list
+    // }
+
+    // [Override]
+    // public firstWhere(func(Double) -> Bool) -> Double {
+    //     for (element in this) {
+    //         if (func(element)) {
+    //             return element
+    //         }
+    //     }
+
+    //     return 0
+    // }
+
+    // [Override]
+    // public reverse() -> DoubleArray {
+    //     DoubleArray array = new DoubleArray(count)
+    //     array.count = count
+
+    //     Int i = 0
+
+    //     for (element in this) {
+    //         array.set(count - ++i, element)
+    //     }
+
+    //     return array
+    // }
+
+    // [Override]
+    // public join(String delimiter) -> String {
+    //     String str = ""
+
+    //     Bool passed = false
+
+    //     for (element in this) {
+    //         if (passed) {
+    //             str = str + delimiter
+    //         } else {
+    //             passed = true
+    //         }
+
+    //         str = str + element.toString()
+    //     }
+
+    //     return str
+    // }
+}

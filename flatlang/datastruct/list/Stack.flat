@@ -1,0 +1,40 @@
+package "flatlang/datastruct/list"
+
+class Stack<E> {
+    visible var Int count
+
+    var ListNode<E> top
+
+    visible Bool isEmpty => count <= 0
+
+    public construct() {}
+
+    public construct(E[] data) {
+        for (e in data) {
+            push(e) // y do u hve to be so pushy?
+        }
+    }
+
+    public push(E data) {
+        let node = new ListNode(data, top)
+        top = node
+
+        count++
+    }
+
+    public pop() -> E {
+        if (isEmpty) {
+            throw new EmptyStackException()
+        }
+
+        E data = top.data
+
+        top = top.next
+
+        count--
+
+        return data
+    }
+
+    public peek() -> E => isEmpty ? null : top.data
+}

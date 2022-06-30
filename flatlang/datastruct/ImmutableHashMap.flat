@@ -1,0 +1,37 @@
+package "flatlang/datastruct"
+
+import "flatlang/datastruct/list/List"
+import "flatlang/operators/EqualsOperator"
+
+immutable class ImmutableHashMap<K extends EqualsOperator, V> implements List<Pair<K, V>> {
+    HashMap<K, V> map
+
+    visible Int count => map.count
+
+    this[K key] => map[key]
+
+    public construct(HashMap<K, V> map) {
+        this(map, true)
+    }
+
+    construct(HashMap<K, V> map, Bool clone) {
+        this.map = clone ? map.clone() : map
+    }
+
+    [Override] public toArray() => map({ _ })
+    [Override] public contains(Pair<K, V> value) => map.contains(value)
+    [Override] public any(func(Pair<K, V>) -> Bool) => map.any(func)
+    [Override] public all(func(Pair<K, V>) -> Bool, passing Bool stopOnContradiction) => map.all(func, stopOnContradiction)
+    [Override] public map<Out>(func(Pair<K, V>, Int, HashMap<K, V>) -> Out) => map.map(func)
+    [Override] public filter(func(Pair<K, V>, Int, HashMap<K, V>) -> Bool) => map.filter(func)
+    [Override] public join(String delimiter) => map.join(delimiter)
+    [Override] public skip(Int num) => map({ _ }).skip(num)
+    [Override] public take(Int num) => map({ _ }).take(num)
+    [Override] public reverse() => map({ _ }).reverse()
+    [Override] public firstWhere(func(Pair<K, V>) -> Bool) => map.firstWhere(func)
+    [Override] public forEach(func(Pair<K, V>, Int, HashMap<K, V>)) => map.forEach(func)
+
+    public containsKey(K key) => map.containsKey(key)
+
+    public toString() => this.class.location + " {" + map.map(p => { p.key + ": " + p.value }).join(", ") + "}"
+}

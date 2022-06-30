@@ -1,0 +1,11 @@
+package "flatlang/network"
+
+import "flatlang/network/NativeSocket.h"
+import "flatlang/io/InputStream"
+
+class NetworkInputStream implements InputStream {
+    public construct(private ConnectionSocket socket) {}
+
+    public readString() => socket.readString()
+    public readBytes() -> Byte[] => null
+}

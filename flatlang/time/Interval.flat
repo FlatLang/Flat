@@ -1,0 +1,87 @@
+package "flatlang/time"
+
+/// Class that represents a time interval. The start and end DateTimes indicate
+/// the start and end of the time interval. A null value for the start DateTime
+/// represents "from the beginning of time", while a null value for the end
+/// DateTime represents "to the end of time".
+class Interval {
+    public DateTime start, end
+
+    visible Long days => (end.millis - start.millis) / DateTime.SECS_DAY
+
+    visible Long hours => (end.millis - start.millis) / DateTime.SECS_HOUR
+    visible Int remainingHours => (Int)(hours % 24)
+
+    visible Long minutes => (end.millis - start.millis) / DateTime.SECS_MINUTE
+    visible Int remainingMinutes => (Int)(minutes % 60)
+
+    visible Long seconds => (end.millis - start.millis) / 1000
+    visible Int remainingSeconds => (Int)(seconds % 60)
+
+    visible Long milliseconds => end.millis - start.millis
+    visible Int remainingMilliseconds => (Int)(milliseconds % 1000)
+
+    visible Int months {
+        get {
+            var Int months = 0
+
+            let current = new DateTime(end)
+
+            while (start.year != current.year || start.month != current.month) {
+                current.subtractMonth()
+                months++
+            }
+
+            return months
+        }
+
+        no set
+    }
+
+    visible Int remainingMonths => months % 12
+
+    visible Int years {
+        get {
+            var Int years = 0
+
+            let current = new DateTime(end)
+
+            while (start.year != current.year) {
+                current.subtractYear()
+                years++
+            }
+
+            return years
+        }
+
+        no set
+    }
+
+    public construct(DateTime start = null, DateTime end = null) {
+        if (start == null || end == null) {
+            return new BoundlessInterval(start, end)
+        } else {
+            return new BoundedInterval(start, end)
+        }
+    }
+
+    public getGap(Interval other) -> Interval {
+        if (end <= other.start) return new BoundedInterval(end, other.start)
+        else if (start >= other.end) return new BoundedInterval(other.end, start)
+        else throw new NoGapException(this, other)
+    }
+
+    public toString() => "Interval [#start, #end]"
+
+    class IntervalException extends Exception {
+        public construct(String message) => super(message)
+    }
+
+    class InvalidIntervalException extends IntervalException {
+        public construct(String message) => super(message)
+    }
+
+    class NoGapException extends IntervalException {
+        public construct(Interval first, Interval second) => super("Cannot get a gap from overlapping Intervals #first and #second")
+    }
+}

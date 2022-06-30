@@ -1,0 +1,10 @@
+package "flatlang/network"
+
+import "flatlang/io/OutputStream"
+import "flatlang/io/InputStream"
+
+class ClientSocket extends Socket {
+    visible var ConnectionSocket connection
+
+    public construct(visible String ip, visible Int port) {}
+}

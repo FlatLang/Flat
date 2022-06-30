@@ -1,0 +1,5 @@
+package "flatlang/datastruct/list"
+
+class CompiledList<Type> {
+
+}

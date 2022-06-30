@@ -1,6 +1,0 @@
-package "nova/meta"
-
-[AutoFinal]
-immutable class Field {
-    public construct(visible String name, visible Type type) {}
-}

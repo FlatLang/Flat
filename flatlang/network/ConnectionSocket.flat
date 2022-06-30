@@ -1,0 +1,28 @@
+package "flatlang/network"
+
+import "flatlang/io/InputStream"
+import "flatlang/io/OutputStream"
+import "flatlang/datastruct/list/Queue"
+
+class ConnectionSocket extends Socket {
+    visible var Bool connected
+
+    visible InputStream  in
+    visible OutputStream out
+
+    Queue<String> inputBuffer = new Queue()
+
+    public validateConnection() => false {
+        if (connected) {
+            let message = readString(false)
+
+            if (connected) {
+                inputBuffer.enqueue(message)
+
+                return true
+            }
+        }
+    }
+
+    public readString() => readString(true)
+}

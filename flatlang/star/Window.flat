@@ -1,0 +1,114 @@
+package "flatlang/star"
+
+import "flatlang/star/NativeWindow.h"
+
+class Window {
+    public external_name var Int x, y, width, height
+
+    public Int clientWidth {
+        get {
+            external c {
+                #ifdef _WIN32
+                    RECT r;
+                    GetClientRect(#{hwnd}, &r);
+
+                    return r.right - r.left;
+                #endif
+            }
+
+            return 0
+        }
+    }
+
+    public Int clientHeight {
+        get {
+            external c {
+                #ifdef _WIN32
+                    RECT r;
+                    GetClientRect(#{hwnd}, &r);
+
+                    return r.bottom - r.top;
+                #endif
+            }
+
+            return 0
+        }
+    }
+
+    public external_name Frame frame
+
+    public external_name String title
+
+    external type WINDOW_ID_TYPE
+    external type MODULE_ID_TYPE
+    external type DEVICE_CONTEXT
+    external type PAINT_CONTEXT
+
+    external Int NULL
+
+    [Target c] public external_name WINDOW_ID_TYPE hwnd
+    [Target c] public external_name MODULE_ID_TYPE hinstance
+    [Target c] public external_name DEVICE_CONTEXT hdc
+    [Target c] public external_name PAINT_CONTEXT ps
+
+    public external_name WindowThread thread
+
+    static {
+        external c {
+            nova_gui_init();
+        }
+    }
+
+    public construct(
+        public String title = null,
+        public Int x = 0,
+        public Int y = 0,
+        public Int width = 0,
+        public Int height = 0
+    ) {
+        frame = new Frame(this)
+        frame.width = clientWidth
+        frame.height = clientHeight
+
+        thread = new WindowThread(this)
+        thread.start()
+    }
+
+    public show() => this {
+        thread.show()
+    }
+
+    public refreshPosition() {
+        external c {
+            #ifdef _WIN32
+                SetWindowPos(#{hwnd}, NULL, #{x}, #{y}, #{width}, #{height}, SWP_NOACTIVATE);
+            #endif
+        }
+
+        frame.width = clientWidth
+        frame.height = clientHeight
+    }
+
+    public center() => this {
+        x = Screen.width / 2 - width / 2
+        y = Screen.height / 2 - height / 2
+
+        refreshPosition()
+    }
+
+    [Target c]
+    public repaint() {
+        if (hwnd != NULL) { // If the window has been loaded
+            external c {
+                #ifdef _WIN32
+                    PostMessage(#{hwnd}, WM_USER_INVALRECT, 0, 0);
+                #endif
+            }
+        }
+    }
+
+    [Target not c]
+    public repaint() {
+
+    }
+}

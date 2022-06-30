@@ -1,0 +1,238 @@
+package "flatlang/time"
+
+import "flatlang/datastruct/Comparable"
+import "flatlang/datastruct/Tuple2"
+import "flatlang/regex/Regex"
+
+import "flatlang/operators/LessThanOperator"
+import "flatlang/operators/LessThanOrEqualToOperator"
+import "flatlang/operators/GreaterThanOperator"
+import "flatlang/operators/GreaterThanOrEqualToOperator"
+
+class DateTime implements Comparable<DateTime>, LessThanOperator<DateTime>, LessThanOrEqualToOperator<DateTime>, GreaterThanOperator<DateTime>, GreaterThanOrEqualToOperator<DateTime> {
+    /// Milliseconds since January 1 1970
+    visible var Long millis
+
+    visible var Int year, month, dayOfMonth, dayOfYear, hour, minute, second
+
+    public Int millisecond => millis % 1000
+
+    visible Bool isLeapYear => Calculator.isLeapYear(year)
+
+    visible static Long SECS_DAY = 24 * 60 * 60 * 1000
+    visible static Long SECS_HOUR = 60 * 60 * 1000
+    visible static Long SECS_MINUTE = 60 * 1000
+    visible static Int EPOCH_YEAR = 1970
+    visible static /*immutable*/ Byte[] MONTH_DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    visible static Byte[] LEAP_MONTH_DAYS = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+
+    public construct(String input, String: format = null) {
+        if (format == null) {
+            throw new Exception("implicit formats not implemented yet")
+        }
+
+        Regex.getMatches("yyyy", format).forEach(match => {
+            year = Int.parseInt(input.substring(match.start, match.end))
+        })
+        Regex.getMatches("MM", format).forEach(match => {
+            month = Int.parseInt(input.substring(match.start, match.end))
+        })
+        Regex.getMatches("dd", format).forEach(match => {
+            dayOfMonth = Int.parseInt(input.substring(match.start, match.end))
+        })
+
+        this(year: year, month: month, dayOfMonth: dayOfMonth)
+    }
+
+    public construct(this Long: millis) {
+        let yearAndDay = Calculator.getYearAndDay(millis)
+        year = yearAndDay.first
+        dayOfYear = yearAndDay.last
+
+        let monthAndDay = Calculator.getMonthAndDay(year, dayOfYear)
+        month = monthAndDay.first
+        dayOfMonth = monthAndDay.last
+
+        hour = Calculator.getHour(millis)
+        minute = Calculator.getMinute(millis)
+        second = Calculator.getSecond(millis)
+    }
+
+    public construct(this Int: year = 0, this Int: month = 1, this Int: dayOfMonth = 1, this Int: hour = 0, this Int: minute = 0, this Int: second = 0, Int: millisecond = 0) {
+        if (month <= 0 || month > 12) {
+            throw new InvalidDateException("Invalid month #{month}. Must be 1-12")
+        } else if (!Calculator.isValidDayOfMonth(year, month, dayOfMonth)) {
+            throw new InvalidDateException("Invalid day of month #dayOfMonth for month #month")
+        } else if (month == 2 && dayOfMonth == 29 && !isLeapYear) {
+            throw new InvalidDateException("Year #year is not a leap year")
+        }
+
+        millis = calculateMillis() + millisecond
+    }
+
+    calculateMillis(Int year = year, Int month = month, Int dayOfMonth = dayOfMonth, Int hour = hour, Int minute = minute, Int second = second, Int millisecond = millisecond) =>
+        Calculator.getYearMillis(year) +
+        Calculator.getMonthMillis(year, month) +
+        Calculator.getDayMillis(dayOfMonth) +
+        Calculator.getHourMillis(hour) +
+        Calculator.getMinuteMillis(minute) +
+        Calculator.getSecondMillis(second) +
+        Calculator.getMillisecondMillis(millisecond)
+
+    public construct(DateTime dateTime) => this(millis: dateTime.millis)
+
+    public addMonth() => addMonths(1)
+    public addMonths(Int months) {
+        if (months > 0) {
+            year += (months + month - 1) / 12
+            month = (month - 1 + months) % 12
+        } else {
+            month = month - 1 + months
+
+            while (month < 0) {
+                month = month + 12
+                year--
+            }
+        }
+
+        ++month
+
+        let days = Calculator.getMonthDays(year)[month - 1]
+
+        if (dayOfMonth > days) {
+            dayOfYear -= dayOfMonth - days
+            dayOfMonth = days
+        }
+
+        millis = calculateMillis()
+    }
+
+    public subtractMonth() => subtractMonths(1)
+    public subtractMonths(Int months) => addMonths(-months)
+
+    public addYear() => addYears(1)
+    public addYears(Int years) {
+        year += years
+
+        if (month == 2 && dayOfMonth == 29 && !Calculator.isLeapYear(year)) {
+            dayOfMonth--
+            dayOfYear--
+        }
+
+        millis = calculateMillis()
+    }
+
+    public subtractYear() => subtractYears(1)
+    public subtractYears(Int years) => addYears(-years)
+
+    public compareTo(DateTime other) => (Int)(millis - other.millis)
+    public lessThan(DateTime other) => millis < other.millis
+    public lessThanOrEqualTo(DateTime other) => millis <= other.millis
+    public greaterThan(DateTime other) => millis > other.millis
+    public greaterThanOrEqualTo(DateTime other) => millis >= other.millis
+
+    public toString() => toString("MM/dd/yyyy")
+    public toString(String format) -> String {
+        let monthString = (month < 10 ? "0" : "") + month
+        let dayOfMonthString = (dayOfMonth < 10 ? "0" : "") + dayOfMonth
+
+        return "#{year}-#{monthString}-#{dayOfMonthString}"
+    }
+
+    class InvalidDateException extends Exception {
+        public construct(String message) => super(message)
+    }
+
+    class InvalidDateFormatException extends InvalidDateException {
+        public construct(String message) => super(message)
+    }
+
+    class Calculator {
+        public static getLeapYearCount(Int year, Bool inclusive = true) -> Int {
+            var Int sum = 0
+
+            for (i in 1970..(inclusive ? year + 1 : year)) {
+                if (isLeapYear(i)) {
+                    sum++
+                }
+            }
+
+            return sum
+        }
+
+        public static getYearMillis(var Int year) -> Long {
+            --year
+
+            var Long millis = 0
+
+            while (year >= DateTime.EPOCH_YEAR) {
+                millis += (Long)getYearSize(year) * 24 * 60 * 60 * 1000
+
+                --year
+            }
+
+            return millis
+        }
+
+        public static getMonthMillis(Int year, var Int month) -> Long {
+            --month
+
+            var Long millis = 0
+
+            while (month > 0) {
+                millis += (Long)(getMonthDays(year)[month - 1]) * 24 * 60 * 60 * 1000
+
+                --month
+            }
+
+            return millis
+        }
+
+        public static getDayMillis(Int dayOfMonth) => ((Long)dayOfMonth - 1) * 24 * 60 * 60 * 1000
+        public static getHourMillis(Int hour) => hour * 60 * 60 * 1000
+        public static getMinuteMillis(Int minute) => minute * 60 * 1000
+        public static getSecondMillis(Int second) => second * 1000
+        public static getMillisecondMillis(Int millisecond) => millisecond
+
+        public static getYear(Long millis) => getYearAndDay(millis).first
+        public static getDayOfMonth(Long millis) => getYearAndDay(millis).last
+        public static getHour(Long millis) => (millis / (60 * 60 * 1000)) % 24
+        public static getMinute(Long millis) => (millis / (60 * 1000)) % 60
+        public static getSecond(Long millis) => (millis / 1000) % 60
+        public static getMillisecond(Long millis) => millis % 1000
+
+        public static getYearSize(Int year) => isLeapYear(year) ? 366 : 365
+        public static getMonthDays(Int year) => isLeapYear(year) ? DateTime.LEAP_MONTH_DAYS : DateTime.MONTH_DAYS
+
+        public static getYearAndDay(Long millis) -> Int[] {
+            var Int year = DateTime.EPOCH_YEAR
+            var Int day = millis / DateTime.SECS_DAY
+
+            while (day >= (let size = getYearSize(year))) {
+                day -= size
+                year++
+            }
+
+            return [year, day + 1]
+        }
+
+        public static getMonthAndDay(Int year, Int yearDay) -> Int[] {
+            var Int month = 0
+            var Int monthDay = yearDay - 1
+
+            while (monthDay >= getMonthDays(year)[month]) {
+                monthDay -= getMonthDays(year)[month++]
+            }
+
+            return [month + 1, monthDay + 1]
+        }
+
+        public static isLeapYear(Int year) =>
+            (year & 3) == 0 &&
+            ((year % 25) != 0 || (year & 15) == 0)
+            // year % 4 == 0 &&
+            // (year % 400 == 0 || year % 100 != 0)
+
+        public static isValidDayOfMonth(Int year, Int month, Int day) => day > 0 && day <= getMonthDays(year)[month - 1]
+    }
+}

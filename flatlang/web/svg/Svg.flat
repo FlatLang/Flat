@@ -1,0 +1,21 @@
+package "flatlang/web/svg"
+
+import "flatlang/io/FileWriter"
+
+class Svg {
+    public SvgMainComponent root
+
+    public construct() {
+        root = new SvgMainComponent()
+    }
+
+    public generateOutput(FileWriter writer) => root.generateOutput(writer)
+
+    public generateHTMLOutput(FileWriter writer) {
+        writer.write("<html>\n")
+
+        generateOutput(writer)
+
+        writer.write("</html>")
+    }
+}

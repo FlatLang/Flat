@@ -1,0 +1,40 @@
+package "flatlang/primitive/number"
+
+import "flatlang/datastruct/Comparable"
+import "flatlang/primitive/Primitive"
+import "flatlang/operators/PlusOperator"
+import "flatlang/operators/PlusEqualsOperator"
+import "flatlang/operators/MinusOperator"
+import "flatlang/operators/MinusEqualsOperator"
+import "flatlang/operators/EqualsOperator"
+import "flatlang/operators/MultiplyOperator"
+import "flatlang/operators/MultiplyEqualsOperator"
+
+abstract class Number extends Primitive implements PlusOperator<Number, Number>, PlusEqualsOperator<Number, Number>, MinusOperator<Number, Number>, MinusEqualsOperator<Number, Number>, MultiplyOperator<Number, Number>, MultiplyEqualsOperator<Number, Number>, EqualsOperator<Number>, Comparable<Number> {
+    public Double realValue => 0
+    public Long integerValue => 0
+
+    public abstract plusInteger(Long other) -> Long
+    public abstract plusReal(Double other) -> Double
+
+    public abstract plusEqualsInteger(Long other) -> Long
+    public abstract plusEqualsReal(Double other) -> Double
+
+    public abstract minusInteger(Long other) -> Long
+    public abstract minusReal(Double other) -> Double
+
+    public abstract minusEqualsInteger(Long other) -> Long
+    public abstract minusEqualsReal(Double other) -> Double
+
+    public abstract multiplyInteger(Long other) -> Long
+    public abstract multiplyReal(Double other) -> Double
+
+    public abstract multiplyEqualsInteger(Long other) -> Long
+    public abstract multiplyEqualsReal(Double other) -> Double
+
+    public abstract compareToInteger(Long other) -> Long
+    public abstract compareToReal(Double other) -> Double
+
+    public abstract equalsInteger(Long other) -> Bool
+    public abstract equalsReal(Double other) -> Bool
+}

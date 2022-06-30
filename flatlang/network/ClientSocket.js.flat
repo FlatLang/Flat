@@ -1,0 +1,38 @@
+package "flatlang/network"
+
+import "flatlang/io/OutputStream"
+import "flatlang/io/InputStream"
+
+class ClientSocket extends Socket {
+    external type SOCKET_TYPE
+
+    var SOCKET_TYPE socket
+
+    visible var ConnectionSocket connection
+
+    public connect() => this {
+        external {
+            #{socket} = #{ServerSocket.NetGlobal.net}.Socket();
+
+            #{socket}.connect(#{port}, #{ip.chars.data});
+        }
+    }
+
+    public write(String value) => this {
+        if (!socket) {
+            throw new Exception("Socket not connected")
+        }
+
+        external {
+            #{socket}.write(#{value.chars.data});
+        }
+    }
+
+    public close() => this {
+        external {
+            #{socket}.end();
+        }
+
+        return true
+    }
+}

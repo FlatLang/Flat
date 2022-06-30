@@ -1,0 +1,44 @@
+package "flatlang/time"
+
+import "flatlang/time/NativeDate.h"
+
+class Date {
+    external void nova_updateTime()
+    external char[] nova_formatDate(char str[], int o, int t, int tt, int f, int ff, int s)
+    external int nova_getYear()
+    external int nova_getMonth()
+    external int nova_getDay()
+    external int nova_getHour()
+    external int nova_getMinute()
+    external int nova_getSecond()
+
+    public var Int year
+    public var Int month
+    public var Int day
+    public var Int hour
+    public var Int minute
+    public var Int second
+
+//    static HashMap<String,
+
+    public construct() => updateTime()
+
+    public decodeDate(String prototype, String date) {}
+
+    public updateTime() {
+        nova_updateTime()
+
+        year   = nova_getYear()
+        month  = nova_getMonth()
+        day    = nova_getDay()
+        hour   = nova_getHour()
+        minute = nova_getMinute()
+        second = nova_getSecond()
+    }
+
+    public formatDate(String str, Int first = month, Int second = day, Int third = year, Int fourth = hour, Int fifth = minute, Int sixth = second) -> String {
+        native Char[] data = nova_formatDate(str.chars.data, first, second, third, fourth, fifth, sixth)
+
+        return new String(data)
+    }
+}

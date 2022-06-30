@@ -1,0 +1,41 @@
+package "flatlang/io"
+
+class FancyOutputStream implements OutputStream {
+    public var Int contentWidth = 80
+
+    public var String headerPattern = "="
+
+    public construct(
+        public OutputStream out = Console.out,
+        public Int contentWidth = 80,
+        public String headerPattern = "="
+    ) {}
+
+    public writeHeader(Object message) => writeHeader(message.toString())
+    public writeHeader(String message, String pattern = headerPattern, var String rightPattern = pattern, Bool symmetrical = false) => this {
+        let fullHeaderCount = contentWidth - message.count - 2
+        let sideCount = fullHeaderCount / 2
+
+        if (symmetrical) {
+            rightPattern = pattern.reverse(true)
+        }
+
+        let leftCount = sideCount / pattern.count
+        let rightCount = sideCount / rightPattern.count
+        let remainingLeft = sideCount % pattern.count
+        let remainingRight = (sideCount % rightPattern.count) + (message.count % 2)
+
+        write(pattern.repeat(leftCount)).write(pattern.substring(end: remainingLeft))
+        write(" ").write(message).write(" ")
+        write(rightPattern.repeat(rightCount)).write(rightPattern.substring(end: remainingRight))
+
+        writeLine()
+    }
+
+    public writeSeparator(String pattern = headerPattern) => this {
+        writeLine(pattern.repeat(contentWidth))
+    }
+
+    public write(String value = "") => this { out.write(value) }
+    public writeLine(String value = "") => this { out.writeLine(value) }
+}

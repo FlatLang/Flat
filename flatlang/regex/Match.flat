@@ -1,0 +1,12 @@
+package "flatlang/regex"
+
+immutable class Match {
+    visible Int count => end - start
+
+    visible String match => source.substring(start, end)
+
+    public construct(visible String source, visible Int start, visible Int end) {}
+
+    [Override]
+    public toString() => match
+}

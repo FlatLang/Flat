@@ -1,0 +1,13 @@
+package "flatlang/math/logic"
+
+import "flatlang/math/Statement"
+
+class LogicalStatement extends Statement {
+    StatementComponent[] components
+
+    public construct(private String statement) {
+        components = new Array()
+    }
+
+    public toString() => statement
+}

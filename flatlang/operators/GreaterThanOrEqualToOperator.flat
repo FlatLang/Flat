@@ -1,0 +1,5 @@
+package "flatlang/operators"
+
+public trait GreaterThanOrEqualToOperator<In> {
+    public greaterThanOrEqualTo(In another) -> Bool
+}

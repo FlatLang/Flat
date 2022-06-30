@@ -1,0 +1,159 @@
+package "flatlang/datastruct"
+
+import "flatlang/datastruct/list/List"
+import "flatlang/operators/EqualsOperator"
+
+class HashSet<T extends EqualsOperator> implements List<T> {
+    T[][] buckets
+
+    visible Int size
+
+    public construct(Int bucketCount = 5, private Int bucketSize = 5) {
+        buckets = new Array(bucketCount).map({ new Array<T>(bucketSize) })
+    }
+
+    [Override]
+    public toArray() => map({ _ })
+
+    [Override]
+    public any(func(T) -> Bool) => false {
+        for (bucket in buckets) {
+            for (v in bucket) {
+                if (v && func(v)) {
+                    return true
+                }
+            }
+        }
+    }
+
+    [Override]
+    public all(func(T) -> Bool, Bool stopOnContradiction = true) -> Bool {
+        var contradiction = false
+
+        for (bucket in buckets) {
+            for (v in bucket) {
+                if (v && !func(v)) {
+                    if (stopOnContradiction) {
+                        return false
+                    }
+
+                    contradiction = true
+                }
+            }
+        }
+
+        return !contradiction
+    }
+
+    [Override]
+    public map<Out>(func(T, Int, HashSet<T>) -> Out) -> Out[] {
+        let array = new Out[]
+
+        var Int i = 0
+
+        for (bucket in buckets) {
+            for (v in bucket) {
+                if (v) {
+                    array.add(func(v, i++, this))
+                }
+            }
+        }
+
+        return array
+    }
+
+    [Override]
+    public filter(func(T, Int, HashSet<T>) -> Bool) -> T[] {
+        let array = new T[]
+
+        var Int i = 0
+
+        for (bucket in buckets) {
+            for (v in bucket) {
+                if (v && func(v, i++, this)) {
+                    array.add(v)
+                }
+            }
+        }
+
+        return array
+    }
+
+    [Override]
+    public join(String delimiter) -> String {
+        var Int i = 0
+
+        var output = ""
+
+        for (bucket in buckets) {
+            for (v in bucket) {
+                if (v) {
+                    if (i > 0) {
+                        output = output + delimiter
+                    }
+
+                    output = output + v
+                }
+            }
+        }
+
+        return output
+    }
+
+    [Override] public skip(Int num) => map({ _ }).skip(num)
+    [Override] public take(Int num) => map({ _ }).take(num)
+    [Override] public reverse() => map({ _ }).reverse()
+
+    [Override]
+    public firstWhere(func(T) -> Bool) -> T => null {
+        for (bucket in buckets) {
+            for (v in bucket) {
+                if (v && func(v)) {
+                    return v
+                }
+            }
+        }
+    }
+
+    [Override]
+    public forEach(func(T, Int, HashSet<T>)) => this {
+        var Int i = 0
+
+        for (bucket in buckets) {
+            for (v in bucket) {
+                if (v) {
+                    func(v, i++, this)
+                }
+            }
+        }
+    }
+
+    getBucket(T value) => buckets[(Int)(value.hashCodeLong & (buckets.count - 1))]
+
+    public add(T value) => value {
+        getBucket(value).add(value)
+    }
+
+    public get(T value) => getBucket(value).firstWhere(x => { x && x.equals(value) })
+
+    public remove(T value) -> T => null {
+        T[] bucket = getBucket(value)
+
+        var Int i = 0
+
+        for (v in bucket) {
+            if (v && v.equals(value)) {
+                bucket.remove(i)
+
+                return v
+            }
+
+            i++
+        }
+    }
+
+    [Override]
+    public contains(T value) => value && get(value)
+
+    public toString() => "HashSet [#{join(", ")}]"
+}

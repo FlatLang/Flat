@@ -1,0 +1,15 @@
+package "flatlang/time"
+
+import "flatlang/time/Interval.InvalidIntervalException"
+
+class BoundedInterval extends Interval {
+    public construct(this super DateTime start, this super DateTime end) {
+        if (start == null || end == null) {
+            throw new InvalidIntervalException("Bounded interval cannot have open-ended bounds: #this")
+        } else {
+            if (start > end) {
+                throw new InvalidIntervalException("Interval from #start to #end is invalid")
+            }
+        }
+    }
+}

@@ -1,7 +1,0 @@
-package "nova/web/js/json"
-
-import "nova/datastruct/HashMap"
-
-class Json extends HashMap<String, Object> {
-    public toString() => "{}"
-}

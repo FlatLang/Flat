@@ -1,0 +1,33 @@
+package "flatlang/web/svg"
+
+import "flatlang/io/FileWriter"
+
+class SvgComponentList {
+    public var SvgComponentNode start
+
+    public generateOutput(FileWriter writer) {
+        var current = start
+
+        while (current) {
+            current.component.generateOutput(writer)
+
+            current = current.next
+        }
+    }
+
+    public addChild(SvgComponent component) {
+        let node = new SvgComponentNode(component)
+
+        if (!start) {
+            start = node
+        } else {
+            var current = start
+
+            while (current.next) {
+                current = current.next
+            }
+
+            current.next = node
+        }
+    }
+}
