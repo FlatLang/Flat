@@ -1,0 +1,31 @@
+package "nova/datastruct/list"
+
+class LinkedListIterator<E> implements Iterator<E> {
+    visible var ListNode position
+    
+    visible Bool hasNext => position != null
+    
+    visible E next {
+        get {
+            if (hasNext) {
+                E data = position.data
+                
+                position = position.next
+                
+                return data
+            }
+            
+            throw new NoSuchElementException()
+        }
+        
+        no set
+    }
+    
+    public construct(private LinkedList<E> list) {
+        reset()
+    }
+    
+    public reset() => this {
+        position = list.first
+    }
+}

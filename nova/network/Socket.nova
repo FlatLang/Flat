@@ -1,5 +1,0 @@
-package "nova/network"
-
-class Socket {
-    public construct(visible String ip, visible Int port) {}
-}

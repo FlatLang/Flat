@@ -1,0 +1,27 @@
+package "nova/datastruct/list"
+
+class CharArrayIterator implements Iterator<Char> {
+    visible var Int position
+    
+    visible Bool hasNext => array.count > position
+    
+    visible Char next {
+        get {
+            if (hasNext) {
+                return array.get(position++ * indexSize)
+            }
+            
+            throw new NoSuchElementException()
+        }
+        
+        no set
+    }
+    
+    public construct(private CharArray array, private Int indexSize) {
+        reset()
+    }
+    
+    public reset() => this {
+        position = 0
+    }
+}

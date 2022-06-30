@@ -1,0 +1,5 @@
+package "nova/primitive/number"
+
+immutable trait RealNumber {
+    
+}

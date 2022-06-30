@@ -1,0 +1,7 @@
+package "nova/datastruct/list"
+
+class EmptyStackException extends NoSuchElementException {
+    public construct(String message = "") {
+        super(message)
+    }
+}

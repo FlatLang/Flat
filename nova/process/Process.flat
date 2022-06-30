@@ -1,0 +1,7 @@
+package "nova/process"
+
+import "nova/io/FileReader"
+
+class Process {
+    public construct(visible FileReader reader) {}
+}

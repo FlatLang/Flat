@@ -1,0 +1,7 @@
+package "nova/math/huffman"
+
+import "nova/datastruct/Tree"
+
+class HuffmanTree extends Tree {
+    
+}

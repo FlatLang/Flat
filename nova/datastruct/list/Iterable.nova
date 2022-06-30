@@ -1,5 +1,0 @@
-package "nova/datastruct/list"
-
-public trait Iterable<E> {
-    visible Iterator<E> iterator
-}

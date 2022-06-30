@@ -1,0 +1,12 @@
+package "nova/network"
+
+import "nova/network/NativeSocket.h"
+import "nova/io/OutputStream"
+
+class NetworkOutputStream implements OutputStream {
+    public construct(private ConnectionSocket socket) {}
+    
+    public write(String data) => this {
+        socket.write(data)
+    }
+}

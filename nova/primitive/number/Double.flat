@@ -1,0 +1,179 @@
+package "nova/primitive/number"
+
+import "nova/exception/UnimplementedForTargetException"
+import "nova/datastruct/Comparable"
+import "nova/operators/EqualsOperator"
+import "nova/operators/MultiplyOperator"
+import "nova/operators/MultiplyEqualsOperator"
+
+class Double extends Number implements RealNumber {
+    external void sprintf(char buffer[], char format[], double value)
+    external char[] realloc(char buffer[], int size)
+    external int strlen(char buffer[])
+    external double strtod(char str[], char* pEnd[])
+    
+    public Double realValue => value
+    public Long integerValue => (Long)value
+    
+    public construct(public Double value) {}
+    
+    public static numDigits(Double number) -> Int {
+        var Int size = number < 0 ? 2 : 1
+        
+        number /= 10
+        
+        while (number > 0) {
+            number /= 10
+            
+            size++
+        }
+        
+        return size
+    }
+    
+    static genString(native var Char buffer[], var Int lastIndex) -> String {
+        buffer = realloc(buffer, ++lastIndex + 1)
+        
+        buffer[lastIndex] = '\0'
+        
+        return new String(buffer)
+    }
+    
+    static native genBuffer(Double value) -> Char[] {
+        Int  size     = 11 + 1 + 15
+        
+        native Char[] buffer = new Char[size]
+        
+        sprintf(buffer, "%.15f", value)
+        
+        return buffer
+    }
+    
+    static repetition(native Char[] buffer, var Int start) -> Int {
+        Int  index = start
+        Char c     = buffer[index]
+        
+        while (buffer[--index] == c);
+        
+        return start - index - 1
+    }
+    
+    static lastSignificantDigit(native Char[] buffer, var Int start) -> Int {
+        while (buffer[start--] == '0');
+        
+        return start + 1
+    }
+    
+    public native static toCharArray(Double value) -> Char[] {
+        external js {
+            return #{value}.toString();
+        }
+    }
+    
+    [Target js]
+    public static toString(Double value) => new String(toCharArray(value))
+    
+    [Target not js]
+    public static toString(Double value) -> String {
+        native var Char buffer[]  = genBuffer(value)
+        Int  size      = strlen(buffer)
+        var Int  lastIndex = size - 1
+        
+        var Char c = buffer[--lastIndex]
+        
+        if (c == '0' || c == '9') {
+            while (buffer[lastIndex--] == c);
+            
+            if (buffer[++lastIndex] == '.') {
+                lastIndex++
+                
+                return genString(buffer, lastIndex)
+            } else {
+                if (lastIndex >= size - 3 - 4) {
+                    lastIndex = size - 1
+                } else if (c == '9') {
+                    buffer[lastIndex]++
+                    
+                    return genString(buffer, lastIndex)
+                }
+            }
+        } else {
+            Int rep = repetition(buffer, lastIndex)
+            
+            if (rep > 5) {
+                buffer[lastIndex] = c
+                
+                if (c >= '5') {
+                    c++;
+                }
+                
+                buffer[++lastIndex] = c
+                
+                return genString(buffer, lastIndex)
+            }
+        }
+        
+        lastIndex = lastSignificantDigit(buffer, size - 1)
+        
+        return genString(buffer, lastIndex)
+    }
+    
+    public static parseDouble(String str) -> Double {
+        external c {
+            return strtod(#{str.chars.data}, NULL);
+        }
+        
+        throw new UnimplementedForTargetException()
+    }
+    
+    public withinTolerance(Double target, passing Double tolerance) =>
+        withinTolerance(value, target, tolerance)
+    
+    public static withinTolerance(Double value, Double target, Double tolerance = 0.00000001) =>
+        (value - target) < tolerance && (value - target) > -tolerance
+    
+    public compareTo(Number other) => other.compareToReal(value)
+    public compareToReal(Double other) => this.value - other
+    public compareToInteger(Long other) => this.value - other
+    
+    public static compareTo(Double value, Number other) => other.compareToReal(value)
+    public static compareToReal(Double value, Double other) => value - other
+    public static compareToInteger(Double value, Long other) => value - other
+    
+    public plus(Number other) => other.plusReal(value)
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) => this.value + other
+    
+    public plusEquals(Number other) => other.plusEqualsReal(value)
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) => this.value += other
+    
+    public minus(Number other) => other.minusReal(value)
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) => this.value - other
+    
+    public minusEquals(Number other) => other.minusEqualsReal(value)
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) => this.value -= other
+    
+    public multiply(Number other) => other.multiplyReal(value)
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) => this.value * other
+    
+    public multiplyEquals(Number other) => other.multiplyEqualsReal(value)
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) => this.value *= other
+    
+    public equals(Number other) => other.equalsReal(value)
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+    
+    public static equals(Double value, Number other) => other.equalsReal(value)
+    public static equalsReal(Double value, Double other) => value == other
+    public static equalsInteger(Double value, Long other) => value == other
+    
+    public toString() => toString(value)
+    public static hashCodeLong(Double value) => Math.abs((Long)value)
+    public static plus(Double a, Double b) => a + b
+    public static compareTo(Double a, Double b) => a - b
+}

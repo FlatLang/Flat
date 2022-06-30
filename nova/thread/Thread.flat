@@ -1,0 +1,124 @@
+package "nova/thread"
+
+import "nova/thread/NativeThread.h"
+
+class Thread {
+    external type NOVA_THREAD_HANDLE
+
+    external void lib_nova_thread_sleep(long millis)
+    external void lib_nova_thread_join(NOVA_THREAD_HANDLE handle)
+    external void lib_nova_thread_cancel(NOVA_THREAD_HANDLE handle)
+    external NOVA_THREAD_HANDLE* create_thread(Thread thread, run())
+
+    var NOVA_THREAD_HANDLE* handle
+
+    visible static immutable Thread[] ACTIVE_THREADS = new Thread[]
+
+    visible var Bool active
+
+    let action()
+
+    Bool useAction = false
+
+    public construct() {}
+
+    public construct(action()) {
+        this.action = action
+
+        useAction = true
+    }
+
+    visible static Long id {
+        get {
+            external c {
+                return nova_current_thread_id();
+            }
+        }
+
+        no set
+    }
+
+    [Target c]
+    public start() => this {
+        handle = create_thread(this, startRun)
+    }
+
+    [Target js]
+    public start() => this {
+
+    }
+
+    public join() => lib_nova_thread_join(handle)
+    public kill() => lib_nova_thread_cancel(handle)
+
+    public static async sleep(Long millis) {
+        [Target c]
+        lib_nova_thread_sleep(millis)
+
+        external js {
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, #{millis});
+            });
+        }
+    }
+
+    public static lock() {
+        external c {
+            #ifdef _WIN32
+                WaitForSingleObject(nova_thread_semaphore, INFINITE);
+            #else
+                sem_wait(nova_thread_semaphore);
+            #endif
+        }
+    }
+
+    public static unlock() {
+        external c {
+            #ifdef _WIN32
+                ReleaseSemaphore(nova_thread_semaphore, 1, 0);
+            #else
+                sem_post(nova_thread_semaphore);
+            #endif
+        }
+    }
+
+    public static sync<OUT>(action() -> OUT) -> OUT {
+        lock()
+        let out = action()
+        unlock()
+        return out
+    }
+
+    public run() {}
+
+    startRun() {
+        active = true
+
+        sync({ ACTIVE_THREADS = ACTIVE_THREADS.add(this) })
+
+        try {
+            //GC.init()
+
+            if (useAction) {
+                action()
+            } else {
+                run()
+            }
+        } catch (Exception e) {
+            var message = "#e.class.location in Thread #id"
+
+            if (e.message) {
+                message += ": #e.message"
+            }
+
+            Console.log(message)
+            Console.waitForEnter()
+        }
+
+        active = false
+
+        sync({ ACTIVE_THREADS = ACTIVE_THREADS.remove(this) })
+    }
+}

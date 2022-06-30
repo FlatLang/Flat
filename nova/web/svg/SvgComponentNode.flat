@@ -1,0 +1,5 @@
+package "nova/web/svg"
+
+class SvgComponentNode {
+    public construct(public SvgComponent component, public var SvgComponentNode next = null) {}
+}

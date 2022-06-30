@@ -1,7 +1,0 @@
-package "nova/math"
-
-class StatementComponent<E> {
-    public construct(visible E data, public StatementComponent<E> next = null) {}
-    
-    public toString() => "#data"
-}

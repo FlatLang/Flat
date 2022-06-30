@@ -1,0 +1,7 @@
+package "nova/datastruct/list"
+
+class ListNode<E> {
+    public construct(public var E data, public var ListNode<E> next = null) {}
+    
+    public clone() => new ListNode(data, next)
+}

@@ -1,7 +1,0 @@
-package "nova/thread"
-
-class UncaughtExceptionHandler {
-    public construct() {}
-    
-    public uncaughtException(Thread thread, Exception exception) {}
-}

@@ -1,0 +1,114 @@
+package "nova/primitive/number"
+
+import "nova/datastruct/Comparable"
+import "nova/operators/EqualsOperator"
+import "nova/operators/MultiplyOperator"
+import "nova/operators/MultiplyEqualsOperator"
+
+class Long extends Number implements Integer {
+    visible static final Long MAX_VALUE =  9223372036854775807
+    visible static final Long MIN_VALUE = -9223372036854775808
+    
+    public Double realValue => (Double)value
+    public Long integerValue => value
+    
+    public construct(public Long value) {}
+    
+    public static numDigits(var Long number) -> Int {
+        var Int size = number < 0 ? 2 : 1 
+        
+        number /= 10
+        
+        while (number != 0) {
+            number /= 10
+            
+            size++
+        }
+        
+        return size
+    }
+    
+    [Target js]
+    public static toString(Long value) => new String(toCharArray(value))
+    
+    [Native]
+    [Target js]
+    public static toCharArray(Long value) -> Char[] {
+        external js {
+            return #{value}.toString();
+        }
+    }
+    
+    [Target not js]
+    public static toString(var Long value) -> String {
+        Int charOffset = '0'
+        var Int digits = numDigits(value)
+        
+        [Native]
+        Char[] data = new Char[digits + 1]
+        
+        data[digits] = '\0'
+        
+        var Int  offset  = 0
+        
+        if (value < 0) {
+            data[0] = '-'
+            
+            offset = 1
+        }
+        
+        Int nums = digits-- - offset
+        
+        for (index in 0..nums) {
+            data[digits - index] = (Char)(charOffset + Math.abs(value % 10))
+            
+            value = value / 10
+        }
+        
+        return new String(data)
+    }
+    
+    public compareTo(Number other) => other.compareToInteger(value)
+    public compareToReal(Double other) => this.value - other
+    public compareToInteger(Long other) => this.value - other
+    
+    public static compareTo(Long value, Number other) => other.compareToInteger(value)
+    public static compareToReal(Long value, Double other) => value - other
+    public static compareToInteger(Long value, Long other) => value - other
+    
+    public plus(Number other) => other.plusInteger(value)
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) => this.value + other
+    
+    public plusEquals(Number other) => other.plusEqualsInteger(value)
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) => this.value += other
+    
+    public minus(Number other) => other.minusInteger(value)
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) => this.value - other
+    
+    public minusEquals(Number other) => other.minusEqualsInteger(value)
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) => this.value -= other
+    
+    public multiply(Number other) => other.multiplyInteger(value)
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) => this.value * other
+    
+    public multiplyEquals(Number other) => other.multiplyEqualsInteger(value)
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) => this.value *= other
+    
+    public equals(Number other) => other.equalsInteger(value)
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+    
+    public static equals(Long value, Number other) => other.equalsInteger(value)
+    public static equalsReal(Long value, Double other) => value == other
+    public static equalsInteger(Long value, Long other) => value == other
+    
+    public toString() => toString(value)
+    public static hashCodeLong(Long value) => Math.abs(value)
+    public static plus(Long a, Long b) => a + b
+}

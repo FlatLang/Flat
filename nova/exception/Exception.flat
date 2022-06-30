@@ -1,0 +1,69 @@
+package "nova/exception"
+
+class Exception {
+    visible StackTrace stackTrace = new StackTrace()
+    
+    public construct(visible String message = "") {}
+    
+    public toString() => this.class.name + (message ? ": #message" : "")
+    
+    [Target c]
+    public onThrown(Bool soft) {
+        external c {
+            // if (#{stackTrace}->context == 0) {
+                // #{stackTrace}->context = nova_get_context();
+            // }
+        }
+    }
+    
+    [Target not c]
+    public onThrown(Bool soft) {
+        
+    }
+
+    [Target not js]
+    public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Bool {
+        if (soft) {
+            try {
+                func()
+            } catch all (Exception e) {
+                if (exact ? e.class == exceptionType : e.class.isOfType(exceptionType)) {
+                    return true
+                }
+            }
+        } else {
+            try {
+                func()
+            } catch (Exception e) {
+                if (exact ? e.class == exceptionType : e.class.isOfType(exceptionType)) {
+                    return true
+                }
+            }
+        }
+        
+        return false
+    }
+
+    [Target js]
+    public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Bool {
+        if (soft) {
+            try {
+                func()
+            } catch all (Exception e) {
+                if (e.class.location == exceptionType.location) {
+                    return true
+                }
+            }
+        } else {
+            try {
+                func()
+            } catch (Exception e) {
+                if (e.class.location == exceptionType.location) {
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+}
