@@ -302,7 +302,7 @@ public class Nova
 			
 			try
 			{
-				URL url = engineJar.toURL();
+				URL url = engineJar.toURI().toURL();
 				
 				// Create a new class loader with the directory
 				ClassLoader cl = new URLClassLoader(new URL[] { url }, this.getClass().getClassLoader());
