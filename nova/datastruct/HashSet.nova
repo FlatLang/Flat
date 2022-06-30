@@ -5,9 +5,9 @@ import "nova/operators/EqualsOperator"
 
 class HashSet<T extends EqualsOperator> implements List<T> {
     T[][] buckets
-    
+
     visible Int size
-    
+
     public construct(Int bucketCount = 5, private Int bucketSize = 5) {
         buckets = new Array(bucketCount).map({ new Array<T>(bucketSize) })
     }
@@ -29,28 +29,28 @@ class HashSet<T extends EqualsOperator> implements List<T> {
     [Override]
     public all(func(T) -> Bool, Bool stopOnContradiction = true) -> Bool {
         var contradiction = false
-        
+
         for (bucket in buckets) {
             for (v in bucket) {
                 if (v && !func(v)) {
                     if (stopOnContradiction) {
                         return false
                     }
-                    
+
                     contradiction = true
                 }
             }
         }
-        
+
         return !contradiction
     }
 
     [Override]
     public map<Out>(func(T, Int, HashSet<T>) -> Out) -> Out[] {
         let array = new Out[]
-        
+
         var Int i = 0
-        
+
         for (bucket in buckets) {
             for (v in bucket) {
                 if (v) {
@@ -58,16 +58,16 @@ class HashSet<T extends EqualsOperator> implements List<T> {
                 }
             }
         }
-        
+
         return array
     }
 
     [Override]
     public filter(func(T, Int, HashSet<T>) -> Bool) -> T[] {
         let array = new T[]
-        
+
         var Int i = 0
-        
+
         for (bucket in buckets) {
             for (v in bucket) {
                 if (v && func(v, i++, this)) {
@@ -130,30 +130,30 @@ class HashSet<T extends EqualsOperator> implements List<T> {
 
     getBucket(T value) => buckets[(Int)(value.hashCodeLong & (buckets.count - 1))]
 
-    public add(T value) -> HashSet => this {
+    public add(T value) => value {
         getBucket(value).add(value)
     }
-    
+
     public get(T value) => getBucket(value).firstWhere(x => { x && x.equals(value) })
-    
+
     public remove(T value) -> T => null {
         T[] bucket = getBucket(value)
-        
+
         var Int i = 0
-        
+
         for (v in bucket) {
             if (v && v.equals(value)) {
                 bucket.remove(i)
-                
+
                 return v
             }
-            
+
             i++
         }
     }
-    
+
     [Override]
     public contains(T value) => value && get(value)
-    
+
     public toString() => "HashSet [#{join(", ")}]"
 }
