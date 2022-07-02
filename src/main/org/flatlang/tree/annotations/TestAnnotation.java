@@ -97,7 +97,9 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 			}
 			else
 			{
-				writeMessage((Literal)Literal.decodeStatement(parent, "\"Testing " + method.getName() + " \"", Location.INVALID, true, true));
+				String name = method.getLiteralNameData() != null ? method.getLiteralNameData().literalName : method.getName();
+
+				writeMessage((Literal)Literal.decodeStatement(parent, "\"Testing " + name + " \"", Location.INVALID, true, true));
 			}
 		}
 		
