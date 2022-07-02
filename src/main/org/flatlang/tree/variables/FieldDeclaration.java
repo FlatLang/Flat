@@ -264,7 +264,14 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 	 */
 	public static FieldDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
 	{
+		SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getFirstLiteralNameData(statement);
+
+		if (literalNameData != null) {
+			statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
+		}
+
 		FieldDeclaration n = new FieldDeclaration(parent, location);
+		n.setLiteralNameData(literalNameData);
 		
 		Bounds extraDeclarations = n.findExtraDeclarations(statement);
 		
