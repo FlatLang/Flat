@@ -935,6 +935,11 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				param.setDefaultType(methodTypes[i].getType());
 			}
 		}
+		methodParams.forEachVisibleListChild(param -> {
+			if (SyntaxUtils.isPrimitiveType(param.getDefaultType())) {
+				param.setDataType(Value.VALUE);
+			}
+		});
 		
 		addTo = addTo == null ? /*call.getReferenceNode().toValue().getTypeClass()*/getParent() : addTo;
 		
