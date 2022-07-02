@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
@@ -608,6 +609,10 @@ public abstract class Node implements Listenable, Annotatable
 	public int getNumChildren()
 	{
 		return children.size();
+	}
+
+	public Stream<Node> getChildStream() {
+		return children.stream();
 	}
 	
 	/**
