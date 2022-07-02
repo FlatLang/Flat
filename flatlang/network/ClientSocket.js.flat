@@ -33,7 +33,7 @@ class ClientSocket extends Socket {
         }
     }
 
-    public write(String value) => this {
+    public write(String value) => true {
         if (!socket) {
             throw new Exception("Socket not connected")
         }
@@ -43,11 +43,9 @@ class ClientSocket extends Socket {
         }
     }
 
-    public close() => this {
+    public close() => true {
         external {
             #{socket}.end();
         }
-
-        return true
     }
 }
