@@ -306,6 +306,8 @@ public class LocalDeclaration extends VariableDeclaration
 			}
 
 			interactName(word, leftDelimiter, rightDelimiter, extra);
+		} else if (extra.isFirstWord() && leftDelimiter.length() > 0) {
+			extra.error = "Invalid symbol '" + leftDelimiter + "'";
 		} else if (setAttribute(word, extra.getWordNumber())) {
 
 		} else if (getType() != null || isImplicit()) {
