@@ -96,14 +96,14 @@ jobs:
             -l Nest \
             -install-dir . \
             -main stabilitytest/StabilityTest \
-            -o Flat-Testing/example/bin/ExecutableJS \
+            -o Flat-Testing/example/bin/StabilityTest \
             -target js
 
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: ExecutableJS.js
-          path: Flat-Testing/example/bin/ExecutableJS.js
+          name: StabilityTest.js
+          path: Flat-Testing/example/bin/StabilityTest.js
 
       - uses: actions/setup-node@v3
         with:
@@ -111,4 +111,4 @@ jobs:
 
       - name: Run Stability Test
         run: |
-          node Flat-Testing/example/bin/ExecutableJS.js
+          node Flat-Testing/example/bin/StabilityTest.js
