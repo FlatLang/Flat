@@ -195,7 +195,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			
 			TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
 			
-			if (method.getParameterList().any(x -> x.isUserMade()))
+			if (method.getParameterList().any(Node::isUserMade))
 			{
 				SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
 			}
