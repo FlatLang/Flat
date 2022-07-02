@@ -1,0 +1,71 @@
+package "flatlang/io"
+
+import "flatlang/time/Time"
+
+class File {
+    visible Bool isDirectory {
+        get {
+            external {
+                if (#{FileGlobal.fs}.lstatSync(#{location.chars.data}).isDirectory()) {
+                    return true;
+                }
+            }
+
+            return false
+        }
+    }
+
+    visible Bool exists {
+        get {
+            external {
+                if (#{FileGlobal.fs}.existsSync(#{location.chars.data})) {
+                    return true;
+                }
+            }
+
+            return false
+        }
+    }
+
+    visible impure File[] files {
+        get {
+            if (!isDirectory) {
+                throw new Exception("Must be a directory to list files")
+            }
+
+            var list = new File[]
+            native Char[] filename
+
+            external {
+                #{FileGlobal.fs}.readdirSync(#{location.chars.data}).forEach((f) => {
+                    #{filename} = f;
+                    #{list.add(new File("#{location}/#{new String(filename)}"))};
+                });
+            }
+
+            return list
+        }
+    }
+
+    public construct(visible String location) {
+
+    }
+
+    public static class FileGlobal {
+        external type FsType
+
+        private static var FsType _fs
+
+        visible static FsType fs {
+            get {
+                external {
+                    if (!#{_fs}) {
+                        #{_fs} = require('fs');
+                    }
+                }
+
+                return _fs
+            }
+        }
+    }
+}
