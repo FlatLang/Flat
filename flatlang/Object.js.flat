@@ -16,4 +16,28 @@ class Object {
             this[#{funcName}].apply(this, #{args});
         }
     }
+
+    async compiler_visible external_name __callExtensionAsync(func(), Object[] args) {
+        external {
+            return await #{func}.apply(this, #{args});
+        }
+    }
+
+    compiler_visible external_name __callExtension(func(), Object[] args) {
+        external {
+            return #{func}.apply(this, #{args});
+        }
+    }
+
+    async compiler_visible external_name __callExtensionChainAsync(func(), Object[] args) => this {
+        external {
+            await #{func}.apply(this, #{args});
+        }
+    }
+
+    compiler_visible external_name __callExtensionChain(func(), Object[] args) => this {
+        external {
+            #{func}.apply(this, #{args});
+        }
+    }
 }
