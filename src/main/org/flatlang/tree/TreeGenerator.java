@@ -459,6 +459,7 @@ public class TreeGenerator implements Runnable
 			
 			if (expectCompileError != null)
 			{
+				controller.setExpectingCompileError(true);
 				boolean hitExpected = false;
 				controller.pushFlags();
 
@@ -493,6 +494,7 @@ public class TreeGenerator implements Runnable
 				}
 				
 				expectCompileError = null;
+				controller.setExpectingCompileError(false);
 			}
 			else
 			{
