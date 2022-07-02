@@ -50,7 +50,7 @@ public class Message
 	 */
 	public Message(String message, Node node, Location location)
 	{
-		this.file       = node.getFileDeclaration(true);
+		this.file       = node.getOriginalFile();
 		this.node       = node;
 		this.location   = location;
 		this.message    = message;
@@ -95,8 +95,6 @@ public class Message
 			}
 
 			String prefix = "";
-
-			FileDeclaration file = this.file.getOriginalFile();
 
 			if (file.getPackage() != null && file.getPackage().getLocation() != null) {
 				prefix = file.getPackage().getLocation() + "/";
