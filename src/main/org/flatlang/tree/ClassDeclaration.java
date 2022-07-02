@@ -3184,6 +3184,12 @@ public class ClassDeclaration extends InstanceDeclaration
 			for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 			{
 				ClassDeclaration typeClass = SyntaxUtils.getImportedClass(getFileDeclaration(), param.getDefaultType());
+
+				if (typeClass == null) {
+					SyntaxMessage.error("Invalid generic type parameter default type '" + param.getDefaultType() + "'", param);
+					result.errorOccurred = true;
+					return result;
+				}
 				
 				if (typeClass.isPrimitive())
 				{
