@@ -1137,6 +1137,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				}
 				else
 				{
+					if (varg.declaration.getOriginalDeclaration() instanceof CallableMethod == false) {
+						return false;
+					}
+
 					callable = (CallableMethod)varg.declaration.getOriginalDeclaration();
 				}
 				
