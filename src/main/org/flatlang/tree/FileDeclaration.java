@@ -559,6 +559,7 @@ public class FileDeclaration extends Node
 				detach();
 				
 				result.skipCycle = true;
+				result.nextIncrement = 0;
 			}
 		}
 		
