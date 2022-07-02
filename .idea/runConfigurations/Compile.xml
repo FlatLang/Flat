@@ -2,7 +2,7 @@
   <configuration default="false" name="Compile" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="org.flatlang.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../Nova-Testing/example ../Nova-Testing/stabilitytest -l ../Nest -install-dir ../Nova-Testing/example -d ../NovaCompilerOutput/js -main stabilitytest/StabilityTest -o ../Nova-Testing/example/bin/Executable.js" />
+    <option name="PROGRAM_PARAMETERS" value="../Flat-Testing/example ../Flat-Testing/stabilitytest -l ../Nest -install-dir ../Flat-Testing/example -d ../FlatCompilerOutput/js -main stabilitytest/StabilityTest -o ../Flat-Testing/example/bin/Executable.js" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
