@@ -300,29 +300,41 @@ public class LocalDeclaration extends VariableDeclaration
 	{
 		DeclarationData extra = (DeclarationData)data;
 		
-		if (extra.isLastWord())
-		{
+		if (extra.isLastWord()) {
 			if (getType() == null && containsImplicitCompatibleAnnotation()) {
 				isImplicit = true;
 			}
 
 			interactName(word, leftDelimiter, rightDelimiter, extra);
-		}
-		else if (setAttribute(word, extra.getWordNumber()))
-		{
+		} else if (setAttribute(word, extra.getWordNumber())) {
 
-		}
-		else if (getType() != null || isImplicit())
-		{
+		} else if (getType() != null || isImplicit()) {
 			extra.error = "Invalid syntax '" + leftDelimiter + word + "'";
-		}
-		else
-		{
-			setType(leftDelimiter + word, true, false, true || extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
+		} else if (rightDelimiter.equals(".")) {
+
+		} else if (rightDelimiter.length() == 0 || rightDelimiter.equals("*") || (rightDelimiter.startsWith("[") && rightDelimiter.length() > 1)) {
+			String type = word;
+
+			for (
+				int i = extra.getWordNumber();
+				i > 0 && extra.delims.get(i).equals(".");
+				i--
+			) {
+				type = extra.words.get(i - 1) + extra.delims.get(i) + type;
+
+				String left = extra.delims.get(i - 1);
+
+				if (left.length() > 0 && !left.equals(".")) {
+					extra.error = "Invalid type '" + type + "'";
+					return false;
+				}
+			}
+
+			setType(type, true, false, true || extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
 
 			if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS && (!setType(getType(), false, extra.checkType) || getType() == null))
 			{
-				extra.error = "Type '" + leftDelimiter + word + "' does not exist";
+				extra.error = "Type '" + type + "' does not exist";
 			}
 
 			if (rightDelimiter.equals("*"))
