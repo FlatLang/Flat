@@ -10,11 +10,26 @@ class ClientSocket extends Socket {
 
     visible var ConnectionSocket connection
 
-    public connect() => this {
+    public async connect() => true {
         external {
-            #{socket} = #{ServerSocket.NetGlobal.net}.Socket();
+            return await new Promise((resolve, reject) => {
+                #{socket} = #{ServerSocket.NetGlobal.net}.Socket();
 
-            #{socket}.connect(#{port}, #{ip.chars.data});
+                #{socket}.on('connect', () => {
+                    #{alertEventListeners("connect", null)};
+                    resolve(true);
+                });
+
+                #{socket}.on('error', (data) => {
+                    resolve(false);
+                });
+
+                #{socket}.on('timeout', (data) => {
+                    resolve(false);
+                });
+
+                #{socket}.connect(#{port}, #{ip.chars.data});
+            });
         }
     }
 
