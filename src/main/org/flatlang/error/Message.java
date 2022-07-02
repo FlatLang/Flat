@@ -96,6 +96,8 @@ public class Message
 
 			String prefix = "";
 
+			FileDeclaration file = this.file.getOriginalFile();
+
 			if (file.getPackage() != null && file.getPackage().getLocation() != null) {
 				prefix = file.getPackage().getLocation() + "/";
 			}
