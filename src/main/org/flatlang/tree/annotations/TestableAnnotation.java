@@ -203,8 +203,18 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			Variable timer = generateTimer(runMethod, method.getName());
 			
 			Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
+
+			if (tryBlock == null) {
+				SyntaxMessage.error("Could not create test suite class", runMethod);
+				return;
+			}
 			
 			MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "(out)", Location.INVALID, true, false, method);
+
+			if (call == null) {
+				SyntaxMessage.error("Could not create test suite class", runMethod);
+				return;
+			}
 
 			if (method.isAsync()) {
 				call.parseModifier("await");
@@ -216,6 +226,11 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			stopTimer(tryBlock, timer);
 			
 			Catch catchBlock = Catch.decodeStatement(runMethod, "catch (NestException e)", Location.INVALID, true);
+
+			if (catchBlock == null) {
+				SyntaxMessage.error("Could not create test suite class", runMethod);
+				return;
+			}
 			
 			runMethod.addChild(catchBlock);
 			stopTimer(catchBlock, timer);
