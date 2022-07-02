@@ -1,27 +1,19 @@
 package "flatlang/network"
 
-import "flatlang/datastruct/HashMap"
 import "flatlang/io/InputStream"
 import "flatlang/io/OutputStream"
 import "flatlang/io/ClosedStreamException"
 
 class ServerSocket extends Socket {
-    interface JsSocket {
-        on(native Char[] eventType, action(String))
-    }
-
     external type SERVER_TYPE
     external type SOCKET_TYPE
 
-    JsSocket[] clients = new Array()
-    var JsSocket server
+    var Socket.JsSocket server
 
     visible Bool open => server != 0
 
-    HashMap<String, Array<action(String)>> eventListeners = new HashMap()
-
     public async start(Int port) => true {
-        var JsSocket client
+        var Socket.JsSocket client
         var native Char[] dataChars
         var String dataString
 
@@ -47,28 +39,6 @@ class ServerSocket extends Socket {
                 #{server}.on("listening", () => {
                     resolve(#{true});
                 });
-            });
-        }
-    }
-
-    alertEventListeners(String eventType, String data) {
-        eventListeners.getOrDefault(eventType, { new Array() }).forEach({ _(data) })
-    }
-
-    public on(String eventType, action(String)) {
-        eventListeners.getOrDefault(eventType, { new Array() }).add(action)
-    }
-
-    re(String s) {
-
-    }
-
-    // FIXME: move resolveFunc out of signature into local declaration
-    public async onAsync(String eventType, resolveFunc(String) = re) -> String {
-        external {
-            return await new Promise(resolve => {
-                #{resolveFunc} = resolve;
-                #{on(eventType, {resolveFunc(_)})};
             });
         }
     }
