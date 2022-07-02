@@ -5,16 +5,6 @@ import "flatlang/time/Time"
 import "tinydir.h"
 
 class File {
-    external int getMaxOpenFiles() as extGetMaxOpenFiles
-    external void setMaxOpenFiles(int max) as extSetMaxOpenFiles
-    external int access(char[] location, int property)
-
-    external int F_OK
-
-    external type tinydir_file
-
-    tinydir_file* file
-
     visible String location
     visible String name => location.substring(location.lastIndexOf('/') + 1)
     visible String extension => location.substring(location.lastIndexOf('.', defaultReturnValue: location.count))
@@ -22,69 +12,10 @@ class File {
     visible String rootName => name.substring(end: name.count - extension.count)
 
     visible Bool isHidden => name.startsWith(".")
-
-    [Target c]
-    visible Bool isDirectory {
-        get {
-            external {
-                return #{file}->is_dir;
-            }
-        }
-
-        no set
-    }
-
-    [Target not c]
-    visible Bool isDirectory => false
-
     visible Bool isFile => exists && !isDirectory
-
-    [Target c]
-    visible Bool exists => access(location.chars.data, F_OK) != -1
-
-    [Target not c]
+    visible Bool isDirectory => false
     visible Bool exists => false
 
-    [Target c]
-    visible impure File[] files {
-        get {
-            if (!isDirectory) {
-                throw new Exception("Must be a directory to list files")
-            }
-
-            var list = new File[]
-
-            [Native]
-            Char[] current
-            tinydir_file* f
-
-            external {
-                tinydir_dir dir;
-                tinydir_open(&dir, (char*)#{location.chars.data});
-
-                while (dir.has_next) {
-                    #{f} = NOVA_MALLOC(sizeof(tinydir_file));
-                    tinydir_readfile(&dir, #{f});
-
-                    //if (!file.is_dir) {
-                        #{current} = #{f}->name;
-
-                        #{
-                            list.add(new File(location + "/" + new String(current), f))
-                        }
-                    //}
-
-                    tinydir_next(&dir);
-                }
-
-                tinydir_close(&dir);
-            }
-
-            return list
-        }
-    }
-
-    [Target not c]
     visible File[] files {
         get {
             return new File[]
@@ -93,31 +24,6 @@ class File {
 
     static {
         File exitLog = new File("log#Time.currentTimeMillis")
-    }
-
-    public Int maxOpenFiles => extGetMaxOpenFiles() {
-        set {
-            Short min = (Short)20
-            Short max = (Short)2048
-
-            if (value > max || value < min) {
-                throw new Exception("Invalid max number of open files: #value\nValid values include #{min}-#{max}")
-            } else {
-                extSetMaxOpenFiles(value)
-            }
-        }
-    }
-
-    construct(visible String location, private tinydir_file* file) {}
-
-    public construct(visible String location) {
-        external c {
-            errno = 0;
-
-            #{file} = NOVA_MALLOC(sizeof(tinydir_file));
-
-            tinydir_file_open(#{file}, (char*)#{location.chars.data});
-        }
     }
 
     public getChildFiles(
