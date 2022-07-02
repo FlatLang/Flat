@@ -39,6 +39,10 @@ class ServerSocket extends Socket {
                 #{server}.on("listening", () => {
                     resolve(#{true});
                 });
+
+                #{server}.on("error", () => {
+                    resolve(#{false});
+                });
             });
         }
     }
