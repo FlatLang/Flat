@@ -351,6 +351,29 @@ public class MethodCallArgumentList extends ArgumentList
 	{
 		return (CallableMethod)getMethodCall().getMethodDeclaration();
 	}
+
+	/**
+	 * @see Node#generateFlatInput(StringBuilder, boolean)
+	 */
+	@Override
+	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
+	{
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			if (i > 0)
+			{
+				builder.append(", ");
+			}
+
+			if (getArgumentName(i) != null) {
+				builder.append(getArgumentName(i)).append(": ");
+			}
+
+			getChild(i).generateFlatInput(builder);
+		}
+
+		return builder;
+	}
 	
 	/**
 	 * @see Node#clone(Node, Location, boolean)
@@ -380,6 +403,8 @@ public class MethodCallArgumentList extends ArgumentList
 	 */
 	public MethodCallArgumentList cloneTo(MethodCallArgumentList node, boolean cloneChildren, boolean cloneAnnotations)
 	{
+		node.argumentNames = argumentNames;
+
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		return node;
