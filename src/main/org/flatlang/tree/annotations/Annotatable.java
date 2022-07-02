@@ -12,7 +12,15 @@ public interface Annotatable
 {
 	ArrayList<Annotation> getAnnotations();
 	void addAnnotation(Annotation annotation);
-	
+
+	default boolean isAsync() {
+		return containsAnnotationOfType(AsyncAnnotation.class);
+	}
+
+	default boolean isAwait() {
+		return containsAnnotationOfType(AwaitAnnotation.class);
+	}
+
 	default boolean containsAnnotationOfType(Class c)
 	{
 		return containsAnnotationOfType(c, false);
