@@ -1044,6 +1044,12 @@ public class SyntaxTree
 	}
 
 	public static String[][] getPrecedingModifiers(String statement, Node parent, Location location) {
+		SyntaxUtils.StatementLiteralNameData[] statementLiteralNameData = SyntaxUtils.getStatementLiteralNameData(statement);
+
+		for (SyntaxUtils.StatementLiteralNameData data : statementLiteralNameData) {
+			statement = statement.replace('`' + data.literalNameData.literalName + '`', data.literalNameData.validName);
+		}
+
 		final IIdentifier n = new IIdentifier(parent, location) {
 			@Override
 			public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {

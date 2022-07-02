@@ -2654,8 +2654,24 @@ public class SyntaxUtils
 		}
 	}
 
-	public static LiteralNameData getLiteralNameData(String statement) {
-		int startTick = statement.indexOf('`');
+	public static class StatementLiteralNameData {
+		public String statement;
+		public int index;
+		public LiteralNameData literalNameData;
+
+		public StatementLiteralNameData(String statement, int index, LiteralNameData literalNameData) {
+			this.statement = statement;
+			this.index = index;
+			this.literalNameData = literalNameData;
+		}
+	}
+
+	public static LiteralNameData getFirstLiteralNameData(String statement) {
+		return getFirstLiteralNameData(statement, 0);
+	}
+
+	public static LiteralNameData getFirstLiteralNameData(String statement, int startIndex) {
+		int startTick = statement.indexOf('`', startIndex);
 		String literalName;
 		String validName;
 
@@ -2671,6 +2687,32 @@ public class SyntaxUtils
 		}
 
 		return null;
+	}
+
+	public static StatementLiteralNameData[] getStatementLiteralNameData(String statement) {
+		ArrayList<StatementLiteralNameData> data = new ArrayList<>();
+
+		int index = 0;
+
+		while (index >= 0) {
+			LiteralNameData literalData = getFirstLiteralNameData(statement, index);
+
+			if (literalData == null) {
+				break;
+			}
+
+			data.add(
+				new StatementLiteralNameData(
+					statement,
+					index,
+					literalData
+				)
+			);
+
+			index += literalData.literalName.length() + 2;
+		}
+
+		return data.toArray(new StatementLiteralNameData[0]);
 	}
 
 	public static String convertLiteralNameToValidName(String literalName) {
