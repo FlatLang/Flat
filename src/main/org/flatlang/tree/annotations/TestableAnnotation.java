@@ -184,8 +184,6 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 	
 	public void addTestCalls()
 	{
-		ClassDeclaration clazz = (ClassDeclaration)parent;
-		
 		final FlatMethodDeclaration runMethod = getRunTestsMethod();
 		
 		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
