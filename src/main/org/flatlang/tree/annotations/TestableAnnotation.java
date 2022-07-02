@@ -207,7 +207,10 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
 			
 			MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "(out)", Location.INVALID, true, false, method);
-			call.parseModifier("await");
+
+			if (method.isAsync()) {
+				call.parseModifier("await");
+			}
 			
 			tryBlock.addChild(call);
 			
