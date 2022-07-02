@@ -1,0 +1,24 @@
+package "flatlang/regex"
+
+immutable class Regex {
+    public static getMatches(String regexStr, String search) -> Match[] => new Array() {
+        var native Char[] chars
+        var Int start
+        var String str
+        let matches = new Array<Match>()
+
+        external {
+            var regex = new RegExp(#{regexStr.chars.data}, "g");
+            var regexMatches = #{search.chars.data}.matchAll(regex);
+
+            for (var m of regexMatches) {
+                #{start} = m.index;
+                #{chars} = m[0];
+                #{str} = #{new String(chars)};
+                #{matches.add(new Match(str, start, start + str.count))};
+            }
+        }
+
+        return matches
+    }
+}
