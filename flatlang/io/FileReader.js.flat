@@ -1,0 +1,24 @@
+package "flatlang/io"
+
+class FileReader {
+    public readAllContents() -> String {
+        var Int size
+
+        native var Char[] buffer
+
+        external js {
+            #{buffer} = #{File.FileGlobal.fs}.readFileSync(#{file.location.chars.data}, 'utf8');
+            #{size} = #{buffer}.length;
+        }
+
+        return new String(buffer, size)
+    }
+
+    public readLine() -> String {
+        return readString()
+    }
+
+    public readChar() -> Char {
+        return 0
+    }
+}
