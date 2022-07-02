@@ -66,6 +66,8 @@ public class Flat
 	public static final String EXECUTABLE_EXTENSION, DYNAMIC_LIB_EXT;
 	
 	public boolean				isTesting     = false;
+
+	private boolean				expectingCompileError = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	DEBUG         = false;
@@ -133,7 +135,7 @@ public class Flat
 			DYNAMIC_LIB_EXT  = "";
 		}
 	}
-	
+
 	/**
 	 * Method called whenever the compiler is invoked. Supplies the
 	 * needed information for compiling the given files.
@@ -1156,6 +1158,14 @@ public class Flat
 			
 			completed(false);
 		}
+	}
+
+	public boolean isExpectingCompileError() {
+		return expectingCompileError;
+	}
+
+	public void setExpectingCompileError(boolean expectingCompileError) {
+		this.expectingCompileError = expectingCompileError;
 	}
 
 	public void pushFlags() {
