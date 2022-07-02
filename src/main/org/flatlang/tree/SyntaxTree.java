@@ -159,9 +159,13 @@ public class SyntaxTree
 			phase(PHASE_METHOD_CONTENTS);
 			
 			phase = PHASE_PRE_GENERATION;
-			
+
+			controller.log("Pre generation validation...");
+
 			root.prePreGenerationValidation();
-			
+
+			controller.log("Validating nodes...");
+
 			validateNodes(root);
 			
 			controller.log("Removing non-concrete property fields...");
@@ -274,12 +278,15 @@ public class SyntaxTree
 		}
 		
 		finishedPhase = true;
-		
+
+		controller.log("Validating nodes...");
 		validateNodes(root);
 		
 		if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
 			root.decodeShorthandActions = true;
+
+			controller.log("Creating static class instance declarations...");
 
 			root.forEachVisibleListChild(file -> {
 				Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
