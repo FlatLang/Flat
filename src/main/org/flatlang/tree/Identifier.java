@@ -20,6 +20,8 @@ public abstract class Identifier extends Value implements Accessible
 	public boolean safeNavigation;
 	public boolean chainNavigation;
 
+	private SyntaxUtils.LiteralNameData literalNameData;
+
 	/**
 	 * @see Node#Node(Node, Location)
 	 */
@@ -209,7 +211,15 @@ public abstract class Identifier extends Value implements Accessible
 	 * 		c code verbatim.
 	 */
 	public abstract void setForceOriginalName(boolean forceOriginal);
-	
+
+	public SyntaxUtils.LiteralNameData getLiteralNameData() {
+		return literalNameData;
+	}
+
+	public void setLiteralNameData(SyntaxUtils.LiteralNameData literalNameData) {
+		this.literalNameData = literalNameData;
+	}
+
 	@Override
 	public ValidationResult validate(int phase)
 	{
@@ -255,6 +265,7 @@ public abstract class Identifier extends Value implements Accessible
 //		node.setDataType(getDataType());
 		node.safeNavigation = safeNavigation;
 		node.chainNavigation = chainNavigation;
+		node.literalNameData = literalNameData;
 
 		return node;
 	}

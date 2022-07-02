@@ -523,7 +523,14 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		if (validateMethodDeclaration(statement))
 		{
+			SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getLiteralNameData(statement);
+
+			if (literalNameData != null) {
+				statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
+			}
+
 			FlatMethodDeclaration n = new FlatMethodDeclaration(parent, location);
+			n.setLiteralNameData(literalNameData);
 			
 			// Bounds of the data within the parentheses.
 			Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
@@ -589,7 +596,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		return false;
 	}
-	
+
 	/**
 	 * Validate that the given statement is a method declaration.
 	 * 
@@ -599,6 +606,12 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	private static boolean validateMethodDeclaration(String statement)
 	{
+		SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getLiteralNameData(statement);
+
+		if (literalNameData != null) {
+			statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
+		}
+
 		int firstParenthIndex = statement.indexOf('(');
 		int endBound = StringUtils.findNextCharacter(statement, StringUtils.SYMBOLS_CHARS, firstParenthIndex - 1, -1);
 		int startBound = 0;
