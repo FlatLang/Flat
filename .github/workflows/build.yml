@@ -77,6 +77,12 @@ jobs:
           repository: FlatLang/Nebula
           path: Nebula
 
+      - name: Checkout SimpleGapRuleFlat
+        uses: actions/checkout@master
+        with:
+          repository: BSteffaniak/SimpleGapRuleFlat
+          path: SimpleGapRuleFlat
+
       - name: Build Stability Test
         run: |
           java -jar target/flat-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
@@ -86,6 +92,7 @@ jobs:
             Flatc \
             Spectra \
             Nebula \
+            SimpleGapRuleFlat \
             -l Nest \
             -install-dir . \
             -main stabilitytest/StabilityTest \
