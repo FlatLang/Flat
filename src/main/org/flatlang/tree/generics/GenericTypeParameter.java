@@ -115,7 +115,12 @@ public class GenericTypeParameter extends IValue
 		
 		return null;
 	}
-	
+
+	@Override
+	public String getTypeClassLocation(boolean checkCast) {
+		return SyntaxUtils.getTypeClassLocation(this, getDefaultType(), checkCast);
+	}
+
 	@Override
 	public String getFlatType(Value context)
 	{
