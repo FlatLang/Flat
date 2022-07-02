@@ -273,7 +273,11 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			String propFunc = propagationFunction != null ? propagationFunction.getName() : "";
 			
 			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
-			call.parseModifier("await");
+
+			if (method.isAsync()) {
+				call.parseModifier("await");
+			}
+
 			runMethod.addChild(call);
 		}
 	}
