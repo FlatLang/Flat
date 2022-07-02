@@ -4,6 +4,8 @@ import org.flatlang.TestContext;
 import org.flatlang.util.Location;
 import org.flatlang.util.SyntaxUtils;
 
+import java.util.Arrays;
+
 /**
  * Node extension that contains children of the type Import.
  * Contains all of a files imports.
@@ -100,28 +102,82 @@ public class ImportList extends TypeList<Import>
 	
 	public String getAbsoluteClassLocation(String className, boolean aliased)
 	{
+		if (className == null) {
+			return null;
+		}
 		if (SyntaxUtils.isAbsoluteClassLocation(className))
 		{
 			return className;
 		}
+
+		String rootClass = className;
+		String childClass = "";
+
+		if (className.contains(".")) {
+			rootClass = className.substring(0, className.indexOf('.'));
+			childClass = className.substring(className.indexOf('.') + 1);
+		}
 		
-		ClassDeclaration clazz = getFileDeclaration().getClassDeclaration(className);
+		ClassDeclaration clazz = getFileDeclaration().getClassDeclaration(rootClass);
 		
 		if (clazz != null)
 		{
-			return clazz.getClassLocation();
+			ClassDeclaration childClazz = checkForChildClass(clazz, childClass);
+
+			if (childClazz != null) {
+				return childClazz.getClassLocation();
+			}
+		}
+
+		Import i = getImport(className, false, true);
+
+		if (i != null) {
+			return i.getClassLocation(aliased);
 		}
 		
-		Import i = getImport(className, false, true);
+		i = getImport(rootClass, false, true);
 		
 		if (i == null)
 		{
 			return null;
 		}
-		
-		return i.getClassLocation(aliased);
+
+		if (!rootClass.equals(className)) {
+			clazz = checkForChildClass(i.getClassDeclaration(), childClass);
+
+			if (clazz != null) {
+				return clazz.getClassLocation();
+			} else {
+				return null;
+			}
+		} else {
+			return i.getClassLocation(aliased);
+		}
 	}
-	
+
+	private ClassDeclaration checkForChildClass(ClassDeclaration clazz, String childClass) {
+		while (childClass.length() > 0) {
+			String current = childClass.contains(".") ? childClass.substring(0, childClass.indexOf('.')) : childClass;
+
+			clazz = Arrays.stream(clazz.getEncapsulatedClasses())
+				.filter(c -> c.getName().equals(current))
+				.findFirst()
+				.orElse(null);
+
+			if (clazz == null) {
+				break;
+			}
+
+			if (childClass.contains(".")) {
+				childClass = childClass.substring(childClass.indexOf('.') + 1);
+			} else {
+				childClass = "";
+			}
+		}
+
+		return clazz;
+	}
+
 	/**
 	 * Get whether or not the given location is an external C import.
 	 * 
