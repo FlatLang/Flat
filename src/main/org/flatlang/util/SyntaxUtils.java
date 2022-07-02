@@ -2709,7 +2709,7 @@ public class SyntaxUtils
 				)
 			);
 
-			index += literalData.literalName.length() + 2;
+			index = statement.indexOf('`' + literalData.literalName + '`', index) + literalData.literalName.length() + 2;
 		}
 
 		return data.toArray(new StatementLiteralNameData[0]);
