@@ -1447,6 +1447,12 @@ public class SyntaxTree
 	 */
 	public static Variable getUsableExistingNode(Node parent, String statement, Location location, boolean validateAccess)
 	{
+		SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getFirstLiteralNameData(statement);
+
+		if (literalNameData != null) {
+			statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
+		}
+
 		VariableDeclaration declaration = findDeclaration(parent, statement, validateAccess);
 		
 		if (declaration != null)
