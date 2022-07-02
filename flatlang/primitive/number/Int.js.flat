@@ -1,0 +1,9 @@
+package "flatlang/primitive/number"
+
+class Int {
+    public static parseInt(String num) -> Int {
+        external {
+            return parseInt(#{num.chars.data});
+        }
+    }
+}
