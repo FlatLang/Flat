@@ -941,6 +941,12 @@ public class MethodCall extends Variable
 	 */
 	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod callableMethod)
 	{
+		SyntaxUtils.StatementLiteralNameData[] statementLiteralNameData = SyntaxUtils.getStatementLiteralNameData(statement);
+
+		for (SyntaxUtils.StatementLiteralNameData data : statementLiteralNameData) {
+			statement = statement.replace('`' + data.literalNameData.literalName + '`', data.literalNameData.validName);
+		}
+
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			MethodCall n  = new MethodCall(parent, location);

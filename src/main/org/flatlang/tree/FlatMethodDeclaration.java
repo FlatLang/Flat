@@ -523,7 +523,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		if (validateMethodDeclaration(statement))
 		{
-			SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getLiteralNameData(statement);
+			SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getFirstLiteralNameData(statement);
 
 			if (literalNameData != null) {
 				statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
@@ -606,7 +606,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	 */
 	private static boolean validateMethodDeclaration(String statement)
 	{
-		SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getLiteralNameData(statement);
+		SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getFirstLiteralNameData(statement);
 
 		if (literalNameData != null) {
 			statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
