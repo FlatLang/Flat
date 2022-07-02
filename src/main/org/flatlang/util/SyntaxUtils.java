@@ -2643,7 +2643,48 @@ public class SyntaxUtils
 		
 		return type;
 	}
-	
+
+	public static class LiteralNameData {
+		public String literalName;
+		public String validName;
+
+		public LiteralNameData(String literalName, String validName) {
+			this.literalName = literalName;
+			this.validName = validName;
+		}
+	}
+
+	public static LiteralNameData getLiteralNameData(String statement) {
+		int startTick = statement.indexOf('`');
+		String literalName;
+		String validName;
+
+		if (startTick >= 0) {
+			int endTick = statement.indexOf('`', startTick + 1);
+
+			if (endTick > startTick) {
+				literalName = statement.substring(startTick + 1, endTick);
+				validName = SyntaxUtils.convertLiteralNameToValidName(literalName);
+
+				return new LiteralNameData(literalName, validName);
+			}
+		}
+
+		return null;
+	}
+
+	public static String convertLiteralNameToValidName(String literalName) {
+		String converted = literalName
+			.replace(' ', '_')
+			.replaceAll("[^\\w\\d]", "");
+
+		if (isNumber(converted.substring(0, 1))) {
+			converted = "func" + converted;
+		}
+
+		return converted;
+	}
+
 	public static class ValueDistance
 	{
 		public int genericDistance;
