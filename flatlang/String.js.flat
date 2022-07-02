@@ -33,6 +33,28 @@ immutable class String {
         this.chars = new StringCharArray(chars, count)
     }
 
+    public transform(transform(Char, Int) -> Char) -> String {
+        native Char[] newData
+
+        external {
+            #{newData} = "";
+        }
+
+        for (i in 0..count) {
+            external {
+                #{newData} += #{transform(chars[i], i)};
+            }
+        }
+
+        return new String(newData)
+    }
+
+    public compareTo(String other) -> Int {
+        external {
+            return #{chars.data}.localeCompare(#{other.chars.data});
+        }
+    }
+
     public concat(String str) -> String {
         native Char[] buf
 
