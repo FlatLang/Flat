@@ -7,8 +7,12 @@ class FileReader {
         native var Char[] buffer
 
         external js {
-            #{buffer} = #{File.FileGlobal.fs}.readFileSync(#{file.location.chars.data}, 'utf8');
-            #{size} = #{buffer}.length;
+            try {
+                #{buffer} = #{File.FileGlobal.fs}.readFileSync(#{file.location.chars.data}, 'utf8');
+                #{size} = #{buffer}.length;
+            } catch (err) {
+                #{throw new Exception("Could not read contents of file '#file.location'")};
+            }
         }
 
         return new String(buffer, size)
