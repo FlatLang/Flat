@@ -270,8 +270,6 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			FlatMethodDeclaration method = testable.getRunTestsMethod();
 			
-			String propFunc = propagationFunction != null ? propagationFunction.getName() : "";
-			
 			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
 
 			if (method.isAsync()) {
