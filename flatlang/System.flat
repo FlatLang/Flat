@@ -193,13 +193,13 @@ immutable class System {
         }
 
         return new Array(count).map((x, i) => {
-            let str = new String("")
+            var native Char[] chars
 
             external {
-                #{str.chars.data} = #{value}[#{i}];
+                #{chars} = #{value}[#{i}];
             }
 
-            return str
+            return new String(chars)
         })
     }
 
