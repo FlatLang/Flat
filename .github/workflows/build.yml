@@ -120,15 +120,16 @@ jobs:
             -l Nest \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
-            -o ./SimpleGapRuleTests \
+            -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
             -target js
 
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: SimpleGapRuleTests.js
-          path: SimpleGapRuleTests.js
+          name: SimpleGapRuleFlat/SimpleGapRuleTests.js
+          path: SimpleGapRuleFlat/SimpleGapRuleTests.js
 
       - name: Run SimpleGapRule Test
+        working-directory: SimpleGapRuleFlat
         run: |
           node ./SimpleGapRuleTests.js
