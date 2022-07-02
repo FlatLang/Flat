@@ -1,0 +1,132 @@
+package "flatlang/io"
+
+class FileReader {
+    external type FILE
+
+    FILE* fp
+
+    external FILE* fopen(char location[], char operation[])
+    external void perror(char name[])
+    external FILE* freopen(char location[], char operation[], FILE* fp)
+    external void fprintf(FILE* fp, char data[])
+    external void fputs(char str[], FILE* stream)
+    external void fflush(FILE* fp)
+    external int fclose(FILE* fp)
+    external void fgets(char buffer[], int size, FILE* fp)
+    external char[] realloc(char buffer[], int size)
+    external char getc(FILE* fp)
+    external void rewind(FILE* fp) as extRewind
+    external int remove(char name[])
+
+    external char EOF
+
+    visible Bool isOpen => fp != 0
+
+    public construct(private FILE* fp) {}
+
+    public open() {
+        external {
+            #{fp} = fopen((char*)#{file.location.chars.data}, "r+");
+        }
+    }
+
+    public readAllContents() -> String {
+        var Int size
+
+        native var Char[] buffer
+
+        external {
+            int string_size;
+            FILE *handler = #{fp};
+
+            #{buffer} = 0;
+
+            if (handler)
+            {
+                // Seek the last byte of the file
+                fseek(handler, 0, SEEK_END);
+                // Offset from the first to the last byte, or in other words, filesize
+                string_size = ftell(handler);
+                // go back to the start of the file
+                rewind(handler);
+
+                // Allocate a string that can hold it all
+                #{buffer} = (char*) malloc(sizeof(char) * (string_size + 1) );
+
+                // Read it all in one operation
+                #{size} = fread(#{buffer}, sizeof(char), string_size, handler);
+
+                // fread doesn't set it so put a \0 in the last position
+                // and buffer is now officially a string
+                #{buffer}[#{size}] = '\0';
+
+                if (#{size} < string_size) {
+                    #{buffer} = realloc(#{buffer}, #{size} + 1);
+                }
+            }
+
+            if (#{buffer} == 0)
+            {
+                return (nova_Nova_String*)nova_null;
+            }
+
+            rewind(handler);
+        }
+
+        return new String(buffer, size)
+    }
+
+    public readLine() -> String {
+        Int bufferSize = 80
+
+        native Char[] line = new Char[bufferSize]
+
+        external {
+            if ((#{bufferSize} = nova_getline(&#{line}, &#{bufferSize}, #{fp})) == -1)
+            {
+                #{return null};
+            }
+
+            #{line} = realloc(#{line}, #{bufferSize});
+            #{line}[#{bufferSize} - 1] = '\0';
+        }
+
+        return new String(line, bufferSize - 1)
+    }
+
+    public readString() -> String {
+        Int bufferSize = 80
+
+        native Char[] line = new Char[bufferSize]
+
+        external {
+            if ((#{bufferSize} = nova_read(&#{line}, &#{bufferSize}, #{fp})) == -1)
+            {
+                #{return null};
+            }
+
+            #{line} = realloc(#{line}, #{bufferSize});
+            #{line}[#{bufferSize} - 1] = '\0';
+        }
+
+        return new String(line, bufferSize - 1)
+    }
+
+    public readChar() -> Char {
+        external {
+            char temp = getc(#{fp});
+
+            if (temp != EOF) {
+                return temp;
+            }
+        }
+
+        return 0
+    }
+
+    public close() => true {
+        if (isOpen) {
+            fclose(fp)
+        }
+    }
+}
