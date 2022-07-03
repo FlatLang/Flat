@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -2484,22 +2485,31 @@ public class ClassDeclaration extends InstanceDeclaration
 			else
 			{
 				setAttribute(word, extra.getWordNumber());
+				boolean checkGenerics = false;
 				
-				if (!data.isFirstWord() && data.getPreviousWord().equals("class"))
-				{
+				if (!data.isFirstWord() && data.getPreviousWord().equals(IDENTIFIER)) {
 					setName(word);
 					setType(word);
-					
-					if (data.getRightAdjacentSkipBounds() != null)
+					checkGenerics = true;
+				} else if (word.equals(IDENTIFIER)) {
+					if (parent instanceof FileDeclaration && (data.isLastWord() || Stream.of("extends", "implements").anyMatch(w -> w.equals(data.getNextWord())))) {
+						String className = parent.getFileDeclaration(true).getName();
+
+						setName(className);
+						setType(className);
+						checkGenerics = true;
+					}
+				}
+
+				if (checkGenerics && data.getRightAdjacentSkipBounds() != null)
+				{
+					getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement, data.getRightAdjacentSkipBounds());
+
+					for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
 					{
-						getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement, data.getRightAdjacentSkipBounds());
-						
-						for (GenericTypeParameter param : getGenericTypeParameterDeclaration())
-						{
-							decodeGenericTypeArguments(param.getName());
-							
-							data.decrementGenericsRemaining();
-						}
+						decodeGenericTypeArguments(param.getName());
+
+						data.decrementGenericsRemaining();
 					}
 				}
 			}
