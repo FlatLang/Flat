@@ -1,0 +1,16 @@
+package "flatlang"
+
+[AutoFinal]
+immutable class {
+    visible static String workingDirectory {
+        get {
+            native var Char[] data
+
+            external {
+                #{data} = process.cwd();
+            }
+
+            return new String(data)
+        }
+    }
+}
