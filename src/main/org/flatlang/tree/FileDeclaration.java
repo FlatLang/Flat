@@ -505,7 +505,11 @@ public class FileDeclaration extends Node
 	 */
 	public String getName()
 	{
-		return FileUtils.removeFileExtension(file.getName());
+		if (isExternalFile()) {
+			return FileUtils.removeFileExtension(FileUtils.removeFileExtension(file.getName()));
+		} else {
+			return FileUtils.removeFileExtension(file.getName());
+		}
 	}
 
 	@Override
