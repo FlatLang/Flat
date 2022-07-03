@@ -191,7 +191,7 @@ public class Cast extends IValue
 		
 		boolean array = type != null && type.containsArrayBracketOverload();
 		
-		if (!getTypeClass().isRelatedTo(type) && !array)
+		if (getTypeClass() != null && !getTypeClass().isRelatedTo(type) && !array)
 		{
 			if (!getProgram().getController().isTesting)
 			{
