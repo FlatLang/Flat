@@ -369,7 +369,7 @@ public class SyntaxTree
 						
 						for (int k = 0; k < methods.getNumChildren(); k++)
 						{
-							MethodDeclaration methodDeclaration = (MethodDeclaration)methods.getChild(k);
+							MethodDeclaration methodDeclaration = methods.getChild(k);
 							
 							if (methodDeclaration.containsBody())
 							{
