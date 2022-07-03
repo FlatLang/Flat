@@ -1390,7 +1390,12 @@ public class SyntaxUtils
 	 */
 	public static Bounds findParenthesesBounds(Node parent, String statement)
 	{
-		int start = statement.indexOf('(');
+		int start = findCharInBaseScope(statement, '(');
+
+		if (start < 0) {
+			return Bounds.EMPTY;
+		}
+
 		int end   = StringUtils.findEndingMatch(statement, start, '(', ')') + 1;
 		
 		if (end <= 0)
@@ -1399,7 +1404,7 @@ public class SyntaxUtils
 			{
 				return Bounds.EMPTY;
 			}
-			
+
 			SyntaxMessage.error("Expected a ')' ending parenthesis", parent);
 		}
 		
