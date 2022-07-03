@@ -133,18 +133,19 @@ class Library {
             return existingLibFile
         }
 
-        let process = System.execute("novac #source.location -library -o #{path}lib#source.rootName")
+        // let process = System.execute("novac #source.location -library -o #{path}lib#source.rootName")
 
-        while (var char = process.reader.readChar()) {
-            Console.write(char)
-        }
+        // while (var char = process.reader.readChar()) {
+        //     Console.write(char)
+        // }
 
-        let libFile = new File(path + "lib#source.rootName" + EXTENSION)
+        // let libFile = new File(path + "lib#source.rootName" + EXTENSION)
 
-        if (!libFile.isFile) {
-            throw new InvalidLibraryException("Failed to build library '#source.location' from nova source to '#libFile.location'")
-        }
+        // if (!libFile.isFile) {
+        //     throw new InvalidLibraryException("Failed to build library '#source.location' from nova source to '#libFile.location'")
+        // }
 
-        return libFile
+        // return libFile
+        return null
     }
 }
