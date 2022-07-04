@@ -51,6 +51,29 @@ class File {
 
     }
 
+    public async delete() => true {
+        native var Char[] errorMessage
+
+        external {
+            #{errorMessage} = await new Promise(resolve => {
+                #{FileGlobal.fs}.rm(#{location.chars.data}, {
+                    recursive: true,
+                    force: true
+                }, (err) => {
+                    if (err) {
+                        resolve(err.message);
+                    } else {
+                        resolve(null);
+                    }
+                });
+            });
+
+            if (#{errorMessage}) {
+                #{throw new Exception(new String(errorMessage))};
+            }
+        }
+    }
+
     public static class FileGlobal {
         external type FsType
 
