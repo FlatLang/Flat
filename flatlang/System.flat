@@ -101,13 +101,6 @@ immutable class System {
         return new Process(new FileReader(pipe))
     }
 
-    [Target not c]
-    public static execute(String command) -> Process {
-        // not supported yet
-
-        return null
-    }
-
     [Target c]
     public static execute(String[] arguments) =>
         execute(arguments.map(arg => {
@@ -180,9 +173,6 @@ immutable class System {
 
         GC.collect()
     }
-
-    [Target not c]
-    public static execute(String[] arguments) {}
 
     [Target js]
     public static jsStringArrayToFlatArray(Object value) -> String[] {

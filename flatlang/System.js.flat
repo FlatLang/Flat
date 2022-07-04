@@ -1,5 +1,7 @@
 package "flatlang"
 
+import "flatlang/serialization/SyntaxStringFunctions"
+
 [AutoFinal]
 immutable class {
     visible static String workingDirectory {
@@ -11,6 +13,55 @@ immutable class {
             }
 
             return new String(data)
+        }
+    }
+
+    public static async execute(String[] arguments, String workingDirectory = null) -> String {
+        native var Char[] data
+
+        external {
+            return await new Promise((resolve) => {
+                var childProcess = #{SystemGlobal.childProcess}.spawn(
+                    #{arguments[0].chars.data},
+                    #{arguments.skip(1).map({_.chars.data}).data},
+                    {
+                        cwd: #{workingDirectory ? workingDirectory.chars.data : ".".chars.data}
+                    }
+                );
+
+                childProcess.stdout.on('data', (data) => {
+                    process.stdout.write(data.toString());
+                });
+
+                childProcess.stderr.on('data', (data) => {
+                    process.stderr.write(data.toString());
+                });
+
+                childProcess.on('exit', () => {
+                    resolve(#{null});
+                });
+            });
+        }
+    }
+
+    public static async execute(String command, String workingDirectory = null) =>
+        await execute(command.splitOnTopLevel(SyntaxStringFunctions.WHITESPACE), workingDirectory)
+
+    public static class SystemGlobal {
+        external type ChildProcessType
+
+        private static var ChildProcessType _childProcess
+
+        visible static ChildProcessType childProcess {
+            get {
+                external {
+                    if (!#{_childProcess}) {
+                        #{_childProcess} = require('child_process');
+                    }
+                }
+
+                return _childProcess
+            }
         }
     }
 }
