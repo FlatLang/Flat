@@ -47,6 +47,20 @@ immutable class {
     public static async execute(String command, String workingDirectory = null) =>
         await execute(command.splitOnTopLevel(SyntaxStringFunctions.WHITESPACE), workingDirectory)
 
+    public static getEnv(String name) -> String {
+        native var Char[] data
+
+        external {
+            #{data} = process.env[#{name.chars.data}];
+
+            if (typeof #{data} !== 'string') {
+                return #{null};
+            }
+        }
+
+        return new String(data)
+    }
+
     public static class SystemGlobal {
         external type ChildProcessType
 
