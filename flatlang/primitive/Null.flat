@@ -5,4 +5,5 @@ immutable class Null extends String {
 
     public concat(String other) => "null#other"
     public toString() => "null"
+    public Long hashCodeLong => 0
 }
