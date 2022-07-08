@@ -7,7 +7,7 @@ import "flatlang/operators/EqualsOperator"
 
 [AutoFinal]
 [Immutable "ImmutableHashMap"]
-class HashMap<K extends EqualsOperator, V> implements List<Pair<K, V>> {
+class HashMap<K, V> implements List<Pair<K, V>> {
     Pair<K, V>[][] buckets
 
     visible var Int count
@@ -211,39 +211,22 @@ class HashMap<K extends EqualsOperator, V> implements List<Pair<K, V>> {
     [AutoFinal]
     class HashMapIterator<K, V> implements Iterator<Pair<K, V>> {
         visible var Int position
-        var Int bucketIndex
-        var Int index
 
-        var Pair<K, V>[][] buckets
-        var Pair<K, V>[] bucket
+        var Iterator<Array<Pair<K, V>>> bucketIterator
+        var Iterator<Pair<K, V>> valueIterator
 
-        visible Bool hasNext => position < map.count
+        visible Bool hasNext => position < map.count && (bucketIterator.hasNext || valueIterator?.hasNext)
+        visible Bool hasPrevious => bucketIterator.hasPrevious || valueIterator?.hasPrevious
 
-        visible Pair<K, V> next {
+        visible Pair<K, V> stepNext {
             get {
-                if (hasNext) {
-                    var Pair<K, V> value
-
-                    while (!value) {
-                        for (i in index..bucket.count) {
-                            value = bucket[i]
-
-                            if (value) {
-                                index = i + 1
-
-                                break
-                            }
-                        }
-
-                        if (!value) {
-                             bucket = buckets[++bucketIndex]
-                             index = 0
-                        }
-                    }
-
+                if (valueIterator?.hasNext) {
                     position++
-
-                    return value
+                    return valueIterator.stepNext
+                } else if (bucketIterator.hasNext) {
+                    position++
+                    valueIterator = bucketIterator.stepNext.iterator
+                    return valueIterator.stepNext
                 }
 
                 throw new NoSuchElementException()
@@ -252,17 +235,34 @@ class HashMap<K extends EqualsOperator, V> implements List<Pair<K, V>> {
             no set
         }
 
+        visible Pair<K, V> current => valueIterator?.current
+        visible Pair<K, V> previous {
+            get {
+                if (valueIterator?.hasPrevious) {
+                    return valueIterator.previous
+                } else if (bucketIterator.hasPrevious) {
+                    return bucketIterator.previous.last
+                }
+            }
+        }
+        visible Pair<K, V> next {
+            get {
+                if (valueIterator?.hasNext) {
+                    return valueIterator.next
+                } else if (bucketIterator.hasNext) {
+                    return bucketIterator.next.first
+                }
+            }
+        }
+
         public construct(visible HashMap<K, V> map) {
             reset()
-
-            buckets = map.buckets
-            bucket = buckets[0]
         }
 
         public reset() => this {
             position = 0
-            index = 0
-            bucketIndex = 0
+            bucketIterator = map.buckets.iterator
+            valueIterator = bucketIterator.hasNext ? bucketIterator.stepNext.iterator : null
         }
     }
 }
