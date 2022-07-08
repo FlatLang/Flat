@@ -3,7 +3,11 @@ package "flatlang/exception"
 class Exception {
     visible StackTrace stackTrace = new StackTrace()
 
-    public construct(visible String message = "") {}
+    public construct(visible String message = "") {
+        external js {
+            this.error = new Error(#{message.chars.data});
+        }
+    }
 
     public toString() => this.class.name + (message ? ": #message" : "")
 
