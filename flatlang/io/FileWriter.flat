@@ -23,7 +23,7 @@ class FileWriter implements OutputStream {
 
     visible File file
 
-    visible Bool isOpen => fp != 0
+    visible Bool isOpen => false
 
     external char EOF
 
