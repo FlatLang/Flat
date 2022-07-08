@@ -262,7 +262,7 @@ trait List<Type> implements Iterable<Type> {
         let array = new Out[]
 
         while (i1.hasNext && i2.hasNext) {
-            array.add(zipper(i1.next, i2.next))
+            array.add(zipper(i1.stepNext, i2.stepNext))
         }
 
         return array

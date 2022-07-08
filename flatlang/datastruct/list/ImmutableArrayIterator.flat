@@ -5,8 +5,9 @@ class ImmutableArrayIterator<E> implements Iterator<E> {
     visible var Int position
 
     visible Bool hasNext => array.count > position
+    visible Bool hasPrevious => position > 0
 
-    visible E next {
+    visible E stepNext {
         get {
             if (hasNext) {
                 return array.get(position++)
@@ -17,6 +18,10 @@ class ImmutableArrayIterator<E> implements Iterator<E> {
 
         no set
     }
+
+    visible E current => position < array.count ? array.get(position) : null
+    visible E previous => position > 0 ? array.get(position - 1) : null
+    visible E next => hasNext ? array.get(position + 1) : null
 
     public construct(private ImmutableArray<E> array) {
         reset()

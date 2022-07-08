@@ -4,8 +4,9 @@ class CharArrayIterator implements Iterator<Char> {
     visible var Int position
 
     visible Bool hasNext => array.count > position
+    visible Bool hasPrevious => position > 0
 
-    visible Char next {
+    visible Char stepNext {
         get {
             if (hasNext) {
                 return array.get(position++ * indexSize)
@@ -16,6 +17,10 @@ class CharArrayIterator implements Iterator<Char> {
 
         no set
     }
+
+    visible Char current => position < array.count ? array.get(position * indexSize) : null
+    visible Char previous => position > 0 ? array.get((position - 1) * indexSize) : null
+    visible Char next => hasNext ? array.get((position + 1) * indexSize) : null
 
     public construct(private CharArray array, private Int indexSize) {
         reset()

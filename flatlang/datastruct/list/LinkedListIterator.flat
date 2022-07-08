@@ -2,14 +2,17 @@ package "flatlang/datastruct/list"
 
 class LinkedListIterator<E> implements Iterator<E> {
     visible var ListNode position
+    visible var ListNode previousNode
 
     visible Bool hasNext => position != null
+    visible Bool hasPrevious => previousNode != null
 
-    visible E next {
+    visible E stepNext {
         get {
             if (hasNext) {
                 E data = position.data
 
+                previousNode = position
                 position = position.next
 
                 return data
@@ -20,6 +23,10 @@ class LinkedListIterator<E> implements Iterator<E> {
 
         no set
     }
+
+    visible E current => position?.data
+    visible E next => position?.next?.data
+    visible E previous => previousNode?.data
 
     public construct(private LinkedList<E> list) {
         reset()

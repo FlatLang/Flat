@@ -4,8 +4,9 @@ class IntArrayIterator implements Iterator<Int> {
     visible var Int position
 
     visible Bool hasNext => array.count > position
+    visible Bool hasPrevious => position > 0
 
-    visible Int next {
+    visible Int stepNext {
         get {
             if (hasNext) {
                 return array.get(position++)
@@ -16,6 +17,10 @@ class IntArrayIterator implements Iterator<Int> {
 
         no set
     }
+
+    visible Int current => position < array.count ? array.get(position) : null
+    visible Int previous => position > 0 ? array.get(position - 1) : null
+    visible Int next => hasNext ? array.get(position + 1) : null
 
     public construct(private IntArray array) {
         reset()

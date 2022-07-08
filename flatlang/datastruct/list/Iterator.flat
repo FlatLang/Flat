@@ -2,5 +2,9 @@ package "flatlang/datastruct/list"
 
 public trait Iterator<E> {
     visible Bool hasNext => false
+    visible Bool hasPrevious => false
+    visible E stepNext => null
+    visible E current => null
+    visible E previous => null
     visible E next => null
 }

@@ -4,8 +4,9 @@ class DoubleArrayIterator implements Iterator<Double> {
     visible var Int position
 
     visible Bool hasNext => array.count > position
+    visible Bool hasPrevious => position > 0
 
-    visible Double next {
+    visible Double stepNext {
         get {
             if (hasNext) {
                 return array.get(position++)
@@ -16,6 +17,10 @@ class DoubleArrayIterator implements Iterator<Double> {
 
         no set
     }
+
+    visible Double current => position < array.count ? array.get(position) : null
+    visible Double previous => position > 0 ? array.get(position - 1) : null
+    visible Double next => hasNext ? array.get(position + 1) : null
 
     public construct(private DoubleArray array) {
         reset()

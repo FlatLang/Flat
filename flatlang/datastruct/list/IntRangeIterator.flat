@@ -4,8 +4,9 @@ class IntRangeIterator implements Iterator<Int> {
     visible var Int position
 
     visible Bool hasNext => position < range.end
+    visible Bool hasPrevious => position > range.start
 
-    visible Int next {
+    visible Int stepNext {
         get {
             if (hasNext) {
                 return position++
@@ -16,6 +17,10 @@ class IntRangeIterator implements Iterator<Int> {
 
         no set
     }
+
+    visible Int current => position
+    visible Int previous => position - 1
+    visible Int next => position + 1
 
     public construct(private IntRange range) {
         reset()
