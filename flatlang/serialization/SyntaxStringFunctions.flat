@@ -378,10 +378,27 @@ extension SyntaxStringFunctions {
      * Split the src by the commas. Makes sure not to split commas that
      * are within parentheses and quotes.
      *
-     * @param src The String to split the commas from.
      * @return An array of Strings containing the Strings that were split.
      */
     public splitAtCommas(String this, Bool searchGenerics = false, Bool allowTrailing = false) -> String[] {
+        return splitOnTopLevel(',', searchGenerics, allowTrailing)
+    }
+
+    /**
+     * Split the src by the given char. Makes sure not to split within parentheses and quotes.
+     *
+     * @return An array of Strings containing the Strings that were split.
+     */
+    public splitOnTopLevel(String this, Char c, Bool searchGenerics = false, Bool allowTrailing = false) -> String[] {
+        return splitOnTopLevel(c.toString(), searchGenerics, allowTrailing)
+    }
+
+    /**
+     * Split the src by the given str. Makes sure not to split within parentheses and quotes.
+     *
+     * @return An array of Strings containing the Strings that were split.
+     */
+    public splitOnTopLevel(String this, String str, Bool searchGenerics = false, Bool allowTrailing = false) -> String[] {
         String[] strs = new String[]
 
         if (trim().count == 0) {
@@ -391,7 +408,37 @@ extension SyntaxStringFunctions {
         var Int oldIndex =  0
         var Int index    = -1
 
-        while ((index = findCharOnTopLevel(',', index + 1, searchGenerics)) >= 0) {
+        while ((index = findStringOnTopLevel(str, index + 1, searchGenerics)) >= 0) {
+            strs.add(substring(oldIndex, index).trim())
+
+            oldIndex = index + str.count
+        }
+
+        let last = substring(oldIndex).trim()
+
+        if (!allowTrailing || last.count > 0) {
+            strs.add(last)
+        }
+
+        return strs
+    }
+
+    /**
+     * Split the src by the given chars. Makes sure not to split within parentheses and quotes.
+     *
+     * @return An array of Strings containing the Strings that were split.
+     */
+    public splitOnTopLevel(String this, Char[] chars, Bool searchGenerics = false, Bool allowTrailing = false) -> String[] {
+        String[] strs = new String[]
+
+        if (trim().count == 0) {
+            return strs
+        }
+
+        var Int oldIndex =  0
+        var Int index    = -1
+
+        while ((index = findCharOnTopLevel(chars, index + 1, searchGenerics)) >= 0) {
             strs.add(substring(oldIndex, index).trim())
 
             oldIndex = index + 1
