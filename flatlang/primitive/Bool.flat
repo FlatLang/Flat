@@ -6,6 +6,7 @@ immutable class Bool extends Primitive implements Comparable<Bool> {
     construct(private Bool value) {}
 
     public compareTo(Bool other) => value == other
+    public equals(Object other) => other && other.class.isOfType(Bool.class) && value == ((Bool)other)
     public toString() => toString(value)
 
     public static toString(Bool value) => value ? "true" : "false"

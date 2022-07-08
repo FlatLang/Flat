@@ -9,7 +9,7 @@ class Short extends Number implements Integer {
     public Double realValue => (Double)value
     public Long integerValue => value
 
-    construct(public Short value) {}
+    public construct(public Short value) {}
 
     public compareTo(Number other) => other.compareToInteger(value)
     public compareToReal(Double other) => this.value - other
@@ -43,7 +43,7 @@ class Short extends Number implements Integer {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) => this.value *= other
 
-    public equals(Number other) => other.equalsInteger(value)
+    public equals(Object other) => other && other.class.isOfType(Number.class) && (Short)other == value
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other
 

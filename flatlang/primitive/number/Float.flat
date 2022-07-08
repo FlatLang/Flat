@@ -49,7 +49,7 @@ class Float extends Number implements RealNumber {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) => this.value *= other
 
-    public equals(Number other) => other.equalsReal(value)
+    public equals(Object other) => other && other.class.isOfType(Number.class) && (Float)other == value
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other
 

@@ -65,7 +65,7 @@ class Char extends Number implements Integer {
     public multiplyEqualsReal(Double other) => this.value *= other
     public multiplyEqualsInteger(Long other) => this.value *= other
 
-    public equals(Number other) => other.equalsInteger(value)
+    public equals(Object other) => other && other.class.isOfType(Number.class) && (Char)other == value
     public equalsReal(Double other) => this.value == other
     public equalsInteger(Long other) => this.value == other
 
