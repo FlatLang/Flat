@@ -53,6 +53,10 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                        <configuration>
+                            <finalName>flatc</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -72,7 +76,7 @@
                             <executable>mvn</executable>
                             <arguments>
                                 <argument>install:install-file</argument>
-                                <argument>-Dfile=target/flat-cli-1.0-SNAPSHOT-jar-with-dependencies.jar</argument>
+                                <argument>-Dfile=target/flatc.jar</argument>
                                 <argument>-DgroupId=org.flatlang</argument>
                                 <argument>-DartifactId=flat</argument>
                                 <argument>-Dversion=1.0-SNAPSHOT</argument>

@@ -85,7 +85,7 @@ jobs:
 
       - name: Build Stability Test
         run: |
-          java -jar target/flat-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
+          java -jar target/flatc.jar \
             Flat-Testing/example \
             Flat-Testing/stabilitytest \
             Astro \
@@ -115,7 +115,7 @@ jobs:
 
       - name: Build SimpleGapRule Test
         run: |
-          java -jar target/flat-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
+          java -jar target/flatc.jar \
             SimpleGapRuleFlat \
             -l Nest \
             -install-dir . \
