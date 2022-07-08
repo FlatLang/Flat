@@ -55,7 +55,7 @@ jobs:
 
       - name: Build Stability Test
         run: |
-          java -jar Flat/target/flat-cli-1.0-SNAPSHOT-jar-with-dependencies.jar \
+          java -jar Flat/target/flatc.jar \
             Flat-Testing/example Flat-Testing/stabilitytest \
             -l Nest \
             -install-dir . \
