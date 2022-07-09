@@ -108,15 +108,17 @@ public interface ShorthandAccessible
 		m.onAfterDecoded();
 		
 		String accessorValue = getShorthandAccessor();
+		String cast = "";
 		
 		if (value instanceof Cast)
 		{
 			accessorValue = accessorValue.substring(StringUtils.findEndingMatch(accessorValue, 0, '(', ')') + 1);
+			cast = "(" + value.generateFlatType().toString() + ")";
 		}
 
 		accessorValue = StringUtils.removeSurroundingParenthesis(accessorValue);
 		
-		Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true);
+		Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = " + cast + "value", getLocationIn(), true);
 		
 		m.addChild(assignment);
 	}
