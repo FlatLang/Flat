@@ -310,7 +310,12 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 		
 		return node;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "this[" + getIndexValue().generateFlatInput() + "] => " + accessorValue;
+	}
+
 	/**
 	 * Test the {@link ArrayBracketOverload} class type to make sure everything
 	 * is working properly.
