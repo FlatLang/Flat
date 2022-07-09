@@ -1253,6 +1253,23 @@ public abstract class Node implements Listenable, Annotatable
 			action.accept(getChild(i));
 		}
 	}
+
+	public void forEachChildRecursive(Consumer<Node> action)
+	{
+		forEachChildRecursive(action, false);
+	}
+
+	public void forEachChildRecursive(Consumer<Node> action, boolean inclusive)
+	{
+		if (inclusive) {
+			action.accept(this);
+		}
+
+		for (int i = 0; i < getNumChildren(); i++)
+		{
+			getChild(i).forEachChildRecursive(action, true);
+		}
+	}
 	
 	public void forEachVisibleChild(Consumer<Node> action)
 	{
