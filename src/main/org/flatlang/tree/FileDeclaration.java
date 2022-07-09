@@ -530,6 +530,17 @@ public class FileDeclaration extends Node
 			return result;
 		}
 
+		String phaseLabel = "???";
+
+		switch (phase) {
+			case SyntaxTree.PHASE_CLASS_DECLARATION: phaseLabel = "one"; break;
+			case SyntaxTree.PHASE_INSTANCE_DECLARATIONS: phaseLabel = "two"; break;
+			case SyntaxTree.PHASE_METHOD_CONTENTS: phaseLabel = "three"; break;
+			case SyntaxTree.PHASE_PRE_GENERATION: phaseLabel = "four"; break;
+		}
+
+		getController().log("Phase " + phaseLabel + " validation for '" + getPackage().getLocation() + "/" + getName() + "'");
+
 		if (isExternalFile())
 		{
 			mergeFiles(getProgram().getFile(getClassDeclaration().getClassLocation(false)), phase);
