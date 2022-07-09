@@ -70,6 +70,8 @@ public class Flat
 	private boolean				expectingCompileError = false;
 	
 	public static final boolean	ANDROID_DEBUG = false;
+	public static final boolean	PRIMITIVE_OVERLOADS = false;
+
 	public static final boolean	DEBUG         = false;
 //	public static final boolean	DEBUG         = true;
 //	public static final boolean USE_INSTALLED_TARGET = false;

@@ -1195,6 +1195,7 @@ public class SyntaxTree
 				for (int i = 0; i < modifierData[1].length; i++) {
 					node.toValue().parseModifier(modifierData[1][i]);
 				}
+				modifierData = null;
 			}
 		}
 		
