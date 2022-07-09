@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Compile JS Airship Test" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.flatlang.Flat" />
+    <module name="Flat" />
+    <option name="PROGRAM_PARAMETERS" value="../Airship -install-dir .. -l ../Nest -l ../Compiler-String-Extensions -l ../Json -main flatlang/airship/Airship_TestSuite -o ../Airship/dist/test.js -target js" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
