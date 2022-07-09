@@ -353,4 +353,22 @@ trait List<Type> implements Iterable<Type> {
             "#first"
 
     public toString() => this.class.location + " {" + join(", ") + "}"
+
+    public equals(Object another) => true {
+        if (!another) return false
+        if (!another.class.isOfType(List.class)) return false
+
+        let otherList = (List)another
+
+        if (otherList.count != count) return false
+
+        let iteratorValue = iterator
+        let otherIteratorValue = otherList.iterator
+
+        while (iteratorValue.hasNext) {
+            if (!iteratorValue.stepNext.equals(otherIteratorValue.stepNext)) {
+                return false
+            }
+        }
+    }
 }
