@@ -133,6 +133,12 @@ public class ForLoop extends Loop
 		{
 			ForLoop n      = new ForLoop(parent, location);
 			Bounds bounds = SyntaxUtils.findParenthesesBounds(n, statement);
+
+			if (!bounds.isValid()) {
+				SyntaxMessage.queryError("Incorrect " + IDENTIFIER + " loop definition", n, require);
+
+				return null;
+			}
 			
 			if (!bounds.extractPreString(statement).trim().equals(IDENTIFIER))
 			{
