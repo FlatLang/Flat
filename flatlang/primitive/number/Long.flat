@@ -92,7 +92,7 @@ class Long extends Number implements Integer {
     public minusEqualsReal(Double other) => this.value -= other
     public minusEqualsInteger(Long other) => this.value -= other
 
-    public multiply(Number other) => other.multiplyInteger(value)
+    public multiply(Object other) => other && other.class.isOfType(Number.class) && (Long)other * value
     public multiplyReal(Double other) => this.value * other
     public multiplyInteger(Long other) => this.value * other
 

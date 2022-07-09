@@ -156,7 +156,7 @@ class Double extends Number implements RealNumber {
     public minusEqualsReal(Double other) => this.value -= other
     public minusEqualsInteger(Long other) => this.value -= other
 
-    public multiply(Number other) => other.multiplyReal(value)
+    public multiply(Object other) => other && other.class.isOfType(Number.class) && (Double)other * value
     public multiplyReal(Double other) => this.value * other
     public multiplyInteger(Long other) => this.value * other
 
