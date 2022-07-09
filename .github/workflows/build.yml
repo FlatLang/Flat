@@ -77,6 +77,12 @@ jobs:
           repository: FlatLang/Redis
           path: Redis
 
+      - name: Checkout Svg library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Svg
+          path: Svg
+
       - name: Build Stability Test
         run: |
           java -jar Flat/target/flatc.jar \
@@ -86,6 +92,7 @@ jobs:
             -l Network \
             -l MySQL \
             -l Redis \
+            -l Svg \
             -install-dir . \
             -std-path flatlang \
             -main stabilitytest/StabilityTest \
