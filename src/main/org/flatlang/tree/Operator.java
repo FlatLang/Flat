@@ -345,6 +345,7 @@ public class Operator extends IValue
 					SyntaxUtils.getTypeInCommon(l, r);
 					
 					SyntaxMessage.error("Type '" + left + "' is not compatible with type '" + right + "'", this);
+					return;
 				}
 				
 				String type = common.getType();
