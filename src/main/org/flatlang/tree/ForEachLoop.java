@@ -165,6 +165,12 @@ public class ForEachLoop extends Loop
 		{
 			ForEachLoop n      = new ForEachLoop(parent, location);
 			Bounds      bounds = SyntaxUtils.findParenthesesBounds(n, statement);
+
+			if (!bounds.isValid()) {
+				SyntaxMessage.queryError("Invalid foreach loop definition", n, require);
+
+				return null;
+			}
 			
 			if (!bounds.extractPreString(statement).trim().equals(IDENTIFIER))
 			{
