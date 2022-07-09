@@ -214,7 +214,12 @@ public class UnaryOperation extends IValue
 	@Override
 	public byte getDataType(boolean checkGeneric)
 	{
-		return getOperator().getDataType();
+		return getDataType(checkGeneric, true);
+	}
+
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
+	{
+		return getOperator().getDataType(checkGeneric, checkCast);
 	}
 	
 	/**

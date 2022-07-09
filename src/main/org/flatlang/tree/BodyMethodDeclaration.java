@@ -222,6 +222,9 @@ public class BodyMethodDeclaration extends FlatMethodDeclaration
 	
 	public boolean convertFunctionContents()
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return false;
+		}
 		if (!parsedConvertedContext && doesConvertToPrimitive() && getConversionTargetContext().isInTree() && getConversionTarget().getScope() != null)
 		{
 			SyntaxUtils.parseConvertedContentsTo(getConversionTarget().getScope(), getConversionTargetContext(), this, this);

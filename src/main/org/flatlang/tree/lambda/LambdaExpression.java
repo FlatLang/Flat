@@ -4,6 +4,7 @@ import org.flatlang.TestContext;
 import org.flatlang.error.SyntaxMessage;
 import org.flatlang.tree.*;
 import org.flatlang.tree.generics.GenericTypeArgument;
+import org.flatlang.tree.generics.GenericTypeParameter;
 import org.flatlang.tree.variables.Variable;
 import org.flatlang.tree.variables.VariableDeclaration;
 import org.flatlang.util.Location;
@@ -13,7 +14,9 @@ import org.flatlang.tree.Node;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * {@link Node} extension that represents a lambda expression.
@@ -402,7 +405,8 @@ public class LambdaExpression extends IIdentifier
 	public Closure generateClosure()
 	{
 		final StringBuilder builder = new StringBuilder();
-		
+		final HashSet<String> genericParameters = new HashSet<>();
+
 		if (parameters == null)
 		{
 			final int[] i = new int[] { 0 };
@@ -415,7 +419,7 @@ public class LambdaExpression extends IIdentifier
 				
 				String type = value.getFlatType(context);
 				String name = "";
-				
+
 				if (variables.length > id)
 				{
 					name = variables[id];
@@ -449,6 +453,8 @@ public class LambdaExpression extends IIdentifier
 					{
 						getFileDeclaration().addImport(arg.getTypeClassLocation());
 						arg.importGenericArgumentTypesTo(getFileDeclaration());
+					} else {
+						genericParameters.add(type);
 					}
 				}
 				
@@ -463,9 +469,17 @@ public class LambdaExpression extends IIdentifier
 				//			}
 			});
 		}
+
+		String genericParametersString = "";
+
+		if (genericParameters.size() > 0) {
+			genericParametersString = "<" +
+				String.join(", ", genericParameters) +
+				">";
+		}
 		
-		String methodDeclaration = "static lambda" + id++ + "(" + builder.toString() + ")";
-		
+		String methodDeclaration = "static lambda" + id++ + genericParametersString + "(" + builder.toString() + ")";
+
 		if (closure.getType() != null)
 		{
 			methodDeclaration += " -> " + closure.getFlatTypeValue(context).getFlatType(context);
@@ -481,6 +495,15 @@ public class LambdaExpression extends IIdentifier
 				{
 					bodyMethod.getParameterList().addChild(parameters[i]);
 				}
+			}
+
+			for (int i = 0; i < bodyMethod.getParameterList().getNumParameters(); i++) {
+				if (bodyMethod.getParameterList().getParameter(i) instanceof ClosureDeclaration == false) {
+					bodyMethod.getParameterList().getParameter(i).setDataType(closure.getParameterList().getParameter(i).getDataType());
+				}
+			}
+			if (bodyMethod.getTypeObject() != null) {
+				bodyMethod.setDataType(closure.getDataType());
 			}
 			
 			LambdaMethodDeclaration method = generateLambdaMethod(bodyMethod, bodyMethod);
@@ -807,7 +830,12 @@ public class LambdaExpression extends IIdentifier
 		
 		return null;
 	}
-	
+
+	@Override
+	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren) {
+		return builder.append("{ ").append(operation).append(" }");
+	}
+
 	/**
 	 * @see Node#clone(Node, Location, boolean)
 	 */

@@ -115,7 +115,7 @@ public class IValue extends Value
 			this.type.setType(type);
 		}
 		
-		genericParameter = searchGenericTypeParameter();
+		genericParameter = searchGenericTypeParameter(0);
 	}
 	
 	@Override
@@ -130,6 +130,12 @@ public class IValue extends Value
 	@Override
 	// Dont forget about IIdentifier!!!!
 	public byte getDataType(boolean checkGeneric)
+	{
+		return getDataType(checkGeneric, true);
+	}
+
+	// Dont forget about IIdentifier!!!!
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
 	{
 		return type.dataType;
 	}
@@ -178,7 +184,7 @@ public class IValue extends Value
 
 		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			node.genericParameter = node.searchGenericTypeParameter();
+			node.genericParameter = genericParameter;
 		}
 		
 		return node;
@@ -189,7 +195,7 @@ public class IValue extends Value
 	{
 		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			genericParameter = searchGenericTypeParameter();
+			genericParameter = searchGenericTypeParameter(0);
 		}
 		
 		return super.onAfterDecoded();

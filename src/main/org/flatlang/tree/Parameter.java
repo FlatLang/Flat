@@ -1,5 +1,6 @@
 package org.flatlang.tree;
 
+import org.flatlang.Flat;
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.error.SyntaxMessage;
@@ -299,16 +300,17 @@ public class Parameter extends LocalDeclaration
 		else
 		{
 			ArrayList<Annotation> annotations = n.getAnnotations();
-			
-			node.cloneTo(n);
-			
+
 			if (annotations != null)
 			{
 				for (int i = annotations.size() - 1; i >= 0; i--)
 				{
-					n.addAnnotation(annotations.get(i));
+					node.addAnnotation(annotations.get(i));
 				}
 			}
+
+			node.onAfterDecoded();
+			node.cloneTo(n);
 		}
 		
 		if (defaultValue != null)
@@ -435,6 +437,10 @@ public class Parameter extends LocalDeclaration
 	
 	public void propagateToPrimitiveOverloads()
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return;
+		}
+
 		FlatMethodDeclaration method = getParentMethod();
 		
 		if (method != null && method.correspondingPrimitiveOverloads.size() > 0)
@@ -451,8 +457,10 @@ public class Parameter extends LocalDeclaration
 		Parameter corresponding = overload.getParameter(getIndex());
 		
 		Value clone = (Value)defaultValue.clone(overload, defaultValue.getLocationIn(), true, true);
-		
-		clone.convertConvertedTypes(getParentMethod());
+
+		if (Flat.PRIMITIVE_OVERLOADS) {
+			clone.convertConvertedTypes(getParentMethod());
+		}
 		
 		corresponding.defaultValue = clone;
 		

@@ -154,12 +154,17 @@ public class Literal extends IValue implements Accessible
 	 */
 	public byte getDataType(boolean checkGeneric)
 	{
+		return getDataType(checkGeneric, true);
+	}
+
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
+	{
 		if (SyntaxUtils.isStringLiteral(value) && (!isStringInstantiation() || isWithinExternalContext()))
 		{
 			return 1;
 		}
 		
-		return super.getDataType(checkGeneric);
+		return super.getDataType(checkGeneric, checkCast);
 	}
 	
 	@Override

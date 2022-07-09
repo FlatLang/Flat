@@ -82,11 +82,19 @@ public interface ShorthandAccessible
 	default Value decodeAccessorValue()
 	{
 		BodyMethodDeclaration a = decodeShorthandAccessor();
+		a.onAfterDecoded();
 		
 		addChild(a);
 		
 		Return returnValue = Return.decodeStatement(a, "return " + getShorthandAccessor(), getLocationIn(), true, false);
-		
+
+		if (returnValue == null) {
+			SyntaxMessage.error("Failed to parse accessor value '" + getShorthandAccessor() + "'", (Node)this);
+			return null;
+		}
+
+		returnValue.onAfterDecoded();
+
 		a.addChild(returnValue);
 		
 		return returnValue.getValueNode();
@@ -97,6 +105,7 @@ public interface ShorthandAccessible
 		BodyMethodDeclaration m = decodeShorthandMutator(context);
 		
 		addChild(m);
+		m.onAfterDecoded();
 		
 		String accessorValue = getShorthandAccessor();
 		
@@ -124,6 +133,10 @@ public interface ShorthandAccessible
 			}
 			
 			Value value = decodeAccessorValue();
+
+			if (((Value)this).getType() == null) {
+				setType(value.getReturnedNode());
+			}
 			
 			if (twoWayBinding)
 			{

@@ -225,10 +225,15 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 		ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
 		
 		Value type = SyntaxTree.decodeValue(method, accessorValue, getLocationIn(), true).getReturnedNode();
+		type.onAfterDecoded();
 		
-		if (type.isGenericType() && type.getGenericTypeParameter().getParentClass() != method.getParentClass())
+		if (type.isGenericType())
 		{
-			method.setType(type.getFlatTypeValue(type));
+			if (type.getGenericTypeParameter().getParentClass() == method.getParentClass()) {
+				method.setType(type.getTypeObject().value);
+			} else {
+				method.setType(type.getFlatTypeValue(type));
+			}
 		}
 		else
 		{

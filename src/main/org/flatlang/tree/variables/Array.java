@@ -210,7 +210,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				if (!parent.containsAnnotationOfType(NativeAnnotation.class, true, true) &&
 					(parent instanceof Assignment == false ||
 						(((Assignment)parent).getAssignedNodeValue() instanceof Variable == false ||
-							!((Assignment)parent).getAssignedNode().getDeclaration().containsAnnotationOfType(NativeAnnotation.class))))
+							!((Assignment)parent).getAssignedNode().getDeclaration().isNative())))
 				{
 					Value value = SyntaxTree.decodeValue(parent, n.mapDimension(0), location, require);
 					
@@ -421,7 +421,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			String type = generateFlatType(new StringBuilder(), null, false).toString();
 			
 			Assignment array = Assignment.decodeStatement(func, "native " + type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
-			
+
 //			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
 //			
 //			setDataType(POINTER);
@@ -430,9 +430,10 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 //			((Instantiation)array.getAssignmentNode().getReturnedNode()).getIdentifier().setDataType(POINTER);
 			
 			array.onAfterDecoded();
-			
 			func.addChild(array);
-			
+			array.onAfterDecoded();
+			array.getAssignedNode().getDeclaration().convertArrays();
+
 			String name = array.getAssignedNode().getName();
 			
 			ArrayList<Value> passedValues = new ArrayList<>();
@@ -456,10 +457,10 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 					value = var;
 				}
 				
-//				if (value.isPrimitive())
-//				{
-//					value = SyntaxUtils.autoboxPrimitive(value);
-//				}
+				if (value.getReturnedNode().isPrimitive())
+				{
+					value = SyntaxUtils.autoboxPrimitive(value, value.getReturnedNode().getType());
+				}
 				
 				Assignment a = Assignment.decodeStatement(func, name + "[" + i + "] = " + value.generateFlatInput(), getLocationIn(), true);
 				
@@ -477,7 +478,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				constructor = func.getType();
 			}
 			
-			ClassDeclaration converted = func.getTypeClass().getConvertedPrimitiveClass(func.getGenericTypeArgumentList().getTypes());
+			ClassDeclaration converted = null;//func.getTypeClass().getConvertedPrimitiveClass(func.getGenericTypeArgumentList().getTypes());
 			
 			if (converted != null)
 			{

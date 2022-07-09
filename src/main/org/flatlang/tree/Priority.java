@@ -217,7 +217,12 @@ public class Priority extends Value implements Accessible
 	@Override
 	public byte getDataType(boolean checkGeneric)
 	{
-		return getReturnedContents().getDataType(checkGeneric);
+		return getDataType(checkGeneric, true);
+	}
+
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
+	{
+		return getReturnedContents().getDataType(checkGeneric, checkCast);
 	}
 	
 	@Override

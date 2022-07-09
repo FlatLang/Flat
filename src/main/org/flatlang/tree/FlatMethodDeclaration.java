@@ -1,5 +1,6 @@
 package org.flatlang.tree;
 
+import org.flatlang.Flat;
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.error.SyntaxMessage;
@@ -72,6 +73,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		
 		GenericTypeParameterList methodParams = new GenericTypeParameterList(this, locationIn.asNew());
 		addChild(methodParams, this);
+	}
+
+	public boolean isExtension() {
+		return getParentClass() instanceof ExtensionDeclaration;
 	}
 	
 	public int[] getDistancesFrom(ParameterList other)
@@ -487,6 +492,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		if (outputType && getType() != null)
 		{
 			builder.append(" -> ").append(getTypeObject().toFlat());
+
+			for (int i = 0; i < getArrayDimensions(); i++) {
+				builder.append("[]");
+			}
 		}
 		
 		builder.append('\n');
@@ -679,6 +688,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public FlatMethodDeclaration getExistingConvertedPrimitiveMethod(Value[] args, Value[] methodArgs)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return null;
+		}
 		for (FlatMethodDeclaration converted : primitiveOverloads)
 		{
 			FlatParameterList params = converted.getParameterList();
@@ -764,6 +776,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public FlatMethodDeclaration checkConvertToClass(ClassDeclaration type, Value[] methodTypes)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return null;
+		}
 		if (getParentClass() != type)
 		{
 			if (getExistingConvertedPrimitiveMethod(type.primitiveOverloadTypes) == null)
@@ -777,6 +792,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public FlatMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types, final Value[] methodTypes)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return null;
+		}
 		ClassDeclaration referenceClass = getParentClass();
 
 		FlatMethodDeclaration clone = clone(parent, getLocationIn(), false, true);
@@ -834,7 +852,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		{
 			Parameter param = parameterList.getParameter(i);
 			
-			changed |= referenceClass.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), param);
+			changed |= referenceClass.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), param, true);
 		}
 		
 		referenceClass.replacePrimitiveGenerics(types, this, clone);
@@ -895,6 +913,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public FlatMethodDeclaration convertPrimitiveMethod(MethodCall call, Value returnType, Node addTo, Value[] types, Value[] methodTypes, ArrayList<Value[]> closureTypes)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return null;
+		}
 		FlatMethodDeclaration method = clone(getParent(), getLocationIn(), false, true);
 		method.setProperty("userMade", false);
 		method.overridenMethod = null;
@@ -1028,6 +1049,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public FlatMethodDeclaration getConvertedPrimitiveMethod(MethodCall call)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return null;
+		}
 		Value[] args = call.getArgumentList().getArgumentsInOrder();
 		Value[] methodArgs = call.getMethodGenericTypeArgumentList().getTypes();
 		
@@ -1519,6 +1543,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 			
 			addChild(contents);
+			genericParameter = searchGenericTypeParameter(0);
 			
 			if (!containedType && getType() != null)
 			{

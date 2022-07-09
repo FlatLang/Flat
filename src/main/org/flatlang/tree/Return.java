@@ -144,7 +144,7 @@ public class Return extends IValue
 				return n;
 			}
 		}
-		
+
 		return null;
 	}
 	
@@ -281,7 +281,7 @@ public class Return extends IValue
 			}
 			if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive() && !Literal.isNullLiteral(node))
 			{
-				return SyntaxUtils.autoboxPrimitive(node);
+				return SyntaxUtils.autoboxPrimitive(node, node.getReturnedNode().getType());
 			}
 		}
 		

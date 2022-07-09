@@ -158,7 +158,8 @@ public interface AbstractValue extends GenericCompatible
 	}
 	
 	public byte getDataType(boolean checkGeneric);
-	
+	public byte getDataType(boolean checkGeneric, boolean checkCast);
+
 	/**
 	 * Set whether or not the identifier is a value, pointer, or
 	 * reference.<br>

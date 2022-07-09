@@ -1,5 +1,6 @@
 package org.flatlang.tree;
 
+import org.flatlang.Flat;
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.error.SyntaxErrorException;
@@ -14,6 +15,7 @@ import org.flatlang.tree.variables.*;
 import org.flatlang.util.*;
 import org.flatlang.util.Bounds;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 
 /**
@@ -687,12 +689,17 @@ public class MethodCall extends Variable
 	@Override
 	public byte getDataType(boolean checkGeneric)
 	{
+		return getDataType(checkGeneric, true);
+	}
+
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
+	{
 		/*if (isPrimitiveGenericType())
 		{
 			return Value.POINTER;
 		}*/
 		
-		return super.getDataType(checkGeneric);
+		return super.getDataType(checkGeneric, checkCast);
 	}
 	
 	@Override
@@ -789,7 +796,7 @@ public class MethodCall extends Variable
 	}
 	
 	@Override
-	public String getGenericReturnType()
+	public String getGenericReturnType(boolean checkCast)
 	{
 		GenericTypeParameter param = getGenericTypeParameter();
 		GenericTypeArgument arg = param.getCorrespondingArgument(this/*.getReferenceNode()*/.toValue());
@@ -947,9 +954,19 @@ public class MethodCall extends Variable
 			statement = statement.replace('`' + data.literalNameData.literalName + '`', data.literalNameData.validName);
 		}
 
+		String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location);
+
+		if (modifierData != null) {
+			statement = modifierData[0][0];
+		}
+
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			MethodCall n  = new MethodCall(parent, location);
+
+			if (modifierData != null) {
+				Arrays.stream(modifierData[1]).forEach(n::parseModifier);
+			}
 			
 			Bounds genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false, '-');
 			
@@ -1017,6 +1034,7 @@ public class MethodCall extends Variable
 			
 			if (!skipArgumentChecks && !n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require))
 			{
+				n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require);
 				SyntaxMessage.queryError("Invalid arguments passed in function call '" + statement + "'", n, require);
 				
 				return null;
@@ -1200,7 +1218,7 @@ public class MethodCall extends Variable
 	{
 		GenericTypeParameter param = parameter.getGenericTypeParameter();
 		
-		if (param != null && param == target)
+		if (param != null && param.getType().equals(target.getType()))
 		{
 			Value required = parameter;
 			
@@ -1431,6 +1449,9 @@ public class MethodCall extends Variable
 	
 	private void checkPrimitiveMethodConversion(CallableMethod methodDeclaration)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return;
+		}
 		if (methodDeclaration instanceof FlatMethodDeclaration)
 		{
 			FlatMethodDeclaration method = (FlatMethodDeclaration)methodDeclaration;
@@ -1466,8 +1487,10 @@ public class MethodCall extends Variable
 					{
 						if (currentParams.getVisibleChild(i).getType().equals(convertedParams.getVisibleChild(position).getType()))
 						{
-							newArgs.addChild(args.getVisibleChild(i));
-							position++;
+							if (args.getNumVisibleChildren() > i) {
+								newArgs.addChild(args.getVisibleChild(i));
+								position++;
+							}
 						}
 					}
 					
@@ -1810,9 +1833,9 @@ public class MethodCall extends Variable
 ////				setDataType(VALUE);
 //			}
 			
-			if (accessing instanceof Variable)
+			if (accessing instanceof Variable || accessing instanceof Literal)
 			{
-				Variable var = (Variable)accessing;
+				Value var = accessing.toValue();
 				
 				if (var.isPrimitiveType() && var.getTypeClass() != null && var.getDataType() != Value.POINTER)
 				{
@@ -1834,9 +1857,7 @@ public class MethodCall extends Variable
 					}
 					else if (!(var.getParent() instanceof Instantiation))
 					{
-						Instantiation instantiation = SyntaxUtils.replaceWithAutoboxPrimitive(var);
-						
-						result.returnedNode = instantiation;
+						result.returnedNode = SyntaxUtils.replaceWithAutoboxPrimitive(var);
 					}
 					
 					return result;
@@ -1892,6 +1913,17 @@ public class MethodCall extends Variable
 		}
 		
 		return result;
+	}
+
+	@Override
+	public boolean onAfterDecoded()
+	{
+		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
+		{
+			genericParameter = searchGenericTypeParameter(0);
+		}
+
+		return super.onAfterDecoded();
 	}
 	
 	@Override

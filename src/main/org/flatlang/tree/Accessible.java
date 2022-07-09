@@ -170,10 +170,6 @@ public interface Accessible
 				
 				return arg;
 			}
-			if (toValue().getParentClass() == type.getParentClass() && toValue().getParentMethod() != null && toValue().getParentMethod().isInstance())
-			{
-				return toValue().getParentMethod().getObjectReference().getGenericTypeArgumentFromParameter(type);
-			}
 			
 			if (typeClass != type.getParentClass())
 			{
@@ -662,7 +658,7 @@ public interface Accessible
 				n = s;
 			}
 			
-			newParent.addChild(index, n);
+			newParent.addChild(index, n, newParent);
 			
 			return n;
 		}

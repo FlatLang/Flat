@@ -213,7 +213,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public void convertArrays()
 	{
-		if (!isWithinExternalContext() && getArrayDimensions() > 0 && !containsAnnotationOfType(NativeAnnotation.class))
+		if (!isWithinExternalContext() && getArrayDimensions() > 0 && !isNative())
 		{
 			String type = "";
 			
@@ -260,7 +260,9 @@ public abstract class Value extends Node implements AbstractValue
 					arg.detach();
 				}
 			}
-			
+
+			setTypeValue("Array");
+			setArrayDimensions(0);
 			setType(type);
 			
 			if (getProgram().getPhase() >= SyntaxTree.PHASE_METHOD_CONTENTS)
@@ -533,7 +535,11 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		return getType() != null && getParentClass() != null && getParentClass().containsExternalType(getType());
 	}
-	
+
+	public boolean isNative() {
+		return containsAnnotationOfType(NativeAnnotation.class);
+	}
+
 	public Value getTypeValue()
 	{
 		Value value = new IIdentifier(this, getLocationIn());
@@ -780,7 +786,7 @@ public abstract class Value extends Node implements AbstractValue
 			}
 			if (id.isAccessed())
 			{
-				if (isGenericType())
+				if (getGenericTypeParameter() != null)
 				{
 					GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(this);
 					
@@ -1176,11 +1182,11 @@ public abstract class Value extends Node implements AbstractValue
 			}
 		}
 		
-		if (arg != null && !arg.isGenericType())
+		if (arg != null && !arg.isGenericType() && !arg.isAncestorOf(this))
 		{
 			return builder.append(SyntaxUtils.getPrimitiveFlatType(arg.generateFlatType(context).toString()));
 		}
-		else if (arg != null && context != null && context.getParentClass() != null && arg.genericParameter.getParentClass().encapsulates(context.getParentClass(), true))
+		else if (arg != null && context != null && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true))
 		{
 			builder.append(arg.getType());
 		}
@@ -1285,7 +1291,7 @@ public abstract class Value extends Node implements AbstractValue
 			toFile.addImport(arg.getTypeClassLocation());
 			arg.importGenericArgumentTypesTo(toFile);
 		}
-		else if (arg != null && context != null && context.getParentClass() != null && arg.genericParameter.getParentClass().encapsulates(context.getParentClass(), true))
+		else if (arg != null && context != null && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true))
 		{
 			toFile.addImport(arg.getTypeClassLocation());
 			arg.importGenericArgumentTypesTo(toFile);
@@ -1465,13 +1471,16 @@ public abstract class Value extends Node implements AbstractValue
 		return genericParameter;
 	}
 	
-	public final GenericTypeParameter searchGenericTypeParameter()
+	public final GenericTypeParameter searchGenericTypeParameter(int index)
 	{
-		return searchGenericTypeParameter(true);
+		return searchGenericTypeParameter(index, true);
 	}
 
-	public GenericTypeParameter searchGenericTypeParameter(boolean checkArray)
+	public GenericTypeParameter searchGenericTypeParameter(int index, boolean checkArray)
 	{
+		if (genericParameter != null) {
+			return genericParameter;
+		}
 		if (getParentMethod(true) != null)
 		{
 			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType(checkArray));
@@ -1502,6 +1511,7 @@ public abstract class Value extends Node implements AbstractValue
 			return null;
 		}
 
+		// use getReferenceNode/getDeclaringClass here??
 		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
 	}
     
@@ -1522,6 +1532,23 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean isGenericType(boolean checkArray, boolean checkCast)
 	{
+		if (isFunctionType()) {
+			return false;
+		} else if (getGenericTypeParameter() != null) {
+			Value ref = this;
+			if (this instanceof Accessible) {
+				ref = ((Accessible)this).getDeclaringClass();
+				if (ref == null) {
+					ref = this;
+				}
+			}
+			String location = SyntaxUtils.getTypeClassLocation(ref, getType(false), true);
+
+			if (location != null) {
+				return false;
+			}
+		}
+
 		return getGenericTypeParameter() != null;
 	}
 	
@@ -1538,7 +1565,13 @@ public abstract class Value extends Node implements AbstractValue
 	public String getGenericReturnType(boolean checkCast)
 	{
 //		GenericTypeParameter param = getGenericTypeParameter(checkCast);//getParentClass().getGenericTypeParameter(getType(checkCast), this);
-		
+
+		String location = SyntaxUtils.getTypeClassLocation(this, getType(), true);
+
+		if (location != null) {
+			return getType();
+		}
+
 		if (genericParameter != null)
 		{
 			return genericParameter.getDefaultType();
@@ -1642,7 +1675,7 @@ public abstract class Value extends Node implements AbstractValue
 		
 		if (flatType.isGenericType() && !getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass()))
 		{
-			setTypeValue(original.getGenericTypeParameter().getDefaultType());
+			setTypeValue(original.getGenericReturnType());
 		}
 		else if (value.getType() != null)
 		{
@@ -1724,7 +1757,10 @@ public abstract class Value extends Node implements AbstractValue
 					}
 					
 					args.replaceWith(newArgs);
-					newArgs.forEachVisibleListChild(x -> x.genericParameter = x.searchGenericTypeParameter());
+					int i = 0;
+					for (GenericTypeArgument arg : newArgs.getVisibleListChildren()) {
+						arg.genericParameter = arg.searchGenericTypeParameter(i++);
+					}
 				}
 			}
 		}
@@ -1737,7 +1773,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public Value replaceWithAutoboxedValue()
 	{
-		Instantiation newValue = SyntaxUtils.autoboxPrimitive(this);
+		Value newValue = SyntaxUtils.autoboxPrimitive(this);
 		
 		replaceWith(newValue);
 		
@@ -1746,7 +1782,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public Value replaceWithAutoboxedValue(String type)
 	{
-		Instantiation newValue = SyntaxUtils.autoboxPrimitive(this, type);
+		Value newValue = SyntaxUtils.autoboxPrimitive(this, type);
 		
 		replaceWith(newValue);
 		
@@ -1760,7 +1796,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public Value replaceWithUnboxedValue(String type)
 	{
-		Value newValue = SyntaxUtils.unboxPrimitive(this, type);
+		Value newValue = SyntaxUtils.unboxPrimitive(this, type, true);
 		
 //		if (!newValue.containsChild(newValue))
 //		{

@@ -266,6 +266,11 @@ public class Throw extends Value
 	@Override
 	public byte getDataType(boolean checkGeneric)
 	{
+		return getDataType(checkGeneric, true);
+	}
+
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
+	{
 		return 0;
 	}
 	
