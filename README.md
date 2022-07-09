@@ -6,6 +6,8 @@ Flat Programming Language
 
 [![Build Standard Library](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml)
 
+[![Test Airship](https://github.com/FlatLang/Airship/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Airship/actions/workflows/build.yml)
+
 Flat is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
 
 __Aim__
