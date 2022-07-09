@@ -244,7 +244,7 @@ public class ForEachLoop extends Loop
 	
 	private boolean decodeVariableAssignment(boolean require)
 	{
-		Assignment assignment = Assignment.decodeStatement(getScope(), getVariable().generateFlatInput() + " = " + getIterator().generateFlatInput() + ".next", getIterator().getLocationIn().asNew(), require);
+		Assignment assignment = Assignment.decodeStatement(getScope(), getVariable().generateFlatInput() + " = " + getIterator().generateFlatInput() + ".stepNext", getIterator().getLocationIn().asNew(), require);
 		
 		if (assignment == null)
 		{
@@ -402,7 +402,7 @@ public class ForEachLoop extends Loop
 		
 		String s = identifier.getRootAccessNode().toValue().generateFlatInput().toString();
 
-		Accessible nextVarAccessor = (Accessible)SyntaxTree.decodeValue(this, s + ".next", location, require);
+		Accessible nextVarAccessor = (Accessible)SyntaxTree.decodeValue(this, s + ".stepNext", location, require);
 
 		if (nextVarAccessor == null) {
 			return false;
