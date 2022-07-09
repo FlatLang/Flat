@@ -871,7 +871,7 @@ public class Variable extends Identifier
 							return result;
 						}
 					}
-					else if (getDataType() == VALUE && getAccessedNode() instanceof MethodCall)
+					else if (getDataType() == VALUE && accessed instanceof MethodCall)
 					{
 						result.returnedNode = replaceWithPrimitiveStaticCall();
 						
