@@ -111,7 +111,12 @@ public class ExtendedClass extends IValue implements GenericCompatible
 		
 		return node;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "extends " + getType();
+	}
+
 	/**
 	 * Test the {@link ExtendedClass} class type to make sure everything
 	 * is working properly.
