@@ -207,19 +207,23 @@ trait List<Type> implements Iterable<Type> {
         return list
     }
 
-    public firstOr(Type default, func(Type) -> Bool = {true}) -> Type => default {
+    public firstOr(Type default, func(Type, Int, List<Type>) -> Bool = {true}) -> Type => default {
+        var Int i = 0
+
         for (element in this) {
-            if (func(element)) {
+            if (func(element, i++, this)) {
                 return element
             }
         }
     }
 
-    public firstOrNull(func(Type) -> Bool = {true}) -> Type => firstOr(null, func)
+    public firstOrNull(func(Type, Int, List<Type>) -> Bool = {true}) -> Type => firstOr(null, func)
 
-    public firstWhereOrThrow<OUT>(Exception e, func(Type) -> OUT = {null}) -> OUT {
+    public firstWhereOrThrow<OUT>(Exception e, func(Type, Int, List<Type>) -> OUT = {null}) -> OUT {
+        var Int i = 0
+
         for (element in this) {
-            if (let value = func(element)) {
+            if (let value = func(element, i++, this)) {
                 return value
             }
         }
@@ -227,9 +231,11 @@ trait List<Type> implements Iterable<Type> {
         throw e
     }
 
-    public firstOrThrow(Exception e, func(Type) -> Bool = {true}) -> Type {
+    public firstOrThrow(Exception e, func(Type, Int, List<Type>) -> Bool = {true}) -> Type {
+        var Int i = 0
+
         for (element in this) {
-            if (func(element)) {
+            if (func(element, i++, this)) {
                 return element
             }
         }
@@ -237,17 +243,21 @@ trait List<Type> implements Iterable<Type> {
         throw e
     }
 
-    public firstWhere(func(Type) -> Bool) -> Type => null {
+    public firstWhere(func(Type, Int, List<Type>) -> Bool) -> Type => null {
+        var Int i = 0
+
         for (element in this) {
-            if (func(element)) {
+            if (func(element, i++, this)) {
                 return element
             }
         }
     }
 
-    public firstNonNull<Out>(func(Type) -> Out) -> Out => null {
+    public firstNonNull<Out>(func(Type, Int, List<Type>) -> Out) -> Out => null {
+        var Int i = 0
+
         for (element in this) {
-            Out value = func(element)
+            Out value = func(element, i++, this)
 
             if (value) {
                 return value
