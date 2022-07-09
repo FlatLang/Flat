@@ -2443,19 +2443,6 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else
 			{
-				if (word.startsWith(","))
-				{
-					word = word.substring(1);
-					throw new RuntimeException();
-					// TODO: delete this
-				}
-				if (word.endsWith(","))
-				{
-					word = word.substring(0, word.length() - 1);
-					throw new RuntimeException();
-					// TODO: delete this
-				}
-				
 				if (word.length() > 0)
 				{
 					Location loc = new Location(0, 0, bounds.getStart(), bounds.getEnd());
