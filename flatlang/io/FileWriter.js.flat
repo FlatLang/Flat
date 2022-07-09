@@ -21,6 +21,58 @@ class {
     }
   }
 
+  public async captureOutput(async action(), Bool silent = true) -> String[] {
+    let output = new Array<String>()
+    native var Char[] data
+
+    let oldBuffer = buffer
+    buffer = ""
+
+    external js {
+      var originalLog = console.log;
+      var log = [];
+    }
+    if (silent) {
+      external js {
+        console.log = function () {
+          log.push([].slice.call(arguments));
+        };
+      }
+    } else {
+      external js {
+        console.log = function () {
+          originalLog.apply(this, [].slice.call(arguments));
+          log.push([].slice.call(arguments));
+        };
+      }
+    }
+
+    try {
+      await action()
+    } finally {
+      external {
+        console.log = originalLog;
+
+        log.forEach((line) => {
+          #{data} = line.map(o => o.toString()).join(" ");
+
+          #{output.add(new String(data))};
+        });
+      }
+
+      if (buffer.count > 0) {
+        external {
+          #{data} = #{buffer.chars.data};
+          #{output.add(new String(data))};
+        }
+      }
+
+      buffer = oldBuffer
+    }
+
+    return output
+  }
+
   public flush() {
     if (buffer.count > 0) {
       external js {
