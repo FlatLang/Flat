@@ -495,16 +495,23 @@ public class Variable extends Identifier
 	
 	public byte getDataType(boolean checkGeneric)
 	{
+		return getDataType(checkGeneric, true);
+	}
+
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
+	{
 		if (declaration == null)
 		{
 			return 0;
 		}
-		
-		Cast cast = getExplicitCast();
-		
-		if (cast != null)
-		{
-			return cast.getDataType();
+
+		if (checkCast) {
+			Cast cast = getExplicitCast();
+
+			if (cast != null)
+			{
+				return cast.getDataType();
+			}
 		}
 		
 		if (checkGeneric && isGenericType())

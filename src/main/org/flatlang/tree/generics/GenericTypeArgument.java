@@ -3,6 +3,8 @@ package org.flatlang.tree.generics;
 import org.flatlang.TestContext;
 import org.flatlang.error.UnimplementedOperationException;
 import org.flatlang.tree.*;
+import org.flatlang.tree.variables.FieldDeclaration;
+import org.flatlang.tree.variables.VariableDeclaration;
 import org.flatlang.util.Location;
 import org.flatlang.tree.GenericCompatible;
 import org.flatlang.tree.IValue;
@@ -32,7 +34,12 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 		
 		addChild(new GenericTypeArgumentList(this, locationIn), this);
 	}
-	
+
+	public GenericTypeArgument(Node temporaryParent, Location locationIn, GenericTypeParameter parameter) {
+		this(temporaryParent, locationIn);
+		genericParameter = parameter;
+	}
+
 	@Override
 	public void onReplaced(Node parent, Node replacement)
 	{
@@ -246,10 +253,35 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 //				return arg.getTypeClass().getGenericTypeParameter(getIndex());
 //			}
 //		}
-		
+
+		if (getParentMethod() != null) {
+			GenericTypeParameter methodParam = getParentMethod().getGenericTypeParameter(getType());
+
+			if (methodParam != null) {
+				return methodParam;
+			}
+		}
+
 		return super.getGenericTypeParameter(checkArray);
 	}
-	
+
+	@Override
+	public GenericTypeParameter searchGenericTypeParameter(int index, boolean checkArray) {
+		if (genericParameter == null && getParent() instanceof ClosureDeclaration == false && getParent() instanceof VariableDeclaration && getParent() instanceof ClassDeclaration == false) {
+			ClassDeclaration c = ((Value) getParent()).getTypeClass();
+
+			if (c != null) {
+				GenericTypeParameter param = c.getGenericTypeParameter(index);
+
+				if (param != null) {
+					return param;
+				}
+			}
+		}
+
+		return super.searchGenericTypeParameter(index, checkArray);
+	}
+
 	@Override
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
 	{

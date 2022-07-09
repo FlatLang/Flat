@@ -1714,11 +1714,16 @@ public class ClassDeclaration extends InstanceDeclaration
 	 * @return An array of methods that are compatible with the given
 	 * 		data.
 	 */
-	public MethodDeclaration[] getMethods(String methodName, int numParams, SearchFilter filter)
-	{
-		return Arrays.stream(getMethods(methodName, filter))
-				.filter(method -> (!filter.requireEqualParameterCount || numParams == method.getParameterList().getNumParameters()) && ((numParams >= method.getParameterList().getNumRequiredParameters() && numParams <= method.getParameterList().getNumVisibleChildren()) ||
-				(filter.allowMoreParameters && numParams > method.getParameterList().getNumRequiredParameters()))).toArray(MethodDeclaration[]::new);
+	public MethodDeclaration[] getMethods(String methodName, int numParams, SearchFilter filter) {
+		MethodDeclaration[] methods = getMethods(methodName, filter);
+
+		return Arrays.stream(methods)
+			.filter(method -> !filter.requireEqualParameterCount || numParams == method.getParameterList().getNumParameters())
+			.filter(method ->
+				(numParams >= method.getParameterList().getNumRequiredParameters() && numParams <= method.getParameterList().getNumVisibleChildren()) ||
+				(filter.allowMoreParameters && numParams > method.getParameterList().getNumRequiredParameters())
+			)
+			.toArray(MethodDeclaration[]::new);
 	}
 	
 	/**
@@ -2759,6 +2764,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public ClassDeclaration getConvertedPrimitiveClass(Value[] args)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return null;
+		}
+
 		if (args.length > 0)
 		{
 			if (isPrimitiveOverload())
@@ -2859,6 +2868,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public static boolean replacePrimitiveGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return false;
+		}
+
 		boolean changed = false;
 		
 		if (shallowReplaceGenerics(params, types, original, value, allowSame))
@@ -2914,6 +2927,10 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public static boolean replacePrimitiveGenerics(GenericTypeParameterList params, Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return false;
+		}
+
 		value.register();
 		
 		ParameterList<Value> originalClosureParams = original.getParameterList();
@@ -3058,9 +3075,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			c.primitiveOverloadTypes[i] = (Value)types[i].clone(this, types[i].getLocationIn(), true, true);//types[i].cloneTo(value, true, true);
 			c.originalPrimitiveOverloadTypes[i] = (Value)types[i].clone(this, types[i].getLocationIn(), true, true);
 		}
-		
-		addChild(c);
-		
+
 		String name = c.getName();
 		
 		GenericTypeParameterList params = c.getGenericTypeParameterDeclaration();
@@ -3082,7 +3097,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		c.setName(name);
 		c.setTypeValue(name);
-		
+		addChild(c);
+
 		addConvertedImplementations(c, types);
 		
 		if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS || getProgram().getTree().finishedPhase)
@@ -3095,6 +3111,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public void convertProperties()
 	{
+		if (Flat.PRIMITIVE_OVERLOADS) {
+			return;
+		}
 		if (isPrimitiveOverload())
 		{
 			if (genericOverload.arrayBracketOverload != null)

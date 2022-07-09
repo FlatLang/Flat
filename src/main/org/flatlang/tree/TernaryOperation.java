@@ -193,25 +193,31 @@ public class TernaryOperation extends IValue implements Accessible
 				}
 				
 				ClassDeclaration commonClass = null;
+
+				Value falseReturnedValue = falseValue.getReturnedNode();
+				Value trueReturnedValue = trueValue.getReturnedNode();
 				
-				Value v = Literal.isNullLiteral(trueValue.getReturnedNode()) ? falseValue.getReturnedNode() : trueValue.getReturnedNode();
-				
+				Value v = Literal.isNullLiteral(trueReturnedValue) ? falseReturnedValue : trueReturnedValue;
+
 				if (Literal.isNullLiteral(trueValue))
 				{
-					commonClass = falseValue.getReturnedNode().getTypeClass();
+					commonClass = falseReturnedValue.getTypeClass();
 				}
 				else if (Literal.isNullLiteral(falseValue))
 				{
-					commonClass = trueValue.getReturnedNode().getTypeClass();
+					commonClass = trueReturnedValue.getTypeClass();
 				}
 				else
 				{
-					if (trueValue.getReturnedNode().getTypeClass() == null || falseValue.getReturnedNode().getTypeClass() == null)
+					if (trueReturnedValue.getGenericTypeParameter() == falseReturnedValue.getGenericTypeParameter() && trueReturnedValue.getGenericTypeParameter() != null) {
+
+					}
+					else if (trueReturnedValue.getTypeClass() == null || falseReturnedValue.getTypeClass() == null)
 					{
 						return null;
 					}
 					
-					commonClass = SyntaxUtils.getTypeInCommon(trueValue.getReturnedNode(), falseValue.getReturnedNode());
+					commonClass = SyntaxUtils.getTypeInCommon(trueReturnedValue, falseReturnedValue);
 				}
 				
 				n.setType(v); // Set the array type data and stuff like that

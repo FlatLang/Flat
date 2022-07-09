@@ -4,6 +4,7 @@ import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.tree.lambda.LambdaMethodDeclaration;
 import org.flatlang.util.Location;
+import org.flatlang.util.SyntaxUtils;
 
 import java.util.ArrayList;
 
@@ -226,10 +227,12 @@ public class MethodCallArgumentList extends ArgumentList
 			MethodCall call = getMethodCall();
 			CallableMethod declaration = call.getCallableMethodBase(true);
 			CallableMethod inferred = call.getInferredDeclaration();
+			Value[] args = getArgumentsInOrder();
 			
 			for (int i = 0; i < getNumVisibleChildren(); i++)
 			{
 				Value param;
+				Value arg = args[i];
 				
 				if (getArgumentName(i) != null)
 				{
@@ -271,7 +274,7 @@ public class MethodCallArgumentList extends ArgumentList
 					}
 					else if (context.getType() != null)
 					{
-						context.replaceWithBoxedValue(param, type);
+						context.replaceWithBoxedValue(param, context.getReturnedNode().getType());
 					}
 				}
 			}

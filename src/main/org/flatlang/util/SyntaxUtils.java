@@ -1,5 +1,6 @@
 package org.flatlang.util;
 
+import org.flatlang.Flat;
 import org.flatlang.error.SyntaxMessage;
 import org.flatlang.error.UnimplementedOperationException;
 import org.flatlang.tree.*;
@@ -1840,12 +1841,13 @@ public class SyntaxUtils
 	public static Identifier generatePrimitiveFacade(MethodCall call)
 	{
 		Accessible accessing = call.getAccessingNode();
-		
+		Accessible accessed = call.getAccessedNode();
+
 		Accessible id = accessing.getRootAccessNode();
 		
 		String input = ((Value)accessing).getTypeClassName();
 
-		if (call.getAccessedNode().isChainNavigation()) {
+		if (accessed != null && accessed.isChainNavigation()) {
 			input += ':';
 		} else {
 			input += '.';
@@ -1899,12 +1901,15 @@ public class SyntaxUtils
 	 * 		class. If the given value is not primitive, then null is
 	 * 		returned.
 	 */
-	public static Instantiation autoboxPrimitive(Value primitive)
+	public static Value autoboxPrimitive(Value primitive)
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return primitive;
+		}
 		return autoboxPrimitive(primitive, primitive.getReturnedNode().getType());
 	}
 	
-	public static Instantiation autoboxPrimitive(Value primitive, String type)
+	public static Value autoboxPrimitive(Value primitive, String type)
 	{
 		Instantiation node = null;
 		
@@ -1915,6 +1920,8 @@ public class SyntaxUtils
 			String className     = type;
 			String defaultValue  = SyntaxUtils.getPrimitiveDefaultValue(className);
 			String instantiation = "new " + className + '(' + defaultValue + ')';
+
+			primitive.getFileDeclaration().addImport(returned.getTypeClassLocation());
 			
 			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
 			
@@ -1935,26 +1942,39 @@ public class SyntaxUtils
 	
 	public static Value unboxPrimitive(Value primitive, String type)
 	{
+		return unboxPrimitive(primitive, type, true);
+	}
+
+	public static Value unboxPrimitive(Value primitive, String type, boolean replace)
+	{
+		if (primitive instanceof Cast) {
+			if (replace) {
+				primitive = Priority.generateFrom(primitive);
+			} else {
+				throw new UnimplementedOperationException("Not implemented yet");
+			}
+		}
 		if (primitive instanceof Accessible)
 		{
 			Priority p = new Priority(primitive.getParent(), primitive.getLocationIn());
+
+			Accessible value = SyntaxTree.decodeAccessible(primitive.getReturnedNode(), "value", Location.INVALID, true, false);
+
 			Cast c = new Cast(p, primitive.getLocationIn());
 			c.setTypeValue(type);
 			c.setDataType(POINTER);
-			
-			Accessible value = SyntaxTree.decodeAccessible(primitive.getReturnedNode(), "value", Location.INVALID, true, false);
-			
-			if (primitive.getParent().containsChild(primitive, false))
-			{
-				primitive.replaceWith(p);
-			}
-			
-			c.addChild(primitive);
+
+			c.addChild(primitive.clone(primitive.getParent(), primitive.getLocationIn()));
 			p.addChild(c);
 			
 			if (value instanceof Identifier)
 			{
 				p.setAccessedNode((Identifier)value);
+			}
+
+			if (replace && primitive.getParent().containsChild(primitive, false))
+			{
+				primitive.replaceWith(p);
 			}
 			
 			return p;//(Value)SyntaxTree.decodeIdentifierAccess(primitive.parent, primitive.generateFlatInput().toString() + ".value", Location.INVALID, true);
@@ -1989,16 +2009,22 @@ public class SyntaxUtils
 		return node;
 	}
 	
-	public static Instantiation replaceWithAutoboxPrimitive(Value primitive)
-	{
+	public static Value replaceWithAutoboxPrimitive(Value primitive) {
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return primitive;
+		}
+		return replaceWithAutoboxPrimitive2(primitive);
+	}
+
+	public static Value replaceWithAutoboxPrimitive2(Value primitive) {
 		Instantiation autobox = autoboxPrimitiveOnly(primitive);
 		
 		if (primitive instanceof Accessible && ((Accessible)primitive).getAccessedNode() != null)
 		{
 			autobox.setAccessedNode(((Accessible)primitive).getAccessedNode());
 		}
-		
-		primitive.getParent().replace(primitive, autobox);
+
+		primitive.replaceWith(autobox);
 		
 		return autobox;
 	}
@@ -2774,7 +2800,10 @@ public class SyntaxUtils
 				}
 				else if (given[i].isGenericType() != required[i].isGenericType())
 				{
-					pair.genericDistance++;
+					if (given[i].isGenericType() && !given[i].getGenericReturnType().equals(required[i].getReturnedNode().getType()) ||
+						required[i].isGenericType() && !required[i].getGenericReturnType().equals(given[i].getReturnedNode().getType())) {
+						pair.genericDistance++;
+					}
 				}
 			}
 		}
@@ -3039,9 +3068,9 @@ public class SyntaxUtils
 							isTypeCompatible(context, value, given, false);
 							param.getCorrespondingArgument(context);
 						}
-						
+
 						SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
-						
+
 						return false;
 					}
 					else
@@ -3444,31 +3473,42 @@ public class SyntaxUtils
 		String paramsList[] = StringUtils.splitCommas(params, 1);
 		
 		ArrayList<GenericTypeArgument> args = new ArrayList<>();
-		
+
+		int i = 0;
 		for (String param : paramsList)
 		{
-			args.add(getGenericTypeArgumentName(parent, param));
+			GenericTypeArgument arg = getGenericTypeArgumentName(parent, param);
+			arg.genericParameter = arg.searchGenericTypeParameter(i++);
+			args.add(arg);
 		}
 		
 		return args.toArray(new GenericTypeArgument[0]);
 	}
 	
+	public static GenericTypeArgument getGenericTypeArgumentName(Node parent, GenericTypeParameter parameter)
+	{
+		GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID, parameter);
+		type.setType(parameter.getType(), true, false, true);
+		
+		return type;
+	}
+
 	public static GenericTypeArgument getGenericTypeArgumentName(Node parent, String parameterName)
 	{
 		GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID);
 		type.setType(parameterName, true, false, true);
-		
+
 		/*DeclarationData data = new DeclarationData();
-		
+
 		GenericTypeParameterList.searchGenerics(parameterName, data);
 		type.iterateWords(parameterName, data, true);
-		
+
 		if (data.containsSkipBounds())
 		{
 			//type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
 			int j = 4;
 		}*/
-		
+
 		return type;
 	}
 	
@@ -3539,8 +3579,7 @@ public class SyntaxUtils
 		
 		temp.extractLambdas();
 		temp.extractArrayInitializers();
-		temp.convertConvertedTypes(conversionTarget);
-		
+
 		return temp.getFlatContents();
 	}
 	

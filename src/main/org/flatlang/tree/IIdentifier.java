@@ -165,8 +165,6 @@ public class IIdentifier extends Identifier
 			
 			this.type.setType(type);
 		}
-		
-		genericParameter = searchGenericTypeParameter();
 	}
 	
 	@Override
@@ -181,6 +179,12 @@ public class IIdentifier extends Identifier
 	@Override
 	// Dont forget about IValue!!!!
 	public byte getDataType(boolean checkGeneric)
+	{
+		return getDataType(checkGeneric, true);
+	}
+
+	// Dont forget about IValue!!!!
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
 	{
 		return type != null ? type.dataType : 0;
 	}
@@ -230,7 +234,7 @@ public class IIdentifier extends Identifier
 
 		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			node.genericParameter = node.searchGenericTypeParameter();
+			node.genericParameter = genericParameter;
 		}
 		
 		return node;
@@ -241,7 +245,7 @@ public class IIdentifier extends Identifier
 	{
 		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			genericParameter = searchGenericTypeParameter();
+			genericParameter = searchGenericTypeParameter(0);
 		}
 		
 		return super.onAfterDecoded();

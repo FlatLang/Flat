@@ -5,6 +5,7 @@ import org.flatlang.ValidationResult;
 import org.flatlang.tree.*;
 import org.flatlang.tree.InstanceDeclaration;
 import org.flatlang.tree.MethodList.SearchFilter;
+import org.flatlang.tree.generics.GenericTypeParameter;
 import org.flatlang.util.*;
 import org.flatlang.tree.Node;
 import org.flatlang.util.Bounds;
@@ -97,6 +98,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		MutatorMethod method = decodeMutator(type);
 		
 		addChild(method);
+		method.onAfterDecoded();
 		
 		return method;
 	}

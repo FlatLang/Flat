@@ -54,6 +54,7 @@ public class SuperParameterModifier extends Annotation implements ModifierAnnota
 				
 				if (!method.doesOverride())
 				{
+					method.doesOverride();
 					SyntaxMessage.error("Method '" + method.getName() + "' does not override a method, which is required for the super modifier", this);
 				}
 				else

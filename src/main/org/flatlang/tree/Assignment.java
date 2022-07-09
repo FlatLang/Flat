@@ -187,7 +187,12 @@ public class Assignment extends Value
 	@Override
 	public byte getDataType(boolean checkGeneric)
 	{
-		return getAssignmentNode().getDataType(checkGeneric);
+		return getDataType(checkGeneric, true);
+	}
+
+	public byte getDataType(boolean checkGeneric, boolean checkCast)
+	{
+		return getAssignmentNode().getDataType(checkGeneric, checkCast);
 	}
 	
 	@Override
@@ -545,7 +550,11 @@ public class Assignment extends Value
 				{
 					declaration.setType("Int");
 				}
-				
+
+				declaration.onAfterDecoded();
+
+				checkPrimitive(getAssignmentNode());
+
 //				GenericTypeArgumentList args = assignment.getGenericTypeArgumentList();
 //				
 //				declaration.getGenericTypeArgumentList().slaughterEveryLastChild();
@@ -580,6 +589,9 @@ public class Assignment extends Value
 		{
 			return true;
 		}
+
+		returnedLeft  = getAssigneeNode().getReturnedNode();
+		returnedRight = getAssignmentNode().getReturnedNode();
 		
 		String leftType  = returnedLeft.getFlatType();
 		String rightType = returnedRight.getFlatType();
@@ -737,22 +749,25 @@ public class Assignment extends Value
 	@Override
 	public void onChildReplaced(Node old, Node replacement)
 	{
-		if (getAssigneeNode() instanceof Variable)
+		Value assignee = getAssigneeNode();
+
+		if (assignee instanceof Variable || assignee instanceof Literal)
 		{
 			Variable v = getAssignedNode();
-			
+
 			if (v.declaration instanceof LocalDeclaration)
 			{
 				LocalDeclaration local = (LocalDeclaration)v.declaration;
-				
+
 				if (local.isImplicit() && !replacement.containsProperty("methodCall"))
 				{
 					local.implicitType = ((Value)replacement).getReturnedNode();
 					local.setType(local.implicitType);
+					local.onAfterDecoded();
 				}
 			}
 		}
-		
+
 		super.onChildReplaced(old, replacement);
 	}
 	
@@ -900,21 +915,29 @@ public class Assignment extends Value
 		
 		Value value = (Value)child;
 		
+		return checkPrimitive(value);
+	}
+
+	private Value checkPrimitive(Value value) {
 		if (getAssignedNodeValue().getReturnedNode().getType() != null)
 		{
 			if (getAssignedNodeValue().getReturnedNode().isPrimitive())
 			{
-				if (!value.getReturnedNode().isPrimitive())
+				if (!value.getReturnedNode().isPrimitive() && getParentMethod() != null && getParentMethod().getProperty("array") == null)
 				{
-					value = SyntaxUtils.unboxPrimitive(value);
+					return SyntaxUtils.unboxPrimitive(value, value.getReturnedNode().getFlatType(value, false));
 				}
 			}
 			else if (value.getReturnedNode().isPrimitive())
 			{
-				value = SyntaxUtils.autoboxPrimitive(value);
+				Value v = SyntaxUtils.autoboxPrimitive(value, value.getReturnedNode().getType());
+
+				if (value.getParent().containsChild(value, false)) {
+					value.replaceWith(v);
+				}
 			}
 		}
-		
+
 		return value;
 	}
 	

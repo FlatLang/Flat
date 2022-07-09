@@ -44,7 +44,11 @@ public class GenericTypeParameter extends IValue
 	{
 		return defaultType;
 	}
-	
+
+	public ClassDeclaration getDefaultTypeClass() {
+		return SyntaxUtils.getImportedClass(getFileDeclaration(), defaultType);
+	}
+
 	public void setDefaultType(String type)
 	{
 		this.defaultType = type;

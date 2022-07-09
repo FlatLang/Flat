@@ -48,7 +48,7 @@ public class BinaryOperation extends IValue
 	}
 	
 	@Override
-	public String getGenericReturnType()
+	public String getGenericReturnType(boolean checkCast)
 	{
 		return getType();
 	}
@@ -738,7 +738,7 @@ public class BinaryOperation extends IValue
 		{
 			Value left = getLeftOperand();
 			Value right = getRightOperand();
-			
+
 			if (overload.getName().equals("PlusOperator"))
 			{
 				boolean leftString = SyntaxUtils.isString(left);
@@ -878,11 +878,43 @@ public class BinaryOperation extends IValue
 	{
 		Value left = getLeftOperand();
 		Value right = getRightOperand();
-		
+
+		Value leftOperand = left;
+		Value rightOperand = right;
+
+		if (rightOperand instanceof BinaryOperation) {
+			rightOperand = ((BinaryOperation)rightOperand).getLeftOperand();
+		}
+
+		if (
+			!Literal.isNullLiteral(leftOperand) &&
+				!Literal.isNullLiteral(rightOperand) &&
+				!leftOperand.getReturnedNode().isExternalType() &&
+				!rightOperand.getReturnedNode().isExternalType() &&
+				leftOperand.getReturnedNode().getType() != null &&
+				rightOperand.getReturnedNode().getType() != null &&
+				leftOperand.getReturnedNode().isPrimitive() ^ rightOperand.getReturnedNode().isPrimitive()
+		) {
+			if (leftOperand.getReturnedNode().isPrimitive()) {
+				rightOperand.replaceWithUnboxedValue(rightOperand.getReturnedNode().getFlatType(rightOperand));
+				right = getRightOperand();
+			} else {
+				left.replaceWithUnboxedValue(leftOperand.getReturnedNode().getFlatType(leftOperand));
+				left = getLeftOperand();
+			}
+		}
+
+		leftOperand = left;
+		rightOperand = right;
+
+		if (rightOperand instanceof BinaryOperation) {
+			rightOperand = ((BinaryOperation)rightOperand).getLeftOperand();
+		}
+
 		Value leftReturned = left.getReturnedNode();
 		ClassDeclaration leftClass = leftReturned.getTypeClass();
 		ClassDeclaration objectClass = getProgram().getClassDeclaration("flatlang/Object");
-		
+
 		if (leftClass != null && !leftReturned.isPrimitive() && leftClass != objectClass && leftReturned.getArrayDimensions() == 0 && getRightOperandValue().getReturnedNode().getArrayDimensions() == 0)
 		{
 			if (leftClass.isOfType(overload))
@@ -943,12 +975,47 @@ public class BinaryOperation extends IValue
 		}
 		
 		ClassDeclaration rightClass = right.getReturnedNode().getTypeClass();
-		
-		if (overload.getName().equals("EqualsOperator") && (leftClass != null && leftClass.isOfType("flatlang/String") || rightClass != null && rightClass.isOfType("flatlang/String")))
-		{
-			SyntaxMessage.warning("Object reference comparison done instead of String comparison for this operation", this);
+
+		if (overload.getName().equals("EqualsOperator")) {
+			if (
+				!Literal.isNullLiteral(leftOperand) &&
+					!Literal.isNullLiteral(rightOperand) &&
+					!leftOperand.getReturnedNode().isExternalType() &&
+					!rightOperand.getReturnedNode().isExternalType() &&
+					leftOperand.getReturnedNode().getType() != null &&
+					rightOperand.getReturnedNode().getType() != null &&
+					leftOperand.getReturnedNode().isPrimitive() ^ rightOperand.getReturnedNode().isPrimitive()
+			) {
+				FlatMethodDeclaration validMethod = (FlatMethodDeclaration) getFileDeclaration().getImportedClass(this, "Object").getMethods("equals")[0];
+				Value param = validMethod.getParameter(0);
+				String defaultValue = param.isPrimitive() ? "0" : "null";
+
+				MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(), validMethod.getName() + "(" + defaultValue + ")", leftReturned.getLocationIn(), true, true, validMethod);
+
+				((Accessible)left.getReturnedNode()).setAccessedNode(call);
+
+				Value rightNode = getRightOperandValue();
+
+				if (right instanceof BinaryOperation)
+				{
+					rightNode.replaceWith(left);
+
+					call.getArgumentList().getVisibleChild(0).replaceWith(rightNode);
+
+					return right;
+				}
+				else
+				{
+					call.getArgumentList().getVisibleChild(0).replaceWith(rightNode);
+
+					return left;
+				}
+			}
+			if ((leftClass != null && leftClass.isOfType("flatlang/String") || rightClass != null && rightClass.isOfType("flatlang/String"))) {
+				SyntaxMessage.warning("Object reference comparison done instead of String comparison for this operation", this);
+			}
 		}
-		
+
 		return  null;
 	}
 	

@@ -160,17 +160,34 @@ public interface GenericCompatible
 			return clazz.getGenericTypeParameter(parameterName, (GenericCompatible)value).getCorrespondingArgument((GenericCompatible)value);
 		}
 	}
-	
+
+	default void addGenericTypeArgumentName(GenericTypeParameter parameter)
+	{
+		addGenericTypeArgumentName(getGenericTypeArgumentList(), parameter);
+	}
+
 	default void addGenericTypeArgumentName(String parameterName)
 	{
 		addGenericTypeArgumentName(getGenericTypeArgumentList(), parameterName);
 	}
-	
+
+	default void addGenericTypeArgumentName(GenericTypeArgumentList list, GenericTypeParameter parameter)
+	{
+		GenericTypeArgument type = getGenericTypeArgumentName(parameter);
+
+		list.addChild(type);
+	}
+
 	default void addGenericTypeArgumentName(GenericTypeArgumentList list, String parameterName)
 	{
 		GenericTypeArgument type = getGenericTypeArgumentName(parameterName);
-		
+
 		list.addChild(type);
+	}
+
+	default GenericTypeArgument getGenericTypeArgumentName(GenericTypeParameter parameter)
+	{
+		return SyntaxUtils.getGenericTypeArgumentName((Node)this, parameter);
 	}
 
 	default GenericTypeArgument getGenericTypeArgumentName(String parameterName)
