@@ -87,7 +87,12 @@ public class StaticClassReference extends IIdentifier
 		
 		return super.getType(checkCast);
 	}
-	
+
+	@Override
+	public boolean isPrimitive() {
+		return false;
+	}
+
 	@Override
 	public boolean onAfterDecoded()
 	{
