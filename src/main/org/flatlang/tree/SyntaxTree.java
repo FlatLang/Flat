@@ -55,7 +55,7 @@ public class SyntaxTree
 		Annotation.class, IfStatement.class, ElseStatement.class, Loop.class,
 		Default.class, Case.class, Match.class, Fallthrough.class, Priority.class,
 		Return.class, Assignment.class, IntRange.class, TernaryOperation.class,
-		Instantiation.class, BinaryOperation.class, Super.class
+		Instantiation.class, BinaryOperation.class, Super.class, UnaryOperation.class
 	};
 	
 	public static final Class<?> SCOPE_CHILD_DECODE[] = new Class<?>[]
@@ -63,9 +63,8 @@ public class SyntaxTree
 		Annotation.class, Break.class, Default.class, Case.class, Match.class,
 		Fallthrough.class, Continue.class, LambdaExpression.class, CodeBlock.class, ExceptionHandler.class,
 		Throw.class, Assignment.class, Instantiation.class, ElseStatement.class, IfStatement.class,
-		Until.class, Loop.class, Array.class, UnaryOperation.class, Cast.class,
-		ChainedMethodCall.class, MethodCall.class, LocalDeclaration.class,
-		ExternalCodeBlock.class, Array.class, ClosureVariable.class,
+		Until.class, Loop.class, Array.class, Cast.class, ChainedMethodCall.class, MethodCall.class,
+		LocalDeclaration.class, ExternalCodeBlock.class, Array.class, ClosureVariable.class,
 	};
 	
 	public static final Class<?> FIELD_SCOPE_CHILD_DECODE[] = new Class<?>[]
