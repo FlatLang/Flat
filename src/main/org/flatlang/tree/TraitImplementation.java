@@ -111,7 +111,12 @@ public class TraitImplementation extends IValue implements GenericCompatible
 		
 		return node;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "trait " + getTypeClassName();
+	}
+
 	/**
 	 * Test the {@link TraitImplementation} class type to make sure everything
 	 * is working properly.
