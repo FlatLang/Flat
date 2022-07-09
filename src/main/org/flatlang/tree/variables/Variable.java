@@ -981,6 +981,11 @@ public class Variable extends Identifier
 		node.safeNavigation = safeNavigation;
 		node.chainNavigation = chainNavigation;
 
+		if (cloneAnnotations)
+		{
+			cloneAnnotationsTo(node);
+		}
+
 		//super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		if (cloneChildren)
