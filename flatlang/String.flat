@@ -52,6 +52,7 @@ immutable class String implements Comparable<String>,
 
     public equals(Object other) => other && other.class.isOfType(String.class) && equals((String)other)
     public equals(String other) => other && count == other.count && compareTo(other) == 0
+    public equalsIgnoreCase(String other) => other && count == other.count && toLowerCase().compareTo(other.toLowerCase()) == 0
 
     public replace(Pattern pattern, String replace) -> String {
         var output = this
