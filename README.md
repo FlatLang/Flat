@@ -2,7 +2,7 @@ Flat Programming Language
 ===========================
 [![Build Flat](https://github.com/FlatLang/Flat/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Flat/actions/workflows/build.yml)
 
-[![Stability Test](https://github.com/BSteffaniak/Flat-Testing/actions/workflows/stability-test.yml/badge.svg)](https://github.com/BSteffaniak/Flat-Testing/actions/workflows/stability-test.yml)
+[![Stability Test](https://github.com/FlatLang/Stability-Test/actions/workflows/stability-test.yml/badge.svg)](https://github.com/FlatLang/Stability-Test/actions/workflows/stability-test.yml)
 
 [![Build Standard Library](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml)
 
