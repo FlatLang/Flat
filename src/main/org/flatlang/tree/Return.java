@@ -99,6 +99,10 @@ public class Return extends IValue
 	@Override
 	public Node getDecodedParent()
 	{
+		if (getValueNode() == null) {
+			return this;
+		}
+
 		return getReturnedNode();
 	}
 	
