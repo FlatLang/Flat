@@ -980,6 +980,7 @@ public class Variable extends Identifier
 		node.arrayAccess = arrayAccess;
 		node.safeNavigation = safeNavigation;
 		node.chainNavigation = chainNavigation;
+		node.genericTypeArgumentList = genericTypeArgumentList;
 
 		if (cloneAnnotations)
 		{
