@@ -101,6 +101,12 @@ public class LambdaExpression extends IIdentifier
 	
 	public static LambdaExpression decodeStatement(Node parent, String statement, Location location, boolean require, ClosureDeclaration closure, Value context)
 	{
+		String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 0);
+
+		if (modifierData != null) {
+			statement = modifierData[0][0];
+		}
+
 		String[] variables = null;
 		int endingIndex = 0;
 		boolean block = false;
@@ -115,6 +121,10 @@ public class LambdaExpression extends IIdentifier
 			{
 				variables = new String[0];
 			}
+
+			if (statement.substring(endingIndex).trim().length() == 0) {
+				return null;
+			}
 		}
 		else if (statement.startsWith("{"))
 		{
@@ -124,15 +134,22 @@ public class LambdaExpression extends IIdentifier
 
 			block = true;
 		}
-		else
+		else if (statement.trim().length() > 0)
 		{
 			variables = new String[] { StringUtils.findNextWord(statement) };
 			
 			endingIndex = variables[0].length();
+		} else {
+			return null;
 		}
 		
 		LambdaExpression n = new LambdaExpression(parent, location);
 		n.variables = variables;
+		if (modifierData != null) {
+			if (!Arrays.stream(modifierData[1]).allMatch(n::parseModifier)) {
+				return null;
+			}
+		}
 		
 		if (endingIndex > 0)
 		{
@@ -384,6 +401,7 @@ public class LambdaExpression extends IIdentifier
 		method.isInstance = parentMethod != null && parentMethod.isInstance();//parentMethod.isStatic();
 		method.objectReference = parentMethod != null ? parentMethod.objectReference : null;
 		method.index = getIndex();//methodCall.getArgumentList().getNumVisibleChildren()
+		cloneAnnotationsTo(method);
 		
 		if (context instanceof MethodCall)
 		{
