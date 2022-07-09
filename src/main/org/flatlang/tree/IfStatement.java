@@ -55,6 +55,10 @@ public class IfStatement extends ControlStatement
 	@Override
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
 	{
+		if (getCondition() == null) {
+			return builder;
+		}
+
 		builder.append("if (").append(getCondition().generateFlatInput()).append(')');
 		
 		if (outputChildren)
