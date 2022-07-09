@@ -2,7 +2,7 @@
   <configuration default="false" name="Compile JS StabilityTest" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="org.flatlang.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../Flat-Testing/stabilitytest -l ../Nest -l ../Network -l ../Compiler-String-Extensions -l ../MySQL -l ../Redis -install-dir .. -d ../FlatCompilerOutput/js/src -main stabilitytest/StabilityTest -o ../Flat-Testing/example/bin/ExecutableJS -target js" />
+    <option name="PROGRAM_PARAMETERS" value="../Stability-Test -l ../Nest -l ../Network -l ../Compiler-String-Extensions -l ../MySQL -l ../Redis -install-dir .. -d ../FlatCompilerOutput/js/src -main stabilitytest/StabilityTest -o ../Flat-Testing/example/bin/ExecutableJS -target js" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
