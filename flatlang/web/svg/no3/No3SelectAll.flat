@@ -1,8 +1,0 @@
-package "flatlang/web/svg/no3"
-
-class No3SelectAll extends No3Node {
-    public construct(public String selection) {}
-
-    [Override]
-    public toJs() => "d3.selectAll('#selection')"
-}

@@ -1,5 +1,0 @@
-package "flatlang/web/svg/no3"
-
-public abstract class No3Node {
-    public abstract toJs() -> String
-}

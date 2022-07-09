@@ -1,6 +1,6 @@
 package "flatlang"
 
-import "flatlang/serialization/SyntaxStringFunctions"
+import "flatlang/extensions/SyntaxStringFunctions"
 
 [AutoFinal]
 immutable class {

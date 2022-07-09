@@ -1,5 +1,0 @@
-import "flatlang/package/Package"
-
-class StandardLibrary extends Package {
-
-}

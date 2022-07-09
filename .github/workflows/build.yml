@@ -53,11 +53,18 @@ jobs:
           repository: FlatLang/Nest
           path: Nest
 
+      - name: Checkout Compiler-String-Extensions library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Compiler-String-Extensions
+          path: Compiler-String-Extensions
+
       - name: Build Stability Test
         run: |
           java -jar Flat/target/flatc.jar \
             Flat-Testing/example Flat-Testing/stabilitytest \
             -l Nest \
+            -l Compiler-String-Extensions \
             -install-dir . \
             -std-path flatlang \
             -main stabilitytest/StabilityTest \

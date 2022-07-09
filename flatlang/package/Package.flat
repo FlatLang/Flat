@@ -1,5 +1,0 @@
-package "flatlang/package"
-
-class Package {
-
-}
