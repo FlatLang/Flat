@@ -101,6 +101,18 @@ jobs:
           repository: FlatLang/Redis
           path: Redis
 
+      - name: Checkout Svg library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Svg
+          path: Svg
+
+      - name: Checkout Json library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Json
+          path: Json
+
       - name: Checkout SimpleGapRuleFlat
         uses: actions/checkout@master
         with:
@@ -122,6 +134,8 @@ jobs:
             -l Network \
             -l MySQL \
             -l Redis \
+            -l Svg \
+            -l Json \
             -install-dir . \
             -main stabilitytest/StabilityTest \
             -o Flat-Testing/example/bin/StabilityTest \
