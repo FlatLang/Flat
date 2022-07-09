@@ -83,10 +83,17 @@ jobs:
           repository: FlatLang/Svg
           path: Svg
 
+      - name: Checkout Stability-Test library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Stability-Test
+          path: Stability-Test
+
       - name: Build Stability Test
         run: |
           java -jar Flat/target/flatc.jar \
-            Flat-Testing/example Flat-Testing/stabilitytest \
+            Flat-Testing/example \
+            Stability-Test \
             -l Nest \
             -l Compiler-String-Extensions \
             -l Network \
@@ -96,14 +103,14 @@ jobs:
             -install-dir . \
             -std-path flatlang \
             -main stabilitytest/StabilityTest \
-            -o Flat-Testing/example/bin/ExecutableJS \
+            -o dist/index.js \
             -target js
 
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: ExecutableJS.js
-          path: Flat-Testing/example/bin/ExecutableJS.js
+          name: index.js
+          path: dist/index.js
 
       - uses: actions/setup-node@v3
         with:
@@ -111,4 +118,4 @@ jobs:
 
       - name: Run Stability Test
         run: |
-          node Flat-Testing/example/bin/ExecutableJS.js
+          node dist/index.js
