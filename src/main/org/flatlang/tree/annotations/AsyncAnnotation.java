@@ -3,7 +3,9 @@ package org.flatlang.tree.annotations;
 import org.flatlang.ValidationResult;
 import org.flatlang.tree.Node;
 import org.flatlang.tree.FlatMethodDeclaration;
+import org.flatlang.tree.Parameter;
 import org.flatlang.tree.SyntaxTree;
+import org.flatlang.tree.lambda.LambdaExpression;
 import org.flatlang.util.Location;
 
 public class AsyncAnnotation extends Annotation implements ModifierAnnotation
@@ -71,7 +73,7 @@ public class AsyncAnnotation extends Annotation implements ModifierAnnotation
 	{
 		if (!checkDuplicate(next, throwError))
 		{
-			if (next instanceof FlatMethodDeclaration)
+			if (next instanceof FlatMethodDeclaration || next instanceof LambdaExpression || next instanceof Parameter)
 			{
 				// valid
 			}
