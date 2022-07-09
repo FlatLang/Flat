@@ -26,13 +26,13 @@ class Exception {
     }
 
     [Target not js]
-    public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Bool {
+    public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Exception => null {
         if (soft) {
             try {
                 func()
             } catch all (Exception e) {
                 if (exact ? e.class == exceptionType : e.class.isOfType(exceptionType)) {
-                    return true
+                    return e
                 }
             }
         } else {
@@ -40,22 +40,20 @@ class Exception {
                 func()
             } catch (Exception e) {
                 if (exact ? e.class == exceptionType : e.class.isOfType(exceptionType)) {
-                    return true
+                    return e
                 }
             }
         }
-
-        return false
     }
 
     [Target js]
-    public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Bool {
+    public static catchType(func(), Class exceptionType, Bool soft = false, Bool exact = false) -> Exception => null {
         if (soft) {
             try {
                 func()
             } catch all (Exception e) {
                 if (e.class.location == exceptionType.location) {
-                    return true
+                    return e
                 }
             }
         } else {
@@ -63,11 +61,9 @@ class Exception {
                 func()
             } catch (Exception e) {
                 if (e.class.location == exceptionType.location) {
-                    return true
+                    return e
                 }
             }
         }
-
-        return false
     }
 }
