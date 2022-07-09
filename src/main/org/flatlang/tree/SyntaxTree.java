@@ -20,6 +20,7 @@ import org.flatlang.util.SyntaxUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -1045,38 +1046,53 @@ public class SyntaxTree
 	}
 
 	public static String[][] getPrecedingModifiers(String statement, Node parent, Location location) {
+		return getPrecedingModifiers(statement, parent, location, 0, 0);
+	}
+
+	public static String[][] getPrecedingModifiers(String statement, Node parent, Location location, int startSkipCount, int endSkipCount) {
+		ArrayList<String> modifiers = new ArrayList<>();
+		int[] potentialModifierCount = new int[] {-1};
+
 		final IIdentifier n = new IIdentifier(parent, location) {
 			@Override
 			public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
-				if (extra.isLastWord()) {
+				if (potentialModifierCount[0] == -1) {
+					potentialModifierCount[0] = 0;
+
+					for (int i = 0; i < extra.words.size(); i++) {
+						if (!extra.delims.get(i).equals("")) {
+							break;
+						}
+
+						potentialModifierCount[0]++;
+					}
+				}
+
+				if (leftDelimiter.length() == 0 && extra.getWordNumber() < startSkipCount) {
+					return true;
+				} else if (extra.getWordNumber() >= potentialModifierCount[0] - endSkipCount) {
 					return false;
-				} else if (rightDelimiter.length() == 0) {
-					if (!parseModifier(word)) {
-						extra.error = "Invalid modifier " + word;
+				} else if (leftDelimiter.length() == 0 && !rightDelimiter.equals(".") && !rightDelimiter.equals(":")) {
+					if (isModifier(word)) {
+						modifiers.add(word);
+						return true;
+					} else {
 						return false;
 					}
 				} else {
 					return false;
 				}
-
-				return true;
 			}
 		};
 
 		Node.ExtraData modifierData = n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, null, false);
 
-		if (modifierData.earlyReturn && modifierData.getWordNumber() > 0) {
-			statement = statement.substring(modifierData.getCurrentWordBounds().getStart());
-
-			String[] modifiers = new String[modifierData.getWordNumber()];
-
-			for (int i = 0; i < modifierData.getWordNumber(); i++) {
-				modifiers[i] = modifierData.words.get(i);
-			}
+		if (modifiers.size() > 0) {
+			statement = statement.substring(modifierData.getPreviousWordBounds().getEnd()).trim();
 
 			return new String[][] {
 				new String[] {statement},
-				modifiers
+				modifiers.toArray(new String[0])
 			};
 		}
 
@@ -1102,7 +1118,7 @@ public class SyntaxTree
 
 		String current = statement.substring(offset, index).trim();
 
-		String[][] modifierData = getPrecedingModifiers(current, parent, location);
+		String[][] modifierData = getPrecedingModifiers(current, parent, location, 0, 1);
 
 		if (modifierData != null) {
 			current = modifierData[0][0];
@@ -1194,8 +1210,10 @@ public class SyntaxTree
 			chainNavigation = index >= 0 && statement.charAt(index) == ':';
 
 			if (modifierData != null) {
-				for (int i = 0; i < modifierData[1].length; i++) {
-					node.toValue().parseModifier(modifierData[1][i]);
+				Value v = node.toValue();
+
+				if (!Arrays.stream(modifierData[1]).allMatch(v::parseModifier)) {
+					return null;
 				}
 				modifierData = null;
 			}
@@ -1376,7 +1394,7 @@ public class SyntaxTree
 //		
 //		if (node == null)
 //		{
-			String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location);
+			String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
 
 			if (modifierData != null) {
 				statement = modifierData[0][0];
@@ -1409,7 +1427,9 @@ public class SyntaxTree
 					}
 				}
 			} else if (modifierData != null) {
-				Arrays.stream(modifierData[1]).forEach(node::parseModifier);
+				if (!Arrays.stream(modifierData[1]).allMatch(node::parseModifier)) {
+					return null;
+				}
 			}
 //		}
 		

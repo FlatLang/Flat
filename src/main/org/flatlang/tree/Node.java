@@ -1395,7 +1395,11 @@ public abstract class Node implements Listenable, Annotatable
 		
 		return input;
 	}
-	
+
+	public boolean isModifier(String modifier) {
+		return Annotation.MODIFIERS.containsKey(modifier);
+	}
+
 	public boolean parseModifier(String modifier)
 	{
 		java.lang.reflect.Constructor c = Annotation.MODIFIERS.get(modifier);
