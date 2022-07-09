@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Compile JS SimpleGapRuleFlat" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.flatlang.Flat" />
+    <module name="Flat" />
+    <option name="PROGRAM_PARAMETERS" value="../SimpleGapRuleFlat -l ../Nest -l ../Compiler-String-Extensions -l ../Json -install-dir .. -d ../FlatCompilerOutput/js/src -main simplegaprule/SimpleGapRuleProgram -o ../Flat-Testing/example/bin/SimpleGapRule -target js" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
