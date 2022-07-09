@@ -113,6 +113,8 @@ public interface ShorthandAccessible
 		{
 			accessorValue = accessorValue.substring(StringUtils.findEndingMatch(accessorValue, 0, '(', ')') + 1);
 		}
+
+		accessorValue = StringUtils.removeSurroundingParenthesis(accessorValue);
 		
 		Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = value", getLocationIn(), true);
 		
