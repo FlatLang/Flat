@@ -50,6 +50,7 @@ immutable class String implements Comparable<String>,
     public repeat(Int times) =>
         new String[times].map({ this }).join()
 
+    public equals(Object other) => other && other.class.isOfType(String.class) && equals((String)other)
     public equals(String other) => other && count == other.count && compareTo(other) == 0
 
     public replace(Pattern pattern, String replace) -> String {
