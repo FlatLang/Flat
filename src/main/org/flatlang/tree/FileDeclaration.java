@@ -647,7 +647,10 @@ public class FileDeclaration extends Node
 				if (method.isUserMade()) {
 					method.setOriginalFile(this);
 
-					MethodDeclaration otherMethod = otherClass.getMethod((GenericCompatible) null, method.getName(), method.getParameterList().getTypes());
+					MethodList.SearchFilter filter = new MethodList.SearchFilter();
+					filter.checkAncestor = false;
+					filter.checkInterfaces = false;
+					MethodDeclaration otherMethod = otherClass.getMethod(new GenericCompatible[] { null }, method.getName(), filter, method.getParameterList().getTypes());
 
 					if (otherMethod != null) {
 						otherMethod.replaceWith(method);
