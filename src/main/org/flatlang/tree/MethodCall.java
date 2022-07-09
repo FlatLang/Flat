@@ -954,7 +954,7 @@ public class MethodCall extends Variable
 			statement = statement.replace('`' + data.literalNameData.literalName + '`', data.literalNameData.validName);
 		}
 
-		String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location);
+		String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
 
 		if (modifierData != null) {
 			statement = modifierData[0][0];
@@ -965,7 +965,9 @@ public class MethodCall extends Variable
 			MethodCall n  = new MethodCall(parent, location);
 
 			if (modifierData != null) {
-				Arrays.stream(modifierData[1]).forEach(n::parseModifier);
+				if (!Arrays.stream(modifierData[1]).allMatch(n::parseModifier)) {
+					return null;
+				}
 			}
 			
 			Bounds genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false, '-');
