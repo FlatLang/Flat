@@ -27,8 +27,6 @@ class FileWriter implements OutputStream {
 
     external char EOF
 
-    [Target js] private var String buffer = ""
-
     public construct(visible File file) {
         external c {
             #{fp} = fopen((char*)#{file.location.chars.data}, "r+");
@@ -90,36 +88,7 @@ class FileWriter implements OutputStream {
         }
     }
 
-    [Target js]
-    public write(String data) => this {
-        let split = data.split(new Pattern("\n"))
-
-        if (split.count > 1) {
-            let dataToPrint = buffer + split.skipLast(1).join("\n")
-
-            buffer = split.last
-
-            external js {
-                console.log(#{dataToPrint.chars.data});
-            }
-        } else {
-            buffer += data
-        }
-    }
-
     [Target c] public flush() => fflush(fp) == 0
     [Target c] public close() => isOpen && fclose(fp) == 0
     [Target java] public close() => false
-
-    [Target js] public flush() {
-        if (buffer.count > 0) {
-            external js {
-                console.log(#{buffer.chars.data});
-            }
-
-            buffer = ""
-        }
-    }
-
-    [Target js] public close() => false
 }
