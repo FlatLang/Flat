@@ -12,6 +12,7 @@ import org.flatlang.util.StringUtils;
 import org.flatlang.util.SyntaxUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * LocalDeclaration extension that represents a Parameter of a method.
@@ -246,11 +247,20 @@ public class Parameter extends LocalDeclaration
 	 */
 	public static Parameter decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName, boolean checkType)
 	{
+		String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
+
+		if (modifierData != null) {
+			statement = modifierData[0][0];
+		}
+
 		String defaultValue = null;
 		
 		Parameter n = new Parameter(parent, location);
-		
-		statement = n.parseModifiers(statement);
+		if (modifierData != null) {
+			if (!Arrays.stream(modifierData[1]).allMatch(n::parseModifier)) {
+				return null;
+			}
+		}
 		
 		int index = SyntaxUtils.findCharInBaseScope(statement, '=');
 		
