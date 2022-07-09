@@ -237,10 +237,10 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			
 			if (test.writeMessage)
 			{
-				Variable success = (Variable)SyntaxTree.decodeIdentifierAccess(tryBlock, "out.write(\"- Success\\n\")", Location.INVALID, true);
+				Variable success = (Variable)SyntaxTree.decodeIdentifierAccess(tryBlock, "out:write(\"- Success #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
 				tryBlock.addChild(success);
 				
-				Variable failure = (Variable)SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure: #e.message\\n\")", Location.INVALID, true);
+				Variable failure = (Variable)SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure: #e.message #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
 				catchBlock.addChild(failure);
 			}
 			
