@@ -90,18 +90,19 @@ jobs:
           path: Stability-Test
 
       - name: Build Stability Test
+        working-directory: Stability-Test
         run: |
-          java -jar Flat/target/flatc.jar \
+          java -jar ../Flat/target/flatc.jar \
             Flat-Testing/example \
             Stability-Test \
-            -l Nest \
-            -l Compiler-String-Extensions \
-            -l Network \
-            -l MySQL \
-            -l Redis \
-            -l Svg \
-            -install-dir . \
-            -std-path flatlang \
+            -l ../Nest \
+            -l ../Compiler-String-Extensions \
+            -l ../Network \
+            -l ../MySQL \
+            -l ../Redis \
+            -l ../Svg \
+            -install-dir .. \
+            -std-path ../flatlang \
             -main stabilitytest/StabilityTest \
             -o dist/test.js \
             -target js
@@ -110,12 +111,13 @@ jobs:
         if: failure()
         with:
           name: test.js
-          path: dist/test.js
+          path: Stability-Test/dist/test.js
 
       - uses: actions/setup-node@v3
         with:
           node-version: 14
 
       - name: Run Stability Test
+        working-directory: Stability-Test
         run: |
           node dist/test.js
