@@ -1,8 +1,8 @@
 package "flatlang/regex"
 
 immutable class Regex {
-    public static getMatches(String regexStr, String search) -> Match[] => new Array() {
-        var native Char[] chars
+    public static getMatches(String regexStr, String search) -> Match[] {
+        var Int count
         var Int start
         var String str
         let matches = new Array<Match>()
@@ -13,9 +13,8 @@ immutable class Regex {
 
             for (var m of regexMatches) {
                 #{start} = m.index;
-                #{chars} = m[0];
-                #{str} = #{new String(chars)};
-                #{matches.add(new Match(str, start, start + str.count))};
+                #{count} = m[0].length;
+                #{matches.add(new Match(search, start, start + count))};
             }
         }
 
