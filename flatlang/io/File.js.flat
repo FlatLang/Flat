@@ -89,9 +89,7 @@ class File {
 
     public static class FileGlobal {
         external type FsType
-
         private static var FsType _fs
-
         visible static FsType fs {
             get {
                 external {
@@ -101,6 +99,20 @@ class File {
                 }
 
                 return _fs
+            }
+        }
+
+        external type PathType
+        private static var PathType _path
+        visible static PathType path {
+            get {
+                external {
+                    if (!#{_path}) {
+                        #{_path} = require('path');
+                    }
+                }
+
+                return _path
             }
         }
     }
