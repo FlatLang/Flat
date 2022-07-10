@@ -61,7 +61,16 @@ class File {
         }
 
         return new File(new String(data))
+    }
 
+    public getParent() -> File => null {
+        native var Char[] data
+
+        external {
+            #{data} = #{FileGlobal.path}.resolve(#{location.chars.data}, '..');
+        }
+
+        return new File(new String(data))
     }
 
     public async delete() => true {
