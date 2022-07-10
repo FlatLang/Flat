@@ -103,14 +103,14 @@ jobs:
             -install-dir . \
             -std-path flatlang \
             -main stabilitytest/StabilityTest \
-            -o dist/index.js \
+            -o dist/test.js \
             -target js
 
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: index.js
-          path: dist/index.js
+          name: test.js
+          path: dist/test.js
 
       - uses: actions/setup-node@v3
         with:
@@ -118,4 +118,4 @@ jobs:
 
       - name: Run Stability Test
         run: |
-          node dist/index.js
+          node dist/test.js
