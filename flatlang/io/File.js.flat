@@ -3,6 +3,8 @@ package "flatlang/io"
 import "flatlang/time/Time"
 
 class File {
+    let visible static File EXECUTED_FILE = getExecutedFile()
+
     visible Bool isDirectory {
         get {
             external {
@@ -49,6 +51,16 @@ class File {
 
     public construct(visible String location) {
         normalizedLocation = location.replace("\\", "/")
+    }
+
+    static getExecutedFile() -> File => null {
+        native var Char[] data
+
+        external {
+            #{data} = __filename;
+        }
+
+        return new File(new String(data))
 
     }
 
