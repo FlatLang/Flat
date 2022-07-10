@@ -48,6 +48,7 @@ class File {
     }
 
     public construct(visible String location) {
+        normalizedLocation = location.replace("\\", "/")
 
     }
 
