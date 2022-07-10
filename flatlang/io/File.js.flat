@@ -4,6 +4,7 @@ import "flatlang/time/Time"
 
 class File {
     let visible static File EXECUTED_FILE = getExecutedFile()
+    let visible static File EXECUTED_DIRECTORY = getExecutedDirectory()
 
     visible Bool isDirectory {
         get {
@@ -58,6 +59,16 @@ class File {
 
         external {
             #{data} = __filename;
+        }
+
+        return new File(new String(data))
+    }
+
+    static getExecutedDirectory() -> File => null {
+        native var Char[] data
+
+        external {
+            #{data} = __dirname;
         }
 
         return new File(new String(data))
