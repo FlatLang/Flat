@@ -126,8 +126,9 @@ jobs:
           path: SimpleGapRuleFlat
 
       - name: Build Stability Test
+        working-directory: Stability-Test
         run: |
-          java -jar target/flatc.jar \
+          java -jar ../Flat/target/flatc.jar \
             Flat-Testing/example \
             Stability-Test \
             Astro \
@@ -158,6 +159,7 @@ jobs:
           node-version: 14
 
       - name: Run Stability Test
+        working-directory: Stability-Test
         run: |
           node dist/test.js
 
