@@ -240,7 +240,7 @@ public class Case extends MatchCase
 		Value value = (Value)getParentMatch().getControlValue().clone(control.getParent(), control.getLocationIn(), true);
 		Value clone = (Value)getValue().clone(getValue().getParent(), getValue().getLocationIn(), true);
 		
-		if (value.getReturnedNode().getTypeClass().isOfType("flatlang/String"))
+		if (value.getReturnedNode().getTypeClass().isOfType("flatlang/String") && !Literal.isNullLiteral(clone))
 		{
 			CallableMethod stringEquals = getProgram().getClassDeclaration("flatlang/String").getMethodList().getMethods("equals", MethodList.SearchFilter.getDefault())[0];
 			
