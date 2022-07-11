@@ -28,6 +28,8 @@ class HashMap<K, V> implements List<Pair<K, V>> {
         }
     }
 
+    visible Pair<K, V>[] entries => filter({ true })
+
     visible HashMapIterator<K, V> iterator => new HashMapIterator(this)
 
     public construct(Int bucketCount = 5, private Int bucketSize = 5) {
