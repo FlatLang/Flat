@@ -159,7 +159,7 @@ jobs:
 
       - name: Run Stability Test
         run: |
-          node dist/StabilityTest.js
+          node dist/test.js
 
       - name: Build SimpleGapRule Test
         run: |
