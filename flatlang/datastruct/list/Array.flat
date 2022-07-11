@@ -262,6 +262,8 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
         return filtered
     }
 
+    override public pure filterAtIndex(Int index, Int count = 1) => filter({ _2 >= index && _2 < index + count })
+
     override public pure take(var Int howMany) -> E[] {
         howMany = howMany > count ? count : howMany
 

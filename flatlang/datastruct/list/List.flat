@@ -159,6 +159,8 @@ trait List<Type> implements Iterable<Type> {
         return list
     }
 
+    public pure filterAtIndex(Int index, Int count = 1) => filter({ _2 < index && _2 >= index + count })
+
     public pure take(Int howMany) -> List<Type> {
         let list = new Type[]
 
