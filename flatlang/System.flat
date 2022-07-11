@@ -34,6 +34,7 @@ immutable class System {
 
     visible static final Int OS_INT
 
+    [Target c]
     compiler_visible thread_local external_name static ExceptionData exceptionData
 
     static {
