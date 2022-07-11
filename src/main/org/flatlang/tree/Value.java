@@ -1693,6 +1693,7 @@ public abstract class Value extends Node implements AbstractValue
 			ClassDeclaration clazz = getTypeClass();
 			
 			setType(type);
+			setDataType(original.getDataType());
 			
 			if (extractType && (flatType instanceof ClassDeclaration == false || flatType != clazz))
 			{
@@ -1765,8 +1766,9 @@ public abstract class Value extends Node implements AbstractValue
 			}
 		}
 		
-		if (flatType.getType() != null)
-		{
+		if (original.isGenericType()) {
+			setDataType(POINTER);
+		} else if (flatType.getType() != null) {
 			setDataType(flatType.getDataType());
 		}
 	}
