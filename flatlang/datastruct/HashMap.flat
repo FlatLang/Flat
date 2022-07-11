@@ -45,6 +45,9 @@ class HashMap<K, V> implements List<Pair<K, V>> {
     }
 
     public add(K key, V value) => this[key] = value
+    public add(Pair<K, V> pair) => this[pair.key] = pair.value
+    public addAll(List<Pair<K, V>> pairs) => pairs.forEach({ add(_) })
+    public addAll(HashMap<K, V> map) => map.entries.forEach({ add(_) })
 
     public getOrDefault(K key, defaultValue() -> V) -> V => containsKey(key) ? this[key] : add(key, defaultValue())
 
