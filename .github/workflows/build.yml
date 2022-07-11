@@ -129,20 +129,20 @@ jobs:
         working-directory: Stability-Test
         run: |
           java -jar ../target/flatc.jar \
-            Flat-Testing/example \
-            Stability-Test \
-            Astro \
-            Flatc \
-            Spectra \
-            Nebula \
-            SimpleGapRuleFlat \
-            -l Nest \
-            -l Compiler-String-Extensions \
-            -l Network \
-            -l MySQL \
-            -l Redis \
-            -l Svg \
-            -l Json \
+            src \
+            ../Flat-Testing/example \
+            ../Astro \
+            ../Flatc \
+            ../Spectra \
+            ../Nebula \
+            ../SimpleGapRuleFlat \
+            -l ../Nest \
+            -l ../Compiler-String-Extensions \
+            -l ../Network \
+            -l ../MySQL \
+            -l ../Redis \
+            -l ../Svg \
+            -l ../Json \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/test.js \
