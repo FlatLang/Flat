@@ -1567,36 +1567,78 @@ public class StringUtils
 	{
 		return splitCommas(src, searchGenerics, false);
 	}
-	
+
 	public static String[] splitCommas(String src, int searchGenerics, boolean allowTrailing)
 	{
 		ArrayList<String> strs = new ArrayList<String>();
-		
+
 		int oldIndex =  0;
 		int index    = -1;
-		
+
 		StringBuilder builder = new StringBuilder();
-		
+
 		while ((index = SyntaxUtils.findCharInBaseScope(src, ',', index + 1, searchGenerics)) >= 0)//(index = Regex.indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
 		{
 			builder = new StringBuilder(src.substring(oldIndex, index));
-			
+
 			trimSurroundingWhitespace(builder);
 
 			strs.add(builder.toString());
-			
+
 			oldIndex = index + 1;
 		}
-		
+
 		builder = new StringBuilder(src.substring(oldIndex, src.length()));
-		
+
 		trimSurroundingWhitespace(builder);
-		
+
 		if (!allowTrailing || builder.toString().trim().length() > 0)
 		{
 			strs.add(builder.toString());
 		}
-		
+
+		return strs.toArray(new String[0]);
+	}
+
+	public static String[] splitWords(String src)
+	{
+		return splitWords(src, 0);
+	}
+
+	public static String[] splitWords(String src, int searchGenerics)
+	{
+		return splitWords(src, searchGenerics, false);
+	}
+
+	public static String[] splitWords(String src, int searchGenerics, boolean allowTrailing)
+	{
+		ArrayList<String> strs = new ArrayList<String>();
+
+		int oldIndex =  0;
+		int index    = -1;
+
+		StringBuilder builder = new StringBuilder();
+
+		while ((index = SyntaxUtils.findCharInBaseScope(src, SyntaxUtils.WHITESPACE, index + 1, searchGenerics)) >= 0)//(index = Regex.indexOf(src, index + 1, ',', new char[] { '(' }, new char[] { ')' }, new char[] { '"' }, new boolean[] { false }, new boolean[] { false }, new boolean[] { true })) > 0)
+		{
+			builder = new StringBuilder(src.substring(oldIndex, index));
+
+			trimSurroundingWhitespace(builder);
+
+			strs.add(builder.toString());
+
+			oldIndex = index + 1;
+		}
+
+		builder = new StringBuilder(src.substring(oldIndex, src.length()));
+
+		trimSurroundingWhitespace(builder);
+
+		if (!allowTrailing || builder.toString().trim().length() > 0)
+		{
+			strs.add(builder.toString());
+		}
+
 		return strs.toArray(new String[0]);
 	}
 	
