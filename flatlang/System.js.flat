@@ -16,7 +16,7 @@ immutable class {
         }
     }
 
-    public static async execute(String[] arguments, String workingDirectory = null) -> String {
+    public static async execute(String[] arguments, String workingDirectory = null) -> Int {
         native var Char[] data
 
         external {
@@ -37,8 +37,8 @@ immutable class {
                     process.stderr.write(data.toString());
                 });
 
-                childProcess.on('exit', () => {
-                    resolve(#{null});
+                childProcess.on('exit', (code) => {
+                    resolve(code);
                 });
             });
         }
