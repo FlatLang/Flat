@@ -77,6 +77,9 @@ public class Return extends IValue
 		{
 			return null;
 		}
+		if (getReturnValues().getVisibleChild(0) instanceof Value == false) {
+			return null;
+		}
 		
 		return (Value)getReturnValues().getVisibleChild(0);
 	}
