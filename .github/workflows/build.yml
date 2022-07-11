@@ -144,14 +144,14 @@ jobs:
             -l Json \
             -install-dir . \
             -main stabilitytest/StabilityTest \
-            -o dist/StabilityTest.js \
+            -o dist/test.js \
             -target js
 
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: StabilityTest.js
-          path: dist/StabilityTest.js
+          name: test.js
+          path: dist/test.js
 
       - uses: actions/setup-node@v3
         with:
@@ -176,7 +176,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: SimpleGapRuleFlat/SimpleGapRuleTests.js
+          name: SimpleGapRuleTests.js
           path: SimpleGapRuleFlat/SimpleGapRuleTests.js
 
       - name: Run SimpleGapRule Test
