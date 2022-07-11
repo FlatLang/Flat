@@ -614,6 +614,8 @@ public class SyntaxUtils
 					{
 						start++;
 					}
+				} else {
+					throw new RuntimeException("Invalid searchGenerics value of " + searchGenerics);
 				}
 			}
 //			else if (c == '=')
