@@ -29,7 +29,9 @@ import static org.flatlang.tree.Value.POINTER;
 public class SyntaxUtils
 {
 	private static final int CHAR = 1, BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5, DOUBLE = 6, NUMBER = 6;
-	
+
+	public static final char[] WHITESPACE = new char[] {' ', '\t', '\n', '\r'};
+
 	/**
 	 * Get the rank of the given primitive type in terms of assignment
 	 * hierarchy. For example: integers can be assigned to long types and
