@@ -2,3 +2,4 @@
 *.gch
 *.d
 .novalib/*/
+dist/
