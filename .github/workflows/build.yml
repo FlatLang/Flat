@@ -143,7 +143,7 @@ jobs:
             -l Redis \
             -l Svg \
             -l Json \
-            -install-dir . \
+            -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/test.js \
             -target js
