@@ -228,11 +228,9 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
 
     public pure clone() => new Array<E>(cloneData(), count)
 
-    [Override]
-    public pure toArray() => clone()
+    override public pure toArray() => clone()
 
-    [Override]
-    public map<Out>(mapFunc(E, Int, Array<E>) -> Out) -> Out[] {
+    override public map<Out>(mapFunc(E, Int, Array<E>) -> Out) -> Out[] {
         let array = new Out[count]
 
         var Int i = 0
@@ -244,15 +242,13 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
         return array
     }
 
-    [Override]
-    public forEach(func(E, Int, Array<E>)) => this {
+    override public forEach(func(E, Int, Array<E>)) => this {
         for (i in 0..count) {
             func(data[i], i, this)
         }
     }
 
-    [Override]
-    public filter(filterFunc(E, Int, Array<E>) -> Bool) -> E[] {
+    override public filter(filterFunc(E, Int, Array<E>) -> Bool) -> E[] {
         let filtered = new E[]
 
         var Int i = 0
@@ -266,8 +262,7 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
         return filtered
     }
 
-    [Override]
-    public pure take(var Int howMany) -> E[] {
+    override public pure take(var Int howMany) -> E[] {
         howMany = howMany > count ? count : howMany
 
         let list = new E[]
@@ -279,8 +274,7 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
         return list
     }
 
-    [Override]
-    public pure skip(Int howMany) -> E[] {
+    override public pure skip(Int howMany) -> E[] {
         let list = new E[]
 
         for (i in howMany..count) {
@@ -301,8 +295,7 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
         return sum
     }
 
-    [Override]
-    public pure reverse() -> E[] {
+    override public pure reverse() -> E[] {
         let array = new E[count]
 
         var Int i = 0
@@ -388,6 +381,5 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
 
     public toImmutable() => new ImmutableArray<E>(this)
 
-    [Override]
-    public toString() => this.class.name + " [#{join(", ")}]"
+    override public toString() => this.class.name + " [#{join(", ")}]"
 }
