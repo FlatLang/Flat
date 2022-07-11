@@ -131,6 +131,17 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
         return element
     }
 
+    public removeAtIndex(Int index) => removeAtIndex(index, 1)[0]
+    public removeAtIndex(Int index, Int count = 1) -> E[] {
+        let output = new Array<E>()
+
+        for (i in 0..count) {
+            output.add(remove(index))
+        }
+
+        return output
+    }
+
     public remove(E element) -> E => null {
         Int index = indexOf(element)
 
