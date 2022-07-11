@@ -194,14 +194,14 @@ class HashMap<K, V> implements List<Pair<K, V>> {
         var Int i = 0
 
         for (pair in bucket) {
-            if (pair && pair.key == key) {
+            if (pair && pair.key.equals(key)) {
                 bucket.remove(i)
                 count--
 
                 return pair.value
+            } else {
+                i++
             }
-
-            i++
         }
     }
 
