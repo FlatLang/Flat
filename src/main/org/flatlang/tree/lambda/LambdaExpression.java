@@ -115,7 +115,7 @@ public class LambdaExpression extends IIdentifier
 		{
 			endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')') + 1;
 			
-			variables = StringUtils.splitCommas(statement.substring(1, endingIndex - 1));
+			variables = StringUtils.splitCommas(statement.substring(1, endingIndex - 1), 1);
 			
 			if (variables.length == 1 && variables[0].length() == 0)
 			{
@@ -441,6 +441,10 @@ public class LambdaExpression extends IIdentifier
 				if (variables.length > id)
 				{
 					name = variables[id];
+					String[] words = StringUtils.splitWords(name);
+					if (words.length > 1) {
+						name = words[words.length - 1];
+					}
 				}
 				else
 				{
