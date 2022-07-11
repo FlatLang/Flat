@@ -292,7 +292,7 @@ public class Flat
 
 			formattedTarget = targetEngineWorkingDir.getName().substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
 
-			File engineJar = new File(enginePath + "/Flat-" + formattedTarget + "/target/flat-" + formattedTarget.toLowerCase() + "-1.0-SNAPSHOT.jar");
+			File engineJar = new File(enginePath + "/Flat-" + formattedTarget + "/target/flat-" + formattedTarget.toLowerCase() + ".jar");
 			
 			if (!engineJar.isFile())
 			{
