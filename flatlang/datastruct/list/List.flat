@@ -11,6 +11,9 @@ trait List<Type> implements Iterable<Type> {
     visible Type first
     visible Type last
 
+    visible Bool isEmpty => count == 0
+    visible Bool isNotEmpty => !isEmpty
+
     public toArray() -> Type[] {
         let array = new Type[]
 

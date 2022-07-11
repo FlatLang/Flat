@@ -17,7 +17,8 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
 
     visible native var E[] data
 
-    visible Bool empty => count <= 0
+    visible Bool isEmpty => count == 0
+    visible Bool isNotEmpty => !isEmpty
 
     [Override]
     visible ArrayIterator<E> iterator => new ArrayIterator(this)
