@@ -20,26 +20,37 @@ immutable class {
         native var Char[] data
 
         external {
-            return await new Promise((resolve) => {
-                var childProcess = #{SystemGlobal.childProcess}.spawn(
-                    #{arguments[0].chars.data},
-                    #{arguments.skip(1).map({_.chars.data}).data},
-                    {
-                        cwd: #{workingDirectory ? workingDirectory.chars.data : ".".chars.data}
-                    }
-                );
+            return await new Promise((resolve, reject) => {
+                try {
+                    var childProcess = #{SystemGlobal.childProcess}.spawn(
+                        #{arguments[0].chars.data},
+                        #{arguments.skip(1).map({_.chars.data}).data},
+                        {
+                            cwd: #{workingDirectory ? workingDirectory.chars.data : ".".chars.data},
+                            shell: true
+                        }
+                    );
 
-                childProcess.stdout.on('data', (data) => {
-                    process.stdout.write(data.toString());
-                });
+                    childProcess.stdout.on('data', (data) => {
+                        process.stdout.write(data.toString());
+                    });
 
-                childProcess.stderr.on('data', (data) => {
-                    process.stderr.write(data.toString());
-                });
+                    childProcess.stderr.on('data', (data) => {
+                        process.stderr.write(data.toString());
+                    });
 
-                childProcess.on('exit', (code) => {
-                    resolve(code);
-                });
+                    childProcess.on('error', (err) => {
+                        #{data} = err.toString();
+                        #{throw new Exception(new String(data))};
+                    });
+
+                    childProcess.on('exit', (code) => {
+                        resolve(code);
+                    });
+                } catch (e) {
+                    #{data} = e.toString();
+                    #{throw new Exception(new String(data))};
+                }
             });
         }
     }
