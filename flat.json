@@ -6,7 +6,7 @@
   "license": "ISC",
   "scripts": {},
   "main": {
-    "source": ".",
+    "source": "src/main",
     "dependencies": {
       "../Compiler-String-Extensions": "local"
     }

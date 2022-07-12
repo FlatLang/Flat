@@ -94,7 +94,7 @@ jobs:
             -l ../MySQL \
             -l ../Redis \
             -install-dir .. \
-            -std-path ../flatlang \
+            -std-path ../src \
             -main stabilitytest/StabilityTest \
             -o dist/test.js \
             -target js
