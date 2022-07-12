@@ -1,0 +1,14 @@
+{
+  "name": "Standard-Library",
+  "version": "0.1.0",
+  "description": "Flat standard library",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "scripts": {},
+  "main": {
+    "source": ".",
+    "dependencies": {
+      "../Compiler-String-Extensions": "local"
+    }
+  }
+}
