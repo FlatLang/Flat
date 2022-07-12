@@ -50,6 +50,25 @@ immutable class System {
                 #{OS_INT = MAC_OSX};
             #endif
         }
+        external js {
+            switch (process.platform) {
+                case "win32": {
+                    #{OS = "Windows"};
+                    #{OS_INT = WINDOWS};
+                    break;
+                }
+                case "linux": {
+                    #{OS = "Linux"};
+                    #{OS_INT = LINUX};
+                    break;
+                }
+                case "darwin": {
+                    #{OS = "Mac OS X"};
+                    #{OS_INT = MAC_OSX};
+                    break;
+                }
+            }
+        }
     }
 
     visible static CumulativeTimer overheadTimer = new CumulativeTimer()
