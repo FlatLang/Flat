@@ -88,6 +88,8 @@ class File {
         return new File(new String(data))
     }
 
+    public getChild(String location) => new File(this.location + "/" + location)
+
     public async delete() => true {
         native var Char[] errorMessage
 
