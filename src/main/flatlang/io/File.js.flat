@@ -90,14 +90,17 @@ class File {
 
     public getChild(String location) => new File(this.location + "/" + location)
 
-    public async delete() => true {
+    public async delete(
+        Bool: recursive = false,
+        Bool: force = false
+    ) => true {
         native var Char[] errorMessage
 
         external {
             #{errorMessage} = await new Promise(resolve => {
                 #{FileGlobal.fs}.rm(#{location.chars.data}, {
-                    recursive: true,
-                    force: true
+                    recursive: #{recursive},
+                    force: #{force}
                 }, (err) => {
                     if (err) {
                         resolve(err.message);
