@@ -8,6 +8,10 @@ class File {
 
     visible Bool isDirectory {
         get {
+            if (!exists) {
+                return false
+            }
+
             external {
                 if (#{FileGlobal.fs}.lstatSync(#{location.chars.data}).isDirectory()) {
                     return true;
