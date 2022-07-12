@@ -593,24 +593,24 @@ public class Flat
 						long time = System.currentTimeMillis();
 						long newTime = time;
 						
-						log("Generating output... ", false);
+						log("Generating output...");
 						codeGeneratorEngine.generateOutput();
-						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Generating output took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
 						
-						log("Inserting main method... ", false);
+						log("Inserting main method...");
 						codeGeneratorEngine.insertMainMethod();
-						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Inserting main method took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
 						
-						log("Formatting output... ", false);
+						log("Formatting output...");
 						codeGeneratorEngine.formatOutput();
-						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Formatting output took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
 						
-						log("Writing files... ");
+						log("Writing files...");
 						codeGeneratorEngine.writeFiles();
-						log("took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Writing files took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
 						
 					}
