@@ -107,6 +107,12 @@ class File {
         }
     }
 
+    public async mkdirs() => true {
+        external {
+            await #{FileGlobal.fs}.promises.mkdir(#{location.chars.data}, {recursive: true})
+        }
+    }
+
     public static class FileGlobal {
         external type FsType
         private static var FsType _fs
