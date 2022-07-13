@@ -114,6 +114,23 @@ trait List<Type> implements Iterable<Type> {
         return !contradiction
     }
 
+    public none(func(Type, Int, List<Type>) -> Bool, Bool stopOnContradiction = true) -> Bool {
+        var Int i = 0
+        var contradiction = false
+
+        for (element in this) {
+            if (func(element, i++, this)) {
+                if (stopOnContradiction) {
+                    return false
+                }
+
+                contradiction = true
+            }
+        }
+
+        return !contradiction
+    }
+
     public filter(filterFunc(Type, Int, List<Type>) -> Bool) -> List<Type> {
         let list = new Type[]
 
