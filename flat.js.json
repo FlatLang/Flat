@@ -1,0 +1,8 @@
+{
+  "scripts": {},
+  "main": {
+    "dependencies": {
+      "github:FlatLang/Flat-JS": "master"
+    }
+  }
+}

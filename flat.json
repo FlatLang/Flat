@@ -1,9 +1,10 @@
 {
   "name": "Flat",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Flat compiler",
   "author": "Braden Steffaniak",
   "license": "ISC",
+  "defaultTarget": "js",
   "scripts": {
     "build": [
       ["mvn", "install"]
