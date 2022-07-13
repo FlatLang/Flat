@@ -154,6 +154,14 @@ public class Annotation extends Node
 	@Override
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
+		if (this instanceof ModifierAnnotation) {
+			ModifierAnnotation mod = (ModifierAnnotation) this;
+
+			if (mod.getAliasUsed() != null) {
+				return builder.append(mod.getAliasUsed());
+			}
+		}
+
 		String name = getClass().getSimpleName();
 		name = name.substring(0, name.length() - "Annotation".length());
 		
