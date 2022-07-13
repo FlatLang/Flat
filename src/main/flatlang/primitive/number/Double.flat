@@ -1,6 +1,5 @@
 package "flatlang/primitive/number"
 
-import "flatlang/exception/UnimplementedForTargetException"
 import "flatlang/datastruct/Comparable"
 import "flatlang/operators/EqualsOperator"
 import "flatlang/operators/MultiplyOperator"
@@ -122,8 +121,9 @@ class Double extends Number implements RealNumber {
         external c {
             return strtod(#{str.chars.data}, NULL);
         }
-
-        throw new UnimplementedForTargetException()
+        external js {
+            return parseFloat(#{str.chars.data});
+        }
     }
 
     public withinTolerance(Double target, passing Double tolerance) =>

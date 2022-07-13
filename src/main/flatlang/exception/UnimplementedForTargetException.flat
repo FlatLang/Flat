@@ -1,5 +1,0 @@
-package "flatlang/exception"
-
-class UnimplementedForTargetException extends UnimplementedOperationException {
-    public construct(String message = "Unimplemented") => super(message + " (target: #System.TARGET)")
-}
