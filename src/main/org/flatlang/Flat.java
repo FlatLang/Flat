@@ -6,13 +6,16 @@ import org.flatlang.tree.match.Match;
 import org.flatlang.util.FileUtils;
 import org.flatlang.util.StringUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
@@ -138,6 +141,45 @@ public class Flat
 		}
 	}
 
+	private static class ProcessResponse {
+		private String[] stdout, stderr;
+		private int exitCode;
+
+		public ProcessResponse(String[] stdout, String[] stderr, int exitCode) {
+			this.stdout = stdout;
+			this.stderr = stderr;
+			this.exitCode = exitCode;
+		}
+	}
+
+	public static ProcessResponse exec(
+		String[] cmd,
+		File workingDirectory
+	) throws IOException, InterruptedException {
+		Process p = Runtime.getRuntime().exec(cmd, null, workingDirectory);
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		BufferedReader errorReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+		ArrayList<String> stdout = new ArrayList<>();
+		ArrayList<String> stderr = new ArrayList<>();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			stdout.add(line);
+		}
+		while ((line = errorReader.readLine()) != null) {
+			stderr.add(line);
+		}
+
+		int exitCode = p.waitFor();
+
+		return new ProcessResponse(
+			stdout.toArray(new String[0]),
+			stderr.toArray(new String[0]),
+			exitCode
+		);
+	}
+
 	/**
 	 * Method called whenever the compiler is invoked. Supplies the
 	 * needed information for compiling the given files.
@@ -145,8 +187,34 @@ public class Flat
 	 * @param args The String array containing the locations of the files
 	 * 		to compile, as well as other compiler arguments.
 	 */
-	public static void main(String args[])
+	public static void main(String[] args)
 	{
+		if (args.length > 1 && args[0].equalsIgnoreCase("airship")) {
+			try {
+				ProcessResponse response = exec(
+					new String[] {
+						"node",
+						System.getProperty("user.home") + "/.flat/packages/Airship/dist/airship.js",
+						"install",
+						"--debug",
+						"-q"
+					},
+					new File("C:/Users/Brade/GitHub/NovaWorkspace/Airship")
+				);
+
+				if (response.exitCode != 0) {
+					stream(response.stderr).forEach(System.err::println);
+					System.exit(response.exitCode);
+				}
+
+				args = StringUtils.splitWhitespace(response.stdout[0].trim());
+				args = Arrays.copyOfRange(args, 3, args.length);
+				args = Arrays.stream(args).map(StringUtils::removeSurroundingQuotes).toArray(String[]::new);
+			} catch (IOException | InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		Flat flat = new Flat(args);
 		
 //		if (args.length > 0)
