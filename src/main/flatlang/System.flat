@@ -6,7 +6,6 @@ import "flatlang/io/FileWriter"
 import "flatlang/io/FileReader"
 import "flatlang/time/Time"
 import "flatlang/time/CumulativeTimer"
-import "flatlang/process/Process"
 import "flatlang/NativeSystem.h"
 
 [AutoFinal]
