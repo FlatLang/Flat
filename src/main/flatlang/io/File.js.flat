@@ -22,6 +22,22 @@ class File {
         }
     }
 
+    visible Bool isSymbolicLink {
+        get {
+            if (!exists) {
+                return false
+            }
+
+            external {
+                if (#{FileGlobal.fs}.lstatSync(#{location.chars.data}).isSymbolicLink()) {
+                    return true;
+                }
+            }
+
+            return false
+        }
+    }
+
     visible Bool exists {
         get {
             external {
@@ -121,6 +137,22 @@ class File {
             await #{FileGlobal.fs}.promises.mkdir(#{location.chars.data}, {recursive: true})
         }
     }
+
+    public async symbolicLinkTo(File target) => true {
+        external {
+            await new Promise((resolve, reject) => {
+                #{FileGlobal.fs}.symlink(#{target.location.chars.data}, #{location.chars.data}, 'junction', (err) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+        }
+    }
+
+    public static async symbolicLink(File from, File to) => await from.symbolicLinkTo(to)
 
     public static class FileGlobal {
         external type FsType
