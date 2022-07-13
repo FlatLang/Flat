@@ -16,11 +16,16 @@ immutable class {
         }
     }
 
-    public static async execute(String[] arguments, String workingDirectory = null) -> Int {
-        native var Char[] data
+    public static async execute(String[] arguments, String workingDirectory = null, Bool: silent = false) -> ExecutionResponse {
+        native var Char[] dataBuffer
+
+        let stdout = new Array<String>()
+        let stderr = new Array<String>()
+
+        var native Int exitCode
 
         external {
-            return await new Promise((resolve, reject) => {
+            #{exitCode} = await new Promise((resolve, reject) => {
                 try {
                     var childProcess = #{SystemGlobal.childProcess}.spawn(
                         #{arguments[0].chars.data},
@@ -32,31 +37,45 @@ immutable class {
                     );
 
                     childProcess.stdout.on('data', (data) => {
-                        process.stdout.write(data.toString());
+                        #{dataBuffer} = data.toString();
+                        #{stdout.add(new String(dataBuffer))};
+                        if (#{!silent}) {
+                            process.stdout.write(#{dataBuffer});
+                        }
                     });
 
                     childProcess.stderr.on('data', (data) => {
-                        process.stderr.write(data.toString());
+                        #{dataBuffer} = data.toString();
+                        #{stderr.add(new String(dataBuffer))};
+                        if (#{!silent}) {
+                            process.stderr.write(#{dataBuffer});
+                        }
                     });
 
                     childProcess.on('error', (err) => {
-                        #{data} = err.toString();
-                        #{throw new Exception(new String(data))};
+                        #{dataBuffer} = err.toString();
+                        #{throw new Exception(new String(dataBuffer))};
                     });
 
                     childProcess.on('exit', (code) => {
                         resolve(code);
                     });
                 } catch (e) {
-                    #{data} = e.toString();
-                    #{throw new Exception(new String(data))};
+                    #{dataBuffer} = e.toString();
+                    #{throw new Exception(new String(dataBuffer))};
                 }
             });
         }
+
+        return new ExecutionResponse(
+            stdout: stdout,
+            stderr: stderr,
+            exitCode: exitCode
+        )
     }
 
-    public static async execute(String command, String workingDirectory = null) =>
-        await execute(command.splitOnTopLevel(SyntaxStringFunctions.WHITESPACE), workingDirectory)
+    public static async execute(String command, String workingDirectory = null, Bool: silent = false) =>
+        await execute(command.splitOnTopLevel(SyntaxStringFunctions.WHITESPACE), workingDirectory, silent: silent)
 
     public static getEnv(String name) -> String {
         native var Char[] data
