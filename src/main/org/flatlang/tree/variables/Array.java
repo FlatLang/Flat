@@ -388,12 +388,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			{
 				return SyntaxMessage.queryError("Type '" + val.getType() + "' is not compatible with arrayAccess type '" + getArrayDeclaration().getType() + "'", this, require);
 			}
-			
-			if (arrayType != null)
-			{
-				val.setType(arrayType);
-			}
-			
+
 			initValues.addChild(val);
 		}
 		
