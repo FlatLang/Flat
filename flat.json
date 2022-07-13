@@ -8,7 +8,7 @@
   "main": {
     "source": "src/main",
     "dependencies": {
-      "../Compiler-String-Extensions": "local"
+      "github:FlatLang/Compiler-String-Extensions": "master"
     }
   }
 }
