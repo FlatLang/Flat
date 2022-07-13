@@ -1642,6 +1642,12 @@ public class MethodCall extends Variable
 	 */
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
 	{
+		if (getAnnotations() != null) {
+			getAnnotations().forEach(annotation -> {
+				annotation.generateFlatInput(builder).append(" ");
+			});
+		}
+
 		builder.append(getName());
 		
 		if (declaration instanceof AccessorMethod)
