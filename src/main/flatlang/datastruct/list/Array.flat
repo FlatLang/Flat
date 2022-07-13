@@ -226,7 +226,7 @@ class Array<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<
         return d
     }
 
-    public pure clone() => new Array<E>(cloneData(), count)
+    public pure clone() => filter({ true })
 
     override public pure toArray() => clone()
 
