@@ -1,9 +1,0 @@
-package "flatlang"
-
-class {
-      public construct(
-          visible String[] stdout,
-          visible String[] stderr,
-          visible Int exitCode
-      )
-  }

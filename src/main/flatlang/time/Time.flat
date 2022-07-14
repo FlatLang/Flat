@@ -1,7 +1,5 @@
 package "flatlang/time"
 
-import "flatlang/time/NativeTime.h"
-
 class Time {
     [Target c] external long currentTimeMillis() as extCurrentTimeMillis
     [Target java] external long System.currentTimeMillis() as extCurrentTimeMillis

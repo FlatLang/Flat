@@ -7,8 +7,6 @@
   "scripts": {},
   "main": {
     "source": "src/main",
-    "dependencies": {
-      "github:FlatLang/Compiler-String-Extensions": "master"
-    }
+    "dependencies": {}
   }
 }
