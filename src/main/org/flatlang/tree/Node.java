@@ -593,7 +593,7 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public FieldDeclaration getExceptionData()
 	{
-		return getProgram().getClassDeclaration("flatlang/System").getField("exceptionData");
+		return getProgram().getClassDeclaration("flatlang/system/System").getField("exceptionData");
 	}
 	
 	public Variable getExceptionDataVariable(Node parent, Location location)
