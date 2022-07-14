@@ -77,7 +77,6 @@ public class FileDeclaration extends Node
 			"flatlang/math/Math",
 			"flatlang/Object",
 			"flatlang/String",
-			"flatlang/System",
 			"flatlang/meta/Class",
 			"flatlang/meta/FunctionMap",
 			"flatlang/meta/PropertyMap",
