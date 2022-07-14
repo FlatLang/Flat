@@ -206,7 +206,8 @@ public class Flat
 					System.exit(response.exitCode);
 				}
 
-				args = StringUtils.splitWhitespace(response.stdout[0].trim());
+				String argsString = response.stdout[response.stdout.length - 1].trim();
+				args = StringUtils.splitWhitespace(argsString);
 				args = Arrays.copyOfRange(args, 3, args.length);
 				args = Arrays.stream(args).map(StringUtils::removeSurroundingQuotes).toArray(String[]::new);
 			} catch (IOException | InterruptedException e) {
