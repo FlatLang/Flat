@@ -2,7 +2,7 @@
   <configuration default="false" name="Compile JS std-lib" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="org.flatlang.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="-l ../Nest -l ../Compiler-String-Extensions -install-dir .. -d ../FlatCompilerOutput/js/src -main stabilitytest/StabilityTest -o ../Standard-Library/dist/index.js -library -target js" />
+    <option name="PROGRAM_PARAMETERS" value="../Standard-Library -l ../System -l ../Nest -l ../Compiler-String-Extensions -install-dir .. -d ../FlatCompilerOutput/js/src -main stabilitytest/StabilityTest -o ../Standard-Library/dist/index.js -library -target js" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

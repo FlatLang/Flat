@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="[Airship] Compile JS Airship" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.flatlang.Flat" />
+    <module name="Flat" />
+    <option name="PROGRAM_PARAMETERS" value="airship ../Airship" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
