@@ -49,7 +49,6 @@ public class Flat
 	private String[] postArgs;
 
 	public String installDirectoryArg;
-	public String standardLibraryPath;
 	public File outputDirectory, installDirectory;
 	
 	public HashMap<String, String> outputDirectories;
@@ -446,21 +445,6 @@ public class Flat
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Flat-Testing/example/";
 
-		if (standardLibraryPath == null) {
-			standardLibraryPath = "../Standard-Library";
-
-			if (USE_INSTALLED_STDLIB) {
-				if (OS == WINDOWS) {
-//				standardLibraryPath = System.getenv("APPDATA") + "/Flat/Standard-Library";
-					standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
-				} else if (OS == MACOSX) {
-					standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
-				} else if (OS == LINUX) {
-					standardLibraryPath = installDirectory.getAbsolutePath() + "/Standard-Library";
-				}
-			}
-		}
-
 		if (DEBUG)
 		{
 			testClasses();
@@ -551,8 +535,6 @@ public class Flat
 		postArgsList.add("-v");
 //		postArgsList.add("-target");
 //		postArgsList.add(target);
-		postArgsList.add("-l");
-		postArgsList.add(standardLibraryPath);
 
 		postArgs = postArgsList.toArray(new String[0]);
 
@@ -563,7 +545,6 @@ public class Flat
 //			inputFiles.add(new File(location));
 //		}
 
-//		args = prependArguments(args, new String[] { standardLibraryPath + "/flat" });
 		args = appendArguments(args, postArgs);
 
 		parseArguments(args);
@@ -870,13 +851,6 @@ public class Flat
 				validateArgumentSize(args, i + 1, args[i]);
 
 				target = args[i + 1].toLowerCase();
-				skip = 1;
-			}
-			else if (arg.toLowerCase().equals("-std-path"))
-			{
-				validateArgumentSize(args, i + 1, args[i]);
-
-				standardLibraryPath = args[i + 1];
 				skip = 1;
 			}
 		}
