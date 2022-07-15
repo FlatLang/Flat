@@ -196,13 +196,13 @@ jobs:
         run: |
           java -jar target/flatc.jar \
             SimpleGapRuleFlat \
-            -l Nest \
-            -l Json \
-            -l Compiler-String-Extensions \
-            -l IO \
-            -l Time \
-            -l System \
-            -l Standard-Library \
+            -l ./Nest \
+            -l ./Json \
+            -l ./Compiler-String-Extensions \
+            -l ./IO \
+            -l ./Time \
+            -l ./System \
+            -l ./Standard-Library \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
             -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
