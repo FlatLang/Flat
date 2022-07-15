@@ -1,9 +1,0 @@
-package "flatlang/time"
-
-class Time {
-    [Target c] external long currentTimeMillis() as extCurrentTimeMillis
-    [Target java] external long System.currentTimeMillis() as extCurrentTimeMillis
-    [Target js] external long "new Date().getTime"() as extCurrentTimeMillis
-
-    visible static Long currentTimeMillis => extCurrentTimeMillis()
-}

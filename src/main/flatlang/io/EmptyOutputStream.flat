@@ -1,5 +1,0 @@
-package "flatlang/io"
-
-class EmptyOutputStream implements OutputStream {
-
-}

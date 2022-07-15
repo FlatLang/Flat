@@ -26,7 +26,7 @@ class WFF {
 
         Conclusion conclusion = conclusionGroup.statement
 
-        Console.writeLine("Conclusion: " + conclusion)
+        // Console.writeLine("Conclusion: " + conclusion)
 
         wff = conclusionGroup.bounds.extractPreString(wff)
 
@@ -38,7 +38,7 @@ class WFF {
             hypotheses.add(group.statement)
         }
         for (n in 0..hypotheses.count) {
-            Console.writeLine(hypotheses.get(n))
+            // Console.writeLine(hypotheses.get(n))
         }
     }
 

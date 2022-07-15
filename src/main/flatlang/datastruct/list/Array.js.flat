@@ -1,0 +1,21 @@
+package "flatlang/datastruct/list"
+
+class {
+  public static jsStringArrayToFlatArray(Object value) -> String[] {
+    var Int count = 0
+
+    external {
+      #{count} = #{value}.length;
+    }
+
+    return new Array(count).map((x, i) => {
+      var native Char[] chars
+
+      external {
+        #{chars} = #{value}[#{i}];
+      }
+
+      return new String(chars)
+    })
+  }
+}

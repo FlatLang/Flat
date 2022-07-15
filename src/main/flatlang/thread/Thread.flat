@@ -113,8 +113,8 @@ class Thread {
                 message += ": #e.message"
             }
 
-            Console.log(message)
-            Console.waitForEnter()
+            // Console.log(message)
+            // Console.waitForEnter()
         }
 
         active = false
