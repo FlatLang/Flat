@@ -291,26 +291,29 @@ public class SyntaxTree
 			controller.log("Creating static class instance declarations...");
 
 			root.forEachVisibleListChild(file -> {
-				Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
-					c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
-					c.classInstanceDeclaration.setStatic(true);
-					String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
-					String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false)).map(i -> i.getName() + ".class").collect(Collectors.joining(", "));
-					String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "new Array()";
-					String isInterfaceValue = c instanceof Trait ? "true" : "false";
-					c.classInstanceDeclaration.setShorthandAccessor("new Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ")");
-					c.getFieldList().addChild(c.classInstanceDeclaration);
-
-				});
+				if (!file.isExternalFile()) {
+					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+						c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
+						c.classInstanceDeclaration.setStatic(true);
+						String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
+						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false)).map(i -> i.getName() + ".class").collect(Collectors.joining(", "));
+						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "new Array()";
+						String isInterfaceValue = c instanceof Trait ? "true" : "false";
+						c.classInstanceDeclaration.setShorthandAccessor("new Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ")");
+						c.getFieldList().addChild(c.classInstanceDeclaration);
+					});
+				}
 			});
 			root.forEachVisibleListChild(file -> {
-				Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
-					if (!c.classInstanceDeclaration.containsAccessorMethod()) {
-						c.classInstanceDeclaration.decodeArrowBinding();
-					}
+				if (!file.isExternalFile()) {
+					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+						if (!c.classInstanceDeclaration.containsAccessorMethod()) {
+							c.classInstanceDeclaration.decodeArrowBinding();
+						}
 
-					c.classInstanceDeclaration.accessorValue = null;
-				});
+						c.classInstanceDeclaration.accessorValue = null;
+					});
+				}
 			});
 			
 			controller.log("Compiling function map functions...");
