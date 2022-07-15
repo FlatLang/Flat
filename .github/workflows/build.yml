@@ -199,9 +199,9 @@ jobs:
             -l Nest \
             -l Json \
             -l Compiler-String-Extensions \
-            -l ../IO \
-            -l ../Time \
-            -l ../System \
+            -l IO \
+            -l Time \
+            -l System \
             -l Standard-Library \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
