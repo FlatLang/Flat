@@ -155,7 +155,7 @@ public class Flat
 		String[] cmd,
 		File workingDirectory
 	) throws IOException, InterruptedException {
-		Process p = Runtime.getRuntime().exec(cmd, null, workingDirectory);
+		Process p = Runtime.getRuntime().exec(cmd, null, workingDirectory.getCanonicalFile());
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		BufferedReader errorReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
@@ -190,16 +190,26 @@ public class Flat
 	{
 		if (args.length > 1 && args[0].equalsIgnoreCase("airship")) {
 			try {
-				ProcessResponse response = exec(
-					new String[] {
+				String[] execArgs = new String[] {
+					"node",
+					System.getProperty("user.home") + "/.flat/packages/Airship/dist/airship.js",
+					"install",
+					"--debug",
+					"-q"
+				};
+
+				if (args.length > 2 && args[2].equalsIgnoreCase("test")) {
+					execArgs = new String[] {
 						"node",
 						System.getProperty("user.home") + "/.flat/packages/Airship/dist/airship.js",
 						"install",
+						"test",
 						"--debug",
 						"-q"
-					},
-					new File("C:/Users/Brade/GitHub/NovaWorkspace/Airship")
-				);
+					};
+				}
+
+				ProcessResponse response = exec(execArgs, new File(args[1]));
 
 				if (response.exitCode != 0) {
 					stream(response.stderr).forEach(System.err::println);
