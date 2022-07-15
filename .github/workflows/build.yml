@@ -125,6 +125,18 @@ jobs:
           repository: BSteffaniak/SimpleGapRuleFlat
           path: SimpleGapRuleFlat
 
+      - name: Checkout IO
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/IO
+          path: IO
+
+      - name: Checkout Time
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Time
+          path: Time
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
