@@ -137,6 +137,12 @@ jobs:
           repository: FlatLang/Time
           path: Time
 
+      - name: Checkout Math
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Math
+          path: Math
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -157,6 +163,7 @@ jobs:
             -l ../Json \
             -l ../IO \
             -l ../Time \
+            -l ../Math \
             -l ../Standard-Library \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
