@@ -1,4 +1,4 @@
-package "flatlang/math"
+package "flatlang"
 
 import "math.h"
 
