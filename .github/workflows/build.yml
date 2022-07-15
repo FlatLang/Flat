@@ -143,6 +143,9 @@ jobs:
             -l ../Redis \
             -l ../Svg \
             -l ../Json \
+            -l ../IO \
+            -l ../Time \
+            -l ../Standard-Library \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/test.js \
@@ -170,6 +173,9 @@ jobs:
             -l Nest \
             -l Json \
             -l Compiler-String-Extensions \
+            -l ../IO \
+            -l ../Time \
+            -l Standard-Library \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
             -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
