@@ -1,7 +1,0 @@
-package "flatlang/math/huffman"
-
-import "flatlang/datastruct/Tree"
-
-class HuffmanTree extends Tree {
-
-}

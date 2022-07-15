@@ -1,5 +1,0 @@
-package "flatlang/math"
-
-class Statement {
-
-}

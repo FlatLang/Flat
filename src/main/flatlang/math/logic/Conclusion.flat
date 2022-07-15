@@ -1,5 +1,0 @@
-package "flatlang/math/logic"
-
-class Conclusion extends LogicalStatement {
-    public construct(String statement) => super(statement)
-}
