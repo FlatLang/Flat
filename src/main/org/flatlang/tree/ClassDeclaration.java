@@ -3973,11 +3973,17 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public void addDefaultConstructor()
 	{
+		if (getFileDeclaration().isExternalFile()) {
+			return;
+		}
 		addChild(Constructor.decodeStatement(this, "public construct()", Location.INVALID, true));
 	}
 	
 	public void addDefaultDestructor()
 	{
+		if (getFileDeclaration().isExternalFile()) {
+			return;
+		}
 		addChild(Destructor.decodeStatement(this, "public destroy()", Location.INVALID, true));
 	}
 	
