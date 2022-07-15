@@ -143,6 +143,12 @@ jobs:
           repository: FlatLang/Math
           path: Math
 
+      - name: Checkout System
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/System
+          path: System
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -164,6 +170,7 @@ jobs:
             -l ../IO \
             -l ../Time \
             -l ../Math \
+            -l ../System \
             -l ../Standard-Library \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
@@ -194,6 +201,7 @@ jobs:
             -l Compiler-String-Extensions \
             -l ../IO \
             -l ../Time \
+            -l ../System \
             -l Standard-Library \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
