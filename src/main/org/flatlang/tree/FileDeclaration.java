@@ -52,7 +52,6 @@ public class FileDeclaration extends Node
 			"flatlang/exception/ExceptionData",
 			"flatlang/exception/Exception",
 			"flatlang/exception/DivideByZeroException",
-			"flatlang/io/Console",
 			"flatlang/primitive/number/Number",
 			"flatlang/primitive/number/Byte",
 			"flatlang/primitive/number/Short",
@@ -71,10 +70,7 @@ public class FileDeclaration extends Node
 			"flatlang/datastruct/list/DoubleArray",
 			"flatlang/datastruct/list/IntRange",
 			"flatlang/thread/Thread",
-			"flatlang/thread/async/Async",
-			"flatlang/thread/async/Task",
-			"flatlang/gc/GC",
-			"flatlang/math/Math",
+			"flatlang/Math",
 			"flatlang/Object",
 			"flatlang/String",
 			"flatlang/meta/Class",
@@ -776,6 +772,13 @@ public class FileDeclaration extends Node
 	 */
 	private void addDefaultImports()
 	{
+		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/IO"))) {
+			addImport("flatlang/io/Console");
+		}
+		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/System"))) {
+			addImport("flatlang/system/System");
+		}
+
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
 			if (importLoc.length() > 0)
