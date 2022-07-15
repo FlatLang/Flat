@@ -121,7 +121,7 @@ jobs:
             -l ../Time \
             -l ../Math \
             -l ../System \
-            -l ../Standard-Library \
+            -l ../src \
             -install-dir .. \
             -std-path ../src \
             -main stabilitytest/StabilityTest \
