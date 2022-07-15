@@ -83,6 +83,30 @@ jobs:
           repository: FlatLang/Stability-Test
           path: Stability-Test
 
+      - name: Checkout IO library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/IO
+          path: IO
+
+      - name: Checkout Time library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Time
+          path: Time
+
+      - name: Checkout Math library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Math
+          path: Math
+
+      - name: Checkout System library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/System
+          path: System
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -93,6 +117,11 @@ jobs:
             -l ../Network \
             -l ../MySQL \
             -l ../Redis \
+            -l ../IO \
+            -l ../Time \
+            -l ../Math \
+            -l ../System \
+            -l ../Standard-Library \
             -install-dir .. \
             -std-path ../src \
             -main stabilitytest/StabilityTest \
