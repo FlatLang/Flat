@@ -1005,7 +1005,7 @@ public class MethodCall extends Variable
 			}
 			
 			boolean skipArgumentChecks = callableMethod != null && (callableMethod instanceof PropertyMethod || parent.getParentClass().isPropertyTrue("functionMap"));
-			
+
 			if (!n.decodeArguments(statement, bounds, require) || !n.deduceMethodCallGenericArguments())
 			{
 				return null;
@@ -1418,6 +1418,32 @@ public class MethodCall extends Variable
 		{
 			SyntaxMessage.error("Too many arguments to method call '" + getName() + "'", this);
 		}
+
+		if (parameters.containsNamedParameters()) {
+			int startIndex = arguments.getFirstArgumentNameIndex() + 1;
+
+			if (startIndex == 0) {
+				startIndex = parameters.getFirstNamedParameterIndex();
+			}
+
+			for (
+				int i = startIndex;
+				i < arguments.getNumVisibleChildren();
+				i++
+			) {
+				if (arguments.getArgumentName(i) == null) {
+					Value arg = arguments.getVisibleChild(i);
+
+					if (arg instanceof Variable) {
+						Variable v = (Variable) arg;
+
+						if (!v.doesAccess()) {
+							arguments.setArgumentName(i, v.getName());
+						}
+					}
+				}
+			}
+		}
 		
 		Value[] order = getArgumentList().getArgumentsInOrder();
 		int position = 0;
@@ -1522,6 +1548,7 @@ public class MethodCall extends Variable
 			
 			requiresName = false;
 			Matcher named = Patterns.NAMED_ARGUMENT.matcher(argument);
+			boolean usedNamedArgs = parent.getFirstArgumentNameIndex() >= 0;
 			
 			if (named.find() && named.start() == 0)
 			{
@@ -1532,7 +1559,7 @@ public class MethodCall extends Variable
 				
 				argument = argument.substring(named.group().length()).trim();
 			}
-			else if (previous != null && parent.getFirstArgumentNameIndex() >= 0)
+			else if (previous != null && usedNamedArgs)
 			{
 				requiresName = true;
 			}
@@ -1591,6 +1618,14 @@ public class MethodCall extends Variable
 				if (arg instanceof Assignment)
 				{
 					arg.onAfterDecoded();
+				}
+				if (usedNamedArgs && getArgumentList().getArgumentName(i) == null && arg instanceof Variable) {
+					Variable v = (Variable)arg;
+
+					if (!v.doesAccess()) {
+						requiresName = false;
+						parent.setArgumentName(i, v.getName());
+					}
 				}
 				
 				if (requiresName)

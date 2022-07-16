@@ -57,7 +57,7 @@ public class MethodCallArgumentList extends ArgumentList
 		
 		return -1;
 	}
-	
+
 	public int getFirstArgumentNameIndex()
 	{
 		for (int i = 0; i < getNumVisibleChildren(); i++)
@@ -67,7 +67,20 @@ public class MethodCallArgumentList extends ArgumentList
 				return i;
 			}
 		}
-		
+
+		return -1;
+	}
+
+	public int getLastArgumentNameIndex()
+	{
+		for (int i = getNumVisibleChildren() - 1; i >= 0; i--)
+		{
+			if (getArgumentName(i) != null)
+			{
+				return i;
+			}
+		}
+
 		return -1;
 	}
 	
