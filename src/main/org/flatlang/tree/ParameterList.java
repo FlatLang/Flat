@@ -189,6 +189,57 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		
 		return -1;
 	}
+
+	public int getFirstNamedParameterIndex() {
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			Value v = getVisibleChild(i);
+
+			if (v instanceof Parameter) {
+				Parameter parameter = (Parameter) v;
+
+				if (parameter.requireNamed) {
+					return i;
+				}
+			}
+		}
+
+		return -1;
+	}
+
+	public int getLastNamedParameterIndex() {
+		for (int i = getNumVisibleChildren() - 1; i >= 0; i--)
+		{
+			Value v = getVisibleChild(i);
+
+			if (v instanceof Parameter) {
+				Parameter parameter = (Parameter) v;
+
+				if (parameter.requireNamed) {
+					return i;
+				}
+			}
+		}
+
+		return -1;
+	}
+
+	public boolean containsNamedParameters() {
+		for (int i = 0; i < getNumVisibleChildren(); i++)
+		{
+			Value v = getVisibleChild(i);
+
+			if (v instanceof Parameter) {
+				Parameter parameter = (Parameter) v;
+
+				if (parameter.requireNamed) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
 	
 	public int[] getDistancesFrom(ParameterList other)
 	{
