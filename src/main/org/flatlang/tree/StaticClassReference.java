@@ -89,6 +89,11 @@ public class StaticClassReference extends IIdentifier
 	}
 
 	@Override
+	public GenericCompatible getContext() {
+		return this;
+	}
+
+	@Override
 	public boolean isPrimitive() {
 		return false;
 	}
