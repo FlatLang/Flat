@@ -960,9 +960,20 @@ public class MethodCall extends Variable
 			statement = modifierData[0][0];
 		}
 
+		boolean await = false;
+
+		if (statement.endsWith("$")) {
+			await = true;
+			statement = statement.substring(0, statement.length() - 1);
+		}
+
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			MethodCall n  = new MethodCall(parent, location);
+
+			if (await) {
+				n.parseModifier("await");
+			}
 
 			if (modifierData != null) {
 				if (!Arrays.stream(modifierData[1]).allMatch(n::parseModifier)) {
