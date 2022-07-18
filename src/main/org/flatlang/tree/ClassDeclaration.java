@@ -1376,6 +1376,22 @@ public class ClassDeclaration extends InstanceDeclaration
 					}
 				}
 				
+				if (compatible.size() > 1) {
+					if (context instanceof Accessible) {
+						Accessible a = (Accessible) context;
+
+						if (!a.isAccessedWithinStaticContext()) {
+							java.util.List<MethodDeclaration> toRemove = compatible.stream()
+								.filter(InstanceDeclaration::isStatic)
+								.collect(Collectors.toList());
+
+							for (MethodDeclaration methodDeclaration : toRemove) {
+								compatible.remove(methodDeclaration);
+							}
+						}
+					}
+				}
+
 				if (compatible.size() > 1)
 				{
 					checkCompatible(methods, arguments);
