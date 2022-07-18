@@ -121,18 +121,6 @@ public abstract class Identifier extends Value implements Accessible
 	}
 	
 	/**
-	 * Get whether or not the specified Node is both used within a
-	 * static context and not accessed by an instance.
-	 * 
-	 * @return Whether or not the specified Node is both used within a
-	 * 		static context and not accessed by an instance.
-	 */
-	public boolean isAccessedWithinStaticContext()
-	{
-		return isWithinStaticContext() && !isAccessed() && (!isInstance() || getParentClass().containsMethod(getName()));
-	}
-	
-	/**
 	 * @see Node#generateFlatInput(StringBuilder, boolean)
 	 */
 	@Override

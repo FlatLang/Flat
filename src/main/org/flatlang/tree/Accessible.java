@@ -74,6 +74,18 @@ public interface Accessible
 	}
 
 	boolean isInstance();
+
+	/**
+	 * Get whether or not the specified Node is both used within a
+	 * static context and not accessed by an instance.
+	 *
+	 * @return Whether or not the specified Node is both used within a
+	 * 		static context and not accessed by an instance.
+	 */
+	default boolean isAccessedWithinStaticContext()
+	{
+		return !isAccessed() && !isInstance() || isAccessed() && getAccessingNode() instanceof StaticClassReference;
+	}
 	
 	/**
 	 * Get the ClassDeclaration instance that declares the method that
