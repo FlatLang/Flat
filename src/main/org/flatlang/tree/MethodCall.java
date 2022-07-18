@@ -960,20 +960,16 @@ public class MethodCall extends Variable
 			statement = modifierData[0][0];
 		}
 
-		boolean await = false;
+		boolean noAwait = false;
 
 		if (statement.endsWith("$")) {
-			await = true;
+			noAwait = true;
 			statement = statement.substring(0, statement.length() - 1);
 		}
 
 		if (SyntaxUtils.isMethodCall(statement))
 		{
 			MethodCall n  = new MethodCall(parent, location);
-
-			if (await) {
-				n.parseModifier("await");
-			}
 
 			if (modifierData != null) {
 				if (!Arrays.stream(modifierData[1]).allMatch(n::parseModifier)) {
@@ -1064,6 +1060,12 @@ public class MethodCall extends Variable
 			}
 			
 			n.parseGenericTypeArguments();
+
+			if (!noAwait) {
+				if (method.toDeclaration().isAsync()) {
+					n.parseModifier("await");
+				}
+			}
 			
 			return n;
 		}
