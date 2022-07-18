@@ -956,7 +956,25 @@ public interface Accessible
 	{
 		return getAccessingNode(false);
 	}
-	
+
+	default ArrayList<Accessible> getAccessedNodes() {
+		return getAccessedNodes(false);
+	}
+
+	default ArrayList<Accessible> getAccessedNodes(boolean inclusive)
+	{
+		ArrayList<Accessible> nodes = new ArrayList<>();
+		Accessible current = inclusive ? this : getAccessedNode();
+
+		while (current != null) {
+			nodes.add(current);
+
+			current = current.getAccessedNode();
+		}
+
+		return nodes;
+	}
+
 	default Accessible getAccessingNode(boolean skipPriority)
 	{
 		Node n = (Node)this;
