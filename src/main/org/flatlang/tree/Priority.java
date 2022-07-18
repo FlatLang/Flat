@@ -56,6 +56,11 @@ public class Priority extends Value implements Accessible
 		this.chainNavigation = chainNavigation;
 	}
 
+	@Override
+	public boolean isInstance() {
+		return false; // FIXME
+	}
+
 
 	@Override
 	public int getNumDecodedChildren()

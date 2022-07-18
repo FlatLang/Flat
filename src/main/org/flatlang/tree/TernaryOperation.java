@@ -86,7 +86,12 @@ public class TernaryOperation extends IValue implements Accessible
 	{
 		this.chainNavigation = chainNavigation;
 	}
-	
+
+	@Override
+	public boolean isInstance() {
+		return false; // FIXME
+	}
+
 	public static TernaryOperation generateDefault(Node parent, Location location)
 	{
 		TernaryOperation n = new TernaryOperation(parent, location);
