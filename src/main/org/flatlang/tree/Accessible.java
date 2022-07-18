@@ -115,8 +115,12 @@ public interface Accessible
 		{
 			list.add(new MethodCall.Pair(c, filter));
 		}
-		
-		list.add(new MethodCall.Pair(getDeclaringClass(), MethodList.SearchFilter.getDefault()));
+
+		filter = new MethodList.SearchFilter();
+		filter.staticValue = isAccessedWithinStaticContext();
+		filter.checkStatic = filter.staticValue;
+
+		list.add(new MethodCall.Pair(getDeclaringClass(), filter));
 		
 		return list.toArray(new MethodCall.Pair[0]);
 	}
