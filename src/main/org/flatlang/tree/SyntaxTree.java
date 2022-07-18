@@ -1188,6 +1188,14 @@ public class SyntaxTree
 				}
 
 				if (index < 0) {
+					if (modifierData != null) {
+						Value v = node.toValue();
+
+						if (!Arrays.stream(modifierData[1]).allMatch(v::parseModifier)) {
+							return null;
+						}
+					}
+
 					return root;
 				}
 			}
@@ -1208,15 +1216,6 @@ public class SyntaxTree
 			safeNavigation = index > 0 && statement.charAt(index - 1) == '?';
 			wasChainNavigation = chainNavigation;
 			chainNavigation = index >= 0 && statement.charAt(index) == ':';
-
-			if (modifierData != null) {
-				Value v = node.toValue();
-
-				if (!Arrays.stream(modifierData[1]).allMatch(v::parseModifier)) {
-					return null;
-				}
-				modifierData = null;
-			}
 		}
 		
 		// Should never reach here...
