@@ -72,6 +72,8 @@ public interface Accessible
 		
 		return false;
 	}
+
+	boolean isInstance();
 	
 	/**
 	 * Get the ClassDeclaration instance that declares the method that

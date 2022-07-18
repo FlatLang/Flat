@@ -64,7 +64,12 @@ public class Literal extends IValue implements Accessible
 	{
 		this.chainNavigation = chainNavigation;
 	}
-	
+
+	@Override
+	public boolean isInstance() {
+		return false; // FIXME
+	}
+
 	@Override
 	public boolean isGenericType(boolean checkArray, boolean checkCast)
 	{
