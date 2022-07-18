@@ -465,7 +465,22 @@ public class SyntaxUtils
 	 * Find the next available instance of the given character in the
 	 * base scope of the given haystack String. The base scope means
 	 * outside of any quotes, parenthesis, and/or brackets.
-	 * 
+	 *
+	 * @param haystack The String to find the character within.
+	 * @param needles The characters to search for in the String.
+	 * @return The index of the character. If the character is not
+	 * 		found, then -1 is returned instead.
+	 */
+	public static int findCharInBaseScope(String haystack, char[] needles)
+	{
+		return findCharInBaseScope(haystack, needles, 0);
+	}
+
+	/**
+	 * Find the next available instance of the given character in the
+	 * base scope of the given haystack String. The base scope means
+	 * outside of any quotes, parenthesis, and/or brackets.
+	 *
 	 * @param haystack The String to find the character within.
 	 * @param needles The characters to search for in the String.
 	 * @param start The index to start the search at.
