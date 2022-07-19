@@ -1437,6 +1437,8 @@ public class MethodCall extends Variable
 
 			if (startIndex == 0) {
 				startIndex = parameters.getFirstNamedParameterIndex();
+			} else {
+				startIndex = Math.min(startIndex, parameters.getFirstNamedParameterIndex());
 			}
 
 			for (
