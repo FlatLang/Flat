@@ -2,8 +2,8 @@ package "flatlang/primitive"
 
 import "flatlang/datastruct/Comparable"
 
-immutable class Bool extends Primitive implements Comparable<Bool> {
-    construct(private Bool value) {}
+class Bool extends Primitive implements Comparable<Bool> {
+    public construct(public Bool value) {}
 
     public compareTo(Bool other) => value == other
     public equals(Object other) => other && other.class.isOfType(Bool.class) && value == ((Bool)other)
