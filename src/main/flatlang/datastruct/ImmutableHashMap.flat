@@ -3,7 +3,7 @@ package "flatlang/datastruct"
 import "flatlang/datastruct/list/List"
 import "flatlang/operators/EqualsOperator"
 
-immutable class ImmutableHashMap<K extends EqualsOperator, V> implements List<Pair<K, V>> {
+class ImmutableHashMap<K extends EqualsOperator, V> implements List<Pair<K, V>> {
     HashMap<K, V> map
 
     visible Int count => map.count

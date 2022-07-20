@@ -8,7 +8,7 @@
   "main": {
     "source": "src/main",
     "dependencies": {
-      "github:FlatLang/Flat": "master"
+      "github:FlatLang/Flat-Core": "master"
     }
   }
 }

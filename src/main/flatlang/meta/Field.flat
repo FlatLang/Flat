@@ -1,6 +1,6 @@
 package "flatlang/meta"
 
 [AutoFinal]
-immutable class Field {
+class Field {
     public construct(visible String name, visible Type type) {}
 }

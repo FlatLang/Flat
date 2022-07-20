@@ -1,6 +1,6 @@
 package "flatlang/regex"
 
-immutable class Match {
+class Match {
     visible Int count => end - start
 
     visible String match => source.substring(start, end)

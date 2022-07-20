@@ -1,6 +1,6 @@
 package "flatlang/regex"
 
-immutable class Regex {
+class Regex {
     public static getMatches(String regexStr, String search) -> Match[] {
         var Int count
         var Int start

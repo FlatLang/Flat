@@ -1,6 +1,5 @@
 package "flatlang/meta"
 
-[AutoFinal]
-immutable class Type {
-    public construct(visible String value, visible immutable GenericArgument[] genericArguments) {}
+class Type {
+    public construct(visible String value, visible GenericArgument[] genericArguments) {}
 }

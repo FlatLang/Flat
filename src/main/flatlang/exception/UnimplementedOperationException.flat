@@ -1,5 +1,0 @@
-package "flatlang/exception"
-
-class UnimplementedOperationException extends Exception {
-    public construct(String message) => super(message)
-}

@@ -1,5 +1,7 @@
 package "flatlang/datastruct"
 
+import "flatlang/datastruct/Comparable"
+
 [AutoFinal]
 class BinaryTree<E extends Comparable> extends Tree<E> {
     public var BinaryNode<E> root <=> (BinaryNode)super.root

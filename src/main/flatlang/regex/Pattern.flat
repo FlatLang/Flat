@@ -1,6 +1,6 @@
 package "flatlang/regex"
 
-immutable class Pattern {
+class Pattern {
     visible String pattern
 
     public construct(visible String pattern) {}

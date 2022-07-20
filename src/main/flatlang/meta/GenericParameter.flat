@@ -1,6 +1,6 @@
 package "flatlang/meta"
 
 [AutoFinal]
-immutable class GenericParameter {
+class GenericParameter {
     public construct(visible Type value, visible Type defaultValue) {}
 }

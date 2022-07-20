@@ -1,5 +1,0 @@
-package "flatlang/operators"
-
-public trait EqualsOperator<E> {
-    public equals(E another) -> Bool
-}

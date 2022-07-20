@@ -1,7 +1,5 @@
 package "flatlang/thread"
 
-import "flatlang/thread/NativeThread.h"
-
 class Thread {
     external type NOVA_THREAD_HANDLE
 
@@ -12,7 +10,7 @@ class Thread {
 
     var NOVA_THREAD_HANDLE* handle
 
-    visible static immutable Thread[] ACTIVE_THREADS = new Thread[]
+    visible static Thread[] ACTIVE_THREADS = new Thread[]
 
     visible var Bool active
 
@@ -96,11 +94,9 @@ class Thread {
     startRun() {
         active = true
 
-        sync({ ACTIVE_THREADS = ACTIVE_THREADS.add(this) })
+        // sync({ ACTIVE_THREADS = ACTIVE_THREADS.add(this) })
 
         try {
-            //GC.init()
-
             if (useAction) {
                 action()
             } else {
@@ -112,13 +108,10 @@ class Thread {
             if (e.message) {
                 message += ": #e.message"
             }
-
-            // Console.log(message)
-            // Console.waitForEnter()
         }
 
         active = false
 
-        sync({ ACTIVE_THREADS = ACTIVE_THREADS.remove(this) })
+        // sync({ ACTIVE_THREADS = ACTIVE_THREADS.remove(this) })
     }
 }

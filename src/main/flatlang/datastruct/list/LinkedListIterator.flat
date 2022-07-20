@@ -1,5 +1,8 @@
 package "flatlang/datastruct/list"
 
+import "flatlang/datastruct/list/Iterator"
+import "flatlang/datastruct/list/NoSuchElementException"
+
 class LinkedListIterator<E> implements Iterator<E> {
     visible var ListNode position
     visible var ListNode previousNode

@@ -1,7 +1,0 @@
-package "flatlang/exception"
-
-class CaughtException {
-    public construct(visible Class type, visible Bool soft = true) {}
-
-    public toString() => "Catching #type, soft: #soft"
-}

@@ -1,5 +1,0 @@
-package "flatlang/operators"
-
-public trait LessThanOperator<In> {
-    public lessThan(In another) -> Bool
-}
