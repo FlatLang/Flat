@@ -203,7 +203,7 @@ jobs:
         run: |
           java -jar target/flatc.jar \
             SimpleGapRuleFlat \
-            -l ../Flat-Core \
+            -l ./Flat-Core \
             -l ./Nest \
             -l ./Json \
             -l ./Compiler-String-Extensions \
