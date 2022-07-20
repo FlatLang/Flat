@@ -46,6 +46,9 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public int getArrayDimensions()
 	{
+		if (getIdentifier() == null) {
+			return 0;
+		}
 		return getIdentifier().getArrayDimensions() - getArrayAccessDimensions();
 	}
 	
