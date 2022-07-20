@@ -1,5 +1,6 @@
 package org.flatlang.tree;
 
+import org.flatlang.Flat;
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.tree.FlatParameterList.ReturnParameterList;
@@ -1368,6 +1369,10 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public boolean convertToPrimitiveType()
 	{
+		if (!Flat.PRIMITIVE_OVERLOADS) {
+			return false;
+		}
+
 		ClassDeclaration c = getTypeClass();
 		
 		if (c != null && getGenericTypeArgumentList() != null)
