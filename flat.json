@@ -11,8 +11,6 @@
     ]
   },
   "main": {
-    "dependencies": {
-      "github:FlatLang/Standard-Library": "master"
-    }
+    "dependencies": {}
   }
 }
