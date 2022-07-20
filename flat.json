@@ -1,14 +1,15 @@
 {
-  "name": "Standard-Library",
+  "name": "Standard Library",
   "version": "0.1.0",
-  "description": "Flat standard library",
+  "description": "Flat Standard Library",
   "author": "Braden Steffaniak",
   "license": "ISC",
   "scripts": {},
   "main": {
     "source": "src/main",
     "dependencies": {
-      "github:FlatLang/Flat-Core": "master"
+      "github:FlatLang/Flat-Core": "master",
+      "github:FlatLang/Regex": "master"
     }
   }
 }

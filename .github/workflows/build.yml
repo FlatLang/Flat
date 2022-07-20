@@ -14,126 +14,42 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Checkout Flat CLI
-        uses: actions/checkout@master
+      - name: Download latest Airship
+        uses: dsaltares/fetch-gh-release-asset@master
         with:
-          repository: FlatLang/Flat
-          path: Flat
+          repo: FlatLang/Airship
+          file: airship.js
 
-      - name: Checkout Flat Testing
-        uses: actions/checkout@master
+      - uses: actions/setup-node@v3
         with:
-          repository: BSteffaniak/Flat-Testing
-          path: Flat-Testing
+          node-version: 14
 
-      - name: Checkout Flat JS Writer
-        uses: actions/checkout@master
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.4
         with:
-          repository: FlatLang/Flat-js
-          path: Flat-JS
+          maven-version: 3.8.2
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
         with:
-          java-version: '11'
-          distribution: 'temurin'
-          cache: maven
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
 
-      - name: Build CLI
-        run: |
-          mvn -f Flat install
-
-      - name: Build JS Writer
-        run: |
-          mvn -f Flat-JS install
-
-      - name: Checkout Nest library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Nest
-          path: Nest
-
-      - name: Checkout Compiler-String-Extensions library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Compiler-String-Extensions
-          path: Compiler-String-Extensions
-
-      - name: Checkout Network library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Network
-          path: Network
-
-      - name: Checkout MySQL library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/MySQL
-          path: MySQL
-
-      - name: Checkout Redis library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Redis
-          path: Redis
-
-      - name: Checkout Stability-Test library
+      - name: Checkout Stability-Test
         uses: actions/checkout@master
         with:
           repository: FlatLang/Stability-Test
           path: Stability-Test
 
-      - name: Checkout IO library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/IO
-          path: IO
-
-      - name: Checkout Time library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Time
-          path: Time
-
-      - name: Checkout Math library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Math
-          path: Math
-
-      - name: Checkout System library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/System
-          path: System
-
-      - name: Checkout Flat-Core library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Flat-Core
-          path: Flat-Core
-
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
-          java -jar ../Flat/target/flatc.jar \
-            src \
-            -l ../Flat-Core \
-            -l ../Nest \
-            -l ../Compiler-String-Extensions \
-            -l ../Network \
-            -l ../MySQL \
-            -l ../Redis \
-            -l ../IO \
-            -l ../Time \
-            -l ../Math \
-            -l ../System \
-            -l ../src \
-            -install-dir .. \
-            -std-path ../src \
-            -main stabilitytest/StabilityTest \
-            -o dist/test.js \
-            -target js
+          node ../airship.js install test
 
       - uses: actions/upload-artifact@v3
         if: failure()
@@ -141,11 +57,7 @@ jobs:
           name: test.js
           path: Stability-Test/dist/test.js
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 14
-
       - name: Run Stability Test
         working-directory: Stability-Test
         run: |
-          node dist/test.js
+          node ../airship.js run test
