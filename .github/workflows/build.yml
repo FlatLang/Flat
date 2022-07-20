@@ -149,6 +149,12 @@ jobs:
           repository: FlatLang/System
           path: System
 
+      - name: Checkout Flat-Core library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Flat-Core
+          path: Flat-Core
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -160,6 +166,7 @@ jobs:
             ../Spectra \
             ../Nebula \
             ../SimpleGapRuleFlat \
+            -l ../Flat-Core \
             -l ../Nest \
             -l ../Compiler-String-Extensions \
             -l ../Network \
@@ -196,6 +203,7 @@ jobs:
         run: |
           java -jar target/flatc.jar \
             SimpleGapRuleFlat \
+            -l ../Flat-Core \
             -l ./Nest \
             -l ./Json \
             -l ./Compiler-String-Extensions \
