@@ -287,7 +287,10 @@ public class Priority extends Value implements Accessible
 	public static Priority generateFrom(Value contents)
 	{
 		Priority n = new Priority(contents.getParent(), contents.getLocationIn());
-		
+
+		if (contents.getParent().containsChild(contents)) {
+			contents.replaceWith(n);
+		}
 		n.addChild(contents);
 		
 		return n;
