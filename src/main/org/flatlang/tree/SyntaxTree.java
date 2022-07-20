@@ -1626,7 +1626,7 @@ public class SyntaxTree
 				}
 			}
 			
-			return getField.apply(((Value)id).getTypeClass());
+			return getField.apply(((Value)id).getFlatTypeClass());
 		}
 		
 		return null;
