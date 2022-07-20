@@ -1,9 +1,0 @@
-package "flatlang/datastruct/list"
-
-import "flatlang/datastruct/list/NoSuchElementException"
-
-class EmptyStackException extends NoSuchElementException {
-    public construct(String message = "") {
-        super(message)
-    }
-}

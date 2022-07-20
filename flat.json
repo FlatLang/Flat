@@ -10,7 +10,8 @@
     "dependencies": {
       "github:FlatLang/Flat-Core": "master",
       "github:FlatLang/Regex": "master",
-      "github:FlatLang/Security": "master"
+      "github:FlatLang/Security": "master",
+      "github:FlatLang/Datastruct": "master"
     }
   }
 }

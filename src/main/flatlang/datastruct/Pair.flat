@@ -1,7 +1,0 @@
-package "flatlang/datastruct"
-
-class Pair<Key, Value> {
-    public construct(public Key key, public Value value) {}
-
-    public toString() => "Pair (#key, #value)"
-}
