@@ -14,6 +14,7 @@ import org.flatlang.tree.variables.VariableDeclaration;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,8 @@ public class SyntaxUtils
 	private static final int CHAR = 1, BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5, DOUBLE = 6, NUMBER = 6;
 
 	public static final char[] WHITESPACE = new char[] {' ', '\t', '\n', '\r'};
+
+	private static HashMap<String, String> classNames = new HashMap<>();
 
 	/**
 	 * Get the rank of the given primitive type in terms of assignment
@@ -3360,11 +3363,18 @@ public class SyntaxUtils
 		{
 			return null;
 		}
+		if (classNames.containsKey(classLocation)) {
+			return classNames.get(classLocation);
+		}
 		
 		int lastIndex = classLocation.lastIndexOf('/') + 1;
 		int endIndex = classLocation.lastIndexOf('.');
 		
-		return classLocation.substring(Math.max(endIndex + 1, lastIndex));
+		String name = classLocation.substring(Math.max(endIndex + 1, lastIndex));
+
+		classNames.put(classLocation, name);
+
+		return name;
 	}
 	
 	public static ClassDeclaration getImportedClass(FileDeclaration file, String className)
