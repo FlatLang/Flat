@@ -64,19 +64,11 @@ public class FileDeclaration extends Node
 			"flatlang/primitive/Bool",
 			"flatlang/datastruct/list/List",
 			"flatlang/datastruct/list/Array",
-			"flatlang/datastruct/list/ImmutableArray",
-			"flatlang/datastruct/list/IntArray",
-			"flatlang/datastruct/list/CharArray",
-			"flatlang/datastruct/list/DoubleArray",
 			"flatlang/datastruct/list/IntRange",
-			"flatlang/thread/Thread",
 			"flatlang/Math",
 			"flatlang/Object",
 			"flatlang/String",
 			"flatlang/meta/Class",
-			"flatlang/meta/FunctionMap",
-			"flatlang/meta/PropertyMap",
-			"flatlang/regex/Pattern",
 		};
 	}
 	
