@@ -155,6 +155,18 @@ jobs:
           repository: FlatLang/Flat-Core
           path: Flat-Core
 
+      - name: Checkout Datastruct library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Datastruct
+          path: Datastruct
+
+      - name: Checkout Regex library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Regex
+          path: Regex
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -167,6 +179,8 @@ jobs:
             ../Nebula \
             ../SimpleGapRuleFlat \
             -l ../Flat-Core \
+            -l ../Datastruct \
+            -l ../Regex \
             -l ../Nest \
             -l ../Compiler-String-Extensions \
             -l ../Network \
@@ -204,6 +218,8 @@ jobs:
           java -jar target/flatc.jar \
             SimpleGapRuleFlat \
             -l ./Flat-Core \
+            -l ./Datastruct \
+            -l ./Regex \
             -l ./Nest \
             -l ./Json \
             -l ./Compiler-String-Extensions \
