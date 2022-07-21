@@ -4,10 +4,7 @@ import org.flatlang.Flat;
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.error.UnimplementedOperationException;
-import org.flatlang.tree.annotations.Annotatable;
-import org.flatlang.tree.annotations.Annotation;
-import org.flatlang.tree.annotations.ModifierAnnotation;
-import org.flatlang.tree.annotations.TargetAnnotation;
+import org.flatlang.tree.annotations.*;
 import org.flatlang.tree.exceptionhandling.Try;
 import org.flatlang.tree.variables.*;
 import org.flatlang.tree.variables.Array;
@@ -151,7 +148,7 @@ public abstract class Node implements Listenable, Annotatable
 				//a.validate(getProgram().getPhase());
 			}
 		}
-		if (annotation instanceof TargetAnnotation)
+		if (annotation instanceof TargetAnnotation || annotation instanceof TargetRuntimeAnnotation)
 		{
 			return;
 		}

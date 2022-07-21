@@ -453,22 +453,27 @@ public class Annotation extends Node
 																																	if (n == null)
 																																	{
 																																		n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
-																																		
+
 																																		if (n == null)
 																																		{
-																																			n = ExpectCompileErrorAnnotation.decodeStatement(parent, name, arguments, location, require);
-																																			
+																																			n = TargetRuntimeAnnotation.decodeStatement(parent, name, arguments, location, require);
+
 																																			if (n == null)
 																																			{
-																																				n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																				n = ExpectCompileErrorAnnotation.decodeStatement(parent, name, arguments, location, require);
 
 																																				if (n == null)
 																																				{
-																																					n = AsyncAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																					n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
 
 																																					if (n == null)
 																																					{
-																																						n = AwaitAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																						n = AsyncAnnotation.decodeStatement(parent, name, arguments, location, require);
+
+																																						if (n == null)
+																																						{
+																																							n = AwaitAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																						}
 																																					}
 																																				}
 																																			}

@@ -39,7 +39,7 @@ public class Flat
 	
 	public File					workingDir, targetEngineWorkingDir;
 	
-	public String target, formattedTarget, targetFileExtension;
+	public String target, targetRuntime, formattedTarget, targetFileExtension;
 	
 	private SyntaxTree			tree;
 	
@@ -453,6 +453,12 @@ public class Flat
 	public void readCliArgs(String[] args) {
 		parseInitialArguments(args);
 
+		if (target != null && target.equals("js")) {
+			targetRuntime = targetRuntime == null ? "node" : targetRuntime;
+		} else {
+			targetRuntime = targetRuntime == null ? "default" : targetRuntime;
+		}
+
 		String workingPath = getWorkingDirectoryPath();
 		String directory = workingPath + "../Flat-Testing/example/";
 
@@ -864,6 +870,13 @@ public class Flat
 				target = args[i + 1].toLowerCase();
 				skip = 1;
 			}
+			else if (arg.toLowerCase().equals("-target-runtime"))
+			{
+				validateArgumentSize(args, i + 1, args[i]);
+
+				targetRuntime = args[i + 1].toLowerCase();
+				skip = 1;
+			}
 		}
 	}
 	
@@ -956,6 +969,10 @@ public class Flat
 				enableFlag(NO_OPTIMIZE);
 			}
 			else if (arg.equals("-target"))
+			{
+				skip = 1;
+			}
+			else if (arg.equals("-target-runtime"))
 			{
 				skip = 1;
 			}
