@@ -4,10 +4,7 @@ import org.flatlang.Flat;
 import org.flatlang.TestContext;
 import org.flatlang.error.SyntaxErrorException;
 import org.flatlang.error.SyntaxMessage;
-import org.flatlang.tree.annotations.Annotation;
-import org.flatlang.tree.annotations.ExpectCompileErrorAnnotation;
-import org.flatlang.tree.annotations.ModifierAnnotation;
-import org.flatlang.tree.annotations.TargetAnnotation;
+import org.flatlang.tree.annotations.*;
 import org.flatlang.tree.generics.GenericTypeArgument;
 import org.flatlang.tree.lambda.LambdaExpression;
 import org.flatlang.tree.match.Match;
@@ -507,8 +504,10 @@ public class TreeGenerator implements Runnable
 			{
 				Annotation a = (Annotation)node;
 				
-				skipNextStatement = skipNextStatement || (a instanceof TargetAnnotation && !((TargetAnnotation)a).currentTarget());
-				
+				skipNextStatement = skipNextStatement ||
+					(a instanceof TargetAnnotation && !((TargetAnnotation)a).currentTarget()) ||
+					(a instanceof TargetRuntimeAnnotation && !((TargetRuntimeAnnotation)a).currentTargetRuntime());
+
 				statement = Annotation.getFragment(statement);
 				
 				
