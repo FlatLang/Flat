@@ -272,10 +272,6 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
 
-			if (method.isAsync()) {
-				call.parseModifier("await");
-			}
-
 			runMethod.addChild(call);
 		}
 	}
