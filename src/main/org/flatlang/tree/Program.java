@@ -72,7 +72,7 @@ public class Program extends TypeList<FileDeclaration>
 	{
 		FileDeclaration file = (FileDeclaration)child;
 
-		if (file.isExcludedExternalFile(controller.targetFileExtension)) {
+		if (file.isExcludedExternalFile(controller.targetFileExtensions)) {
 			return;
 		}
 

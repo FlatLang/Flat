@@ -153,15 +153,12 @@ public class FileDeclaration extends Node
 		return getLibrary() != null;
 	}
 	
-	public boolean isExcludedExternalFile(String targetFileExtension) {
+	public boolean isExcludedExternalFile(java.util.List<String> targetFileExtensions) {
 		if (isExternalFile())
 		{
 			String extension = getExternalExtension();
-			
-			if (!extension.equals(targetFileExtension))
-			{
-				return true;
-			}
+
+			return targetFileExtensions.stream().noneMatch(extension::equals);
 		}
 		
 		return false;
@@ -512,7 +509,7 @@ public class FileDeclaration extends Node
 	{
 		ValidationResult result = super.validate(phase);
 		
-		if (result.skipValidation() || isExcludedExternalFile(getController().targetFileExtension))
+		if (result.skipValidation() || isExcludedExternalFile(getController().targetFileExtensions))
 		{
 			return result;
 		}
