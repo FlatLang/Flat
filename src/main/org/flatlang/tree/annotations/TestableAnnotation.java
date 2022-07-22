@@ -215,10 +215,6 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 				SyntaxMessage.error("Could not create test suite class", runMethod);
 				return;
 			}
-
-			if (method.isAsync()) {
-				call.parseModifier("await");
-			}
 			
 			tryBlock.addChild(call);
 			
