@@ -15,6 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
@@ -39,7 +40,8 @@ public class Flat
 	
 	public File					workingDir, targetEngineWorkingDir;
 	
-	public String target, targetRuntime, formattedTarget, targetFileExtension;
+	public String target, targetRuntime, formattedTarget;
+	public ArrayList<String> targetFileExtensions = new ArrayList<>();
 	
 	private SyntaxTree			tree;
 	
@@ -379,7 +381,12 @@ public class Flat
 				System.exit(1);
 			}
 
-			targetFileExtension = formattedTarget.toLowerCase();
+
+			targetFileExtensions.add(target);
+
+			if (target.equals("es6")) {
+				targetFileExtensions.add("js");
+			}
 			
 			try
 			{
@@ -388,8 +395,8 @@ public class Flat
 				// Create a new class loader with the directory
 				ClassLoader cl = new URLClassLoader(new URL[] { url }, this.getClass().getClassLoader());
 				
-				Class codeGeneratorEngineClass = cl.loadClass("org.flatlang." + targetFileExtension + ".engines." + formattedTarget + "CodeGeneratorEngine");
-				Class compileEngineClass = cl.loadClass("org.flatlang." + targetFileExtension + ".engines." + formattedTarget + "CompileEngine");
+				Class codeGeneratorEngineClass = cl.loadClass("org.flatlang." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CodeGeneratorEngine");
+				Class compileEngineClass = cl.loadClass("org.flatlang." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CompileEngine");
 				
 				java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Flat.class);
 				java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Flat.class);

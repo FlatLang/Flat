@@ -2,6 +2,7 @@ package org.flatlang.tree;
 
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
+import org.flatlang.tree.annotations.TargetAnnotation;
 import org.flatlang.util.Location;
 import org.flatlang.util.StringUtils;
 import org.flatlang.util.SyntaxUtils;
@@ -75,7 +76,7 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 	
 	public void setContents(String contents)
 	{
-		if (target != null && !target.equals(getProgram().getController().target))
+		if (target != null && !TargetAnnotation.targetMatches(getProgram().getController().target, target))
 		{
 			return;
 		}
@@ -176,7 +177,7 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor
 		
 		if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
-			if (target != null && !target.equals(getProgram().getController().target))
+			if (target != null && !TargetAnnotation.targetMatches(getProgram().getController().target, target))
 			{
 				detach();
 				

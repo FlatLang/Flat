@@ -25,12 +25,16 @@ public class TargetAnnotation extends Annotation
     {
         return currentTarget(getProgram().getController().target);
     }
+
+    public static boolean targetMatches(String target, String value) {
+        return value.equals(target) || value.equals("js") && target.equals("es6");
+    }
     
     public boolean currentTarget(String target)
     {
         for (String t : targets)
         {
-            if (t.equals(target))
+            if (targetMatches(target, t))
             {
                 return !opposite;
             }
