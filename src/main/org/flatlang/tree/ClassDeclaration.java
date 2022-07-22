@@ -659,7 +659,9 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				if (clazz != this)// && !clazz.isPropertyTrue("functionMap"))
 				{
-					array.add((Trait)clazz);
+					if (!array.contains(clazz)) {
+						array.add((Trait) clazz);
+					}
 				}
 			}
 			else
@@ -676,7 +678,9 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					if (inter != this)
 					{
-						array.add(inter);
+						if (!array.contains(inter)) {
+							array.add(inter);
+						}
 					}
 				}
 			}
@@ -687,7 +691,9 @@ public class ClassDeclaration extends InstanceDeclaration
 				{
 					if (t != this)
 					{
-						array.add(t);
+						if (!array.contains(t)) {
+							array.add(t);
+						}
 					}
 				}
 			}
