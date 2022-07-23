@@ -564,6 +564,10 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			
 			if (parents.length > 0)
 			{
+				if (isPrimitive() && initializationValue.equals("null")) {
+					setDataType(POINTER);
+				}
+
 				Assignment assignment = Assignment.decodeStatement(parents[0], getName() + " = " + initializationValue, getLocationIn(), true);
 				
 				if (assignment != null)

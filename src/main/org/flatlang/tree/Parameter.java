@@ -523,10 +523,9 @@ public class Parameter extends LocalDeclaration
 	public void setPrimitive()
 	{
 		super.setPrimitive();
-		
-		if (isPrimitive() && "null".equals(defaultValueString))
-		{
-			defaultValueString = getDefaultLiteralValue();
+
+		if (isPrimitive() && "null".equals(defaultValueString)) {
+			setDataType(POINTER);
 		}
 	}
 	
