@@ -1809,16 +1809,24 @@ public class SyntaxUtils
 			else if (c == '\n')
 			{
 				String substring = text.substring(lastIndex, formatMatcher.start());
-				
-				builder.append(substring).append('\n').append(tabs);
-				
+
+				if (substring.trim().length() == 0) {
+					while (builder.length() > 0 && builder.charAt(builder.length() - 1) != '\n') {
+						builder.deleteCharAt(builder.length() - 1);
+					}
+
+					builder.append('\n').append(tabs);
+				} else {
+					builder.append(substring).append('\n').append(tabs);
+				}
+
 				lastIndex = formatMatcher.start() + 1;
 				
 				sameLine = false;
 			}
 		}
 		
-		builder.append(tabs).append(text.substring(lastIndex, text.length()));
+		builder.append(tabs).append(text.substring(lastIndex));
 		
 		return builder.toString();
 	}
