@@ -512,15 +512,16 @@ public class Assignment extends Value
 			if (declaration.isImplicit())
 			{
 				Value previousType = declaration.getTypeValue();
-				
+
 				if (declaration.getImplicitType() == null)
 				{
 					/*IValue value = new IValue(getParent(), getLocationIn());
 					value.setType(assignment.getFlatType());*/
 					
 					declaration.setImplicitType(assignment);
-				}
-				else if (previousType.getArrayDimensions() != assignment.getArrayDimensions())
+				} else if (previousType == null || previousType.getTypeClass() == null) {
+					return SyntaxMessage.queryError("Implicit type for '" + declaration.getName() + "' cannot be determined", this, require);
+				} else if (previousType.getArrayDimensions() != assignment.getArrayDimensions())
 				{
 					return SyntaxMessage.queryError("Incompatible array assignment. Assigned node has " + declaration.getArrayDimensions() + " dimensions, when assignment has " + assignment.getArrayDimensions() + " dimensions", this, require);
 				}
