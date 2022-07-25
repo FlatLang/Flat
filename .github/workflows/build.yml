@@ -202,7 +202,7 @@ jobs:
         if: failure()
         with:
           name: test.js
-          path: dist/test.js
+          path: StabilityTest/dist/test.js
 
       - uses: actions/setup-node@v3
         with:
