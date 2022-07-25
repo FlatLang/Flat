@@ -2,7 +2,7 @@
   <configuration default="false" name="Compile JS Airship" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="org.flatlang.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../Airship/src/main -install-dir .. -l ../Flat-Core -l ../Standard-Library -l ../System -l ../Compiler-String-Extensions -l ../Json -l ../FuCli -l ../Http -l ../IO -l ../Time -l ../Git -main flatlang/airship/Airship -o ../Airship/dist/airship.js -target js" />
+    <option name="PROGRAM_PARAMETERS" value="../Airship/src/main -install-dir .. -l ../Flat-Core -l ../Datastruct -l ../Regex -l ../Standard-Library -l ../System -l ../Compiler-String-Extensions -l ../Json -l ../FuCli -l ../Http -l ../IO -l ../Time -l ../Git -l ../Logger -main flatlang/airship/Airship -o ../Airship/dist/airship.js -target js" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
