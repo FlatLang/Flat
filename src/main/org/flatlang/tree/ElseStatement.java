@@ -3,8 +3,11 @@ package org.flatlang.tree;
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.error.SyntaxMessage;
+import org.flatlang.tree.exceptionhandling.Throw;
+import org.flatlang.tree.variables.VariableDeclaration;
 import org.flatlang.util.Location;
 import org.flatlang.util.StringUtils;
+import org.flatlang.util.SyntaxUtils;
 
 /**
  * Node extension that represents the declaration of an "else
@@ -119,6 +122,58 @@ public class ElseStatement extends ControlStatement
 		}
 		
 		return null;
+	}
+
+	public IfStatement getIfElseChainStart() {
+		Node prev = getPreviousNode();
+
+		if (prev instanceof Value) {
+			Value returned = ((Value)prev).getReturnedNode();
+
+			if (returned instanceof IfStatement) {
+				if (returned.getParent() instanceof ElseStatement) {
+					return ((ElseStatement)returned.getParent()).getIfElseChainStart();
+				} else {
+					return (IfStatement) returned;
+				}
+			} else if (returned instanceof ElseStatement) {
+				return ((ElseStatement)returned).getIfElseChainStart();
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public void onStackPopped(Node popped) {
+		IfStatement start = getIfElseChainStart();
+
+		if (start.getParent() instanceof Assignment) {
+			Assignment assignment = (Assignment) start.getParent();
+			VariableDeclaration declaration = assignment.getAssignedNode().getDeclaration();
+
+			Node lastChild;
+
+			if (getInlineStatement() != null) {
+				lastChild = getInlineStatement().getScope().getLastChild();
+			} else {
+				lastChild = getScope().getLastVisibleChild();
+			}
+
+			if (lastChild instanceof Throw) {
+
+			} else if (lastChild instanceof Value == false) {
+				SyntaxMessage.error("Invalid value '" + lastChild.generateFlatInput() + "' for expression", this);
+			} else if (declaration.getType() == null) {
+				declaration.setType(((Value) lastChild).getReturnedNode());
+			} else {
+				Value common = SyntaxUtils.getTypeInCommon(((Value) lastChild).getReturnedNode(), declaration);
+
+				declaration.setType(common);
+			}
+		}
+
+		super.onStackPopped(popped);
 	}
 	
 	@Override

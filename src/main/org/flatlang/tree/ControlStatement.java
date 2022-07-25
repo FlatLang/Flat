@@ -10,7 +10,7 @@ import org.flatlang.util.Location;
  * @since	v0.2.37 Oct 16, 2014 at 5:19:17 PM
  * @version	v0.2.38 Dec 6, 2014 at 5:19:17 PM
  */
-public class ControlStatement extends Node
+public class ControlStatement extends IValue
 {
 	/**
 	 * @see Node#Node(Node, Location)
