@@ -397,6 +397,11 @@ public class Return extends IValue
 				
 				result.nextIncrement += getNumReturnValues();
 			}
+
+			if (getPreviousNode() instanceof Return) {
+				detach();
+				result.skipCycle = true;
+			}
 		}
 		
 		return result;
