@@ -611,7 +611,19 @@ public abstract class Node implements Listenable, Annotatable
 	public Stream<Node> getChildStream() {
 		return children.stream();
 	}
-	
+
+	public ArrayList<Node> getVisibleChildren() {
+		ArrayList<Node> nodes = new ArrayList<>();
+
+		int start = getNumDecodedChildren();
+
+		for (int i = 0; i < getNumVisibleChildren(); i++) {
+			nodes.add(children.get(start + i));
+		}
+
+		return nodes;
+	}
+
 	/**
 	 * Get the child Node at the specific index in the children
 	 * ArrayList.
