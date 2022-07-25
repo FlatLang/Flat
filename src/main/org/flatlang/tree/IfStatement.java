@@ -1,11 +1,17 @@
 package org.flatlang.tree;
 
 import org.flatlang.TestContext;
+import org.flatlang.ValidationResult;
 import org.flatlang.error.SyntaxMessage;
+import org.flatlang.tree.exceptionhandling.Throw;
+import org.flatlang.tree.variables.Variable;
+import org.flatlang.tree.variables.VariableDeclaration;
 import org.flatlang.util.Bounds;
 import org.flatlang.util.Location;
 import org.flatlang.util.StringUtils;
 import org.flatlang.util.SyntaxUtils;
+
+import java.util.function.Consumer;
 
 /**
  * Node extension that represents the declaration of an "if statement"
@@ -151,7 +157,128 @@ public class IfStatement extends ControlStatement
 		
 		return true;
 	}
-	
+
+	private void forEachIfStatementExpression(Node parent, Consumer<Value> func) {
+		Node lastChild = getScope().getLastVisibleChild();
+
+		if (lastChild instanceof Value == false) {
+			SyntaxMessage.error("Invalid value '" + lastChild.generateFlatInput() + "' for expression", this);
+			return;
+		}
+
+		func.accept((Value) lastChild);
+
+		for (int i = parent.getIndex() + 1; i < parent.getParent().getNumChildren(); i++) {
+			Node child = parent.getParent().getChild(i);
+
+			if (child instanceof ElseStatement) {
+				ElseStatement elseStatement = (ElseStatement) child;
+
+				if (elseStatement.getInlineStatement() != null) {
+					child = elseStatement.getInlineStatement();
+				}
+
+				Node value = child.getScope().getLastVisibleChild();
+
+				if (value instanceof Value == false) {
+					SyntaxMessage.error("Invalid value '" + value.generateFlatInput() + "' for expression", this);
+					return;
+				}
+
+				func.accept((Value) value);
+			} else {
+				break;
+			}
+		}
+	}
+
+	@Override
+	public ValidationResult validate(int phase)
+	{
+		ValidationResult result = super.validate(phase);
+
+		if (result.skipValidation())
+		{
+			return result;
+		}
+
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
+		{
+			if (getParent() instanceof Assignment) {
+				Assignment assignment = (Assignment) getParent();
+				VariableDeclaration declaration = assignment.getAssignedNode().getDeclaration();
+
+				forEachIfStatementExpression(assignment, (value) -> {
+					if (value instanceof Throw) {
+						return;
+					}
+
+					Assignment replacement = Assignment.generateDefault(value.getScope(), value.getLocationIn());
+					Variable variable = declaration.generateUsableVariable(replacement, value.getLocationIn());
+					variable.setProperty("userMade", false);
+					replacement.getAssigneeNodes().addChild(variable);
+					value.replaceWith(replacement);
+
+					replacement.addChild(value);
+				});
+
+				assignment.replaceWith(this);
+			} else if (getParent().getParent() instanceof Return) {
+				Return r = (Return) getParent().getParent();
+
+				forEachIfStatementExpression(r, (value) -> {
+					if (value instanceof Throw || value instanceof Return) {
+						return;
+					}
+
+					Return replacement = new Return(value.getParent(), value.getLocationIn());
+					replacement.setProperty("userMade", false);
+					value.replaceWith(replacement);
+
+					replacement.getReturnValues().addChild(value);
+				});
+
+				r.replaceWith(this);
+			}
+		}
+
+		return result;
+	}
+
+	public IfStatement getIfElseChainStart() {
+		if (getParent() instanceof ElseStatement) {
+			return ((ElseStatement)getParent()).getIfElseChainStart();
+		}
+
+		return this;
+	}
+
+	@Override
+	public void onStackPopped(Node popped) {
+		IfStatement start = getIfElseChainStart();
+
+		if (start.getParent() instanceof Assignment) {
+			Assignment assignment = (Assignment) start.getParent();
+			VariableDeclaration declaration = assignment.getAssignedNode().getDeclaration();
+
+			Node lastChild = getScope().getLastVisibleChild();
+
+			if (lastChild instanceof Throw) {
+
+			} else if (lastChild instanceof Value == false) {
+				SyntaxMessage.error("Invalid value '" + lastChild.generateFlatInput() + "' for expression", this);
+			} else if (declaration.getType() == null) {
+				declaration.setType(((Value) lastChild).getReturnedNode());
+			} else {
+				Value common = SyntaxUtils.getTypeInCommon(((Value) lastChild).getReturnedNode(), declaration);
+
+				declaration.setType(common);
+			}
+		}
+
+		super.onStackPopped(popped);
+	}
+
 	/**
 	 * @see Node#clone(Node, Location, boolean)
 	 */

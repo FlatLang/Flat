@@ -4,12 +4,16 @@ import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
 import org.flatlang.error.SyntaxMessage;
 import org.flatlang.tree.*;
+import org.flatlang.tree.exceptionhandling.Throw;
 import org.flatlang.tree.variables.Variable;
+import org.flatlang.tree.variables.VariableDeclaration;
 import org.flatlang.util.Location;
 import org.flatlang.util.StringUtils;
 import org.flatlang.util.SyntaxUtils;
 import org.flatlang.tree.Node;
 import org.flatlang.tree.Value;
+
+import java.util.stream.Collectors;
 
 /**
  * {@link Node} extension that represents
@@ -315,11 +319,124 @@ public class Match extends ControlStatement
 				
 				replace(getControlValue(), var);
 			}
+
+			if (getParent() instanceof Assignment) {
+				Assignment assignment = (Assignment) getParent();
+				VariableDeclaration declaration = assignment.getAssignedNode().getDeclaration();
+
+				getScope().getVisibleChildren().forEach((child) -> {
+					Node lastChild = child.getScope().getLastVisibleChild();
+
+					if (lastChild instanceof Throw) {
+						return;
+					}
+
+					Assignment replacement = Assignment.generateDefault(child.getScope(), child.getLocationIn());
+					Variable variable = declaration.generateUsableVariable(replacement, child.getLocationIn());
+					variable.setProperty("userMade", false);
+					replacement.getAssigneeNodes().addChild(variable);
+					lastChild.replaceWith(replacement);
+
+					replacement.addChild(lastChild);
+				});
+
+				assignment.replaceWith(this);
+			} else if (getParent().getParent() instanceof Return) {
+				Return r = (Return) getParent().getParent();
+
+				getScope().getVisibleChildren().forEach((child) -> {
+					Node lastChild = child.getScope().getLastVisibleChild();
+
+					if (lastChild instanceof Throw) {
+						return;
+					}
+
+					Return replacement = new Return(child.getScope(), child.getLocationIn());
+					replacement.setProperty("userMade", false);
+					lastChild.replaceWith(replacement);
+
+					replacement.getReturnValues().addChild(lastChild);
+				});
+
+				r.replaceWith(this);
+			}
 		}
 		
 		return result;
 	}
-	
+
+	private void expressionError(Node n) {
+		SyntaxMessage.error("Invalid case value '" + n.generateFlatInput() + "' for expression", this);
+	}
+
+	private Value getTypeInCommon() {
+		java.util.List<Node> nodes = getScope().getVisibleChildren().stream()
+			.map(child -> child.getScope().getLastVisibleChild())
+			.filter(child -> child instanceof Throw == false)
+			.collect(Collectors.toList());
+
+		if (nodes.get(0) instanceof Value == false) {
+			expressionError(nodes.get(0));
+			return null;
+		}
+
+		Value current = null;
+
+		for (Node n : nodes) {
+			if (n instanceof Value == false) {
+				expressionError(n);
+				return null;
+			}
+			Value value = ((Value) n).getReturnedNode();
+
+			if (current == null) {
+				current = value;
+			} else {
+				current = SyntaxUtils.getTypeInCommon(current, value);
+			}
+		}
+
+		setType(current);
+
+		return current;
+	}
+
+	@Override
+	public void onStackPopped(Node popped) {
+		if (getParent() instanceof Assignment) {
+			Assignment assignment = (Assignment) getParent();
+
+			Value common = getTypeInCommon();
+
+			Variable variable = assignment.getAssignedNode();
+			VariableDeclaration declaration = variable.getDeclaration();
+
+			if (declaration instanceof LocalDeclaration) {
+				LocalDeclaration localDeclaration = (LocalDeclaration) declaration;
+
+				if (localDeclaration.isImplicit()) {
+					localDeclaration.setImplicitType(common);
+					localDeclaration.setType(common);
+				}
+			}
+		} else if (getParent().getParent() instanceof Return) {
+			Value common = getTypeInCommon();
+
+			if (common != null && !SyntaxUtils.validateCompatibleTypes(getParentMethod(), common)) {
+				SyntaxMessage.error("Match return type of '" + common.getFlatType() + "' is not compatible with function return type", this);
+			}
+		}
+
+		super.onStackPopped(popped);
+	}
+
+	@Override
+	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+		builder.append("match ");
+
+		return getControlValue().generateFlatInput(builder);
+	}
+
 	/**
 	 * @see Node#clone(Node, Location, boolean)
 	 */
