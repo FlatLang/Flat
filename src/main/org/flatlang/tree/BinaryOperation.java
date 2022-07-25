@@ -128,7 +128,14 @@ public class BinaryOperation extends IValue
 	
 	public static BinaryOperation generateNullCheck(Node parent, Value value, Value root)
 	{
-		Variable local = parent.getNearestScopeAncestor().getScope().createLocalVariable(root);
+		Node scopeNode = parent.getNearestScopeAncestor();
+
+		if ((scopeNode instanceof ControlStatement || scopeNode instanceof WhileLoop))// && scopeNode.isDecoding())
+		{
+			scopeNode = scopeNode.getParent().getAncestorWithScope();
+		}
+
+		Variable local = scopeNode.getScope().createLocalVariable(root);
 		local.detach();
 		local.declaration.setProperty("userMade", false);
 		
