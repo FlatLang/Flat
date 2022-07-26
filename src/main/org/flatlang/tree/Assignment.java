@@ -427,6 +427,14 @@ public class Assignment extends Value
 	@Override
 	public void onAdded(Node parent)
 	{
+		if (wasDeclaration) {
+			if (
+				parent instanceof Scope == false && !(parent instanceof ArgumentList && parent.parent instanceof ForLoop) ||
+					getAssignmentNode() instanceof ControlStatement
+			) {
+				getAssignedNode().getDeclaration().setProperty("requiresPrecedingDeclaration", true);
+			}
+		}
 		if (getAssignedNodeValue() instanceof Variable && getAssignedNode().getDeclaration() instanceof ArrayAccessorMethod)
 		{
 			Variable assigned = getAssignedNode();
@@ -845,11 +853,13 @@ public class Assignment extends Value
 		
 		Node original = scopeNode;
 		
-		if ((scopeNode instanceof ControlStatement || scopeNode instanceof WhileLoop) && scopeNode.isDecoding())
-		{
+		if ((scopeNode instanceof ControlStatement || scopeNode instanceof WhileLoop) && scopeNode.isDecoding()) {
 			scopeNode = scopeNode.getParent().getAncestorWithScope();
+			var.setProperty("requiresPrecedingDeclaration", true);
 		}
-		
+
+		var.setProperty("fromAssignment", true);
+
 		scopeNode.getScope().addChild(var);
 		
 		Location newLoc = new Location(getLocationIn());

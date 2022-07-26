@@ -258,7 +258,8 @@ public class ForEachLoop extends Loop
 		}
 		
 		assignment.setProperty("userMade", false);
-		
+		assignment.wasDeclaration = true;
+
 		getScope().addChild(getScope().getNumDecodedChildren(), assignment);
 		
 		return true;
@@ -278,6 +279,7 @@ public class ForEachLoop extends Loop
 		
 		assignment.getAssignedNode().declaration.setProperty("userMade", false);
 		assignment.setProperty("userMade", false);
+		assignment.wasDeclaration = true;
 		
 		getParent().getAncestorWithScope().getScope().addChild(assignment);
 		
