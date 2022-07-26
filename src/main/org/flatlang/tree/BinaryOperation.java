@@ -138,9 +138,11 @@ public class BinaryOperation extends IValue
 		Variable local = scopeNode.getScope().createLocalVariable(root);
 		local.detach();
 		local.declaration.setProperty("userMade", false);
-		
+		local.declaration.setProperty("fromAssignment", true);
+		local.declaration.setProperty("requiresPrecedingDeclaration", true);
+
 		BinaryOperation nullCheck = BinaryOperation.generateDefault(parent, value.getLocationIn());
-		
+
 		Assignment assignment = Assignment.generateDefault(parent, value.getLocationIn());
 		assignment.getAssigneeNodes().addChild(local);
 		assignment.addChild(root);

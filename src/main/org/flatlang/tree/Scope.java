@@ -388,7 +388,9 @@ public class Scope extends Node
 		//var.getDeclaration().validateType();
 		
 		addBefore.getParent().addChildBefore(addBefore, assign);
-		
+		assigneeDecl.setProperty("requiresPrecedingDeclaration", true);
+		localDecl.setProperty("requiresPrecedingDeclaration", true);
+
 		return (Variable)var.clone(this, getLocationIn());
 	}
 	

@@ -224,7 +224,8 @@ public class ForLoop extends Loop
 		{
 			return false;
 		}
-		
+
+		initialization.wasDeclaration = true;
 		initialization.onAfterDecoded();
 		getArgumentList().addChild(initialization);
 		
