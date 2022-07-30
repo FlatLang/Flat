@@ -1,5 +1,0 @@
-package "flatlang/exception"
-
-class Backtraces {
-
-}
