@@ -9,7 +9,7 @@ class Promise<T> extends Future<T> {
 
     public construct() {
         external js {
-            #{promise} = new Promise((resolve, reject) => {
+            #{promise} = Promise((resolve, reject) => {
                 #{resolveCb} = resolve;
                 #{rejectCb} = reject;
             });

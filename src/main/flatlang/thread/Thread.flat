@@ -54,7 +54,7 @@ class Thread {
         lib_nova_thread_sleep(millis)
 
         external js {
-            await new Promise(resolve => {
+            await Promise(resolve => {
                 setTimeout(() => {
                     resolve();
                 }, #{millis});

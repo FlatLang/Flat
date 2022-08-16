@@ -3,7 +3,7 @@ package "flatlang/thread"
 import "flatlang/datastruct/HashMap"
 
 class ThreadLocal<T> {
-    HashMap<Long, T> map = new HashMap()
+    HashMap<Long, T> map = HashMap()
 
     public construct(T value = null) => set(value)
 
