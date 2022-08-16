@@ -78,7 +78,7 @@ public class IntRange extends Instantiation
 				endValueString = "(Int)" + endValueString;
 			}
 			
-			Instantiation inst = Instantiation.decodeStatement(parent, "new IntRange(" + startValueString + ", " + endValueString + ")", location, false);
+			Instantiation inst = Instantiation.decodeStatement(parent, "IntRange(" + startValueString + ", " + endValueString + ")", location, false);
 			
 			if (inst == null)
 			{

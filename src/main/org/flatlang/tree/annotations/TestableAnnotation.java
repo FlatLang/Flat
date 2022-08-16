@@ -130,7 +130,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 			String name = method.getScope().getUniqueName("_" + method.getName() + "TestRunner");
 			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateFlatInput() : "";
 			
-			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestRunnerModel", name, "new TestRunnerModel(" + getTestCaseInitializer() + description + ")");
+			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestRunnerModel", name, "TestRunnerModel(" + getTestCaseInitializer() + description + ")");
 			
 			runner = fields.a;
 		}
@@ -147,7 +147,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		
 		if (initializerValues.length() == 2)
 		{
-			initializerValues = "new TestCase[0]";
+			initializerValues = "Array<TestCase>()";
 		}
 		
 		return initializerValues;

@@ -1336,42 +1336,6 @@ public class SyntaxUtils
 	}
 	
 	/**
-	 * Get whether or not the given statement is a valid instantiation method call.<br>
-	 * <br>
-	 * For example:
-	 * <blockquote><pre>
-	 * new ListNode&lt;E&gt;()
-	 * new Object()</pre></blockquote>
-	 * The "ListNode&lt;E&gt;()" is a valid instantiation method call, as
-	 * well as "Object()".
-	 * 
-	 * @param statement The statement to test.
-	 * @return Whether or not the given statement is a valid instantiation call.
-	 */
-	public static boolean isInstantiationCall(String statement)
-	{
-		if (statement.length() > 0 && !StringUtils.isSymbol(statement.charAt(0)))
-		{
-			Bounds bounds = SyntaxUtils.findParenthesesBounds(null, statement);
-
-			statement = bounds.trimString(statement);
-			bounds = StringUtils.findNextWordBounds(statement);
-			
-			if (bounds.extractString(statement).equals("new"))
-			{
-				statement = bounds.trimString(statement);
-				bounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, true);
-				statement = bounds.trimString(statement);
-				statement = statement.trim();
-				
-				return SyntaxUtils.isValidIdentifier(statement);
-			}
-		}
-
-		return false;
-	}
-	
-	/**
 	 * Get whether or not the given statement is an array
 	 * initialization.<br>
 	 * <br>
@@ -1949,7 +1913,7 @@ public class SyntaxUtils
 		{
 			String className     = type;
 			String defaultValue  = SyntaxUtils.getPrimitiveDefaultValue(className);
-			String instantiation = "new " + className + '(' + defaultValue + ')';
+			String instantiation = className + '(' + defaultValue + ')';
 
 			primitive.getFileDeclaration().addImport(returned.getTypeClassLocation());
 			
@@ -2031,7 +1995,7 @@ public class SyntaxUtils
 		{
 			String className = primitive.getType();
 			
-			String instantiation = "new " + className + '(' + ((Accessible)primitive).getRootAccessNode().generateFlatInputUntil((Accessible)primitive) + ')';
+			String instantiation = className + '(' + ((Accessible)primitive).getRootAccessNode().generateFlatInputUntil((Accessible)primitive) + ')';
 			
 			node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
 		}

@@ -55,7 +55,7 @@ public class RegexLiteral extends Instantiation
 				
 				String escapedString = n.originalValue.replaceAll("[\\\\]", "\\\\\\\\");
 				
-				Instantiation inst = Instantiation.decodeStatement(parent, "new Pattern(\"" + escapedString + "\")", location, false);
+				Instantiation inst = Instantiation.decodeStatement(parent, "Pattern(\"" + escapedString + "\")", location, false);
 				
 				if (inst == null)
 				{

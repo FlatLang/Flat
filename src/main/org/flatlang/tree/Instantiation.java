@@ -7,6 +7,8 @@ import org.flatlang.tree.variables.Array;
 import org.flatlang.tree.variables.VariableDeclaration;
 import org.flatlang.util.*;
 
+import java.util.Arrays;
+
 /**
  * Value extension that represents the declaration of an
  * instantiation node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -18,8 +20,6 @@ import org.flatlang.util.*;
  */
 public class Instantiation extends IIdentifier implements GenericCompatible
 {
-	public static final String IDENTIFIER = "new";
-	
 	/**
 	 * @see Node#Node(Node, Location)
 	 */
@@ -234,37 +234,19 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	{
 		Instantiation n = new Instantiation(parent, location);
 
-		ExtraData data = n.iterateWords(statement, Patterns.IDENTIFIER_BOUNDARIES, null, require);
+		String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
 
-		if (data.words.stream().noneMatch(w -> w.equals(IDENTIFIER)))
-		{
-			return null;
+		if (modifierData != null) {
+			statement = modifierData[0][0];
 		}
 
-		int i = 0;
-
-		for (String word : data.words) {
-			if (word.equals(IDENTIFIER)) {
-				break;
-			}
-
-			i++;
-
-			if (!n.parseModifier(word)) {
+		if (modifierData != null) {
+			if (!Arrays.stream(modifierData[1]).allMatch(n::parseModifier)) {
 				return null;
 			}
 		}
-
-		if (data.bounds.size() < i + 2) {
-			return null;
-		}
-
-		Location newLoc = location.asNew();
-		newLoc.addBounds(data.bounds.get(i + 1).getStart(), statement.length());
-
-		String instantiation = statement.substring(data.bounds.get(i + 1).getStart());
 		
-		return n.decodeInstantiation(instantiation, newLoc, require, validateAccess, reference);
+		return n.decodeInstantiation(statement, location, require, validateAccess, reference);
 	}
 	
 	/**
@@ -316,7 +298,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 //			
 //			instantiation = clazz.getName() + instantiation.substring(className.length());
 //			
-			MethodCall methodCall = MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference);
+			MethodCall methodCall = MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference, true);
 			
 			if (methodCall == null)
 			{
@@ -389,7 +371,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
 	{
-		return builder.append("new ").append(getIdentifier().generateFlatInput(outputChildren));
+		return builder.append(getIdentifier().generateFlatInput(outputChildren));
 	}
 	
 //	/**

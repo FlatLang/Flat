@@ -52,7 +52,7 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 	{
 		FieldDeclaration.InitializationContext context = field.getInitializationContext();
 		
-		Instantiation replacement = Instantiation.decodeStatement(context.parents[0], "new " + field.generateFlatType(field) + "(" + arg.getDefaultLiteralValue() + ")", Location.INVALID, true, false);
+		Instantiation replacement = Instantiation.decodeStatement(context.parents[0], field.generateFlatType(field) + "(" + arg.getDefaultLiteralValue() + ")", Location.INVALID, true, false);
 		
 		if (field.initializationValue != null)
 		{

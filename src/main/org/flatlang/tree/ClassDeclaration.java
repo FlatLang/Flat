@@ -3592,7 +3592,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			method.setDataType(Value.POINTER);
 			
-			call = Instantiation.decodeStatement(method, "new " + instance.getName() + genericParams + arguments, instance.getLocationIn(), true, false, (Constructor)instance);
+			call = Instantiation.decodeStatement(method, instance.getName() + genericParams + arguments, instance.getLocationIn(), true, false, (Constructor)instance);
 			node = call;
 		}
 		else

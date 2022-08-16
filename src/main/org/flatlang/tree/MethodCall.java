@@ -388,6 +388,17 @@ public class MethodCall extends Variable
 	{
 		return searchMethodDeclaration(getName());
 	}
+
+	private MethodDeclaration getConstructor(String name) {
+		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(name) != null)
+		{
+			setName(getFileDeclaration().getImportedClass(getDeclaringClass(), name).getName());
+
+			return getDeclaringClass().getMethod(getContext(), name, getArgumentList());
+		}
+
+		return null;
+	}
 	
 	private VariableDeclaration searchMethodDeclaration(String name)
 	{
@@ -397,13 +408,11 @@ public class MethodCall extends Variable
 		{
 			return closure;
 		}
-		
-		// If constructor
-		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(name) != null)
-		{
-			setName(getFileDeclaration().getImportedClass(getDeclaringClass(), name).getName());
-			
-			return getDeclaringClass().getMethod(getContext(), name, getArgumentList());
+
+		MethodDeclaration constructor = getConstructor(name);
+
+		if (constructor != null) {
+			return constructor;
 		}
 		if (getParent() instanceof Super)
 		{
@@ -946,7 +955,11 @@ public class MethodCall extends Variable
 	 * @return The generated node, if it was possible to translated it
 	 * 		into a MethodCall.
 	 */
-	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod callableMethod)
+	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod callableMethod) {
+		return decodeStatement(parent, statement, location, require, validateAccess, callableMethod, false);
+	}
+
+	public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod callableMethod, boolean requireConstructor)
 	{
 		SyntaxUtils.StatementLiteralNameData[] statementLiteralNameData = SyntaxUtils.getStatementLiteralNameData(statement);
 
@@ -997,6 +1010,10 @@ public class MethodCall extends Variable
 			{
 				return null;
 			}
+
+			if (requireConstructor && n.getFileDeclaration().getImportList().getAbsoluteClassLocation(data.name) == null) {
+				return null;
+			}
 			
 			VariableDeclaration temp = null;
 			
@@ -1020,7 +1037,11 @@ public class MethodCall extends Variable
 			
 			if (callableMethod == null)
 			{
-				callableMethod = (CallableMethod)n.searchMethodDeclaration(data.name);
+				if (requireConstructor) {
+					callableMethod = n.getConstructor(data.name);
+				} else {
+					callableMethod = (CallableMethod) n.searchMethodDeclaration(data.name);
+				}
 			}
 			
 			n.setDeclaration((VariableDeclaration)callableMethod);
