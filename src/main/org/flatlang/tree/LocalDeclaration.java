@@ -187,7 +187,7 @@ public class LocalDeclaration extends VariableDeclaration
 			
 			n.checkExternal();
 			
-			if (!checkName || n.validateDeclaration())
+			if (!checkName || n.validateDeclaration(require))
 			{
 				for (int i = 0; i < n.getNumGenericTypeArguments(); i++)
 				{
@@ -226,7 +226,7 @@ public class LocalDeclaration extends VariableDeclaration
 	 * 
 	 * @return Whether or not the specified declaration is valid.
 	 */
-	public boolean validateDeclaration()
+	public boolean validateDeclaration(boolean require)
 	{
 		if ((!containsImplicitCompatibleAnnotation() && getType() == null) || getName() == null)
 		{
@@ -239,7 +239,8 @@ public class LocalDeclaration extends VariableDeclaration
 		if (node instanceof LocalDeclaration)
 		{
 			SyntaxTree.findDeclaration(getParent(), getName());
-			SyntaxMessage.error("Local variable '" + getName() + "' has already been declared", this);
+			SyntaxMessage.queryError("Local variable '" + getName() + "' has already been declared", this, require);
+			return false;
 		}
 		
 		return true;
