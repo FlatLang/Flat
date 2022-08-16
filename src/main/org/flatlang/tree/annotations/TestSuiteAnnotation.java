@@ -167,10 +167,10 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			String initializer = "[" + getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream()
 				.map(x -> (TestSuiteAnnotation)x)
-				.map(x -> "new TestSuite(" + x.suiteInitializer + ")")
+				.map(x -> "TestSuite(" + x.suiteInitializer + ")")
 				.collect(Collectors.joining(", ")) + "]";
 			
-			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestSuiteRunnerModel", name, "new TestSuiteRunnerModel(" + initializer + ")");
+			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestSuiteRunnerModel", name, "TestSuiteRunnerModel(" + initializer + ")");
 			
 			return fields.a;
 		}
@@ -197,7 +197,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		
 		if (initializerValues.length() == 2)
 		{
-			initializerValues = "new TestRunner[0]";
+			initializerValues = "TestRunner[0]";
 		}
 		
 		return initializerValues;
@@ -243,7 +243,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 		
 		for (String className : classNames)
 		{
-			Assignment call = Assignment.decodeStatement(runMethod, "let test" + className + " = new " + className + "()", getLocationIn(), true);
+			Assignment call = Assignment.decodeStatement(runMethod, "let test" + className + " = " + className + "()", getLocationIn(), true);
 			
 			runMethod.addChild(call);
 			call.onAfterDecoded();

@@ -234,23 +234,6 @@ public class Patterns
 	public static final Pattern POST_IMPORT				= Pattern.compile("(?<=import\\s{0,9})(\\S+)");
 
 	/**
-	 * Pattern that searches for the word "new" followed by whitespace
-	 * and and then not whitespace<br>
-	 * <br>
-	 * For example, both of the following are correct:
-	 * "new   	Test" and "new Test"
-	 */
-	public static final Pattern PRE_INSTANTIATION		= Pattern.compile("new\\s+\\S");
-
-	/**
-	 * Pattern that searches for the data after an instantiation.<br>
-	 * <br>
-	 * For example: "new Test(these, are, arguments)" would return
-	 * "Test(these, are, arguments)"
-	 */
-	public static final Pattern POST_INSTANTIATION		= Pattern.compile("(?<=new\\s{1,9})([\\S\\s]+)");
-
-	/**
 	 * Pattern that searches for the data before a method call.<br>
 	 * <br>
 	 * For example:<br>
@@ -401,7 +384,7 @@ public class Patterns
 	 * <br>
 	 * For example:<br>
 	 * <blockquote><pre>throw new ExceptionName()</pre></blockquote>
-	 * returns "new ExceptionName()"
+	 * returns "ExceptionName()"
 	 */
 	public static final Pattern POST_THROW				= Pattern.compile("(?<=throw\\s{1,9})((\\S+\\s*)+)");
 

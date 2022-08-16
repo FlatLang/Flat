@@ -84,7 +84,7 @@ interface RunnableTests
 		
 		if (initializerValues.length() == 2)
 		{
-			initializerValues = "new TestRunner[0]";
+			initializerValues = "TestRunner[0]";
 		}
 		
 		Assignment a = Assignment.decodeStatement(parent, "this.testRunners = " + initializerValues, Location.INVALID, true);
@@ -175,7 +175,7 @@ interface RunnableTests
 		
 		String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer", true);
 		
-		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = new Timer().start()", Location.INVALID, true);
+		Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = Timer().start()", Location.INVALID, true);
 		
 		parent.addChild(a);
 		a.onAfterDecoded();
@@ -203,7 +203,7 @@ interface RunnableTests
 		
 		String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult", true);
 		String failureMessage = success ? "" : ", e.message";
-		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = new TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", " + test.generateTestCase().getName() + failureMessage + ")", Location.INVALID, true);
+		Assignment a = Assignment.decodeStatement(parent, "let " + name + " = TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", " + test.generateTestCase().getName() + failureMessage + ")", Location.INVALID, true);
 		
 		parent.addChild(a);
 		a.onAfterDecoded();

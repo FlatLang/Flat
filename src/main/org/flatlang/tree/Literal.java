@@ -135,7 +135,7 @@ public class Literal extends IValue implements Accessible
 	{
 		if (false && !isWithinExternalContext() && isStringInstantiation())
 		{
-			builder.append("new String(").append(value).append(')');
+			builder.append("String(").append(value).append(')');
 		}
 		else
 		{
@@ -353,7 +353,7 @@ public class Literal extends IValue implements Accessible
 	
 	public Instantiation getStringInstantiation()
 	{
-		return Instantiation.decodeStatement(this.getParent(), "new String(" + this.value + ")", this.getLocationIn(), true);
+		return Instantiation.decodeStatement(this.getParent(), "String(" + this.value + ")", this.getLocationIn(), true);
 	}
 	
 	private static String insertExpression(String str, int index, int offset, int end, int lastEnd, int endOffset, StringBuilder builder)

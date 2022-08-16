@@ -168,7 +168,7 @@ public class BinaryOperation extends IValue
 	 */
 	private static boolean validateStatement(Node node, String statement)
 	{
-		if (SyntaxUtils.isLiteral(node, statement) || SyntaxUtils.isInstantiationCall(statement))
+		if (SyntaxUtils.isLiteral(node, statement))
 		{
 			return false;
 		}

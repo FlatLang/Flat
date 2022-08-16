@@ -297,9 +297,9 @@ public class SyntaxTree
 						c.classInstanceDeclaration.setStatic(true);
 						String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
 						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false)).map(i -> i.getName() + ".class").collect(Collectors.joining(", "));
-						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "new Array()";
+						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
 						String isInterfaceValue = c instanceof Trait ? "true" : "false";
-						c.classInstanceDeclaration.setShorthandAccessor("new Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ")");
+						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ")");
 						c.getFieldList().addChild(c.classInstanceDeclaration);
 					});
 				}
@@ -899,16 +899,11 @@ public class SyntaxTree
 		
 		if (index > 0 && endsWithArrayAccess(statement, index))
 		{
-			Node n = Instantiation.decodeStatement(parent, statement, location, require);
-			
+			Node n = Assignment.decodeStatement(parent, statement, location, require);
+				
 			if (n == null)
 			{
-				n = Assignment.decodeStatement(parent, statement, location, require);
-				
-				if (n == null)
-				{
-					n = BinaryOperation.decodeStatement(parent, statement, location, require);
-				}
+				n = BinaryOperation.decodeStatement(parent, statement, location, require);
 			}
 			
 			if (n != null)
@@ -941,6 +936,19 @@ public class SyntaxTree
 		
 		boolean safeNavigation = false;
 		String accessString = null;
+
+		if (statement.startsWith("new")) {
+			int start = StringUtils.findNextNonWhitespaceIndex(statement, 3);
+
+			if (start > 3) {
+				String array = statement.substring(start);
+				Node node = Array.decodeStatement(parent, array, location, require);
+
+				if (node != null) {
+					return node;
+				}
+			}
+		}
 		
 		Object o = getArrayAccessOrNode(parent, statement, location, require);
 		

@@ -281,7 +281,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			return "";
 		}
 		
-		String call = "new " + getArrayType(dimension) + "(" + args + ")";
+		String call = getArrayType(dimension) + "(" + args + ")";
 		
 		String prefix = dimension > 0 ? ".map({ " : "";
 		String postfix = dimension > 0 ? " })" : "";
@@ -482,7 +482,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				constructor = func.getType();
 			}
 			
-			Return r = Return.decodeStatement(func, "return new " + constructor + "(" + name + ", " + initValues.getNumVisibleChildren() + ")", getLocationIn(), true);
+			Return r = Return.decodeStatement(func, "return " + constructor + "(" + name + ", " + initValues.getNumVisibleChildren() + ")", getLocationIn(), true);
 			
 			func.addChild(r);
 			

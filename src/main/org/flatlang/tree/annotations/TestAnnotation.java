@@ -119,7 +119,7 @@ public class TestAnnotation extends Annotation implements ModifierAnnotation, Ru
 			String name = method.getScope().getUniqueName("_" + method.getName() + "TestCase");
 			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateFlatInput() : "";
 			
-			testCase = addFieldInitialization("TestCase", name, "new TestCase(\"" + testName + "\"" + description + ")");
+			testCase = addFieldInitialization("TestCase", name, "TestCase(\"" + testName + "\"" + description + ")");
 			testCase.validate(getProgram().getPhase());
 		}
 		
