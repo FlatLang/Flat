@@ -426,7 +426,7 @@ public class ForEachLoop extends Loop
 		
 		LocalDeclaration variable = LocalDeclaration.decodeStatement(this, declaration, location, require);
 		
-		if (variable == null || !variable.validateDeclaration())
+		if (variable == null || !variable.validateDeclaration(require))
 		{
 			return false;
 		}
