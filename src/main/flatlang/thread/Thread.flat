@@ -1,4 +1,4 @@
-package "flatlang/thread"
+package flatlang/thread
 
 class Thread {
     external type NOVA_THREAD_HANDLE

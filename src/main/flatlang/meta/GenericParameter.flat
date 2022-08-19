@@ -1,4 +1,4 @@
-package "flatlang/meta"
+package flatlang/meta
 
 [AutoFinal]
 class GenericParameter {

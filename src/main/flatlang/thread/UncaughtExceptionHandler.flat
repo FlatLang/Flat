@@ -1,4 +1,4 @@
-package "flatlang/thread"
+package flatlang/thread
 
 class UncaughtExceptionHandler {
     public construct() {}
