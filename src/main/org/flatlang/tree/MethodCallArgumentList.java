@@ -194,7 +194,7 @@ public class MethodCallArgumentList extends ArgumentList
 					
 					types.add(value);
 				}
-				else if (getLastArgumentNameIndex() == getNumVisibleChildren() - 1)
+				else if (getLastArgumentNameIndex() == getNumVisibleChildren() - 1 && param.isOptional())
 				{
 					types.add(new DefaultArgument(this, Location.INVALID));
 					
