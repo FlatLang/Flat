@@ -104,13 +104,13 @@ public class Package extends Node
 			if (StringUtils.isSurroundedByQuotes(statement))
 			{
 				statement  = StringUtils.removeSurroundingQuotes(statement);
-				
-				n.location = statement;
-				
-				if (n.validatePackageExists(require))
-				{
-					return n;
-				}
+			}
+
+			n.location = statement;
+
+			if (n.validatePackageExists(require))
+			{
+				return n;
 			}
 		}
 		

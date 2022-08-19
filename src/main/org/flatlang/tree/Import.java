@@ -144,21 +144,33 @@ public class Import extends Node
 				
 				statement = statement.substring("static".length()).trim();
 			}
+
+			boolean quotes = statement.charAt(0) == '"';
+			String importLocation;
+			String alias;
 			
-			if (statement.charAt(0) != '"')
+			if (quotes)
 			{
-				return null;
+				int quoteEnd = StringUtils.findEndingChar(statement, '"', 0, 1);
+
+				if (quoteEnd < 0)
+				{
+					SyntaxMessage.error("Missing ending quotation for import statement", n);
+					return null;
+				}
+
+				importLocation = statement.substring(1, quoteEnd);
+				alias = statement.substring(quoteEnd + 1).trim();
+			} else {
+				int whitespaceOrEnd = StringUtils.findNextWhitespaceIndex(statement, 0);
+
+				if (whitespaceOrEnd == -1) {
+					whitespaceOrEnd = statement.length();
+				}
+
+				importLocation = statement.substring(0, whitespaceOrEnd);
+				alias = statement.substring(whitespaceOrEnd).trim();
 			}
-			
-			int quoteEnd = StringUtils.findEndingChar(statement, '"', 0, 1);
-			
-			if (quoteEnd < 0)
-			{
-				SyntaxMessage.error("Missing ending quotation for import statement", n);
-			}
-			
-			String importLocation = statement.substring(1, quoteEnd);
-			String alias          = statement.substring(quoteEnd + 1).trim();
 			
 			if (n.validateImportLocation(importLocation) && n.validateAlias(alias, require))
 			{
