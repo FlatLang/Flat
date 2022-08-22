@@ -781,6 +781,9 @@ public class FileDeclaration extends Node
 		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/System"))) {
 			addImport("flatlang/system/System");
 		}
+		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/Nest") || l.endsWith("/Nest/src"))) {
+			addStaticImport("novex/nest/Nest");
+		}
 
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
