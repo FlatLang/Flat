@@ -761,13 +761,6 @@ public class FileDeclaration extends Node
 	 */
 	private void addDefaultImports()
 	{
-		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/IO"))) {
-			addImport("flatlang/io/Console");
-		}
-		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/System"))) {
-			addImport("flatlang/system/System");
-		}
-
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
 			if (importLoc.length() > 0)
@@ -775,6 +768,8 @@ public class FileDeclaration extends Node
 				addImport(importLoc).markUsed();
 			}
 		}
+
+		getProgram().getController().defaultImports.forEach(this::addImport);
 	}
 	
 	public static FileDeclaration generateTemporaryFile(Node parent, Location locationIn)

@@ -57,6 +57,7 @@ public class Flat
 	
 	
 	public HashSet<String> includeDirectories;
+	public HashSet<String> defaultImports;
 	public ArrayList<File>		inputFiles;//, includeDirectories;
 	public Stack<Long> flagsStack;
 
@@ -285,6 +286,7 @@ public class Flat
 //		cSourceFiles       = new ArrayList<>();
 //		cHeaderFiles       = new ArrayList<>();
 		includeDirectories = new HashSet<>();
+		defaultImports = new HashSet<>();
 		outputDirectories  = new HashMap<>();
 
 		testClasses = false;//BENCHMARK <= 0;
@@ -943,6 +945,14 @@ public class Flat
 				
 				includeDirectories.add(FileUtils.formatPath(args[i + 1]));
 				
+				skip = 1;
+			}
+			else if (arg.equals("-default-import"))
+			{
+				validateArgumentSize(args, i + 1, arg);
+
+				defaultImports.add(args[i + 1]);
+
 				skip = 1;
 			}
 			else if (arg.equals("-install-dir"))
