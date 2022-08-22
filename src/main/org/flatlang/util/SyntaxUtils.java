@@ -2696,12 +2696,12 @@ public class SyntaxUtils
 	}
 
 	public static LiteralNameData getFirstLiteralNameData(String statement, int startIndex) {
-		int startTick = statement.indexOf('`', startIndex);
+		int startTick = SyntaxUtils.findCharInBaseScope(statement, '`', startIndex);
 		String literalName;
 		String validName;
 
 		if (startTick >= 0) {
-			int endTick = statement.indexOf('`', startTick + 1);
+			int endTick = SyntaxUtils.findCharInBaseScope(statement, '`', startTick + 1);
 
 			if (endTick > startTick) {
 				literalName = statement.substring(startTick + 1, endTick);
