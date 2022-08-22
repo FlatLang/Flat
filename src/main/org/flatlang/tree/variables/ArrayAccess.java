@@ -110,7 +110,11 @@ public class ArrayAccess extends Node implements ArrayCompatible
 					
 					if (!clazz.getArrayBracketOverload().alreadyDecoded())
 					{
-						reference.getTypeClass().getArrayBracketOverload().decodeArrowBinding();
+						ArrayBracketOverload overload = reference.getTypeClass().getArrayBracketOverload();
+
+						if (overload != null) {
+							overload.decodeArrowBinding();
+						}
 					}
 					
 					MethodCall call = MethodCall.decodeStatement(reference, "get(" + data + ")", location, require, false, clazz.getArrayAccessorMethod());
