@@ -365,6 +365,9 @@ public class Literal extends IValue implements Accessible
 
 			statement = statement.substring(0, index) + '"';
 		}
+		if (statement.startsWith("\"|")) {
+			statement = statement.replaceAll("^\"\\|[ \\t\\r]*\\n" + tabCount, "\"");
+		}
 
 		return statement.replaceAll("[\\n\\r]" + tabCount, "\\\\n");
 	}
