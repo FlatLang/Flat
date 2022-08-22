@@ -1441,14 +1441,24 @@ public class ClassDeclaration extends InstanceDeclaration
 			if (valid)
 			{
 				Value[] values = arguments.getArgumentsInOrder(flatMethod);
-				
-				for (int i = 0; i < values.length; i++)
-				{
-					if (!SyntaxUtils.isTypeCompatible(null, flatMethod.getParameter(i), values[i].getReturnedNode()))
-					{
-						valid = false;
-						
-						break;
+
+				if (values.length > flatMethod.getParameterList().getNumParameters()) {
+					valid = false;
+				} else {
+					int count = Math.max(values.length, flatMethod.getParameterList().getNumParameters());
+
+					for (int i = 0; i < count; i++) {
+						if (i >= values.length) {
+							if (!flatMethod.getParameterList().getParameter(i).isOptional()) {
+								valid = false;
+
+								break;
+							}
+						} else if (!SyntaxUtils.isTypeCompatible(null, flatMethod.getParameter(i), values[i].getReturnedNode())) {
+							valid = false;
+
+							break;
+						}
 					}
 				}
 			}
