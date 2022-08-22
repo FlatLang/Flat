@@ -6,6 +6,7 @@ import org.flatlang.error.SyntaxMessage;
 import org.flatlang.tree.annotations.KeepWhitespaceAnnotation;
 import org.flatlang.util.Location;
 import org.flatlang.util.Patterns;
+import org.flatlang.util.StringUtils;
 import org.flatlang.util.SyntaxUtils;
 
 import java.util.regex.Matcher;
@@ -408,9 +409,18 @@ public class Literal extends IValue implements Accessible
 		int lastOffset = 0;
 		
 		StringBuilder builder = new StringBuilder();
-		
+
+		outer:
 		while (index >= 0 && end >= 0)
 		{
+			while (StringUtils.isCharacterEscaped(str, index)) {
+				index = str.indexOf("#", index + 1);
+
+				if (index == -1) {
+					break outer;
+				}
+			}
+
 			if (index + 1 < str.length())
 			{
 				int offset = 0;
