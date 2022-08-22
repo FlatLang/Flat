@@ -148,7 +148,7 @@ public class ElseStatement extends ControlStatement
 	public void onStackPopped(Node popped) {
 		IfStatement start = getIfElseChainStart();
 
-		if (start.getParent() instanceof Assignment) {
+		if (start != null && start.getParent() instanceof Assignment) {
 			Assignment assignment = (Assignment) start.getParent();
 			VariableDeclaration declaration = assignment.getAssignedNode().getDeclaration();
 
