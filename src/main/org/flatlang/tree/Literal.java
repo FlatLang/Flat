@@ -327,6 +327,7 @@ public class Literal extends IValue implements Accessible
 				
 				if (literalType.equals("String"))
 				{
+					statement = formatMultilineString(statement);
 					String expression = formatStringExpressions(statement);
 					
 					if (!expression.equals(statement))
@@ -348,7 +349,22 @@ public class Literal extends IValue implements Accessible
 	
 	public static String formatMultilineString(String statement)
 	{
-		return statement.replaceAll("[\\n\\r][ \\t]*", "\\\\n");
+		if (!statement.contains("\n")) {
+			return statement;
+		}
+
+		String tabCount = "*";
+
+		if (statement.charAt(statement.length() - 2) == '|') {
+			int index = statement.lastIndexOf('\n', statement.length() - 3);
+			int count = statement.length() - 3 - index;
+
+			tabCount = "{0," + count + "}";
+
+			statement = statement.substring(0, index) + '"';
+		}
+
+		return statement.replaceAll("[\\n\\r][ \\t]" + tabCount, "\\\\n");
 	}
 	
 	public Instantiation getStringInstantiation()
@@ -453,11 +469,7 @@ public class Literal extends IValue implements Accessible
 		{
 			KeepWhitespaceAnnotation annotation = (KeepWhitespaceAnnotation)getAnnotationOfType(KeepWhitespaceAnnotation.class, true);
 			
-			if (annotation == null)
-			{
-				value = formatMultilineString(value);
-			}
-			else
+			if (annotation != null)
 			{
 				if (annotation.indent != null)
 				{
