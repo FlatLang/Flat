@@ -348,7 +348,7 @@ public class Literal extends IValue implements Accessible
 	
 	public static String formatMultilineString(String statement)
 	{
-		return statement.replaceAll("\\n\\s*", "");
+		return statement.replaceAll("[\\n\\r][ \\t]*", "\\\\n");
 	}
 	
 	public Instantiation getStringInstantiation()
