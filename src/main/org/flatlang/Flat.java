@@ -58,6 +58,7 @@ public class Flat
 	
 	public HashSet<String> includeDirectories;
 	public HashSet<String> defaultImports;
+	public HashSet<String> defaultStaticImports;
 	public ArrayList<File>		inputFiles;//, includeDirectories;
 	public Stack<Long> flagsStack;
 
@@ -287,6 +288,7 @@ public class Flat
 //		cHeaderFiles       = new ArrayList<>();
 		includeDirectories = new HashSet<>();
 		defaultImports = new HashSet<>();
+		defaultStaticImports = new HashSet<>();
 		outputDirectories  = new HashMap<>();
 
 		testClasses = false;//BENCHMARK <= 0;
@@ -952,6 +954,14 @@ public class Flat
 				validateArgumentSize(args, i + 1, arg);
 
 				defaultImports.add(args[i + 1]);
+
+				skip = 1;
+			}
+			else if (arg.equals("-default-static-import"))
+			{
+				validateArgumentSize(args, i + 1, arg);
+
+				defaultStaticImports.add(args[i + 1]);
 
 				skip = 1;
 			}

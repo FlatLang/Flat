@@ -184,14 +184,28 @@ public class FileDeclaration extends Node
 	 * @param loc The location to add an import from.
 	 * @return The generated Import node.
 	 */
-	public Import addImport(String loc)
+	public Import addImport(String loc) {
+		return addImport(loc, false);
+	}
+
+	/**
+	 * Add a static Import node from the given location.
+	 *
+	 * @param loc The location to add an import from.
+	 * @return The generated Import node.
+	 */
+	public Import addStaticImport(String loc) {
+		return addImport(loc, true);
+	}
+
+	public Import addImport(String loc, boolean staticImport)
 	{
 		if (loc == null || containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc) && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc))
 		{
 			return null;
 		}
 		
-		Import importNode = Import.decodeStatement(this, "import \"" + loc + "\"", getLocationIn(), true);
+		Import importNode = Import.decodeStatement(this, "import " + (staticImport ? "static " : "") + "\"" + loc + "\"", getLocationIn(), true);
 		
 		addChild(importNode);
 		
@@ -777,6 +791,7 @@ public class FileDeclaration extends Node
 		}
 
 		getProgram().getController().defaultImports.forEach(this::addImport);
+		getProgram().getController().defaultStaticImports.forEach(this::addStaticImport);
 	}
 	
 	public static FileDeclaration generateTemporaryFile(Node parent, Location locationIn)
