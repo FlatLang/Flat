@@ -328,6 +328,8 @@ public class Literal extends IValue implements Accessible
 				if (literalType.equals("String"))
 				{
 					statement = formatMultilineString(statement);
+					n.setValue(statement);
+
 					String expression = formatStringExpressions(statement);
 					
 					if (!expression.equals(statement))
@@ -353,18 +355,18 @@ public class Literal extends IValue implements Accessible
 			return statement;
 		}
 
-		String tabCount = "*";
+		String tabCount = "";
 
 		if (statement.charAt(statement.length() - 2) == '|') {
 			int index = statement.lastIndexOf('\n', statement.length() - 3);
 			int count = statement.length() - 3 - index;
 
-			tabCount = "{0," + count + "}";
+			tabCount = "[ \\t]{0," + count + "}";
 
 			statement = statement.substring(0, index) + '"';
 		}
 
-		return statement.replaceAll("[\\n\\r][ \\t]" + tabCount, "\\\\n");
+		return statement.replaceAll("[\\n\\r]" + tabCount, "\\\\n");
 	}
 	
 	public Instantiation getStringInstantiation()
