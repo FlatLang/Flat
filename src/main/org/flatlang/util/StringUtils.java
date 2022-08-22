@@ -921,14 +921,24 @@ public class StringUtils
 		
 		return findEndingChar(value, '"', start, direction, condition);
 	}
+
+	public static boolean isCharacterEscaped(CharSequence value, int start) {
+		if (start <= 0) {
+			return false;
+		}
+		if (value.charAt(start - 1) != '\\') {
+			return false;
+		}
+
+		return !isCharacterEscaped(value, start - 1);
+	}
 	
 	public static int defaultCharacterCheck(CharSequence value, char c, int start, int direction)
 	{
 		start += direction;
 		
-		if (start > 0 && value.charAt(start - 1) == '\\' && value.charAt(start - 2) != '\\')
-		{
-			return start + direction;
+		while (isCharacterEscaped(value, start)) {
+			start = start + direction;
 		}
 		
 		return start;
