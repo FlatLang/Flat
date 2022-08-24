@@ -8,6 +8,14 @@ Flat Programming Language
 
 [![Test Airship](https://github.com/FlatLang/Airship/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Airship/actions/workflows/build.yml)
 
+[![Test Flat Core](https://github.com/FlatLang/Flat-Core/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Flat-Core/actions/workflows/test.yml)
+
+[![Test IO](https://github.com/FlatLang/IO/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/IO/actions/workflows/test.yml)
+
+[![Test Nest](https://github.com/FlatLang/Nest/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Nest/actions/workflows/test.yml)
+
+[![Test FuCli](https://github.com/FlatLang/FuCli/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/FuCli/actions/workflows/test.yml)
+
 Flat is a light-weight general purpose programming language that cross-compiles to multiple different programming languages.
 
 __Aim__
