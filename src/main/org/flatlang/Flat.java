@@ -1183,12 +1183,14 @@ public class Flat
 			System.exit(1);
 		}
 	}
-	
-	private void addFilesFromDirectory(ArrayList<File> files, File directory)
-	{
-		if (!directory.getName().equalsIgnoreCase(".flatlib"))
-		{
-			stream(directory.listFiles()).filter(x -> x.getName().toLowerCase().endsWith(".flat"))
+
+	private void addFilesFromDirectory(ArrayList<File> files, File directory) {
+		if (!directory.getName().equalsIgnoreCase(".flatlib")) {
+			File[] directoryFiles = directory.listFiles();
+
+			if (directoryFiles != null) {
+				stream(directoryFiles)
+					.filter(x -> x.getName().toLowerCase().endsWith(".flat"))
 					.filter(x -> files.stream().noneMatch(f -> {
 						try {
 							return f.getCanonicalPath().equals(x.getCanonicalPath());
@@ -1196,10 +1198,12 @@ public class Flat
 							throw new RuntimeException(e);
 						}
 					}))
-					.forEach(x -> files.add(x));
-			stream(directory.listFiles())
-					.filter(x -> x.isDirectory())
+					.forEach(files::add);
+
+				stream(directoryFiles)
+					.filter(File::isDirectory)
 					.forEach(x -> addFilesFromDirectory(files, x));
+			}
 		}
 	}
 	
