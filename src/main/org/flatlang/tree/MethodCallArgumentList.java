@@ -2,6 +2,7 @@ package org.flatlang.tree;
 
 import org.flatlang.TestContext;
 import org.flatlang.ValidationResult;
+import org.flatlang.error.SyntaxMessage;
 import org.flatlang.tree.lambda.LambdaMethodDeclaration;
 import org.flatlang.util.Location;
 import org.flatlang.util.SyntaxUtils;
@@ -250,7 +251,7 @@ public class MethodCallArgumentList extends ArgumentList
 			{
 				Value param;
 				Value arg = args[i];
-				
+
 				if (getArgumentName(i) != null)
 				{
 					param = declaration.getParameterList().getParameter(getArgumentName(i));
@@ -258,6 +259,12 @@ public class MethodCallArgumentList extends ArgumentList
 				else
 				{
 					param = declaration.getParameterList().getParameter(i);
+				}
+
+				if (param == null) {
+					SyntaxMessage.error("Invalid argument", arg);
+					result.errorOccurred = true;
+					break;
 				}
 				
 				Value inferredType = inferred.getParameterList().getParameter(i);
