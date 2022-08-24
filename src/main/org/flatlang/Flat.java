@@ -15,8 +15,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Arrays.stream;
 
@@ -183,6 +181,12 @@ public class Flat
 		);
 	}
 
+	private static <T> T[] concatArrays(T[] array1, T[] array2) {
+		T[] result = Arrays.copyOf(array1, array1.length + array2.length);
+		System.arraycopy(array2, 0, result, array1.length, array2.length);
+		return result;
+	}
+
 	/**
 	 * Method called whenever the compiler is invoked. Supplies the
 	 * needed information for compiling the given files.
@@ -221,7 +225,8 @@ public class Flat
 				}
 
 				String argsString = response.stdout[response.stdout.length - 1].trim();
-				args = StringUtils.splitWhitespace(argsString);
+				String[] extraArgs = Arrays.copyOfRange(args, 3, args.length);
+				args = concatArrays(StringUtils.splitWhitespace(argsString), extraArgs);
 				args = Arrays.copyOfRange(args, 3, args.length);
 				args = Arrays.stream(args).map(StringUtils::removeSurroundingQuotes).toArray(String[]::new);
 			} catch (IOException | InterruptedException e) {
