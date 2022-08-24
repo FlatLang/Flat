@@ -225,7 +225,7 @@ public class Flat
 				}
 
 				String argsString = response.stdout[response.stdout.length - 1].trim();
-				String[] extraArgs = Arrays.copyOfRange(args, 3, args.length);
+				String[] extraArgs = Arrays.copyOfRange(args, Math.min(args.length, 3), args.length);
 				args = concatArrays(StringUtils.splitWhitespace(argsString), extraArgs);
 				args = Arrays.copyOfRange(args, 3, args.length);
 				args = Arrays.stream(args).map(StringUtils::removeSurroundingQuotes).toArray(String[]::new);
