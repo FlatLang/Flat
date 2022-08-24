@@ -737,7 +737,8 @@ public class FileDeclaration extends Node
 					.collect(Collectors.toList());
 
 			if (dupes.size() > 0) {
-				SyntaxMessage.error("Duplicate class declaration for class '" + c.getClassLocation() + "'", child);
+				String classes = dupes.stream().map(ClassDeclaration::getClassLocation).collect(Collectors.joining(", "));
+				SyntaxMessage.error("Duplicate class declaration for class '" + c.getClassLocation() + "' (" + classes + ")", child);
 			}
 
 			super.addChild(child);
