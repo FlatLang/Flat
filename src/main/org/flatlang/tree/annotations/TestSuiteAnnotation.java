@@ -191,7 +191,16 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 				return c;
 			})
 			.filter(Objects::nonNull)
-			.map(x -> (TestableAnnotation)x.getAnnotationOfType(TestableAnnotation.class))
+			.map(x -> {
+				TestableAnnotation annotation = (TestableAnnotation)x.getAnnotationOfType(TestableAnnotation.class);
+
+				if (annotation == null) {
+					SyntaxMessage.error("Class " + x + " does not have a valid 'testable' annotation", getController());
+				}
+
+				return annotation;
+			})
+			.filter(Objects::nonNull)
 			.map(x -> x.getParentClass().getName() + "." + x.generateTestRunner().getName())
 			.collect(Collectors.joining(", ")) + "]";
 		
@@ -267,7 +276,12 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
 			
 			TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
-			
+
+			if (testable == null) {
+				SyntaxMessage.error("Class " + c + " does not have a valid 'testable' annotation", getController());
+				continue;
+			}
+
 			FlatMethodDeclaration method = testable.getRunTestsMethod();
 			
 			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
