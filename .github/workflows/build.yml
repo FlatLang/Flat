@@ -167,6 +167,12 @@ jobs:
           repository: FlatLang/Logger
           path: Logger
 
+      - name: Checkout CoLorIzer library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/CoLorIzer
+          path: CoLorIzer
+
       - name: Checkout Regex library
         uses: actions/checkout@master
         with:
@@ -195,6 +201,7 @@ jobs:
             -l ../Svg \
             -l ../Json \
             -l ../Logger \
+            -l ../CoLorIzer \
             -l ../IO \
             -l ../Time \
             -l ../Math \
@@ -236,6 +243,7 @@ jobs:
             -l ./Nest \
             -l ./Json \
             -l ./Logger \
+            -l ./CoLorIzer \
             -l ./Compiler-String-Extensions \
             -l ./IO \
             -l ./Time \
