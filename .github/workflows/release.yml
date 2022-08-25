@@ -2,7 +2,7 @@ name: Prepare Flat Release
 
 on:
   release:
-    types: [published]
+    types: [published, edited]
 
 jobs:
   compress:
