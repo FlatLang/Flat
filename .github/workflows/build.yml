@@ -161,6 +161,12 @@ jobs:
           repository: FlatLang/Datastruct
           path: Datastruct
 
+      - name: Checkout Logger library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Logger
+          path: Logger
+
       - name: Checkout Regex library
         uses: actions/checkout@master
         with:
@@ -188,6 +194,7 @@ jobs:
             -l ../Redis \
             -l ../Svg \
             -l ../Json \
+            -l ../Logger \
             -l ../IO \
             -l ../Time \
             -l ../Math \
@@ -228,6 +235,7 @@ jobs:
             -l ./Regex \
             -l ./Nest \
             -l ./Json \
+            -l ./Logger \
             -l ./Compiler-String-Extensions \
             -l ./IO \
             -l ./Time \
