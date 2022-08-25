@@ -52,7 +52,12 @@ public class Fallthrough extends Node implements MatchChild
 		
 		return null;
 	}
-	
+
+	@Override
+	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+		return builder.append("fallthrough");
+	}
+
 	@Override
 	public void onAdded(Node parent)
 	{
