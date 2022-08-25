@@ -240,11 +240,14 @@ public class Flat
 //		{
 //			args = Arrays.copyOfRange(args, 1, args.length);
 //		}
-		
-		flat.compile(args, true);
-		
-		flat.compileEngine.compile();
-		
+
+		try {
+			flat.compile(args, true);
+			flat.compileEngine.compile();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
 		flat.outputMessages(false);
 	}
 	
