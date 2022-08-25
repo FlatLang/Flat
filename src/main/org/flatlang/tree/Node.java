@@ -1781,7 +1781,7 @@ public abstract class Node implements Listenable, Annotatable
 	
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
-		throw new UnimplementedOperationException("The Flat input implementation for this feature has not been implemented yet.");
+		throw new UnimplementedOperationException("The Flat input implementation for " + getClass().getName() + " has not been implemented yet.");
 	}
 	
 	public Node followedByScope(boolean scope)
