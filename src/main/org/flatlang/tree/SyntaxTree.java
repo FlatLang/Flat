@@ -295,6 +295,7 @@ public class SyntaxTree
 					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
 						c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
 						c.classInstanceDeclaration.setStatic(true);
+						c.classInstanceDeclaration.setLazy(true);
 						String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
 						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false)).map(i -> i.getName() + ".class").collect(Collectors.joining(", "));
 						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
