@@ -29,7 +29,7 @@ import java.util.ArrayList;
  */
 public class VariableDeclaration extends IIdentifier
 {
-	private boolean            volatileVal, external, reference;
+	private boolean            volatileVal, external, reference, lazy;
 	public ArrayList<ClosureVariableDeclaration> closureVariableDeclarations = new ArrayList<>();
 	
 	public  String[]           extraDeclarations;
@@ -643,6 +643,7 @@ public class VariableDeclaration extends IIdentifier
 		node.external     = external;
 		node.volatileVal  = volatileVal;
 		node.reference    = reference;
+		node.lazy         = lazy;
 		
 		node.extraDeclarations = new String[extraDeclarations.length];
 		
@@ -667,7 +668,15 @@ public class VariableDeclaration extends IIdentifier
 		
 		return null;
 	}
-	
+
+	public boolean getLazy() {
+		return lazy;
+	}
+
+	public void setLazy(boolean lazy) {
+		this.lazy = lazy;
+	}
+
 	/**
 	 * Implementation of the ExtraData for this class.
 	 * 
