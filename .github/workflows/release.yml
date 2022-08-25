@@ -1,0 +1,79 @@
+name: Prepare Flat Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  compress:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compression:
+          - algorithm: xz
+            extension: xz
+            replace_extension: false
+            compression_level: 9
+            content_type: application/octet-stream
+          - algorithm: 7z
+            extension: 7z
+            replace_extension: true
+            compression_level: 9
+            content_type: application/octet-stream
+          - algorithm: bzip2
+            extension: bz2
+            replace_extension: false
+            compression_level: 9
+            content_type: application/octet-stream
+          - algorithm: gzip
+            extension: gz
+            replace_extension: false
+            compression_level: 9
+            content_type: application/x-gzip
+          - algorithm: zip
+            extension: zip
+            replace_extension: true
+            compression_level: 9
+            content_type: application/x-zip-compressed
+
+    steps:
+      - name: Download flatc.jar ${{ github.event.release.tag_name }}
+        uses: FlatLang/fetch-release-asset@master
+        with:
+          repo: FlatLang/Flat
+          file: flatc.jar
+          version: ${{ github.event.release.id }}
+
+      - name: Install 7zip
+        run: |
+          sudo apt install p7zip-full p7zip-rar
+
+      - name: Compress flatc.jar
+        run: |
+          7z \
+            a \
+            -mx=${{ matrix.compression.compression_level }} \
+            -t${{ matrix.compression.algorithm }} \
+            ${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }} \
+            flatc.jar
+
+      - name: Delete ${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }} Asset
+        uses: mknejp/delete-release-assets@v1
+        with:
+          fail-if-no-assets: false
+          token: ${{ github.token }}
+          tag: ${{ github.event.release.tag_name }}
+          repository: FlatLang/Flat
+          assets: ${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }}
+
+      - name: Upload ${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }} Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }}
+          asset_name: ${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }}
+          asset_content_type: ${{ matrix.compression.content_type }}
