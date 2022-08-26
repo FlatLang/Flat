@@ -1223,12 +1223,14 @@ public class Flat
 	}
 
 	public static List<File> getFiles(final Path directory, final String glob) throws IOException {
-		final PathMatcher maskMatcher = FileSystems.getDefault()
-				.getPathMatcher("glob:" + glob);
+		final PathMatcher matcher = FileSystems.getDefault()
+			.getPathMatcher("glob:" + glob);
 
 		try (Stream<Path> paths = Files.walk(directory)) {
-				return paths.map(path -> new File(path.toUri()))
-					.collect(Collectors.toList());
+			return paths
+				.filter(matcher::matches)
+				.map(path -> new File(path.toUri()))
+				.collect(Collectors.toList());
 		}
 	}
 	
