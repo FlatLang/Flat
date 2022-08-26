@@ -61,7 +61,7 @@ public class Flat
 	public HashSet<String> includeDirectories;
 	public HashSet<String> defaultImports;
 	public HashSet<String> defaultStaticImports;
-	public ArrayList<File>		inputFiles;//, includeDirectories;
+	public ArrayList<File>		inputFiles, excludeFiles;//, includeDirectories;
 	public Stack<Long> flagsStack;
 
 	public HashMap<File, ArrayList<File>> libraryFiles;
@@ -292,6 +292,7 @@ public class Flat
 		}
 
 		inputFiles         = new ArrayList<>();
+		excludeFiles         = new ArrayList<>();
 		libraryFiles       = new HashMap<>();
 		externalImports    = new ArrayList<>();
 		externalIncludes   = new ArrayList<>();
@@ -593,6 +594,8 @@ public class Flat
 		args = appendArguments(args, postArgs);
 
 		parseArguments(args);
+
+		inputFiles.removeAll(excludeFiles);
 	}
 
 	/**
@@ -1092,14 +1095,25 @@ public class Flat
 				validateArgumentSize(args, i + 1, arg);
 				
 				libraries.add(args[i + 1]);
-				
-				File file = new File(args[i + 1]).getAbsoluteFile();
-				
-				ArrayList<File> list = new ArrayList<>();
-				list.add(file);
 
-				libraryFiles.put(file, list);
-				
+				try {
+					inputFiles.addAll(getFiles(args[i + 1]));
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+
+				skip = 1;
+			}
+			else if (arg.equals("-x"))
+			{
+				validateArgumentSize(args, i + 1, arg);
+
+				try {
+					excludeFiles.addAll(getFiles(args[i + 1]));
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+
 				skip = 1;
 			}
 			// Specify a custom output directory.
@@ -1137,15 +1151,13 @@ public class Flat
 				{
 					if (args[i].startsWith("glob:")) {
 						try {
-							String[] directories = splitParentDirectory(args[i].substring("glob:".length()), true);
-							inputFiles.addAll(getFiles(Paths.get(directories[0]), directories[1]));
+							inputFiles.addAll(getFiles(args[i].substring("glob:".length())));
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
 					} else {
 						try {
-							String[] directories = splitParentDirectory(args[i] + "/**/*.flat", true);
-							inputFiles.addAll(getFiles(Paths.get(directories[0]), directories[1]));
+							inputFiles.addAll(getFiles(args[i]));
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
@@ -1171,13 +1183,15 @@ public class Flat
 			
 			System.exit(1);
 		}
-		
-		validateFiles(inputFiles);
-		
-		for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
-		{
-			validateFiles(entry.getValue());
+	}
+
+	private List<File> getFiles(String location) throws IOException {
+		if (!location.contains("*")) {
+			location = location + "/**/*.flat";
 		}
+
+		String[] directories = splitParentDirectory(location, true);
+		return getFiles(Paths.get(directories[0]), directories[1]);
 	}
 
 	public static String[] splitParentDirectory(String path, boolean checkGlob) {
@@ -1259,90 +1273,6 @@ public class Flat
 			System.err.println(message == null ? "Invalid arguments passed" : message);
 			
 			System.exit(1);
-		}
-	}
-
-	private void addFilesFromDirectory(ArrayList<File> files, File directory) {
-		if (!directory.getName().equalsIgnoreCase(".flatlib")) {
-			File[] directoryFiles = directory.listFiles();
-
-			if (directoryFiles != null) {
-				stream(directoryFiles)
-					.filter(x -> x.getName().toLowerCase().endsWith(".flat"))
-					.filter(x -> files.stream().noneMatch(f -> {
-						try {
-							return f.getCanonicalPath().equals(x.getCanonicalPath());
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}))
-					.forEach(files::add);
-
-				stream(directoryFiles)
-					.filter(File::isDirectory)
-					.forEach(x -> addFilesFromDirectory(files, x));
-			}
-		}
-	}
-	
-	/**
-	 * Validate that the input files end with .fat. If any of them
-	 * do not, an error will be output. Also outputs an error if the
-	 * input file does not exist or is a directory.
-	 */
-	private void validateFiles(ArrayList<File> files)
-	{
-		boolean working = true;
-		
-		for (int i = 0; i < files.size(); i++)
-		{
-			File f = files.get(i);
-			
-			if (!f.isFile())
-			{
-				if (f.isDirectory())
-				{
-					addFilesFromDirectory(files, f);
-					
-					includeDirectories.add(f.getParentFile().getAbsolutePath());
-				}
-				else
-				{
-					working = false;
-					
-					error("Input file '" + f.getAbsolutePath() + "' is not a file.");
-				}
-			}
-			else if (!f.getName().toLowerCase().endsWith(".flat"))
-			{
-				working = false;
-				
-				error("Input file '" + f.getName() + "' must have an extension of .flat");
-			}
-			else if (!f.exists())
-			{
-				working = false;
-				
-				error("Input file '" + f.getAbsolutePath() + "' does not exist.");
-			}
-		}
-		
-		for (int i = files.size() - 1; i >= 0; i--)
-		{
-			if (files.get(i).isDirectory())
-			{
-				files.remove(i);
-			}
-		}
-		
-		if (!working)
-		{
-			startTimer();
-			stopTimer();
-			
-			outputMessages( true);
-			
-			completed(false);
 		}
 	}
 
