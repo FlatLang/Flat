@@ -1559,7 +1559,12 @@ public class SyntaxTree
 							
 							if (method != null && node == null)
 							{
-								node = method.getParameterList().getReferenceParameter().getTypeClass().getField(statement);
+								ReferenceParameter referenceParam = method.getParameterList().getReferenceParameter();
+								ClassDeclaration typeClazz = referenceParam.getTypeClass();
+
+								if (typeClazz != null && typeClazz instanceof ExtensionDeclaration == false) {
+									node = typeClazz.getField(statement);
+								}
 							}
 						}
 					}
