@@ -1960,6 +1960,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			extension += "." + getFileDeclaration().getExternalExtension();
 		}
+
+		if (p.isDefaultPackage()) {
+			return name + extension;
+		}
 		
 		return p.getLocation() + "/" + name + extension;
 	}
