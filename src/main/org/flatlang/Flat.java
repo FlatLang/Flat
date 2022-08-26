@@ -14,7 +14,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.*;
+import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.stream;
 
@@ -1131,10 +1135,22 @@ public class Flat
 				// (If it is one of the sources to compile)
 				if (lastInput == i - 1)
 				{
-					File file = new File(args[i]).getAbsoluteFile();
+					if (args[i].startsWith("glob:")) {
+						try {
+							String[] directories = splitParentDirectory(args[i].substring("glob:".length()), true);
+							inputFiles.addAll(getFiles(Paths.get(directories[0]), directories[1]));
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					} else {
+						try {
+							String[] directories = splitParentDirectory(args[i] + "/**/*.flat", true);
+							inputFiles.addAll(getFiles(Paths.get(directories[0]), directories[1]));
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
 
-					inputFiles.add(file);
-					
 					lastInput = i;
 				}
 				else if (i == args.length - 1)
@@ -1161,6 +1177,43 @@ public class Flat
 		for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
 		{
 			validateFiles(entry.getValue());
+		}
+	}
+
+	public static String[] splitParentDirectory(String path, boolean checkGlob) {
+		if (new File(path).isDirectory()) {
+			return new String[] { path, "" };
+		}
+		if (new File(path).isAbsolute()) {
+			return new String[] { path, "" };
+		}
+
+		String suffix = "";
+		String home = System.getProperty("user.dir");
+
+		if (checkGlob) {
+			int index = path.indexOf("*");
+
+			if (index > 0) {
+				int slash = path.lastIndexOf('/', index - 1);
+
+				if (slash > 0) {
+					suffix = path.substring(slash + 1);
+					path = path.substring(0, slash);
+				}
+			}
+		}
+
+		return new String[] { Paths.get(home, path).normalize().toString(), suffix };
+	}
+
+	public static List<File> getFiles(final Path directory, final String glob) throws IOException {
+		final PathMatcher maskMatcher = FileSystems.getDefault()
+				.getPathMatcher("glob:" + glob);
+
+		try (Stream<Path> paths = Files.walk(directory)) {
+				return paths.map(path -> new File(path.toUri()))
+					.collect(Collectors.toList());
 		}
 	}
 	
