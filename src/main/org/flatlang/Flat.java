@@ -1185,7 +1185,22 @@ public class Flat
 			return new String[] { path, "" };
 		}
 		if (new File(path).isAbsolute()) {
-			return new String[] { path, "" };
+			String suffix = "";
+
+			if (checkGlob) {
+				int index = path.indexOf("*");
+
+				if (index > 0) {
+					int slash = path.lastIndexOf('/', index - 1);
+
+					if (slash > 0) {
+						suffix = path.substring(slash + 1);
+						path = path.substring(0, slash);
+					}
+				}
+			}
+
+			return new String[] { path, suffix };
 		}
 
 		String suffix = "";
