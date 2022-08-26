@@ -241,14 +241,19 @@ public class Flat
 //			args = Arrays.copyOfRange(args, 1, args.length);
 //		}
 
+		int returnCode = 0;
+
 		try {
 			flat.compile(args, true);
 			flat.compileEngine.compile();
 		} catch (Exception e) {
 			e.printStackTrace();
+			returnCode = 1;
 		}
 
 		flat.outputMessages(false);
+
+		System.exit(returnCode);
 	}
 	
 	public static void unsupportedOs()
