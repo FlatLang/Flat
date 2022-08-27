@@ -1239,7 +1239,13 @@ public class Flat
 	public static void addIfNotExists(ArrayList<File> list, List<File> toAdd) {
 		list.addAll(
 			toAdd.stream()
-				.filter(file -> !list.contains(file))
+				.filter(file -> list.stream().noneMatch(f -> {
+					try {
+						return f.getCanonicalPath().equals(file.getCanonicalPath());
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}))
 				.collect(Collectors.toList())
 		);
 	}
