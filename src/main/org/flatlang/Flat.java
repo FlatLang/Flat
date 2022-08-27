@@ -1097,7 +1097,7 @@ public class Flat
 				libraries.add(args[i + 1]);
 
 				try {
-					inputFiles.addAll(getFiles(args[i + 1]));
+					addIfNotExists(inputFiles, getFiles(args[i + 1]));
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -1109,7 +1109,7 @@ public class Flat
 				validateArgumentSize(args, i + 1, arg);
 
 				try {
-					excludeFiles.addAll(getFiles(args[i + 1]));
+					addIfNotExists(excludeFiles, getFiles(args[i + 1]));
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -1151,13 +1151,13 @@ public class Flat
 				{
 					if (args[i].startsWith("glob:")) {
 						try {
-							inputFiles.addAll(getFiles(args[i].substring("glob:".length())));
+							addIfNotExists(inputFiles, getFiles(args[i].substring("glob:".length())));
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
 					} else {
 						try {
-							inputFiles.addAll(getFiles(args[i]));
+							addIfNotExists(inputFiles, getFiles(args[i]));
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
@@ -1234,6 +1234,14 @@ public class Flat
 		}
 
 		return new String[] { Paths.get(home, path).normalize().toString(), suffix };
+	}
+
+	public static void addIfNotExists(ArrayList<File> list, List<File> toAdd) {
+		list.addAll(
+			toAdd.stream()
+				.filter(file -> !list.contains(file))
+				.collect(Collectors.toList())
+		);
 	}
 
 	public static List<File> getFiles(final Path directory, final String glob) throws IOException {
