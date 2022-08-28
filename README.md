@@ -15,6 +15,12 @@ Flat Programming Language
 [![Test Read Line](https://github.com/FlatLang/Read-Line/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Read-Line/actions/workflows/test.yml)
 [![Test Logger](https://github.com/FlatLang/Logger/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Logger/actions/workflows/test.yml)
 [![Test Json](https://github.com/FlatLang/Json/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Json/actions/workflows/test.yml)
+[![Test Git](https://github.com/FlatLang/Git/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Git/actions/workflows/test.yml)
+[![Test Datastruct](https://github.com/FlatLang/Datastruct/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Datastruct/actions/workflows/test.yml)
+[![Test Compiler String Extensions](https://github.com/FlatLang/Compiler-String-Extensions/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Compiler-String-Extensions/actions/workflows/test.yml)
+[![Test CoLorIzer](https://github.com/FlatLang/CoLorIzer/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/CoLorIzer/actions/workflows/test.yml)
+[![Test Http](https://github.com/FlatLang/Http/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Http/actions/workflows/test.yml)
+[![Test Math](https://github.com/FlatLang/Math/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Math/actions/workflows/test.yml)
 
 A multi-paradigm language built for versatility and rapid development.
 
