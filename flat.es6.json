@@ -1,8 +1,10 @@
 {
   "scripts": {},
-  "main": {
-    "dependencies": {
-      "github:FlatLang/Flat-ES6": "master"
+  "sources": {
+    "main": {
+      "dependencies": {
+        "github:FlatLang/Flat-ES6": "master"
+      }
     }
   }
 }
