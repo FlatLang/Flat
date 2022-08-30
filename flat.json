@@ -5,12 +5,14 @@
   "author": "Braden Steffaniak",
   "license": "ISC",
   "scripts": {},
-  "main": {
-    "source": "src/main",
-    "dependencies": {
-      "github:FlatLang/Regex": "master",
-      "github:FlatLang/Security": "master",
-      "github:FlatLang/Datastruct": "master"
+  "sources": {
+    "main": {
+      "source": "src/main",
+      "dependencies": {
+        "github:FlatLang/Regex": "master",
+        "github:FlatLang/Security": "master",
+        "github:FlatLang/Datastruct": "master"
+      }
     }
   }
 }
