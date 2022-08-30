@@ -10,7 +10,9 @@
       ["mvn", "install"]
     ]
   },
-  "main": {
-    "dependencies": {}
+  "sources": {
+    "main": {
+      "dependencies": {}
+    }
   }
 }
