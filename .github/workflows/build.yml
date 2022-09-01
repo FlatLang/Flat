@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ "master" ]
   schedule:
-    - cron: '0 4 * * *'
+    - cron: '0 5 * * *'
 
 env:
   LOGGING_DEFAULT_SHOW_PREFIX: true
