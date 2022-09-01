@@ -23,6 +23,9 @@ Flat Programming Language
 [![Test Math](https://github.com/FlatLang/Math/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Math/actions/workflows/test.yml)
 [![Test Network](https://github.com/FlatLang/Network/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Network/actions/workflows/test.yml)
 [![Test Redis](https://github.com/FlatLang/Redis/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Redis/actions/workflows/test.yml)
+[![Test Elevate](https://github.com/FlatLang/Elevate/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Elevate/actions/workflows/test.yml)
+[![Test Path](https://github.com/FlatLang/Path/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Path/actions/workflows/test.yml)
+[![Test RegEdit](https://github.com/FlatLang/RegEdit/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/RegEdit/actions/workflows/test.yml)
 
 A multi-paradigm language built for versatility and rapid development.
 
