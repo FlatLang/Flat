@@ -537,7 +537,15 @@ public class FileDeclaration extends Node
 			case SyntaxTree.PHASE_PRE_GENERATION: phaseLabel = "four"; break;
 		}
 
-		getController().log("Phase " + phaseLabel + " validation for '" + getPackage().getLocation() + "/" + getName() + "'");
+		String name = getPackage().getLocation() + "/" + getName();
+
+		if (isExternalFile()) {
+			name += '.' + getExternalExtension();
+		}
+
+		name += ".flat";
+
+		getController().log("Phase " + phaseLabel + " validation for '" + name + "'");
 
 		if (isExternalFile())
 		{
