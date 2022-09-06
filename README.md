@@ -26,6 +26,7 @@ Flat Programming Language
 [![Test Elevate](https://github.com/FlatLang/Elevate/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Elevate/actions/workflows/test.yml)
 [![Test Path](https://github.com/FlatLang/Path/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Path/actions/workflows/test.yml)
 [![Test RegEdit](https://github.com/FlatLang/RegEdit/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/RegEdit/actions/workflows/test.yml)
+[![Test Npm-Client](https://github.com/FlatLang/Npm-Client/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Npm-Client/actions/workflows/test.yml)
 
 A multi-paradigm language built for versatility and rapid development.
 
