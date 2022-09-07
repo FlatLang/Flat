@@ -2,6 +2,8 @@ Flat Programming Language
 ===========================
 [![Build Flat](https://github.com/FlatLang/Flat/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Flat/actions/workflows/build.yml)
 [![Stability Test](https://github.com/FlatLang/Stability-Test/actions/workflows/stability-test.yml/badge.svg)](https://github.com/FlatLang/Stability-Test/actions/workflows/stability-test.yml)
+[![Test JS Compilation Target](https://github.com/FlatLang/Flat-JS/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Flat-JS/actions/workflows/test.yml)
+[![Test ES6 Compilation Target](https://github.com/FlatLang/Flat-ES6/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Flat-ES6/actions/workflows/test.yml)
 [![Build Standard Library](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml)
 [![Test Airship](https://github.com/FlatLang/Airship/actions/workflows/build.yml/badge.svg)](https://github.com/FlatLang/Airship/actions/workflows/build.yml)
 [![Test Flat Core](https://github.com/FlatLang/Flat-Core/actions/workflows/test.yml/badge.svg)](https://github.com/FlatLang/Flat-Core/actions/workflows/test.yml)
