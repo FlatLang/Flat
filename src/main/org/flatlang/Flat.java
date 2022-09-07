@@ -203,8 +203,7 @@ public class Flat
 		if (args.length > 1 && args[0].equalsIgnoreCase("airship")) {
 			try {
 				String[] execArgs = new String[] {
-					"node",
-					System.getProperty("user.home") + "/.flat/packages/Airship/dist/airship.js",
+					System.getProperty("user.home") + "/.flat/bin/airship",
 					"install",
 					"--debug",
 					"-q"
@@ -212,8 +211,7 @@ public class Flat
 
 				if (args.length > 2 && args[2].equalsIgnoreCase("test")) {
 					execArgs = new String[] {
-						"node",
-						System.getProperty("user.home") + "/.flat/packages/Airship/dist/airship.js",
+						System.getProperty("user.home") + "/.flat/bin/airship",
 						"install",
 						"test",
 						"--debug",
