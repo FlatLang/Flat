@@ -5,7 +5,6 @@ import org.flatlang.ValidationResult;
 import org.flatlang.error.SyntaxMessage;
 import org.flatlang.tree.*;
 import org.flatlang.tree.annotations.*;
-import org.flatlang.tree.Identifier;
 import org.flatlang.tree.generics.GenericTypeArgument;
 import org.flatlang.tree.generics.GenericTypeArgumentList;
 import org.flatlang.tree.generics.GenericTypeParameterList;
@@ -13,8 +12,6 @@ import org.flatlang.util.Bounds;
 import org.flatlang.util.Location;
 import org.flatlang.util.StringUtils;
 import org.flatlang.util.SyntaxUtils;
-import org.flatlang.tree.Node;
-import org.flatlang.tree.Value;
 
 import java.util.ArrayList;
 
@@ -22,7 +19,7 @@ import java.util.ArrayList;
  * Identifier extension that represents something that returns a value.
  * For the rules on what can and cannot be an value node, refer to
  * {@link #setType(java.lang.String)}
- * 
+ *
  * @author	Braden Steffaniak
  * @since	v0.2.4 May 2, 2014 at 11:14:37 PM
  * @version	v0.2.43 Jan 16, 2015 at 11:59:17 AM
@@ -31,39 +28,39 @@ public class VariableDeclaration extends IIdentifier
 {
 	private boolean            volatileVal, external, reference, lazy;
 	public ArrayList<ClosureVariableDeclaration> closureVariableDeclarations = new ArrayList<>();
-	
+
 	public  String[]           extraDeclarations;
-	
+
 	public ArrayList<Variable> references = new ArrayList<>();
-	
+
 	/**
 	 * @see Node#Node(Node, Location)
 	 */
 	public VariableDeclaration(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
+
 		GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
 		addChild(implementation, this);
-		
+
 		extraDeclarations = new String[0];
 	}
-	
+
 	public boolean requiresHeapAllocation()
 	{
 		return closureVariableDeclarations.stream().anyMatch(x -> x.requiresHeapAllocation());
 	}
-	
+
 	public boolean isValueReference()
 	{
 		return reference;
 	}
-	
+
 	public void setIsValueReference(boolean reference)
 	{
 		this.reference = reference;
 	}
-	
+
 	public boolean isImmutable()
 	{
 		if (isPrimitive())
@@ -74,10 +71,10 @@ public class VariableDeclaration extends IIdentifier
 		{
 			return false;
 		}
-		
+
 		return getTypeClass() != null && getTypeClass().isImmutable() || getImmutableAnnotation() != null;
 	}
-	
+
 	public ImmutableAnnotation getImmutableAnnotation()
 	{
 		if (getAnnotations() != null)
@@ -87,7 +84,7 @@ public class VariableDeclaration extends IIdentifier
 				if (a instanceof ImmutableAnnotation)
 				{
 					ImmutableAnnotation i = (ImmutableAnnotation)a;
-					
+
 					if (i.parameters.size() == 0)
 					{
 						return i;
@@ -95,30 +92,30 @@ public class VariableDeclaration extends IIdentifier
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public boolean isFinal()
 	{
 		return getFinalAnnotation() != null;
 	}
-	
+
 	public FinalAnnotation getFinalAnnotation()
 	{
 		return (FinalAnnotation)getAnnotationOfType(FinalAnnotation.class, false, true);
 	}
-	
+
 	public boolean isVar()
 	{
 		return getVarAnnotation() != null;
 	}
-	
+
 	public VarAnnotation getVarAnnotation()
 	{
 		return (VarAnnotation)getAnnotationOfType(VarAnnotation.class, false, true);
 	}
-	
+
 	@Override
 	public void onReplaced(Node parent, Node replacement)
 	{
@@ -128,20 +125,20 @@ public class VariableDeclaration extends IIdentifier
 				x.declaration = (VariableDeclaration)replacement;
 			});
 		}
-		
+
 		super.onReplaced(parent, replacement);
 	}
-	
+
 	public boolean isLocal()
 	{
 		return true;
 	}
-	
+
 	public VariableDeclaration getOriginalDeclaration()
 	{
 		return this;
 	}
-	
+
 	/**
 	 * @see Node#getNumDefaultChildren()
 	 */
@@ -150,7 +147,7 @@ public class VariableDeclaration extends IIdentifier
 	{
 		return super.getNumDefaultChildren() + 1;
 	}
-	
+
 	/**
 	 * Get the Bounds that contains the extra field declarations.<br>
 	 * <br>
@@ -161,7 +158,7 @@ public class VariableDeclaration extends IIdentifier
 	 * the declaration is classified as an 'extra' declaration. The Bounds would start
 	 * before the comma after '<code><i>firstName</i></code>' and end after
 	 * '<code><i>lastName, middleI</i></code>' section.
-	 * 
+	 *
 	 * @param statement The statement to search for the extra declarations in.
 	 * @return The Bounds containing the extra declarations. If there are no
 	 * 		extra declarations, then Bounds.EMPTY is returned.
@@ -169,40 +166,40 @@ public class VariableDeclaration extends IIdentifier
 	public Bounds findExtraDeclarations(String statement)
 	{
 		String declarations[] = StringUtils.splitCommas(statement, 1);
-		
+
 		if (declarations.length > 1)
 		{
 			extraDeclarations = new String[declarations.length - 1];
-			
+
 			System.arraycopy(declarations, 1, extraDeclarations, 0, declarations.length - 1);
-			
+
 			return new Bounds(declarations[0].length(), statement.length());
 		}
-		
+
 		return Bounds.EMPTY;
 	}
-	
+
 	public boolean isTangible()
 	{
 		return isAccessible();
 	}
-	
+
 	public boolean isAccessible()
 	{
 		return true;
 	}
-	
+
 	public boolean isSettable()
 	{
 		return true;
 	}
-	
+
 	@Override
 	public ClassDeclaration getDeclaringClass()
 	{
 		return getParentClass();
 	}
-	
+
 	/**
 	 * @see Value#getGenericReturnType()
 	 */
@@ -211,7 +208,7 @@ public class VariableDeclaration extends IIdentifier
 	{
 		return getGenericTypeParameter().getDefaultType();
 	}
-	
+
 	/**
 	 * @see Identifier#isDeclaration()
 	 */
@@ -220,11 +217,11 @@ public class VariableDeclaration extends IIdentifier
 	{
 		return true;
 	}
-	
+
 	/**
 	 * Get whether or not the variable is external. For more information
 	 * on external variables, see {@link #setExternal(boolean)}.
-	 * 
+	 *
 	 * @return Whether or not the variable is external.
 	 */
 	public boolean isExternal()
@@ -232,13 +229,13 @@ public class VariableDeclaration extends IIdentifier
 		if (getParent() instanceof FieldDeclaration)
 		{
 			FieldDeclaration field = (FieldDeclaration)getParent();
-			
+
 			return field.isExternal();
 		}
-		
+
 		return external;
 	}
-	
+
 	/**
 	 * @see Node#isWithinExternalContext()
 	 */
@@ -247,7 +244,7 @@ public class VariableDeclaration extends IIdentifier
 	{
 		return isExternal() || super.isWithinExternalContext();
 	}
-	
+
 	/**
 	 * Set whether or not the variable is external. A variable is external
 	 * if it is referenced from a language outside of Flat. For example,
@@ -257,27 +254,27 @@ public class VariableDeclaration extends IIdentifier
 	 * For example:
 	 * <blockquote><pre>
 	 * import "externalFile.h";
-	 * 
+	 *
 	 * ...
-	 * 
+	 *
 	 * public static void main(String args[])
 	 * {
 	 *	// This is the external variable declaration.
 	 * 	externalFile.externalType varName;
-	 * 	
+	 *
 	 * 	// This is the external variable assignment.
 	 * 	varName = externalFile.variableInstance;
 	 * }</pre></blockquote>
 	 * In this example, 'externalFile' is the C header file that is
 	 * imported. 'variableInstance' is the name of a variable that
 	 * is contained within the imported header file.<br>
-	 * 
+	 *
 	 * @param external Whether or not the variable will be external.
 	 */
 	public void setExternal(boolean external)
 	{
 		this.external = external;
-		
+
 		setForceOriginalName(true);
 	}
 
@@ -285,29 +282,29 @@ public class VariableDeclaration extends IIdentifier
 	 * Get whether or not the variable's value is volatile. This is used
 	 * for exception handling to make sure local variables keep their
 	 * values after an exception has been thrown.
-	 * 
+	 *
 	 * @return Whether or not the variable's value is volatile.
 	 */
 	public boolean isVolatile()
 	{
 		return volatileVal;
 	}
-	
+
 	/**
 	 * Get the C equivalent of the 'constant' keyword.
-	 * 
+	 *
 	 * @return The C equivalent of the 'constant' keyword.
 	 */
 	public String getVolatileText()
 	{
 		return "volatile";
 	}
-	
+
 	/**
 	 * Set whether or not the variable's value is volatile. This is used
 	 * for exception handling to make sure local variables keep their
 	 * values after an exception has been thrown.
-	 * 
+	 *
 	 * @param volatileVal Whether or not the variable's value
 	 * 		is volatile.
 	 */
@@ -315,19 +312,19 @@ public class VariableDeclaration extends IIdentifier
 	{
 		this.volatileVal = volatileVal;
 	}
-	
+
 	/**
 	 * Set the name of the Variable.
-	 * 
+	 *
 	 * @see Identifier#setName(java.lang.String)
-	 * 
+	 *
 	 * @param name The String to set as the new name.
 	 */
 	public void setName(String name)
 	{
 		setName(name, false);
 	}
-	
+
 	/**
 	 * Set a specified attribute to true.<br>
 	 * <br>
@@ -336,14 +333,14 @@ public class VariableDeclaration extends IIdentifier
 	 * private static int index;</pre></blockquote>
 	 * <u><code>private</code></u> sets the visibility of the declaration
 	 * to private. <u><code>static</code></u> sets the variable as static.
-	 * 
+	 *
 	 * @param attribute The attribute to set true.
 	 */
 	public void setAttribute(String attribute)
 	{
 		setAttribute(attribute, -1);
 	}
-	
+
 	/**
 	 * Set a specified attribute to true.<br>
 	 * <br>
@@ -354,7 +351,7 @@ public class VariableDeclaration extends IIdentifier
 	 * sets the visibility of the declaration to private.
 	 * "<u><code>static</code></u>" is the second attribute (index: 1) that
 	 * sets the variable as static.
-	 * 
+	 *
 	 * @param attribute The attribute to set true.
 	 * @param argNum The index of the attribute in the order that it
 	 * 		came in.
@@ -364,33 +361,33 @@ public class VariableDeclaration extends IIdentifier
 	{
 		return parseModifier(attribute);
 	}
-	
+
 	public void swapNames(Variable other)
 	{
 		swapNames(other.getDeclaration());
 	}
-	
+
 	public void swapNames(VariableDeclaration other)
 	{
 		String  temp  = getName();
 		boolean force = doesForceOriginalName();
-		
+
 		setName(other.getName(), other.doesForceOriginalName());
 		other.setName(temp, force);
 	}
-	
+
 	@Override
 	public boolean onAfterDecoded()
 	{
 		convertArrays();
-		
+
 		return super.onAfterDecoded();
 	}
-	
+
 	/**
 	 * Compare the specified variable with the given one to see if they
 	 * come from the same declaration.
-	 * 
+	 *
 	 * @param other The variable to compare with.
 	 * @return Whether or not the variables come from the same
 	 * 		declaration.
@@ -398,10 +395,10 @@ public class VariableDeclaration extends IIdentifier
 	public boolean isSameVariable(Variable other)
 	{
 		VariableDeclaration second = other.getDeclaration();
-		
+
 		return this == second;
 	}
-	
+
 	/**
 	 * @see Node#generateFlatInput(StringBuilder, boolean)
 	 */
@@ -409,19 +406,19 @@ public class VariableDeclaration extends IIdentifier
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
 	{
 		generateFlatAnnotations(builder);
-		
+
 		if (isFunctionType())
 		{
 			return generateFlatType(builder, this);
 		}
-		
+
 		return generateFlatType(builder, this).append(' ').append(getName());
 	}
-	
+
 	/**
 	 * Check to see if the statement is declaring an array.
 	 * e.g. "<u><code>String names[]</code></u>"
-	 * 
+	 *
 	 * @param statement The statement possibly containing array brackets.
 	 * @param index The index to start the search for array brackets at.
 	 * @param rightDelimiter The right delimiter possibly containing
@@ -433,22 +430,22 @@ public class VariableDeclaration extends IIdentifier
 		if (rightDelimiter.length() > 0 && rightDelimiter.charAt(0) == '[')
 		{
 			int dimensions = SyntaxUtils.findArrayDimensions(statement, index, false);
-			
+
 			if (dimensions < 0)
 			{
 				return SyntaxMessage.queryError("Array brackets cannot contain data", this, require);
 			}
-			
+
 			setArrayDimensions(getArrayDimensions() + dimensions);
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Generate a usable Variable instance that refers to the specified
 	 * VariableDeclaration.
-	 * 
+	 *
 	 * @param parent The parent of the newly generated Variable.
 	 * @param location The location of the newly generated Variable.
 	 * @return The newly generated Variable.
@@ -456,14 +453,14 @@ public class VariableDeclaration extends IIdentifier
 	public Variable generateUsableVariable(Node parent, Location location)
 	{
 		Variable var = new Variable(parent, location);
-		
+
 		return generateUsableVariable(var);
 	}
-	
+
 	/**
 	 * Generate a usable Variable instance that refers to the specified
 	 * VariableDeclaration from the given Variable instance.
-	 * 
+	 *
 	 * @param toVar The Variable to set up as a reference to the
 	 * 		VariableDeclaration.
 	 * @return The correctly set up Variable.
@@ -471,28 +468,28 @@ public class VariableDeclaration extends IIdentifier
 	public Variable generateUsableVariable(Variable toVar)
 	{
 		toVar.setDeclaration(this);
-		
+
 		if (toVar.isAccessed())
 		{
 			GenericTypeArgumentList refArgs = toVar.getReferenceNode().toValue().getGenericTypeArgumentList();
 			GenericTypeArgumentList declarationArgs = getGenericTypeArgumentList();
 			GenericTypeArgumentList args = new GenericTypeArgumentList(toVar, toVar.getLocationIn());
 			declarationArgs.cloneChildrenTo(args);
-			
+
 			boolean changed = false;
-			
+
 			for (int i = 0; i < declarationArgs.getNumVisibleChildren(); i++)
 			{
 				GenericTypeArgument arg = toVar.getGenericTypeArgumentList().getVisibleChild(i);
-				
+
 				if (arg.isGenericType())
 				{
 //					int index = arg.getGenericTypeParameter().getIndex();
 //					
 //					args.getVisibleChild(i).setType(refArgs.getVisibleChild(index));
-					
+
 					GenericTypeArgument extracted = toVar.getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
-					
+
 					if (extracted != null)
 					{
 						if (extracted.isGenericType() && extracted.getGenericTypeParameter().getParentClass() != toVar.getParentClass())
@@ -503,21 +500,21 @@ public class VariableDeclaration extends IIdentifier
 						{
 							args.getVisibleChild(i).setType(extracted);
 						}
-						
+
 						changed = true;
 					}
 				}
 			}
-			
+
 			if (changed)
 			{
 				toVar.genericTypeArgumentList = args;
 			}
 		}
-		
+
 		return toVar;
 	}
-	
+
 	/**
 	 * @see Node#validate(int)
 	 */
@@ -525,7 +522,7 @@ public class VariableDeclaration extends IIdentifier
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
-		
+
 		if (result.skipValidation())
 		{
 			return result;
@@ -546,22 +543,22 @@ public class VariableDeclaration extends IIdentifier
 				return result.errorOccurred();
 			}
 		}
-		
+
 		addDefaultGenericTypeArguments();
-		
+
 		if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
 		{
 			convertToPrimitiveType();
 		}
-		
+
 		return result;
 	}
-	
+
 	public boolean isUsed()
 	{
 		return !isUserMade() || references.size() > 0;
 	}
-	
+
 	public void addDefaultGenericTypeArguments()
 	{
 		addDefaultGenericTypeArguments(false);
@@ -578,13 +575,13 @@ public class VariableDeclaration extends IIdentifier
 			{
 				args.slaughterEveryLastChild();
 			}
-			
+
 			for (int i = args.getNumVisibleChildren(); i < decl.getNumParameters(); i++)
 			{
 				String type = decl.getParameter(i).getDefaultType();
-				
+
 				args.addChild(SyntaxUtils.getGenericTypeArgumentName(this, type));
-				
+
 				getFileDeclaration().addImport(decl.getFileDeclaration().getImport(type, false).getClassLocation());
 			}
 		}
@@ -601,15 +598,15 @@ public class VariableDeclaration extends IIdentifier
 		{
 			setType(getType(), false, !isGenericType());
 			SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
-			
+
 			isGenericType();
-			
+
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * @see Node#clone(Node, Location, boolean)
 	 */
@@ -617,10 +614,10 @@ public class VariableDeclaration extends IIdentifier
 	public VariableDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		VariableDeclaration node = new VariableDeclaration(temporaryParent, locationIn);
-		
+
 		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
-	
+
 	/**
 	 * @see Node#cloneTo(Node)
 	 */
@@ -628,58 +625,62 @@ public class VariableDeclaration extends IIdentifier
 	{
 		return cloneTo(node, true, true);
 	}
-	
+
 	/**
 	 * Fill the given {@link VariableDeclaration} with the data that is in the
 	 * specified node.
-	 * 
+	 *
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
 	public VariableDeclaration cloneTo(VariableDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
-		
+
 		node.external     = external;
 		node.volatileVal  = volatileVal;
 		node.reference    = reference;
 		node.lazy         = lazy;
-		
+
 		node.extraDeclarations = new String[extraDeclarations.length];
-		
+
 		for (int i = 0; i < extraDeclarations.length; i++)
 		{
 			node.extraDeclarations[i] = extraDeclarations[i];
 		}
-		
+
 		return node;
 	}
-	
+
 	/**
 	 * Test the VariableDeclaration class type to make sure everything
 	 * is working properly.
-	 * 
+	 *
 	 * @return The error output, if there was an error. If the test was
 	 * 		successful, null is returned.
 	 */
 	public static String test(TestContext context)
 	{
-		
-		
+
+
 		return null;
 	}
 
 	public boolean getLazy() {
-		return lazy;
+		return containsAnnotationOfType(LazyAnnotation.class);
 	}
 
 	public void setLazy(boolean lazy) {
-		this.lazy = lazy;
+		if (lazy) {
+			addAnnotation(new LazyAnnotation(this, Location.INVALID));
+		} else if (getLazy()) {
+			removeAnnotationOfType(LazyAnnotation.class);
+		}
 	}
 
 	/**
 	 * Implementation of the ExtraData for this class.
-	 * 
+	 *
 	 * @author	Braden Steffaniak
 	 * @since	v0.2.29 Aug 28, 2014 at 6:56:45 PM
 	 * @version	v0.2.29 Aug 28, 2014 at 6:56:45 PM
@@ -687,17 +688,17 @@ public class VariableDeclaration extends IIdentifier
 	public static class DeclarationData extends ExtraData
 	{
 		private int	genericsRemaining;
-		
+
 		public int getGenericsRemaining()
 		{
 			return genericsRemaining;
 		}
-		
+
 		public void setGenericsRemaining(int remaining)
 		{
 			this.genericsRemaining = remaining;
 		}
-		
+
 		public void decrementGenericsRemaining()
 		{
 			genericsRemaining--;
