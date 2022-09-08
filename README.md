@@ -1,6 +1,6 @@
 Flat Programming Language
 ===========================
-![Status Badges](https://flatlang.org/api/badges.svg)
+![Status Badges](https://flatlang.org/api/badges.svg?nocache=true)
 
 A multi-paradigm language built for versatility and rapid development.
 
