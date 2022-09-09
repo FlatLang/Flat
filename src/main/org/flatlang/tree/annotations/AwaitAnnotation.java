@@ -1,6 +1,8 @@
 package org.flatlang.tree.annotations;
 
 import org.flatlang.ValidationResult;
+import org.flatlang.error.SyntaxMessage;
+import org.flatlang.tree.FlatMethodDeclaration;
 import org.flatlang.tree.Node;
 import org.flatlang.tree.SyntaxTree;
 import org.flatlang.tree.Value;
@@ -57,11 +59,6 @@ public class AwaitAnnotation extends Annotation implements ModifierAnnotation
 		{
 			return result;
 		}
-
-		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
-		{
-
-		}
 		
 		return result;
 	}
@@ -73,6 +70,12 @@ public class AwaitAnnotation extends Annotation implements ModifierAnnotation
 		{
 			if (next instanceof Value)
 			{
+				FlatMethodDeclaration method = next.getParentMethod(true);
+
+				if (method == null || !method.isAsync()) {
+					SyntaxMessage.error("await must be used within an async function", next);
+					return false;
+				}
 				// valid
 			}
 			else
