@@ -2624,7 +2624,7 @@ public class SyntaxUtils
 	{
 		if (type != null)
 		{
-			int start = type.indexOf('<');
+			int start = findCharInBaseScope(type, '<');
 			
 			if (start > 0)
 			{
