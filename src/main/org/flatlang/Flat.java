@@ -202,8 +202,14 @@ public class Flat
 	{
 		if (args.length > 1 && args[0].equalsIgnoreCase("airship")) {
 			try {
+				String airshipExectuable = System.getProperty("user.home") + "/.flat/bin/airship";
+
+				if (OS == WINDOWS) {
+					airshipExectuable += ".cmd";
+				}
+
 				String[] execArgs = new String[] {
-					System.getProperty("user.home") + "/.flat/bin/airship",
+					airshipExectuable,
 					"install",
 					"--debug",
 					"-q"
@@ -211,7 +217,7 @@ public class Flat
 
 				if (args.length > 2 && args[2].equalsIgnoreCase("test")) {
 					execArgs = new String[] {
-						System.getProperty("user.home") + "/.flat/bin/airship",
+						airshipExectuable,
 						"install",
 						"test",
 						"--debug",
