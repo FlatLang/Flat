@@ -689,6 +689,15 @@ public class Flat
 						enableFlag(DRY_RUN);
 						completed(false);
 					}
+
+					int lineCount = 0;
+
+					for (FileDeclaration file : tree.getFiles()) {
+						lineCount += file.getSource().split("\r\n|\r|\n").length;
+					}
+
+					System.out.println("Number of lines parsed: " + lineCount);
+
 					if (generateCode)
 					{
 						long time = System.currentTimeMillis();
