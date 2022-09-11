@@ -3,6 +3,7 @@ package org.flatlang.tree.annotations;
 import org.flatlang.ValidationResult;
 import org.flatlang.tree.FlatMethodDeclaration;
 import org.flatlang.tree.Node;
+import org.flatlang.tree.Parameter;
 import org.flatlang.tree.SyntaxTree;
 import org.flatlang.tree.lambda.LambdaExpression;
 import org.flatlang.tree.variables.FieldDeclaration;
@@ -73,7 +74,7 @@ public class LazyAnnotation extends Annotation implements ModifierAnnotation
 	{
 		if (!checkDuplicate(next, throwError))
 		{
-			if (next instanceof FieldDeclaration)
+			if (next instanceof FieldDeclaration || next instanceof Parameter)
 			{
 				// valid
 			}
