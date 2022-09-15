@@ -192,7 +192,11 @@ public class Priority extends Value implements Accessible
 	@Override
 	public Value getFlatTypeValue(Value context)
 	{
-		return getContents().getReturnedNode().getFlatTypeValue(getContents().getReturnedNode());
+		if (getContents() instanceof Cast) {
+			return getContents().getFlatTypeValue(context);
+		} else {
+			return getContents().getReturnedNode().getFlatTypeValue(getContents().getReturnedNode());
+		}
 	}
 	
 	@Override
