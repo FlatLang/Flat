@@ -680,6 +680,7 @@ public class Flat
 					allFiles.sort(Comparator.comparing(File::getName));
 					
 					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
+					tree.generate();
 					
 					codeGeneratorEngine.tree = tree;
 					compileEngine.tree = tree;
