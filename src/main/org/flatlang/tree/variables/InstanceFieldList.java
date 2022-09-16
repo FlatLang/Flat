@@ -3,6 +3,7 @@ package org.flatlang.tree.variables;
 import org.flatlang.TestContext;
 import org.flatlang.tree.List;
 import org.flatlang.tree.Node;
+import org.flatlang.tree.TypeList;
 import org.flatlang.util.Location;
 
 /**
@@ -13,7 +14,7 @@ import org.flatlang.util.Location;
  * @since	v0.1 Jan 5, 2014 at 10:00:50 PM
  * @version	v0.2.29 Aug 29, 2014 at 3:17:45 PM
  */
-public class InstanceFieldList extends List
+public class InstanceFieldList extends TypeList<FieldDeclaration>
 {
 	/**
 	 * @see Node#Node(Node, Location)
