@@ -1250,6 +1250,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	private boolean validateDeclaration(String statement, Bounds bounds, boolean require)
 	{
 		String parameterList = bounds.extractString(statement);
+
+		if (parameterList == null) {
+			return false;
+		}
 		
 		return decodeParameters(parameterList, require);
 	}
@@ -1332,7 +1336,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	{
 		if (parameterList.length() > 0)
 		{
-			String parameters[] = StringUtils.splitCommas(parameterList, 1);
+			String[] parameters = StringUtils.splitCommas(parameterList, 1);
 			
 			Location location = new Location(getLocationIn());
 			
