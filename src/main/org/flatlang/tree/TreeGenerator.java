@@ -234,8 +234,6 @@ public class TreeGenerator implements Runnable
 		{
 			decodeFields(inner);
 			decodeInnerClasses(inner);
-
-			SyntaxTree.validateNodes(inner, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 		}
 	}
 	
