@@ -104,6 +104,7 @@ public class DataClassDeclaration extends ClassDeclaration
 				addedDataClassFunctionality = true;
 				validateDefaultConstructor();
 				addCopyFunction();
+				addEqualsFunctions();
 			}
 		}
 	}
@@ -139,6 +140,37 @@ public class DataClassDeclaration extends ClassDeclaration
 		func.getScope().addChild(returnStatement);
 
 		addChild(func);
+	}
+
+	private void addEqualsFunctions() {
+		BodyMethodDeclaration objectFunc = BodyMethodDeclaration.decodeStatement(this, "override public equals(Object other)", Location.INVALID, true);
+
+		if (objectFunc == null) {
+			SyntaxMessage.error("Failed to create equals function override for data class", this);
+			return;
+		}
+
+		objectFunc.shorthandAction = "other && " +
+			"other.class.isOfType(" + getName() + ".class) && " +
+			"equals((" + getName() + ")other)";
+
+		addChild(objectFunc);
+
+		BodyMethodDeclaration classFunc = BodyMethodDeclaration.decodeStatement(this, "public equals(" + getName() + " other)", Location.INVALID, true);
+
+		if (classFunc == null) {
+			SyntaxMessage.error("Failed to create equals function overload for data class", this);
+			return;
+		}
+
+		List<FieldDeclaration> fields = getFieldList().getPublicFieldList().getChildStream().map(c -> (FieldDeclaration)c).collect(Collectors.toList());
+
+		classFunc.shorthandAction = "other != null" +
+			fields.stream()
+				.map(f -> " && " + f.getName() + " == other." + f.getName())
+				.collect(Collectors.joining(""));
+
+		addChild(classFunc);
 	}
 
 	private void validateDefaultConstructor() {
