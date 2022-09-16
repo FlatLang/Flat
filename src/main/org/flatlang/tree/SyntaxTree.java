@@ -37,6 +37,9 @@ import java.util.stream.Collectors;
 public class SyntaxTree
 {
 	private int						phase;
+
+	private File[] files;
+	private String[] sources;
 	
 	private Flat					controller;
 	
@@ -103,18 +106,20 @@ public class SyntaxTree
 	 */
 	public SyntaxTree(File files[], Flat controller) throws IOException
 	{
-		String filenames[] = new String[files.length];
-		String sources[]   = new String[files.length];
+		String[] filenames = new String[files.length];
+		String[] sources = new String[files.length];
 		
 		for (int i = 0; i < files.length; i++)
 		{
 			filenames[i] = files[i].getName();
 			sources[i]   = FileUtils.readFile(files[i]);
 		}
-		
-		generate(files, sources, controller);
+
+		this.controller = controller;
+		this.files = files;
+		this.sources = sources;
 	}
-	
+
 	/**
 	 * Generate a SyntaxTree instance given the name of the file and the
 	 * source within it.
@@ -123,9 +128,11 @@ public class SyntaxTree
 	 * @param sources The source codes inside the files.
 	 * @param controller The controller of the compiling program.
 	 */
-	public SyntaxTree(File files[], String sources[], Flat controller)
+	public SyntaxTree(File[] files, String[] sources, Flat controller)
 	{
-		generate(files, sources, controller);
+		this.files = files;
+		this.sources = sources;
+		this.controller = controller;
 	}
 	
 	/**
@@ -136,10 +143,9 @@ public class SyntaxTree
 	 * @param sources The source codes inside the files.
 	 * @param controller The controller of the compiling program.
 	 */
-	private void generate(File files[], String sources[], Flat controller)
+	public void generate()
 	{
 		this.useThreads = !controller.isFlagEnabled(Flat.SINGLE_THREAD);
-		this.controller = controller;
 		
 		root = new Program(controller, this);
 		
@@ -1868,4 +1874,4 @@ public class SyntaxTree
 		
 		return null;
 	}
-}
+}}
