@@ -210,24 +210,32 @@ public class TreeGenerator implements Runnable
 			
 			traverseCode(node, contentStart, SyntaxTree.SECOND_PASS_CLASSES, true);
 			
-			decodeScopeContents(node.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-			decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-			decodeScopeContents(node.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-			decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-			decodeScopeContents(node.getInnerClasses(), false, SyntaxTree.SECOND_PASS_CLASSES, true);
-			
-			for (ClassDeclaration inner : node.getInnerClasses())
-			{
-				decodeScopeContents(inner.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-				decodeScopeContents(inner.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-				decodeScopeContents(inner.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-				decodeScopeContents(inner.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-			}
+			decodeFields(node);
+			decodeInnerClasses(node);
 			
 			if (node.arrayBracketOverload != null)
 			{
 				decodeScopeContentsNode(node.arrayBracketOverload, false, SyntaxTree.ARRAY_BRACKET_OVERLOAD_DECODE, true);
 			}
+		}
+	}
+
+	private void decodeFields(ClassDeclaration node) {
+		decodeScopeContents(node.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+		decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+		decodeScopeContents(node.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+		decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+	}
+
+	private void decodeInnerClasses(ClassDeclaration node) {
+		decodeScopeContents(node.getInnerClasses(), false, SyntaxTree.SECOND_PASS_CLASSES, true);
+
+		for (ClassDeclaration inner : node.getInnerClasses())
+		{
+			decodeFields(inner);
+			decodeInnerClasses(inner);
+
+			SyntaxTree.validateNodes(inner, SyntaxTree.PHASE_INSTANCE_DECLARATIONS);
 		}
 	}
 	
