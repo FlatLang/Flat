@@ -83,13 +83,13 @@ public class SyntaxTree
 	
 	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		Annotation.class, Import.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class, ExtensionDeclaration.class,
+		DataClassDeclaration.class, Annotation.class, Import.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class, ExtensionDeclaration.class,
 		Package.class, ExternalCodeBlock.class
 	};
 	
 	public static final Class<?> SECOND_PASS_CLASSES[] = new Class<?>[]
 	{
-		ArrayBracketOverload.class, Annotation.class, StaticBlock.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class, AbstractMethodDeclaration.class,
+		ArrayBracketOverload.class, Annotation.class, StaticBlock.class, DataClassDeclaration.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class, AbstractMethodDeclaration.class,
 		ExternalMethodDeclaration.class, ClosureVariable.class, ExtensionMethodDeclaration.class,
 		ExtensionFieldDeclaration.class, Destructor.class, Constructor.class, BodyMethodDeclaration.class,
 		ExternalType.class, FieldDeclaration.class, ExternalCodeBlock.class
@@ -625,6 +625,7 @@ public class SyntaxTree
 				else if (node == null && type == Constructor.class) node = Constructor.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Default.class) node = Default.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == Destructor.class) node = Destructor.decodeStatement(parent, statement, location, require);
+				else if (node == null && type == DataClassDeclaration.class) node = DataClassDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExtensionDeclaration.class) node = ExtensionDeclaration.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExternalCodeBlock.class) node = ExternalCodeBlock.decodeStatement(parent, statement, location, require);
 				else if (node == null && type == ExternalMethodDeclaration.class) node = ExternalMethodDeclaration.decodeStatement(parent, statement, location, require);
@@ -735,6 +736,7 @@ public class SyntaxTree
 		else if (type.isAssignableFrom(Default.class) && (node = Default.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(Destructor.class) && (node = Destructor.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ElseStatement.class) && (node = ElseStatement.decodeStatement(parent, statement, location, require)) != null);
+		else if (type.isAssignableFrom(DataClassDeclaration.class) && (node = DataClassDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExtensionDeclaration.class) && (node = ExtensionDeclaration.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExternalCodeBlock.class) && (node = ExternalCodeBlock.decodeStatement(parent, statement, location, require)) != null);
 		else if (type.isAssignableFrom(ExternalMethodDeclaration.class) && (node = ExternalMethodDeclaration.decodeStatement(parent, statement, location, require)) != null);
@@ -1874,4 +1876,4 @@ public class SyntaxTree
 		
 		return null;
 	}
-}}
+}
