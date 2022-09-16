@@ -1539,6 +1539,11 @@ public class StringUtils
 		
 		out.setEnd(StringUtils.findNextNonWhitespaceIndex(source, bounds.getEnd() - 2, -1) + 1);
 		out.setStart(StringUtils.findNextNonWhitespaceIndex(source, bounds.getStart() + 1));
+
+		if (bounds.isValid() && !out.isValid()) {
+			out.setStart(bounds.getEnd());
+			out.setEnd(bounds.getEnd());
+		}
 		
 		return out;
 	}
