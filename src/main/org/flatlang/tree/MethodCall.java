@@ -1221,10 +1221,12 @@ public class MethodCall extends Variable
 	 */
 	public boolean decodeArguments(String statement, Bounds bounds, boolean require)
 	{
-		String argumentList = statement.substring(bounds.getStart(), bounds.getEnd());
-		
-		if (argumentList.length() <= 0)
-		{
+		String argumentList = bounds.extractString(statement);
+
+		if (argumentList == null) {
+			return false;
+		}
+		if (argumentList.length() == 0) {
 			return true;
 		}
 		
