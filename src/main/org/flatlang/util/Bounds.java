@@ -152,7 +152,7 @@ public class Bounds
 	 */
 	public boolean isValid()
 	{
-		return start >= 0 && end > 0;
+		return start >= 0 && end > 0 && start <= end;
 	}
 	
 	public void setInvalid()
