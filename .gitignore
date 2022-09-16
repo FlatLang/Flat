@@ -6,6 +6,7 @@
 /Execute.exe
 /bin/
 /out/
+/dist/
 target/
 /.idea/datasources*
 /.idea/dataSources.local.xml
