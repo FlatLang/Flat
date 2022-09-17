@@ -105,6 +105,7 @@ public class DataClassDeclaration extends ClassDeclaration
 				validateDefaultConstructor();
 				addCopyFunction();
 				addEqualsFunctions();
+				addToStringFunction();
 			}
 		}
 	}
@@ -171,6 +172,34 @@ public class DataClassDeclaration extends ClassDeclaration
 				.collect(Collectors.joining(""));
 
 		addChild(classFunc);
+	}
+
+	private void addToStringFunction() {
+		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "override public toString()", Location.INVALID, true);
+
+		if (func == null) {
+			SyntaxMessage.error("Failed to create toString function override for data class", this);
+			return;
+		}
+
+		List<FieldDeclaration> fields = getFieldList().getPublicFieldList().getChildStream().map(c -> (FieldDeclaration)c).collect(Collectors.toList());
+
+		String values = fields.stream()
+			.map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + "}")
+			.collect(Collectors.joining(",\n"))
+			.trim();
+
+		if (values.length() == 0) {
+			func.shorthandAction = "\"{}\"";
+		} else {
+			func.shorthandAction = "\"|\n" +
+				"    {\n" +
+				"      " + values.trim() + "\n" +
+				"    }\n" +
+				"    |\"";
+		}
+
+		addChild(func);
 	}
 
 	private void validateDefaultConstructor() {
