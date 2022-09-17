@@ -175,7 +175,7 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void addToStringFunction() {
-		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "override public toString()", Location.INVALID, true);
+		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "override public toString() -> String", Location.INVALID, true);
 
 		if (func == null) {
 			SyntaxMessage.error("Failed to create toString function override for data class", this);
