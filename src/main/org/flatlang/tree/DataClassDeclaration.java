@@ -185,7 +185,7 @@ public class DataClassDeclaration extends ClassDeclaration
 		List<FieldDeclaration> fields = getFieldList().getPublicFieldList().getChildStream().map(c -> (FieldDeclaration)c).collect(Collectors.toList());
 
 		String values = fields.stream()
-			.map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + "}")
+			.map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + ".toString()}")
 			.collect(Collectors.joining(",\n"))
 			.trim();
 
