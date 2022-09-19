@@ -1,4 +1,4 @@
-package "flatlang/async"
+package "flat/async"
 
 abstract class Future<T> {
     abstract get() -> T

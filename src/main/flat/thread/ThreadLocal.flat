@@ -1,6 +1,6 @@
-package flatlang/thread
+package flat/thread
 
-import flatlang/datastruct/HashMap
+import flat/datastruct/HashMap
 
 class ThreadLocal<T> {
     HashMap<Long, T> map = HashMap()
