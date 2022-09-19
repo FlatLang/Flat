@@ -110,8 +110,17 @@ public class DataClassDeclaration extends ClassDeclaration
 		}
 	}
 
+	private List<FieldDeclaration> getFields() {
+		return getFieldList()
+			.getPublicFieldList()
+			.getChildStream()
+			.map(c -> (FieldDeclaration)c)
+			.filter(f -> f.getShorthandAccessor() == null)
+			.collect(Collectors.toList());
+	}
+
 	private void addCopyFunction() {
-		List<FieldDeclaration> fields = getFieldList().getPublicFieldList().getChildStream().map(c -> (FieldDeclaration)c).collect(Collectors.toList());
+		List<FieldDeclaration> fields = getFields();
 
 		String params = fields.stream()
 			.map(f -> f.getFlatType() + ": " + f.getName() + " = " + f.getName())
@@ -164,7 +173,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			return;
 		}
 
-		List<FieldDeclaration> fields = getFieldList().getPublicFieldList().getChildStream().map(c -> (FieldDeclaration)c).collect(Collectors.toList());
+		List<FieldDeclaration> fields = getFields();
 
 		classFunc.shorthandAction = "other != null" +
 			fields.stream()
@@ -182,7 +191,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			return;
 		}
 
-		List<FieldDeclaration> fields = getFieldList().getPublicFieldList().getChildStream().map(c -> (FieldDeclaration)c).collect(Collectors.toList());
+		List<FieldDeclaration> fields = getFields();
 
 		String values = fields.stream()
 			.map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + ".toString()}")
@@ -203,7 +212,7 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void validateDefaultConstructor() {
-		List<FieldDeclaration> fields = getFieldList().getPublicFieldList().getChildStream().map(c -> (FieldDeclaration)c).collect(Collectors.toList());
+		List<FieldDeclaration> fields = getFields();
 		Constructor constructor = (Constructor) getMethod(this, getName(), fields.toArray(new FieldDeclaration[0]));
 
 		if (constructor == null) {
