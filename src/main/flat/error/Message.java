@@ -85,15 +85,6 @@ public class Message
 		
 		if (node != null)
 		{
-			Location loc   = node.getLocationIn();
-			
-			int lineNumber = node.getLineNumber();
-			
-			if (location != null && location.isValid())
-			{
-				lineNumber += location.getLineNumber();
-			}
-
 			String prefix = "";
 
 			if (file.getPackage() != null && file.getPackage().getLocation() != null) {
@@ -101,11 +92,6 @@ public class Message
 			}
 			
 			info += " - in file \"" + prefix + file.getFile().getName() + '"';
-			
-			if (loc != null)
-			{
-				info += " on line number " + lineNumber + " at offset " + loc.getOffset() + " [" + loc.getStart() + ", " + loc.getEnd() + "]";
-			}
 		}
 		
 		if (type == MESSAGE)
