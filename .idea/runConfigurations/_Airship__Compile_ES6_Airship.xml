@@ -1,7 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="[Airship] Compile ES6 Airship" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="org.flat.Flat" />
-    <module name="Flat" />
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="MAIN_CLASS_NAME" value="flat.Flat" />
+    <module name="flat-cli" />
     <option name="PROGRAM_PARAMETERS" value="airship ../Airship" />
     <method v="2">
       <option name="Make" enabled="true" />

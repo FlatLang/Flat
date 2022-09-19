@@ -6,11 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Flat" />
+        <module name="flat-cli" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Flat" target="1.8" />
+      <module name="flat-cli" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

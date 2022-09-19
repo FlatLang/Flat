@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Compile JS SvgFractal" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="org.flat.Flat" />
+    <option name="MAIN_CLASS_NAME" value="flat.Flat" />
     <module name="Flat" />
     <option name="PROGRAM_PARAMETERS" value="../Flat-Testing/example/SvgFractal.flat -l ../Standard-Library -l ../System -l ../Svg -l ../Compiler-String-Extensions -l ../IO -l ../Time -install-dir .. -main example/SvgFractal -o ../Flat-Testing/example/bin/SvgFractal -target js" />
     <method v="2">
