@@ -217,7 +217,7 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		if (constructor == null) {
 			String params = fields.stream()
-				.map(f -> f.getFlatType() + ": " + f.getName())
+				.map(f -> "this " + f.getFlatType() + ": " + f.getName())
 				.collect(Collectors.joining(", "));
 
 			constructor = Constructor.decodeStatement(
