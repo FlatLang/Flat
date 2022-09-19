@@ -1885,17 +1885,12 @@ public abstract class Node implements Listenable, Annotatable
 	public String getLocationInfo()
 	{
 		FileDeclaration file = getFileDeclaration();
-		Location        loc  = getLocationIn();
 		
 		String info = "";
 		
 		if (file != null)
 		{
 			info += " in file " + file.getName();
-		}
-		if (loc != null)
-		{
-			info += " on line number " + loc.getLineNumber() + " at offset " + loc.getOffset();
 		}
 		
 		return info;
