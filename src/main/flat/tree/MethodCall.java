@@ -6,6 +6,7 @@ import flat.ValidationResult;
 import flat.error.SyntaxErrorException;
 import flat.error.SyntaxMessage;
 import flat.tree.MethodList.SearchFilter;
+import flat.tree.annotations.AsyncAnnotation;
 import flat.tree.generics.GenericTypeArgument;
 import flat.tree.generics.GenericTypeArgumentList;
 import flat.tree.generics.GenericTypeParameter;
@@ -1492,7 +1493,14 @@ public class MethodCall extends Variable
 			{
 				Parameter param = (Parameter)parameters.getParameter(i);
 				Value arg = order[i];
-				
+
+				if (param instanceof ClosureDeclaration && param.isAsync() && arg instanceof Closure) {
+					Closure closure = (Closure)arg;
+
+					if (closure.isLambda() && !closure.getDeclaration().isAsync()) {
+						closure.getDeclaration().addAnnotation(new AsyncAnnotation(this, Location.INVALID));
+					}
+				}
 				if (arg instanceof DefaultArgument == false && getArgumentList().getArgumentName(position++) == null)
 				{
 					if (param.requireNamed)
