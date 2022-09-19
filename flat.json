@@ -7,7 +7,7 @@
   "scripts": {},
   "sources": {
     "main": {
-      "source": "src/main",
+      "source": "src",
       "dependencies": {
         "github:FlatLang/Regex": "master",
         "github:FlatLang/Security": "master",
