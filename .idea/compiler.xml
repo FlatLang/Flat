@@ -2,17 +2,16 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile name="Maven default annotation processors profile">
+      <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="flat-util" />
-        <module name="flat-ast" />
         <module name="flat-cli" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Flat" target="1.8" />
+      <module name="flat-cli" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
