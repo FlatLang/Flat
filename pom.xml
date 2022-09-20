@@ -8,9 +8,6 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <src.dir>src/main</src.dir>
-        <package.groupId>flat</package.groupId>
-        <package.artifactId>flat-cli</package.artifactId>
-        <package.version>1.0-SNAPSHOT</package.version>
     </properties>
 
     <groupId>flat</groupId>
@@ -18,39 +15,6 @@
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
-        <dependency>
-            <groupId>flat</groupId>
-            <artifactId>flat-ast</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>flat</groupId>
-                    <artifactId>flat-cli</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>flat</groupId>
-            <artifactId>flat-util</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>flat</groupId>
-                    <artifactId>flat-cli</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>flat</groupId>
-            <artifactId>flat-es6</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>flat</groupId>
-                    <artifactId>flat-cli</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
@@ -72,7 +36,6 @@
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.4.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -98,32 +61,32 @@
                 </executions>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <artifactId>exec-maven-plugin</artifactId>-->
-<!--                <version>3.0.0</version>-->
-<!--                <groupId>org.codehaus.mojo</groupId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>Install File Local</id>-->
-<!--                        <phase>install</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>exec</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <executable>mvn</executable>-->
-<!--                            <arguments>-->
-<!--                                <argument>install:install-file</argument>-->
-<!--                                <argument>-Dfile=target/${package.artifactId}-${package.version}.jar</argument>-->
-<!--                                <argument>-DgroupId=${package.groupId}</argument>-->
-<!--                                <argument>-DartifactId=${package.artifactId}</argument>-->
-<!--                                <argument>-Dversion=${package.version}</argument>-->
-<!--                                <argument>-Dpackaging=jar</argument>-->
-<!--                                <argument>-DgeneratePom=true</argument>-->
-<!--                            </arguments>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <executions>
+                    <execution>
+                        <id>Install File Local</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>mvn</executable>
+                            <arguments>
+                                <argument>install:install-file</argument>
+                                <argument>-Dfile=target/flatc.jar</argument>
+                                <argument>-DgroupId=flat</argument>
+                                <argument>-DartifactId=flat</argument>
+                                <argument>-Dversion=1.0-SNAPSHOT</argument>
+                                <argument>-Dpackaging=jar</argument>
+                                <argument>-DgeneratePom=true</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
