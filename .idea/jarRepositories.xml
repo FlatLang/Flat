@@ -2,6 +2,11 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
+      <option name="id" value="jsweet-release" />
+      <option name="name" value="jsweet-release" />
+      <option name="url" value="https://repository.jsweet.org/artifactory/libs-release-local" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Central Repository" />
       <option name="url" value="https://repo.maven.apache.org/maven2" />
@@ -15,6 +20,16 @@
       <option name="id" value="jboss.community" />
       <option name="name" value="JBoss Community repository" />
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jsweet-external" />
+      <option name="name" value="libs-release" />
+      <option name="url" value="https://repository.jsweet.org/artifactory/ext-release-local" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="jsweet-snapshot" />
+      <option name="name" value="jsweet-snapshot" />
+      <option name="url" value="https://repository.jsweet.org/artifactory/libs-snapshot-local" />
     </remote-repository>
   </component>
 </project>

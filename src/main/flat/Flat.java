@@ -62,17 +62,14 @@ public class Flat
 	public HashSet<String> defaultImports;
 	public HashSet<String> defaultStaticImports;
 	public ArrayList<File>		inputFiles, excludeFiles;//, includeDirectories;
+	public HashSet<String>		inputFilesSet, excludeFilesSet;//, includeDirectories;
 	public Stack<Long> flagsStack;
 
 	public HashMap<File, ArrayList<File>> libraryFiles;
 	
 	public CodeGeneratorEngine codeGeneratorEngine;
 	public CompileEngine compileEngine;
-	
-	public static final int	OS;
-	
-	public static final String EXECUTABLE_EXTENSION, DYNAMIC_LIB_EXT;
-	
+
 	public boolean				isTesting     = false;
 
 	private boolean				expectingCompileError = false;
@@ -105,46 +102,13 @@ public class Flat
 	public static final long	NO_C_OUTPUT   = 0x0000000000010000l;
 	public static final long	NO_OPTIMIZE   = 0x0000000000001000l;
 	public static final long	QUOTE_PATHS   = 0x0000000000000100l;
-	
-	public static final int		WINDOWS       = 1;
-	public static final int		MACOSX        = 2;
-	public static final int		LINUX         = 3;
-	
+
 	public static final String	LANGUAGE_NAME = "Flat";
 	public static final String	VERSION       = "v0.3.8";
 	
 	/**
 	 * Find out which operating system the compiler is running on.
 	 */
-	static
-	{
-		String osName = System.getProperty("os.name").toLowerCase();
-		
-		if (osName.startsWith("win"))
-		{
-			OS = WINDOWS;
-			EXECUTABLE_EXTENSION = ".exe";
-			DYNAMIC_LIB_EXT  = ".dll";
-		}
-		else if (osName.startsWith("mac"))
-		{
-			OS = MACOSX;
-			EXECUTABLE_EXTENSION = "";
-			DYNAMIC_LIB_EXT  = ".dylib";
-		}
-		else if (osName.startsWith("lin"))
-		{
-			OS = LINUX;
-			EXECUTABLE_EXTENSION = "";
-			DYNAMIC_LIB_EXT  = ".so";
-		}
-		else
-		{
-			OS = 0;
-			EXECUTABLE_EXTENSION = "";
-			DYNAMIC_LIB_EXT  = "";
-		}
-	}
 
 	private static class ProcessResponse {
 		private String[] stdout, stderr;
@@ -296,7 +260,9 @@ public class Flat
 		}
 
 		inputFiles         = new ArrayList<>();
-		excludeFiles         = new ArrayList<>();
+		excludeFiles       = new ArrayList<>();
+		inputFilesSet      = new HashSet<>();
+		excludeFilesSet    = new HashSet<>();
 		libraryFiles       = new HashMap<>();
 		externalImports    = new ArrayList<>();
 		externalIncludes   = new ArrayList<>();
@@ -385,6 +351,8 @@ public class Flat
 
 			File engineDir = new File(enginePath);
 
+			System.out.println("Loading engine in directory: " + enginePath);
+
 			Optional<File> existingFile = Arrays.stream(engineDir.listFiles()).filter(x -> x.isDirectory() && x.getName().equalsIgnoreCase(folderName)).findFirst();
 
 			if (!existingFile.isPresent())
@@ -393,6 +361,8 @@ public class Flat
 
 				System.exit(1);
 			}
+
+			System.out.println("Searching for jar in directory: " + existingFile.get().getCanonicalPath());
 
 			targetEngineWorkingDir = existingFile.get().getCanonicalFile();
 
@@ -407,6 +377,7 @@ public class Flat
 				System.exit(1);
 			}
 
+			System.out.println("Found jar file: " + engineJar.getCanonicalPath());
 
 			targetFileExtensions.add(target);
 
@@ -417,21 +388,24 @@ public class Flat
 			try
 			{
 				URL url = engineJar.toURI().toURL();
-				
+
 				// Create a new class loader with the directory
 				ClassLoader cl = new URLClassLoader(new URL[] { url }, this.getClass().getClassLoader());
-				
+
 				Class codeGeneratorEngineClass = cl.loadClass("flat." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CodeGeneratorEngine");
 				Class compileEngineClass = cl.loadClass("flat." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CompileEngine");
-				
+
 				java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Flat.class);
 				java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Flat.class);
-				
+
 				codeGeneratorEngine = (CodeGeneratorEngine)codeGeneratorEngineConstructor.newInstance(this);
 				compileEngine = (CompileEngine)compileEngineConstructor.newInstance(this);
-				
+
+				System.out.println("Initializing " + codeGeneratorEngine.getClass().getName());
 				codeGeneratorEngine.init();
+				System.out.println("Initializing " + compileEngine.getClass().getName());
 				compileEngine.init();
+				System.out.println("Adding include directories to CompileEngine");
 				compileEngine.addIncludeDirectories(includeDirectories);
 			}
 			catch (InvocationTargetException e)
@@ -452,6 +426,7 @@ public class Flat
 			}
 			catch (ClassNotFoundException e)
 			{
+				e.printStackTrace();
 				System.exit(5);
 			}
 			catch (MalformedURLException e)
@@ -461,7 +436,8 @@ public class Flat
 		}
 		catch (IOException io)
 		{
-			
+			io.printStackTrace();
+			System.exit(7);
 		}
 		
 		//codeGeneratorEngine = new CCodeGeneratorEngine(this);
@@ -610,6 +586,7 @@ public class Flat
 	 */
 	public void compile(String args[], boolean generateCode)
 	{
+		System.out.println("Compiling Flat code");
 		codeGeneratorEngine.initializeOutputDirectory();
 		
 //		log("Flat " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
@@ -678,10 +655,12 @@ public class Flat
 					}
 
 					allFiles.sort(Comparator.comparing(File::getName));
-					
+
+					log("Instantiating SyntaxTree");
 					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
 					tree.generate();
-					
+					log("Generated SyntaxTree");
+
 					codeGeneratorEngine.tree = tree;
 					compileEngine.tree = tree;
 					
@@ -1111,7 +1090,7 @@ public class Flat
 				libraries.add(args[i + 1]);
 
 				try {
-					addIfNotExists(inputFiles, getFiles(args[i + 1]));
+					addIfNotExists(inputFiles, getFiles(args[i + 1]), inputFilesSet);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -1123,7 +1102,7 @@ public class Flat
 				validateArgumentSize(args, i + 1, arg);
 
 				try {
-					addIfNotExists(excludeFiles, getFiles(args[i + 1]));
+					addIfNotExists(excludeFiles, getFiles(args[i + 1]), excludeFilesSet);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -1165,13 +1144,13 @@ public class Flat
 				{
 					if (args[i].startsWith("glob:")) {
 						try {
-							addIfNotExists(inputFiles, getFiles(args[i].substring("glob:".length())));
+							addIfNotExists(inputFiles, getFiles(args[i].substring("glob:".length())), inputFilesSet);
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
 					} else {
 						try {
-							addIfNotExists(inputFiles, getFiles(args[i]));
+							addIfNotExists(inputFiles, getFiles(args[i]), inputFilesSet);
 						} catch (IOException e) {
 							throw new RuntimeException(e);
 						}
@@ -1199,13 +1178,23 @@ public class Flat
 		}
 	}
 
+	private final HashMap<String, List<File>> searchedFiles = new HashMap<>();
+
 	private List<File> getFiles(String location) throws IOException {
 		if (!location.contains("*")) {
 			location = location + "/**/*.flat";
 		}
 
+		if (searchedFiles.containsKey(location)) {
+			return searchedFiles.get(location);
+		}
+
 		String[] directories = splitParentDirectory(location, true);
-		return getFiles(Paths.get(directories[0]), directories[1]);
+		List<File> files = getFiles(Paths.get(directories[0]), directories[1]);
+
+		searchedFiles.put(location, files);
+
+		return files;
 	}
 
 	public static String[] splitParentDirectory(String path, boolean checkGlob) {
@@ -1250,18 +1239,26 @@ public class Flat
 		return new String[] { Paths.get(home, path).normalize().toString(), suffix };
 	}
 
-	public static void addIfNotExists(ArrayList<File> list, List<File> toAdd) {
-		list.addAll(
-			toAdd.stream()
-				.filter(file -> list.stream().noneMatch(f -> {
-					try {
-						return f.getCanonicalPath().equals(file.getCanonicalPath());
-					} catch (IOException e) {
-						throw new RuntimeException(e);
+	public static void addIfNotExists(ArrayList<File> list, List<File> toAdd, HashSet<String> existing) {
+		List<File> unique = toAdd.stream()
+			.filter(file -> {
+				try {
+					String path = file.getCanonicalPath();
+
+					if (existing.contains(path)) {
+						return false;
 					}
-				}))
-				.collect(Collectors.toList())
-		);
+
+					existing.add(path);
+
+					return true;
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			})
+			.collect(Collectors.toList());
+
+		list.addAll(unique);
 	}
 
 	public static List<File> getFiles(final Path directory, final String glob) throws IOException {

@@ -51,6 +51,7 @@ public abstract class CodeGeneratorEngine
 	
 	public File initializeOutputDirectory()
 	{
+		controller.log("Initializing output directory");
 		if (controller.outputDirectory == null)
 		{
 			try
