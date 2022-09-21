@@ -10,6 +10,7 @@ import flat.util.SyntaxUtils;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * {@link ClassDeclaration} extension that represents
@@ -102,6 +103,8 @@ public class DataClassDeclaration extends ClassDeclaration
 		if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
 			if (!addedDataClassFunctionality) {
 				addedDataClassFunctionality = true;
+				addMissingImports();
+				addOperatorOverloads();
 				validateDefaultConstructor();
 				addCopyFunction();
 				addEqualsFunctions();
@@ -110,13 +113,34 @@ public class DataClassDeclaration extends ClassDeclaration
 		}
 	}
 
+	public void addMissingImports() {
+		getFields().stream()
+			.filter(f -> !f.isPrimitiveType())
+			.forEach((field) -> getFileDeclaration().addImport(field.getTypeClassLocation()));
+	}
+
+	public void addOperatorOverloads() {
+		ClassDeclaration equalsOperator = getProgram().getClassDeclaration("flat/operators/EqualsOperator");
+
+		if (!implementsInterface(equalsOperator, true)) {
+			getFileDeclaration().addImport(equalsOperator.getClassLocation());
+			TraitImplementation i = TraitImplementation.decodeStatement(this, equalsOperator.getName(), Location.INVALID, true);
+			getInterfacesImplementationList().addChild(i);
+		}
+	}
+
 	private List<FieldDeclaration> getFields() {
-		return getFieldList()
+		Stream<FieldDeclaration> fields = getFieldList()
 			.getPublicFieldList()
 			.getChildStream()
 			.map(c -> (FieldDeclaration)c)
-			.filter(f -> f.getShorthandAccessor() == null)
-			.collect(Collectors.toList());
+			.filter(f -> f.getShorthandAccessor() == null);
+
+		if (doesExtendClass() && getExtendedClassDeclaration() instanceof DataClassDeclaration) {
+			return Stream.concat(fields, ((DataClassDeclaration)getExtendedClassDeclaration()).getFields().stream()).collect(Collectors.toList());
+		} else {
+			return fields.collect(Collectors.toList());
+		}
 	}
 
 	private void addCopyFunction() {
@@ -133,8 +157,11 @@ public class DataClassDeclaration extends ClassDeclaration
 			return;
 		}
 
-		String args = fields.stream()
-			.map(IIdentifier::getName)
+		String args = getDataClassConstructor()
+			.getParameterList()
+			.getChildStream()
+			.filter(f -> f instanceof ReferenceParameter == false)
+			.map(param -> ((Parameter) param).getName())
 			.collect(Collectors.joining(", "));
 
 		Value returnValue = Instantiation.decodeStatement(
@@ -153,7 +180,7 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void addEqualsFunctions() {
-		BodyMethodDeclaration objectFunc = BodyMethodDeclaration.decodeStatement(this, "override public equals(Object other)", Location.INVALID, true);
+		BodyMethodDeclaration objectFunc = BodyMethodDeclaration.decodeStatement(this, "override public equals(Object other) -> Bool", Location.INVALID, true);
 
 		if (objectFunc == null) {
 			SyntaxMessage.error("Failed to create equals function override for data class", this);
@@ -166,7 +193,7 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		addChild(objectFunc);
 
-		BodyMethodDeclaration classFunc = BodyMethodDeclaration.decodeStatement(this, "public equals(" + getName() + " other)", Location.INVALID, true);
+		BodyMethodDeclaration classFunc = BodyMethodDeclaration.decodeStatement(this, "public equals(" + getName() + " other) -> Bool", Location.INVALID, true);
 
 		if (classFunc == null) {
 			SyntaxMessage.error("Failed to create equals function overload for data class", this);
@@ -177,7 +204,7 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		classFunc.shorthandAction = "other != null" +
 			fields.stream()
-				.map(f -> " && " + f.getName() + " == other." + f.getName())
+				.map(f -> " && (" + f.getName() + " == other." + f.getName() + ")")
 				.collect(Collectors.joining(""));
 
 		addChild(classFunc);
@@ -211,11 +238,18 @@ public class DataClassDeclaration extends ClassDeclaration
 		addChild(func);
 	}
 
-	private void validateDefaultConstructor() {
+	private Constructor getDataClassConstructor() {
 		List<FieldDeclaration> fields = getFields();
-		Constructor constructor = (Constructor) getMethod(this, getName(), fields.toArray(new FieldDeclaration[0]));
+
+		return (Constructor) getMethod(this, getName(), fields.toArray(new FieldDeclaration[0]));
+	}
+
+	private void validateDefaultConstructor() {
+		Constructor constructor = getDataClassConstructor();
 
 		if (constructor == null) {
+			List<FieldDeclaration> fields = getFields();
+
 			String params = fields.stream()
 				.map(f -> "this " + f.getFlatType() + ": " + f.getName())
 				.collect(Collectors.joining(", "));
