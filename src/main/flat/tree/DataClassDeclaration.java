@@ -104,7 +104,6 @@ public class DataClassDeclaration extends ClassDeclaration
 			if (!addedDataClassFunctionality) {
 				addedDataClassFunctionality = true;
 				addMissingImports();
-				addOperatorOverloads();
 				validateDefaultConstructor();
 				addCopyFunction();
 				addEqualsFunctions();
@@ -117,16 +116,6 @@ public class DataClassDeclaration extends ClassDeclaration
 		getFields().stream()
 			.filter(f -> !f.isPrimitiveType())
 			.forEach((field) -> getFileDeclaration().addImport(field.getTypeClassLocation()));
-	}
-
-	public void addOperatorOverloads() {
-		ClassDeclaration equalsOperator = getProgram().getClassDeclaration("flat/operators/EqualsOperator");
-
-		if (!implementsInterface(equalsOperator, true)) {
-			getFileDeclaration().addImport(equalsOperator.getClassLocation());
-			TraitImplementation i = TraitImplementation.decodeStatement(this, equalsOperator.getName(), Location.INVALID, true);
-			getInterfacesImplementationList().addChild(i);
-		}
 	}
 
 	private List<FieldDeclaration> getFields() {
