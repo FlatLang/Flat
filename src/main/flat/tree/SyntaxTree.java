@@ -306,6 +306,11 @@ public class SyntaxTree
 						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false)).map(i -> i.getName() + ".class").collect(Collectors.joining(", "));
 						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
 						String isInterfaceValue = c instanceof Trait ? "true" : "false";
+
+						if (c.getClassLocation().equals("flat/Object")) {
+							interfacesArg = "Array()";
+						}
+
 						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ")");
 						c.getFieldList().addChild(c.classInstanceDeclaration);
 					});
