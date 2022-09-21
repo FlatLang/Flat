@@ -176,7 +176,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			return;
 		}
 
-		objectFunc.shorthandAction = "other && " +
+		objectFunc.shorthandAction = "(other || !this) && " +
 			"other.class.isOfType(" + getName() + ".class) && " +
 			"equals((" + getName() + ")other)";
 
@@ -191,7 +191,7 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		List<FieldDeclaration> fields = getFields();
 
-		classFunc.shorthandAction = "other != null" +
+		classFunc.shorthandAction = "(other || !this)" +
 			fields.stream()
 				.map(f -> " && (" + f.getName() + " == other." + f.getName() + ")")
 				.collect(Collectors.joining(""));
