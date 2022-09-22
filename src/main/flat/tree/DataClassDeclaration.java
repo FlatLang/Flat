@@ -314,13 +314,13 @@ public class DataClassDeclaration extends ClassDeclaration
 
 			String params = fields.stream()
 				.map(f -> {
-					String initialization = "";
+					String initialization = f.getName();
 
 					if (f.initializationValue instanceof String) {
-						initialization = " = " + f.initializationValue;
+						initialization = (String) f.initializationValue;
 					}
 
-					return "this " + f.getFlatType() + ": " + f.getName() + initialization;
+					return "this " + f.getFlatType() + ": " + f.getName() + " = " + initialization;
 				})
 				.collect(Collectors.joining(", "));
 
