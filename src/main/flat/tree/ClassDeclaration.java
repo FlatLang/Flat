@@ -1943,7 +1943,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getClassLocation(true);
 	}
 	
-	public String getClassLocation(boolean checkExternal)
+	public String getClassLocation(boolean checkExternal) {
+		return getClassLocation(checkExternal, true);
+	}
+
+	public String getClassLocation(boolean checkExternal, boolean includePackage)
 	{
 		Package p = getFileDeclaration().getPackage();
 		
@@ -1974,7 +1978,7 @@ public class ClassDeclaration extends InstanceDeclaration
 			return name + extension;
 		}
 		
-		return p.getLocation() + "/" + name + extension;
+		return (includePackage ? p.getLocation() + "/" : "") + name + extension;
 	}
 	
 	public Package getPackage()
