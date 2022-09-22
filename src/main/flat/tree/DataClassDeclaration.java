@@ -298,6 +298,16 @@ public class DataClassDeclaration extends ClassDeclaration
 		});
 
 		addChild(builderClass);
+
+		BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public toBuilder() -> " + builderClass.getClassLocation(false, false), Location.INVALID, true);
+
+		String toBuilderArgs = fields.stream()
+			.map(f -> f.getName() + ": " + f.getName())
+			.collect(Collectors.joining(", "));
+
+		toBuilderFunc.shorthandAction = builderClass.getClassLocation(false, false);
+
+		addChild(toBuilderFunc);
 	}
 
 	private Constructor getDataClassConstructor() {
