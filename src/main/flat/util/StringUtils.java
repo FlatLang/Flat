@@ -848,7 +848,7 @@ public class StringUtils
 			{
 				scope++;
 			}
-			else if (StringUtils.containsString(str, end, index) && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar))
+			else if (StringUtils.containsString(str, end, index) && (direction > 0 || index > 0 && str.charAt(index - 1) != escapeChar) && (!end.equals(">") || str.charAt(index - 1) != '-'))
 			{
 				scope--;
 				
