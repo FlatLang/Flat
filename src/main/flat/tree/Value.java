@@ -829,7 +829,7 @@ public abstract class Value extends Node implements AbstractValue
 					return type.getFileDeclaration();
 				}
 				
-				if (this instanceof MethodCall)
+				if (this instanceof MethodCall && ((MethodCall)this).getDeclaration() != null)
 				{
 					return ((MethodCall)this).getDeclaration().getFileDeclaration();
 				}

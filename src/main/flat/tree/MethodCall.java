@@ -391,11 +391,14 @@ public class MethodCall extends Variable
 	}
 
 	private MethodDeclaration getConstructor(String name) {
-		if (getFileDeclaration().getImportList().getAbsoluteClassLocation(name) != null)
-		{
-			setName(getFileDeclaration().getImportedClass(getDeclaringClass(), name).getName());
+		FileDeclaration file = parent.getReferenceFile();
+		ClassDeclaration c = file.getImportedClass(file, name);
 
-			return getDeclaringClass().getMethod(getContext(), name, getArgumentList());
+		if (c != null)
+		{
+			setName(c.getName());
+
+			return c.getMethod(getContext(), name, getArgumentList());
 		}
 
 		return null;
@@ -1012,7 +1015,7 @@ public class MethodCall extends Variable
 				return null;
 			}
 
-			if (requireConstructor && n.getFileDeclaration().getImportList().getAbsoluteClassLocation(data.name) == null) {
+			if (requireConstructor && parent.getReferenceFile().getImportList().getAbsoluteClassLocation(data.name) == null) {
 				return null;
 			}
 			
