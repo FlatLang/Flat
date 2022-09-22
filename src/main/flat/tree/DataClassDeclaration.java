@@ -313,7 +313,15 @@ public class DataClassDeclaration extends ClassDeclaration
 			List<FieldDeclaration> fields = getFields();
 
 			String params = fields.stream()
-				.map(f -> "this " + f.getFlatType() + ": " + f.getName())
+				.map(f -> {
+					String initialization = "";
+
+					if (f.initializationValue instanceof String) {
+						initialization = " = " + f.initializationValue;
+					}
+
+					return "this " + f.getFlatType() + ": " + f.getName() + initialization;
+				})
 				.collect(Collectors.joining(", "));
 
 			constructor = Constructor.decodeStatement(
