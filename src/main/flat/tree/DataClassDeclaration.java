@@ -279,7 +279,7 @@ public class DataClassDeclaration extends ClassDeclaration
 		builderClass.addChild(buildFunc);
 
 		String constructorParams = fields.stream()
-			.map(f -> f.getFlatType() + ": " + f.getName() + " = " + f.getName() + "_value")
+			.map(f -> f.getFlatType() + " " + f.getName() + " = " + f.getName() + "_value")
 			.collect(Collectors.joining(", "));
 
 		Constructor constructor = Constructor.decodeStatement(
@@ -320,7 +320,7 @@ public class DataClassDeclaration extends ClassDeclaration
 						initialization = (String) f.initializationValue;
 					}
 
-					return "this " + f.getFlatType() + ": " + f.getName() + " = " + initialization;
+					return "this " + f.getFlatType() + " " + f.getName() + " = " + initialization;
 				})
 				.collect(Collectors.joining(", "));
 
