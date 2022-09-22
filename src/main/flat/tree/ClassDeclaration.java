@@ -1951,9 +1951,18 @@ public class ClassDeclaration extends InstanceDeclaration
 		String name = getName();
 		
 		ClassDeclaration fileClass = getFileDeclaration().getClassDeclaration();
-		
-		if (fileClass != null && fileClass != this)
-		{
+
+		if (encapsulatingClass != null) {
+			ClassDeclaration encapsulating = encapsulatingClass;
+
+			while (encapsulating != null) {
+				name = encapsulating.getName() + "." + name;
+				encapsulating = encapsulating.encapsulatingClass;
+			}
+			if (fileClass != null && !name.startsWith(fileClass.getName() + ".")) {
+				name = fileClass.getName() + "." + name;
+			}
+		} else if (fileClass != null && fileClass != this) {
 			name = fileClass.getName() + "." + name;
 		}
 		if (checkExternal && getFileDeclaration().isExternalFile())
@@ -2095,10 +2104,10 @@ public class ClassDeclaration extends InstanceDeclaration
 		}
 		else if (child instanceof ClassDeclaration)
 		{
-			getFileDeclaration().addChild(child);
-			
 			((ClassDeclaration)child).encapsulatingClass = this;
-			
+
+			getFileDeclaration().addChild(child);
+
 			if (getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION) // if added as inner class, re-run class declaration validation
 			{
 				child.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
