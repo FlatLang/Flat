@@ -736,15 +736,22 @@ public class FileDeclaration extends Node
 		else if (child instanceof ClassDeclaration)
 		{
 			ClassDeclaration c = (ClassDeclaration) child;
+			String location = c.getClassLocation();
 
 			java.util.List<ClassDeclaration> dupes = getProgram().getVisibleListChildren().stream()
 					.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
 					.filter(c2 -> c2 != c)
-					.filter(c2 -> c2.getClassLocation().equals(c.getClassLocation()))
+					.filter(c2 -> c2.getClassLocation().equals(location))
 					.filter(c2 -> c2.genericOverload == c.genericOverload)
 					.collect(Collectors.toList());
 
 			if (dupes.size() > 0) {
+				getProgram().getVisibleListChildren().stream()
+					.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
+					.filter(c2 -> c2 != c)
+					.filter(c2 -> c2.getClassLocation().equals(location))
+					.filter(c2 -> c2.genericOverload == c.genericOverload)
+					.collect(Collectors.toList());
 				String classes = dupes.stream().map(ClassDeclaration::getClassLocation).collect(Collectors.joining(", "));
 				SyntaxMessage.error("Duplicate class declaration for class '" + c.getClassLocation() + "' (" + classes + ")", child);
 			}

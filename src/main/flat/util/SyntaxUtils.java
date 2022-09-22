@@ -2508,6 +2508,31 @@ public class SyntaxUtils
 		
 		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
 	}
+
+	public static ClassDeclaration getClosestClass(FileDeclaration file, Node node, String name) {
+		ClassDeclaration c = node.getParentClass(true);
+
+		while (c != null) {
+			if (c.getName().equals(name)) {
+				return c;
+			}
+
+			c = c.getParentClass(false);
+		}
+
+		java.util.List<ClassDeclaration> classes = Arrays.stream(file.getClassDeclarations())
+			.filter(x -> x.getName().equals(name))
+			.collect(Collectors.toList());
+
+		if (classes.size() > 1) {
+			SyntaxMessage.error("Ambiguous class name '" + name + "', cannot determine correct class to reference for value type.", node);
+			return null;
+		} else if (classes.size() == 0) {
+			return null;
+		}
+
+		return classes.get(0);
+	}
 	
 	public static String getTypeClassLocation(Node node, String type)
 	{
@@ -2520,31 +2545,13 @@ public class SyntaxUtils
 		
 		if (file != null)
 		{
-			java.util.List<ClassDeclaration> classes = Arrays.stream(file.getClassDeclarations())
-					.filter(c -> c.getName().equals(type))
-					.collect(Collectors.toList());
+			ClassDeclaration closest = getClosestClass(file, node, type);
 
-			if (classes.size() > 1) {
-				// FIXME: Need to update to recursively check ancestor classes instead of just immediately jumping to root file and checking all classes.
-				SyntaxMessage.error("Cannot determine correct class to reference for value type. This is my fault...", node);
-				return null;
+			if (closest != null) {
+				return closest.getClassLocation();
 			}
 
-			if (classes.size() == 1)
-			{
-				ClassDeclaration c = classes.get(0);
-
-				return c.getClassLocation();
-			}
-			
-			String location = file.getImportList().getAbsoluteClassLocation(type);
-			
-			//		if (location == null)
-			//		{
-			//			SyntaxUtils.throwImportException(this, type, getLocationIn());
-			//		}
-			
-			return location;
+			return file.getImportList().getAbsoluteClassLocation(type);
 		}
 		
 		return null;
