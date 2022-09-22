@@ -2509,15 +2509,40 @@ public class SyntaxUtils
 		return SyntaxUtils.getImportedClass(given.getFileDeclaration(), name);
 	}
 
+	public static ClassDeclaration searchInnerClasses(Node node, ClassDeclaration c, String name) {
+		ArrayList<ClassDeclaration> classes = c.getInnerClasses().filterVisibleListChildren(inner -> inner.getName().equals(name));
+
+		if (classes.size() > 1) {
+			SyntaxMessage.error("Ambiguous class name '" + name + "', cannot determine correct class to reference for value type.", node);
+			return null;
+		} else if (classes.size() == 0) {
+			return null;
+		}
+
+		return classes.get(0);
+	}
+
 	public static ClassDeclaration getClosestClass(FileDeclaration file, Node node, String name) {
 		ClassDeclaration c = node.getParentClass(true);
 
-		while (c != null) {
-			if (c.getName().equals(name)) {
-				return c;
+		if (c.getName().equals(name)) {
+			return c;
+		}
+
+		ClassDeclaration inner = searchInnerClasses(node, c, name);
+
+		if (inner != null) {
+			return inner;
+		}
+
+		ClassDeclaration current = c;
+
+		while (current != null) {
+			if (current.getName().equals(name)) {
+				return current;
 			}
 
-			c = c.getParentClass(false);
+			current = current.getParentClass(false);
 		}
 
 		java.util.List<ClassDeclaration> classes = Arrays.stream(file.getClassDeclarations())
