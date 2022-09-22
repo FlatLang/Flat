@@ -96,6 +96,18 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		checkAddDataClassFunctionality(phase);
 
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
+			ClassDeclaration builderClass = getBuilderClass();
+
+			getFields().forEach((field) -> {
+				if (field.initializationValue instanceof Value) {
+					FieldDeclaration builderField = builderClass.getField(field.getName() + "_value");
+					builderField.initializationValue = ((Value) field.initializationValue).generateFlatInput().toString();
+					builderField.decodeInitializationValue();
+				}
+			});
+		}
+
 		return result;
 	}
 
@@ -108,6 +120,7 @@ public class DataClassDeclaration extends ClassDeclaration
 				addCopyFunction();
 				addEqualsFunctions();
 				addToStringFunction();
+				addBuilderClass();
 			}
 		}
 	}
@@ -225,6 +238,66 @@ public class DataClassDeclaration extends ClassDeclaration
 		}
 
 		addChild(func);
+	}
+
+	private ClassDeclaration getBuilderClass() {
+		TypeList<ClassDeclaration> innerClasses = getInnerClasses(false);
+
+		return innerClasses.filterListChildren(c -> c.getName().equals("Builder")).stream().findFirst().get();
+	}
+
+	private void addBuilderClass() {
+		ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this, "public static class Builder", Location.INVALID, true);
+
+		List<FieldDeclaration> fields = getFields();
+
+		fields.forEach((field) -> {
+			FieldDeclaration mutableField = FieldDeclaration.decodeStatement(builderClass, "var " + field.getFlatType() + " " + field.getName() + "_value", Location.INVALID, true);
+
+			BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + field.getFlatType() + " value) -> Builder", Location.INVALID, true);
+			assignFunc.shorthandAction = "this";
+
+			builderClass.addChild(mutableField);
+			builderClass.addChild(assignFunc);
+
+			Assignment assignment = Assignment.decodeStatement(assignFunc, field.getName() + "_value = value", Location.INVALID, true);
+
+			assignFunc.addChild(assignment);
+		});
+
+		BodyMethodDeclaration buildFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public build() -> " + getName(), Location.INVALID, true);
+
+		String args = getDataClassConstructor()
+			.getParameterList()
+			.getChildStream()
+			.filter(f -> f instanceof ReferenceParameter == false)
+			.map(param -> ((Parameter) param).getName() + ": " + ((Parameter) param).getName() + "_value")
+			.collect(Collectors.joining(", "));
+
+		buildFunc.shorthandAction = getName() + "(" + args + ")";
+
+		builderClass.addChild(buildFunc);
+
+		String constructorParams = fields.stream()
+			.map(f -> f.getFlatType() + ": " + f.getName() + " = " + f.getName() + "_value")
+			.collect(Collectors.joining(", "));
+
+		Constructor constructor = Constructor.decodeStatement(
+			builderClass,
+			"public construct(" + constructorParams + ")",
+			Location.INVALID,
+			true
+		);
+
+		builderClass.addChild(constructor);
+
+		fields.forEach((field) -> {
+			Assignment assignment = Assignment.decodeStatement(constructor, "this." + field.getName() + "_value = " + field.getName(), Location.INVALID, true);
+
+			constructor.addChild(assignment);
+		});
+
+		addChild(builderClass);
 	}
 
 	private Constructor getDataClassConstructor() {
