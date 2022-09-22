@@ -76,6 +76,10 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 	@Override
 	public ClassDeclaration getDeclaringClass()
 	{
+		if (isAccessed()) {
+			return getAccessingNode().getDeclaringClass();
+		}
+
 		return getFileDeclaration().getImportedClass(this, getType());
 	}
 	

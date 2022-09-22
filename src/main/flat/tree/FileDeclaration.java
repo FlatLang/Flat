@@ -348,7 +348,7 @@ public class FileDeclaration extends Node
 			clazz = clazz.encapsulatingClass;
 		}
 		
-		for (ClassDeclaration c : from.getFileDeclaration().getClassDeclarations())
+		for (ClassDeclaration c : from.getFileDeclaration(true).getClassDeclarations())
 		{
 			if (c.getName().equals(className)) // TODO: need to check if at valid depth
 			{
