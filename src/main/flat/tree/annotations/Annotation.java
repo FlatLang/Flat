@@ -635,7 +635,7 @@ public class Annotation extends Node
 	{
 		if (require)
 		{
-			SyntaxMessage.error(getClass().getSimpleName() + " is applied to an invalid type '" + node.getClass().getSimpleName() + "'", node);
+			SyntaxMessage.error(getClass().getSimpleName() + " is applied to an invalid type '" + parent.getClass().getSimpleName() + "'", node);
 		}
 		
 		return false;
