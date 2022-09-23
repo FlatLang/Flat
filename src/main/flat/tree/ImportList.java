@@ -81,7 +81,7 @@ public class ImportList extends TypeList<Import>
 			
 			if (!absoluteLocation)
 			{
-				location = SyntaxUtils.getClassName(location);
+				location = SyntaxUtils.getClassName(location, false);
 			}
 			
 			if (importLocation.equals(location))
