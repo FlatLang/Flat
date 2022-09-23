@@ -15,6 +15,7 @@ import flat.tree.variables.VariableDeclaration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -2516,7 +2517,13 @@ public class SyntaxUtils
 			SyntaxMessage.error("Ambiguous class name '" + name + "', cannot determine correct class to reference for value type.", node);
 			return null;
 		} else if (classes.size() == 0) {
-			return null;
+			return c.getInnerClasses()
+				.getChildStream()
+				.map(inner -> (ClassDeclaration)inner)
+				.map(inner -> searchInnerClasses(node, inner, name))
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElse(null);
 		}
 
 		return classes.get(0);
@@ -2566,19 +2573,35 @@ public class SyntaxUtils
 	
 	public static String getTypeClassLocation(Node node, String type, boolean checkCast)
 	{
+		ClassDeclaration c = getTypeClass(node, type, checkCast);
+
+		if (c != null) {
+			return c.getClassLocation();
+		}
+
+		return null;
+	}
+
+	public static ClassDeclaration getTypeClass(Node node, String type)
+	{
+		return getTypeClass(node, type, true);
+	}
+
+	public static ClassDeclaration getTypeClass(Node node, String type, boolean checkCast)
+	{
 		FileDeclaration file = node.getReferenceFile(checkCast);
-		
+
 		if (file != null)
 		{
 			ClassDeclaration closest = getClosestClass(file, node, type);
 
 			if (closest != null) {
-				return closest.getClassLocation();
+				return closest;
 			}
 
-			return file.getImportList().getAbsoluteClassLocation(type);
+			return Flat.instance.getTree().getRoot().getClassDeclaration(file.getImportList().getAbsoluteClassLocation(type));
 		}
-		
+
 		return null;
 	}
 	
