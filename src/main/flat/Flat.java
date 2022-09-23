@@ -112,6 +112,8 @@ public class Flat
 	
 	public static final String	LANGUAGE_NAME = "Flat";
 	public static final String	VERSION       = "v0.3.8";
+
+	public static Flat instance;
 	
 	/**
 	 * Find out which operating system the compiler is running on.
@@ -243,7 +245,8 @@ public class Flat
 		}
 
 		Flat flat = new Flat(args);
-		
+		instance = flat;
+
 //		if (args.length > 0)
 //		{
 //			args = Arrays.copyOfRange(args, 1, args.length);
