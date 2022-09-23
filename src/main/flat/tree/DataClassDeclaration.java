@@ -149,7 +149,7 @@ public class DataClassDeclaration extends ClassDeclaration
 		List<FieldDeclaration> fields = getFields();
 
 		String params = fields.stream()
-			.map(f -> f.getFlatType() + ": " + f.getName() + " = " + f.getName())
+			.map(f -> f.getFlatType() + " " + f.getName() + " = " + f.getName())
 			.collect(Collectors.joining(", "));
 
 		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copy(" + params + ") -> " + getFlatType(), Location.INVALID, true);
