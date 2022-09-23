@@ -233,7 +233,7 @@ public class Program extends TypeList<FileDeclaration>
 
 		FileDeclaration node = getVisibleChild(index);
 
-		String className = SyntaxUtils.getClassName(components.length > 1 ? components[1] : components[0]);
+		String className = SyntaxUtils.getClassName(classLocation);
 
 		return node.getClassDeclaration(className);
 	}

@@ -420,8 +420,16 @@ public class FileDeclaration extends Node
 		{
 			ClassDeclaration c = (ClassDeclaration)getChild(super.getNumDefaultChildren() + getClassOffset() + i);
 			
-			if (c.getName().equals(className))
+			if (c.getClassLocation(false, false).equals(className))
 			{
+				return c;
+			}
+		}
+		for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset() + i; i++)
+		{
+			ClassDeclaration c = (ClassDeclaration)getChild(super.getNumDefaultChildren() + getClassOffset() + i);
+
+			if (c.getName().equals(className)) {
 				return c;
 			}
 		}

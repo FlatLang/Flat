@@ -3384,7 +3384,11 @@ public class SyntaxUtils
 		return classLocation.substring(0, lastIndex);
 	}
 	
-	public static String getClassName(String classLocation)
+	public static String getClassName(String classLocation) {
+		return getClassName(classLocation, true);
+	}
+
+	public static String getClassName(String classLocation, boolean includeEncapsulatingClasses)
 	{
 		if (classLocation == null)
 		{
@@ -3395,7 +3399,7 @@ public class SyntaxUtils
 		}
 		
 		int lastIndex = classLocation.lastIndexOf('/') + 1;
-		int endIndex = classLocation.lastIndexOf('.');
+		int endIndex = includeEncapsulatingClasses ? -1 : classLocation.lastIndexOf('.');
 		
 		String name = classLocation.substring(Math.max(endIndex + 1, lastIndex));
 
