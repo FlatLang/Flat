@@ -59,6 +59,7 @@ public class RegexLiteral extends Instantiation
 				
 				if (inst == null)
 				{
+					Instantiation.decodeStatement(parent, "Pattern(\"" + escapedString + "\")", location, false);
 					SyntaxMessage.queryError("Unable to decode regex literal '" + statement + "'", n, require);
 					
 					return null;
