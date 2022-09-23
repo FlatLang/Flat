@@ -603,10 +603,12 @@ public class FileDeclaration extends Node
 			
 			if (!other.getImportList().containsImport(im.location))
 			{
-				im.setOriginalFile(this);
-				other.getImportList().addChild(im);
+				Import clone = (Import)im.clone(other.getImportList(), Location.INVALID);
+				clone.setOriginalFile(this);
+				other.getImportList().addChild(clone);
 				
 				SyntaxTree.validateNodes(im, phase);
+				SyntaxTree.validateNodes(clone, phase);
 			}
 		}
 
