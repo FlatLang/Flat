@@ -391,8 +391,7 @@ public class MethodCall extends Variable
 	}
 
 	private MethodDeclaration getConstructor(String name) {
-		FileDeclaration file = parent.getReferenceFile();
-		ClassDeclaration c = file.getImportedClass(file, name);
+		ClassDeclaration c = SyntaxUtils.getTypeClass(parent, name);
 
 		if (c != null)
 		{
