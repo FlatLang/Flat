@@ -121,6 +121,7 @@ public class DataClassDeclaration extends ClassDeclaration
 				addEqualsFunctions();
 				addToStringFunction();
 				addBuilderClass();
+				addCopyToFunction();
 			}
 		}
 	}
@@ -179,6 +180,50 @@ public class DataClassDeclaration extends ClassDeclaration
 		func.getScope().addChild(returnStatement);
 
 		addChild(func);
+	}
+
+	private void addCopyToFunction() {
+		List<FieldDeclaration> fields = getFields();
+
+		StringBuilder paramName = new StringBuilder("target");
+
+		while (fields.stream().anyMatch(f -> f.getName().equals(paramName.toString()))) {
+			paramName.append("Obj");
+		}
+
+		String params = getFlatType() + " " + paramName + fields.stream()
+			.map(f -> ", " + f.getFlatType() + ": " + f.getName() + " = " + f.getName())
+			.collect(Collectors.joining(""));
+
+		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copyTo(" + params + ") -> " + getFlatType(), Location.INVALID, true);
+
+		if (func == null) {
+			SyntaxMessage.error("Failed to create copyTo function for data class", this);
+			return;
+		}
+
+		addChild(func);
+
+		String calls = getDataClassConstructor()
+			.getParameterList()
+			.getChildStream()
+			.filter(f -> f instanceof ReferenceParameter == false)
+			.map(param -> (Parameter) param)
+			.map(param -> "." + param.getName() + "(" + param.getName() + ")")
+			.collect(Collectors.joining(""));
+
+		Value returnValue = (Value)SyntaxTree.decodeScopeContents(
+			func.getScope(),
+			paramName + ".toBuilder()" + calls + ".build()",
+			Location.INVALID,
+			true
+		);
+
+		Return returnStatement = new Return(func.getScope(), Location.INVALID);
+		returnStatement.getReturnValues().addChild(returnValue);
+
+		func.getScope().addChild(returnStatement);
+
 	}
 
 	private void addEqualsFunctions() {
