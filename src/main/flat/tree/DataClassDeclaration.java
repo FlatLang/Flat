@@ -137,7 +137,8 @@ public class DataClassDeclaration extends ClassDeclaration
 			.getPublicFieldList()
 			.getChildStream()
 			.map(c -> (FieldDeclaration)c)
-			.filter(f -> f.getShorthandAccessor() == null);
+			.filter(f -> f.getShorthandAccessor() == null)
+			.filter(f -> !f.containsAccessorMethod());
 
 		if (doesExtendClass() && getExtendedClassDeclaration() instanceof DataClassDeclaration) {
 			return Stream.concat(fields, ((DataClassDeclaration)getExtendedClassDeclaration()).getFields().stream()).collect(Collectors.toList());
