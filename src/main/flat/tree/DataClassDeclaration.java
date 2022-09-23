@@ -305,7 +305,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			.map(f -> f.getName() + ": " + f.getName())
 			.collect(Collectors.joining(", "));
 
-		toBuilderFunc.shorthandAction = builderClass.getClassLocation(false, false);
+		toBuilderFunc.shorthandAction = builderClass.getClassLocation(false, false) + "(" + toBuilderArgs + ")";
 
 		addChild(toBuilderFunc);
 	}
