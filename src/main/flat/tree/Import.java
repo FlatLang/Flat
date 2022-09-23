@@ -332,7 +332,11 @@ public class Import extends Node
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 
+		node.used = used;
 		node.external = external;
+		node.isStatic = isStatic;
+		node.alias = alias;
+		node.location = location;
 
 		return node;
 	}
