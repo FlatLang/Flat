@@ -191,11 +191,11 @@ public class DataClassDeclaration extends ClassDeclaration
 			paramName.append("Obj");
 		}
 
-		String params = getFlatType() + " " + paramName + fields.stream()
+		String params = "TargetType " + paramName + fields.stream()
 			.map(f -> ", " + f.getFlatType() + ": " + f.getName() + " = " + f.getName())
 			.collect(Collectors.joining(""));
 
-		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copyTo(" + params + ") -> " + getFlatType(), Location.INVALID, true);
+		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copyTo<TargetType extends " + getFlatType() + ">(" + params + ") -> TargetType", Location.INVALID, true);
 
 		if (func == null) {
 			SyntaxMessage.error("Failed to create copyTo function for data class", this);
