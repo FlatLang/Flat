@@ -141,7 +141,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			.filter(f -> !f.containsAccessorMethod());
 
 		if (doesExtendClass() && getExtendedClassDeclaration() instanceof DataClassDeclaration) {
-			return Stream.concat(fields, ((DataClassDeclaration)getExtendedClassDeclaration()).getFields().stream()).collect(Collectors.toList());
+			return Stream.concat(((DataClassDeclaration)getExtendedClassDeclaration()).getFields().stream(), fields).collect(Collectors.toList());
 		} else {
 			return fields.collect(Collectors.toList());
 		}
