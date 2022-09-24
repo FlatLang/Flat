@@ -269,7 +269,7 @@ public class DataClassDeclaration extends ClassDeclaration
 		List<FieldDeclaration> fields = getFields();
 
 		String values = fields.stream()
-			.map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + ".toString()}")
+			.map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + " != null && " + f.getName() + ".class.isOfType(String.class) ? '\"' + " + f.getName() + ".toString() + '\"' : " + f.getName() + ".toString()}")
 			.collect(Collectors.joining(",\n"))
 			.trim();
 
