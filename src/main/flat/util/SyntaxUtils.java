@@ -2511,13 +2511,13 @@ public class SyntaxUtils
 	}
 
 	public static ClassDeclaration searchInnerClasses(Node node, ClassDeclaration c, String name) {
-		ArrayList<ClassDeclaration> classes = c.getInnerClasses().filterVisibleListChildren(inner -> inner.getName().equals(name));
+		ArrayList<ClassDeclaration> classes = c.getInnerClasses(false).filterVisibleListChildren(inner -> inner.getName().equals(name));
 
 		if (classes.size() > 1) {
 			SyntaxMessage.error("Ambiguous class name '" + name + "', cannot determine correct class to reference for value type.", node);
 			return null;
 		} else if (classes.size() == 0) {
-			return c.getInnerClasses()
+			return c.getInnerClasses(false)
 				.getChildStream()
 				.map(inner -> (ClassDeclaration)inner)
 				.map(inner -> searchInnerClasses(node, inner, name))
