@@ -469,15 +469,9 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			type += "Array<";
 		}
-		
-		switch (getType())
-		{
-//			case "Char": type += "CharArray"; break;
-//			case "Int": type += "IntArray"; break;
-//			case "Double": type += "DoubleArray"; break;
-			default: type += "Array<" + generateFlatInput(new StringBuilder(), false, false) + ">";
-		}
-		
+
+		type += "Array<" + generateFlatInput(new StringBuilder(), false, false) + ">";
+
 		for (int i = 1 + arrayOffset; i < getArrayDimensions(); i++)
 		{
 			type += ">";
