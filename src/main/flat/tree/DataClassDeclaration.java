@@ -274,10 +274,10 @@ public class DataClassDeclaration extends ClassDeclaration
 			.trim();
 
 		if (values.length() == 0) {
-			func.shorthandAction = "\"{}\"";
+			func.shorthandAction = "\"" + getName() + " {}\"";
 		} else {
 			func.shorthandAction = "\"|\n" +
-				"    {\n" +
+				"    " + getName() + " {\n" +
 				"      " + values.trim() + "\n" +
 				"    }\n" +
 				"    |\"";
