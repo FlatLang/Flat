@@ -120,6 +120,7 @@ public class DataClassDeclaration extends ClassDeclaration
 				addCopyFunction();
 				addEqualsFunctions();
 				addToStringFunction();
+				addToJsonFunction();
 				addBuilderClass();
 				addCopyToFunction();
 			}
@@ -281,6 +282,30 @@ public class DataClassDeclaration extends ClassDeclaration
 				"      " + values.trim() + "\n" +
 				"    }\n" +
 				"    |\"";
+		}
+
+		addChild(func);
+	}
+
+	private void addToJsonFunction() {
+		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "override public toJson() -> String", Location.INVALID, true);
+
+		if (func == null) {
+			SyntaxMessage.error("Failed to create toJson function override for data class", this);
+			return;
+		}
+
+		List<FieldDeclaration> fields = getFields();
+
+		String values = fields.stream()
+			.map(f -> "\\\"" + f.getName() + "\\\":#{" + f.getName() + ".toJson()}")
+			.collect(Collectors.joining(","))
+			.trim();
+
+		if (values.length() == 0) {
+			func.shorthandAction = "\"{}\"";
+		} else {
+			func.shorthandAction = "\"{" + values.trim() + "}\"";
 		}
 
 		addChild(func);
