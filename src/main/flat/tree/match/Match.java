@@ -375,7 +375,7 @@ public class Match extends ControlStatement
 			.filter(child -> child instanceof Throw == false)
 			.collect(Collectors.toList());
 
-		if (nodes.get(0) instanceof Value == false) {
+		if (nodes.size() > 0 && nodes.get(0) instanceof Value == false) {
 			expressionError(nodes.get(0));
 			return null;
 		}
