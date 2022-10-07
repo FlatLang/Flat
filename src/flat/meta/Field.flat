@@ -1,6 +1,5 @@
 package flat/meta
 
-[AutoFinal]
 class Field {
     public construct(visible String name, visible Type type) {}
 }

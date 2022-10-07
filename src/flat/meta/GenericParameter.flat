@@ -1,6 +1,5 @@
 package flat/meta
 
-[AutoFinal]
 class GenericParameter {
     public construct(visible Type value, visible Type defaultValue) {}
 }

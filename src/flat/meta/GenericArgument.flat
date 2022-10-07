@@ -1,6 +1,5 @@
 package flat/meta
 
-[AutoFinal]
 class GenericArgument {
     public construct(visible Type value) {}
 }
