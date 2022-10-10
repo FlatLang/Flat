@@ -187,8 +187,17 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		final FlatMethodDeclaration runMethod = getRunTestsMethod();
 		
 		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
-		
-		getMethodsWithTypeAnnotation(TestAnnotation.class).forEach(method -> {
+
+		java.util.List<FlatMethodDeclaration> testMethods = getMethodsWithTypeAnnotation(TestAnnotation.class);
+		java.util.List<FlatMethodDeclaration> onlyMethods = testMethods.stream()
+			.filter(m -> m.containsAnnotationOfType(OnlyAnnotation.class))
+			.collect(Collectors.toList());
+
+		if (!onlyMethods.isEmpty()) {
+			testMethods = onlyMethods;
+		}
+
+		testMethods.forEach(method -> {
 			getFileDeclaration().addImport("novex/nest/NestException");
 			
 			TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);

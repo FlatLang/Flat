@@ -6,7 +6,6 @@ import flat.tree.*;
 import flat.tree.variables.FieldDeclaration;
 import flat.tree.variables.Variable;
 import flat.util.Location;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
@@ -270,24 +269,46 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 			
 			
 		}
-		
-		for (String className : classNames)
-		{
-			ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
-			
+
+		java.util.List<ClassDeclaration> testableClasses = Arrays.stream(classNames)
+			.map(name -> getFileDeclaration().getImportedClass(this, name))
+			.filter(c -> {
+				TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
+
+				if (testable == null) {
+					SyntaxMessage.error("Class " + c + " does not have a valid 'testable' annotation", getController());
+					return false;
+				}
+
+				return true;
+			})
+			.collect(Collectors.toList());
+
+		java.util.List<ClassDeclaration> onlyTestableClasses = testableClasses.stream()
+			.filter(c -> {
+				if (c.containsAnnotationOfType(OnlyAnnotation.class)) {
+					return true;
+				}
+
+				TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
+
+				return !testable.getMethodsWithTypeAnnotation(OnlyAnnotation.class).isEmpty();
+			})
+			.collect(Collectors.toList());
+
+		if (!onlyTestableClasses.isEmpty()) {
+			testableClasses = onlyTestableClasses;
+		}
+
+		testableClasses.forEach(c -> {
 			TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
 
-			if (testable == null) {
-				SyntaxMessage.error("Class " + c + " does not have a valid 'testable' annotation", getController());
-				continue;
-			}
-
 			FlatMethodDeclaration method = testable.getRunTestsMethod();
-			
-			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + className + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
+
+			Variable call = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod,  "test" + c.getName() + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
 
 			runMethod.addChild(call);
-		}
+		});
 	}
 	
 	@Override
