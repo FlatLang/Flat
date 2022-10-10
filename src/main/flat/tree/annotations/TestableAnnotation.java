@@ -188,7 +188,9 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 		
 		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
 
-		java.util.List<FlatMethodDeclaration> testMethods = getMethodsWithTypeAnnotation(TestAnnotation.class);
+		java.util.List<FlatMethodDeclaration> testMethods = getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
+			.filter(m -> !m.containsAnnotationOfType(IgnoreAnnotation.class))
+			.collect(Collectors.toList());
 		java.util.List<FlatMethodDeclaration> onlyMethods = testMethods.stream()
 			.filter(m -> m.containsAnnotationOfType(OnlyAnnotation.class))
 			.collect(Collectors.toList());
