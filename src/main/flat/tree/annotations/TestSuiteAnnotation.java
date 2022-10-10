@@ -272,6 +272,7 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests
 
 		java.util.List<ClassDeclaration> testableClasses = Arrays.stream(classNames)
 			.map(name -> getFileDeclaration().getImportedClass(this, name))
+			.filter(c -> !c.containsAnnotationOfType(IgnoreAnnotation.class))
 			.filter(c -> {
 				TestableAnnotation testable = (TestableAnnotation)c.getAnnotationOfType(TestableAnnotation.class);
 
