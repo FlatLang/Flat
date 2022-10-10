@@ -65,7 +65,8 @@ public class Annotation extends Node
 			AsyncAnnotation.class,
 			AwaitAnnotation.class,
 			LazyAnnotation.class,
-			InlineAnnotation.class
+			InlineAnnotation.class,
+			OnlyAnnotation.class
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
