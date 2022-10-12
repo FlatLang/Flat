@@ -7,6 +7,8 @@ import flat.util.Location;
 import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
 
+import java.util.Arrays;
+
 /**
  * Node extension that represents the declaration of an
  * "import statement" node type. See {@link #decodeStatement(Node, String, Location, boolean)}
@@ -22,6 +24,7 @@ public class Import extends Node
 	private boolean	external;
 
 	public boolean isStatic;
+	public boolean packageImport;
 
 	public String  alias;
 	public String  location;
@@ -76,6 +79,10 @@ public class Import extends Node
 	public void setExternal(boolean external)
 	{
 		this.external = external;
+	}
+
+	public boolean isPackageImport() {
+		return packageImport;
 	}
 
 	public String getClassLocation()
@@ -291,11 +298,20 @@ public class Import extends Node
 
 			if (clazz == null)
 			{
-				SyntaxMessage.error("Unknown import location '" + location + "'", this, false);
+				ClassDeclaration[] classes = getProgram().getClassDeclarationsForPackage(location);
 
-				getParent().removeChild(this);
+				if (classes.length > 0) {
+					packageImport = true;
+					Arrays.stream(classes).forEach(c -> {
+						getFileDeclaration().addImport(c.getClassLocation());
+					});
+				} else {
+					SyntaxMessage.error("Unknown import location '" + location + "'", this, false);
 
-				return result.errorOccurred();
+					getParent().removeChild(this);
+
+					return result.errorOccurred();
+				}
 			}
 		}
 

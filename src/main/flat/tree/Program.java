@@ -6,8 +6,10 @@ import flat.util.Location;
 import flat.util.SyntaxUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Node extension that represents a whole Flat program. The
@@ -236,6 +238,18 @@ public class Program extends TypeList<FileDeclaration>
 		String className = SyntaxUtils.getClassName(classLocation);
 
 		return node.getClassDeclaration(className);
+	}
+
+	public ClassDeclaration[] getClassDeclarationsForPackage(String packageLocation) {
+		ArrayList<ClassDeclaration> classes = new ArrayList<>();
+
+		forEachVisibleListChild(file -> {
+			if (packageLocation.equals(file.getPackage().getLocation())) {
+				classes.addAll(Arrays.stream(file.getClassDeclarations()).collect(Collectors.toList()));
+			}
+		});
+
+		return classes.toArray(new ClassDeclaration[0]);
 	}
 
 	/**
