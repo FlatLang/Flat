@@ -257,6 +257,9 @@ public class IfStatement extends ControlStatement
 	public void onStackPopped(Node popped) {
 		IfStatement start = getIfElseChainStart();
 
+		if (start == null) {
+			SyntaxMessage.error("Could not find if statement start", this);
+		}
 		if (start.getParent() instanceof Assignment) {
 			Assignment assignment = (Assignment) start.getParent();
 			VariableDeclaration declaration = assignment.getAssignedNode().getDeclaration();
