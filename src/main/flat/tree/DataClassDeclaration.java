@@ -384,7 +384,17 @@ public class DataClassDeclaration extends ClassDeclaration
 	private Constructor getDataClassConstructor() {
 		List<FieldDeclaration> fields = getFields();
 
-		return (Constructor) getMethod(this, getName(), fields.toArray(new FieldDeclaration[0]));
+		return  getConstructorList()
+			.getChildStream()
+			.map(x -> (Constructor)x)
+			.filter(x -> x.getParameterList()
+				.getChildStream()
+				.filter(f -> f instanceof ReferenceParameter == false)
+				.map(p -> (Parameter)p)
+				.allMatch(p -> fields.stream().anyMatch(f -> f.getName().equals(p.getName())))
+			)
+			.findFirst()
+			.orElse(null);
 	}
 
 	private void validateDefaultConstructor() {
