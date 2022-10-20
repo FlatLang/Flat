@@ -302,10 +302,12 @@ public class Import extends Node
 
 				if (classes.length > 0) {
 					packageImport = true;
-					Arrays.stream(classes).forEach(c -> {
-						getFileDeclaration().addImport(c.getClassLocation());
-					});
+					Arrays.stream(classes)
+						.filter(c -> !c.getFileDeclaration().isExternalFile())
+						.forEach(c -> getFileDeclaration().addImport(c.getClassLocation()));
 				} else {
+					getProgram().getClassDeclaration(location);
+					getProgram().getClassDeclarationsForPackage(location);
 					SyntaxMessage.error("Unknown import location '" + location + "'", this, false);
 
 					getParent().removeChild(this);
