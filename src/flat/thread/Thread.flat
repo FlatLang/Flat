@@ -10,7 +10,7 @@ class Thread {
 
     var NOVA_THREAD_HANDLE* handle
 
-    visible static Thread[] ACTIVE_THREADS = new Thread[]
+    visible static Thread[] ACTIVE_THREADS = Thread[]
 
     visible var Bool active
 
