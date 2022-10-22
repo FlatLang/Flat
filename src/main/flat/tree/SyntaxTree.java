@@ -83,7 +83,7 @@ public class SyntaxTree
 	
 	public static final Class<?> FIRST_PASS_CLASSES[] = new Class<?>[]
 	{
-		DataClassDeclaration.class, Annotation.class, Import.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class, ExtensionDeclaration.class,
+		DataClassDeclaration.class, Annotation.class, Import.class, ExtensionDeclaration.class, ClassDeclaration.class, InterfaceDeclaration.class, Trait.class,
 		Package.class, ExternalCodeBlock.class
 	};
 	

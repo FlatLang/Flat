@@ -46,7 +46,7 @@ public class ExtensionDeclaration extends ClassDeclaration
 		
 		if (index >= 0)
 		{
-			statement = statement.substring(0, index) + ClassDeclaration.IDENTIFIER + statement.substring(index + IDENTIFIER.length());
+			statement = statement.substring(0, index) + statement.substring(index + IDENTIFIER.length());
 			
 			ClassData data = new ClassData(false, false, true);
 			
