@@ -513,7 +513,10 @@ public class Closure extends Variable
 		
 		if (declaration.getType() != null && declaration.getTypeObject() instanceof FunctionType == false && (method.getTypeClass(true, true) == null || !method.getTypeClass(true, true).isOfType(declaration.getTypeClass(true, true))))
 		{
-			method.getTypeClass(true, true).isOfType(declaration.getTypeClass(true, true));
+			ClassDeclaration c = method.getTypeClass(true, true);
+			if (c != null) {
+				c.isOfType(declaration.getTypeClass(true, true));
+			}
 			SyntaxMessage.error("The method '" + method.getName() + "()' return type of '" + method.getType() + "' is not compatible with required closure type of '" + declaration.getType() + "'", this);
 		}
 		
