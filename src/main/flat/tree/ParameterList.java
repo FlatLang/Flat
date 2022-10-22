@@ -4,6 +4,7 @@ import flat.TestContext;
 import flat.error.SyntaxMessage;
 import flat.tree.generics.GenericTypeArgumentList;
 import flat.tree.generics.GenericTypeParameter;
+import flat.tree.variables.FieldDeclaration;
 import flat.util.Location;
 
 import java.util.ArrayList;
@@ -45,12 +46,16 @@ public class ParameterList<E extends Value> extends TypeList<E>
 	public ParameterList(Node temporaryParent, Location locationIn)
 	{
 		super(temporaryParent, locationIn);
-		
-		if (temporaryParent instanceof StaticBlock == false && !getMethodDeclaration().isExternal())
+
+		if (temporaryParent instanceof StaticBlock == false && temporaryParent instanceof ClosureParameterList == false && temporaryParent instanceof FieldDeclaration == false)
 		{
-			Parameter reference = generateReferenceParameter();
-			
-			addChild(reference);
+			if (getMethodDeclaration() == null) {
+				throw new RuntimeException("How did I get here with type " + temporaryParent);
+			} else if (!getMethodDeclaration().isExternal()) {
+				Parameter reference = generateReferenceParameter();
+
+				addChild(reference);
+			}
 		}
 	}
 

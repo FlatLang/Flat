@@ -23,8 +23,12 @@ public class FunctionType extends Type
 				type.value = c.getName();
 				type.type = c.getTypeObject();
 				type.closure = (FirstClassClosureDeclaration)c.cloneTo(firstClass);
-				
-				firstClass.reference = (Identifier)parent;
+
+				if (parent instanceof Identifier) {
+					firstClass.reference = (Identifier) parent;
+				} else {
+					throw new RuntimeException("Invalid parent type " + parent);
+				}
 				
 				return type;
 			}
