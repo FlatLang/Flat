@@ -192,6 +192,12 @@ jobs:
           repository: FlatLang/Stream
           path: Stream
 
+      - name: Checkout Event-Stream library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Event-Stream
+          path: Event-Stream
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -221,6 +227,7 @@ jobs:
             -l ../System \
             -l ../Standard-Library \
             -l ../Stream \
+            -l ../Event-Stream \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/test.js \
@@ -264,6 +271,7 @@ jobs:
             -l ./System \
             -l ./Standard-Library \
             -l ./Stream \
+            -l ./Event-Stream \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
             -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
