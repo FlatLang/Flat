@@ -244,14 +244,17 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 				{
 					TypeList<Value> types = n.getInitializerValues();
 					Value type = types.getVisibleChild(0).getReturnedNode();
-					
-					for (int i = 1; i < types.getNumVisibleChildren(); i++)
-					{
-						type = SyntaxUtils.getTypeInCommon(type, types.getVisibleChild(i).getReturnedNode());
+
+					if (type != null) {
+						for (int i = 1; i < types.getNumVisibleChildren(); i++) {
+							type = SyntaxUtils.getTypeInCommon(type, types.getVisibleChild(i).getReturnedNode());
+						}
+
+						if (type != null) {
+							n.setType(type.getType());
+							n.setArrayDimensions(1);
+						}
 					}
-					
-					n.setType(type.getType());
-					n.setArrayDimensions(1);
 				}
 				
 				n.initializer = statement;
@@ -467,6 +470,12 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			String constructor = "Array<" + type + ">";
 			
 			func.convertArrays();
+			ClassDeclaration funcTypeClass = func.getTypeClass();
+
+			if (funcTypeClass == null) {
+				SyntaxMessage.error("Invalid type", this);
+				return;
+			}
 			
 			if (func.getTypeClass().isPrimitiveOverload())
 			{

@@ -2221,6 +2221,9 @@ public class SyntaxUtils
 	 */
 	public static ClassDeclaration getTypeInCommon(Value value1, Value value2)
 	{
+		if (value1 == null || value2 == null) {
+			return null;
+		}
 		if (value1.isPrimitive() && value2.isPrimitive() && value1.getType() != null && value2.getType() != null)
 		{
 			String type = getHighestPrimitiveType(value1.getType(), value2.getType());
