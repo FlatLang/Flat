@@ -1156,6 +1156,11 @@ public class SyntaxTree
 			if (safeNavigation)
 			{
 				current = current.substring(0, current.length() - 1);
+
+				if (current.length() == 0)
+				{
+					return null;
+				}
 			}
 			
 			node = decodeAccessible(parent, current, location, require, validateAccess);
