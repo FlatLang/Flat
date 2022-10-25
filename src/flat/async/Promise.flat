@@ -1,4 +1,4 @@
-package "flat/async"
+package flat/async
 
 class Promise<T> extends Future<T> {
     [Target js] external type JsCallback
