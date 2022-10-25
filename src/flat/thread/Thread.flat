@@ -32,8 +32,6 @@ class Thread {
                 return nova_current_thread_id();
             }
         }
-
-        no set
     }
 
     [Target c]
