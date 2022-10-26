@@ -335,7 +335,10 @@ public class SyntaxTree
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addPropertyMapFunctions()));
 			
 			controller.log("Compiling arrow bindings...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeShorthandActions()));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				controller.log("Compiling arrow bindings for class " + c.getClassLocation() + "...");
+				c.decodeShorthandActions();
+			}));
 
 			controller.log("Compiling interface field overrides...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.autoAddInterfaceFieldOverrides()));
