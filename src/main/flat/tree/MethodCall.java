@@ -395,9 +395,7 @@ public class MethodCall extends Variable
 
 		if (c != null)
 		{
-			setName(c.getName());
-
-			return c.getMethod(getContext(), name, getArgumentList());
+			return c.getMethod(getContext(), c.getName(), getArgumentList());
 		}
 
 		return null;

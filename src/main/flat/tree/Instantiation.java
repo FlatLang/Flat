@@ -315,7 +315,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 				
 				if (callType != null)
 				{
-					setTypeValue(callType.getName());
+					setTypeValue(className);
 					
 					if (!callType.isOfType(getTypeClass()) && type != null && type.getConstructorList().getNumVisibleChildren() > 0)
 					{
@@ -362,7 +362,7 @@ public class Instantiation extends IIdentifier implements GenericCompatible
 		}
 		
 		addChild(child);
-		setName(child.getName());
+		setName(className);
 		
 		setDataType(child.getDataType());
 		
