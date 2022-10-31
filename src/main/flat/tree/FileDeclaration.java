@@ -69,6 +69,8 @@ public class FileDeclaration extends Node
 			"flat/Object",
 			"flat/String",
 			"flat/meta/Class",
+			"flat/meta/Field",
+			"flat/meta/Function",
 		};
 	}
 	

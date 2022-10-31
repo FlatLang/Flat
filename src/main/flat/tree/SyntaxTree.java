@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class that deconstructs a source code file and builds a Tree out of
@@ -138,10 +139,6 @@ public class SyntaxTree
 	/**
 	 * Generate the SyntaxTree given the name of the file and the
 	 * source within it.
-	 * 
-	 * @param files The files containing the sources.
-	 * @param sources The source codes inside the files.
-	 * @param controller The controller of the compiling program.
 	 */
 	public void generate()
 	{
@@ -296,26 +293,72 @@ public class SyntaxTree
 
 			controller.log("Creating static class instance declarations...");
 
+			ArrayList<ClassDeclaration> classes = new ArrayList<>();
+
 			root.forEachVisibleListChild(file -> {
 				if (!file.isExternalFile()) {
 					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+						classes.add(c);
+
 						c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
 						c.classInstanceDeclaration.setStatic(true);
 						c.classInstanceDeclaration.setLazy(true);
+
 						String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
-						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false)).map(i -> i.getName() + ".class").collect(Collectors.joining(", "));
+
+						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false))
+							.map(i -> i.getName() + ".class")
+							.collect(Collectors.joining(", "));
+
 						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
+
+						String fieldValues = Stream.concat(
+								c.getFieldList().getPublicFieldList().getChildStream(),
+								c.getFieldList().getPublicStaticFieldList().getChildStream()
+							)
+							.map(f -> (FieldDeclaration)f)
+							.map(i -> "Field(name: \"" + i.getName() + "\")")
+							.collect(Collectors.joining(", "));
+
+						String fieldsArg = fieldValues.length() > 0 ? "[" + fieldValues + "]" : "Array()";
+
+						String functionValues = Stream.concat(
+								Arrays.stream(c.getConstructorList().getMethods()),
+								Arrays.stream(c.getMethodList().getMethods())
+							)
+							.map(i -> {
+								if (i instanceof Constructor) {
+									return "Function(\"construct\")";
+								} else {
+									return "Function(\"" + i.getName() + "\")";
+								}
+							})
+							.collect(Collectors.joining(", "));
+
+						String functionsArg = functionValues.length() > 0 ? "[" + functionValues + "]" : "Array()";
+
 						String isInterfaceValue = c instanceof Trait ? "true" : "false";
 
 						if (c.getClassLocation().equals("flat/Object")) {
 							interfacesArg = "Array()";
 						}
 
-						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ")");
+						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ")");
 						c.getFieldList().addChild(c.classInstanceDeclaration);
 					});
 				}
 			});
+
+			ClassDeclaration metaClass = root.getClassDeclaration("flat/meta/Class");
+
+			classes.forEach(c -> {
+				metaClass.getFileDeclaration().addImport(c.getClassLocation());
+			});
+
+			String classesValue = "[" + classes.stream().map(c -> c.getClassLocation(false, false) + ".class").collect(Collectors.joining(", ")) + "]";
+
+			metaClass.getField("ALL").setShorthandAccessor(classesValue);
+
 			root.forEachVisibleListChild(file -> {
 				if (!file.isExternalFile()) {
 					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
