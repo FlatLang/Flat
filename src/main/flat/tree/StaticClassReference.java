@@ -6,6 +6,9 @@ import flat.tree.variables.Variable;
 import flat.util.Location;
 import flat.util.SyntaxUtils;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 /**
  * {@link IIdentifier} extension that represents the use of a Static
  * Class name to reference a static instance within the specified
@@ -73,10 +76,45 @@ public class StaticClassReference extends IIdentifier
 		{
 			return getProgram().getClassDeclaration("flat/meta/Class");
 		}
+
+		if (getParent() instanceof StaticClassReference) {
+			StaticClassReference ref = (StaticClassReference) getParent();
+			ClassDeclaration typeClass = ref.getTypeClass(checkCast, defaultGenericType);
+			ClassDeclaration tc = Stream.concat(
+					Arrays.stream(typeClass.getEncapsulatedClasses()),
+					Arrays.stream(typeClass.getSiblingClasses())
+				)
+				.filter(c -> c.getName().equals(getName()))
+				.findFirst()
+				.orElse(null);
+
+			return tc;
+		}
 		
 		return super.getTypeClass(checkCast, defaultGenericType);
 	}
-	
+
+	@Override
+	public String getTypeClassLocation(boolean checkCast) {
+		if (getParent() instanceof StaticClassReference) {
+			StaticClassReference ref = (StaticClassReference) getParent();
+			ClassDeclaration typeClass = ref.getTypeClass(checkCast, false);
+			ClassDeclaration tc = Stream.concat(
+					Arrays.stream(typeClass.getEncapsulatedClasses()),
+					Arrays.stream(typeClass.getSiblingClasses())
+				)
+				.filter(c -> c.getName().equals(getName()))
+				.findFirst()
+				.orElse(null);
+
+			if (tc != null) {
+				return tc.getClassLocation();
+			}
+		}
+
+		return super.getTypeClassLocation(checkCast);
+	}
+
 	@Override
 	public String getType(boolean checkCast)
 	{

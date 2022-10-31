@@ -169,6 +169,21 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		return classes.toArray(new ClassDeclaration[0]);
 	}
+
+	public ClassDeclaration[] getSiblingClasses()
+	{
+		ArrayList<ClassDeclaration> classes = new ArrayList<>();
+
+		for (ClassDeclaration c : getFileDeclaration().getClassDeclarations())
+		{
+			if (c != this && c.encapsulatingClass == null)
+			{
+				classes.add(c);
+			}
+		}
+
+		return classes.toArray(new ClassDeclaration[0]);
+	}
 	
 	@Override
 	public boolean isImmutable()
@@ -979,7 +994,7 @@ public class ClassDeclaration extends InstanceDeclaration
 	private void addMethods(ArrayList<FlatMethodDeclaration> methods, boolean checkInterfaces, boolean checkAncestor)
 	{
 		MethodList list = getMethodList();
-		
+
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
 			MethodDeclaration method = list.getChild(i);
