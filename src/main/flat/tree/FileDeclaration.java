@@ -190,6 +190,10 @@ public class FileDeclaration extends Node
 		return addImport(loc, false);
 	}
 
+	public Import addImport(String loc, String alias) {
+		return addImport(loc, false, alias, false);
+	}
+
 	/**
 	 * Add a static Import node from the given location.
 	 *
@@ -200,14 +204,18 @@ public class FileDeclaration extends Node
 		return addImport(loc, true);
 	}
 
-	public Import addImport(String loc, boolean staticImport)
+	public Import addImport(String loc, boolean staticImport) {
+		return addImport(loc, staticImport, null, false);
+	}
+
+	public Import addImport(String loc, boolean staticImport, String alias, boolean force)
 	{
-		if (loc == null || containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc) && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc))
+		if (!force && (loc == null || containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc) && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc)))
 		{
 			return null;
 		}
 		
-		Import importNode = Import.decodeStatement(this, "import " + (staticImport ? "static " : "") + "\"" + loc + "\"", getLocationIn(), true);
+		Import importNode = Import.decodeStatement(this, "import " + (staticImport ? "static " : "") + "\"" + loc + "\"" + (alias != null ? " as " + alias : ""), getLocationIn(), true);
 		
 		addChild(importNode);
 		
@@ -281,9 +289,13 @@ public class FileDeclaration extends Node
 	 * 		package relative path (true), or just a class name (false).
 	 * @return Whether or not the given location has been imported.
 	 */
-	public boolean containsImport(String importLocation, boolean absoluteLocation)
+	public boolean containsImport(String importLocation, boolean absoluteLocation) {
+		return containsImport(importLocation, absoluteLocation, false);
+	}
+
+	public boolean containsImport(String importLocation, boolean absoluteLocation, boolean aliased)
 	{
-		return getImport(importLocation, absoluteLocation, false) != null;
+		return getImport(importLocation, absoluteLocation, aliased) != null;
 	}
 	
 	/**

@@ -351,11 +351,15 @@ public class SyntaxTree
 
 			ClassDeclaration metaClass = root.getClassDeclaration("flat/meta/Class");
 
+			int[] index = new int[] {1};
+
 			classes.forEach(c -> {
-				metaClass.getFileDeclaration().addImport(c.getClassLocation());
+				metaClass.getFileDeclaration().addImport(c.getClassLocation(), false, "Class" + index[0]++, true);
 			});
 
-			String classesValue = "[" + classes.stream().map(c -> c.getClassLocation(false, false) + ".class").collect(Collectors.joining(", ")) + "]";
+			index[0] = 1;
+
+			String classesValue = "[" + classes.stream().map(c -> "Class" + index[0]++ + ".class").collect(Collectors.joining(", ")) + "]";
 
 			metaClass.getField("ALL").setShorthandAccessor(classesValue);
 

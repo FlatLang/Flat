@@ -52,7 +52,7 @@ public class StaticClassReference extends IIdentifier
 		Node ref = parent instanceof Accessible && ((Accessible) parent).canAccess() ? ((Accessible) parent).toValue().getTypeClass() : parent;
 		ref = ref == null ? parent : ref;
 
-		if (ref.getFileDeclaration().getClassDeclaration(statement) != null || ref.getFileDeclaration().containsImport(statement, false))
+		if (ref.getFileDeclaration().getClassDeclaration(statement) != null || ref.getFileDeclaration().containsImport(statement, false, true))
 		{
 			StaticClassReference n = new StaticClassReference(parent, location);
 			
