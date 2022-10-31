@@ -1,5 +1,0 @@
-package flat/meta
-
-class Field {
-    public construct(visible String name, visible Type type) {}
-}
