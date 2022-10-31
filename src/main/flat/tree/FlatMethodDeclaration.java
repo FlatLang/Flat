@@ -413,9 +413,13 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				{
 					if (method.getParentClass() == getParentClass())
 					{
-						method.getParentClass();
-						getParentClass();
-						SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
+						if (SyntaxUtils.isSameType(getParameterList().getObjectReference(), method.getParameterList().getObjectReference())) {
+							SyntaxUtils.areSameTypes(getParameterList().getTypes(), method.getParameterList().getTypes());
+							SyntaxUtils.isSameType(getParameterList().getObjectReference(), method.getParameterList().getObjectReference());
+							method.getParentClass();
+							getParentClass();
+							SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
+						}
 					}
 					
 					continue;
