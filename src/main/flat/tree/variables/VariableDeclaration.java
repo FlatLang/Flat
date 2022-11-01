@@ -582,7 +582,14 @@ public class VariableDeclaration extends IIdentifier
 
 				args.addChild(SyntaxUtils.getGenericTypeArgumentName(this, type));
 
-				getFileDeclaration().addImport(decl.getFileDeclaration().getImport(type, false).getClassLocation());
+				Import imp = decl.getFileDeclaration().getImport(type, false);
+
+				if (imp == null) {
+					SyntaxMessage.error("Invalid type '" + type + "'", this);
+					return;
+				}
+
+				getFileDeclaration().addImport(imp.getClassLocation());
 			}
 		}
 	}
