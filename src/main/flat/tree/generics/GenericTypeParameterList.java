@@ -129,8 +129,20 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 		if (numWords > 1)
 		{
 			boolean failed = true;
-			
+
 			Bounds bounds     = StringUtils.findNextWordBounds(parameterName);
+
+			if (bounds.extractString(parameterName).equals("reified")) {
+				type.setReified(true);
+				bounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
+
+				String newParameterName = parameterName.substring(bounds.getEnd());
+
+				if (StringUtils.findNumWords(newParameterName) == 1) {
+					return addGenericParameterName(type, newParameterName);
+				}
+			}
+
 			Bounds nextBounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
 			
 			if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER) || nextBounds.extractString(parameterName).equals(IMPLEMENTS_IDENTIFIER))

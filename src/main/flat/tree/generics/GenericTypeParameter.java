@@ -19,7 +19,8 @@ import flat.tree.Node;
 public class GenericTypeParameter extends IValue
 {
 	private String defaultType;
-	
+	private boolean reified;
+
 	/**
 	 * @see Node#Node(Node, Location)
 	 */
@@ -39,7 +40,15 @@ public class GenericTypeParameter extends IValue
 	{
 		setTypeValue(name);
 	}
-	
+
+	public boolean isReified() {
+		return reified;
+	}
+
+	public void setReified(boolean reified) {
+		this.reified = reified;
+	}
+
 	public String getDefaultType()
 	{
 		return defaultType;
