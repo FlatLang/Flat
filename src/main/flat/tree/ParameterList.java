@@ -311,7 +311,9 @@ public class ParameterList<E extends Value> extends TypeList<E>
 		{
 			if (!getParentMethod().isInstance())
 			{
-				contextError(parent);
+				if (getParentMethod() instanceof PropertyMethod == false || ((PropertyMethod)getParentMethod()).getDeclaration() instanceof ClassInstanceDeclaration == false) {
+					contextError(parent);
+				}
 			}
 		}
 	}

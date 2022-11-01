@@ -343,7 +343,7 @@ public class SyntaxTree
 							interfacesArg = "Array()";
 						}
 
-						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ")");
+						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ", this)");
 						c.getFieldList().addChild(c.classInstanceDeclaration);
 					});
 				}
