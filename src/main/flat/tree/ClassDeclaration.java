@@ -2437,10 +2437,6 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				return null;
 			}
-			else if (index + IDENTIFIER.length() < statement.length() && !StringUtils.isWhitespace(statement.charAt(index + IDENTIFIER.length())))
-			{
-				return null;
-			}
 			
 			ClassDeclaration n = new ClassDeclaration(parent, location);
 			n.setVisibility(PUBLIC);
@@ -2548,7 +2544,7 @@ public class ClassDeclaration extends InstanceDeclaration
 					setType(word);
 					checkGenerics = true;
 				} else if (word.equals(IDENTIFIER)) {
-					if (parent instanceof FileDeclaration && (data.isLastWord() || Stream.of("extends", "implements").anyMatch(w -> w.equals(data.getNextWord())))) {
+					if (parent instanceof FileDeclaration && (data.isLastWord() || data.getRightAdjacentSkipBounds() != null || Stream.of("extends", "implements").anyMatch(w -> w.equals(data.getNextWord())))) {
 						String className = parent.getFileDeclaration(true).getName();
 
 						setName(className);
