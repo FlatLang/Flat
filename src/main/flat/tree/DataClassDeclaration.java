@@ -197,7 +197,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			.map(f -> ", " + f.getFlatType() + ": " + f.getName() + " = " + f.getName())
 			.collect(Collectors.joining(""));
 
-		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copyTo<TargetType extends " + getFlatType() + ">(" + params + ") -> TargetType", Location.INVALID, true);
+		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copyTo<TargetType extends " + getName() + ">(" + params + ") -> TargetType", Location.INVALID, true);
 
 		if (func == null) {
 			SyntaxMessage.error("Failed to create copyTo function for data class", this);
@@ -318,15 +318,18 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void addBuilderClass() {
-		ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this, "public static class Builder", Location.INVALID, true);
+		String generics = getGenericTypeParameterDeclaration() != null ? getGenericTypeParameterDeclaration().generateFlatInput().toString() : "";
+		ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this, "public static class Builder" + generics, Location.INVALID, true);
 
 		List<FieldDeclaration> fields = getFields();
 
 		fields.forEach((field) -> {
 			FieldDeclaration mutableField = FieldDeclaration.decodeStatement(builderClass, "var " + field.getFlatType() + " " + field.getName() + "_value", Location.INVALID, true);
+			mutableField.onAfterDecoded();
 
-			BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + field.getFlatType() + " value) -> Builder", Location.INVALID, true);
+			BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + field.getFlatType() + " value) -> Builder" + generics, Location.INVALID, true);
 			assignFunc.shorthandAction = "this";
+			assignFunc.onAfterDecoded();
 
 			builderClass.addChild(mutableField);
 			builderClass.addChild(assignFunc);
@@ -336,7 +339,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			assignFunc.addChild(assignment);
 		});
 
-		BodyMethodDeclaration buildFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public build() -> " + getName(), Location.INVALID, true);
+		BodyMethodDeclaration buildFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public build() -> " + getName() + generics, Location.INVALID, true);
 
 		String args = getDataClassConstructor()
 			.getParameterList()
@@ -345,7 +348,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			.map(param -> ((Parameter) param).getName() + ": " + ((Parameter) param).getName() + "_value")
 			.collect(Collectors.joining(", "));
 
-		buildFunc.shorthandAction = getName() + "(" + args + ")";
+		buildFunc.shorthandAction = getName() + generics + "(" + args + ")";
 
 		builderClass.addChild(buildFunc);
 
@@ -370,13 +373,13 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		addChild(builderClass);
 
-		BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public toBuilder() -> Builder", Location.INVALID, true);
+		BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public toBuilder() -> Builder" + generics, Location.INVALID, true);
 
 		String toBuilderArgs = fields.stream()
 			.map(f -> f.getName() + ": " + f.getName())
 			.collect(Collectors.joining(", "));
 
-		toBuilderFunc.shorthandAction = "Builder(" + toBuilderArgs + ")";
+		toBuilderFunc.shorthandAction = "Builder" + generics + "(" + toBuilderArgs + ")";
 
 		addChild(toBuilderFunc);
 	}
