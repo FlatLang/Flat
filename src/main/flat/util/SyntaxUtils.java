@@ -34,8 +34,6 @@ public class SyntaxUtils
 
 	public static final char[] WHITESPACE = new char[] {' ', '\t', '\n', '\r'};
 
-	private static HashMap<String, String> classNames = new HashMap<>();
-
 	/**
 	 * Get the rank of the given primitive type in terms of assignment
 	 * hierarchy. For example: integers can be assigned to long types and
@@ -3397,18 +3395,11 @@ public class SyntaxUtils
 		{
 			return null;
 		}
-		if (classNames.containsKey(classLocation)) {
-			return classNames.get(classLocation);
-		}
 		
 		int lastIndex = classLocation.lastIndexOf('/') + 1;
 		int endIndex = includeEncapsulatingClasses ? -1 : classLocation.lastIndexOf('.');
 		
-		String name = classLocation.substring(Math.max(endIndex + 1, lastIndex));
-
-		classNames.put(classLocation, name);
-
-		return name;
+		return classLocation.substring(Math.max(endIndex + 1, lastIndex));
 	}
 	
 	public static ClassDeclaration getImportedClass(FileDeclaration file, String className)
