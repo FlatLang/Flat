@@ -2697,6 +2697,9 @@ public class ClassDeclaration extends InstanceDeclaration
 	
 	public GenericTypeParameter getGenericTypeParameter(int index)
 	{
+		if (getGenericTypeParameterDeclaration().getNumVisibleChildren() <= index) {
+			return null;
+		}
 		return getGenericTypeParameterDeclaration().getVisibleChild(index);
 	}
 
