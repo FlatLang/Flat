@@ -307,6 +307,7 @@ public class SyntaxTree
 			root.forEachVisibleListChild(file -> {
 				if (!file.isExternalFile()) {
 					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+						controller.log("Creating static class instance declaration for class " + c.getClassLocation() + "...");
 						classes.add(c);
 
 						c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
@@ -376,6 +377,7 @@ public class SyntaxTree
 				if (!file.isExternalFile()) {
 					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
 						if (!c.classInstanceDeclaration.containsAccessorMethod()) {
+							controller.log("Compiling class instance declaration arrow binding for class " + c.getClassLocation() + "...");
 							c.classInstanceDeclaration.decodeArrowBinding();
 						}
 
