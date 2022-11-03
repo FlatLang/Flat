@@ -136,11 +136,9 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter>
 				type.setReified(true);
 				bounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
 
-				String newParameterName = parameterName.substring(bounds.getEnd());
+				String newParameterName = parameterName.substring(bounds.getStart());
 
-				if (StringUtils.findNumWords(newParameterName) == 1) {
-					return addGenericParameterName(type, newParameterName);
-				}
+				return addGenericParameterName(type, newParameterName);
 			}
 
 			Bounds nextBounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());

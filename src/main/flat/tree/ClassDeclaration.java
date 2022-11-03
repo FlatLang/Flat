@@ -19,10 +19,13 @@ import flat.util.Bounds;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Arrays.stream;
 
 /**
  * Declaration extension that represents the declaration of a class
@@ -2696,6 +2699,14 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		return getGenericTypeParameterDeclaration().getVisibleChild(index);
 	}
+
+	public List<GenericTypeParameter> getReifiedParameters() {
+		return getGenericTypeParameterDeclaration()
+			.getChildStream()
+			.map(p -> (GenericTypeParameter) p)
+			.filter(p -> p.isReified())
+			.collect(Collectors.toList());
+	}
 	
 	public String generateTemporaryMethodName()
 	{
@@ -3294,8 +3305,38 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			
 		}
-		
+
+		if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
+			ClassDeclaration[] classes = getClassExtensions();
+
+			if (classes.length > 0) {
+				for (GenericTypeParameter param : getGenericTypeParameterDeclaration()) {
+					if (param.isReified()) {
+						stream(classes).forEach(c -> {
+							GenericTypeArgument arg = param.getCorrespondingArgument(c);
+							if (arg != null) {
+								GenericTypeParameter argP = arg.getGenericTypeParameter();
+								GenericTypeParameter p = c.getGenericTypeParameter(argP.getName());
+								if (p != null) {
+									p.setReified(true);
+								}
+							}
+						});
+					}
+				}
+			}
+		}
+
 		return result;
+	}
+
+	public ClassDeclaration[] getClassExtensions()
+	{
+		return getProgram().getChildStream()
+			.filter(f -> f instanceof FileDeclaration)
+			.map(f -> (FileDeclaration) f)
+			.flatMap(f -> stream(f.getClassDeclarations()).filter(c -> c.isOfType(this)))
+			.toArray(ClassDeclaration[]::new);
 	}
 	
 	public boolean isPrimitiveOverload()

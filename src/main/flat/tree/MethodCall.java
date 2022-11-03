@@ -1115,7 +1115,12 @@ public class MethodCall extends Variable
 	{
 		if (getFlatMethod() != null)
 		{
-			GenericTypeParameterList params = getFlatMethod().getMethodGenericTypeParameterDeclaration();
+			GenericTypeParameterList params;
+			if (getFlatMethod() instanceof Constructor) {
+				params = getFlatMethod().getParentClass().getGenericTypeParameterDeclaration();
+			} else {
+				params = getFlatMethod().getMethodGenericTypeParameterDeclaration();
+			}
 			
 			int index = params.getParameterIndex(type.getName());
 			

@@ -94,7 +94,9 @@ public class DataClassDeclaration extends ClassDeclaration
 			return result;
 		}
 
-		checkAddDataClassFunctionality(phase);
+		if (phase > SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
+			checkAddDataClassFunctionality();
+		}
 
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
 			ClassDeclaration builderClass = getBuilderClass();
@@ -111,19 +113,17 @@ public class DataClassDeclaration extends ClassDeclaration
 		return result;
 	}
 
-	private void checkAddDataClassFunctionality(int phase) {
-		if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
-			if (!addedDataClassFunctionality) {
-				addedDataClassFunctionality = true;
-				addMissingImports();
-				validateDefaultConstructor();
-				addCopyFunction();
-				addEqualsFunctions();
-				addToStringFunction();
-				addToJsonFunction();
-				addBuilderClass();
-				addCopyToFunction();
-			}
+	public void checkAddDataClassFunctionality() {
+		if (!addedDataClassFunctionality) {
+			addedDataClassFunctionality = true;
+			addMissingImports();
+			validateDefaultConstructor();
+			addCopyFunction();
+			addEqualsFunctions();
+			addToStringFunction();
+			addToJsonFunction();
+			addBuilderClass();
+			addCopyToFunction();
 		}
 	}
 
@@ -318,8 +318,9 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void addBuilderClass() {
-		String generics = getGenericTypeParameterDeclaration() != null ? getGenericTypeParameterDeclaration().generateFlatInput().toString() : "";
-		ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this, "public static class Builder" + generics, Location.INVALID, true);
+		String genericParams = getGenericTypeParameterDeclaration() != null ? getGenericTypeParameterDeclaration().generateFlatInput().toString() : "";
+		String genericArgs = getGenericTypeArgumentList() != null ? getGenericTypeArgumentList().generateFlatInput().toString() : "";
+		ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this, "public static class Builder" + genericParams, Location.INVALID, true);
 
 		List<FieldDeclaration> fields = getFields();
 
@@ -327,7 +328,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			FieldDeclaration mutableField = FieldDeclaration.decodeStatement(builderClass, "var " + field.getFlatType() + " " + field.getName() + "_value", Location.INVALID, true);
 			mutableField.onAfterDecoded();
 
-			BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + field.getFlatType() + " value) -> Builder" + generics, Location.INVALID, true);
+			BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + field.getFlatType() + " value) -> Builder" + genericParams, Location.INVALID, true);
 			assignFunc.shorthandAction = "this";
 			assignFunc.onAfterDecoded();
 
@@ -339,7 +340,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			assignFunc.addChild(assignment);
 		});
 
-		BodyMethodDeclaration buildFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public build() -> " + getName() + generics, Location.INVALID, true);
+		BodyMethodDeclaration buildFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public build() -> " + getName() + genericArgs, Location.INVALID, true);
 
 		String args = getDataClassConstructor()
 			.getParameterList()
@@ -348,7 +349,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			.map(param -> ((Parameter) param).getName() + ": " + ((Parameter) param).getName() + "_value")
 			.collect(Collectors.joining(", "));
 
-		buildFunc.shorthandAction = getName() + generics + "(" + args + ")";
+		buildFunc.shorthandAction = getName() + genericArgs + "(" + args + ")";
 
 		builderClass.addChild(buildFunc);
 
@@ -373,13 +374,13 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		addChild(builderClass);
 
-		BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public toBuilder() -> Builder" + generics, Location.INVALID, true);
+		BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public toBuilder() -> Builder" + genericParams, Location.INVALID, true);
 
 		String toBuilderArgs = fields.stream()
 			.map(f -> f.getName() + ": " + f.getName())
 			.collect(Collectors.joining(", "));
 
-		toBuilderFunc.shorthandAction = "Builder" + generics + "(" + toBuilderArgs + ")";
+		toBuilderFunc.shorthandAction = "Builder" + genericArgs + "(" + toBuilderArgs + ")";
 
 		addChild(toBuilderFunc);
 	}

@@ -289,6 +289,15 @@ public class SyntaxTree
 		
 		if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
+			root.forEachVisibleListChild(file -> {
+				if (!file.isExternalFile()) {
+					Arrays.stream(file.getClassDeclarations())
+						.filter(c -> c instanceof DataClassDeclaration)
+						.map(c -> (DataClassDeclaration)c)
+						.forEach(c -> c.checkAddDataClassFunctionality());
+				}
+			});
+
 			root.decodeShorthandActions = true;
 
 			controller.log("Creating static class instance declarations...");
@@ -1431,6 +1440,11 @@ public class SyntaxTree
 						if (node == null)
 						{
 							node = StaticClassReference.decodeStatement(parent, statement, location, false);
+
+							if (node == null)
+							{
+								node = ReifiedParameterAccess.decodeStatement(parent, statement, location, false);
+							}
 						}
 					}
 				}

@@ -4,6 +4,8 @@ import flat.TestContext;
 import flat.ValidationResult;
 import flat.error.SyntaxMessage;
 import flat.tree.generics.GenericTypeArgumentList;
+import flat.tree.generics.GenericTypeParameter;
+import flat.tree.generics.GenericTypeParameterList;
 import flat.util.Bounds;
 import flat.util.Location;
 import flat.util.Stack;
@@ -75,7 +77,20 @@ public class Constructor extends BodyMethodDeclaration
 	{
 		return true;
 	}
-	
+
+	@Override
+	public GenericTypeParameter getGenericTypeParameter(String name)
+	{
+		GenericTypeParameterList decl = getParentClass().getGenericTypeParameterDeclaration();
+
+		if (decl != null)
+		{
+			return decl.getParameter(name);
+		}
+
+		return super.getGenericTypeParameter(name);
+	}
+
 	/**
 	 * @see FlatMethodDeclaration#generateFlatInput(java.lang.StringBuilder, boolean)
 	 */

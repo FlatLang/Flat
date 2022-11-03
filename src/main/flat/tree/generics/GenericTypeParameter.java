@@ -155,6 +155,10 @@ public class GenericTypeParameter extends IValue
 	@Override
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
 	{
+		if (isReified()) {
+			builder.append("reified ");
+		}
+
 		builder.append(getName());
 		
 		if (!getDefaultType().equals("Object"))
@@ -196,6 +200,7 @@ public class GenericTypeParameter extends IValue
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
 		node.defaultType = defaultType;
+		node.reified = reified;
 		
 		return node;
 	}
@@ -216,7 +221,13 @@ public class GenericTypeParameter extends IValue
 	
 	public String toString(boolean carets)
 	{
-		String str = getName();
+		String str = "";
+
+		if (isReified()) {
+			str += "reified ";
+		}
+
+		str += getName();
 		
 		if (!getDefaultType().equals("Object"))
 		{
