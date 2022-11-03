@@ -169,9 +169,11 @@ public class DataClassDeclaration extends ClassDeclaration
 			.map(param -> ((Parameter) param).getName())
 			.collect(Collectors.joining(", "));
 
+		String genericArgs = getGenericTypeArgumentList().generateFlatInput().toString();
+
 		Value returnValue = Instantiation.decodeStatement(
 			func.getScope(),
-			getName() + "(" + args + ")",
+			getName() + genericArgs + "(" + args + ")",
 			Location.INVALID,
 			true
 		);
@@ -318,8 +320,8 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void addBuilderClass() {
-		String genericParams = getGenericTypeParameterDeclaration() != null ? getGenericTypeParameterDeclaration().generateFlatInput().toString() : "";
-		String genericArgs = getGenericTypeArgumentList() != null ? getGenericTypeArgumentList().generateFlatInput().toString() : "";
+		String genericParams = getGenericTypeParameterDeclaration().generateFlatInput().toString();
+		String genericArgs = getGenericTypeArgumentList().generateFlatInput().toString();
 		ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this, "public static class Builder" + genericParams, Location.INVALID, true);
 
 		List<FieldDeclaration> fields = getFields();
