@@ -3,6 +3,7 @@ package flat.tree;
 import flat.TestContext;
 import flat.ValidationResult;
 import flat.error.SyntaxMessage;
+import flat.tree.annotations.DataIgnoreAnnotation;
 import flat.tree.variables.FieldDeclaration;
 import flat.util.Location;
 import flat.util.StringUtils;
@@ -138,6 +139,7 @@ public class DataClassDeclaration extends ClassDeclaration
 			.getPublicFieldList()
 			.getChildStream()
 			.map(c -> (FieldDeclaration)c)
+			.filter(f -> !f.containsAnnotationOfType(DataIgnoreAnnotation.class))
 			.filter(f -> f.getShorthandAccessor() == null)
 			.filter(f -> !f.containsAccessorMethod());
 

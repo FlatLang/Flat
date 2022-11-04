@@ -67,7 +67,8 @@ public class Annotation extends Node
 			LazyAnnotation.class,
 			InlineAnnotation.class,
 			OnlyAnnotation.class,
-			IgnoreAnnotation.class
+			IgnoreAnnotation.class,
+			DataIgnoreAnnotation.class,
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
@@ -485,6 +486,11 @@ public class Annotation extends Node
 																																								if (n == null)
 																																								{
 																																									n = InlineAnnotation.decodeStatement(parent, name, arguments, location, require);
+
+																																									if (n == null)
+																																									{
+																																										n = DataIgnoreAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																									}
 																																								}
 																																							}
 																																						}
