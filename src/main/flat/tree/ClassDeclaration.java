@@ -3319,6 +3319,9 @@ public class ClassDeclaration extends InstanceDeclaration
 							GenericTypeArgument arg = param.getCorrespondingArgument(c);
 							if (arg != null) {
 								GenericTypeParameter argP = arg.getGenericTypeParameter();
+								if (argP == null) {
+									SyntaxMessage.error("Invalid generic arg " + arg.getName(), c);
+								}
 								GenericTypeParameter p = c.getGenericTypeParameter(argP.getName());
 								if (p != null) {
 									p.setReified(true);
