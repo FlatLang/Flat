@@ -155,7 +155,7 @@ public class DataClassDeclaration extends ClassDeclaration
 		List<FieldDeclaration> fields = getFields();
 
 		String params = fields.stream()
-			.map(f -> f.getFlatType() + " " + f.getName() + " = " + f.getName())
+			.map(f -> f.getFlatType(this) + " " + f.getName() + " = " + f.getName())
 			.collect(Collectors.joining(", "));
 
 		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copy(" + params + ") -> " + getFlatType(), Location.INVALID, true);
@@ -199,7 +199,7 @@ public class DataClassDeclaration extends ClassDeclaration
 		}
 
 		String params = "TargetType " + paramName + fields.stream()
-			.map(f -> ", " + f.getFlatType() + ": " + f.getName() + " = " + f.getName())
+			.map(f -> ", " + f.getFlatType(this) + ": " + f.getName() + " = " + f.getName())
 			.collect(Collectors.joining(""));
 
 		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copyTo<TargetType extends " + getName() + ">(" + params + ") -> TargetType", Location.INVALID, true);
@@ -332,10 +332,11 @@ public class DataClassDeclaration extends ClassDeclaration
 		List<FieldDeclaration> fields = getFields();
 
 		fields.forEach((field) -> {
-			FieldDeclaration mutableField = FieldDeclaration.decodeStatement(builderClass, "var " + field.getFlatType() + " " + field.getName() + "_value", Location.INVALID, true);
+			String fieldType = field.getFlatType(this);
+			FieldDeclaration mutableField = FieldDeclaration.decodeStatement(builderClass, "var " + fieldType + " " + field.getName() + "_value", Location.INVALID, true);
 			mutableField.onAfterDecoded();
 
-			BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + field.getFlatType() + " value) -> Builder" + genericParams, Location.INVALID, true);
+			BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + fieldType + " value) -> Builder" + genericParams, Location.INVALID, true);
 			assignFunc.shorthandAction = "this";
 			assignFunc.onAfterDecoded();
 
@@ -361,7 +362,7 @@ public class DataClassDeclaration extends ClassDeclaration
 		builderClass.addChild(buildFunc);
 
 		String constructorParams = fields.stream()
-			.map(f -> f.getFlatType() + " " + f.getName() + " = " + f.getName() + "_value")
+			.map(f -> f.getFlatType(this) + " " + f.getName() + " = " + f.getName() + "_value")
 			.collect(Collectors.joining(", "));
 
 		Constructor constructor = Constructor.decodeStatement(
@@ -422,7 +423,7 @@ public class DataClassDeclaration extends ClassDeclaration
 						initialization = (String) f.initializationValue;
 					}
 
-					return "this " + f.getFlatType() + " " + f.getName() + " = " + initialization;
+					return "this " + f.getFlatType(this) + " " + f.getName() + " = " + initialization;
 				})
 				.collect(Collectors.joining(", "));
 
