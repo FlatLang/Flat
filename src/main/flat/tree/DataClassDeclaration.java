@@ -3,6 +3,7 @@ package flat.tree;
 import flat.TestContext;
 import flat.ValidationResult;
 import flat.error.SyntaxMessage;
+import flat.tree.annotations.DataEqualsIgnoreAnnotation;
 import flat.tree.annotations.DataIgnoreAnnotation;
 import flat.tree.variables.FieldDeclaration;
 import flat.util.Location;
@@ -253,7 +254,9 @@ public class DataClassDeclaration extends ClassDeclaration
 			return;
 		}
 
-		List<FieldDeclaration> fields = getFields();
+		List<FieldDeclaration> fields = getFields().stream()
+			.filter(f -> !f.containsAnnotationOfType(DataEqualsIgnoreAnnotation.class))
+			.collect(Collectors.toList());
 
 		classFunc.shorthandAction = "(other || !this)" +
 			fields.stream()
