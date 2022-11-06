@@ -70,6 +70,7 @@ public class Annotation extends Node
 			IgnoreAnnotation.class,
 			DataIgnoreAnnotation.class,
 			DataEqualsIgnoreAnnotation.class,
+			DataToStringIgnoreAnnotation.class,
 		};
 		
 		Arrays.stream(classes).forEach(c -> {
@@ -495,6 +496,11 @@ public class Annotation extends Node
 																																										if (n == null)
 																																										{
 																																											n = DataEqualsIgnoreAnnotation.decodeStatement(parent, name, arguments, location, require);
+
+																																											if (n == null)
+																																											{
+																																												n = DataToStringIgnoreAnnotation.decodeStatement(parent, name, arguments, location, require);
+																																											}
 																																										}
 																																									}
 																																								}

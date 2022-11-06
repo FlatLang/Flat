@@ -5,6 +5,7 @@ import flat.ValidationResult;
 import flat.error.SyntaxMessage;
 import flat.tree.annotations.DataEqualsIgnoreAnnotation;
 import flat.tree.annotations.DataIgnoreAnnotation;
+import flat.tree.annotations.DataToStringIgnoreAnnotation;
 import flat.tree.variables.FieldDeclaration;
 import flat.util.Location;
 import flat.util.StringUtils;
@@ -274,7 +275,9 @@ public class DataClassDeclaration extends ClassDeclaration
 			return;
 		}
 
-		List<FieldDeclaration> fields = getFields();
+		List<FieldDeclaration> fields = getFields().stream()
+			.filter(f -> !f.containsAnnotationOfType(DataToStringIgnoreAnnotation.class))
+			.collect(Collectors.toList());
 
 		String values = fields.stream()
 			.map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + " != null && " + f.getName() + ".class.isOfType(String.class) ? '\"' + " + f.getName() + ".toString() + '\"' : " + f.getName() + ".toString()}")
