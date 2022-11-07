@@ -1679,8 +1679,6 @@ public class ClassDeclaration extends InstanceDeclaration
 			{
 				if (method.isStatic() || searchingClosure || contexts == null || contexts.length == 0 || contexts[0] instanceof Accessible == false || !((Accessible)contexts[0]).canAccess() || SyntaxUtils.isTypeCompatible(contexts[0], method.getParameterList().getObjectReference(), (Value)contexts[0])) {
 					compatible.add(method);
-				} else {
-					SyntaxUtils.isTypeCompatible(contexts[0], method.getParameterList().getObjectReference(), (Value)contexts[0]);
 				}
 			}
 		}
