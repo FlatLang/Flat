@@ -316,9 +316,9 @@ public class Variable extends Identifier
 	
 	public GenericCompatible getContext()
 	{
-		return getDeclaration() != null ? getDeclaration().getContext() : null;
+		return this;
 	}
-	
+
 	/**
 	 * Get the Instance/LocalDeclaration that declares the
 	 * specified variable.

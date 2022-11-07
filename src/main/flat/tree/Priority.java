@@ -41,7 +41,7 @@ public class Priority extends Value implements Accessible
 
 	public GenericCompatible getContext()
 	{
-		return null;
+		return this;
 	}
 
 	@Override

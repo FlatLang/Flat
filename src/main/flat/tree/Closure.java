@@ -174,7 +174,7 @@ public class Closure extends Variable
 		
 		if (closure != null)
 		{
-			return (FlatMethodDeclaration)declaringClass.getMethod(contexts, name, filter, closure.getParameterList().getTypes(), false, true);
+			return (FlatMethodDeclaration)declaringClass.getMethod(contexts, name, filter, closure.getParameterList().getTypes(), false, true, true);
 		}
 		
 		return null;

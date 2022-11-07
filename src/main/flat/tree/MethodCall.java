@@ -435,7 +435,7 @@ public class MethodCall extends Variable
 				SyntaxMessage.error("Could not find declaring class for '" + name + "'", this);
 			}
 			
-			MethodDeclaration method = clazz.a.getMethod(getContext(), name, clazz.b, getArgumentList());
+			MethodDeclaration method = clazz.a.getMethod(getReferenceNode().getContext(), name, clazz.b, getArgumentList());
 			
 			if (method != null)
 			{
@@ -850,7 +850,7 @@ public class MethodCall extends Variable
 	@Override
 	public GenericCompatible getContext()
 	{
-		return getReferenceNode().getContext();
+		return this;
 	}
 	
 	@Override

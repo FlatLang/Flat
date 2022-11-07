@@ -1581,9 +1581,12 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getMethod(contexts, methodName, filter, parameterTypes, reverse, true);
 	}
 	
-	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides)
+	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides) {
+		return getMethod(contexts, methodName, filter, parameterTypes, reverse, filterOverrides, false);
+	}
+	public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides, boolean searchingClosure)
 	{
-		ArrayList<MethodDeclaration> methods = new ArrayList<>(Arrays.asList(getMethods(contexts, methodName, filter, parameterTypes, reverse)));
+		ArrayList<MethodDeclaration> methods = new ArrayList<>(Arrays.asList(getMethods(contexts, methodName, filter, parameterTypes, reverse, searchingClosure)));
 		
 		if (filterOverrides)
 		{
@@ -1660,7 +1663,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		return methods;
 	}
 	
-	public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse)
+	public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse) {
+		return getMethods(contexts, methodName, filter, parameterTypes, reverse, false);
+	}
+
+	public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean searchingClosure)
 	{
 		MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
 		
@@ -1670,7 +1677,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes, reverse))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
 			{
-				compatible.add(method);
+				if (method.isStatic() || searchingClosure || contexts == null || contexts.length == 0 || contexts[0] instanceof Accessible == false || !((Accessible)contexts[0]).canAccess() || SyntaxUtils.isTypeCompatible(contexts[0], method.getParameterList().getObjectReference(), (Value)contexts[0])) {
+					compatible.add(method);
+				} else {
+					SyntaxUtils.isTypeCompatible(contexts[0], method.getParameterList().getObjectReference(), (Value)contexts[0]);
+				}
 			}
 		}
 		
