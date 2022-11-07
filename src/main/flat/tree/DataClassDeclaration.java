@@ -385,7 +385,7 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		addChild(builderClass);
 
-		BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public toBuilder() -> Builder" + genericParams, Location.INVALID, true);
+		BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(this, "public toBuilder() -> Builder" + genericParams, Location.INVALID, true);
 
 		String toBuilderArgs = fields.stream()
 			.map(f -> f.getName() + ": " + f.getName())
