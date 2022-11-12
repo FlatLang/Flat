@@ -24,7 +24,7 @@ import static java.util.Arrays.stream;
 
 /**
  * Class used for the compilation process.
- * 
+ *
  * @author	Braden Steffaniak
  * @since	v0.1 Jan 5, 2014 at 9:00:04 PM
  * @version	v0.2.44 Jul 13, 2015 at 1:28:17 AM
@@ -32,32 +32,32 @@ import static java.util.Arrays.stream;
 public class Flat
 {
 	private boolean				testClasses;
-	
+
 	public boolean deleteOutputDirectory;
-	
+
 	private long				flags;
 	private long				startTime, endTime;
-	
+
 	public File				outputFile;
-	
+
 	public File					workingDir, targetEngineWorkingDir;
-	
+
 	public String target, targetRuntime, formattedTarget;
 	public ArrayList<String> targetFileExtensions = new ArrayList<>();
-	
+
 	private SyntaxTree			tree;
-	
+
 	public ArrayList<String>	externalImports, externalIncludes, libraries;
 	public ArrayList<String> errors, warnings, messages;
-	
+
 	private String[] postArgs;
 
 	public String installDirectoryArg;
 	public File outputDirectory, installDirectory;
-	
+
 	public HashMap<String, String> outputDirectories;
-	
-	
+
+
 	public HashSet<String> includeDirectories;
 	public HashSet<String> defaultImports;
 	public HashSet<String> defaultStaticImports;
@@ -65,18 +65,18 @@ public class Flat
 	public Stack<Long> flagsStack;
 
 	public HashMap<File, ArrayList<File>> libraryFiles;
-	
+
 	public CodeGeneratorEngine codeGeneratorEngine;
 	public CompileEngine compileEngine;
-	
+
 	public static final int	OS;
-	
+
 	public static final String EXECUTABLE_EXTENSION, DYNAMIC_LIB_EXT;
-	
+
 	public boolean				isTesting     = false;
 
 	private boolean				expectingCompileError = false;
-	
+
 	public static final boolean	ANDROID_DEBUG = false;
 	public static final boolean	PRIMITIVE_OVERLOADS = false;
 
@@ -86,7 +86,7 @@ public class Flat
 	public static final boolean USE_INSTALLED_TARGET = true;
 //	public static final boolean USE_INSTALLED_STDLIB = false;
 	public static final boolean USE_INSTALLED_STDLIB = true;
-	
+
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 
@@ -105,23 +105,23 @@ public class Flat
 	public static final long	NO_C_OUTPUT   = 0x0000000000010000l;
 	public static final long	NO_OPTIMIZE   = 0x0000000000001000l;
 	public static final long	QUOTE_PATHS   = 0x0000000000000100l;
-	
+
 	public static final int		WINDOWS       = 1;
 	public static final int		MACOSX        = 2;
 	public static final int		LINUX         = 3;
-	
+
 	public static final String	LANGUAGE_NAME = "Flat";
 	public static final String	VERSION       = "v0.3.8";
 
 	public static Flat instance;
-	
+
 	/**
 	 * Find out which operating system the compiler is running on.
 	 */
 	static
 	{
 		String osName = System.getProperty("os.name").toLowerCase();
-		
+
 		if (osName.startsWith("win"))
 		{
 			OS = WINDOWS;
@@ -196,7 +196,7 @@ public class Flat
 	/**
 	 * Method called whenever the compiler is invoked. Supplies the
 	 * needed information for compiling the given files.
-	 * 
+	 *
 	 * @param args The String array containing the locations of the files
 	 * 		to compile, as well as other compiler arguments.
 	 */
@@ -266,14 +266,14 @@ public class Flat
 
 		System.exit(returnCode);
 	}
-	
+
 	public static void unsupportedOs()
 	{
 		System.err.println("Unsupported operating system.");
-		
+
 		System.exit(1);
 	}
-	
+
 	/**
 	 * Method used to initialize the compiler data and start the
 	 * compilation process.
@@ -285,16 +285,16 @@ public class Flat
 			try
 			{
 				System.out.println("Preparing Benchmark...");
-				
+
 				Thread.sleep(100);
-				
+
 				System.out.println("Starting...");
 			}
 			catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
-			
+
 			enableFlag(DRY_RUN);
 		}
 
@@ -328,16 +328,16 @@ public class Flat
 			if (System.getenv("FLAT_HOME") == null)
 			{
 				System.err.println("FLAT_HOME environment variable is not set. Learn how to set them at http://flat-lang.org/docs/getting-started/configure-environment");
-				
+
 				System.exit(1);
 			}
-			
+
 			installDirectory = new File(System.getenv("FLAT_HOME"));
 		}
 		else if (OS == MACOSX)
 		{
 			String workingPath = getWorkingDirectoryPath();
-			
+
 			installDirectory = new File("/Library/Application Support/Flat");
 		}
 		else if (OS == LINUX)
@@ -356,13 +356,13 @@ public class Flat
 			System.exit(1);
 		}
 	}
-	
+
 	private void startEngines()
 	{
 		try
 		{
 			String enginePath = null;
-			
+
 			if (!USE_INSTALLED_TARGET)
 			{
 				enginePath = "..";
@@ -402,11 +402,11 @@ public class Flat
 			formattedTarget = targetEngineWorkingDir.getName().substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
 
 			File engineJar = new File(enginePath + "/Flat-" + formattedTarget + "/target/flat-" + formattedTarget.toLowerCase() + ".jar");
-			
+
 			if (!engineJar.isFile())
 			{
 				System.err.println("Could not find built target jar for " + target + " compilation target in '" + engineJar.getAbsolutePath() + "'");
-				
+
 				System.exit(1);
 			}
 
@@ -416,23 +416,23 @@ public class Flat
 			if (target.equals("es6")) {
 				targetFileExtensions.add("js");
 			}
-			
+
 			try
 			{
 				URL url = engineJar.toURI().toURL();
-				
+
 				// Create a new class loader with the directory
 				ClassLoader cl = new URLClassLoader(new URL[] { url }, this.getClass().getClassLoader());
-				
+
 				Class codeGeneratorEngineClass = cl.loadClass("flat." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CodeGeneratorEngine");
 				Class compileEngineClass = cl.loadClass("flat." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CompileEngine");
-				
+
 				java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Flat.class);
 				java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Flat.class);
-				
+
 				codeGeneratorEngine = (CodeGeneratorEngine)codeGeneratorEngineConstructor.newInstance(this);
 				compileEngine = (CompileEngine)compileEngineConstructor.newInstance(this);
-				
+
 				codeGeneratorEngine.init();
 				compileEngine.init();
 				compileEngine.addIncludeDirectories(includeDirectories);
@@ -464,13 +464,13 @@ public class Flat
 		}
 		catch (IOException io)
 		{
-			
+
 		}
-		
+
 		//codeGeneratorEngine = new CCodeGeneratorEngine(this);
 		//compileEngine = new CCompileEngine(this);
 	}
-	
+
 	/**
 	 * Used to represent a debugging breakpoint...
 	 *
@@ -482,7 +482,7 @@ public class Flat
 		{
 			System.out.println("Breakpoint");
 		}
-		
+
 		return condition;
 	}
 
@@ -504,9 +504,6 @@ public class Flat
 
 			args = new String[]
 					{
-//				"../Flatc",
-//				"../Astro",
-//				"../Spectra",
 //				"../Flat.c",
 //				"../plumber/plumbercalc",
 //							"../Flat-Testing/example",
@@ -536,8 +533,6 @@ public class Flat
 //				"example/SvgFractal",
 //				"example/HashMapDemo",
 //				"example/HashSetDemo",
-//				"spectra/Spectra",
-//				"novex/flatc/Flatc",
 //				"-nogc",
 //				"-no-c-output",
 //				"-dry",
@@ -607,58 +602,58 @@ public class Flat
 
 	/**
 	 * Compile the input files given within the args.
-	 * 
+	 *
 	 * @param args The String array containing the locations of the files
 	 * 		to compile, as well as other compiler arguments.
 	 */
 	public void compile(String args[], boolean generateCode)
 	{
 		codeGeneratorEngine.initializeOutputDirectory();
-		
+
 //		log("Flat " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
 //				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
 //				"This is free software, and you are welcome to redistribute it\n" +
 //				"under certain conditions");//; type show c for details.");
-		
+
 		workingDir = new File(getWorkingDirectoryPath());
-		
+
 		startTimer();
-		
+
 		createSyntaxTree(generateCode);
 	}
 
 	private String[] prependArguments(String args[], String ... newData)
 	{
 		String temp[] = new String[args.length + newData.length];
-		
+
 		System.arraycopy(newData, 0, temp, 0, newData.length);
 		System.arraycopy(args, 0, temp, newData.length, args.length);
-		
+
 		return temp;
 	}
-	
+
 	private String[] appendArguments(String args[], String ... newData)
 	{
 		String temp[] = new String[args.length + newData.length];
-		
+
 		System.arraycopy(args, 0, temp, 0, args.length);
 		System.arraycopy(newData, 0, temp, args.length, newData.length);
-		
+
 		return temp;
 	}
-	
+
 	private void createSyntaxTree(boolean generateCode)
 	{
 		// Try to create a Syntax Tree for the given file.
 		try
 		{
 			int times = 1;
-			
+
 			if (BENCHMARK > 0)
 			{
 				times = BENCHMARK;
 			}
-			
+
 			try
 			{
 				for (int i = 0; i < times; i++)
@@ -666,7 +661,7 @@ public class Flat
 					long before = System.currentTimeMillis();
 
 					ArrayList<File> allFiles = new ArrayList<>(inputFiles);
-					
+
 					for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
 					{
 						entry.getValue().stream()
@@ -681,13 +676,13 @@ public class Flat
 					}
 
 					allFiles.sort(Comparator.comparing(File::getName));
-					
+
 					tree = new SyntaxTree(allFiles.toArray(new File[0]), this);
 					tree.generate();
-					
+
 					codeGeneratorEngine.tree = tree;
 					compileEngine.tree = tree;
-					
+
 					if (containsErrors())
 					{
 						enableFlag(DRY_RUN);
@@ -706,31 +701,31 @@ public class Flat
 					{
 						long time = System.currentTimeMillis();
 						long newTime = time;
-						
+
 						log("Generating output...");
 						codeGeneratorEngine.generateOutput();
 						log("Generating output took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
-						
+
 						log("Inserting main method...");
 						codeGeneratorEngine.insertMainMethod();
 						log("Inserting main method took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
-						
+
 						log("Formatting output...");
 						codeGeneratorEngine.formatOutput();
 						log("Formatting output took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
-						
+
 						log("Writing files...");
 						codeGeneratorEngine.writeFiles();
 						log("Writing files took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
 						time = newTime;
-						
+
 					}
-					
+
 					long time = System.currentTimeMillis() - before;
-					
+
 					if (BENCHMARK > 1)
 					{
 						System.out.println("Benchmark " + (i + 1) + ": " + time + "ms");
@@ -746,25 +741,25 @@ public class Flat
 		catch (IOException e1)
 		{
 			error("Could not generate the syntax tree for the file '");// + file.getName() + "'.");
-			
+
 			e1.printStackTrace();
-			
+
 			completed(false);
 		}
-		
+
 		long   time = System.currentTimeMillis() - startTime;
-		
+
 		String str  = LANGUAGE_NAME + " compile time: " + time + "ms";
-		
+
 		outputMessages(true);
-		
+
 		if (BENCHMARK > 0)
 		{
 			if (BENCHMARK > 1)
 			{
 				str += " (Average of " + String.format("%.3f", time / (float)BENCHMARK) + "ms)";
 			}
-			
+
 			System.out.println(str);
 		}
 		else
@@ -772,25 +767,25 @@ public class Flat
 			log(str);
 		}
 	}
-	
+
 	/**
 	 * Output the log message from the compiler.
-	 * 
+	 *
 	 * @param message The message describing what happened.
 	 */
 	public void log(String message)
 	{
 		log(message, true);
 	}
-	
+
 	public void log(String message, boolean newLine)
 	{
 		log(flags, message, newLine);
 	}
-	
+
 	/**
 	 * Output the log message from the compiler.
-	 * 
+	 *
 	 * @param flags The flags that verify whether the compiler is verbose.
 	 * @param message The message describing what happened.
 	 */
@@ -798,7 +793,7 @@ public class Flat
 	{
 		log(flags, message, true);
 	}
-	
+
 	public static void log(long flags, String message, boolean newLine)
 	{
 		if (isFlagEnabled(flags, VERBOSE))
@@ -806,20 +801,20 @@ public class Flat
 			System.out.print(message + (newLine ? '\n' : ""));
 		}
 	}
-	
+
 	/**
 	 * Output a warning message from the compiler.
-	 * 
+	 *
 	 * @param message The message describing the warning.
 	 */
 	public void warning(String message)
 	{
 		warnings.add("Warning: " + message);
 	}
-	
+
 	/**
 	 * Output an error message from the compiler.
-	 * 
+	 *
 	 * @param message The message describing the error.
 	 */
 	public void error(String message)
@@ -828,26 +823,26 @@ public class Flat
 		{
 			enableFlag(DRY_RUN);
 		}
-		
+
 		String error = "Error: " + message;
-		
+
 		errors.add(error);
 	}
-	
+
 	/**
 	 * Get whether or not the compilation has accumulated any errors.
-	 * 
+	 *
 	 * @return Whether or not there are any errors currently.
 	 */
 	public boolean containsErrors()
 	{
 		return errors.size() > 0;
 	}
-	
+
 	/**
 	 * Add the given external import location to be added to the
 	 * compilation list.
-	 * 
+	 *
 	 * @param file The File that is importing the location.
 	 * @param location The location that is being imported.
 	 */
@@ -858,7 +853,7 @@ public class Flat
 //			location = file.getFile().getParent() + "/" + location;
 			String absoluteLocation = location.substring(0, location.length() - 1) + target;
 			absoluteLocation = FileUtils.findFileLocation(absoluteLocation, includeDirectories.toArray(new String[0]));
-			
+
 			if (absoluteLocation != null && !StringUtils.containsString(externalImports, absoluteLocation))
 			{
 				externalImports.add(absoluteLocation);
@@ -927,10 +922,10 @@ public class Flat
 			}
 		}
 	}
-	
+
 	/**
 	 * Parse the arguments passed to the compiler.
-	 * 
+	 *
 	 * @param args The list of arguments to parse.
 	 */
 	private void parseArguments(String args[])
@@ -939,51 +934,51 @@ public class Flat
 		int skip = 0;
 
 		startEngines();
-		
+
 		// Iterate through all of the arguments.
 		for (int i = 0; i < args.length; i++)
 		{
 			if (skip > 0)
 			{
 				skip--;
-				
+
 				continue;
 			}
-			
+
 			// Lowercase the argument for easier non-case-sensitive String
 			// matching.
 			String arg = args[i].toLowerCase();
-			
+
 			if (arg.length() <= 0)
 			{
 				if (lastInput == i - 1)
 				{
 					lastInput = i;
 				}
-				
+
 				continue;
 			}
-			
+
 			if (compileEngine.checkArgument(arg, args, i))
 			{
-				
+
 			}
 			// If the user is trying to set the output location.
 			else if (arg.equals("-o"))
 			{
 				validateArgumentSize(args, postArgs.length + i + 1, "-o", "Expected output file name after argument '-o'");
-				
+
 				outputFile = new File(args[i + 1]);
-				
+
 				skip = 1;
 			}
 			// If the user is trying to set the source include directory.
 			else if (arg.equals("-dir"))
 			{
 				validateArgumentSize(args, i + 1, arg);
-				
+
 				includeDirectories.add(FileUtils.formatPath(args[i + 1]));
-				
+
 				skip = 1;
 			}
 			else if (arg.equals("-default-import"))
@@ -1043,9 +1038,9 @@ public class Flat
 			else if (arg.equals("-main"))
 			{
 				validateArgumentSize(args, i + 1, arg);
-				
+
 				codeGeneratorEngine.mainClass = args[i + 1];
-				
+
 				skip = 1;
 			}
 			// If the user wants to view the c source output.
@@ -1110,7 +1105,7 @@ public class Flat
 			else if (arg.equals("-l"))
 			{
 				validateArgumentSize(args, i + 1, arg);
-				
+
 				libraries.add(args[i + 1]);
 
 				try {
@@ -1137,7 +1132,7 @@ public class Flat
 			else if (arg.equals("-output-directory") || arg.equals("-d"))
 			{
 				validateArgumentSize(args, i + 1, arg);
-				
+
 				try
 				{
 					outputDirectory = new File(args[i + 1]).getCanonicalFile();
@@ -1147,14 +1142,14 @@ public class Flat
 				{
 					throw new RuntimeException(e);
 				}
-				
+
 				skip = 1;
 			}
 			// Specify a custom output directory for a specified package.
 			else if (arg.equals("-package-output-directory"))
 			{
 				validateArgumentSize(args, i + 2, arg);
-				
+
 				outputDirectories.put(args[i + 1], args[i + 2]);
 
 				skip = 2;
@@ -1193,11 +1188,11 @@ public class Flat
 				}
 			}
 		}
-		
+
 		if (outputFile == null)
 		{
 			System.err.println("You must specify an output file using the -o argument. e.g. 'flatc Test.flat -o Test'");
-			
+
 			System.exit(1);
 		}
 	}
@@ -1278,7 +1273,7 @@ public class Flat
 				.collect(Collectors.toList());
 		}
 	}
-	
+
 	public File getLibrary(File file)
 	{
 		for (Map.Entry<File, ArrayList<File>> entry : libraryFiles.entrySet())
@@ -1288,21 +1283,21 @@ public class Flat
 				return entry.getKey();
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	private void validateArgumentSize(String[] args, int size, String arg)
 	{
 		validateArgumentSize(args, size, arg, null);
 	}
-	
+
 	private void validateArgumentSize(String[] args, int size, String arg, String message)
 	{
 		if (args.length <= size)
 		{
 			System.err.println(message == null ? "Invalid arguments passed" : message);
-			
+
 			System.exit(1);
 		}
 	}
@@ -1322,30 +1317,30 @@ public class Flat
 	public void popFlags() {
 		flags = flagsStack.pop();
 	}
-	
+
 	/**
 	 * Enable the specified flag.
-	 * 
+	 *
 	 * @param flag The flag to set enable.
 	 */
 	public void enableFlag(long flag)
 	{
 		flags |= flag;
 	}
-	
+
 	/**
 	 * Disable the specified flag.
-	 * 
+	 *
 	 * @param flag The flag to disable.
 	 */
 	public void disableFlag(long flag)
 	{
 		flags = flags & (~flag);
 	}
-	
+
 	/**
 	 * Check if the specific flag is enabled for the compiler.
-	 * 
+	 *
 	 * @param flag The flag to check if is enabled.
 	 * @return Whether or not the flag is enabled.
 	 */
@@ -1353,10 +1348,10 @@ public class Flat
 	{
 		return isFlagEnabled(flags, flag);
 	}
-	
+
 	/**
 	 * Check if the specific flag is enabled for the given set of flags.
-	 * 
+	 *
 	 * @param flags The flags to verify the flag with.
 	 * @param flag The flag to check if is enabled.
 	 * @return Whether or not the flag is enabled.
@@ -1365,10 +1360,10 @@ public class Flat
 	{
 		return (flags & flag) != 0;
 	}
-	
+
 	/**
 	 * Get the working directory of the compiler.
-	 * 
+	 *
 	 * @return The working directory of the compiler.
 	 */
 	private static String getWorkingDirectoryPath()
@@ -1377,10 +1372,10 @@ public class Flat
 		{
 			return "/mnt/sdcard/AppProjects/Flat/";
 		}
-			
+
 		return System.getProperty("user.dir").replace('\\', '/') + "/";
 	}
-	
+
 	/**
 	 * Start the compilation timer.
 	 */
@@ -1388,7 +1383,7 @@ public class Flat
 	{
 		startTime = System.currentTimeMillis();
 	}
-	
+
 	/**
 	 * Stop the compilation timer.
 	 */
@@ -1396,32 +1391,32 @@ public class Flat
 	{
 		endTime = System.currentTimeMillis();
 	}
-	
+
 	/**
 	 * Get the time the compiler took to compile the input files.
-	 * 
+	 *
 	 * @return The time in milliseconds it took to compile.
 	 */
 	private long getCompileTime()
 	{
 		return endTime - startTime;
 	}
-	
+
 	public void setTestClasses(boolean testClasses)
 	{
 		this.testClasses = testClasses;
 	}
-	
+
 	public SyntaxTree getTree()
 	{
 		return tree;
 	}
-	
+
 	private void outputMessages()
 	{
 		outputMessages(true);
 	}
-	
+
 	/**
 	 * Output all of the stored errors, warnings, and other messages.
 	 */
@@ -1429,17 +1424,17 @@ public class Flat
 	{
 		outputMessages(true, outputResult);
 	}
-	
+
 	private void outputMessages(boolean success, boolean outputResult)
 	{
 		outputMessages(success, warnings.size(), errors.size(), outputResult);
 	}
-	
+
 	private void outputMessages(boolean success, int warningCount, int errorCount)
 	{
 		outputMessages(success, warningCount, errorCount, true);
 	}
-	
+
 	private void outputMessages(boolean success, int warningCount, int errorCount, boolean outputResult)
 	{
 		for (String s : messages)
@@ -1460,7 +1455,7 @@ public class Flat
 			String status = success ? "succeeded" : "failed";
 			String errorsText = "";
 			String warningsText = "";
-			
+
 			if (warningCount > 0)
 			{
 				warningsText = " " + warningCount + " warning" + (warningCount > 1 ? "s" : "");
@@ -1468,13 +1463,13 @@ public class Flat
 			if (errorCount > 0)
 			{
 				status = "failed";
-				
+
 				errorsText = " " + errorCount + " error" + (errorCount > 1 ? "s" : "");
 			}
-			
+
 			String with = errorsText.length() + warningsText.length() > 0 ? " with" : "";
 			String message = "Compilation " + status + with + errorsText + warningsText;
-			
+
 			if (status.equals("succeeded"))
 			{
 				log(message);
@@ -1484,12 +1479,12 @@ public class Flat
 				System.err.println(message);
 			}
 		}
-		
+
 		messages = new ArrayList<>();
 		warnings = new ArrayList<>();
 		errors = new ArrayList<>();
 	}
-	
+
 	/**
 	 * Method called whenever the compilation sequence has completed.
 	 */
@@ -1497,22 +1492,22 @@ public class Flat
 	{
 		completed(success, warnings.size(), errors.size());
 	}
-	
+
 	public void completed(boolean success, int warningCount, int errorCount)
 	{
 		stopTimer();
-		
+
 		log("Compile time: " + getCompileTime() + "ms");
-		
+
 		outputMessages(success, warningCount, errorCount);
-		
+
 		if (isFlagEnabled(RUNTIME))
 		{
 //			final Command c = new Command("start bin/Executa.exe", workingDir);
-//			
+//
 //			c.addCommandListener(new CommandListener()
 //			{
-//				
+//
 //				@Override
 //				public void resultReceived(int result)
 //				{
@@ -1521,19 +1516,19 @@ public class Flat
 //						System.err.println("error.");
 //					}
 //				}
-//				
+//
 //				@Override
 //				public void messageReceived(String message)
 //				{
 //					System.out.println(message);
 //				}
-//				
+//
 //				@Override
 //				public void errorReceived(String message)
 //				{
 //					System.err.println(message);
 //				}
-//				
+//
 //				@Override
 //				public void commandExecuted()
 //				{
@@ -1556,23 +1551,23 @@ public class Flat
 //				e.printStackTrace();
 //			}
 		}
-		
+
 		if (!ANDROID_DEBUG)
 		{
 			System.exit(success ? 0 : 1);
 		}
 	}
-	
+
 	public static Flat generateTemporaryController(String[] args)
 	{
 		Flat controller = new Flat(args);
 		controller.isTesting = true;
 		controller.setTestClasses(false);
 		controller.compile(new String[0], false);
-		
+
 		return controller;
 	}
-	
+
 	/**
 	 * Call the test case methods for all of the classes to make sure they
 	 * are working correctly.
@@ -1582,201 +1577,201 @@ public class Flat
 		if (testClasses)
 		{
 			System.out.println("Testing classes");
-			
+
 			TestContext context = new TestContext();
-			
+
 			String error = null;
-			
+
 			error = ArgumentList.test(context);
-			
+
 			if (error == null)
 			{
 				error = Assignment.test(context);
-				
+
 				if (error == null)
 				{
 					error = BinaryOperation.test(context);
-					
+
 					if (error == null)
 					{
 						error = Cast.test(context);
-						
+
 						if (error == null)
 						{
 							error = ClassDeclaration.test(context);
-							
+
 							if (error == null)
 							{
 								error = Closure.test(context);
-								
+
 								if (error == null)
 								{
 									error = ClosureDeclaration.test(context);
-									
+
 									if (error == null)
 									{
 										error = Condition.test(context);
-										
+
 										if (error == null)
 										{
 											error = Constructor.test(context);
-											
+
 											if (error == null)
 											{
 												error = Destructor.test(context);
-												
+
 												if (error == null)
 												{
 													error = Dimensions.test(context);
-													
+
 													if (error == null)
 													{
 														error = ElseStatement.test(context);
-														
+
 														if (error == null)
 														{
 															error = ExternalMethodDeclaration.test(context);
-															
+
 															if (error == null)
 															{
 																error = ExternalType.test(context);
-																
+
 																if (error == null)
 																{
 																	error = ExternalTypeList.test(context);
-																	
+
 																	if (error == null)
 																	{
 																		error = FileDeclaration.test(context);
-																		
+
 																		if (error == null)
 																		{
 																			error = ForLoop.test(context);
-																			
+
 																			if (error == null)
 																			{
 																				error = Identifier.test(context);
-																				
+
 																				if (error == null)
 																				{
 																					error = IfStatement.test(context);
-																					
+
 																					if (error == null)
 																					{
 																						error = IIdentifier.test(context);
-																						
+
 																						if (error == null)
 																						{
 																							error = Import.test(context);
-																							
+
 																							if (error == null)
 																							{
 																								error = ImportList.test(context);
-																								
+
 																								if (error == null)
 																								{
 																									error = InstanceDeclaration.test(context);
-																									
+
 																									if (error == null)
 																									{
 																										error = Instantiation.test(context);
-																										
+
 																										if (error == null)
 																										{
 																											error = IValue.test(context);
-																											
+
 																											if (error == null)
 																											{
 																												error = Literal.test(context);
-																												
+
 																												if (error == null)
 																												{
 																													error = LocalDeclaration.test(context);
-																													
+
 																													if (error == null)
 																													{
 																														error = Loop.test(context);
-																														
+
 																														if (error == null)
 																														{
 																															error = LoopInitialization.test(context);
-																															
+
 																															if (error == null)
 																															{
 																																error = LoopUpdate.test(context);
-																																
+
 																																if (error == null)
 																																{
 																																	error = MethodCall.test(context);
-																																	
+
 																																	if (error == null)
 																																	{
 																																		error = MethodCallArgumentList.test(context);
-																																		
+
 																																		if (error == null)
 																																		{
 																																			error = MethodDeclaration.test(context);
-																																			
+
 																																			if (error == null)
 																																			{
 																																				error = MethodList.test(context);
-																																				
+
 																																				if (error == null)
 																																				{
 																																					error = Node.test(context);
-																																					
+
 																																					if (error == null)
 																																					{
 																																						error = Operator.test(context);
-																																						
+
 																																						if (error == null)
 																																						{
 																																							error = Parameter.test(context);
-																																							
+
 																																							if (error == null)
 																																							{
 																																								error = ParameterList.test(context);
-																																								
+
 																																								if (error == null)
 																																								{
 																																									error = Priority.test(context);
-																																									
+
 																																									if (error == null)
 																																									{
 																																										error = Program.test(context);
-																																										
+
 																																										if (error == null)
 																																										{
 																																											error = Return.test(context);
-																																											
+
 																																											if (error == null)
 																																											{
 																																												error = Scope.test(context);
-																																												
+
 																																												if (error == null)
 																																												{
 																																													error = SyntaxTree.test(context);
-																																													
+
 																																													if (error == null)
 																																													{
 																																														error = TreeGenerator.test(context);
-																																														
+
 																																														if (error == null)
 																																														{
 																																															error = UnaryOperation.test(context);
-																																															
+
 																																															if (error == null)
 																																															{
 																																																error = Until.test(context);
-																																																
+
 																																																if (error == null)
 																																																{
 																																																	error = Value.test(context);
-																																																	
+
 																																																	if (error == null)
 																																																	{
 																																																		error = VTable.test(context);
-																																																		
+
 																																																		if (error == null)
 																																																		{
 																																																			error = GenericCompatible.test(context);
@@ -1784,7 +1779,7 @@ public class Flat
 																																																			if (error == null)
 																																																			{
 																																																				error = WhileLoop.test(context);
-																																																				
+
 																																																				if (error == null)
 																																																				{
 																																																					error = Match.test(context);
@@ -1838,15 +1833,15 @@ public class Flat
 					}
 				}
 			}
-			
+
 			if (error != null)
 			{
 				System.err.println("Pre-compilation class tests failed:");
 				System.err.println(error);
-				
+
 				completed(true);
 			}
-			
+
 			System.out.println("Done testing classes");
 		}
 	}

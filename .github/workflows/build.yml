@@ -60,30 +60,6 @@ jobs:
           repository: FlatLang/Nest
           path: Nest
 
-      - name: Checkout Astro library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Astro
-          path: Astro
-
-      - name: Checkout Flatc library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Flatc
-          path: Flatc
-
-      - name: Checkout Spectra library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Spectra
-          path: Spectra
-
-      - name: Checkout Nebula library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Nebula
-          path: Nebula
-
       - name: Checkout Compiler-String-Extensions library
         uses: actions/checkout@master
         with:
@@ -204,10 +180,6 @@ jobs:
           java -jar ../target/flatc.jar \
             src \
             ../Flat-Testing/example \
-            ../Astro \
-            ../Flatc \
-            ../Spectra \
-            ../Nebula \
             ../SimpleGapRuleFlat \
             -l ../Flat-Core \
             -l ../Datastruct \
