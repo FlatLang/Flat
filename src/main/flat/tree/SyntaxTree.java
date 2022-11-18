@@ -20,8 +20,10 @@ import flat.util.SyntaxUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.Exception;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -169,7 +171,7 @@ public class SyntaxTree
 
 			controller.log("Validating nodes...");
 
-			validateNodes(root);
+			validateNodes(root, false);
 			
 			controller.log("Removing non-concrete property fields...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.removeNonConcreteProperties()));
@@ -198,6 +200,28 @@ public class SyntaxTree
 			
 			generators[i] = generator;
 		}
+	}
+
+	void parallelRun(Stream<Runnable> actions) {
+		java.util.List<Thread> threads = actions.map(Thread::new).collect(Collectors.toList());
+
+		threads.forEach(Thread::start);
+		for (Thread thread1 : threads) {
+			try {
+				thread1.join();
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+
+	void syncRun(Stream<Runnable> actions) {
+		actions.forEach(Runnable::run);
+	}
+
+	void runActions(Stream<Runnable> actions, boolean parallel) {
+		if (parallel) parallelRun(actions);
+		else syncRun(actions);
 	}
 	
 	/**
@@ -240,33 +264,11 @@ public class SyntaxTree
 		
 		if (useThreads && phase >= PHASE_METHOD_CONTENTS)
 		{
-			Thread threads[] = new Thread[generators.length];
-			
-			for (int i = 0; i < generators.length; i++)
-			{
-				Thread generator = new Thread(generators[i]);
-				generator.setName(generators[i].getFile().getName() + " Generator");
-				
-				generator.start();
-				
-				threads[i] = generator;
-			}
-			
-			for (int i = 0; i < generators.length; i++)
-			{
-				Thread generator = threads[i];
-				
-				generator.join();
-			}
+			parallelRun(Arrays.stream(generators));
 		}
 		else
 		{
-			for (int i = 0; i < generators.length; i++)
-			{
-				TreeGenerator generator = generators[i];
-				
-				generator.run();
-			}
+			syncRun(Arrays.stream(generators));
 		}
 		
 		if (phase == PHASE_CLASS_DECLARATION)
@@ -285,18 +287,25 @@ public class SyntaxTree
 		finishedPhase = true;
 
 		controller.log("Validating nodes...");
-		validateNodes(root);
+		validateNodes(root, false);
 		
 		if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
-			root.forEachVisibleListChild(file -> {
-				if (!file.isExternalFile()) {
-					Arrays.stream(file.getClassDeclarations())
-						.filter(c -> c instanceof DataClassDeclaration)
-						.map(c -> (DataClassDeclaration)c)
-						.forEach(c -> c.checkAddDataClassFunctionality());
-				}
-			});
+			runActions(
+				root.getChildStream()
+				.map(f -> (FileDeclaration)f)
+				.map(file -> () -> {
+					if (!file.isExternalFile()) {
+						syncRun(
+							Arrays.stream(file.getClassDeclarations())
+								.filter(c -> c instanceof DataClassDeclaration)
+								.map(c -> (DataClassDeclaration)c)
+								.map(c -> c::checkAddDataClassFunctionality)
+						);
+					}
+				}),
+				useThreads
+			);
 
 			root.decodeShorthandActions = true;
 
@@ -304,60 +313,66 @@ public class SyntaxTree
 
 			ArrayList<ClassDeclaration> classes = new ArrayList<>();
 
-			root.forEachVisibleListChild(file -> {
-				if (!file.isExternalFile()) {
-					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
-						controller.log("Creating static class instance declaration for class " + c.getClassLocation() + "...");
-						classes.add(c);
+			runActions(
+				root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.map(file -> () -> {
+						if (!file.isExternalFile()) {
+							Arrays.stream(file.getClassDeclarations())
+								.forEach((c) -> {
+									controller.log("Creating static class instance declaration for class " + c.getClassLocation() + "...");
+									classes.add(c);
 
-						c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
-						c.classInstanceDeclaration.setStatic(true);
-						c.classInstanceDeclaration.setLazy(true);
+									c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
+									c.classInstanceDeclaration.setStatic(true);
+									c.classInstanceDeclaration.setLazy(true);
 
-						String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
+									String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
 
-						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false))
-							.map(i -> i.getName() + ".class")
-							.collect(Collectors.joining(", "));
+									String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false))
+										.map(i -> i.getName() + ".class")
+										.collect(Collectors.joining(", "));
 
-						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
+									String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
 
-						String fieldValues = Stream.concat(
-								c.getFieldList().getPublicFieldList().getChildStream(),
-								c.getFieldList().getPublicStaticFieldList().getChildStream()
-							)
-							.map(f -> (FieldDeclaration)f)
-							.map(i -> "Field(name: \"" + i.getName() + "\")")
-							.collect(Collectors.joining(", "));
+									String fieldValues = Stream.concat(
+											c.getFieldList().getPublicFieldList().getChildStream(),
+											c.getFieldList().getPublicStaticFieldList().getChildStream()
+										)
+										.map(f -> (FieldDeclaration) f)
+										.map(i -> "Field(name: \"" + i.getName() + "\")")
+										.collect(Collectors.joining(", "));
 
-						String fieldsArg = fieldValues.length() > 0 ? "[" + fieldValues + "]" : "Array()";
+									String fieldsArg = fieldValues.length() > 0 ? "[" + fieldValues + "]" : "Array()";
 
-						String functionValues = Stream.concat(
-								Arrays.stream(c.getConstructorList().getMethods()),
-								Arrays.stream(c.getMethodList().getMethods())
-							)
-							.map(i -> {
-								if (i instanceof Constructor) {
-									return "Function(\"construct\")";
-								} else {
-									return "Function(\"" + i.getName() + "\")";
-								}
-							})
-							.collect(Collectors.joining(", "));
+									String functionValues = Stream.concat(
+											Arrays.stream(c.getConstructorList().getMethods()),
+											Arrays.stream(c.getMethodList().getMethods())
+										)
+										.map(i -> {
+											if (i instanceof Constructor) {
+												return "Function(\"construct\")";
+											} else {
+												return "Function(\"" + i.getName() + "\")";
+											}
+										})
+										.collect(Collectors.joining(", "));
 
-						String functionsArg = functionValues.length() > 0 ? "[" + functionValues + "]" : "Array()";
+									String functionsArg = functionValues.length() > 0 ? "[" + functionValues + "]" : "Array()";
 
-						String isInterfaceValue = c instanceof Trait ? "true" : "false";
+									String isInterfaceValue = c instanceof Trait ? "true" : "false";
 
-						if (c.getClassLocation().equals("flat/Object")) {
-							interfacesArg = "Array()";
+									if (c.getClassLocation().equals("flat/Object")) {
+										interfacesArg = "Array()";
+									}
+
+									c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ", this)");
+									c.getFieldList().addChild(c.classInstanceDeclaration);
+								});
 						}
-
-						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ", this)");
-						c.getFieldList().addChild(c.classInstanceDeclaration);
-					});
-				}
-			});
+					}),
+				useThreads
+		);
 
 			ClassDeclaration metaClass = root.getClassDeclaration("flat/meta/Class");
 
@@ -373,18 +388,23 @@ public class SyntaxTree
 
 			metaClass.getField("ALL").setShorthandAccessor(classesValue);
 
-			root.forEachVisibleListChild(file -> {
-				if (!file.isExternalFile()) {
-					Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
-						if (!c.classInstanceDeclaration.containsAccessorMethod()) {
-							controller.log("Compiling class instance declaration arrow binding for class " + c.getClassLocation() + "...");
-							c.classInstanceDeclaration.decodeArrowBinding();
-						}
+			runActions(
+				root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.map(file -> () -> {
+						if (!file.isExternalFile()) {
+							Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+								if (!c.classInstanceDeclaration.containsAccessorMethod()) {
+									controller.log("Compiling class instance declaration arrow binding for class " + c.getClassLocation() + "...");
+									c.classInstanceDeclaration.decodeArrowBinding();
+								}
 
-						c.classInstanceDeclaration.accessorValue = null;
-					});
-				}
-			});
+								c.classInstanceDeclaration.accessorValue = null;
+							});
+						}
+					}),
+				false
+			);
 			
 			controller.log("Compiling function map functions...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
@@ -478,9 +498,13 @@ public class SyntaxTree
 	 * 
 	 * @param root The Node to validate, then validate the children.
 	 */
-	public ValidationResult validateNodes(Node root)
+	public ValidationResult validateNodes(Node root) {
+		return validateNodes(root, false);
+	}
+
+	public ValidationResult validateNodes(Node root, boolean parallel)
 	{
-		return validateNodes(root, phase);
+		return validateNodes(root, phase, parallel);
 	}
 	
 	/**
@@ -488,7 +512,11 @@ public class SyntaxTree
 	 *
 	 * @param root The Node to validate, then validate the children.
 	 */
-	public static ValidationResult validateNodes(Node root, int phase)
+	public static ValidationResult validateNodes(Node root, int phase) {
+		return validateNodes(root, phase, false);
+	}
+
+	public static ValidationResult validateNodes(Node root, int phase, boolean parallel)
 	{
 		ValidationResult result = null;
 		
@@ -504,21 +532,48 @@ public class SyntaxTree
 			int temp = result.nextIncrement;
 			
 			root = result.returnedNode;
-			
-			int i = 0;
-			
-			while (i < root.getNumChildren())
-			{
-				Node child = root.getChild(i);
-				
-				result = validateNodes(child, phase);
-				
-				if (!result.continueValidation)
+
+			if (parallel) {
+				Thread threads[] = new Thread[root.getNumChildren()];
+
+				for (int i = 0; i < threads.length; i++)
 				{
-					return result;
+					FileDeclaration child = (FileDeclaration) root.getChild(i);
+					Thread thread = new Thread(() -> {
+						ValidationResult r = validateNodes(child, phase);
+						r.increment();
+					});
+					thread.setName(child.getFile().getName() + " Validator");
+
+					thread.start();
+
+					threads[i] = thread;
 				}
-				
-				i += result.increment();
+
+				for (int i = 0; i < threads.length; i++)
+				{
+					Thread thread = threads[i];
+
+					try {
+						thread.join();
+					} catch (InterruptedException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			} else {
+				int i = 0;
+
+				while (i < root.getNumChildren()) {
+					Node child = root.getChild(i);
+
+					result = validateNodes(child, phase);
+
+					if (!result.continueValidation) {
+						return result;
+					}
+
+					i += result.increment();
+				}
 			}
 			
 			result.nextIncrement = temp;
