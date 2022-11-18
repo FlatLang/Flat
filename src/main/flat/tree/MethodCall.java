@@ -1803,6 +1803,24 @@ public class MethodCall extends Variable
 			GenericTypeParameter param = params.getParameter(i);
 			
 			Value common = null;
+
+			if (decl.isExtension()) {
+				// FIXME: this does not handle nested generics
+				GenericTypeArgumentList refArgs = decl.getParameterList().getReferenceParameter().getGenericTypeArgumentList();
+
+				int index = -1;
+
+				for (int j = 0; j < refArgs.getNumVisibleChildren(); j++) {
+					if (refArgs.getVisibleChild(j).getName().equals(param.getName())) {
+						index = j;
+						break;
+					}
+				}
+
+				if (index != -1) {
+					common = getReferenceNode().toValue().getGenericTypeArgumentList().getVisibleChild(index);
+				}
+			}
 			
 			for (int n = 0; n < decl.getParameterList().getNumParameters(); n++)
 			{
