@@ -576,7 +576,7 @@ public class Flat
 
 		ArrayList<String> postArgsList = new ArrayList<>();
 
-		postArgsList.add("-single-thread");
+		enableFlag(SINGLE_THREAD);
 		postArgsList.add("-single-file");
 //		postArgsList.add("-line-numbers");
 		postArgsList.add("-no-optimize");
@@ -1061,6 +1061,11 @@ public class Flat
 			else if (arg.equals("-single-thread"))
 			{
 				enableFlag(SINGLE_THREAD);
+			}
+			// If the user wants to run a single threaded compilation
+			else if (arg.equals("-parallel"))
+			{
+				disableFlag(SINGLE_THREAD);
 			}
 			// If the user wants to perform a dry run of the compilation
 			// process.
