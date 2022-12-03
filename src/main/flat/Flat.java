@@ -775,12 +775,7 @@ public class Flat
 	 */
 	public void log(String message)
 	{
-		log(message, true);
-	}
-
-	public void log(String message, boolean newLine)
-	{
-		log(flags, message, newLine);
+		log(flags, message);
 	}
 
 	/**
@@ -791,14 +786,9 @@ public class Flat
 	 */
 	public static void log(long flags, String message)
 	{
-		log(flags, message, true);
-	}
-
-	public static void log(long flags, String message, boolean newLine)
-	{
 		if (isFlagEnabled(flags, VERBOSE))
 		{
-			System.out.print(message + (newLine ? '\n' : ""));
+			System.out.print("\r\033[K" + message);
 		}
 	}
 
