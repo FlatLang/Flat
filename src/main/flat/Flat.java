@@ -37,6 +37,7 @@ public class Flat
 
 	private long				flags;
 	private long				startTime, endTime;
+	private static boolean logged = false;
 
 	public File				outputFile;
 
@@ -90,21 +91,22 @@ public class Flat
 	// Set to 0 to not benchmark.
 	public static final int		BENCHMARK     = 0;
 
-	public static final long	SINGLE_THREAD = 0x1000000000000000l;
-	public static final long	SMALL_BIN     = 0x0100000000000000l;
-	public static final long	NO_GC         = 0x0010000000000000l;
-	public static final long	LIBRARY       = 0x0001000000000000l;
-	public static final long	RUNTIME       = 0x0000100000000000l;
-	public static final long	C_ARGS        = 0x0000010000000000l;
+	public static final long	SINGLE_THREAD    = 0x1000000000000000l;
+	public static final long	SMALL_BIN        = 0x0100000000000000l;
+	public static final long	NO_GC            = 0x0010000000000000l;
+	public static final long	LIBRARY          = 0x0001000000000000l;
+	public static final long	RUNTIME          = 0x0000100000000000l;
+	public static final long	C_ARGS           = 0x0000010000000000l;
 	//////////////////////////////////////////////
-	public static final long	SINGLE_FILE   = 0x0000001000000000l;
-	public static final long	DRY_RUN       = 0x0000000100000000l;
-	public static final long	VERBOSE       = 0x0000000010000000l;
-	public static final long	FORMATC       = 0x0000000001000000l;
-	public static final long	CSOURCE       = 0x0000000000100000l;
-	public static final long	NO_C_OUTPUT   = 0x0000000000010000l;
-	public static final long	NO_OPTIMIZE   = 0x0000000000001000l;
-	public static final long	QUOTE_PATHS   = 0x0000000000000100l;
+	public static final long	SINGLE_FILE      = 0x0000001000000000l;
+	public static final long	DRY_RUN          = 0x0000000100000000l;
+	public static final long	VERBOSE          = 0x0000000010000000l;
+	public static final long	FORMATC          = 0x0000000001000000l;
+	public static final long	CSOURCE          = 0x0000000000100000l;
+	public static final long	NO_C_OUTPUT      = 0x0000000000010000l;
+	public static final long	NO_OPTIMIZE      = 0x0000000000001000l;
+	public static final long	QUOTE_PATHS      = 0x0000000000000100l;
+	public static final long	REPLACE_LOG_LINE = 0x0000000000000010l;
 
 	public static final int		WINDOWS       = 1;
 	public static final int		MACOSX        = 2;
@@ -577,6 +579,7 @@ public class Flat
 		ArrayList<String> postArgsList = new ArrayList<>();
 
 		enableFlag(SINGLE_THREAD);
+		enableFlag(REPLACE_LOG_LINE);
 		postArgsList.add("-single-file");
 //		postArgsList.add("-line-numbers");
 		postArgsList.add("-no-optimize");
@@ -788,7 +791,9 @@ public class Flat
 	{
 		if (isFlagEnabled(flags, VERBOSE))
 		{
-			System.out.print("\r\033[K" + message);
+			String prefix = logged && isFlagEnabled(flags, REPLACE_LOG_LINE) ? "\033[1A\033[K" : "";
+			System.out.println(prefix + message);
+			logged = true;
 		}
 	}
 
@@ -1072,6 +1077,10 @@ public class Flat
 			else if (arg.equals("-dry"))
 			{
 				enableFlag(DRY_RUN);
+			}
+			else if (arg.equals("-no-replace-log-line"))
+			{
+				disableFlag(REPLACE_LOG_LINE);
 			}
 			// If the user wants to format the makefile file paths with quotes
 			// instead of backslashes for escaping spaces.
