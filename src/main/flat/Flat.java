@@ -695,7 +695,7 @@ public class Flat
 						lineCount += file.getSource().split("\r\n|\r|\n").length;
 					}
 
-					System.out.println("Number of lines parsed: " + lineCount);
+					log("Number of lines parsed: " + lineCount);
 
 					if (generateCode)
 					{
