@@ -698,7 +698,7 @@ public class Flat
 						lineCount += file.getSource().split("\r\n|\r|\n").length;
 					}
 
-					log("Number of lines parsed: " + lineCount);
+					log("Number of lines parsed: " + lineCount, true);
 
 					if (generateCode)
 					{
@@ -707,22 +707,22 @@ public class Flat
 
 						log("Generating output...");
 						codeGeneratorEngine.generateOutput();
-						log("Generating output took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Generating output took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
 						time = newTime;
 
 						log("Inserting main method...");
 						codeGeneratorEngine.insertMainMethod();
-						log("Inserting main method took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Inserting main method took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
 						time = newTime;
 
 						log("Formatting output...");
 						codeGeneratorEngine.formatOutput();
-						log("Formatting output took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Formatting output took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
 						time = newTime;
 
 						log("Writing files...");
 						codeGeneratorEngine.writeFiles();
-						log("Writing files took " + ((newTime = System.currentTimeMillis()) - time) + "ms");
+						log("Writing files took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
 						time = newTime;
 
 					}
@@ -778,7 +778,17 @@ public class Flat
 	 */
 	public void log(String message)
 	{
-		log(flags, message);
+		log(flags, message, false);
+	}
+
+	/**
+	 * Output the log message from the compiler.
+	 *
+	 * @param message The message describing what happened.
+	 */
+	public void log(String message, boolean persist)
+	{
+		log(flags, message, persist);
 	}
 
 	/**
@@ -787,13 +797,13 @@ public class Flat
 	 * @param flags The flags that verify whether the compiler is verbose.
 	 * @param message The message describing what happened.
 	 */
-	public static void log(long flags, String message)
+	public static void log(long flags, String message, boolean persist)
 	{
 		if (isFlagEnabled(flags, VERBOSE))
 		{
 			String prefix = logged && isFlagEnabled(flags, REPLACE_LOG_LINE) ? "\033[1A\033[K" : "";
 			System.out.println(prefix + message);
-			logged = true;
+			logged = !persist;
 		}
 	}
 
@@ -1501,7 +1511,7 @@ public class Flat
 	{
 		stopTimer();
 
-		log("Compile time: " + getCompileTime() + "ms");
+		log("Compile time: " + getCompileTime() + "ms", true);
 
 		outputMessages(success, warningCount, errorCount);
 
