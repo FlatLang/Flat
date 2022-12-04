@@ -544,7 +544,9 @@ public class FileDeclaration extends Node
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
-		
+
+		Flat.processStep();
+
 		if (result.skipValidation() || isExcludedExternalFile(getController().targetFileExtensions))
 		{
 			return result;
@@ -605,7 +607,7 @@ public class FileDeclaration extends Node
 				result.nextIncrement = 0;
 			}
 		}
-		
+
 		return result;
 	}
 	

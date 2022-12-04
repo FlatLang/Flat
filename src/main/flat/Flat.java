@@ -37,6 +37,7 @@ public class Flat
 
 	private long				flags;
 	private long				startTime, endTime;
+	public static volatile int processedSteps = 0, stepsToProcess = 0;
 	private static boolean logged = false;
 
 	public File				outputFile;
@@ -801,10 +802,44 @@ public class Flat
 	{
 		if (isFlagEnabled(flags, VERBOSE))
 		{
-			String prefix = logged && isFlagEnabled(flags, REPLACE_LOG_LINE) ? "\033[1A\033[K" : "";
-			System.out.println(prefix + message);
+			String prefix = logged && isFlagEnabled(flags, REPLACE_LOG_LINE) ? "\033[2A\033[K" : "";
+			System.out.println(prefix + message + "\n");
 			logged = !persist;
 		}
+	}
+
+	public static void logProgress() {
+		if (stepsToProcess == 0) {
+			return;
+		}
+
+		String escape = "\033[1A\033[K";
+		String prefix = escape + "[";
+		String suffix = "] " + processedSteps + "/" + stepsToProcess;
+		StringBuilder progress = new StringBuilder();
+		int progressLength = 80 - prefix.length() - suffix.length();
+
+		for (int i = 0; i < progressLength; i++) {
+			int progressPosition = (processedSteps * 100 / stepsToProcess) * progressLength / 100;
+
+			if (i < progressPosition) {
+				progress.append("=");
+			} else {
+				progress.append(" ");
+			}
+		}
+
+		System.out.println(prefix + progress + suffix);
+	}
+
+	public static synchronized void processStep() {
+		processedSteps++;
+		logProgress();
+	}
+
+	public static synchronized void addStepsToProcess(int count) {
+		stepsToProcess += count;
+		logProgress();
 	}
 
 	/**

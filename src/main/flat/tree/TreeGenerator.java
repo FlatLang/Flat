@@ -136,6 +136,7 @@ public class TreeGenerator implements Runnable
 		{
 			phase3(file);
 		}
+		Flat.processStep();
 	}
 	
 	/**

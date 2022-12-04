@@ -154,9 +154,9 @@ public class SyntaxTree
 		{
 			sources[i] = removeComments(sources[i]);
 		}
-		
+
 		initTreeGenerators(files, sources);
-		
+
 		try
 		{
 			phase(PHASE_CLASS_DECLARATION);
@@ -170,11 +170,20 @@ public class SyntaxTree
 			root.prePreGenerationValidation();
 
 			controller.log("Validating nodes...");
-
+			Flat.addStepsToProcess(root.getNumVisibleChildren());
 			validateNodes(root, false);
 			
 			controller.log("Removing non-concrete property fields...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.removeNonConcreteProperties()));
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.removeNonConcreteProperties();
+				Flat.processStep();
+			}));
 		}
 		catch (InterruptedException e)
 		{
@@ -202,17 +211,20 @@ public class SyntaxTree
 		}
 	}
 
-	void parallelRun(Stream<Runnable> actions) {
-		java.util.List<Thread> threads = actions.map(Thread::new).collect(Collectors.toList());
-
-		threads.forEach(Thread::start);
-		for (Thread thread1 : threads) {
-			try {
-				thread1.join();
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
+	void joinThread(Thread thread) {
+		try {
+			thread.join();
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
+	}
+
+	void parallelRun(Stream<Runnable> actions) {
+		actions
+			.map(Thread::new)
+			.peek(Thread::start)
+			.collect(Collectors.toList())
+			.forEach(this::joinThread);
 	}
 
 	void syncRun(Stream<Runnable> actions) {
@@ -264,10 +276,12 @@ public class SyntaxTree
 		
 		if (useThreads && phase >= PHASE_METHOD_CONTENTS)
 		{
+			Flat.addStepsToProcess(generators.length);
 			parallelRun(Arrays.stream(generators));
 		}
 		else
 		{
+			Flat.addStepsToProcess(generators.length);
 			syncRun(Arrays.stream(generators));
 		}
 		
@@ -279,31 +293,51 @@ public class SyntaxTree
 		else if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
 			if (Flat.PRIMITIVE_OVERLOADS) {
+				Flat.addStepsToProcess(
+					(int)root.getChildStream()
+						.map(f -> (FileDeclaration)f)
+						.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+						.count()
+				);
+
 				controller.log("Adding primitive generic overload properties...");
-				root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.convertProperties()));
+				root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+					c.convertProperties();
+					Flat.processStep();
+				}));
 			}
 		}
 		
 		finishedPhase = true;
 
 		controller.log("Validating nodes...");
+		Flat.addStepsToProcess(root.getNumVisibleChildren());
 		validateNodes(root, false);
 		
 		if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.filter(f -> !f.isExternalFile())
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations())
+						.filter(c -> c instanceof DataClassDeclaration))
+					.count()
+			);
+
 			runActions(
 				root.getChildStream()
-				.map(f -> (FileDeclaration)f)
-				.map(file -> () -> {
-					if (!file.isExternalFile()) {
-						syncRun(
-							Arrays.stream(file.getClassDeclarations())
-								.filter(c -> c instanceof DataClassDeclaration)
-								.map(c -> (DataClassDeclaration)c)
-								.map(c -> c::checkAddDataClassFunctionality)
-						);
-					}
-				}),
+					.map(f -> (FileDeclaration)f)
+					.filter(f -> !f.isExternalFile())
+					.map(file -> () -> syncRun(
+						Arrays.stream(file.getClassDeclarations())
+							.filter(c -> c instanceof DataClassDeclaration)
+							.map(c -> (DataClassDeclaration)c)
+							.map(c -> {
+								Flat.processStep();
+								return c::checkAddDataClassFunctionality;
+							})
+					)),
 				useThreads
 			);
 
@@ -313,66 +347,72 @@ public class SyntaxTree
 
 			ArrayList<ClassDeclaration> classes = new ArrayList<>();
 
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.filter(f -> !f.isExternalFile())
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+
 			runActions(
 				root.getChildStream()
 					.map(f -> (FileDeclaration)f)
-					.map(file -> () -> {
-						if (!file.isExternalFile()) {
-							Arrays.stream(file.getClassDeclarations())
-								.forEach((c) -> {
-									controller.log("Creating static class instance declaration for class " + c.getClassLocation() + "...");
-									classes.add(c);
+					.filter(f -> !f.isExternalFile())
+					.map(file -> () -> Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+						controller.log("Creating static class instance declaration for class " + c.getClassLocation() + "...");
+						classes.add(c);
 
-									c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
-									c.classInstanceDeclaration.setStatic(true);
-									c.classInstanceDeclaration.setLazy(true);
+						c.classInstanceDeclaration = new ClassInstanceDeclaration(c, Location.INVALID);
+						c.classInstanceDeclaration.setStatic(true);
+						c.classInstanceDeclaration.setLazy(true);
 
-									String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
+						String extendedClassName = c.getExtendedClass() != null ? c.getExtendedClassName() + ".class" : "null";
 
-									String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false))
-										.map(i -> i.getName() + ".class")
-										.collect(Collectors.joining(", "));
+						String interfaceValues = Arrays.stream(c.getImplementedInterfaces(false))
+							.map(i -> i.getName() + ".class")
+							.collect(Collectors.joining(", "));
 
-									String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
+						String interfacesArg = interfaceValues.length() > 0 ? "[" + interfaceValues + "]" : "Array()";
 
-									String fieldValues = Stream.concat(
-											c.getFieldList().getPublicFieldList().getChildStream(),
-											c.getFieldList().getPublicStaticFieldList().getChildStream()
-										)
-										.map(f -> (FieldDeclaration) f)
-										.map(i -> "Field(name: \"" + i.getName() + "\")")
-										.collect(Collectors.joining(", "));
+						String fieldValues = Stream.concat(
+								c.getFieldList().getPublicFieldList().getChildStream(),
+								c.getFieldList().getPublicStaticFieldList().getChildStream()
+							)
+							.map(f -> (FieldDeclaration) f)
+							.map(i -> "Field(name: \"" + i.getName() + "\")")
+							.collect(Collectors.joining(", "));
 
-									String fieldsArg = fieldValues.length() > 0 ? "[" + fieldValues + "]" : "Array()";
+						String fieldsArg = fieldValues.length() > 0 ? "[" + fieldValues + "]" : "Array()";
 
-									String functionValues = Stream.concat(
-											Arrays.stream(c.getConstructorList().getMethods()),
-											Arrays.stream(c.getMethodList().getMethods())
-										)
-										.map(i -> {
-											if (i instanceof Constructor) {
-												return "Function(\"construct\")";
-											} else {
-												return "Function(\"" + i.getName() + "\")";
-											}
-										})
-										.collect(Collectors.joining(", "));
+						String functionValues = Stream.concat(
+								Arrays.stream(c.getConstructorList().getMethods()),
+								Arrays.stream(c.getMethodList().getMethods())
+							)
+							.map(i -> {
+								if (i instanceof Constructor) {
+									return "Function(\"construct\")";
+								} else {
+									return "Function(\"" + i.getName() + "\")";
+								}
+							})
+							.collect(Collectors.joining(", "));
 
-									String functionsArg = functionValues.length() > 0 ? "[" + functionValues + "]" : "Array()";
+						String functionsArg = functionValues.length() > 0 ? "[" + functionValues + "]" : "Array()";
 
-									String isInterfaceValue = c instanceof Trait ? "true" : "false";
+						String isInterfaceValue = c instanceof Trait ? "true" : "false";
 
-									if (c.getClassLocation().equals("flat/Object")) {
-										interfacesArg = "Array()";
-									}
-
-									c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ", this)");
-									c.getFieldList().addChild(c.classInstanceDeclaration);
-								});
+						if (c.getClassLocation().equals("flat/Object")) {
+							interfacesArg = "Array()";
 						}
-					}),
+
+						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ", this)");
+						c.getFieldList().addChild(c.classInstanceDeclaration);
+
+						Flat.processStep();
+					})),
 				useThreads
-		);
+			);
 
 			ClassDeclaration metaClass = root.getClassDeclaration("flat/meta/Class");
 
@@ -388,53 +428,138 @@ public class SyntaxTree
 
 			metaClass.getField("ALL").setShorthandAccessor(classesValue);
 
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.filter(f -> !f.isExternalFile())
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+
 			runActions(
 				root.getChildStream()
 					.map(f -> (FileDeclaration)f)
-					.map(file -> () -> {
-						if (!file.isExternalFile()) {
-							Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
-								if (!c.classInstanceDeclaration.containsAccessorMethod()) {
-									controller.log("Compiling class instance declaration arrow binding for class " + c.getClassLocation() + "...");
-									c.classInstanceDeclaration.decodeArrowBinding();
-								}
-
-								c.classInstanceDeclaration.accessorValue = null;
-							});
+					.filter(f -> !f.isExternalFile())
+					.map(file -> () -> Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
+						if (!c.classInstanceDeclaration.containsAccessorMethod()) {
+							controller.log("Compiling class instance declaration arrow binding for class " + c.getClassLocation() + "...");
+							c.classInstanceDeclaration.decodeArrowBinding();
 						}
-					}),
+
+						c.classInstanceDeclaration.accessorValue = null;
+						Flat.processStep();
+					})),
 				false
 			);
-			
+
 			controller.log("Compiling function map functions...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addFunctionMapFunctions()));
-			
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.addFunctionMapFunctions();
+				Flat.processStep();
+			}));
+
 			controller.log("Compiling property map functions...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.addPropertyMapFunctions()));
-			
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.addPropertyMapFunctions();
+				Flat.processStep();
+			}));
+
 			controller.log("Compiling arrow bindings...");
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				controller.log("Compiling arrow bindings for class " + c.getClassLocation() + "...");
 				c.decodeShorthandActions();
+				Flat.processStep();
 			}));
 
 			controller.log("Compiling interface field overrides...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.autoAddInterfaceFieldOverrides()));
-			
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.autoAddInterfaceFieldOverrides();
+				Flat.processStep();
+			}));
+
 			controller.log("Compiling field initializations...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.decodeFieldInitializations()));
-			
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.decodeFieldInitializations();
+				Flat.processStep();
+			}));
+
 			controller.log("Compiling arrow binding overrides...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkShorthandActionOverrides()));
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.checkShorthandActionOverrides();
+				Flat.processStep();
+			}));
 			
 			controller.log("Compiling function/property map overrides...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.checkMapOverrides()));
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.checkMapOverrides();
+				Flat.processStep();
+			}));
 			
 			controller.log("Linking virtual declarations...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.searchVirtualDeclarations()));
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.searchVirtualDeclarations();
+				Flat.processStep();
+			}));
 			
 			controller.log("Updating generic parameters...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> c.updateGenericParameters()));
+			Flat.addStepsToProcess(
+				(int)root.getChildStream()
+					.map(f -> (FileDeclaration)f)
+					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
+					.count()
+			);
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
+				c.updateGenericParameters();
+				Flat.processStep();
+			}));
 		}
 	}
 	
