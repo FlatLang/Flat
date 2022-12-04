@@ -457,7 +457,7 @@ public class SyntaxTree
 				(int)root.getChildStream()
 					.map(f -> (FileDeclaration)f)
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
+					.count() * 9
 			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.addFunctionMapFunctions();
@@ -465,24 +465,12 @@ public class SyntaxTree
 			}));
 
 			controller.log("Compiling property map functions...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.addPropertyMapFunctions();
 				Flat.processStep();
 			}));
 
 			controller.log("Compiling arrow bindings...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				controller.log("Compiling arrow bindings for class " + c.getClassLocation() + "...");
 				c.decodeShorthandActions();
@@ -490,72 +478,36 @@ public class SyntaxTree
 			}));
 
 			controller.log("Compiling interface field overrides...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.autoAddInterfaceFieldOverrides();
 				Flat.processStep();
 			}));
 
 			controller.log("Compiling field initializations...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.decodeFieldInitializations();
 				Flat.processStep();
 			}));
 
 			controller.log("Compiling arrow binding overrides...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.checkShorthandActionOverrides();
 				Flat.processStep();
 			}));
 			
 			controller.log("Compiling function/property map overrides...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.checkMapOverrides();
 				Flat.processStep();
 			}));
 			
 			controller.log("Linking virtual declarations...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.searchVirtualDeclarations();
 				Flat.processStep();
 			}));
 			
 			controller.log("Updating generic parameters...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
 				c.updateGenericParameters();
 				Flat.processStep();
