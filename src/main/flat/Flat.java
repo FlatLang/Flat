@@ -817,7 +817,9 @@ public class Flat
 
 		String escape = "\033[1A\033[K";
 		String prefix = escape + "[";
-		String suffix = "] " + processedSteps + "/" + targetSteps + " (" + (processedSteps * 100 / targetSteps) + "%)";
+		String percentage = (processedSteps * 100 / targetSteps) + "%";
+		int percentagePosition = 0;
+		String suffix = "] " + Arrays.stream(new String[String.valueOf(targetSteps).length() - String.valueOf(processedSteps).length()]).map(x -> " ").collect(Collectors.joining("")) + processedSteps + "/" + targetSteps;
 		StringBuilder progress = new StringBuilder();
 		int progressLength = 80 - prefix.length() - suffix.length();
 
@@ -826,7 +828,10 @@ public class Flat
 		for (int i = 0; i < progressLength; i++) {
 			int progressPosition = lastProgress * progressLength / 100;
 
-			if (i < progressPosition) {
+			if (percentagePosition < percentage.length() && i >= progressLength / 2 - percentage.length() / 2) {
+				progress.append(percentage.charAt(percentagePosition));
+				percentagePosition++;
+			} else if (i < progressPosition) {
 				progress.append("=");
 			} else {
 				progress.append(" ");
