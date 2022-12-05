@@ -545,7 +545,11 @@ public class FileDeclaration extends Node
 	{
 		ValidationResult result = super.validate(phase);
 
-		Flat.processStep(getProgram().getPhase() >= SyntaxTree.PHASE_METHOD_CONTENTS ? 2 : 1);
+		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS) {
+			getController().processStep(28);
+		} else if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
+			getController().processStep(10);
+		}
 
 		if (result.skipValidation() || isExcludedExternalFile(getController().targetFileExtensions))
 		{

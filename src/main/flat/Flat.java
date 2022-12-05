@@ -808,22 +808,38 @@ public class Flat
 		}
 	}
 
-	public static synchronized void logProgress() {
+	public String etaTime(String defaultText) {
+		if (lastProgress <= 1) {
+			return defaultText;
+		}
+
+		long currentTime = System.currentTimeMillis();
+		long elapsedMs = currentTime - startTime;
+
+		long remainingMs = Math.round(elapsedMs * (100.0 / lastProgress)) - elapsedMs;
+
+		return (remainingMs / 1000) + "s";
+	}
+
+	public synchronized void logProgress() {
 		if (stepsToProcess == 0) {
 			return;
 		}
 
 		int targetSteps = Math.max(stepsToProcess, estimatedStepsToProcess);
+		lastProgress = Math.max(lastProgress, processedSteps * 100 / targetSteps);
 
 		String escape = "\033[1A\033[K";
 		String prefix = escape + "[";
 		String percentage = (processedSteps * 100 / targetSteps) + "%";
 		int percentagePosition = 0;
-		String suffix = "] " + Arrays.stream(new String[String.valueOf(targetSteps).length() - String.valueOf(processedSteps).length()]).map(x -> " ").collect(Collectors.joining("")) + processedSteps + "/" + targetSteps;
+		String suffix = "] " +
+			Arrays.stream(new String[String.valueOf(targetSteps).length() - String.valueOf(processedSteps).length()]).map(x -> " ").collect(Collectors.joining("")) +
+			processedSteps + "/" + targetSteps + " " +
+			"eta " + etaTime("...");
 		StringBuilder progress = new StringBuilder();
 		int progressLength = 80 - prefix.length() - suffix.length();
 
-		lastProgress = Math.max(lastProgress, processedSteps * 100 / targetSteps);
 
 		for (int i = 0; i < progressLength; i++) {
 			int progressPosition = lastProgress * progressLength / 100;
@@ -841,34 +857,34 @@ public class Flat
 		System.out.println(prefix + progress + suffix);
 	}
 
-	public static synchronized void processStep() {
-		processStep(1);
+	public synchronized void processStep() {
+		processStep(10);
 	}
 
-	public static synchronized void processStep(int step) {
+	public synchronized void processStep(int step) {
 		processedSteps += step;
 		logProgress();
 	}
 
-	public static synchronized int getStepsToProcess() {
+	public synchronized int getStepsToProcess() {
 		return stepsToProcess;
 	}
 
-	public static synchronized void addStepsToProcess(int count) {
+	public synchronized void addStepsToProcess(int count) {
 		stepsToProcess += count;
 		logProgress();
 	}
 
-	public static synchronized void addEstimatedStepsToProcess(int count) {
+	public synchronized void addEstimatedStepsToProcess(int count) {
 		estimatedStepsToProcess += count;
 		logProgress();
 	}
 
-	public static synchronized int getEstimatedStepsToProcess() {
+	public synchronized int getEstimatedStepsToProcess() {
 		return estimatedStepsToProcess;
 	}
 
-	public static synchronized void setEstimatedStepsToProcess(int count) {
+	public synchronized void setEstimatedStepsToProcess(int count) {
 		estimatedStepsToProcess = count;
 		logProgress();
 	}

@@ -136,7 +136,14 @@ public class TreeGenerator implements Runnable
 		{
 			phase3(file);
 		}
-		Flat.processStep();
+
+		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS) {
+			controller.processStep(10);
+		} else if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
+			controller.processStep(5);
+		} else {
+			controller.processStep(1);
+		}
 	}
 	
 	/**
