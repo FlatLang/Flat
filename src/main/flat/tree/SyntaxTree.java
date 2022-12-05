@@ -157,7 +157,7 @@ public class SyntaxTree
 
 		initTreeGenerators(files, sources);
 
-		Flat.setEstimatedStepsToProcess(sources.length * 18);
+		Flat.setEstimatedStepsToProcess(sources.length * 13);
 
 		try
 		{
@@ -172,7 +172,7 @@ public class SyntaxTree
 			root.prePreGenerationValidation();
 
 			controller.log("Validating nodes...");
-			Flat.addStepsToProcess(root.getNumVisibleChildren());
+			Flat.addStepsToProcess(root.getNumVisibleChildren() * 2);
 			validateNodes(root, false);
 			
 			controller.log("Removing non-concrete property fields...");
@@ -299,7 +299,11 @@ public class SyntaxTree
 		finishedPhase = true;
 
 		controller.log("Validating nodes...");
-		Flat.addStepsToProcess(root.getNumVisibleChildren());
+		if (phase >= PHASE_METHOD_CONTENTS) {
+			Flat.addStepsToProcess(root.getNumVisibleChildren() * 2);
+		} else {
+			Flat.addStepsToProcess(root.getNumVisibleChildren());
+		}
 		validateNodes(root, false);
 		
 		if (phase == PHASE_INSTANCE_DECLARATIONS)
@@ -327,22 +331,17 @@ public class SyntaxTree
 				useThreads
 			);
 
-			int projectedSteps = Flat.getStepsToProcess() +
-				(int)root.getFilesStream()
-					.filter(f -> !f.isExternalFile())
-					.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
-					.count() * 2 +
-				(int)root.getFilesStream()
-					.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
-					.count() * 9 +
-				root.getNumVisibleChildren() * 2 +
-				generators.length;
-
 			Flat.setEstimatedStepsToProcess(
-				Math.max(
-					projectedSteps,
-					Flat.getEstimatedStepsToProcess()
-				)
+				Flat.getStepsToProcess() +
+					(int)root.getFilesStream()
+						.filter(f -> !f.isExternalFile())
+						.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
+						.count() +
+					(int)root.getFilesStream()
+						.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
+						.count() * 2 +
+					root.getNumVisibleChildren() * 4 +
+					generators.length
 			);
 
 			root.decodeShorthandActions = true;
@@ -350,13 +349,6 @@ public class SyntaxTree
 			controller.log("Creating static class instance declarations...");
 
 			ArrayList<ClassDeclaration> classes = new ArrayList<>();
-
-			Flat.addStepsToProcess(
-				(int)root.getFilesStream()
-					.filter(f -> !f.isExternalFile())
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
 
 			runActions(
 				root.getChildStream().map(f -> (FileDeclaration)f)
@@ -410,8 +402,6 @@ public class SyntaxTree
 
 						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ", this)");
 						c.getFieldList().addChild(c.classInstanceDeclaration);
-
-						Flat.processStep();
 					})),
 				useThreads
 			);
@@ -456,61 +446,54 @@ public class SyntaxTree
 			Flat.addStepsToProcess(
 				(int)root.getFilesStream()
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count() * 9
+					.count() * 2
 			);
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.addFunctionMapFunctions();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::addFunctionMapFunctions));
 
 			controller.log("Compiling property map functions...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.addPropertyMapFunctions();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::addPropertyMapFunctions));
 
 			controller.log("Compiling arrow bindings...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				controller.log("Compiling arrow bindings for class " + c.getClassLocation() + "...");
-				c.decodeShorthandActions();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+				.peek(c -> Flat.processStep(2))
+				.forEach(c -> {
+					controller.log("Compiling arrow bindings for class " + c.getClassLocation() + "...");
+					c.decodeShorthandActions();
+				}));
 
 			controller.log("Compiling interface field overrides...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.autoAddInterfaceFieldOverrides();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::autoAddInterfaceFieldOverrides));
 
 			controller.log("Compiling field initializations...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.decodeFieldInitializations();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::decodeFieldInitializations));
 
 			controller.log("Compiling arrow binding overrides...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.checkShorthandActionOverrides();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::checkShorthandActionOverrides));
 			
 			controller.log("Compiling function/property map overrides...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.checkMapOverrides();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::checkMapOverrides));
 			
 			controller.log("Linking virtual declarations...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.searchVirtualDeclarations();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::searchVirtualDeclarations));
 			
 			controller.log("Updating generic parameters...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.updateGenericParameters();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
+//				.peek(c -> Flat.processStep())
+				.forEach(ClassDeclaration::updateGenericParameters));
 		}
 	}
 	

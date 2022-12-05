@@ -37,7 +37,7 @@ public class Flat
 
 	private long				flags;
 	private long				startTime, endTime;
-	private static volatile int processedSteps = 0, stepsToProcess = 0, estimatedStepsToProcess = 0, lastProgressPosition = 0;
+	private static volatile int processedSteps = 0, stepsToProcess = 0, estimatedStepsToProcess = 0, lastProgress = 0;
 	private static boolean logged = false;
 
 	public File				outputFile;
@@ -817,31 +817,31 @@ public class Flat
 
 		String escape = "\033[1A\033[K";
 		String prefix = escape + "[";
-		String suffix = "] " + processedSteps + "/" + targetSteps;
+		String suffix = "] " + processedSteps + "/" + targetSteps + " (" + (processedSteps * 100 / targetSteps) + "%)";
 		StringBuilder progress = new StringBuilder();
 		int progressLength = 80 - prefix.length() - suffix.length();
-		int lastPos = -1;
+
+		lastProgress = Math.max(lastProgress, processedSteps * 100 / targetSteps);
 
 		for (int i = 0; i < progressLength; i++) {
-			int progressPosition = (processedSteps * 100 / targetSteps) * progressLength / 100;
+			int progressPosition = lastProgress * progressLength / 100;
 
-			if (i < progressPosition || i <= lastProgressPosition) {
-				lastPos = i;
+			if (i < progressPosition) {
 				progress.append("=");
 			} else {
 				progress.append(" ");
 			}
 		}
 
-		if (lastPos > lastProgressPosition) {
-			lastProgressPosition = lastPos;
-		}
-
 		System.out.println(prefix + progress + suffix);
 	}
 
 	public static synchronized void processStep() {
-		processedSteps++;
+		processStep(1);
+	}
+
+	public static synchronized void processStep(int step) {
+		processedSteps += step;
 		logProgress();
 	}
 
