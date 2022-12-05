@@ -844,6 +844,7 @@ public class Flat
 			"eta " + repeatSpaces(Math.max(0, 3 - etaValue.length())) + etaValue;
 		StringBuilder progress = new StringBuilder();
 		int progressLength = 80 - prefix.length() - suffix.length();
+		boolean printedTip = false;
 
 		for (int i = 0; i < progressLength; i++) {
 			int progressPosition = lastProgress * progressLength / 100;
@@ -851,8 +852,14 @@ public class Flat
 			if (percentagePosition < percentage.length() && i >= progressLength / 2 - percentage.length() / 2) {
 				progress.append(percentage.charAt(percentagePosition));
 				percentagePosition++;
+				if (i >= progressPosition) {
+					printedTip = true;
+				}
 			} else if (i < progressPosition) {
 				progress.append("=");
+			} else if (!printedTip) {
+				progress.append(">");
+				printedTip = true;
 			} else {
 				progress.append(" ");
 			}
