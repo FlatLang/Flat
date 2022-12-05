@@ -50,7 +50,7 @@ public class SyntaxTree
 	
 	private TreeGenerator			generators[];
 	
-	private boolean					useThreads;
+	public boolean					useThreads;
 	
 	public boolean finishedPhase;
 	
@@ -275,12 +275,12 @@ public class SyntaxTree
 		if (phase >= PHASE_METHOD_CONTENTS) {
 			phaseWeight = 10;
 		} else if (phase >= PHASE_INSTANCE_DECLARATIONS) {
-			phaseWeight = 5;
+			phaseWeight = useThreads ? 10 / Runtime.getRuntime().availableProcessors() : 5;
 		} else {
 			phaseWeight = 1;
 		}
 		controller.addStepsToProcess(generators.length * phaseWeight);
-		runActions(Arrays.stream(generators), useThreads && phase >= PHASE_METHOD_CONTENTS);
+		runActions(Arrays.stream(generators), useThreads && phase >= PHASE_INSTANCE_DECLARATIONS);
 		
 		if (phase == PHASE_CLASS_DECLARATION)
 		{
@@ -322,7 +322,7 @@ public class SyntaxTree
 					.filter(f -> !f.isExternalFile())
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations())
 						.filter(c -> c instanceof DataClassDeclaration))
-					.count() * 10
+					.count() * 5
 			);
 
 			runActions(
@@ -333,7 +333,7 @@ public class SyntaxTree
 							.filter(c -> c instanceof DataClassDeclaration)
 							.map(c -> (DataClassDeclaration)c)
 							.map(c -> {
-								controller.processStep();
+								controller.processStep(5);
 								return c::checkAddDataClassFunctionality;
 							})
 					)),
@@ -345,7 +345,7 @@ public class SyntaxTree
 					(int)root.getFilesStream()
 						.filter(f -> !f.isExternalFile())
 						.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
-						.count() * 15 +
+						.count() * (useThreads ? 20 / Runtime.getRuntime().availableProcessors() : 15) +
 					(int)root.getFilesStream()
 						.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
 						.count() * 20 +
@@ -433,7 +433,7 @@ public class SyntaxTree
 				(int)root.getFilesStream()
 					.filter(f -> !f.isExternalFile())
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count() * 15
+					.count() * (useThreads ? 20 / Runtime.getRuntime().availableProcessors() : 15)
 			);
 
 			runActions(
@@ -446,9 +446,9 @@ public class SyntaxTree
 						}
 
 						c.classInstanceDeclaration.accessorValue = null;
-						controller.processStep(15);
+						controller.processStep(useThreads ? 20 / Runtime.getRuntime().availableProcessors() : 15);
 					})),
-				false
+				useThreads
 			);
 
 			controller.log("Compiling function map functions...");

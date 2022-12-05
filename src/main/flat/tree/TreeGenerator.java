@@ -140,7 +140,7 @@ public class TreeGenerator implements Runnable
 		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS) {
 			controller.processStep(10);
 		} else if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
-			controller.processStep(5);
+			controller.processStep(tree.useThreads ? 10 / Runtime.getRuntime().availableProcessors() : 5);
 		} else {
 			controller.processStep(1);
 		}
