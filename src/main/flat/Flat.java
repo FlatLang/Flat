@@ -821,6 +821,10 @@ public class Flat
 		return (remainingMs / 1000) + "s";
 	}
 
+	private static String repeatSpaces(int count) {
+		return Arrays.stream(new String[count]).map(x -> " ").collect(Collectors.joining(""));
+	}
+
 	public synchronized void logProgress() {
 		if (stepsToProcess == 0) {
 			return;
@@ -829,17 +833,17 @@ public class Flat
 		int targetSteps = Math.max(stepsToProcess, estimatedStepsToProcess);
 		lastProgress = Math.max(lastProgress, processedSteps * 100 / targetSteps);
 
-		String escape = "\033[1A\033[K";
-		String prefix = escape + "[";
+		String etaValue = etaTime("...");
+
+		String prefix = "[";
 		String percentage = (processedSteps * 100 / targetSteps) + "%";
 		int percentagePosition = 0;
 		String suffix = "] " +
-			Arrays.stream(new String[String.valueOf(targetSteps).length() - String.valueOf(processedSteps).length()]).map(x -> " ").collect(Collectors.joining("")) +
+			repeatSpaces(String.valueOf(targetSteps).length() - String.valueOf(processedSteps).length()) +
 			processedSteps + "/" + targetSteps + " " +
-			"eta " + etaTime("...");
+			"eta " + repeatSpaces(Math.max(0, 3 - etaValue.length())) + etaValue;
 		StringBuilder progress = new StringBuilder();
 		int progressLength = 80 - prefix.length() - suffix.length();
-
 
 		for (int i = 0; i < progressLength; i++) {
 			int progressPosition = lastProgress * progressLength / 100;
@@ -854,7 +858,7 @@ public class Flat
 			}
 		}
 
-		System.out.println(prefix + progress + suffix);
+		System.out.println("\033[1A\033[K" + prefix + progress + suffix);
 	}
 
 	public synchronized void processStep() {
