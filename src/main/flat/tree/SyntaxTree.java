@@ -157,6 +157,8 @@ public class SyntaxTree
 
 		initTreeGenerators(files, sources);
 
+		Flat.setEstimatedStepsToProcess(sources.length * 18);
+
 		try
 		{
 			phase(PHASE_CLASS_DECLARATION);
@@ -174,16 +176,10 @@ public class SyntaxTree
 			validateNodes(root, false);
 			
 			controller.log("Removing non-concrete property fields...");
-			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
-					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
-					.count()
-			);
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(c -> {
-				c.removeNonConcreteProperties();
-				Flat.processStep();
-			}));
+			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(ClassDeclaration::removeNonConcreteProperties));
+
+			Flat.setEstimatedStepsToProcess(Flat.getStepsToProcess());
+			Flat.logProgress();
 		}
 		catch (InterruptedException e)
 		{
@@ -273,17 +269,9 @@ public class SyntaxTree
 		
 		this.phase = phase;
 		finishedPhase = false;
-		
-		if (useThreads && phase >= PHASE_METHOD_CONTENTS)
-		{
-			Flat.addStepsToProcess(generators.length);
-			parallelRun(Arrays.stream(generators));
-		}
-		else
-		{
-			Flat.addStepsToProcess(generators.length);
-			syncRun(Arrays.stream(generators));
-		}
+
+		Flat.addStepsToProcess(generators.length);
+		runActions(Arrays.stream(generators), useThreads && phase >= PHASE_METHOD_CONTENTS);
 		
 		if (phase == PHASE_CLASS_DECLARATION)
 		{
@@ -317,8 +305,7 @@ public class SyntaxTree
 		if (phase == PHASE_INSTANCE_DECLARATIONS)
 		{
 			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
+				(int)root.getFilesStream()
 					.filter(f -> !f.isExternalFile())
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations())
 						.filter(c -> c instanceof DataClassDeclaration))
@@ -326,8 +313,7 @@ public class SyntaxTree
 			);
 
 			runActions(
-				root.getChildStream()
-					.map(f -> (FileDeclaration)f)
+				root.getFilesStream()
 					.filter(f -> !f.isExternalFile())
 					.map(file -> () -> syncRun(
 						Arrays.stream(file.getClassDeclarations())
@@ -341,6 +327,24 @@ public class SyntaxTree
 				useThreads
 			);
 
+			int projectedSteps = Flat.getStepsToProcess() +
+				(int)root.getFilesStream()
+					.filter(f -> !f.isExternalFile())
+					.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
+					.count() * 2 +
+				(int)root.getFilesStream()
+					.flatMap(f -> Arrays.stream(f.getClassDeclarations()))
+					.count() * 9 +
+				root.getNumVisibleChildren() * 2 +
+				generators.length;
+
+			Flat.setEstimatedStepsToProcess(
+				Math.max(
+					projectedSteps,
+					Flat.getEstimatedStepsToProcess()
+				)
+			);
+
 			root.decodeShorthandActions = true;
 
 			controller.log("Creating static class instance declarations...");
@@ -348,16 +352,14 @@ public class SyntaxTree
 			ArrayList<ClassDeclaration> classes = new ArrayList<>();
 
 			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
+				(int)root.getFilesStream()
 					.filter(f -> !f.isExternalFile())
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
 					.count()
 			);
 
 			runActions(
-				root.getChildStream()
-					.map(f -> (FileDeclaration)f)
+				root.getChildStream().map(f -> (FileDeclaration)f)
 					.filter(f -> !f.isExternalFile())
 					.map(file -> () -> Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
 						controller.log("Creating static class instance declaration for class " + c.getClassLocation() + "...");
@@ -429,16 +431,14 @@ public class SyntaxTree
 			metaClass.getField("ALL").setShorthandAccessor(classesValue);
 
 			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
+				(int)root.getFilesStream()
 					.filter(f -> !f.isExternalFile())
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
 					.count()
 			);
 
 			runActions(
-				root.getChildStream()
-					.map(f -> (FileDeclaration)f)
+				root.getFilesStream()
 					.filter(f -> !f.isExternalFile())
 					.map(file -> () -> Arrays.stream(file.getClassDeclarations()).forEach((c) -> {
 						if (!c.classInstanceDeclaration.containsAccessorMethod()) {
@@ -454,8 +454,7 @@ public class SyntaxTree
 
 			controller.log("Compiling function map functions...");
 			Flat.addStepsToProcess(
-				(int)root.getChildStream()
-					.map(f -> (FileDeclaration)f)
+				(int)root.getFilesStream()
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
 					.count() * 9
 			);

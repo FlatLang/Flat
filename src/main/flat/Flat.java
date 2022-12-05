@@ -37,7 +37,7 @@ public class Flat
 
 	private long				flags;
 	private long				startTime, endTime;
-	public static volatile int processedSteps = 0, stepsToProcess = 0;
+	private static volatile int processedSteps = 0, stepsToProcess = 0, estimatedStepsToProcess = 0, lastProgressPosition = 0;
 	private static boolean logged = false;
 
 	public File				outputFile;
@@ -808,25 +808,33 @@ public class Flat
 		}
 	}
 
-	public static void logProgress() {
+	public static synchronized void logProgress() {
 		if (stepsToProcess == 0) {
 			return;
 		}
 
+		int targetSteps = Math.max(stepsToProcess, estimatedStepsToProcess);
+
 		String escape = "\033[1A\033[K";
 		String prefix = escape + "[";
-		String suffix = "] " + processedSteps + "/" + stepsToProcess;
+		String suffix = "] " + processedSteps + "/" + targetSteps;
 		StringBuilder progress = new StringBuilder();
 		int progressLength = 80 - prefix.length() - suffix.length();
+		int lastPos = -1;
 
 		for (int i = 0; i < progressLength; i++) {
-			int progressPosition = (processedSteps * 100 / stepsToProcess) * progressLength / 100;
+			int progressPosition = (processedSteps * 100 / targetSteps) * progressLength / 100;
 
-			if (i < progressPosition) {
+			if (i < progressPosition || i <= lastProgressPosition) {
+				lastPos = i;
 				progress.append("=");
 			} else {
 				progress.append(" ");
 			}
+		}
+
+		if (lastPos > lastProgressPosition) {
+			lastProgressPosition = lastPos;
 		}
 
 		System.out.println(prefix + progress + suffix);
@@ -837,8 +845,26 @@ public class Flat
 		logProgress();
 	}
 
+	public static synchronized int getStepsToProcess() {
+		return stepsToProcess;
+	}
+
 	public static synchronized void addStepsToProcess(int count) {
 		stepsToProcess += count;
+		logProgress();
+	}
+
+	public static synchronized void addEstimatedStepsToProcess(int count) {
+		estimatedStepsToProcess += count;
+		logProgress();
+	}
+
+	public static synchronized int getEstimatedStepsToProcess() {
+		return estimatedStepsToProcess;
+	}
+
+	public static synchronized void setEstimatedStepsToProcess(int count) {
+		estimatedStepsToProcess = count;
 		logProgress();
 	}
 
