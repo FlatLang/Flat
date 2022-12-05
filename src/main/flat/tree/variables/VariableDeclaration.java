@@ -31,7 +31,7 @@ public class VariableDeclaration extends IIdentifier
 
 	public  String[]           extraDeclarations;
 
-	public ArrayList<Variable> references = new ArrayList<>();
+	public volatile ArrayList<Variable> references = new ArrayList<>();
 
 	/**
 	 * @see Node#Node(Node, Location)

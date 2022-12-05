@@ -1859,7 +1859,7 @@ public class MethodCall extends Variable
 	}
 	
 	@Override
-	public void onAdded(Node parent)
+	public synchronized void onAdded(Node parent)
 	{
 		super.onAdded(parent);
 		

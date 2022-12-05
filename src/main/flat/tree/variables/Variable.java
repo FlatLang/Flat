@@ -671,7 +671,7 @@ public class Variable extends Identifier
 	}
 	
 	@Override
-	public void onAdded(Node parent)
+	public synchronized void onAdded(Node parent)
 	{
 		if (declaration != null)
 		{
