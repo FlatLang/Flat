@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Node extension that represents a whole Flat program. The
@@ -238,6 +239,10 @@ public class Program extends TypeList<FileDeclaration>
 		String className = SyntaxUtils.getClassName(classLocation);
 
 		return node.getClassDeclaration(className);
+	}
+
+	public Stream<FileDeclaration> getFilesStream() {
+		return getChildStream().map(f -> (FileDeclaration)f);
 	}
 
 	public ClassDeclaration[] getClassDeclarationsForPackage(String packageLocation) {
