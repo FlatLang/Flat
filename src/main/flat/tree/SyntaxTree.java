@@ -182,8 +182,7 @@ public class SyntaxTree
 			controller.log("Removing non-concrete property fields...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(ClassDeclaration::removeNonConcreteProperties));
 
-			controller.setEstimatedStepsToProcess(controller.getStepsToProcess());
-			controller.logProgress();
+			controller.processStep(Math.max(controller.getEstimatedStepsToProcess(), controller.getStepsToProcess()) - controller.getProcessedSteps());
 		}
 		catch (InterruptedException e)
 		{

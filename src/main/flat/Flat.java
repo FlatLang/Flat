@@ -868,6 +868,10 @@ public class Flat
 		System.out.println("\033[1A\033[K" + prefix + progress + suffix);
 	}
 
+	public synchronized int getProcessedSteps() {
+		return processedSteps;
+	}
+
 	public synchronized void processStep() {
 		processStep(10);
 	}
