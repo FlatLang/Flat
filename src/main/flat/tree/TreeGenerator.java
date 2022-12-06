@@ -139,8 +139,8 @@ public class TreeGenerator implements Runnable
 
 		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS) {
 			controller.processStep(10);
-		} else if (phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
-			controller.processStep(tree.useThreads ? 10 / Runtime.getRuntime().availableProcessors() : 5);
+		} else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
+			controller.processStep(tree.phaseInstanceDeclarationsWeight);
 		} else {
 			controller.processStep(1);
 		}
@@ -770,7 +770,7 @@ public class TreeGenerator implements Runnable
 			
 			return null;
 		}
-		
+
 		if (!catchException)
 		{
 			return decodeStatement(statement, location, searchTypes);

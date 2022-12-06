@@ -51,11 +51,14 @@ public class SyntaxTree
 	private TreeGenerator			generators[];
 	
 	public boolean					useThreads;
+	public int phaseInstanceDeclarationsWeight;
 	
 	public boolean finishedPhase;
 	
 	public static final int			PHASE_CLASS_DECLARATION = 1, PHASE_INSTANCE_DECLARATIONS = 2,
 									PHASE_METHOD_CONTENTS = 3, PHASE_PRE_GENERATION = 4;
+
+	public static boolean PHASE_INSTANCE_DECLARATIONS_PARALLEL = false;
 	
 	private static final Class<?> PRE_VALUE_DECODE[] = new Class<?>[]
 	{
@@ -145,6 +148,7 @@ public class SyntaxTree
 	public void generate()
 	{
 		this.useThreads = !controller.isFlagEnabled(Flat.SINGLE_THREAD);
+		phaseInstanceDeclarationsWeight = useThreads && PHASE_INSTANCE_DECLARATIONS_PARALLEL ? 10 / Runtime.getRuntime().availableProcessors() : 5;
 		
 		root = new Program(controller, this);
 		
@@ -274,13 +278,19 @@ public class SyntaxTree
 
 		if (phase >= PHASE_METHOD_CONTENTS) {
 			phaseWeight = 10;
-		} else if (phase >= PHASE_INSTANCE_DECLARATIONS) {
-			phaseWeight = useThreads ? 10 / Runtime.getRuntime().availableProcessors() : 5;
+		} else if (phase == PHASE_INSTANCE_DECLARATIONS) {
+			phaseWeight = phaseInstanceDeclarationsWeight;
 		} else {
 			phaseWeight = 1;
 		}
 		controller.addStepsToProcess(generators.length * phaseWeight);
-		runActions(Arrays.stream(generators), useThreads && phase >= PHASE_INSTANCE_DECLARATIONS);
+		boolean runParallel = useThreads && phase >= PHASE_INSTANCE_DECLARATIONS;
+
+		if (phase == PHASE_INSTANCE_DECLARATIONS && !PHASE_INSTANCE_DECLARATIONS_PARALLEL) {
+			runParallel = false;
+		}
+
+		runActions(Arrays.stream(generators), runParallel);
 		
 		if (phase == PHASE_CLASS_DECLARATION)
 		{
