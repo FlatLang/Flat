@@ -14,6 +14,7 @@ import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Identifier extension that represents something that returns a value.
@@ -31,7 +32,7 @@ public class VariableDeclaration extends IIdentifier
 
 	public  String[]           extraDeclarations;
 
-	public volatile ArrayList<Variable> references = new ArrayList<>();
+	public volatile java.util.List<Variable> references = Collections.synchronizedList(new ArrayList<>());
 
 	/**
 	 * @see Node#Node(Node, Location)
