@@ -68,6 +68,9 @@ public class FinalAnnotation extends Annotation implements ModifierAnnotation
 			
 			declaration.references.forEach(variable ->
 			{
+				if (variable == null) {
+					throw new RuntimeException("Parallelization error with variable declaration references: " + declaration.getDeclaringClass().getName() + "." + declaration.getName());
+				}
 				if (variable.getParentMethod() instanceof Constructor == false &&
 					variable.getParentMethod() instanceof AssignmentMethod == false &&
 					variable.getParentMethod() instanceof MutatorMethod == false &&
