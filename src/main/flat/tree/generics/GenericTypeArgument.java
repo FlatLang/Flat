@@ -40,7 +40,7 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	}
 
 	@Override
-	public void onReplaced(Node parent, Node replacement)
+	public synchronized void onReplaced(Node parent, Node replacement)
 	{
 		if (this != replacement && getTypeObject() instanceof FunctionType)
 		{

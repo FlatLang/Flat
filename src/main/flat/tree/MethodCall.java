@@ -1866,6 +1866,10 @@ public class MethodCall extends Variable
 		if (isCallingClosureVariable())
 		{
 			ClosureVariable var = getClosureVariable();
+
+			if (var == null) {
+				throw new RuntimeException("Failed to get closure variable!");
+			}
 			
 			var.declaration.references.add(var);
 		}

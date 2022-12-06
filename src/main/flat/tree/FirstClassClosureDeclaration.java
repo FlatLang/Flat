@@ -11,7 +11,7 @@ import flat.util.Location;
  */
 public class FirstClassClosureDeclaration extends ClosureDeclaration
 {
-	public Identifier reference;
+	public volatile Identifier reference;
 	
 	/**
 	 * @see Node#Node(Node, Location)
@@ -80,7 +80,7 @@ public class FirstClassClosureDeclaration extends ClosureDeclaration
 	 * @param node The node to copy the data into.
 	 * @return The cloned node.
 	 */
-	public FirstClassClosureDeclaration cloneTo(FirstClassClosureDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
+	public synchronized FirstClassClosureDeclaration cloneTo(FirstClassClosureDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
 		
