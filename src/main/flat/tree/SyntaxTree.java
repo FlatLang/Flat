@@ -461,20 +461,11 @@ public class SyntaxTree
 				useThreads
 			);
 
-			controller.log("Compiling function map functions...");
 			controller.addStepsToProcess(
 				(int)root.getFilesStream()
 					.flatMap(file -> Arrays.stream(file.getClassDeclarations()))
 					.count() * 20
 			);
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
-//				.peek(c -> controller.processStep())
-				.forEach(ClassDeclaration::addFunctionMapFunctions));
-
-			controller.log("Compiling property map functions...");
-			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
-//				.peek(c -> controller.processStep())
-				.forEach(ClassDeclaration::addPropertyMapFunctions));
 
 			controller.log("Compiling arrow bindings...");
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations())
