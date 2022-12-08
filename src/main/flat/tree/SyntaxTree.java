@@ -58,7 +58,7 @@ public class SyntaxTree
 	public static final int			PHASE_CLASS_DECLARATION = 1, PHASE_INSTANCE_DECLARATIONS = 2,
 									PHASE_METHOD_CONTENTS = 3, PHASE_PRE_GENERATION = 4;
 
-	public static boolean PHASE_INSTANCE_DECLARATIONS_PARALLEL = true;
+	public static boolean PHASE_INSTANCE_DECLARATIONS_PARALLEL = false;
 	
 	private static final Class<?> PRE_VALUE_DECODE[] = new Class<?>[]
 	{
