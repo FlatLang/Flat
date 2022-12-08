@@ -59,7 +59,8 @@ public class SyntaxTree
 									PHASE_METHOD_CONTENTS = 3, PHASE_PRE_GENERATION = 4;
 
 	public static boolean PHASE_INSTANCE_DECLARATIONS_PARALLEL = false;
-	
+	public static boolean STATIC_CLASS_INSTANCE_DECLARATIONS_PARALLEL = false;
+
 	private static final Class<?> PRE_VALUE_DECODE[] = new Class<?>[]
 	{
 		Annotation.class, IfStatement.class, ElseStatement.class, Loop.class,
@@ -421,7 +422,7 @@ public class SyntaxTree
 						c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + ", this)");
 						c.getFieldList().addChild(c.classInstanceDeclaration);
 					})),
-				useThreads
+				useThreads && STATIC_CLASS_INSTANCE_DECLARATIONS_PARALLEL
 			);
 
 			ClassDeclaration metaClass = root.getClassDeclaration("flat/meta/Class");
