@@ -184,6 +184,7 @@ public class SyntaxTree
 			root.forEachVisibleListChild(file -> Arrays.stream(file.getClassDeclarations()).forEach(ClassDeclaration::removeNonConcreteProperties));
 
 			controller.processStep(Math.max(controller.getEstimatedStepsToProcess(), controller.getStepsToProcess()) - controller.getProcessedSteps());
+			controller.log("", true);
 		}
 		catch (InterruptedException e)
 		{
