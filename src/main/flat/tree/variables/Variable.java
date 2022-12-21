@@ -925,7 +925,9 @@ public class Variable extends Identifier
 		
 		for (int i = 0; i < args.getNumVisibleChildren(); i++)
 		{
-			extraArgs += ", " + args.getVisibleChild(i).generateFlatInput();
+			String name = args.getArgumentName(i);
+			name = name != null ? name + ": " : "";
+			extraArgs += ", " + name + args.getVisibleChild(i).generateFlatInput();
 		}
 		
 		String syntax = getType() + "." + call.getName() + "(" + root.generateFlatInputUntil(this).toString() + extraArgs + ")";
