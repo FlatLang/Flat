@@ -1926,12 +1926,11 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public Program getProgram()
 	{
-		if (parent != null && parent != this)
-		{
+		if (parent != null && parent != this) {
 			return parent.getProgram();
 		}
-		
-		return this instanceof Program ? (Program)this : null;
+
+		return null;
 	}
 	
 	public boolean isInTree()

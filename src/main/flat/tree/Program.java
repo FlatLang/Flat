@@ -144,6 +144,11 @@ public class Program extends TypeList<FileDeclaration>
 		return closures;
 	}
 
+	@Override
+	public Program getProgram() {
+		return this;
+	}
+
 	/**
 	 * Add Imports for all of the classes within the same package as the
 	 * given FileDeclaration.
