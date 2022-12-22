@@ -2956,6 +2956,9 @@ public class SyntaxUtils
 		{
 			return true;
 		}
+		if (required != null && (required instanceof ClosureDeclaration && !(given.isFunctionType() || given instanceof Closure || given instanceof ClosureDeclaration || given instanceof Variable && ((Variable)given).getDeclaration() instanceof ClosureVariableDeclaration))) {
+			return false;
+		}
 		
 		if (given instanceof FlatMethodDeclaration && ((FlatMethodDeclaration)given).shorthandAction != null || required instanceof FlatMethodDeclaration && ((FlatMethodDeclaration)required).shorthandAction != null)
 		{
@@ -2967,7 +2970,7 @@ public class SyntaxUtils
 			return true;
 		}
 		
-		if (context != null && given.isGenericType() && context instanceof Constructor == false)
+		if (context != null && given instanceof ClosureDeclaration == false && given.isGenericType() && context instanceof Constructor == false)
 		{
 			GenericTypeParameter param = given.getGenericTypeParameter();//((Value)context).getTypeClass().getGenericTypeParameter(given.getType(), given);
 			

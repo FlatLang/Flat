@@ -1369,7 +1369,10 @@ public class MethodCall extends Variable
 					else
 					{
 						GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(n);
-						arg.setType(SyntaxUtils.getValueInCommon(arg, common));
+
+						if (common != null) {
+							arg.setType(SyntaxUtils.getValueInCommon(arg, common));
+						}
 					}
 				}
 			}
