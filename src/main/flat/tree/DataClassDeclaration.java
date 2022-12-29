@@ -235,19 +235,6 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void addEqualsFunctions() {
-		BodyMethodDeclaration objectFunc = BodyMethodDeclaration.decodeStatement(this, "override public equals(Object other) -> Bool", Location.INVALID, true);
-
-		if (objectFunc == null) {
-			SyntaxMessage.error("Failed to create equals function override for data class", this);
-			return;
-		}
-
-		objectFunc.shorthandAction = "(other || !this) && " +
-			"other.class.isOfType(" + getName() + ".class) && " +
-			"equals((" + getName() + ")other)";
-
-		addChild(objectFunc);
-
 		BodyMethodDeclaration classFunc = BodyMethodDeclaration.decodeStatement(this, "public equals(" + getName() + " other) -> Bool", Location.INVALID, true);
 
 		if (classFunc == null) {
@@ -255,16 +242,37 @@ public class DataClassDeclaration extends ClassDeclaration
 			return;
 		}
 
-		List<FieldDeclaration> fields = getFields().stream()
-			.filter(f -> !f.containsAnnotationOfType(DataEqualsIgnoreAnnotation.class))
-			.collect(Collectors.toList());
+		Parameter[] params = classFunc.getParameterList().getChildStream().filter(f -> f instanceof ReferenceParameter == false).toArray(Parameter[]::new);
 
-		classFunc.shorthandAction = "(other || !this)" +
-			fields.stream()
-				.map(f -> " && (" + f.getName() + " == other." + f.getName() + ")")
-				.collect(Collectors.joining(""));
+		if (getMethod(this, "equals", params) == null) {
+			List<FieldDeclaration> fields = getFields().stream()
+				.filter(f -> !f.containsAnnotationOfType(DataEqualsIgnoreAnnotation.class))
+				.collect(Collectors.toList());
 
-		addChild(classFunc);
+			classFunc.shorthandAction = "(other || !this)" +
+				fields.stream()
+					.map(f -> " && (" + f.getName() + " == other." + f.getName() + ")")
+					.collect(Collectors.joining(""));
+
+			addChild(classFunc);
+		}
+
+		BodyMethodDeclaration objectFunc = BodyMethodDeclaration.decodeStatement(this, "override public equals(Object other) -> Bool", Location.INVALID, true);
+
+		if (objectFunc == null) {
+			SyntaxMessage.error("Failed to create equals function override for data class", this);
+			return;
+		}
+
+		params = objectFunc.getParameterList().getChildStream().filter(f -> f instanceof ReferenceParameter == false).toArray(Parameter[]::new);
+
+		if (getMethod(this, "equals", params) == null) {
+			objectFunc.shorthandAction = "(other || !this) && " +
+				"other.class.isOfType(" + getName() + ".class) && " +
+				"equals((" + getName() + ")other)";
+
+			addChild(objectFunc);
+		}
 	}
 
 	private void addToStringFunction() {
