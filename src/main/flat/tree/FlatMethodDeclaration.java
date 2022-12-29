@@ -5,10 +5,7 @@ import flat.TestContext;
 import flat.ValidationResult;
 import flat.error.SyntaxMessage;
 import flat.tree.MethodList.SearchFilter;
-import flat.tree.annotations.Annotation;
-import flat.tree.annotations.OverrideAnnotation;
-import flat.tree.annotations.PublicAnnotation;
-import flat.tree.annotations.RequireGenericTypeAnnotation;
+import flat.tree.annotations.*;
 import flat.tree.generics.GenericTypeArgument;
 import flat.tree.generics.GenericTypeParameter;
 import flat.tree.generics.GenericTypeParameterList;
@@ -42,6 +39,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	private String[] types;
 	
 	public FlatMethodDeclaration overridenMethod;
+	public FlatMethodDeclaration asyncOverload;
 	private ArrayList<FlatMethodDeclaration> overridingMethods, primitiveOverloads;
 	public ArrayList<FlatMethodDeclaration> correspondingPrimitiveOverloads;
 	
@@ -1569,7 +1567,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			}
 		}
 	}
-	
+
 	public void throwInferTypeError()
 	{
 		SyntaxMessage.error("Unable to infer return value of arrow binding for function '" + getName() + "'. Please add an explicit return type to any functions that the arrow binding returns.", this);
@@ -1744,6 +1742,17 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			if (genericOverload == null || !genericOverload.usedShorthandAction)
 			{
 				checkOverrides();
+			}
+
+			if (!isAsync()) {
+				if (getParameterList().getChildStream().anyMatch(p -> p.containsAnnotationOfType(LazyAnnotation.class))) {
+					asyncOverload = (FlatMethodDeclaration) clone(getParent(), getLocationIn());
+
+					asyncOverload.setName(asyncOverload.getName() + "_async");
+					asyncOverload.addAnnotation(new AsyncAnnotation(asyncOverload, asyncOverload.getLocationIn()));
+
+					getParent().addChild(asyncOverload);
+				}
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)

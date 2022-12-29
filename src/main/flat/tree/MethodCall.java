@@ -7,6 +7,8 @@ import flat.error.SyntaxErrorException;
 import flat.error.SyntaxMessage;
 import flat.tree.MethodList.SearchFilter;
 import flat.tree.annotations.AsyncAnnotation;
+import flat.tree.annotations.AwaitAnnotation;
+import flat.tree.annotations.LazyAnnotation;
 import flat.tree.generics.GenericTypeArgument;
 import flat.tree.generics.GenericTypeArgumentList;
 import flat.tree.generics.GenericTypeParameter;
@@ -1894,10 +1896,8 @@ public class MethodCall extends Variable
 		}
 		
 		Identifier returned  = this;
-		
-		Accessible reference = returned.getReferenceNode();
+
 		Accessible accessing = returned.getAccessingNode();
-		Identifier accessed  = returned.getAccessedNode();
 		
 		if (isCallingClosureVariable())
 		{
@@ -1918,40 +1918,6 @@ public class MethodCall extends Variable
 		
 		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-//			// TODO: Update to never do this
-//			if (isPrimitiveGenericType() && !(reference.toValue().getTypeClassLocation().equals("flat/datastruct/list/CharArray") || reference.toValue().getTypeClassLocation().equals("flat/datastruct/list/IntArray") || reference.toValue().getTypeClassLocation().equals("flat/datastruct/list/DoubleArray")))
-//			{
-//				if (accessed instanceof Variable)
-//				{
-//					if (accessed.getName().equals("value"))
-//					{
-//						return result;
-//					}
-//				}
-//				
-//				String input = returned.generateFlatInputUntil(returned) + ".value";
-//				
-//				if (accessed != null)
-//				{
-//					input += "." + accessed.generateFlatInput();
-//				}
-//				
-//				Identifier value = (Identifier)SyntaxTree.decodeIdentifierAccess(getParent(), input, getLocationIn(), false, false);
-//				
-//				if (value == null)
-//				{
-//					return result.errorOccurred();
-//				}
-//				
-//				returned.getParent().replace(returned, value);
-//				
-//				result.returnedNode = value;
-//				
-//				return result;
-//				
-////				setDataType(VALUE);
-//			}
-			
 			if (accessing instanceof Variable || accessing instanceof Literal)
 			{
 				Value var = accessing.toValue();
@@ -1981,15 +1947,23 @@ public class MethodCall extends Variable
 					
 					return result;
 				}
-//				else if (var.declaration instanceof ClassInstanceDeclaration && getName().equals("isOfType") && getDeclaringClass().getClassLocation().equals("flat/meta/Class"))
-//				{
-//					int j = 5;
-//				}
 			}
 			
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
+			FlatMethodDeclaration flatMethodDeclaration = getMethodDeclaration() instanceof FlatMethodDeclaration ? (FlatMethodDeclaration) getMethodDeclaration() : null;
+
+			if (flatMethodDeclaration != null && flatMethodDeclaration.asyncOverload != null) {
+				if (parent.getParentMethod(true).isAsync()) {
+					setDeclaration(flatMethodDeclaration.asyncOverload);
+
+					if (!isAwait()) {
+						addAnnotation(new AwaitAnnotation(this, getLocationIn()));
+					}
+				}
+			}
+
 			if (isCallingClosureVariable() && (getBaseNode() instanceof Assignment == false || !getBaseNode().containsProperty("userMade")))
 			{
 				ClosureVariable var = getClosureVariable();
