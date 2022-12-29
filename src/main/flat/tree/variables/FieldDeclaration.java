@@ -482,7 +482,10 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			
+			if (getMutatorMethod() != null) {
+				getMutatorMethod().setVisibility(getVisibility());
+				getMutatorMethod().setStatic(isStatic());
+			}
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 		{
