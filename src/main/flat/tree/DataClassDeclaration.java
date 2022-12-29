@@ -244,7 +244,11 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		Parameter[] params = classFunc.getParameterList().getChildStream().filter(f -> f instanceof ReferenceParameter == false).toArray(Parameter[]::new);
 
-		if (getMethod(this, "equals", params) == null) {
+		MethodList.SearchFilter filter = new MethodList.SearchFilter();
+		filter.checkAncestor = false;
+		filter.requireExactMatch = true;
+
+		if (getMethod(this, "equals", filter, params) == null) {
 			List<FieldDeclaration> fields = getFields().stream()
 				.filter(f -> !f.containsAnnotationOfType(DataEqualsIgnoreAnnotation.class))
 				.collect(Collectors.toList());
@@ -266,7 +270,7 @@ public class DataClassDeclaration extends ClassDeclaration
 
 		params = objectFunc.getParameterList().getChildStream().filter(f -> f instanceof ReferenceParameter == false).toArray(Parameter[]::new);
 
-		if (getMethod(this, "equals", params) == null) {
+		if (getMethod(this, "equals", filter, params) == null) {
 			objectFunc.shorthandAction = "(other || !this) && " +
 				"other.class.isOfType(" + getName() + ".class) && " +
 				"equals((" + getName() + ")other)";
