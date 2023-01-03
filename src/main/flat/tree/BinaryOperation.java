@@ -132,7 +132,13 @@ public class BinaryOperation extends IValue
 
 		if ((scopeNode instanceof ControlStatement || scopeNode instanceof WhileLoop))// && scopeNode.isDecoding())
 		{
+			boolean wasIf = scopeNode instanceof IfStatement;
+
 			scopeNode = scopeNode.getParent().getAncestorWithScope();
+
+			if (wasIf && scopeNode instanceof ElseStatement) {
+				scopeNode = scopeNode.getParent().getAncestorWithScope();
+			}
 		}
 
 		Variable local = scopeNode.getScope().createLocalVariable(root);
