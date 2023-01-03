@@ -830,6 +830,9 @@ public class FileDeclaration extends Node
 		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/Nest") || l.endsWith("/Nest/src"))) {
 			addStaticImport("novex/nest/Nest");
 		}
+		if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/Stream") || l.endsWith("/Stream/src"))) {
+			addStaticImport("flat/stream/StreamListExtensions");
+		}
 
 		for (String importLoc : DEFAULT_IMPORTS)
 		{
