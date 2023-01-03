@@ -1662,6 +1662,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 			
 			if (overridenMethod.getType() != null)
 			{
+				if (getType() == null) {
+					SyntaxMessage.error("Method " + getParentClass().getName() + "." + getName() + " does not override return type of method " + overridenMethod.getParentClass().getName() + "." + overridenMethod.getName(), this);
+					return;
+				}
 				setDataType(overridenMethod.getDataType());
 			}
 			
