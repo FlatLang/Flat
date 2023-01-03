@@ -30,8 +30,8 @@ public class FieldList extends List
 		
 		super.addChild(privateFields);
 		super.addChild(publicFields);
-		super.addChild(privateStaticFields);
 		super.addChild(publicStaticFields);
+		super.addChild(privateStaticFields);
 	}
 	
 	/**
@@ -64,6 +64,17 @@ public class FieldList extends List
 	{
 		return (InstanceFieldList)getChild(1);
 	}
+
+	/**
+	 * Get the PublicFieldList that contains all of the public
+	 * Fields for its parent ClassDeclaration.
+	 *
+	 * @return The PublicFieldList instance.
+	 */
+	public StaticFieldList getPublicStaticFieldList()
+	{
+		return (StaticFieldList)getChild(2);
+	}
 	
 	/**
 	 * Get the PrivateFieldList that contains all of the private
@@ -72,17 +83,6 @@ public class FieldList extends List
 	 * @return The PrivateFieldList instance.
 	 */
 	public StaticFieldList getPrivateStaticFieldList()
-	{
-		return (StaticFieldList)getChild(2);
-	}
-	
-	/**
-	 * Get the PublicFieldList that contains all of the public
-	 * Fields for its parent ClassDeclaration.
-	 * 
-	 * @return The PublicFieldList instance.
-	 */
-	public StaticFieldList getPublicStaticFieldList()
 	{
 		return (StaticFieldList)getChild(3);
 	}
