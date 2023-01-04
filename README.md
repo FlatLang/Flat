@@ -6,4 +6,4 @@ Flat Programming Language
 
 A multi-paradigm language built for versatility and rapid development.
 
-© 2014-2022 Flat
+© 2014-2023 Flat
