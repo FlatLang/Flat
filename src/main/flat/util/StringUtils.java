@@ -911,9 +911,9 @@ public class StringUtils
 		QuadFunction<CharSequence, Character, Integer, Integer, Integer> condition = (str, c, i, dir) -> {
 			i += dir;
 			
-			if (dir > 0 && i < str.length() - 3 && str.charAt(i) == '#' && str.charAt(i + 1) == '{')
+			if (dir > 0 && i < str.length() - 3 && str.charAt(i) == '#' && !isCharacterEscaped(str, i) && str.charAt(i + 1) == '{')
 			{
-				return (i = findEndingChar(str, '}', i + dir, dir)) >= 0 ? i + dir : i;
+				return (i = findEndingMatch(str, i + dir, '{', '}', dir)) >= 0 ? i + dir : i;
 			}
 			
 			return defaultCharacterCheck(str, c, i - dir, dir);

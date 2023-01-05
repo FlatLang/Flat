@@ -427,7 +427,7 @@ public class Literal extends IValue implements Accessible
 				
 				if (str.charAt(index + 1) == '{')
 				{
-					end = SyntaxUtils.findCharInBaseScope(str, '}', index + 2);
+					end = SyntaxUtils.findEndingBrace(str, index + 2);
 					
 					offset = 2;
 				}
