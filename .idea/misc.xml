@@ -31,7 +31,7 @@
       <property name="JToolBar.isRollover" class="java.lang.Boolean" />
     </properties>
     <properties class="javax.swing.JTree">
-      <property name="JTree.lineStyle" class="java.lang.String" />
+      <property name="JTree.litestyle" class="java.lang.String" />
     </properties>
     <properties class="javax.swing.text.JTextComponent">
       <property name="caretAspectRatio" class="java.lang.Double" />

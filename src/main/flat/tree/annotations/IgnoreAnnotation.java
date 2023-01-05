@@ -33,20 +33,20 @@ public class IgnoreAnnotation extends Annotation implements ModifierAnnotation, 
 		ModifierAnnotation.super.onAdded(parent);
 		super.onAdded(parent);
 	}
-	
+
 	@Override
 	public ValidationResult validate(int phase)
 	{
 		ValidationResult result = super.validate(phase);
-		
+
 		if (result.skipValidation())
 		{
 			return result;
 		}
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public boolean onApplied(Node next, boolean throwError)
 	{
@@ -61,32 +61,32 @@ public class IgnoreAnnotation extends Annotation implements ModifierAnnotation, 
 				return invalidApplication(next, throwError);
 			}
 		}
-		
+
 		return super.onApplied(next, throwError);
 	}
-	
+
 	@Override
 	public IgnoreAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		IgnoreAnnotation node = new IgnoreAnnotation(temporaryParent, locationIn);
-		
+
 		return cloneTo(node, cloneChildren, cloneAnnotations);
 	}
-	
+
 	public IgnoreAnnotation cloneTo(IgnoreAnnotation node)
 	{
 		return cloneTo(node, true, true);
 	}
-	
+
 	public IgnoreAnnotation cloneTo(IgnoreAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
-		
+
 		node.aliasUsed = aliasUsed;
-		
+
 		return node;
 	}
-	
+
 	@Override
 	public String[] getAliases()
 	{

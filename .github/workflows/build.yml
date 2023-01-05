@@ -54,11 +54,11 @@ jobs:
           repository: FlatLang/Standard-Library
           path: Standard-Library
 
-      - name: Checkout Nest library
+      - name: Checkout Test library
         uses: actions/checkout@master
         with:
-          repository: FlatLang/Nest
-          path: Nest
+          repository: FlatLang/Test
+          path: Test
 
       - name: Checkout Compiler-String-Extensions library
         uses: actions/checkout@master
@@ -184,7 +184,7 @@ jobs:
             -l ../Flat-Core \
             -l ../Datastruct \
             -l ../Regex \
-            -l ../Nest \
+            -l ../Test \
             -l ../Compiler-String-Extensions \
             -l ../Network \
             -l ../MySQL \
@@ -233,7 +233,7 @@ jobs:
             -l ./Flat-Core \
             -l ./Datastruct \
             -l ./Regex \
-            -l ./Nest \
+            -l ./Test \
             -l ./Json \
             -l ./Logger \
             -l ./CoLorIzer \

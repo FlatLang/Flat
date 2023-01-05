@@ -2,7 +2,7 @@
   <configuration default="false" name="Compile ES6" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="flat.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../Flat-Testing/example ../Stability-Test ../Flat-Testing/bank ../SimpleGapRuleFlat ../Airship -l ../Regex -l ../Security -l ../Datastruct -l ../Logger -l ../Flat-Core -l ../Git -l ../Standard-Library -l ../System -l ../Nest -l ../Svg -l ../Compiler-String-Extensions -l ../Json -l ../Network -l ../MySQL -l ../Star -l ../Redis -l ../FuCli -l ../IO -l ../Time -l ../System -l ../Http -l ../Math -install-dir .. -main stabilitytest/StabilityTest -o ../Stability-Test/dist/test.js -target es6" />
+    <option name="PROGRAM_PARAMETERS" value="../Flat-Testing/example ../Stability-Test ../Flat-Testing/bank ../SimpleGapRuleFlat ../Airship -l ../Regex -l ../Security -l ../Datastruct -l ../Logger -l ../Flat-Core -l ../Git -l ../Standard-Library -l ../System -l ../Test -l ../Svg -l ../Compiler-String-Extensions -l ../Json -l ../Network -l ../MySQL -l ../Star -l ../Redis -l ../FuCli -l ../IO -l ../Time -l ../System -l ../Http -l ../Math -install-dir .. -main stabilitytest/StabilityTest -o ../Stability-Test/dist/test.js -target es6" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

@@ -2,7 +2,7 @@
   <configuration default="false" name="Compile JS SimpleGapRuleFlat" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="flat.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../SimpleGapRuleFlat -l ../Standard-Library -l ../System -l ../Nest -l ../Compiler-String-Extensions -l ../Json -l ../IO -l ../Time -install-dir .. -d ../FlatCompilerOutput/js/src -main simplegaprule/SimpleGapRuleProgram -o ../SimpleGapRuleFlat/dist/index.js -target js" />
+    <option name="PROGRAM_PARAMETERS" value="../SimpleGapRuleFlat -l ../Standard-Library -l ../System -l ../Test -l ../Compiler-String-Extensions -l ../Json -l ../IO -l ../Time -install-dir .. -d ../FlatCompilerOutput/js/src -main simplegaprule/SimpleGapRuleProgram -o ../SimpleGapRuleFlat/dist/index.js -target js" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

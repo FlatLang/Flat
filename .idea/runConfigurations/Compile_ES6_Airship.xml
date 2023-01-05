@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Compile ES6 Airship" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="flat.Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../Airship/src -install-dir .. -l ../Flat-Core -l ../Datastruct -l ../Regex -l ../Standard-Library -l ../System -l ../Compiler-String-Extensions -l ../Json -l ../FuCli/src -l ../Http -l ../IO/src -l ../Time -l ../Git -l ../Logger -l ../Nest -l ../Read-Line -l ../CoLorIzer/src -l ../Path/src -l ../RegEdit/src -l ../Npm-Client/src -default-import flat/system/System -default-import flat/io/Console -main flat/airship/Airship -o ../Airship/dist/airship.js -target es6" />
+    <option name="PROGRAM_PARAMETERS" value="../Airship/src -install-dir .. -l ../Flat-Core -l ../Datastruct -l ../Regex -l ../Standard-Library -l ../System -l ../Compiler-String-Extensions -l ../Json -l ../FuCli/src -l ../Http -l ../IO/src -l ../Time -l ../Git -l ../Logger -l ../Test -l ../Read-Line -l ../CoLorIzer/src -l ../Path/src -l ../RegEdit/src -l ../Npm-Client/src -default-import flat/system/System -default-import flat/io/Console -main flat/airship/Airship -o ../Airship/dist/airship.js -target es6" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

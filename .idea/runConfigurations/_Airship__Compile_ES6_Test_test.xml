@@ -1,8 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="[Airship] Compile ES6 Nest test" type="Application" factoryName="Application">
+  <configuration default="false" name="[Airship] Compile ES6 Test test" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="flat.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="airship ../Nest test -target es6" />
+    <option name="PROGRAM_PARAMETERS" value="airship ../Test test -target es6" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

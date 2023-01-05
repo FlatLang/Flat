@@ -2,7 +2,7 @@
   <configuration default="false" name="Compile JS browser StabilityTest" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="flat.Flat" />
     <module name="Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../Stability-Test -l ../Regex -l ../Datastruct -l ../Flat-Core -l ../Standard-Library -l ../System -l ../Nest -l ../Network -l ../Compiler-String-Extensions -l ../MySQL -l ../Redis -l ../IO -l ../Time -install-dir .. -d ../FlatCompilerOutput/js/src -main stabilitytest/StabilityTest -o ../Stability-Test/dist/test.js -target js -target-runtime browser" />
+    <option name="PROGRAM_PARAMETERS" value="../Stability-Test -l ../Regex -l ../Datastruct -l ../Flat-Core -l ../Standard-Library -l ../System -l ../Test -l ../Network -l ../Compiler-String-Extensions -l ../MySQL -l ../Redis -l ../IO -l ../Time -install-dir .. -d ../FlatCompilerOutput/js/src -main stabilitytest/StabilityTest -o ../Stability-Test/dist/test.js -target js -target-runtime browser" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
