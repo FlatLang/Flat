@@ -320,6 +320,12 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 		{
 			if (parameters[i].length() > 0)
 			{
+				Parameter p;
+				if ((p = Parameter.decodeStatement(this, parameters[i], location, false)) != null) {
+					getParameterList().addChild(p);
+					continue;
+				}
+
 				GenericTypeArgument arg = getGenericTypeArgumentName(parameters[i]);
 				
 				IIdentifier param = arg;//Value.generateFromType(this, location, parameters[i], require);

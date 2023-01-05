@@ -1725,13 +1725,22 @@ public class SyntaxTree
 	{
 		VariableDeclaration node = null;
 		
-		if (statement.equals(LambdaExpression.UNNAMED_PARAMETER))// && parent instanceof Identifier == false)
-		{
-			if (parent.getParentMethod(true) instanceof LambdaMethodDeclaration)
-			{
+		if (statement.equals(LambdaExpression.UNNAMED_PARAMETER)) {
+			if (parent.getParentMethod(true) instanceof LambdaMethodDeclaration) {
 				LambdaMethodDeclaration method = (LambdaMethodDeclaration)parent.getParentMethod(true);
 				
 				return method.getNextUnnamedParameter();
+			}
+		} else if (SyntaxUtils.isLambdaPositionalParameterName(statement)) {
+			if (parent.getParentMethod(true) instanceof LambdaMethodDeclaration)
+			{
+				LambdaMethodDeclaration method = (LambdaMethodDeclaration)parent.getParentMethod(true);
+
+				Parameter param = method.getParameterList().getVisibleChild(Integer.parseInt(statement.substring(1)) - 1);
+
+				if (param != null) {
+					return param;
+				}
 			}
 		}
 		if (statement.equals("class"))

@@ -430,22 +430,22 @@ public class LambdaExpression extends IIdentifier
 			closure.getParameterList().forEach(x ->
 			{
 				int id = i[0]++;
-				
-				Value value = closure.getParameterList().getParameter(id).getFlatTypeValue(context);
+
+				Value param = closure.getParameterList().getParameter(id);
+				Value value = param.getFlatTypeValue(context);
 				
 				String type = value.getFlatType(context);
 				String name = "";
 
-				if (variables.length > id)
-				{
+				if (variables.length > id) {
 					name = variables[id];
 					String[] words = StringUtils.splitWords(name);
 					if (words.length > 1) {
 						name = words[words.length - 1];
 					}
-				}
-				else
-				{
+				} else if (param instanceof Parameter) {
+					name = "_" + ((Parameter)param).getName();
+				} else {
 					name = "_" + (id + 1);
 				}
 				

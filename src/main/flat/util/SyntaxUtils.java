@@ -7,6 +7,7 @@ import flat.tree.*;
 import flat.tree.generics.GenericTypeArgument;
 import flat.tree.generics.GenericTypeArgumentList;
 import flat.tree.generics.GenericTypeParameter;
+import flat.tree.lambda.LambdaMethodDeclaration;
 import flat.tree.variables.FieldDeclaration;
 import flat.tree.variables.ObjectReference;
 import flat.tree.variables.Variable;
@@ -3567,6 +3568,22 @@ public class SyntaxUtils
 		}*/
 
 		return type;
+	}
+
+	public static boolean isLambdaPositionalParameterName(String name) {
+		return name.startsWith("_") && tryParse(name.substring(1)) != null;
+	}
+
+	private static Integer tryParse(String text)
+	{
+		try
+		{
+			return Integer.parseInt(text);
+		}
+		catch (NumberFormatException e)
+		{
+			return null;
+		}
 	}
 	
 	/**

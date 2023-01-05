@@ -82,16 +82,7 @@ public class Parameter extends LocalDeclaration
 	
 	public boolean isUnnamedParameter()
 	{
-		FlatMethodDeclaration method = getParentMethod();
-		
-		if (method instanceof LambdaMethodDeclaration && getName().startsWith("_"))
-		{
-			Integer parsed = tryParse(getName().substring(1));
-			
-			return parsed != null && method.getParameterList().getVisibleParameterIndex(getName()) + 1 == parsed;
-		}
-		
-		return false;
+		return getParentMethod() instanceof LambdaMethodDeclaration && getName().startsWith("_");
 	}
 	
 	public void updateGenericParameter(Parameter other)
@@ -99,18 +90,6 @@ public class Parameter extends LocalDeclaration
 		if (other.getType() != null)
 		{
 			setDataType(other.getDataType());
-		}
-	}
-	
-	private static Integer tryParse(String text)
-	{
-		try
-		{
-			return Integer.parseInt(text);
-		}
-		catch (NumberFormatException e)
-		{
-			return null;
 		}
 	}
 	
