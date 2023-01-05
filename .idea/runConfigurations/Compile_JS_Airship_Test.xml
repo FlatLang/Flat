@@ -1,7 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Compile JS Airship Test" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="flat.Flat" />
-    <option name="PROGRAM_PARAMETERS" value="../Airship -install-dir .. -l ../Standard-Library -l ../System -l ../Nest -l ../Compiler-String-Extensions -l ../Json -l ../FuCli -l ../Http -l ../IO -l ../Time -l ../Datastruct -l ../Flat-Core -l ../Read-Line -l ../CoLorIzer -l ../Logger -l ../Git -l ../Regex -l ../Npm-Client -l ../Event-Stream -l ../RegEdit -l ../Path -main flat/airship/Airship_TestSuite -o ../Airship/dist/test.js -target js" />
+    <module name="flat-cli" />
+    <option name="PROGRAM_PARAMETERS" value="../Airship -install-dir .. -l ../Standard-Library -l ../System -l ../Nest -l ../Compiler-String-Extensions -l ../Json -l ../FuCli -l ../Http -l ../IO -l ../Time -l ../Datastruct -l ../Flat-Core -l ../Read-Line -l ../CoLorIzer -l ../Logger -l ../Git -l ../Regex -l ../Npm-Client -l ../Event-Stream -l ../RegEdit -l ../Path -l ../Stream -main flat/airship/Airship_TestSuite -o ../Airship/dist/test.js -target js" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
