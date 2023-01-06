@@ -214,8 +214,15 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 	public Variable generateUsableVariable(Variable toVar)
 	{
 		super.generateUsableVariable(toVar);
+
+		String type = generateFlatInput().toString();
+
+		int index = -1;
+		if ((index = SyntaxUtils.findCharInBaseScope(type, '=')) != -1) {
+			type = type.substring(0, index).trim();
+		}
 		
-		toVar.setType(generateFlatInput().toString());
+		toVar.setType(type);
 		
 		return toVar;
 	}
