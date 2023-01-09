@@ -135,6 +135,10 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 	
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray)
 	{
+		if (generateArray) {
+			builder.append("new ");
+		}
+
 		builder.append(getName()).append(generateGenericType(this));
 		
 		if (generateArray)
