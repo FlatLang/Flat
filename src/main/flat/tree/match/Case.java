@@ -49,6 +49,22 @@ public class Case extends MatchCase
 		
 		return null;
 	}
+
+	/**
+	 * Get the {@link Fallthrough Fallthrough}
+	 * instance that is paired with this switch case (if a fallthrough exists)
+	 *
+	 * @return The Fallthrough instance.
+	 */
+	public Continue getContinue()
+	{
+		if (getScope().getLastVisibleChild() instanceof Continue)
+		{
+			return (Continue)getScope().getLastVisibleChild();
+		}
+
+		return null;
+	}
 	
 	@Override
 	public boolean pendingScopeFragment(Node node)
@@ -92,7 +108,12 @@ public class Case extends MatchCase
 	{
 		return getFallthrough() != null;
 	}
-	
+
+	public boolean containsContinue()
+	{
+		return getContinue() != null;
+	}
+
 	/**
 	 * Get whether or not the specified switch case requires a break
 	 * statement in order to function properly. The only cases when this
@@ -104,7 +125,7 @@ public class Case extends MatchCase
 	 */
 	public boolean requiresBreak()
 	{
-		return !containsFallthrough() && !(getScope().getLastChild() instanceof Return);
+		return !containsFallthrough() && !containsContinue() && !(getScope().getLastChild() instanceof Return);
 	}
 	
 	@Override
