@@ -531,7 +531,9 @@ public class Assignment extends Value
 					return SyntaxMessage.queryError("Implicit type for '" + declaration.getName() + "' cannot be determined", this, require);
 				} else if (previousType.getArrayDimensions() != assignment.getArrayDimensions())
 				{
-					return SyntaxMessage.queryError("Incompatible array assignment. Assigned node has " + declaration.getArrayDimensions() + " dimensions, when assignment has " + assignment.getArrayDimensions() + " dimensions", this, require);
+					int declarationDimensions = declaration.getArrayDimensions();
+					int assignmentDimensions = assignment.getArrayDimensions();
+					return SyntaxMessage.queryError("Incompatible array assignment. Assigned node has " + declarationDimensions + " dimension" + (declarationDimensions == 1 ? "" : "s") + ", when assignment has " + assignmentDimensions + " dimension" + (assignmentDimensions == 1 ? "" : "s"), this, require);
 				}
 				else if (previousType.getTypeClass().hasCommonAncestor(assignment.getTypeClass()))
 				{
