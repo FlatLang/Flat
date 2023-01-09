@@ -355,6 +355,7 @@ public class Import extends Node
 		node.isStatic = isStatic;
 		node.alias = alias;
 		node.location = location;
+		node.packageImport = packageImport;
 
 		return node;
 	}
