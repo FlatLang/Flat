@@ -505,6 +505,10 @@ public class FileDeclaration extends Node
 		return null;
 	}
 
+	public ClassDeclaration getFileClassDeclaration() {
+		return getClassDeclaration(getName());
+	}
+
 	/**
 	 * Get the File that this FileDeclaration represents.
 	 *
