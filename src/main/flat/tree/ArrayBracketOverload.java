@@ -259,7 +259,7 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 			return result;
 		}
 		
-		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
+		if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
 			decodeArrowBinding();
 		}
