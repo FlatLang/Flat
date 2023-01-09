@@ -5,6 +5,7 @@ import flat.ValidationResult;
 import flat.tree.*;
 import flat.tree.InstanceDeclaration;
 import flat.tree.MethodList.SearchFilter;
+import flat.tree.annotations.Annotation;
 import flat.util.*;
 import flat.tree.Node;
 import flat.util.Bounds;
@@ -482,9 +483,21 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 		}
 		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			if (getMutatorMethod() != null) {
-				getMutatorMethod().setVisibility(getVisibility());
-				getMutatorMethod().setStatic(isStatic());
+			MutatorMethod mutatorMethod = getMutatorMethod();
+
+			if (mutatorMethod != null) {
+				mutatorMethod.setVisibility(getVisibility());
+				mutatorMethod.setStatic(isStatic());
+
+				getAnnotations().forEach(a -> {
+					mutatorMethod.addAnnotation((Annotation)a.clone(mutatorMethod, a.getLocationIn()));
+				});
+
+				mutatorMethod.setType(getTypeValue());
+
+				if (mutatorMethod.getParameterList().getNumVisibleChildren() > 0) {
+					mutatorMethod.getParameterList().getVisibleChild(0).setType(getTypeValue());
+				}
 			}
 		}
 		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
