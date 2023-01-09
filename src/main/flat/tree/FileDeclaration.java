@@ -639,6 +639,11 @@ public class FileDeclaration extends Node
 		ClassDeclaration thisClass = getClassDeclaration();
 		ClassDeclaration otherClass = other.getClassDeclaration();
 
+		if (thisClass.containsArrayBracketOverload()) {
+			otherClass.arrayBracketOverload = thisClass.arrayBracketOverload;
+			otherClass.arrayBracketOverload.parent = otherClass;
+		}
+
 		thisClass.getInnerClasses(false).getVisibleListChildren().forEach(innerClass -> {
 			innerClass.setOriginalFile(this);
 			otherClass.addChild(innerClass);
