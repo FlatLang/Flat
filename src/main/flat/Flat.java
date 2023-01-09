@@ -1300,7 +1300,7 @@ public class Flat
 			}
 		}
 
-		if (outputFile == null)
+		if (outputFile == null && outputDirectory == null)
 		{
 			System.err.println("You must specify an output file using the -o argument. e.g. 'flatc Test.flat -o Test'");
 
