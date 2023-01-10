@@ -202,14 +202,14 @@ jobs:
             -l ../Event-Stream \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
-            -o dist/test.js \
+            -o dist/js/test.js \
             -target js
 
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: test.js
-          path: Stability-Test/dist/test.js
+          path: Stability-Test/dist/js/test.js
 
       - uses: actions/setup-node@v3
         with:
@@ -218,13 +218,13 @@ jobs:
       - name: Run Stability Test
         working-directory: Stability-Test
         run: |
-          node dist/test.js
+          node dist/js/test.js
 
       - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: test.js
-          path: Stability-Test/dist/test.js
+          path: Stability-Test/dist/js/test.js
 
       - name: Build SimpleGapRule Test
         run: |
