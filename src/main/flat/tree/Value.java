@@ -1727,7 +1727,7 @@ public abstract class Value extends Node implements AbstractValue
 									GenericTypeParameter param = params.getParameter(i);
 									GenericTypeArgument arg = new GenericTypeArgument(args, args.getLocationIn());
 									
-									if (getParentClass() == typeClass)
+									if (getParentClass() == typeClass && !isWithinStaticContext())
 									{
 										arg.setType(params.getParameter(i).getType());
 									}
