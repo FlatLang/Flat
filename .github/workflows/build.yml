@@ -62,7 +62,7 @@ jobs:
         if: failure()
         with:
           name: test.js
-          path: Stability-Test/dist/test.js
+          path: Stability-Test/dist/js/test.js
 
       - name: Run Stability Test
         working-directory: Stability-Test
