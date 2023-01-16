@@ -436,13 +436,15 @@ public class SyntaxTree
 
 			int[] index = new int[] {1};
 
-			classes.forEach(c -> {
-				metaClass.getFileDeclaration().addImport(c.getClassLocation(), false, "Class" + index[0]++, true);
-			});
+			classes.stream()
+				.filter(c -> c.encapsulatingClass == null)
+				.forEach(c -> {
+					metaClass.getFileDeclaration().addImport(c.getClassLocation(), false, "Class" + index[0]++, true);
+				});
 
 			index[0] = 1;
 
-			String classesValue = "[" + classes.stream().map(c -> "Class" + index[0]++ + ".class").collect(Collectors.joining(", ")) + "]";
+			String classesValue = "[" + classes.stream().filter(c -> c.encapsulatingClass == null).map(c -> "Class" + index[0]++ + ".class").collect(Collectors.joining(", ")) + "]";
 
 			metaClass.getField("ALL").setShorthandAccessor(classesValue);
 
