@@ -130,14 +130,34 @@ public class Constructor extends BodyMethodDeclaration
 			Constructor n = new Constructor(parent, location);
 			
 			method.cloneTo(n);
-			
+
+			ClassDeclaration parentClass = n.getParentClass();
+			StringBuilder type = new StringBuilder(parentClass.getName());
+			GenericTypeParameterList params = parentClass.getGenericTypeParameterDeclaration();
+
+			if (params.getNumVisibleChildren() > 0) {
+				type.append("<");
+
+				int[] i = new int[]{0};
+
+				params.forEachVisibleListChild(param -> {
+					if (i[0]++ != 0) {
+						type.append(", ");
+					}
+
+					type.append(param.getName());
+				});
+
+				type.append(">");
+			}
+
 			n.setName(IDENTIFIER);
-			n.setType(n.getParentClass().getName(), true, false);
+			n.setType(type.toString(), true, false);
 			n.setStatic(true);
 			n.setDataType(POINTER);
 			
 //			GenericTypeParameterList params = n.getMethodGenericTypeParameterDeclaration();
-//			GenericTypeParameterList classParams = n.getParentClass().getGenericTypeParameterDeclaration();
+//			GenericTypeParameterList classParams = parentClass.getGenericTypeParameterDeclaration();
 //			
 //			for (int i = 0; i < classParams.getNumParameters(); i++)
 //			{
