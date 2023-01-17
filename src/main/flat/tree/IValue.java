@@ -89,6 +89,17 @@ public class IValue extends Value
 	// Dont forget about IIdentifier!!!!
 	public String getType(boolean checkCast)
 	{
+		if (checkCast && this instanceof Accessible) {
+			Accessible accessible = (Accessible) this;
+
+			Cast cast = accessible.getCast();
+
+			if (cast != null)
+			{
+				return cast.getType();
+			}
+		}
+
 		return type != null ? type.toFlat() : null;
 	}
 	
