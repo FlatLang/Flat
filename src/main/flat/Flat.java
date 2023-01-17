@@ -31,6 +31,7 @@ import static java.util.Arrays.stream;
  */
 public class Flat
 {
+	public static String objectClassType = "class";
 	private boolean				testClasses;
 
 	public boolean deleteOutputDirectory;
@@ -357,6 +358,12 @@ public class Flat
 			System.err.println("Missing Flat install directory located at '" + installDirectory.getAbsolutePath() + "'");
 
 			System.exit(1);
+		}
+
+		switch (target) {
+			case "java":
+				objectClassType = "trait";
+				break;
 		}
 	}
 

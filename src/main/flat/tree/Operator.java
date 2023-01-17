@@ -128,22 +128,22 @@ public class Operator extends IValue
 		updateType();
 	}
 	
-	public Trait getOperatorOverload()
+	public ClassDeclaration getOperatorOverload()
 	{
 		switch (operator)
 		{
-			case "==": return (Trait)getProgram().getClassDeclaration("flat/operators/EqualsOperator");
-			case "!=": return (Trait)getProgram().getClassDeclaration("flat/operators/NotEqualToOperator");
-			case "*": return (Trait)getProgram().getClassDeclaration("flat/operators/MultiplyOperator");
-			case "*=": return (Trait)getProgram().getClassDeclaration("flat/operators/MultiplyEqualsOperator");
-			case "+": return (Trait)getProgram().getClassDeclaration("flat/operators/PlusOperator");
-			case "+=": return (Trait)getProgram().getClassDeclaration("flat/operators/PlusEqualsOperator");
-			case "-": return (Trait)getProgram().getClassDeclaration("flat/operators/MinusOperator");
-			case "-=": return (Trait)getProgram().getClassDeclaration("flat/operators/MinusEqualsOperator");
-			case "<": return (Trait)getProgram().getClassDeclaration("flat/operators/LessThanOperator");
-			case "<=": return (Trait)getProgram().getClassDeclaration("flat/operators/LessThanOrEqualToOperator");
-			case ">": return (Trait)getProgram().getClassDeclaration("flat/operators/GreaterThanOperator");
-			case ">=": return (Trait)getProgram().getClassDeclaration("flat/operators/GreaterThanOrEqualToOperator");
+			case "==": return getProgram().getClassDeclaration("flat/Object");
+			case "!=": return getProgram().getClassDeclaration("flat/operators/NotEqualToOperator");
+			case "*": return getProgram().getClassDeclaration("flat/operators/MultiplyOperator");
+			case "*=": return getProgram().getClassDeclaration("flat/operators/MultiplyEqualsOperator");
+			case "+": return getProgram().getClassDeclaration("flat/operators/PlusOperator");
+			case "+=": return getProgram().getClassDeclaration("flat/operators/PlusEqualsOperator");
+			case "-": return getProgram().getClassDeclaration("flat/operators/MinusOperator");
+			case "-=": return getProgram().getClassDeclaration("flat/operators/MinusEqualsOperator");
+			case "<": return getProgram().getClassDeclaration("flat/operators/LessThanOperator");
+			case "<=": return getProgram().getClassDeclaration("flat/operators/LessThanOrEqualToOperator");
+			case ">": return getProgram().getClassDeclaration("flat/operators/GreaterThanOperator");
+			case ">=": return getProgram().getClassDeclaration("flat/operators/GreaterThanOrEqualToOperator");
 			default: return null;
 		}
 	}

@@ -13,10 +13,7 @@ import flat.tree.variables.ObjectReference;
 import flat.tree.variables.Variable;
 import flat.tree.variables.VariableDeclaration;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
@@ -2230,15 +2227,18 @@ public class SyntaxUtils
 			return value1.getType().equals(type) ? value1.getTypeClass() : value2.getTypeClass();
 		}
 		
-		ClassDeclaration type1 = value1.getTypeClass();
-		ClassDeclaration type2 = value2.getTypeClass();
+		final ClassDeclaration originalType1 = value1.getTypeClass();
+		final ClassDeclaration originalType2 = value2.getTypeClass();
+
+		ClassDeclaration type1 = originalType1;
+		ClassDeclaration type2 = originalType2;
 		
 		if (type1 == null || type2 == null)
 		{
 			return null;
 		}
 		
-		ClassDeclaration type3 = type2;
+		ClassDeclaration originalType = type2;
 		
 		while (type2 != null)
 		{
@@ -2250,8 +2250,9 @@ public class SyntaxUtils
 			type2 = type2.getExtendedClassDeclaration();
 		}
 		
-		type2 = type3;
-		
+		type2 = originalType;
+		originalType = type1;
+
 		while (type1 != null)
 		{
 			if (type2.isOfType(type1))
@@ -2260,6 +2261,25 @@ public class SyntaxUtils
 			}
 			
 			type1 = type1.getExtendedClassDeclaration();
+		}
+
+		type1 = originalType;
+		originalType = type2;
+
+		Optional<Trait> t = Arrays.stream(type2.getImplementedInterfaces(true))
+			.filter(originalType1::isOfType)
+			.findFirst();
+
+		if (t.isPresent()) {
+			return t.get();
+		}
+
+		t = Arrays.stream(type1.getImplementedInterfaces(true))
+			.filter(originalType2::isOfType)
+			.findFirst();
+
+		if (t.isPresent()) {
+			return t.get();
 		}
 		
 		return null;

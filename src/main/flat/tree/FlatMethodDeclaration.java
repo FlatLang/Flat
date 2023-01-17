@@ -582,6 +582,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 	
 	public boolean checkOverrides()
 	{
+		if (getParentClass().getName().equals("Object")) return false;
+
 		if (overridenMethod == null)
 		{
 			SearchFilter filter = new SearchFilter();
@@ -1669,7 +1671,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 				setDataType(overridenMethod.getDataType());
 			}
 			
-			if (getScope().getNumVisibleChildren() > 0)
+			if (getScope() != null && getScope().getNumVisibleChildren() > 0)
 			{
 				Node n = getScope().getVisibleChild(0);
 				

@@ -12,6 +12,7 @@ import flat.util.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -331,7 +332,7 @@ public class BinaryOperation extends IValue
 			
 			operator.updateType();
 			String operatorType = operator.getType();
-			
+
 			if (common == null)
 			{
 				ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("flat/primitive/number/Int");
@@ -747,7 +748,7 @@ public class BinaryOperation extends IValue
 			}
 		}
 		
-		Trait overload = getOperator().getOperatorOverload();
+		ClassDeclaration overload = getOperator().getOperatorOverload();
 		
 		if (overload != null)
 		{
@@ -827,18 +828,17 @@ public class BinaryOperation extends IValue
 			
 			if (overload.getName().equals("NotEqualToOperator"))
 			{
-				overload = (Trait)getProgram().getClassDeclaration("flat/operators/EqualsOperator");
-				
+				UnaryOperation operation = new UnaryOperation(getParent(), getLocationIn());
+
+				overload = getProgram().getClassDeclaration("flat/Object");
+
 				value = checkOperatorOverload(overload);
-				
-				if (value != null)
-				{
-					UnaryOperation operation = new UnaryOperation(getParent(), getLocationIn());
-					
+
+				if (value != null) {
 					operation.addChild(new Operator(value, value.getLocationIn(), "!"));
 					operation.addChild(value);
 					operation.setType("Bool");
-					
+
 					return operation;
 				}
 			}
@@ -889,7 +889,7 @@ public class BinaryOperation extends IValue
 		return this;
 	}
 	
-	public Value checkOperatorOverload(Trait overload)
+	public Value checkOperatorOverload(ClassDeclaration overload)
 	{
 		Value left = getLeftOperand();
 		Value right = getRightOperand();
@@ -943,7 +943,7 @@ public class BinaryOperation extends IValue
 					Stream<MethodDeclaration> validMethods = Arrays.stream(methods)
 						.filter(x -> x != method && x.getDeclaringClass() != objectClass && x.getParameterList().getNumParameters() == 1);
 					
-					validMethods = validMethods.sorted((o1, o2) -> o1.getDeclaringClass().getDistanceFrom(overload) - o2.getDeclaringClass().getDistanceFrom(overload));
+					validMethods = validMethods.sorted(Comparator.comparingInt(o -> o.getDeclaringClass().getDistanceFrom(overload)));
 					
 					ArrayList<MethodDeclaration> list = validMethods.collect(Collectors.toCollection(ArrayList::new));
 					
@@ -991,7 +991,7 @@ public class BinaryOperation extends IValue
 		
 		ClassDeclaration rightClass = right.getReturnedNode().getTypeClass();
 
-		if (overload.getName().equals("EqualsOperator")) {
+		if (getOperator().getOperator().equals("==")) {
 			if (
 				!Literal.isNullLiteral(leftOperand) &&
 					!Literal.isNullLiteral(rightOperand) &&

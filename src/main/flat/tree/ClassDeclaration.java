@@ -16,11 +16,8 @@ import flat.tree.variables.*;
 import flat.util.*;
 import flat.util.Bounds;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -661,16 +658,30 @@ public class ClassDeclaration extends InstanceDeclaration
 		return getImplementedInterfaces(true);
 	}
 	
+	public String[] getImplementedInterfaceLocations(boolean checkAncestors) {
+		TypeList<TraitImplementation> list = getInterfacesImplementationList();
+
+		ArrayList<String> array = new ArrayList<>();
+
+		for (int i = 0; i < list.getNumVisibleChildren(); i++) {
+			String type = list.getVisibleChild(i).getType();
+
+			array.add(getFileDeclaration().getImportList().getAbsoluteClassLocation(type));
+		}
+
+		return array.toArray(new String[0]);
+	}
+
 	public Trait[] getImplementedInterfaces(boolean checkAncestors)
 	{
 		TypeList<TraitImplementation> list = getInterfacesImplementationList();
-		
+
 		ArrayList<Trait> array = new ArrayList<>();
-		
+
 		for (int i = 0; i < list.getNumVisibleChildren(); i++)
 		{
 			String type = list.getVisibleChild(i).getType();
-			
+
 			ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), type);
 			
 			if (clazz instanceof Trait)
@@ -684,11 +695,11 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 			else
 			{
-				SyntaxMessage.error("Class '" + type + "' is not a trait", this);
+				SyntaxMessage.error("Expected class '" + type + "' to be a trait, but it was not", this);
 			}
 		}
 		
-		if (checkAncestors)
+		if (checkAncestors && !getName().equals("Object"))
 		{
 			for (int i = array.size() - 1; i >= 0; i--)
 			{
@@ -735,6 +746,24 @@ public class ClassDeclaration extends InstanceDeclaration
 			}
 		}
 		
+		return false;
+	}
+
+	public boolean implementsInterface(String clazz)
+	{
+		return implementsInterface(clazz, true);
+	}
+
+	public boolean implementsInterface(String clazz, boolean checkAncestor)
+	{
+		for (String i : getImplementedInterfaceLocations(checkAncestor))
+		{
+			if (Objects.equals(clazz, i))
+			{
+				return true;
+			}
+		}
+
 		return false;
 	}
 	
@@ -924,7 +953,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			for (ClassDeclaration i : getImplementedInterfaces())
 			{
-				i.addAbstractMethods(methods, checkInterfaces, checkAncestor);
+				i.addAbstractMethods(methods, !Flat.objectClassType.equals("trait") || !getName().equals("Object"), checkAncestor);
 			}
 		}
 		if (checkAncestor)
@@ -968,7 +997,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			for (ClassDeclaration i : getImplementedInterfaces())
 			{
-				i.addBodyMethods(methods, checkInterfaces, checkAncestor);
+				i.addBodyMethods(methods, !Flat.objectClassType.equals("trait") || !getName().equals("Object"), checkAncestor);
 			}
 		}
 		if (checkAncestor)
@@ -1012,7 +1041,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			for (ClassDeclaration i : getImplementedInterfaces())
 			{
-				i.addMethods(methods, checkInterfaces, checkAncestor);
+				i.addMethods(methods, !Flat.objectClassType.equals("trait") || !getName().equals("Object"), checkAncestor);
 			}
 		}
 		if (checkAncestor)
@@ -1906,6 +1935,7 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			boolean before = filter.checkAncestor;
 			filter.checkAncestor = false;
+			filter.checkInterfaces = !Flat.objectClassType.equals("trait") || !getName().equals("Object");
 			
 			for (Trait inter : getImplementedInterfaces(false))
 			{
@@ -2466,13 +2496,34 @@ public class ClassDeclaration extends InstanceDeclaration
 				
 				SyntaxMessage.error("Invalid generic type declaration", n, newLoc);
 			}
-			
-			// TODO: Check for the standard library version of Object.
-			if (n.extendedClass == null && !n.getClassLocation(false).equals("flat/Object"))
-			{
-				ExtendedClass extended = ExtendedClass.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
-				
-				n.setExtendedClass(extended);
+
+			switch (Flat.objectClassType) {
+				case "class":
+					// TODO: Check for the standard library version of Object.
+					if (n.extendedClass == null && !n.getClassLocation(false).equals("flat/Object"))
+					{
+						ExtendedClass extended = ExtendedClass.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
+
+						n.setExtendedClass(extended);
+					}
+					break;
+				case "trait":
+					if (n.getName().equals("Object")) {// && parent.getFileDeclaration().getPackage().getLocation().equals("flat")) {
+						Trait t = new Trait(parent, location);
+
+						n.cloneTo(t);
+
+						return t;
+					}
+
+					// TODO: Check for the standard library version of Object.
+					if (!n.implementsInterface("flat/Object") && !n.getClassLocation(false).equals("flat/Object"))
+					{
+						TraitImplementation implementation = TraitImplementation.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
+
+						n.getInterfacesImplementationList().addChild(implementation);
+					}
+					break;
 			}
 			
 			return n;
@@ -3394,7 +3445,8 @@ public class ClassDeclaration extends InstanceDeclaration
 		if (this instanceof Trait || getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap))
 		{
 			addMapImport(getExtendedClassDeclaration(), type);
-			
+
+			// FIXME: Flat.objectClassType
 			String extensionName = !getExtendedClassName().equals("Object") ? getExtendedClassName() : "";
 			
 			String classType = this instanceof Trait ? "trait" : "class";
@@ -3957,9 +4009,11 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		i.getFieldList().getPublicFieldList().forEachVisibleChild(convertField);
 		i.getFieldList().getPrivateFieldList().forEachVisibleChild(convertField);
-		
+
 		for (Trait extended : i.getImplementedInterfaces(false))
 		{
+			if (Flat.objectClassType.equals("trait") && extended.getName().equals("Object")) continue;
+
 			addFieldsFromInterface(extended);
 		}
 	}

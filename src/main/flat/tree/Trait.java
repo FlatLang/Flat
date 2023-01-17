@@ -1,5 +1,6 @@
 package flat.tree;
 
+import flat.Flat;
 import flat.TestContext;
 import flat.ValidationResult;
 import flat.tree.variables.FieldDeclaration;
@@ -106,7 +107,7 @@ public class Trait extends ClassDeclaration
 	{
 		MethodDeclaration[] methods = super.getMethods(methodName, filter);
 		
-		if (filter.checkAncestor)
+		if (filter.checkAncestor && (!Flat.objectClassType.equals("trait") || doesExtendClass()))
 		{
 			ClassDeclaration obj = getExtendedClass().getTypeClass();//getProgram().getClassDeclaration("flat/Object");
 			
