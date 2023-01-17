@@ -192,7 +192,7 @@ public class ForEachLoop extends Loop
 					IntRange range = (IntRange)iterator;
 
 					String name = n.getIdentifier().getName();
-					String type = range.getStartValue().getType();
+					String type = SyntaxUtils.getValueInCommon(range.getStartValue(), range.getEndValue()).generateFlatType(parent.getParentMethod(true)).toString();
 
 					String forLoopDeclaration = "for (" + type + " " + name + " = " + range.getStartValue().generateFlatInput() + "; " + name + " < " + range.getEndValue().generateFlatInput() + "; " + name + "++)" + statement.substring(bounds.getEnd() + 1);
 
