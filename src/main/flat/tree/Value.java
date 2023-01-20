@@ -5,6 +5,7 @@ import flat.TestContext;
 import flat.ValidationResult;
 import flat.tree.FlatParameterList.ReturnParameterList;
 import flat.tree.annotations.NativeAnnotation;
+import flat.tree.annotations.NativeArrayAnnotation;
 import flat.tree.annotations.RequireGenericTypeAnnotation;
 import flat.tree.generics.GenericTypeArgument;
 import flat.tree.generics.GenericTypeArgumentList;
@@ -214,7 +215,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public void convertArrays()
 	{
-		if (!isWithinExternalContext() && getArrayDimensions() > 0 && !isNative())
+		if (!isWithinExternalContext() && getArrayDimensions() > 0 && !isNativeArray())
 		{
 			String type = "";
 			
@@ -533,6 +534,10 @@ public abstract class Value extends Node implements AbstractValue
 
 	public boolean isNative() {
 		return containsAnnotationOfType(NativeAnnotation.class);
+	}
+
+	public boolean isNativeArray() {
+		return containsAnnotationOfType(NativeArrayAnnotation.class);
 	}
 
 	public Value getTypeValue()

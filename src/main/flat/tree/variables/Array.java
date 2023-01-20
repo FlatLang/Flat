@@ -6,6 +6,7 @@ import flat.error.SyntaxMessage;
 import flat.tree.*;
 import flat.tree.Identifier;
 import flat.tree.annotations.NativeAnnotation;
+import flat.tree.annotations.NativeArrayAnnotation;
 import flat.util.Location;
 import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
@@ -211,10 +212,10 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			if (n.decodeDimensions(statement, index, newLoc, require))
 			{
-				if (!parent.containsAnnotationOfType(NativeAnnotation.class, true, true) &&
+				if (!parent.containsAnnotationOfType(NativeArrayAnnotation.class, true, true) &&
 					(parent instanceof Assignment == false ||
 						(((Assignment)parent).getAssignedNodeValue() instanceof Variable == false ||
-							!((Assignment)parent).getAssignedNode().getDeclaration().isNative())))
+							!((Assignment)parent).getAssignedNode().getDeclaration().isNativeArray())))
 				{
 					Value value = SyntaxTree.decodeValue(parent, n.mapDimension(0), location, require);
 					
@@ -422,7 +423,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			String type = generateFlatType(new StringBuilder(), null, false).toString();
 			
-			Assignment array = Assignment.decodeStatement(func, "native " + type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
+			Assignment array = Assignment.decodeStatement(func, "native_array " + type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
 
 //			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
 //			
