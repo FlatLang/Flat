@@ -300,6 +300,8 @@ public class LocalDeclaration extends VariableDeclaration
 	public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData data)
 	{
 		DeclarationData extra = (DeclarationData)data;
+
+		boolean nullable = rightDelimiter.startsWith("?");
 		
 		if (extra.isLastWord()) {
 			if (getType() == null && containsImplicitCompatibleAnnotation()) {
@@ -315,7 +317,7 @@ public class LocalDeclaration extends VariableDeclaration
 			extra.error = "Invalid syntax '" + leftDelimiter + word + "'";
 		} else if (rightDelimiter.equals(".")) {
 
-		} else if (rightDelimiter.length() == 0 || rightDelimiter.equals("*") || (rightDelimiter.startsWith("[") && rightDelimiter.length() > 1)) {
+		} else if (rightDelimiter.length() == 0 || nullable ||  rightDelimiter.equals("*") || (rightDelimiter.startsWith("[") && rightDelimiter.length() > 1)) {
 			String type = word;
 
 			for (
@@ -350,10 +352,16 @@ public class LocalDeclaration extends VariableDeclaration
 				{
 					setDataType(POINTER);
 				}
+			} else if (nullable) {
+				setDataType(POINTER);
 			}
 		}
+
+		if (nullable) {
+			rightDelimiter = rightDelimiter.substring(1);
+		}
 		
-		if (!checkArray(extra.statement, bounds.getEnd(), rightDelimiter, extra.require))
+		if (!checkArray(extra.statement, bounds.getEnd() + (nullable ? 1 : 0), rightDelimiter, extra.require))
 		{
 			extra.error = "Could not parse array brackets";
 		}

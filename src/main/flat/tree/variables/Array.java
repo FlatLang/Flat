@@ -423,7 +423,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			
 			String type = generateFlatType(new StringBuilder(), null, false).toString();
 			
-			Assignment array = Assignment.decodeStatement(func, "native_array " + type + "[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
+			Assignment array = Assignment.decodeStatement(func, "native_array " + type + "?[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
 
 //			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
 //			
