@@ -540,7 +540,7 @@ public class MethodCall extends Variable
 
 	public boolean isSuperCall()
 	{
-		return (getParent() instanceof Accessible == false || !((Accessible)getParent()).doesAccess()) && getFlatMethod() != null && getFlatMethod().isSuperCallFrom(getParentClass());
+		return declaration instanceof InitializationMethod && declaration.getParentClass() != getParentClass();
 	}
 
 	/**
