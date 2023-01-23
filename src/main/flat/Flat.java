@@ -32,6 +32,7 @@ import static java.util.Arrays.stream;
 public class Flat
 {
 	public static String objectClassType = "class";
+	public static boolean keepSuperCallInConstructor = false;
 	private boolean				testClasses;
 
 	public boolean deleteOutputDirectory;
@@ -363,6 +364,7 @@ public class Flat
 		switch (target) {
 			case "java":
 				objectClassType = "trait";
+				keepSuperCallInConstructor = true;
 				break;
 		}
 	}

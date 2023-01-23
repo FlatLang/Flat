@@ -1,5 +1,6 @@
 package flat.tree;
 
+import flat.Flat;
 import flat.TestContext;
 import flat.ValidationResult;
 import flat.error.SyntaxMessage;
@@ -11,6 +12,7 @@ import flat.util.Location;
 import flat.util.Stack;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * MethodDeclaration extension that represents the declaration of a Constructor
@@ -268,25 +270,8 @@ public class Constructor extends BodyMethodDeclaration
 		
 		if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS)
 		{
-			if (!initializedInitMethod)
-			{
-				initMethod.getScope().slaughterEveryLastVisibleChild();
-				initMethod.getScope().getVariableList().closureContextDeclarations = getScope().getVariableList().closureContextDeclarations;
-				initMethod.getScope().inheritChildren(getScope());
-				initMethod.setLocationIn(getLocationIn());
-				initMethod.getScope().localVariableID = getScope().localVariableID;
-				
-				String args = generateParameterOutput(this);
-				
-				MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true, false, initMethod);
-				addChild(init);
-				
-				SyntaxTree.validateNodes(getParameterList(), phase);
-				result.returnedNode = initMethod;
-				
-				initializedInitMethod = true;
-			}
-			
+			extractToInitializationMethod(phase, result);
+
 			if (phase == SyntaxTree.PHASE_PRE_GENERATION)
 			{
 				getScope().getVariableList().closureContextDeclarations = new ArrayList<>();
@@ -295,7 +280,37 @@ public class Constructor extends BodyMethodDeclaration
 		
 		return result;
 	}
-	
+
+	private void extractToInitializationMethod(int phase, ValidationResult result) {
+		if (!initializedInitMethod) {
+			java.util.List<MethodCall> superCalls = Flat.keepSuperCallInConstructor
+				? getScope().getChildStream()
+					.filter(c -> c instanceof MethodCall)
+					.map(c -> (MethodCall) c)
+					.filter(MethodCall::isSuperCall)
+					.collect(Collectors.toList())
+				: new ArrayList<>();
+
+			initMethod.getScope().slaughterEveryLastVisibleChild();
+			initMethod.getScope().getVariableList().closureContextDeclarations = getScope().getVariableList().closureContextDeclarations;
+			initMethod.getScope().inheritChildren(getScope());
+			initMethod.setLocationIn(getLocationIn());
+			initMethod.getScope().localVariableID = getScope().localVariableID;
+
+			superCalls.forEach(this::addChild);
+
+			String args = generateParameterOutput(this);
+
+			MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true, false, initMethod);
+			addChild(init);
+
+			SyntaxTree.validateNodes(getParameterList(), phase);
+			result.returnedNode = initMethod;
+
+			initializedInitMethod = true;
+		}
+	}
+
 	@Override
 	public void checkDataType(String type)
 	{
