@@ -3319,6 +3319,16 @@ public class ClassDeclaration extends InstanceDeclaration
 		
 		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
+			if (Flat.objectClassType.equals("trait") && getClassLocation().equals("flat/Object")) {
+				Constructor constructor = new Constructor(this, Location.INVALID);
+				constructor.setVisibility(PUBLIC);
+				constructor.setStatic(true);
+				constructor.setName("Object");
+				constructor.setType(this);
+
+				addChild(constructor);
+			}
+
 			getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
 			
 			if (!isPropertyTrue("functionMap"))
