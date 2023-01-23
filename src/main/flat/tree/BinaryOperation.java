@@ -990,16 +990,20 @@ public class BinaryOperation extends IValue
 		}
 		
 		ClassDeclaration rightClass = right.getReturnedNode().getTypeClass();
+		Value leftOperandReturned = leftOperand.getReturnedNode();
+		Value rightOperandReturned = rightOperand.getReturnedNode();
 
 		if (getOperator().getOperator().equals("==")) {
 			if (
 				!Literal.isNullLiteral(leftOperand) &&
 					!Literal.isNullLiteral(rightOperand) &&
-					!leftOperand.getReturnedNode().isExternalType() &&
-					!rightOperand.getReturnedNode().isExternalType() &&
-					leftOperand.getReturnedNode().getType() != null &&
-					rightOperand.getReturnedNode().getType() != null &&
-					leftOperand.getReturnedNode().isPrimitive() ^ rightOperand.getReturnedNode().isPrimitive()
+					!leftOperandReturned.isExternalType() &&
+					!rightOperandReturned.isExternalType() &&
+					leftOperandReturned.getType() != null &&
+					rightOperandReturned.getType() != null &&
+					(!leftOperandReturned.isPrimitive() &&
+					!rightOperandReturned.isPrimitive() ||
+					leftOperandReturned.isPrimitive() ^ rightOperandReturned.isPrimitive())
 			) {
 				FlatMethodDeclaration validMethod = (FlatMethodDeclaration) getFileDeclaration().getImportedClass(this, "Object").getMethods("equals")[0];
 				Value param = validMethod.getParameter(0);
