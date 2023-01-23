@@ -6,6 +6,7 @@ import flat.ValidationResult;
 import flat.error.SyntaxMessage;
 import flat.tree.MethodList.SearchFilter;
 import flat.tree.annotations.*;
+import flat.tree.exceptionhandling.Throw;
 import flat.tree.generics.GenericTypeArgument;
 import flat.tree.generics.GenericTypeParameter;
 import flat.tree.generics.GenericTypeParameterList;
@@ -1618,15 +1619,19 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 		}
 		else
 		{
-			if (returned instanceof Closure == false && setType)
-			{
-				setType(returned);//returned.getFlatTypeValue(returned));
+			if (contents instanceof Throw) {
+
+			} else {
+				if (returned instanceof Closure == false && setType)
+				{
+					setType(returned);//returned.getFlatTypeValue(returned));
+				}
+
+				Return r = new Return(this, getLocationIn());
+				r.getReturnValues().addChild(contents);
+
+				contents = r;
 			}
-			
-			Return r = new Return(this, getLocationIn());
-			r.getReturnValues().addChild(contents);
-			
-			contents = r;
 		}
 		
 		return contents;

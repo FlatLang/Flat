@@ -1,6 +1,7 @@
 package flat.tree;
 
 import flat.error.SyntaxMessage;
+import flat.tree.exceptionhandling.Throw;
 import flat.util.Location;
 import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
@@ -95,9 +96,15 @@ public interface ShorthandAccessible
 
 		returnValue.onAfterDecoded();
 
-		a.addChild(returnValue);
+		Value value = returnValue.getValueNode();
+
+		if (value instanceof Throw) {
+			a.addChild(value);
+		} else {
+			a.addChild(returnValue);
+		}
 		
-		return returnValue.getValueNode();
+		return value;
 	}
 	
 	default void decodeMutatorValue(Value value, Value context)
