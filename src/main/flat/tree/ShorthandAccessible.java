@@ -103,6 +103,10 @@ public interface ShorthandAccessible
 		} else {
 			a.addChild(returnValue);
 		}
+
+		if (a.getType() == null) {
+			a.setType(value.getReturnedNode());
+		}
 		
 		return value;
 	}
