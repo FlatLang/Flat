@@ -463,7 +463,9 @@ public class UnaryOperation extends IValue
 		
 		if (isOperatorOnLeft() && getOperator().getOperator().equals(Operator.BANG))
 		{
-			if (!"Bool".equals(getValue().getReturnedNode().getType()))
+			Value returned = getValue().getReturnedNode();
+
+			if (!"Bool".equals(returned.getType()) || returned.isPointer())
 			{
 				BinaryOperation operation = getValue().replaceWithNullCheck();
 				
