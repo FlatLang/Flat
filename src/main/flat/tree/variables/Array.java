@@ -422,22 +422,32 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			func.setProperty("array", this);
 			
 			String type = generateFlatType(new StringBuilder(), null, false).toString();
-			
-			Assignment array = Assignment.decodeStatement(func, "native_array " + type + "?[] temp = new " + type + "[" + initValues.getNumVisibleChildren() + "]", func.getLocationIn(), true);
 
-//			VariableDeclaration decl = array.getAssignedNode().getDeclaration();
-//			
-//			setDataType(POINTER);
-//			decl.setDataType(POINTER);
-//			array.getAssignmentNode().getReturnedNode().setDataType(POINTER);
-//			((Instantiation)array.getAssignmentNode().getReturnedNode()).getIdentifier().setDataType(POINTER);
-			
-			array.onAfterDecoded();
-			func.addChild(array);
-			array.onAfterDecoded();
-			array.getAssignedNode().getDeclaration().convertArrays();
+			LocalDeclaration declaration = new LocalDeclaration(func, func.getLocationIn());
+			declaration.setProperty("userMade", false);
+			declaration.setName("temp");
+			declaration.setType(this);
+			declaration.setDataType(POINTER);
+			declaration.addAnnotation(new NativeArrayAnnotation(declaration, declaration.getLocationIn()));
+			func.addChild(declaration);
 
-			String name = array.getAssignedNode().getName();
+			Assignment arrayAssignment = Assignment.generateDefault(func, func.getLocationIn());
+			Variable variable = declaration.generateUsableVariable(func, func.getLocationIn());
+			variable.setProperty("userMade", false);
+			arrayAssignment.getAssigneeNodes().addChild(variable);
+
+			Array arrayInstantiation = new Array(func, func.getLocationIn());
+			cloneTo(arrayInstantiation);
+			arrayInstantiation.initializer = null;
+			arrayInstantiation.getInitializerValues().detach();
+
+			arrayAssignment.addChild(arrayInstantiation);
+
+			arrayAssignment.onAfterDecoded();
+			func.addChild(arrayAssignment);
+			arrayAssignment.onAfterDecoded();
+
+			String name = arrayAssignment.getAssignedNode().getName();
 			
 			ArrayList<Value> passedValues = new ArrayList<>();
 			
