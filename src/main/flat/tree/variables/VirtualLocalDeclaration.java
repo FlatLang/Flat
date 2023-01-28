@@ -13,7 +13,7 @@ import flat.util.Location;
  */
 public class VirtualLocalDeclaration extends LocalDeclaration
 {
-	private Value reference;
+	public Value reference;
 	
 	/**
 	 * @see Node#Node(Node, Location)
