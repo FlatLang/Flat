@@ -3,6 +3,7 @@ package flat.tree;
 import flat.Flat;
 import flat.TestContext;
 import flat.ValidationResult;
+import flat.error.SyntaxErrorException;
 import flat.error.SyntaxMessage;
 import flat.tree.MethodList.SearchFilter;
 import flat.tree.annotations.*;
@@ -1373,9 +1374,19 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 					{
 						param.addAnnotation(anno);
 					}
-					
-					param.onAfterDecoded();
-					
+
+					boolean dryRun = getController().isFlagEnabled(Flat.DRY_RUN);
+
+					try {
+						param.onAfterDecoded();
+					} catch (SyntaxErrorException e) {
+						getController().errors.remove(getController().errors.size() - 1);
+						if (!dryRun) {
+							getController().disableFlag(Flat.DRY_RUN);
+						}
+						return false;
+					}
+
 					getParameterList().addChild(param);
 				}
 				else

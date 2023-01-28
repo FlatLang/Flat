@@ -3946,14 +3946,14 @@ public class ClassDeclaration extends InstanceDeclaration
 				else
 				{
 					FieldDeclaration clone = field.clone(this, Location.INVALID, true, true);
-					
+
 					clone.setTwoWayBinding(true);//field.getVisibility() == PUBLIC);
 					clone.setShorthandAccessor(field.getName());
 					clone.setProperty("inheritedFromTrait", true);
 					
 					if (field.isGenericType())
 					{
-						clone.setType(field.getGenericTypeParameter().getCorrespondingArgument(clone), clone);
+						clone.setType(clone.searchGenericTypeArgument(clone), clone);
 					}
 					else
 					{

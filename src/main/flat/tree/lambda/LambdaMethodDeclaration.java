@@ -56,7 +56,12 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration
 		
 		return closure.closureDeclaration;//(ClosureDeclaration)methodCall.getFlatMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
 	}
-	
+
+	@Override
+	public boolean isWithinStaticContext() {
+		return contextDeclaration.isWithinStaticContext();
+	}
+
 	@Override
 	public boolean doesConvertToPrimitive()
 	{

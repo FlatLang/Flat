@@ -205,7 +205,7 @@ public class VariableDeclaration extends IIdentifier
 	 * @see Value#getGenericReturnType()
 	 */
 	@Override
-	public String getGenericReturnType()
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
 		return getGenericTypeParameter().getDefaultType();
 	}
@@ -581,7 +581,10 @@ public class VariableDeclaration extends IIdentifier
 			{
 				String type = decl.getParameter(i).getDefaultType();
 
-				args.addChild(SyntaxUtils.getGenericTypeArgumentName(this, type));
+				GenericTypeArgument arg = SyntaxUtils.getGenericTypeArgumentName(this, type);
+				arg.autoAdded = true;
+
+				args.addChild(arg);
 
 				Import imp = decl.getFileDeclaration().getImport(type, false);
 

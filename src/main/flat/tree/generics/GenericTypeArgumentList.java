@@ -34,19 +34,41 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 	
 	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, Value context)
 	{
-		if (getNumVisibleChildren() > 0)
-		{
-			builder.append(GenericCompatible.GENERIC_START);
+		if (getNumVisibleChildren() == 0) return builder;
+
+		GenericTypeArgument[] args = new GenericTypeArgument[getNumVisibleChildren()];
+
+		boolean[] autoAdded = new boolean[args.length];
+
+		for (int i = 0; i < getNumVisibleChildren(); i++) {
+			args[i] = getVisibleChild(i);
+			autoAdded[i] = args[i].autoAdded;
+
+			if (i == 0 && autoAdded[i]) return builder;
+
+			if (!args[i].isGenericType()) continue;
+
+			GenericTypeParameter param = args[i].getGenericTypeParameter();
+
+			if (param == null) continue;
+
+			GenericTypeArgument arg = param.getCorrespondingArgument(context);
+
+			if (arg != null) args[i] = arg;
 		}
+
+		builder.append(GenericCompatible.GENERIC_START);
 		
-		for (int i = 0; i < getNumVisibleChildren(); i++)
+		for (int i = 0; i < args.length; i++)
 		{
+			if (autoAdded[i]) break;
+
 			if (i > 0)
 			{
 				builder.append(", ");
 			}
 			
-			getVisibleChild(i).generateFlatInput(builder, true, context);
+			args[i].generateFlatInput(builder, true, context);
 		}
 		
 		if (getNumVisibleChildren() > 0)

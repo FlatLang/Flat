@@ -3575,27 +3575,27 @@ public class SyntaxUtils
 		generator.traverseCode(to, 0, null, false);
 	}
 	
-	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, GenericTypeArgument argument)
+	public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, GenericTypeArgument argument)
 	{
-		return performWalk(context, current, required, argument.getGenericTypeParameter());
+		return performWalk(context, subContext, current, required, argument.getGenericTypeParameter());
 	}
 	
-	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter)
+	public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter)
 	{
-		return performWalk(context, current, required, parameter, false);
+		return performWalk(context, subContext, current, required, parameter, false);
 	}
 	
-	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter, boolean allowGeneric)
+	public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter, boolean allowGeneric)
 	{
-		return performWalk(context, current, required, parameter.getVisibleIndex(), allowGeneric);
+		return performWalk(context, subContext, current, required, parameter.getVisibleIndex(), allowGeneric);
 	}
 	
-	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, int parameterIndex)
+	public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, int parameterIndex)
 	{
-		return performWalk(context, current, required, parameterIndex, false);
+		return performWalk(context, subContext, current, required, parameterIndex, false);
 	}
 	
-	public static GenericTypeArgument performWalk(Value context, ClassDeclaration current, ClassDeclaration required, int parameterIndex, boolean allowGeneric)
+	public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, int parameterIndex, boolean allowGeneric)
 	{
 		Stack<IValue> path = new Stack<>();
 		
@@ -3663,9 +3663,9 @@ public class SyntaxUtils
 				return (GenericTypeArgument)current.primitiveOverloadTypes[parameterIndex];
 			}
 		}
-		else if (context.getGenericTypeArgumentList() != null && context.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex)
+		else if (subContext.getGenericTypeArgumentList() != null && subContext.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex)
 		{
-			return context.getGenericTypeArgument(parameterIndex);
+			return subContext.getGenericTypeArgument(parameterIndex);
 		}
 		
 		return null;

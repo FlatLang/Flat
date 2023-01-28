@@ -245,7 +245,12 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 		
 		return method;
 	}
-	
+
+	@Override
+	public boolean isWithinStaticContext() {
+		return false;
+	}
+
 	/**
 	 * @see VariableDeclaration#validate(int)
 	 */

@@ -83,7 +83,7 @@ public class Literal extends IValue implements Accessible
 	}
 
 	@Override
-	public String getGenericReturnType()
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
 		if (isGenericType())
 		{

@@ -1095,7 +1095,32 @@ public abstract class Value extends Node implements AbstractValue
 		
 		return "";
 	}
-	
+
+	public GenericTypeArgument searchGenericTypeArgument(Value context) {
+		if (isGenericType())
+		{
+			GenericTypeParameter param = getGenericTypeParameter();
+
+			if (param != null)
+			{
+				if (
+					!param.isMethodGenericParameter() &&
+						context != null &&
+						context.getParentClass() != null &&
+						context.getParentClass().isOfType(param.getParentClass()) &&
+						context.getParentClass() != param.getParentClass()) {
+					return SyntaxUtils.performWalk(context, context, context.getParentClass(), param.getParentClass(), param, true);
+				} else if (this instanceof Accessible) {
+					return ((Accessible)this).getGenericTypeArgumentFromParameter(param);
+				} else {
+					return param.getCorrespondingArgument(context);
+				}
+			}
+		}
+
+		return null;
+	}
+
 	/**
 	 * Generate the Flat syntax for the type of the specified Value's type.
 	 * 
@@ -1150,7 +1175,7 @@ public abstract class Value extends Node implements AbstractValue
 		
 		GenericTypeArgument arg = null;
 		GenericTypeParameter param = getGenericTypeParameter();
-		
+
 		if (isGenericType())
 		{
 			if (param != null)
@@ -1159,20 +1184,16 @@ public abstract class Value extends Node implements AbstractValue
 				{
 					if (context.getParentClass() != param.getParentClass())
 					{
-						arg = SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
-						
+						arg = SyntaxUtils.performWalk(context, context, context.getParentClass(), param.getParentClass(), param, true);
+
 						if (arg == null)
 						{
 //							SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
 						}
 						else
 						{
-							return builder.append(arg.getType());
+							return builder.append(arg.generateFlatType());
 						}
-					}
-					else
-					{
-						defaultGeneric = false;
 					}
 				}
 				else
@@ -1186,7 +1207,7 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			return builder.append(SyntaxUtils.getPrimitiveFlatType(arg.generateFlatType(context).toString()));
 		}
-		else if (arg != null && context != null && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true))
+		else if (arg != null && context != null && context instanceof GenericTypeArgument == false && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true))
 		{
 			builder.append(arg.getType());
 		}
@@ -1198,9 +1219,9 @@ public abstract class Value extends Node implements AbstractValue
 		{
 			builder.append(SyntaxUtils.getPrimitiveFlatType(type.getType()));
 		}
-		
-		builder.append(type.generateGenericType(context));
-		
+
+		writeFlatGenericTypeArguments(builder, context, type);
+
 		if (checkArray && isPrimitiveArray())
 		{
 			builder.append(generateFlatArrayText());
@@ -1212,7 +1233,11 @@ public abstract class Value extends Node implements AbstractValue
 		
 		return builder;
 	}
-	
+
+	public void writeFlatGenericTypeArguments(StringBuilder builder, Value context, Value type) {
+		builder.append(type.generateGenericType(context));
+	}
+
 	public BinaryOperation replaceWithNullCheck()
 	{
 		BinaryOperation operation = BinaryOperation.generateDefault(parent, getLocationIn());
@@ -1276,7 +1301,7 @@ public abstract class Value extends Node implements AbstractValue
 				{
 					if (context.getParentClass() != param.getParentClass())
 					{
-						arg = SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
+						arg = SyntaxUtils.performWalk(context, context, context.getParentClass(), param.getParentClass(), param, true);
 					}
 				}
 				else
@@ -1333,7 +1358,7 @@ public abstract class Value extends Node implements AbstractValue
 	
 	public ClassDeclaration getFlatTypeClass()
 	{
-		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getFlatType())));
+		return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getFlatType(this))));
 	}
 	
 	public ClassDeclaration getFlatTypeClass(Value context)
@@ -1487,7 +1512,7 @@ public abstract class Value extends Node implements AbstractValue
 		}
 		if (getParentMethod(true) != null)
 		{
-			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getType(checkArray));
+			GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getFlatType(this, checkArray));
 
 			if (param != null)
 			{
@@ -1516,7 +1541,7 @@ public abstract class Value extends Node implements AbstractValue
 		}
 
 		// use getReferenceNode/getDeclaringClass here??
-		return getParentClass().getGenericTypeParameter(getType(checkArray), this);
+		return getParentClass().getGenericTypeParameter(getFlatType(this, checkArray), this);
 	}
     
 	public boolean isFunctionType()
@@ -1561,12 +1586,22 @@ public abstract class Value extends Node implements AbstractValue
 		return isGenericType() && SyntaxUtils.isPrimitiveType(getGenericReturnType());
 	}
 	
-	public String getGenericReturnType()
+	public final String getGenericReturnType()
 	{
 		return getGenericReturnType(true);
 	}
+
+	public final String getGenericReturnType(Value context)
+	{
+		return getGenericReturnType(context, true);
+	}
+
+	public final String getGenericReturnType(boolean checkCast)
+	{
+		return getGenericReturnType(this, checkCast);
+	}
 	
-	public String getGenericReturnType(boolean checkCast)
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
 //		GenericTypeParameter param = getGenericTypeParameter(checkCast);//getParentClass().getGenericTypeParameter(getType(checkCast), this);
 
@@ -1609,7 +1644,7 @@ public abstract class Value extends Node implements AbstractValue
 	{
 		if (target.isGenericType())
 		{
-			GenericTypeArgument a = SyntaxUtils.performWalk(context, context.getParentClass(), targetClass, target.genericParameter, true);
+			GenericTypeArgument a = SyntaxUtils.performWalk(context, context, context.getParentClass(), targetClass, target.genericParameter, true);
 			
 			if (a != null)
 			{
@@ -1676,8 +1711,14 @@ public abstract class Value extends Node implements AbstractValue
 
 		Value original = value;
 		Value flatType = value.getFlatTypeValue(context);
-		
-		if (flatType.isGenericType() && !getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass()))
+		if (flatType.isGenericType() && getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass()) && (context != null && isWithinStaticContext() != context.isWithinStaticContext())) {
+			boolean b = ((Accessible)this).isAccessedWithinStaticContext();
+			boolean c = isWithinStaticContext();
+			boolean d = context.isWithinStaticContext();
+			original.getGenericReturnType();
+		}
+
+		if (flatType.isGenericType() && ((context != null && isWithinStaticContext() != context.isWithinStaticContext()) || !getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass())))
 		{
 			setTypeValue(original.getGenericReturnType());
 		}
@@ -1731,6 +1772,7 @@ public abstract class Value extends Node implements AbstractValue
 								{
 									GenericTypeParameter param = params.getParameter(i);
 									GenericTypeArgument arg = new GenericTypeArgument(args, args.getLocationIn());
+									arg.autoAdded = true;
 									
 									if (getParentClass() == typeClass && !isWithinStaticContext())
 									{

@@ -677,7 +677,12 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 			ShorthandAccessible.super.decodeMutatorValue(value, context);
 		}
 	}
-	
+
+	@Override
+	public boolean isWithinStaticContext() {
+		return !isInstance();
+	}
+
 	/**
 	 * @see Node#clone(Node, Location, boolean)
 	 */

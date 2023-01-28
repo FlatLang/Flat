@@ -109,13 +109,7 @@ public class Priority extends Value implements Accessible
 	{
 		return getReturnedContents().getGenericTypeParameter(checkArray);
 	}
-	
-	@Override
-	public String getGenericReturnType(boolean checkCast)
-	{
-		return getReturnedContents().getGenericReturnType(checkCast);
-	}
-	
+
 	//	@Override
 //	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
 //	{
@@ -128,14 +122,14 @@ public class Priority extends Value implements Accessible
 //	}
 	
 	@Override
-	public String getGenericReturnType()
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
 		if (!doesAccess())
 		{
-			return getReturnedContents().getGenericReturnType();
+			return getReturnedContents().getGenericReturnType(context, checkCast);
 		}
 		
-		return super.getGenericReturnType();
+		return super.getGenericReturnType(context, checkCast);
 	}
 	
 	/*public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)

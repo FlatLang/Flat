@@ -256,7 +256,7 @@ public class IIdentifier extends Identifier
 	{
 		if (getProgram() != null && getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION)
 		{
-			genericParameter = searchGenericTypeParameter(0);
+			genericParameter = searchGenericTypeParameter(0, false);
 		}
 		
 		return super.onAfterDecoded();

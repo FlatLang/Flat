@@ -172,26 +172,15 @@ public class Variable extends Identifier
 		
 		return super.getCArgumentReferenceContext();
 	}
-	
-	@Override
-	public String getGenericReturnType()
+
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
-		return getGenericReturnType(true);
-	}
-	
-	public String getGenericReturnType(boolean checkCast)
-	{
-		if (isGenericType(checkCast))
-		{
-			GenericTypeParameter param = getGenericTypeParameter();
-			GenericTypeArgument arg = param.getCorrespondingArgument(this);
-			
-			param = arg != null && arg.isGenericType() ? arg.getGenericTypeParameter() : param;
-			
-			return arg != null && !arg.isGenericType() ? arg.getType() : param.getDefaultType();
-		}
-		
-		throw new RuntimeException("Generic return type requested from non-generic type.");
+		GenericTypeParameter param = getGenericTypeParameter();
+		GenericTypeArgument arg = searchGenericTypeArgument(context);
+
+		param = arg != null && arg.isGenericType() ? arg.getGenericTypeParameter() : param;
+
+		return arg != null && !arg.isGenericType() ? arg.getType() : param.getDefaultType();
 	}
 	
 	@Override
@@ -203,7 +192,7 @@ public class Variable extends Identifier
 			
 			if (refClass != null && refClass != type.getParentClass() && refClass.isOfType(type.getParentClass()))
 			{
-				GenericTypeArgument arg = SyntaxUtils.performWalk(this, refClass, type.getParentClass(), type, true);
+				GenericTypeArgument arg = SyntaxUtils.performWalk(this, this, refClass, type.getParentClass(), type, true);
 				
 				if (arg != null)
 				{

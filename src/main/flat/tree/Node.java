@@ -1671,7 +1671,7 @@ public abstract class Node implements Listenable, Annotatable
 	 */
 	public boolean isWithinStaticContext()
 	{
-		return getParentMethod() == null || !getParentMethod().isInstance();
+		return getParentMethod(true) == null || !getParentMethod(true).isInstance();
 	}
 	
 	/**

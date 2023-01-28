@@ -136,8 +136,9 @@ public interface Accessible
 		
 		ClassDeclaration typeClass = null;
 		
-		Value value = (Value)getReferenceContext();
-		
+		Value refNode = (Value)getReferenceContext();
+		Value value = refNode;
+
 		if (value == this)
 		{
 			value = (Value)getReferenceNode();
@@ -189,37 +190,23 @@ public interface Accessible
 				return arg;
 			}
 			
-			if (typeClass != type.getParentClass())
+			if (typeClass != type.getParentClass() && !(refNode instanceof Variable && ((Variable)refNode).declaration instanceof ReferenceParameter))
 			{
-				return SyntaxUtils.performWalk(value, typeClass, type.getParentClass(), index);
+				if (refNode != value) {
+					return SyntaxUtils.performWalk(this.toValue(), this.toValue(), typeClass, type.getParentClass(), index);
+				} else {
+					return SyntaxUtils.performWalk(toValue(), value, typeClass, type.getParentClass(), index);
+				}
 			}
 			
-			if (index >= 0 && !flatType.isGenericType())
-			{
-				GenericTypeArgumentList args = flatType.getGenericTypeArgumentList();
-				
-				if (args != null && args.getNumVisibleChildren() > index)
-				{
-					return flatType.getGenericTypeArgument(index);
-				}
-				
-				Node ref = value.getParent();
-				
-				if (ref instanceof Instantiation)
-				{
-					ref = ref.getParent();
-				}
-				
-				if (ref instanceof Assignment)
-				{
-					return ((Assignment)ref).getAssignedNode().getGenericTypeArgument(index, false);
-				}
-			}
-			else if (value.getBaseNode() instanceof Assignment)
+			if (value.getBaseNode() instanceof Assignment && !value.getBaseNode().isDecoding())
 			{
 				Assignment assignment = (Assignment)value.getBaseNode();
-				
-				return assignment.getAssignedNode().getDeclaration().getGenericTypeArgument(index);
+				VariableDeclaration decl = assignment.getAssignedNode().getDeclaration();
+
+				if (decl.getGenericTypeArgumentList().getNumVisibleChildren() > index) {
+					return decl.getGenericTypeArgument(index);
+				}
 			}
 		}
 		

@@ -23,7 +23,8 @@ import flat.tree.Value;
 public class GenericTypeArgument extends IIdentifier implements GenericCompatible
 {
 	public boolean allocatedOnHeap;
-	
+	public boolean autoAdded;
+
 	/**
 	 * @see Node#Node(Node, Location)
 	 */
@@ -168,11 +169,11 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	 * @see Value#getGenericReturnType()
 	 */
 	@Override
-	public String getGenericReturnType()
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
 		if (((Value)getContext()).getGenericTypeParameterDeclaration().containsParameter(getType()))
 		{
-			return getFlatType(this);//getDefaultType();
+			return getFlatType(this, true, true);//getDefaultType();
 		}
 		
 		return getType();
@@ -291,7 +292,12 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	{
 		return builder.append(getFlatType(context));
 	}
-	
+
+	@Override
+	public void writeFlatGenericTypeArguments(StringBuilder builder, Value context, Value type) {
+		builder.append(type.generateGenericType(null));
+	}
+
 	public Value getTangibleNode()
 	{
 		GenericTypeArgumentList list = getParentGenericTypeArgumentList();
@@ -395,6 +401,9 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	public GenericTypeArgument cloneTo(GenericTypeArgument node, boolean cloneChildren, boolean cloneAnnotations)
 	{
 		super.cloneTo(node, cloneChildren, cloneAnnotations);
+
+		node.allocatedOnHeap = allocatedOnHeap;
+		node.autoAdded = autoAdded;
 		
 		return node;
 	}

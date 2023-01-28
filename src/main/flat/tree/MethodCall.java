@@ -808,10 +808,10 @@ public class MethodCall extends Variable
 	}
 
 	@Override
-	public String getGenericReturnType(boolean checkCast)
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
 		GenericTypeParameter param = getGenericTypeParameter();
-		GenericTypeArgument arg = param.getCorrespondingArgument(this/*.getReferenceNode()*/.toValue());
+		GenericTypeArgument arg = searchGenericTypeArgument(context);
 
 		if (arg == null || arg.isGenericType())
 		{
@@ -1260,7 +1260,11 @@ public class MethodCall extends Variable
 		}
 	}
 
-	private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter, Value corresponding, GenericTypeParameter target)
+	private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter, Value corresponding, GenericTypeParameter target) {
+		return recursiveGenericParamSearch(parameter, corresponding, corresponding, target);
+	}
+
+	private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter, Value corresponding, Value subContext, GenericTypeParameter target)
 	{
 		GenericTypeParameter param = parameter.getGenericTypeParameter();
 
@@ -1270,9 +1274,10 @@ public class MethodCall extends Variable
 
 			if (required instanceof GenericTypeArgument)
 			{
+				param = required.genericParameter;
 				required = ((GenericTypeArgument)required).getTangibleNode();
 
-				corresponding = SyntaxUtils.performWalk(corresponding, corresponding.getTypeClass(), required.getTypeClass(), param);
+				corresponding = SyntaxUtils.performWalk(corresponding, subContext, corresponding.getTypeClass(), required.getTypeClass(), param);
 			}
 
 			return new Pair<>(param, corresponding);
@@ -1280,18 +1285,18 @@ public class MethodCall extends Variable
 		else
 		{
 			GenericTypeArgumentList params = parameter.getGenericTypeArgumentList();
-//			GenericTypeArgumentList args = corresponding.getGenericTypeArgumentList();
+			GenericTypeArgumentList args = corresponding.getGenericTypeArgumentList();
 
-			// TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A, Out>(ValueDistance<A, A> other, ...)
-			for (int i = 0; i < /*Math.min(args.getNumVisibleChildren(), */params.getNumVisibleChildren()/*)*/; i++)
-			{
-//				Value arg = args.getVisibleChild(i);
+			if (params != null && args != null) {
+				// TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A, Out>(ValueDistance<A, A> other, ...)
+				for (int i = 0; i < Math.min(args.getNumVisibleChildren(), params.getNumVisibleChildren()); i++) {
+					Value arg = args.getVisibleChild(i);
 
-				Pair<GenericTypeParameter, Value> p = recursiveGenericParamSearch(params.getVisibleChild(i), /*arg*/corresponding, target);
+					Pair<GenericTypeParameter, Value> p = recursiveGenericParamSearch(params.getVisibleChild(i), arg, corresponding, target);
 
-				if (p != null)
-				{
-					return p;
+					if (p != null) {
+						return p;
+					}
 				}
 			}
 		}
@@ -1321,11 +1326,24 @@ public class MethodCall extends Variable
 
 		if (flatMethod != null)
 		{
-			GenericTypeParameterList genParams = flatMethod.getMethodGenericTypeParameterDeclaration();
+			GenericTypeParameterList genParams = flatMethod instanceof Constructor
+				? flatMethod.getParentClass().getGenericTypeParameterDeclaration()
+				: flatMethod.getMethodGenericTypeParameterDeclaration();
+
 			FlatParameterList params = flatMethod.getParameterList();
 
 			Value[] args = getArgumentList().getArgumentsInOrder();
 			Value[] types = genParams.getTypes();
+
+			int start = getMethodGenericTypeArgumentList().getNumVisibleChildren();
+
+			for (int i = start - 1; i >= 0; i--) {
+				GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(i);
+				types[i] = arg;
+				if (arg.autoAdded) {
+					start = i;
+				}
+			}
 
 			// Find least common denominator type for nth method generic type argument
 			// e.g.   public reduce<Out>(func(Out, Type, Int, List) -> Out, Out initialValue) -> Out
@@ -1334,7 +1352,7 @@ public class MethodCall extends Variable
 			//
 			//        when searching for Out's type, it checks lambda's return type of Int and
 			//        the type of initialValue which is String. The common type between those is Object.
-			for (int n = 0; n < genParams.getNumVisibleChildren(); n++)
+			for (int n = start; n < genParams.getNumVisibleChildren(); n++)
 			{
 				Value common = types[n];
 
@@ -1359,18 +1377,36 @@ public class MethodCall extends Variable
 					}
 				}
 
-				if (common != types[n])
-				{
-					if (getMethodGenericTypeArgumentList().getNumVisibleChildren() <= n)
-					{
-						GenericTypeArgument arg = new GenericTypeArgument(getMethodGenericTypeArgumentList(), Location.INVALID);
-						arg.setType(common);
+				if (flatMethod instanceof ExtensionMethodDeclaration) {
+					Pair<GenericTypeParameter, Value> pair = recursiveGenericParamSearch(params.getReferenceParameter(), getReferenceNode().toValue(), genParams.getParameter(n));
 
-						getMethodGenericTypeArgumentList().addChild(arg);
+					if (pair != null) {
+						if (common == types[n]) {
+							common = pair.b.getReturnedNode();
+							common = common instanceof ClosureVariable ? ((FunctionType)common.getTypeObject()).closure : common;
+						} else {
+							common = SyntaxUtils.getValueInCommon(common, pair.b.getReturnedNode());
+						}
+					}
+				}
+
+//				if (common != types[n])
+				{
+					if (start <= n)
+					{
+						if (getMethodGenericTypeArgumentList().getNumVisibleChildren() <= n) {
+							GenericTypeArgument arg = new GenericTypeArgument(getMethodGenericTypeArgumentList(), Location.INVALID);
+							arg.autoAdded = true;
+							arg.setType(common);
+							getMethodGenericTypeArgumentList().addChild(arg);
+						} else {
+							getMethodGenericTypeArgumentList().getVisibleChild(n).setType(common);
+						}
 					}
 					else
 					{
 						GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(n);
+						arg.autoAdded = true;
 
 						if (common != null) {
 							arg.setType(SyntaxUtils.getValueInCommon(arg, common));
@@ -1804,6 +1840,7 @@ public class MethodCall extends Variable
 		for (int i = args.getNumVisibleChildren(); i < params.getNumVisibleChildren(); i++)
 		{
 			GenericTypeArgument arg = new GenericTypeArgument(args, getLocationIn().asNew());
+			arg.autoAdded = true;
 
 			GenericTypeParameter param = params.getParameter(i);
 

@@ -49,7 +49,7 @@ public class BinaryOperation extends IValue
 	}
 	
 	@Override
-	public String getGenericReturnType(boolean checkCast)
+	public String getGenericReturnType(Value context, boolean checkCast)
 	{
 		return getType();
 	}
@@ -348,6 +348,8 @@ public class BinaryOperation extends IValue
 					}
 					lhn.getReturnedNode().getTypeClass();
 					rhn.getReturnedNode().getTypeClass();
+					lhn.getReturnedNode().getFlatTypeValue(lhn.getReturnedNode()).getTypeClass();
+					rhn.getReturnedNode().getFlatTypeValue(rhn.getReturnedNode()).getTypeClass();
 					SyntaxMessage.error("Type '" + returnedLeft.getType() + "' and '" + returnedRight.getType() + "' are not compatible", this);
 				}
 			}
