@@ -589,15 +589,12 @@ public class Variable extends Identifier
 		{
 			GenericTypeParameter param = getGenericTypeParameter();
 			
-			if (param != null)// && context != null)
+			if (param != null)
 			{
 				GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(param);
 				
 				if (extractedType != null)
 				{
-					GenericTypeArgument value = extractedType.clone(extractedType.getParent(), extractedType.getLocationIn(), true, true);
-					value.setArrayDimensions(getArrayDimensions());
-					
 					return extractedType;
 				}
 			}

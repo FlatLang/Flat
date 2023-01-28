@@ -341,6 +341,12 @@ public class Operator extends IValue
 				{
 					String left = l.getType();
 					String right = r.getType();
+
+					Value lv = getLeftOperand().getReturnedNode();
+					lv.getFlatTypeValue(lv);
+
+					Value rv = getRightOperand().getReturnedNode();
+					rv.getFlatTypeValue(rv);
 					
 					SyntaxUtils.getTypeInCommon(l, r);
 					

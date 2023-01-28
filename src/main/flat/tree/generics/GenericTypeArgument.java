@@ -293,11 +293,6 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 		return builder.append(getFlatType(context));
 	}
 
-	@Override
-	public void writeFlatGenericTypeArguments(StringBuilder builder, Value context, Value type) {
-		builder.append(type.generateGenericType(null));
-	}
-
 	public Value getTangibleNode()
 	{
 		GenericTypeArgumentList list = getParentGenericTypeArgumentList();

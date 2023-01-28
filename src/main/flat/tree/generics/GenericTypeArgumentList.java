@@ -46,7 +46,7 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument>
 
 			if (i == 0 && autoAdded[i]) return builder;
 
-			if (!args[i].isGenericType()) continue;
+			if (!args[i].isGenericType() || getParent() instanceof GenericTypeArgument) continue;
 
 			GenericTypeParameter param = args[i].getGenericTypeParameter();
 
