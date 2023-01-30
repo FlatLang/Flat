@@ -1711,12 +1711,6 @@ public abstract class Value extends Node implements AbstractValue
 
 		Value original = value;
 		Value flatType = value.getFlatTypeValue(context);
-		if (flatType.isGenericType() && getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass()) && (context != null && isWithinStaticContext() != context.isWithinStaticContext())) {
-			boolean b = ((Accessible)this).isAccessedWithinStaticContext();
-			boolean c = isWithinStaticContext();
-			boolean d = context.isWithinStaticContext();
-			original.getGenericReturnType();
-		}
 
 		if (flatType.isGenericType() && ((context != null && isWithinStaticContext() != context.isWithinStaticContext()) || !getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass())))
 		{
