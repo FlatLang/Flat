@@ -213,7 +213,7 @@ public class IfStatement extends ControlStatement
 						return;
 					}
 
-					Assignment replacement = Assignment.generateDefault(value.getScope(), value.getLocationIn());
+					Assignment replacement = Assignment.generateDefault(value.getScope() != null ? value.getScope() : value.getParent(), value.getLocationIn());
 					Variable variable = declaration.generateUsableVariable(replacement, value.getLocationIn());
 					variable.setProperty("userMade", false);
 					replacement.getAssigneeNodes().addChild(variable);
