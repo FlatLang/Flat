@@ -3,6 +3,7 @@ package flat.tree.generics;
 import flat.TestContext;
 import flat.error.UnimplementedOperationException;
 import flat.tree.*;
+import flat.tree.variables.Variable;
 import flat.tree.variables.VariableDeclaration;
 import flat.util.Location;
 import flat.tree.GenericCompatible;
@@ -143,7 +144,24 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 	{
 		super.setTypeValue(type);
 	}
-	
+
+	@Override
+	public FileDeclaration getReferenceFile(boolean checkCast) {
+		if (autoAdded && getParent().getParent() instanceof Variable) {
+			Variable variable = (Variable)getParent().getParent();
+
+			if (!variable.isDecoding()) {
+				ClassDeclaration declaringClass = variable.getDeclaringClass();
+
+				if (declaringClass != null) {
+					return declaringClass.getFileDeclaration();
+				}
+			}
+		}
+
+		return super.getReferenceFile(checkCast);
+	}
+
 	/**
 	 * Get the default type that this generic type extends.
 	 * @see GenericTypeParameter#getDefaultType()
@@ -198,7 +216,7 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 			}
 		}
 		
-		return getParentClass();
+		return getReferenceClass();
 	}
 	
 	public static String searchGenericType(String str, int start, boolean backwards)

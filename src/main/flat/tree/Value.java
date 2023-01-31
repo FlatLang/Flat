@@ -1541,7 +1541,15 @@ public abstract class Value extends Node implements AbstractValue
 		}
 
 		// use getReferenceNode/getDeclaringClass here??
-		return getParentClass().getGenericTypeParameter(getFlatType(this, checkArray), this);
+		return getReferenceClass().getGenericTypeParameter(getFlatType(this, checkArray), this);
+	}
+
+	public ClassDeclaration getReferenceClass() {
+		if (getParentMethod() instanceof ExtensionMethodDeclaration) {
+			return getParentMethod().getParameterList().getReferenceParameter().getTypeClass();
+		}
+
+		return getParentClass();
 	}
     
 	public boolean isFunctionType()
