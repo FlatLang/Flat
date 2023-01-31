@@ -1584,9 +1584,11 @@ public abstract class Value extends Node implements AbstractValue
 			if (location != null) {
 				return false;
 			}
+
+			return true;
 		}
 
-		return getGenericTypeParameter() != null;
+		return false;
 	}
 	
 	public boolean isPrimitiveGenericType()
