@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * {@link List} extension that abstracts a general list type that can only
@@ -68,7 +69,11 @@ public class TypeList<E extends Node> extends List implements Iterable<E>
 		
 		return null;
 	}
-	
+
+	public Stream<E> getChildTypeStream() {
+		return (Stream<E>)super.getChildStream();
+	}
+
 	public void forEachListChild(Consumer<E> action)
 	{
 		for (int i = 0; i < getNumChildren(); i++)
