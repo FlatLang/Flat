@@ -1573,7 +1573,7 @@ public abstract class Value extends Node implements AbstractValue
 			return false;
 		} else if (getGenericTypeParameter() != null) {
 			Value ref = this;
-			if (this instanceof Accessible) {
+			if (this instanceof Accessible && ((Accessible)this).canAccess()) {
 				ref = ((Accessible)this).getDeclaringClass();
 				if (ref == null) {
 					ref = this;
