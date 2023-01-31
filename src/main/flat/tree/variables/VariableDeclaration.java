@@ -470,49 +470,6 @@ public class VariableDeclaration extends IIdentifier
 	{
 		toVar.setDeclaration(this);
 
-		if (toVar.isAccessed())
-		{
-			GenericTypeArgumentList refArgs = toVar.getReferenceNode().toValue().getGenericTypeArgumentList();
-			GenericTypeArgumentList declarationArgs = getGenericTypeArgumentList();
-			GenericTypeArgumentList args = new GenericTypeArgumentList(toVar, toVar.getLocationIn());
-			declarationArgs.cloneChildrenTo(args);
-
-			boolean changed = false;
-
-			for (int i = 0; i < declarationArgs.getNumVisibleChildren(); i++)
-			{
-				GenericTypeArgument arg = toVar.getGenericTypeArgumentList().getVisibleChild(i);
-
-				if (arg.isGenericType())
-				{
-//					int index = arg.getGenericTypeParameter().getIndex();
-//					
-//					args.getVisibleChild(i).setType(refArgs.getVisibleChild(index));
-
-					GenericTypeArgument extracted = toVar.getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
-
-					if (extracted != null)
-					{
-						if (extracted.isGenericType() && extracted.getGenericTypeParameter().getParentClass() != toVar.getParentClass())
-						{
-							args.getVisibleChild(i).setType(extracted.getDefaultType());
-						}
-						else
-						{
-							args.getVisibleChild(i).setType(extracted);
-						}
-
-						changed = true;
-					}
-				}
-			}
-
-			if (changed)
-			{
-				toVar.genericTypeArgumentList = args;
-			}
-		}
-
 		return toVar;
 	}
 
