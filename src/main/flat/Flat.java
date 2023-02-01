@@ -501,7 +501,7 @@ public class Flat
 	public void readCliArgs(String[] args) {
 		parseInitialArguments(args);
 
-		if (target != null && target.equals("js")) {
+		if (target != null && (target.equals("js") || target.equals("es6"))) {
 			targetRuntime = targetRuntime == null ? "node" : targetRuntime;
 		} else {
 			targetRuntime = targetRuntime == null ? "default" : targetRuntime;
