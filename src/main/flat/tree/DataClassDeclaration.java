@@ -268,6 +268,13 @@ public class DataClassDeclaration extends ClassDeclaration
 	}
 
 	private void addToStringFunction() {
+		MethodList.SearchFilter filter = new MethodList.SearchFilter();
+		filter.checkAncestor = false;
+
+		if (getMethod(this, "toString", filter, new Value[0]) != null) {
+			return;
+		}
+
 		BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "override public toString() -> String", Location.INVALID, true);
 
 		if (func == null) {
