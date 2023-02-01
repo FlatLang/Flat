@@ -12,7 +12,7 @@ Because I had started this project over a decade ago when I was 16 and very earl
 
 ...however, this repository is still under active development because it is the only current working compiler. The compiler is currently being rewritten into several different modules, written in the Flat language itself:
 
-* [Flat-Compiler](https://github.com/FlatLang/Flat-Compiler) - Includes all of the front-end/middle-end/back-end compiler components and utilities and provides the CLI for compiling Flat code
+* [Flat-Compiler](https://github.com/FlatLang/Flat-Compiler) - Imports all of the front-end/middle-end/back-end compiler components and utilities as dependencies and provides the CLI for compiling Flat code
 * [Flat-AST](https://github.com/FlatLang/Flat-AST) - Defines the Flat AST structure
 * [Flat-Lexer](https://github.com/FlatLang/Flat-Lexer) - The new lexer engine
 * [Parser-Core](https://github.com/FlatLang/Parser-Core) - The new generic code parser engine (for all languages that have an implemented grammar)
