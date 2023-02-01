@@ -348,5 +348,12 @@
     "url": "https://github.com/FlatLang/Progress-Bar/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Progress-Bar"
+  },
+  {
+    "label": "Test TerminalSize",
+    "svg": "https://github.com/FlatLang/TerminalSize/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/TerminalSize/actions/workflows/test.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "TerminalSize"
   }
 ]
