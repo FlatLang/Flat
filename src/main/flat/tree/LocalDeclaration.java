@@ -354,6 +354,7 @@ public class LocalDeclaration extends VariableDeclaration
 				}
 			} else if (nullable) {
 				setDataType(POINTER);
+				explicitlyNullable = true;
 			}
 		}
 

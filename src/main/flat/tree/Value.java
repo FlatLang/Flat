@@ -35,7 +35,8 @@ public abstract class Value extends Node implements AbstractValue
 	public ArrayAccess arrayAccess;
 	
 	public GenericTypeParameter genericParameter;
-	
+	public boolean explicitlyNullable;
+
 	/**
 	 * @see Node#Node(Node, Location)
 	 */
@@ -1218,6 +1219,9 @@ public abstract class Value extends Node implements AbstractValue
 		else
 		{
 			builder.append(SyntaxUtils.getPrimitiveFlatType(type.getType()));
+			if (explicitlyNullable) {
+				builder.append("?");
+			}
 		}
 
 		writeFlatGenericTypeArguments(builder, context, type);

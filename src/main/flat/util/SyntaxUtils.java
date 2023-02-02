@@ -3462,8 +3462,16 @@ public class SyntaxUtils
 
 	public static GenericTypeArgument getGenericTypeArgumentName(Node parent, String parameterName)
 	{
+		boolean nullable = parameterName.endsWith("?");
+		if (nullable) parameterName = parameterName.substring(0, parameterName.length() - 1);
+
 		GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID);
 		type.setType(parameterName, true, false, true);
+
+		if (nullable) {
+			type.setDataType(POINTER);
+			type.explicitlyNullable = true;
+		}
 
 		/*DeclarationData data = new DeclarationData();
 

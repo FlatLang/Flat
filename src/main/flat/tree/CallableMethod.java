@@ -41,6 +41,9 @@ public interface CallableMethod
 	{
 		if (returnType != null)
 		{
+			boolean nullable = returnType.endsWith("?");
+			if (nullable) returnType = returnType.substring(0, returnType.length() - 1);
+
 			int bracketIndex = returnType.indexOf('[');
 			
 			if (bracketIndex > 0)
@@ -71,6 +74,10 @@ public interface CallableMethod
 			}
 			
 			((Value)this).setType(returnType, true);
+			if (nullable) {
+				((Value)this).setDataType(Value.POINTER);
+				((Value)this).explicitlyNullable = true;
+			}
 			
 			if (symbol.equals("*"))
 			{
