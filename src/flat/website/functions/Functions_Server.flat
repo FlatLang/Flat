@@ -10,7 +10,7 @@ class {
   static CliArg portArg = CliArg("--port", count: 1)
 
   public static async main(String[] args) {
-    let cli = FuCli([portArg]):parse(args.skip(1))
+    let cli = FuCli("server", [portArg]):parse(args.skip(1))
 
     let port = portArg.enabled ? Int.parseInt(portArg.value) : DEFAULT_PORT
 
