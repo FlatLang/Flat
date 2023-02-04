@@ -1335,7 +1335,7 @@ public class MethodCall extends Variable
 			Value[] args = getArgumentList().getArgumentsInOrder();
 			Value[] types = genParams.getTypes();
 
-			int start = getMethodGenericTypeArgumentList().getNumVisibleChildren();
+			int start = Math.min(types.length, getMethodGenericTypeArgumentList().getNumVisibleChildren());
 
 			for (int i = start - 1; i >= 0; i--) {
 				GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(i);
