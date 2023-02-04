@@ -14,7 +14,8 @@ import flat.tree.variables.VariableDeclaration;
  */
 public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 {
-	private boolean twoWayBinding, decoded;
+	private boolean twoWayBinding;
+	private volatile boolean decoded;
 	
 	private String accessorValue;
 	
@@ -27,7 +28,7 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	}
 	
 	@Override
-	public boolean alreadyDecoded()
+	public synchronized boolean alreadyDecoded()
 	{
 		return decoded;
 	}
@@ -220,16 +221,15 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible
 	}
 	
 	@Override
-	public BodyMethodDeclaration decodeShorthandAccessor()
+	public synchronized BodyMethodDeclaration decodeShorthandAccessor()
 	{
+		decoded = true;
 		ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
 		
 		Value type = SyntaxTree.decodeValue(method, accessorValue, getLocationIn(), true).getReturnedNode();
 		type.onAfterDecoded();
 		method.setType(type);
-		
-		decoded = true;
-		
+
 		return method;
 	}
 	
