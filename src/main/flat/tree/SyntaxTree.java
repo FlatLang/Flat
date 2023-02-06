@@ -223,10 +223,20 @@ public class SyntaxTree
 	void parallelRun(Stream<Runnable> actions) {
 		actions
 			.map(Thread::new)
+			.peek(t -> t.setUncaughtExceptionHandler(uncaughtExceptionHandler))
 			.peek(Thread::start)
 			.collect(Collectors.toList())
 			.forEach(this::joinThread);
 	}
+
+	Thread.UncaughtExceptionHandler uncaughtExceptionHandler = (thread, exception) -> {
+		if (exception instanceof SyntaxErrorException) {
+			throw (SyntaxErrorException)exception;
+		}
+		exception.printStackTrace();
+		Flat.instance.error("Failed to compile");
+		throw new RuntimeException(exception);
+	};
 
 	void syncRun(Stream<Runnable> actions) {
 		actions.forEach(Runnable::run);
