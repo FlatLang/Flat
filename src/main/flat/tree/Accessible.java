@@ -995,7 +995,7 @@ public interface Accessible
 				
 				last = last == null ? priority : last;
 				
-				if (this != priority.getContents())
+				if (this != priority.getContents() && priority.getReturnedContents() instanceof Accessible)
 				{
 					return (Accessible)priority.getReturnedContents();
 				}
