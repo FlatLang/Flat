@@ -295,7 +295,9 @@ public class MethodCallArgumentList extends ArgumentList
 					}
 					else if (context.getType() != null)
 					{
-						context.replaceWithBoxedValue(param, context.getReturnedNode().getType());
+						if (declaration instanceof InitializationMethod == false) {
+							context.replaceWithBoxedValue(param, context.getReturnedNode().getType());
+						}
 					}
 				}
 			}
