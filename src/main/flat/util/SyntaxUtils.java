@@ -1961,6 +1961,7 @@ public class SyntaxUtils
 			if (value instanceof Identifier)
 			{
 				p.setAccessedNode((Identifier)value);
+				p.setSafeNavigation(true);
 			}
 
 			if (replace && primitive.getParent().containsChild(primitive, false))
