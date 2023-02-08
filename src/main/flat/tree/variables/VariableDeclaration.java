@@ -562,7 +562,7 @@ public class VariableDeclaration extends IIdentifier
 
 	public boolean validateType()
 	{
-		if (getType() != null && !setType(getType(), false, !isGenericType()))
+		if (getType() != null && !setType(getType(), false, !isGenericType(), false))
 		{
 			setType(getType(), false, !isGenericType());
 			SyntaxMessage.error("Type '" + getType() + "' does not exist", this, false);
