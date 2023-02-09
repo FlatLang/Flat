@@ -440,6 +440,7 @@ public class Array extends VariableDeclaration implements ArrayCompatible
 			cloneTo(arrayInstantiation);
 			arrayInstantiation.initializer = null;
 			arrayInstantiation.getInitializerValues().detach();
+			arrayInstantiation.setDataType(POINTER);
 
 			arrayAssignment.addChild(arrayInstantiation);
 
