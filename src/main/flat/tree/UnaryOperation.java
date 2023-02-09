@@ -467,13 +467,13 @@ public class UnaryOperation extends IValue
 
 			if (!"Bool".equals(returned.getType()) || returned.isPointer())
 			{
-				BinaryOperation operation = getValue().replaceWithNullCheck();
-				
-				operation.getOperator().setOperator(Operator.EQUALS);
-				
-				replaceWith(operation);
-				
-				result.returnedNode = operation;
+				Value operation = getValue().replaceWithNullCheck();
+
+				if (operation instanceof Priority == false) {
+					Priority p = new Priority(operation.parent, getLocationIn());
+					operation.replaceWith(p);
+					p.addChild(operation);
+				}
 			}
 		}
 		

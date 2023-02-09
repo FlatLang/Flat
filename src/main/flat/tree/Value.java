@@ -1242,19 +1242,45 @@ public abstract class Value extends Node implements AbstractValue
 		builder.append(type.generateGenericType(context));
 	}
 
-	public BinaryOperation replaceWithNullCheck()
+	public Value replaceWithNullCheck()
 	{
+		Value returned = getReturnedNode();
+
+		boolean needsBoxedBoolCheck = returned.isPointer() && "Bool".equals(returned.getType());
+
+		if (needsBoxedBoolCheck) {
+			Priority outerP = new Priority(parent, getLocationIn());
+
+			BinaryOperation nullCheck = BinaryOperation.generateNullCheck(outerP.parent, this, this, parent);
+			nullCheck.replaceWith(outerP);
+
+			Variable local = TernaryOperation.getLocalVariableFromNullCheck(nullCheck).getDeclaration().generateUsableVariable(nullCheck, getLocationIn());
+
+			BinaryOperation andOp = BinaryOperation.generateDefault(outerP.parent, getLocationIn());
+			andOp.getLeftOperand().replaceWith(nullCheck);
+			andOp.getOperator().setOperator(Operator.AND);
+
+			Identifier value = SyntaxTree.decodeIdentifier(local, "value", getLocationIn(), false);
+			local.setAccessedNode(value);
+
+			andOp.getRightOperand().replaceWith(local);
+
+			outerP.addChild(andOp);
+
+			return outerP;
+		}
+
 		BinaryOperation operation = BinaryOperation.generateDefault(parent, getLocationIn());
 		operation.getOperator().setOperator(Operator.NOT_EQUAL);
 		operation.getRightOperand().replaceWith(Literal.decodeStatement(parent, getDefaultLiteralValue(), getLocationIn(), true, true));
-		
+
 		replaceWith(operation);
-		
+
 		Priority p = new Priority(getParent(), getLocationIn());
 		p.addChild(this);
 		
 		operation.getLeftOperand().replaceWith(p);
-		
+
 		return operation;
 	}
 	

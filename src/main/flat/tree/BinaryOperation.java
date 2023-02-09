@@ -127,7 +127,11 @@ public class BinaryOperation extends IValue
 		return generateNullCheck(parent, value, value);
 	}
 	
-	public static BinaryOperation generateNullCheck(Node parent, Value value, Value root)
+	public static BinaryOperation generateNullCheck(Node parent, Value value, Value root) {
+		return generateNullCheck(parent, value, root, null);
+	}
+
+	public static BinaryOperation generateNullCheck(Node parent, Value value, Value root, Node replaceOn)
 	{
 		Node scopeNode = parent.getNearestScopeAncestor();
 
@@ -149,6 +153,10 @@ public class BinaryOperation extends IValue
 		local.declaration.setProperty("requiresPrecedingDeclaration", true);
 
 		BinaryOperation nullCheck = BinaryOperation.generateDefault(parent, value.getLocationIn());
+
+		if (replaceOn != null) {
+			replaceOn.replace(root, nullCheck);
+		}
 
 		Assignment assignment = Assignment.generateDefault(parent, value.getLocationIn());
 		assignment.getAssigneeNodes().addChild(local);
@@ -1166,25 +1174,7 @@ public class BinaryOperation extends IValue
 		
 		return result;
 	}
-	
-	@Override
-	@Deprecated
-	public BinaryOperation replaceWithNullCheck()
-	{
-		Operator operator = getOperator();
-		Value right = getRightOperand();
-		
-		BinaryOperation operation = super.replaceWithNullCheck();
-		
-		BinaryOperation rhn = BinaryOperation.generateDefault(operation, operation.getLocationIn());
-		
-		rhn.getLeftOperand().replaceWith(operation.getRightOperand());
-		rhn.getOperator().replaceWith(operator);
-		rhn.getRightOperand().replaceWith(right);
-		
-		return operation;
-	}
-	
+
 	/**
 	 * @see Node#clone(Node, Location, boolean)
 	 */

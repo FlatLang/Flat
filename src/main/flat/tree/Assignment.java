@@ -414,14 +414,6 @@ public class Assignment extends Value
 			}
 			
 			validateCompatible();
-
-			VariableDeclaration declaration = getAssignedNode().declaration;
-
-			if ((declaration instanceof LocalDeclaration == false || !((LocalDeclaration)declaration).isImplicit()) && getAssignedNode().getReturnedNode().isPointer()) {
-				if (getAssignmentNode().getType() != null) {
-					getAssignmentNode().setDataType(POINTER);
-				}
-			}
 			
 			return true;
 		}
@@ -955,6 +947,8 @@ public class Assignment extends Value
 				if (value.getParent().containsChild(value, false)) {
 					value.replaceWith(v);
 				}
+
+				return v;
 			}
 		}
 
