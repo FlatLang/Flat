@@ -24,7 +24,12 @@ public class ClosureVariable extends Variable
 	{
 		super(temporaryParent, locationIn);
 	}
-	
+
+	@Override
+	public void decodeGenericTypeArguments(String params) {
+
+	}
+
 	/**
 	 * Decode the given statement into a {@link ClosureVariable} instance, if
 	 * possible. If it is not possible, this method returns null.<br>
