@@ -335,19 +335,22 @@ public class LambdaExpression extends IIdentifier
 			
 			if (child instanceof Value && child instanceof Return == false)
 			{
-				Return r = new Return(method, child.getLocationIn());
-				
-				child.replaceWith(r);
-				
-				r.getReturnValues().addChild(child);
-				
-				if (method.getType() == null)
-				{
-					method.setType(r.getReturnedNode());
-				}
-				else if (!SyntaxUtils.isTypeCompatible(this, method, r))
-				{
-					SyntaxMessage.error("Lambda expression must return type '" + method.generateFlatType() + "'", r);
+				if (child instanceof Value && ((Value) child).getType() == null) {
+					Return r = Return.decodeStatement(this, "return null", getLocationIn(), true, false);
+
+					method.getScope().addChild(r);
+				} else {
+					Return r = new Return(method, child.getLocationIn());
+
+					child.replaceWith(r);
+
+					r.getReturnValues().addChild(child);
+
+					if (method.getType() == null) {
+						method.setType(r.getReturnedNode());
+					} else if (!SyntaxUtils.isTypeCompatible(this, method, r)) {
+						SyntaxMessage.error("Lambda expression must return type '" + method.generateFlatType() + "'", r);
+					}
 				}
 			}
 		}
@@ -553,18 +556,23 @@ public class LambdaExpression extends IIdentifier
 				
 				if (returned instanceof Return == false)
 				{
-					Return r = new Return(method, returned.getLocationIn());
-					
-					r.getReturnValues().addChild(returned);
-					
-					method.getScope().addChild(r);
-					
-					if (pending)
-					{
-						FunctionType type = (FunctionType)getTypeObject();
-						
-						type.type = Type.parse(this, r.getReturnedNode().generateFlatType().toString());
-						type.closure.setType(r.getReturnedNode());
+					if (returned instanceof Value && ((Value) returned).getType() == null) {
+						Return r = Return.decodeStatement(this, "return null", getLocationIn(), true, false);
+
+						method.getScope().addChild(r);
+					} else {
+						Return r = new Return(method, returned.getLocationIn());
+
+						r.getReturnValues().addChild(returned);
+
+						method.getScope().addChild(r);
+
+						if (pending) {
+							FunctionType type = (FunctionType) getTypeObject();
+
+							type.type = Type.parse(this, r.getReturnedNode().generateFlatType().toString());
+							type.closure.setType(r.getReturnedNode());
+						}
 					}
 				}
 			}
