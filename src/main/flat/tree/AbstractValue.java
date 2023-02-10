@@ -42,18 +42,19 @@ public interface AbstractValue extends GenericCompatible
 		Value n = (Value)this;
 		
 		DeclarationData data = new DeclarationData();
-		
-		GenericTypeParameterList.searchGenerics(type, data);
-		
-		while (data.getGenericsRemaining() > 0)
-		{
-			Bounds bounds = data.getSkipBounds(data.getGenericsRemaining() - 1);
-			
-			decodeGenericTypeArguments(type, bounds);
-			
-			type = bounds.extractPreString(type) + bounds.extractPostString(type);
-			
-			data.decrementGenericsRemaining();
+
+		if (type.indexOf('(') == -1 || type.indexOf('<') < type.indexOf('(')) {
+			GenericTypeParameterList.searchGenerics(type, data);
+
+			while (data.getGenericsRemaining() > 0) {
+				Bounds bounds = data.getSkipBounds(data.getGenericsRemaining() - 1);
+
+				decodeGenericTypeArguments(type, bounds);
+
+				type = bounds.extractPreString(type) + bounds.extractPostString(type);
+
+				data.decrementGenericsRemaining();
+			}
 		}
 		
 		if (checkType)
