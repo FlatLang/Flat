@@ -362,5 +362,12 @@
     "url": "https://github.com/FlatLang/Console-Escape-Codes/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Console-Escape-Codes"
+  },
+  {
+    "label": "Test Selenium",
+    "svg": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Selenium"
   }
 ]
