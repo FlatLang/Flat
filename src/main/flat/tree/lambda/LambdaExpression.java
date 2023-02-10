@@ -451,15 +451,17 @@ public class LambdaExpression extends IIdentifier
 				} else {
 					name = "_" + (id + 1);
 				}
+
+				boolean isClosure = type.indexOf('(') != -1 && (type.indexOf('<') == -1 || type.indexOf('(') < type.indexOf('<'));
 				
-				if (type.endsWith(")"))
+				if (isClosure)
 				{
 					type = name + type.substring(type.indexOf('('));
 				}
 				
 				builder.append(builder.length() > 0 ? ", " : "").append(type);
 				
-				if (!type.endsWith(")"))
+				if (!isClosure)
 				{
 					builder.append(" ").append(name);
 				}
@@ -549,11 +551,11 @@ public class LambdaExpression extends IIdentifier
 				Node node = SyntaxTree.decodeScopeContents(method, operation, getLocationIn().asNew());
 				method.addChild(node);
 			}
-			
+
 			if ((pending || method.getType() != null) && method.getScope().getNumVisibleChildren() == 1)
 			{
 				Node returned = method.getScope().getLastChild();
-				
+
 				if (returned instanceof Return == false)
 				{
 					if (returned instanceof Value && ((Value) returned).getType() == null) {
