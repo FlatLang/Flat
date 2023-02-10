@@ -355,5 +355,12 @@
     "url": "https://github.com/FlatLang/TerminalSize/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "TerminalSize"
+  },
+  {
+    "label": "Test Console-Escape-Codes",
+    "svg": "https://github.com/FlatLang/Console-Escape-Codes/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Console-Escape-Codes/actions/workflows/test.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Console-Escape-Codes"
   }
 ]
