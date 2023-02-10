@@ -1219,9 +1219,10 @@ public abstract class Value extends Node implements AbstractValue
 		else
 		{
 			builder.append(SyntaxUtils.getPrimitiveFlatType(type.getType()));
-			if (explicitlyNullable) {
-				builder.append("?");
-			}
+		}
+
+		if (explicitlyNullable) {
+			builder.append("?");
 		}
 
 		writeFlatGenericTypeArguments(builder, context, type);
@@ -1937,6 +1938,7 @@ public abstract class Value extends Node implements AbstractValue
 		
 		node.arrayAccess = arrayAccess;
 		node.genericParameter = genericParameter;
+		node.explicitlyNullable = explicitlyNullable;
 
 		return node;
 	}
