@@ -1,0 +1,132 @@
+package flat/website/functions
+
+import flat/log
+import flat/io
+import flat/json
+import flat/datastruct
+import flat/http
+import flat/time
+
+class {
+  static Long CACHE_LIFETIME = 30000
+  static Logger log = Logger(StatusPills.class)
+
+  lazy Array<HashMap<String, String>> badges => JsonDeserializer().parseArray(File("res/badges.json"))
+
+  var Long lastCacheSave = 0
+
+  public construct() {}
+
+  public async run() -> String {
+    let cache = File("pill-cache.json")
+
+    if (!cache.exists || lastCacheSave + CACHE_LIFETIME < Time.currentTimeMillis) {
+      let data = badges.mapParallel({
+        let svgData = Http.get(_x["svg"]).data
+
+        return HashMap()
+          :add("svg", svgData)
+          :add("url", _x["url"])
+          :add("label", _x["label"])
+          :add("repoName", _x["repoName"])
+      })
+
+      FileWriter(cache).write(data.toJson()).close()
+      lastCacheSave = Time.currentTimeMillis
+    }
+
+    let Array<HashMap<String, String>> svgs = JsonDeserializer().parseArray(cache)
+
+    var Int x = 0
+    var Int y = 0
+    let canvasWidth = 800
+    let pillWidth = 80
+    let pillHeight = 20
+    let margin = 1
+    let textMargin = 2
+    let charWidth = 6.7
+
+    let rects = svgs.map({
+      let Int width = Math.ceil(_x["repoName"].count * charWidth + textMargin * 2)
+
+      if (x + width > canvasWidth) {
+        x = 0
+        y += pillHeight + margin
+      }
+
+      let rect = Rect(x, y, width, pillHeight)
+
+      x += width + margin
+
+      return rect
+    })
+
+    let svgContents = svgs.map({
+      return generateStatusBox(
+        id: _i,
+        url: _x["url"],
+        title: _x["label"],
+        repoName: _x["repoName"],
+        success: _x["svg"].contains("passing"),
+        rect: rects[_i],
+        textMargin: textMargin
+      )
+    })
+
+    let clipPaths = rects.map({
+      return "|
+        <clipPath id=\"clipPath-#{_i}\">
+          <rect x=\"#{_x.x}\" y=\"#{_x.y}\" width=\"#{_x.width}\" height=\"#{_x.height}\" ry=\"2\" rx=\"2\"/>
+        </clipPath>
+        |"
+    })
+
+    return "|
+      <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 #{canvasWidth} #{y + pillHeight}\">
+        <defs xmlns=\"http://www.w3.org/2000/svg\">
+          <linearGradient id=\"success-fill\" x1=\"50%\" y1=\"0%\" x2=\"50%\" y2=\"100%\">
+            <stop stop-color=\"\#34D058\" offset=\"0%\"/>
+            <stop stop-color=\"\#28A745\" offset=\"100%\"/>
+          </linearGradient>
+          <linearGradient id=\"failing-fill\" x1=\"50%\" y1=\"0%\" x2=\"50%\" y2=\"100%\">
+            <stop stop-color=\"\#D73A49\" offset=\"0%\"/>
+            <stop stop-color=\"\#CB2431\" offset=\"100%\"/>
+          </linearGradient>
+          #{clipPaths.join("\n")}
+        </defs>
+        #{svgContents.join("\n")}
+      </svg>
+      |"
+  }
+
+  static generateStatusBox(
+    Int id,
+    String url,
+    String title,
+    String repoName,
+    Bool success,
+    Rect rect,
+    Int textMargin
+  ) -> String {
+    let x = rect.x
+    let y = rect.y
+    let width = rect.width
+    let height = rect.height
+    return "|
+      <a target=\"_blank\" href=\"#{url}\">
+        <title>#{title}</title>
+        <g font-family=\"monospace\" font-size=\"11\">
+          <rect x=\"#{x}\" y=\"#{y}\" width=\"#{width}\" height=\"#{height}\" ry=\"2\" rx=\"2\" fill=\"url(#{success ? "\#success-fill" : "\#failing-fill"})\"/>
+          <text x=\"#{x + textMargin}\" y=\"#{y + height / 2 + 11 / 2}\" style=\"clip-path: url(\#clipPath-#{id})\">#{repoName}</text>
+        </g>
+      </a>
+      |"
+  }
+
+  static data class Rect {
+    visible Int x
+    visible Int y
+    visible Int width
+    visible Int height
+  }
+}

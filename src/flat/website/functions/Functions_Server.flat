@@ -17,6 +17,7 @@ class {
     let server = Server()
 
     let statusBadge = StatusBadge()
+    let statusPills = StatusPills()
     let githubStatusPage = GitHubStatusPage()
     let airshipController = AirshipController()
 
@@ -27,6 +28,15 @@ class {
       _res.setHeader("x-frame-options", "deny")
       _res.setHeader("x-xss-protection", "0")
       _res.send(statusBadge.run())
+    })
+
+    server.get("/pills.svg", {
+      _res.setHeader("Content-Type", "image/svg+xml")
+      _res.setHeader("Cache-Control", "max-age=300, private")
+      _res.setHeader("x-content-type-options", "nosniff")
+      _res.setHeader("x-frame-options", "deny")
+      _res.setHeader("x-xss-protection", "0")
+      _res.send(statusPills.run())
     })
 
     server.get("/github-status", {
