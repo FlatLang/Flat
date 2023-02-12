@@ -1,4 +1,9 @@
 {
+  "scripts": {
+    "test": "node dist/js/test.js",
+    "StatusBadge": "node dist/js/index.js StatusBadge",
+    "server": "node dist/js/server.js"
+  },
   "sources": {
     "main": {
       "mainClass": "flat/website/functions/StatusBadge",

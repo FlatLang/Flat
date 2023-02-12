@@ -6,22 +6,30 @@ import flat/json
 import flat/datastruct
 import flat/http
 import flat/time
+import flat/cache
 
 class {
-  static Long CACHE_LIFETIME = 30000
   static Logger log = Logger(StatusPills.class)
 
   lazy Array<HashMap<String, String>> badges => JsonDeserializer().parseArray(File("res/badges.json"))
 
-  var Long lastCacheSave = 0
+  static File CACHE_FILE = File("pill-cache.json")
+  static Long CACHE_LIFETIME = 30000
+
+  ItemCache<Array<HashMap<String, String>>> svgCache = ItemCache.Builder()
+    .withLifetime(CACHE_LIFETIME)
+    .withStore(ItemJsonFileCacheStore(CACHE_FILE))
+    .build()
+
+  static {
+    CACHE_FILE.deleteSync()
+  }
 
   public construct() {}
 
   public async run() -> String {
-    let cache = File("pill-cache.json")
-
-    if (!cache.exists || lastCacheSave + CACHE_LIFETIME < Time.currentTimeMillis) {
-      let data = badges.mapParallel({
+    let svgs = svgCache.getOrStore({
+      return badges.mapParallel({
         let svgData = Http.get(_x["svg"]).data
 
         return HashMap()
@@ -30,12 +38,7 @@ class {
           :add("label", _x["label"])
           :add("repoName", _x["repoName"])
       })
-
-      FileWriter(cache).write(data.toJson()).close()
-      lastCacheSave = Time.currentTimeMillis
-    }
-
-    let Array<HashMap<String, String>> svgs = JsonDeserializer().parseArray(cache)
+    })
 
     var Int x = 0
     var Int y = 0
@@ -123,10 +126,12 @@ class {
       |"
   }
 
-  static data class Rect {
-    visible Int x
-    visible Int y
-    visible Int width
-    visible Int height
+  static class Rect {
+    public construct(
+      visible Int x,
+      visible Int y,
+      visible Int width,
+      visible Int height
+    ) {}
   }
 }

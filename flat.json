@@ -5,11 +5,6 @@
   "author": "Braden Steffaniak",
   "license": "ISC",
   "defaultTarget": "es6",
-  "scripts": {
-    "test": "node dist/es6/test.js",
-    "StatusBadge": "node dist/es6/index.js StatusBadge",
-    "server": "node dist/es6/server.js"
-  },
   "sources": {
     "main": {
       "mainClass": "flat/website/functions/StatusBadge",
@@ -21,7 +16,8 @@
         "github:FlatLang/Http": "master",
         "github:FlatLang/Time": "master",
         "github:FlatLang/FuCli": "master",
-        "github:FlatLang/Logger": "master"
+        "github:FlatLang/Logger": "master",
+        "github:FlatLang/Cache": "master"
       }
     },
     "cmd": {
