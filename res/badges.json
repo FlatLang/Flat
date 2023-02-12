@@ -369,5 +369,12 @@
     "url": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Selenium"
+  },
+  {
+    "label": "Test Cache",
+    "svg": "https://github.com/FlatLang/Cache/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Cache/actions/workflows/test.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Cache"
   }
 ]
