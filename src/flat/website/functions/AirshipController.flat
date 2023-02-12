@@ -22,7 +22,9 @@ class {
 
     let responseData = Http.get(
       "https://api.github.com/repos/FlatLang/Airship/releases",
-      headers: HashMap():add("Authorization", "Bearer #{AirshipController.TOKEN}")
+      headers: HashMap()
+        :add("Authorization", "Bearer #{AirshipController.TOKEN}")
+        :add("User-Agent", "flat-github-client")
     ).data
 
     let Array<HashMap<String, Object>> releases = JsonDeserializer().parseArray(responseData)
