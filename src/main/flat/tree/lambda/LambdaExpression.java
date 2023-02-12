@@ -436,8 +436,8 @@ public class LambdaExpression extends IIdentifier
 
 				Value param = closure.getParameterList().getParameter(id);
 				Value value = param.getFlatTypeValue(context);
-				
-				String type = value.getFlatType(context);
+
+				String type = value.getFlatParameterType(context);
 				String name = "";
 
 				if (variables.length > id) {
@@ -773,6 +773,10 @@ public class LambdaExpression extends IIdentifier
 		}
 		
 		ClassDeclaration type = context.getReferenceNode().toValue().getTypeClass();
+
+		if (type == null && context.getReferenceNode() instanceof Instantiation) {
+			type = context.getFileDeclaration().getImportedClass(context, context.getName());
+		}
 
 		if (type != null) {
 			ArrayList<MethodDeclaration> temp = new ArrayList<>();

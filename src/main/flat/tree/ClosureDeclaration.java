@@ -11,6 +11,8 @@ import flat.util.*;
 import flat.tree.variables.VariableDeclaration;
 import flat.util.Bounds;
 
+import java.util.stream.Collectors;
+
 /**
  * Identifier extension that represents the use of a variable
  * type. Harnesses the needed information of each variable, such as
@@ -396,7 +398,28 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 	{
 		
 	}
-	
+
+	@Override
+	public String getFlatParameterType(Value context) {
+		String str = getName() + "(";
+
+		// FIXME: Need to potentially check Generic Arguments
+		str += getParameterList().getChildTypeStream()
+			.filter(p -> p instanceof ReferenceParameter == false)
+			.filter(p -> p instanceof Parameter)
+			.map(p -> (Parameter)p)
+			.map(p -> p.getFlatType(context) + " " + p.getName())
+			.collect(Collectors.joining(", "));
+
+		str += ")";
+
+		if (getType() != null) {
+			str += " -> " + super.getFlatType(context);
+		}
+
+		return str;
+	}
+
 	/**
 	 * @see VariableDeclaration#validate(int)
 	 */

@@ -933,14 +933,14 @@ public class Variable extends Identifier
 	}
 	
 	@Override
-	public String getFlatType(Value context, boolean checkArray)
+	public String getFlatType(Value context, boolean checkArray, boolean defaultGeneric)
 	{
 		if (declaration instanceof ClassInstanceDeclaration)
 		{
 			return declaration.getType();
 		}
 		
-		return super.getFlatType(context, checkArray);
+		return super.getFlatType(context, checkArray, defaultGeneric);
 	}
 	
 	/**

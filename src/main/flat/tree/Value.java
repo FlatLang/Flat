@@ -1285,17 +1285,21 @@ public abstract class Value extends Node implements AbstractValue
 		return operation;
 	}
 	
-	public String getFlatType()
+	public final String getFlatType()
 	{
 		return getFlatType(null);
 	}
 	
-	public String getFlatType(Value context)
+	public final String getFlatType(Value context)
 	{
 		return getFlatType(context, true);
 	}
+
+	public String getFlatParameterType(Value context) {
+		return getFlatType(context);
+	}
 	
-	public String getFlatType(Value context, boolean checkArray)
+	public final String getFlatType(Value context, boolean checkArray)
 	{
 		return getFlatType(context, checkArray, false);
 	}

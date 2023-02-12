@@ -135,7 +135,7 @@ public class GenericTypeParameter extends IValue
 	}
 
 	@Override
-	public String getFlatType(Value context)
+	public String getFlatType(Value context, boolean checkArray, boolean defaultGeneric)
 	{
 		if (context instanceof MethodCall)
 		{
