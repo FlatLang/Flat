@@ -221,6 +221,7 @@ jobs:
             -l ../Console-Escape-Codes \
             -l ../Thread \
             -l ../Future \
+            -x ../Future/src/**/*_Test*.flat \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/js/test.js \
