@@ -186,6 +186,12 @@ jobs:
           repository: FlatLang/Thread
           path: Thread
 
+      - name: Checkout Future library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Future
+          path: Future
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -214,6 +220,7 @@ jobs:
             -l ../Event-Stream \
             -l ../Console-Escape-Codes \
             -l ../Thread \
+            -l ../Future \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/js/test.js \
