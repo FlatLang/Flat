@@ -101,26 +101,26 @@ public interface Accessible
 	
 	default MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] getDeclaringClasses()
 	{
-		ArrayList<MethodCall.Pair> list = new ArrayList<>();
-		
-		for (ClassDeclaration c : toValue().getExtensionClasses())
-		{
-			list.add(new MethodCall.Pair(c, MethodList.SearchFilter.getDefault()));
-		}
+		ArrayList<MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>> list = new ArrayList<>();
 		
 		MethodList.SearchFilter filter = new MethodList.SearchFilter();
-		filter.checkStatic(true);
-		
-		for (ClassDeclaration c : toValue().getStaticImports())
-		{
-			list.add(new MethodCall.Pair(c, filter));
-		}
-
-		filter = new MethodList.SearchFilter();
 		filter.staticValue = isAccessedWithinStaticContext();
 		filter.checkStatic = filter.staticValue;
 
-		list.add(new MethodCall.Pair(getDeclaringClass(), filter));
+		list.add(new MethodCall.Pair<>(getDeclaringClass(), filter));
+
+		filter = new MethodList.SearchFilter();
+		filter.checkStatic(true);
+
+		for (ClassDeclaration c : toValue().getStaticImports())
+		{
+			list.add(new MethodCall.Pair<>(c, filter));
+		}
+
+		for (ClassDeclaration c : toValue().getExtensionClasses())
+		{
+			list.add(new MethodCall.Pair<>(c, MethodList.SearchFilter.getDefault()));
+		}
 		
 		return list.toArray(new MethodCall.Pair[0]);
 	}
