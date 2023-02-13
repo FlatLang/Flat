@@ -639,76 +639,17 @@ public class FileDeclaration extends Node
 		ClassDeclaration thisClass = getClassDeclaration();
 		ClassDeclaration otherClass = other.getClassDeclaration();
 
-		if (thisClass.containsArrayBracketOverload()) {
-			otherClass.arrayBracketOverload = thisClass.arrayBracketOverload;
-			otherClass.arrayBracketOverload.parent = otherClass;
-		}
+		thisClass.mergeClasses(otherClass, phase);
 
-		thisClass.getInnerClasses(false).getVisibleListChildren().forEach(innerClass -> {
-			innerClass.setOriginalFile(this);
-			otherClass.addChild(innerClass);
-		});
-
-		thisClass.getExternalTypeListNode().getVisibleListChildren().forEach(external -> {
-			external.setOriginalFile(this);
-			otherClass.getExternalTypeListNode().addChild(external);
-		});
-
-		List[] fieldLists = new List[]{
-			thisClass.getFieldList().getPublicFieldList(),
-			thisClass.getFieldList().getPublicStaticFieldList(),
-			thisClass.getFieldList().getPrivateFieldList(),
-			thisClass.getFieldList().getPrivateStaticFieldList()
-		};
-
-		for (List thisList : fieldLists) {
-			for (Node fieldNode : thisList.toArray()) {
-				FieldDeclaration field = (FieldDeclaration)fieldNode;
-
-				if (field.isUserMade()) {
-					field.setOriginalFile(this);
-
-					FieldDeclaration otherField = otherClass.getField(field.getName());
-
-					if (otherField != null) {
-						otherField.replaceWith(field);
-					} else {
-						otherClass.getFieldList().addChild(field);
-					}
-
-					SyntaxTree.validateNodes(field, phase);
-				}
-			}
-		}
-
-		MethodList[] methodLists = new MethodList[]{
-			thisClass.getConstructorList(),
-			thisClass.getMethodList(),
-			thisClass.getPropertyMethodList()
-		};
-
-		for (MethodList thisList : methodLists) {
-			for (FlatMethodDeclaration method : thisList.getMethods()) {
-				if (method.isUserMade()) {
-					method.setOriginalFile(this);
-
-					MethodList.SearchFilter filter = new MethodList.SearchFilter();
-					filter.checkAncestor = false;
-					filter.checkInterfaces = false;
-					MethodDeclaration otherMethod = otherClass.getMethod(new GenericCompatible[] { null }, method.getName(), filter, method.getParameterList().getTypes());
-
-					if (otherMethod != null) {
-						otherMethod.replaceWith(method);
-					} else {
-						otherClass.addChild(method);
-					}
-
-					method.objectReference = new ObjectReference(method);
-
-					SyntaxTree.validateNodes(method, phase);
-				}
-			}
-		}
+//		Arrays.stream(getClassDeclarations()).forEach(c -> {
+//			ClassDeclaration otherClass = other.getClassDeclaration(c.getName());
+//
+//			if (otherClass == null) {
+//				other.addChild(c.clone(other, c.getLocationIn()));
+//			} else {
+//				c.mergeClasses(otherClass, phase);
+//			}
+//		});
 	}
 
 	public boolean isExternalFile()

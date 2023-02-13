@@ -1544,6 +1544,9 @@ public class ClassDeclaration extends InstanceDeclaration
 		{
 			return arrayBracketOverload;
 		}
+		if (doesExtendClass() && getExtendedClassDeclaration() == null) {
+			getExtendedClassDeclaration();
+		}
 		
 		return doesExtendClass() ? getExtendedClassDeclaration().getArrayBracketOverload() : null;
 	}
@@ -4171,6 +4174,88 @@ public class ClassDeclaration extends InstanceDeclaration
 	{
 		AssignmentMethod assignments = new AssignmentMethod(this, Location.INVALID);
 		addChild(assignments);
+	}
+
+	public void mergeClasses(ClassDeclaration otherClass, int phase) {
+		if (containsArrayBracketOverload()) {
+			otherClass.arrayBracketOverload = arrayBracketOverload;
+			otherClass.arrayBracketOverload.parent = otherClass;
+		}
+
+		FileDeclaration fileDeclaration = getFileDeclaration();
+
+		getInnerClasses(false).getVisibleListChildren().forEach(innerClass -> {
+			innerClass.setOriginalFile(fileDeclaration);
+
+			ClassDeclaration otherInnerClass = otherClass.getInnerClasses().firstWhere(c -> c.getName().equals(innerClass.getName()));
+
+			if (otherInnerClass != null) {
+				innerClass.mergeClasses(otherInnerClass, phase);
+			} else {
+				otherClass.addChild(innerClass);
+			}
+		});
+
+		getExternalTypeListNode().getVisibleListChildren().forEach(external -> {
+			external.setOriginalFile(fileDeclaration);
+			otherClass.getExternalTypeListNode().addChild(external);
+		});
+
+		flat.tree.List[] fieldLists = new flat.tree.List[]{
+			getFieldList().getPublicFieldList(),
+			getFieldList().getPublicStaticFieldList(),
+			getFieldList().getPrivateFieldList(),
+			getFieldList().getPrivateStaticFieldList()
+		};
+
+		for (flat.tree.List thisList : fieldLists) {
+			for (Node fieldNode : thisList.toArray()) {
+				FieldDeclaration field = (FieldDeclaration)fieldNode;
+
+				if (field.isUserMade()) {
+					field.setOriginalFile(fileDeclaration);
+
+					FieldDeclaration otherField = otherClass.getField(field.getName());
+
+					if (otherField != null) {
+						otherField.replaceWith(field);
+					} else {
+						otherClass.getFieldList().addChild(field);
+					}
+
+					SyntaxTree.validateNodes(field, phase);
+				}
+			}
+		}
+
+		MethodList[] methodLists = new MethodList[]{
+			getConstructorList(),
+			getMethodList(),
+			getPropertyMethodList()
+		};
+
+		for (MethodList thisList : methodLists) {
+			for (FlatMethodDeclaration method : thisList.getMethods()) {
+				if (method.isUserMade()) {
+					method.setOriginalFile(fileDeclaration);
+
+					MethodList.SearchFilter filter = new MethodList.SearchFilter();
+					filter.checkAncestor = false;
+					filter.checkInterfaces = false;
+					MethodDeclaration otherMethod = otherClass.getMethod(new GenericCompatible[] { null }, method.getName(), filter, method.getParameterList().getTypes());
+
+					if (otherMethod != null) {
+						otherMethod.replaceWith(method);
+					} else {
+						otherClass.addChild(method);
+					}
+
+					method.objectReference = new ObjectReference(method);
+
+					SyntaxTree.validateNodes(method, phase);
+				}
+			}
+		}
 	}
 	
 	@Override
