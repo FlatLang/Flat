@@ -267,6 +267,8 @@ jobs:
             -l ./Stream \
             -l ./Event-Stream \
             -l ./Console-Escape-Codes \
+            -l ./Future \
+            -x ./Future/src/**/*_Test*.flat \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
             -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
