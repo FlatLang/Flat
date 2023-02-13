@@ -180,6 +180,12 @@ jobs:
           repository: FlatLang/Console-Escape-Codes
           path: Console-Escape-Codes
 
+      - name: Checkout Thread library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Thread
+          path: Thread
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -207,6 +213,7 @@ jobs:
             -l ../Stream \
             -l ../Event-Stream \
             -l ../Console-Escape-Codes \
+            -l ../Thread \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/js/test.js \
