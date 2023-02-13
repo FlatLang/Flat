@@ -28,13 +28,6 @@
     "repoName": "Flat-ES6"
   },
   {
-    "label": "Build Standard Library",
-    "svg": "https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml/badge.svg",
-    "url": "https://github.com/FlatLang/Standard-Library/actions/workflows/build.yml",
-    "repoOrganization": "FlatLang",
-    "repoName": "Standard-Library"
-  },
-  {
     "label": "Test Airship",
     "svg": "https://github.com/FlatLang/Airship/actions/workflows/build.yml/badge.svg",
     "url": "https://github.com/FlatLang/Airship/actions/workflows/build.yml",
