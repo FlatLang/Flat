@@ -1089,6 +1089,14 @@ public class MethodCall extends Variable
 				if (method.toDeclaration().isAsync()) {
 					n.parseModifier("await");
 				}
+
+				if (method.toDeclaration() instanceof Constructor == false &&
+					method.toDeclaration() instanceof InitializationMethod == false &&
+					!method.toDeclaration().getParentClass().isOfType("flat/future/Future") &&
+					method.toDeclaration().getTypeClass() != null &&
+					method.toDeclaration().getTypeClass().isOfType("flat/future/Future")) {
+					n.addChild(decodeStatement(n, "get()", location, true));
+				}
 			}
 
 			return n;
