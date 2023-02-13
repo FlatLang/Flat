@@ -401,23 +401,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 
 	@Override
 	public String getFlatParameterType(Value context) {
-		String str = getName() + "(";
-
-		// FIXME: Need to potentially check Generic Arguments
-		str += getParameterList().getChildTypeStream()
-			.filter(p -> p instanceof ReferenceParameter == false)
-			.filter(p -> p instanceof Parameter)
-			.map(p -> (Parameter)p)
-			.map(p -> p.getFlatType(context) + " " + p.getName())
-			.collect(Collectors.joining(", "));
-
-		str += ")";
-
-		if (getType() != null) {
-			str += " -> " + super.getFlatType(context);
-		}
-
-		return str;
+		return toString();
 	}
 
 	/**

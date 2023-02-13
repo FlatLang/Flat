@@ -4,6 +4,7 @@ import flat.TestContext;
 import flat.error.SyntaxMessage;
 import flat.tree.*;
 import flat.tree.generics.GenericTypeArgument;
+import flat.tree.generics.MethodGenericTypeParameter;
 import flat.tree.variables.Variable;
 import flat.tree.variables.VariableDeclaration;
 import flat.util.Location;
@@ -470,17 +471,27 @@ public class LambdaExpression extends IIdentifier
 				
 				value.importGenericArgumentTypesTo(getFileDeclaration());
 				
-				if (value.isGenericType())
-				{
-					GenericTypeArgument arg = value.getGenericTypeParameter().getCorrespondingArgument(context);
-					
-					if (arg != null)
-					{
-						getFileDeclaration().addImport(arg.getTypeClassLocation());
-						arg.importGenericArgumentTypesTo(getFileDeclaration());
-					} else {
+				if (value.isGenericType()) {
+					if (value.getGenericTypeParameter() instanceof MethodGenericTypeParameter) {
 						genericParameters.add(type);
+					} else {
+						GenericTypeArgument arg = value.getGenericTypeParameter().getCorrespondingArgument(context);
+
+						if (arg != null) {
+							getFileDeclaration().addImport(arg.getTypeClassLocation());
+							arg.importGenericArgumentTypesTo(getFileDeclaration());
+						} else {
+							genericParameters.add(type);
+						}
 					}
+				} else if (value instanceof ClosureDeclaration) {
+					ClosureDeclaration closureDeclaration = (ClosureDeclaration) value;
+
+					closureDeclaration.getParameterList().getChildTypeStream()
+						.filter(Value::isGenericType)
+						.map(Value::getGenericTypeParameter)
+						.filter(p -> p instanceof MethodGenericTypeParameter || !p.getParentClass().isAncestorOf(getParentClass(), true))
+						.forEach(p -> genericParameters.add(p.getType()));
 				}
 				
 				//			if (refFile != null)
