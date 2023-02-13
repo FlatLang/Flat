@@ -2488,7 +2488,7 @@ public class SyntaxUtils
 		ClassDeclaration c = getTypeClass(node, type, checkCast);
 
 		if (c != null) {
-			return c.getClassLocation();
+			return c.getClassLocation(false);
 		}
 
 		return null;
