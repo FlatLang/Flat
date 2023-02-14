@@ -48,12 +48,6 @@ jobs:
         run: |
           mvn -f Flat-JS install
 
-      - name: Checkout Standard library
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Standard-Library
-          path: Standard-Library
-
       - name: Checkout Test library
         uses: actions/checkout@master
         with:
@@ -215,7 +209,6 @@ jobs:
             -l ../Time \
             -l ../Math \
             -l ../System \
-            -l ../Standard-Library \
             -l ../Stream \
             -l ../Event-Stream \
             -l ../Console-Escape-Codes \
@@ -263,7 +256,6 @@ jobs:
             -l ./IO \
             -l ./Time \
             -l ./System \
-            -l ./Standard-Library \
             -l ./Stream \
             -l ./Event-Stream \
             -l ./Console-Escape-Codes \
