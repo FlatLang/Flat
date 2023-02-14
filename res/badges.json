@@ -140,6 +140,13 @@
     "repoName": "CoLorIzer"
   },
   {
+    "label": "Test Flat-Website-Backend",
+    "svg": "https://github.com/FlatLang/Flat-Website-Backend/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Flat-Website-Backend/actions/workflows/test.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Flat-Website-Backend"
+  },
+  {
     "label": "Test Http",
     "svg": "https://github.com/FlatLang/Http/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Http/actions/workflows/test.yml",
@@ -161,11 +168,11 @@
     "repoName": "Network"
   },
   {
-    "label": "Test Redis",
-    "svg": "https://github.com/FlatLang/Redis/actions/workflows/test.yml/badge.svg",
-    "url": "https://github.com/FlatLang/Redis/actions/workflows/test.yml",
+    "label": "Test RegEdit",
+    "svg": "https://github.com/FlatLang/RegEdit/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/RegEdit/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
-    "repoName": "Redis"
+    "repoName": "RegEdit"
   },
   {
     "label": "Test Elevate",
@@ -182,13 +189,6 @@
     "repoName": "Path"
   },
   {
-    "label": "Test RegEdit",
-    "svg": "https://github.com/FlatLang/RegEdit/actions/workflows/test.yml/badge.svg",
-    "url": "https://github.com/FlatLang/RegEdit/actions/workflows/test.yml",
-    "repoOrganization": "FlatLang",
-    "repoName": "RegEdit"
-  },
-  {
     "label": "Test Npm-Client",
     "svg": "https://github.com/FlatLang/Npm-Client/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Npm-Client/actions/workflows/test.yml",
@@ -196,18 +196,11 @@
     "repoName": "Npm-Client"
   },
   {
-    "label": "Test Flat-Website-Backend",
-    "svg": "https://github.com/FlatLang/Flat-Website-Backend/actions/workflows/test.yml/badge.svg",
-    "url": "https://github.com/FlatLang/Flat-Website-Backend/actions/workflows/test.yml",
+    "label": "Test Redis",
+    "svg": "https://github.com/FlatLang/Redis/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Redis/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
-    "repoName": "Flat-Website-Backend"
-  },
-  {
-    "label": "Test Server",
-    "svg": "https://github.com/FlatLang/Server/actions/workflows/test.yml/badge.svg",
-    "url": "https://github.com/FlatLang/Server/actions/workflows/test.yml",
-    "repoOrganization": "FlatLang",
-    "repoName": "Server"
+    "repoName": "Redis"
   },
   {
     "label": "Test GitHubClient",
@@ -217,11 +210,18 @@
     "repoName": "GitHubClient"
   },
   {
-    "label": "Test Glob",
-    "svg": "https://github.com/FlatLang/Glob/actions/workflows/test.yml/badge.svg",
-    "url": "https://github.com/FlatLang/Glob/actions/workflows/test.yml",
+    "label": "Test Server",
+    "svg": "https://github.com/FlatLang/Server/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Server/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
-    "repoName": "Glob"
+    "repoName": "Server"
+  },
+  {
+    "label": "Test Selenium",
+    "svg": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Selenium"
   },
   {
     "label": "Test Flat-AST",
@@ -357,11 +357,11 @@
     "repoName": "Console-Escape-Codes"
   },
   {
-    "label": "Test Selenium",
-    "svg": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml/badge.svg",
-    "url": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml",
+    "label": "Test Glob",
+    "svg": "https://github.com/FlatLang/Glob/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Glob/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
-    "repoName": "Selenium"
+    "repoName": "Glob"
   },
   {
     "label": "Test Cache",
