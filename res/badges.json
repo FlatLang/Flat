@@ -376,5 +376,12 @@
     "url": "https://github.com/FlatLang/Thread/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Thread"
+  },
+  {
+    "label": "Test Future",
+    "svg": "https://github.com/FlatLang/Future/actions/workflows/test.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Future/actions/workflows/test.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Future"
   }
 ]
