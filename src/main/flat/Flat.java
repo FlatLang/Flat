@@ -815,6 +815,10 @@ public class Flat
 			System.out.println(prefix + message + "\n");
 			logged = !persist;
 		}
+
+		if (lastProgress < 100) {
+			instance.logProgress();
+		}
 	}
 
 	public String etaTime(String defaultText) {
