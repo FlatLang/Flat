@@ -6,6 +6,7 @@ import flat.ValidationResult;
 import flat.error.Message;
 import flat.error.SyntaxErrorException;
 import flat.error.SyntaxMessage;
+import flat.tree.annotations.VarAnnotation;
 import flat.tree.exceptionhandling.Throw;
 import flat.tree.variables.Variable;
 import flat.util.*;
@@ -147,6 +148,7 @@ public class BinaryOperation extends IValue
 		}
 
 		Variable local = scopeNode.getScope().createLocalVariable(root);
+		local.declaration.addAnnotation(new VarAnnotation(local.declaration, local.declaration.getLocationIn()));
 		local.detach();
 		local.declaration.setProperty("userMade", false);
 		local.declaration.setProperty("fromAssignment", true);
