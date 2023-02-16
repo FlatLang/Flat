@@ -1,384 +1,384 @@
 [
   {
-    "label": "Build Flat",
+    "label": "Flat",
     "svg": "https://github.com/FlatLang/Flat/actions/workflows/build.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat/actions/workflows/build.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat"
   },
   {
-    "label": "Stability Test",
+    "label": "Stability-Test",
     "svg": "https://github.com/FlatLang/Stability-Test/actions/workflows/stability-test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Stability-Test/actions/workflows/stability-test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Stability-Test"
   },
   {
-    "label": "Test JS Compilation Target",
+    "label": "Flat-JS",
     "svg": "https://github.com/FlatLang/Flat-JS/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-JS/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-JS"
   },
   {
-    "label": "Test ES6 Compilation Target",
+    "label": "Flat-ES6",
     "svg": "https://github.com/FlatLang/Flat-ES6/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-ES6/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-ES6"
   },
   {
-    "label": "Test Airship",
+    "label": "Airship",
     "svg": "https://github.com/FlatLang/Airship/actions/workflows/build.yml/badge.svg",
     "url": "https://github.com/FlatLang/Airship/actions/workflows/build.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Airship"
   },
   {
-    "label": "Test Flat Core",
+    "label": "Flat-Core",
     "svg": "https://github.com/FlatLang/Flat-Core/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Core/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Core"
   },
   {
-    "label": "Test IO",
+    "label": "IO",
     "svg": "https://github.com/FlatLang/IO/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/IO/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "IO"
   },
   {
-    "label": "Test Test",
+    "label": "Test",
     "svg": "https://github.com/FlatLang/Test/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Test/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Test"
   },
   {
-    "label": "Test FuCli",
+    "label": "FuCli",
     "svg": "https://github.com/FlatLang/FuCli/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/FuCli/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "FuCli"
   },
   {
-    "label": "Test Time",
+    "label": "Time",
     "svg": "https://github.com/FlatLang/Time/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Time/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Time"
   },
   {
-    "label": "Test System",
+    "label": "System",
     "svg": "https://github.com/FlatLang/System/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/System/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "System"
   },
   {
-    "label": "Test Security",
+    "label": "Security",
     "svg": "https://github.com/FlatLang/Security/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Security/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Security"
   },
   {
-    "label": "Test Regex",
+    "label": "Regex",
     "svg": "https://github.com/FlatLang/Regex/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Regex/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Regex"
   },
   {
-    "label": "Test Read Line",
+    "label": "Read-Line",
     "svg": "https://github.com/FlatLang/Read-Line/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Read-Line/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Read-Line"
   },
   {
-    "label": "Test Logger",
+    "label": "Logger",
     "svg": "https://github.com/FlatLang/Logger/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Logger/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Logger"
   },
   {
-    "label": "Test Json",
+    "label": "Json",
     "svg": "https://github.com/FlatLang/Json/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Json/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Json"
   },
   {
-    "label": "Test Git",
+    "label": "Git",
     "svg": "https://github.com/FlatLang/Git/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Git/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Git"
   },
   {
-    "label": "Test Datastruct",
+    "label": "Datastruct",
     "svg": "https://github.com/FlatLang/Datastruct/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Datastruct/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Datastruct"
   },
   {
-    "label": "Test Compiler String Extensions",
+    "label": "Compiler-String-Extensions",
     "svg": "https://github.com/FlatLang/Compiler-String-Extensions/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Compiler-String-Extensions/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Compiler-String-Extensions"
   },
   {
-    "label": "Test CoLorIzer",
+    "label": "CoLorIzer",
     "svg": "https://github.com/FlatLang/CoLorIzer/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/CoLorIzer/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "CoLorIzer"
   },
   {
-    "label": "Test Flat-Website-Backend",
+    "label": "Flat-Website-Backend",
     "svg": "https://github.com/FlatLang/Flat-Website-Backend/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Website-Backend/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Website-Backend"
   },
   {
-    "label": "Test Http",
+    "label": "Http",
     "svg": "https://github.com/FlatLang/Http/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Http/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Http"
   },
   {
-    "label": "Test Math",
+    "label": "Math",
     "svg": "https://github.com/FlatLang/Math/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Math/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Math"
   },
   {
-    "label": "Test Network",
+    "label": "Network",
     "svg": "https://github.com/FlatLang/Network/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Network/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Network"
   },
   {
-    "label": "Test RegEdit",
+    "label": "RegEdit",
     "svg": "https://github.com/FlatLang/RegEdit/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/RegEdit/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "RegEdit"
   },
   {
-    "label": "Test Elevate",
+    "label": "Elevate",
     "svg": "https://github.com/FlatLang/Elevate/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Elevate/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Elevate"
   },
   {
-    "label": "Test Path",
+    "label": "Path",
     "svg": "https://github.com/FlatLang/Path/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Path/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Path"
   },
   {
-    "label": "Test Npm-Client",
+    "label": "Npm-Client",
     "svg": "https://github.com/FlatLang/Npm-Client/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Npm-Client/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Npm-Client"
   },
   {
-    "label": "Test Redis",
+    "label": "Redis",
     "svg": "https://github.com/FlatLang/Redis/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Redis/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Redis"
   },
   {
-    "label": "Test GitHubClient",
+    "label": "GitHubClient",
     "svg": "https://github.com/FlatLang/GitHubClient/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/GitHubClient/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "GitHubClient"
   },
   {
-    "label": "Test Server",
+    "label": "Server",
     "svg": "https://github.com/FlatLang/Server/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Server/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Server"
   },
   {
-    "label": "Test Selenium",
+    "label": "Selenium",
     "svg": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Selenium/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Selenium"
   },
   {
-    "label": "Test Flat-AST",
+    "label": "Flat-AST",
     "svg": "https://github.com/FlatLang/Flat-AST/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-AST/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-AST"
   },
   {
-    "label": "Test Flat-Parser",
+    "label": "Flat-Parser",
     "svg": "https://github.com/FlatLang/Flat-Parser/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Parser/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Parser"
   },
   {
-    "label": "Test Flat-Annotations",
+    "label": "Flat-Annotations",
     "svg": "https://github.com/FlatLang/Flat-Annotations/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Annotations/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Annotations"
   },
   {
-    "label": "Test Flat-Lexer",
+    "label": "Flat-Lexer",
     "svg": "https://github.com/FlatLang/Flat-Lexer/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Lexer/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Lexer"
   },
   {
-    "label": "Test Stream",
+    "label": "Stream",
     "svg": "https://github.com/FlatLang/Stream/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Stream/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Stream"
   },
   {
-    "label": "Test Event-Stream",
+    "label": "Event-Stream",
     "svg": "https://github.com/FlatLang/Event-Stream/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Event-Stream/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Event-Stream"
   },
   {
-    "label": "Test Flat-Compiler",
+    "label": "Flat-Compiler",
     "svg": "https://github.com/FlatLang/Flat-Compiler/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Compiler/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Compiler"
   },
   {
-    "label": "Test Flat-Compiler-Models",
+    "label": "Flat-Compiler-Models",
     "svg": "https://github.com/FlatLang/Flat-Compiler-Models/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Compiler-Models/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Compiler-Models"
   },
   {
-    "label": "Test Flat-Writer",
+    "label": "Flat-Writer",
     "svg": "https://github.com/FlatLang/Flat-Writer/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Writer/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Writer"
   },
   {
-    "label": "Test Flat-ES6-Writer",
+    "label": "Flat-ES6-Writer",
     "svg": "https://github.com/FlatLang/Flat-ES6-Writer/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-ES6-Writer/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-ES6-Writer"
   },
   {
-    "label": "Test Parser-Core",
+    "label": "Parser-Core",
     "svg": "https://github.com/FlatLang/Parser-Core/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Parser-Core/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Parser-Core"
   },
   {
-    "label": "Test Java-Annotations",
+    "label": "Java-Annotations",
     "svg": "https://github.com/FlatLang/Java-Annotations/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Java-Annotations/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Java-Annotations"
   },
   {
-    "label": "Test Java-Parser",
+    "label": "Java-Parser",
     "svg": "https://github.com/FlatLang/Java-Parser/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Java-Parser/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Java-Parser"
   },
   {
-    "label": "Test Java-AST",
+    "label": "Java-AST",
     "svg": "https://github.com/FlatLang/Java-AST/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Java-AST/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Java-AST"
   },
   {
-    "label": "Test Flat-AST-Visitor",
+    "label": "Flat-AST-Visitor",
     "svg": "https://github.com/FlatLang/Flat-AST-Visitor/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-AST-Visitor/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-AST-Visitor"
   },
   {
-    "label": "Test Flat-Flat-Writer",
+    "label": "Flat-Flat-Writer",
     "svg": "https://github.com/FlatLang/Flat-Flat-Writer/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Flat-Flat-Writer/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Flat-Flat-Writer"
   },
   {
-    "label": "Test Progress-Bar",
+    "label": "Progress-Bar",
     "svg": "https://github.com/FlatLang/Progress-Bar/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Progress-Bar/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Progress-Bar"
   },
   {
-    "label": "Test TerminalSize",
+    "label": "TerminalSize",
     "svg": "https://github.com/FlatLang/TerminalSize/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/TerminalSize/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "TerminalSize"
   },
   {
-    "label": "Test Console-Escape-Codes",
+    "label": "Console-Escape-Codes",
     "svg": "https://github.com/FlatLang/Console-Escape-Codes/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Console-Escape-Codes/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Console-Escape-Codes"
   },
   {
-    "label": "Test Glob",
+    "label": "Glob",
     "svg": "https://github.com/FlatLang/Glob/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Glob/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Glob"
   },
   {
-    "label": "Test Cache",
+    "label": "Cache",
     "svg": "https://github.com/FlatLang/Cache/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Cache/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Cache"
   },
   {
-    "label": "Test Thread",
+    "label": "Thread",
     "svg": "https://github.com/FlatLang/Thread/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Thread/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
     "repoName": "Thread"
   },
   {
-    "label": "Test Future",
+    "label": "Future",
     "svg": "https://github.com/FlatLang/Future/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/Future/actions/workflows/test.yml",
     "repoOrganization": "FlatLang",
