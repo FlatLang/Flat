@@ -150,8 +150,9 @@ public class IfStatement extends ControlStatement
 
 		addChild(condition, this);
 
-		if (!"Bool".equals(condition.getReturnedNode().getType()))
-		{
+		if (!"Bool".equals(condition.getReturnedNode().getType())) {
+			condition.replaceWithNullCheck();
+		} else if (condition.getReturnedNode().isPointer()) {
 			condition.replaceWithNullCheck();
 		}
 
