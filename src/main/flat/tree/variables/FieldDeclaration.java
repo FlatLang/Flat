@@ -493,10 +493,10 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 					mutatorMethod.addAnnotation((Annotation)a.clone(mutatorMethod, a.getLocationIn()));
 				});
 
-				mutatorMethod.setType(getTypeValue());
+				mutatorMethod.setType(this);
 
 				if (mutatorMethod.getParameterList().getNumVisibleChildren() > 0) {
-					mutatorMethod.getParameterList().getVisibleChild(0).setType(getTypeValue());
+					mutatorMethod.getParameterList().getVisibleChild(0).setType(this);
 				}
 			}
 		}
