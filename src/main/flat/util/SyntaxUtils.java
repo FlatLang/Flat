@@ -2942,7 +2942,9 @@ public class SyntaxUtils
 		}
 		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
 		{
-			if (required.isExternalType() || (required.getTypeClassLocation().equals("flat/primitive/number/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals("flat/String")))
+			if (required.isExternalType() ||
+				(required.isNative() && required.isNativeArray() && required.getTypeClassLocation().equals("flat/primitive/number/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.isNative() && given.getTypeClassLocation().equals("flat/String")) ||
+				(given.isNative() && given.isNativeArray() && given.getTypeClassLocation().equals("flat/primitive/number/Char") && given.getArrayDimensions() == 1 && required.getTypeClassLocation() != null && required.isNative() && required.getTypeClassLocation().equals("flat/String")))
 			{
 				return true;
 			}
