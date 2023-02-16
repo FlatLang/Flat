@@ -42,6 +42,20 @@
     "repoName": "Flat-Core"
   },
   {
+    "label": "Flat-Core flatc",
+    "svg": "https://github.com/FlatLang/Flat-Core/actions/workflows/build-es6.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Flat-Core/actions/workflows/build-es6.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Flat-Core"
+  },
+  {
+    "label": "Flat-Core Java",
+    "svg": "https://github.com/FlatLang/Flat-Core/actions/workflows/build-java.yml/badge.svg",
+    "url": "https://github.com/FlatLang/Flat-Core/actions/workflows/build-java.yml",
+    "repoOrganization": "FlatLang",
+    "repoName": "Flat-Core"
+  },
+  {
     "label": "IO",
     "svg": "https://github.com/FlatLang/IO/actions/workflows/test.yml/badge.svg",
     "url": "https://github.com/FlatLang/IO/actions/workflows/test.yml",
