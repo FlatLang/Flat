@@ -2942,11 +2942,6 @@ public class SyntaxUtils
 		}
 		else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0)
 		{
-			if (required.isExternalType() || (required.getTypeClassLocation().equals("flat/primitive/number/Char") && required.getArrayDimensions() == 1 && given.getTypeClassLocation() != null && given.getTypeClassLocation().equals("flat/String")))
-			{
-				return true;
-			}
-			
 			return false;
 		}
 		
