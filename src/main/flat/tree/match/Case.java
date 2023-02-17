@@ -57,6 +57,14 @@ public class Case extends MatchCase {
         return null;
     }
 
+    public Break getBreak() {
+        if (getScope().getLastVisibleChild() instanceof Break) {
+            return (Break) getScope().getLastVisibleChild();
+        }
+
+        return null;
+    }
+
     @Override
     public boolean pendingScopeFragment(Node node) {
         if (returningCase != null) {
@@ -97,6 +105,10 @@ public class Case extends MatchCase {
         return getContinue() != null;
     }
 
+    public boolean containsBreak() {
+        return getBreak() != null;
+    }
+
     /**
      * Get whether or not the specified switch case requires a break
      * statement in order to function properly. The only cases when this
@@ -107,7 +119,7 @@ public class Case extends MatchCase {
      * function correctly.
      */
     public boolean requiresBreak() {
-        return !containsFallthrough() && !containsContinue() && !(getScope().getLastChild() instanceof Return);
+        return !containsFallthrough() && !containsContinue() && !containsBreak() && !(getScope().getLastChild() instanceof Return);
     }
 
     @Override
