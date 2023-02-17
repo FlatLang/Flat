@@ -11,302 +11,260 @@ import flat.util.Location;
 
 import java.util.stream.Collectors;
 
-public class TestableAnnotation extends Annotation implements ModifierAnnotation, RunnableTests
-{
-	public String aliasUsed;
-	public boolean generatedRunTestsMethod, writeMessage;
-	public FieldDeclaration runner;
-
-	@Override
-	public String getAliasUsed()
-	{
-		return aliasUsed;
-	}
-
-	@Override
-	public void setAliasUsed(String aliasUsed)
-	{
-		this.aliasUsed = aliasUsed;
-	}
-
-	public TestableAnnotation(Node temporaryParent, Location locationIn)
-	{
-		super(temporaryParent, locationIn);
-	}
-
-	@Override
-	public String[] defaultParameterNames()
-	{
-		return new String[] { "message" };
-	}
-
-	@Override
-	public String[][] defaultParameterTypes()
-	{
-		return new String[][] { { "Literal" } };
-	}
-
-	public static TestableAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require)
-	{
-		if (name.equals("Testable"))
-		{
-			TestableAnnotation n = new TestableAnnotation(parent, location);
-
-			n.parseParameters(parameters);
-
-			return n;
-		}
-
-		return null;
-	}
-
-	@Override
-	public void onAdded(Node parent)
-	{
-		ModifierAnnotation.super.onAdded(parent);
-		super.onAdded(parent);
-	}
-
-	@Override
-	public ValidationResult validate(int phase)
-	{
-		ValidationResult result = super.validate(phase);
-
-		if (result.skipValidation())
-		{
-			return result;
-		}
-
-		if (phase == SyntaxTree.PHASE_CLASS_DECLARATION)
-		{
-			implementTestRunner();
-		}
-		if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)
-		{
-			searchRunTestsMethod();
-		}
-		else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS)
-		{
-			insertMessage();
-		}
-		else if (phase == SyntaxTree.PHASE_PRE_GENERATION)
-		{
-			if (generatedRunTestsMethod)
-			{
-				addTestCalls();
-			}
-		}
-
-		return result;
-	}
-
-	public FlatMethodDeclaration searchRunTestsMethod()
-	{
-		FlatMethodDeclaration method = getRunTestsMethod();
-
-		if (method == null)
-		{
-			getFileDeclaration().addImport("flat/test/TestResult");
-			getFileDeclaration().addImport("flat/io/OutputStream");
-
-			method = BodyMethodDeclaration.decodeStatement(parent, "public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
-
-			parent.addChild(method);
-
-			generatedRunTestsMethod = true;
-		}
+public class TestableAnnotation extends Annotation implements ModifierAnnotation, RunnableTests {
+    public String aliasUsed;
+    public boolean generatedRunTestsMethod, writeMessage;
+    public FieldDeclaration runner;
+
+    @Override
+    public String getAliasUsed() {
+        return aliasUsed;
+    }
+
+    @Override
+    public void setAliasUsed(String aliasUsed) {
+        this.aliasUsed = aliasUsed;
+    }
+
+    public TestableAnnotation(Node temporaryParent, Location locationIn) {
+        super(temporaryParent, locationIn);
+    }
+
+    @Override
+    public String[] defaultParameterNames() {
+        return new String[]{"message"};
+    }
+
+    @Override
+    public String[][] defaultParameterTypes() {
+        return new String[][]{{"Literal"}};
+    }
+
+    public static TestableAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+        if (name.equals("Testable")) {
+            TestableAnnotation n = new TestableAnnotation(parent, location);
+
+            n.parseParameters(parameters);
+
+            return n;
+        }
+
+        return null;
+    }
+
+    @Override
+    public void onAdded(Node parent) {
+        ModifierAnnotation.super.onAdded(parent);
+        super.onAdded(parent);
+    }
 
-		return method;
-	}
+    @Override
+    public ValidationResult validate(int phase) {
+        ValidationResult result = super.validate(phase);
+
+        if (result.skipValidation()) {
+            return result;
+        }
+
+        if (phase == SyntaxTree.PHASE_CLASS_DECLARATION) {
+            implementTestRunner();
+        }
+        if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
+            searchRunTestsMethod();
+        } else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
+            insertMessage();
+        } else if (phase == SyntaxTree.PHASE_PRE_GENERATION) {
+            if (generatedRunTestsMethod) {
+                addTestCalls();
+            }
+        }
 
-	public FieldDeclaration generateTestRunner()
-	{
-		if (runner == null)
-		{
-			getFileDeclaration().addImport("flat/test/TestCase");
-			getFileDeclaration().addImport("flat/test/TestRunnerModel");
-			FlatMethodDeclaration method = searchRunTestsMethod();
+        return result;
+    }
 
-			String name = method.getScope().getUniqueName("_" + method.getName() + "TestRunner");
-			String description = parameters.containsKey("message") && ((Literal)parameters.get("message")).isStringInstantiation() ? ", " + ((Literal)parameters.get("message")).generateFlatInput() : "";
+    public FlatMethodDeclaration searchRunTestsMethod() {
+        FlatMethodDeclaration method = getRunTestsMethod();
 
-			MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestRunnerModel", name, "TestRunnerModel(" + getTestCaseInitializer() + description + ")");
+        if (method == null) {
+            getFileDeclaration().addImport("flat/test/TestResult");
+            getFileDeclaration().addImport("flat/io/OutputStream");
 
-			runner = fields.a;
-		}
+            method = BodyMethodDeclaration.decodeStatement(parent, "public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
 
-		return runner;
-	}
+            parent.addChild(method);
 
-	public String getTestCaseInitializer()
-	{
-		String initializerValues = "[" + String.join(", ", getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
-			.map(x -> (TestAnnotation)x.getAnnotationOfType(TestAnnotation.class))
-			.map(x -> x.generateTestCase().getName())
-			.collect(Collectors.toList())) + "]";
+            generatedRunTestsMethod = true;
+        }
 
-		if (initializerValues.length() == 2)
-		{
-			initializerValues = "Array<TestCase>()";
-		}
+        return method;
+    }
 
-		return initializerValues;
-	}
+    public FieldDeclaration generateTestRunner() {
+        if (runner == null) {
+            getFileDeclaration().addImport("flat/test/TestCase");
+            getFileDeclaration().addImport("flat/test/TestRunnerModel");
+            FlatMethodDeclaration method = searchRunTestsMethod();
 
-	public void insertMessage()
-	{
-		if (parameters.containsKey("message"))
-		{
-			Literal message = (Literal)parameters.get("message");
+            String name = method.getScope().getUniqueName("_" + method.getName() + "TestRunner");
+            String description = parameters.containsKey("message") && ((Literal) parameters.get("message")).isStringInstantiation() ? ", " + ((Literal) parameters.get("message")).generateFlatInput() : "";
 
-			if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length() > 2)
-			{
-				message.value = "\"" + message.value.substring(1, message.value.length() - 1) + "\"";
+            MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestRunnerModel", name, "TestRunnerModel(" + getTestCaseInitializer() + description + ")");
 
-				writeMessage(message, getRunTestsMethod(), false, "Test.out", "writeHeader");
-			}
-		}
-		else
-		{
-			ClassDeclaration clazz = (ClassDeclaration)parent;
-			getFileDeclaration().addImport("flat/test/Test");
+            runner = fields.a;
+        }
 
-			writeMessage((Literal)Literal.decodeStatement(parent, "\"Testing " + clazz.getName() + "\"", Location.INVALID, true, true), getRunTestsMethod(), false, "Test.out", "writeHeader");
-		}
-	}
+        return runner;
+    }
 
-	public void writeMessage(Literal message)
-	{
-		RunnableTests.super.writeMessage(message, getRunTestsMethod(), true, "out");
+    public String getTestCaseInitializer() {
+        String initializerValues = "[" + String.join(", ", getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
+            .map(x -> (TestAnnotation) x.getAnnotationOfType(TestAnnotation.class))
+            .map(x -> x.generateTestCase().getName())
+            .collect(Collectors.toList())) + "]";
 
-		writeMessage = true;
-	}
+        if (initializerValues.length() == 2) {
+            initializerValues = "Array<TestCase>()";
+        }
 
-	public void addTestCalls()
-	{
-		final FlatMethodDeclaration runMethod = getRunTestsMethod();
+        return initializerValues;
+    }
 
-		callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
+    public void insertMessage() {
+        if (parameters.containsKey("message")) {
+            Literal message = (Literal) parameters.get("message");
 
-		java.util.List<FlatMethodDeclaration> testMethods = getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
-			.filter(m -> !m.containsAnnotationOfType(IgnoreAnnotation.class))
-			.collect(Collectors.toList());
-		java.util.List<FlatMethodDeclaration> onlyMethods = testMethods.stream()
-			.filter(m -> m.containsAnnotationOfType(OnlyAnnotation.class))
-			.collect(Collectors.toList());
+            if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length() > 2) {
+                message.value = "\"" + message.value.substring(1, message.value.length() - 1) + "\"";
 
-		if (!onlyMethods.isEmpty()) {
-			testMethods = onlyMethods;
-		}
+                writeMessage(message, getRunTestsMethod(), false, "Test.out", "writeHeader");
+            }
+        } else {
+            ClassDeclaration clazz = (ClassDeclaration) parent;
+            getFileDeclaration().addImport("flat/test/Test");
 
-		testMethods.forEach(method -> {
-			getFileDeclaration().addImport("flat/test/TestException");
+            writeMessage((Literal) Literal.decodeStatement(parent, "\"Testing " + clazz.getName() + "\"", Location.INVALID, true, true), getRunTestsMethod(), false, "Test.out", "writeHeader");
+        }
+    }
 
-			TestAnnotation test = (TestAnnotation)method.getAnnotationOfType(TestAnnotation.class);
+    public void writeMessage(Literal message) {
+        RunnableTests.super.writeMessage(message, getRunTestsMethod(), true, "out");
 
-			if (method.getParameterList().any(Node::isUserMade))
-			{
-				SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
-			}
+        writeMessage = true;
+    }
 
-			callMethodsWithAnnotationOfType(InitTestAnnotation.class);
+    public void addTestCalls() {
+        final FlatMethodDeclaration runMethod = getRunTestsMethod();
 
-			Variable timer = generateTimer(runMethod, method.getName());
+        callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
 
-			Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
+        java.util.List<FlatMethodDeclaration> testMethods = getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
+            .filter(m -> !m.containsAnnotationOfType(IgnoreAnnotation.class))
+            .collect(Collectors.toList());
+        java.util.List<FlatMethodDeclaration> onlyMethods = testMethods.stream()
+            .filter(m -> m.containsAnnotationOfType(OnlyAnnotation.class))
+            .collect(Collectors.toList());
 
-			if (tryBlock == null) {
-				SyntaxMessage.error("Could not create test suite class", runMethod);
-				return;
-			}
+        if (!onlyMethods.isEmpty()) {
+            testMethods = onlyMethods;
+        }
 
-			MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "(out)", Location.INVALID, true, false, method);
+        testMethods.forEach(method -> {
+            getFileDeclaration().addImport("flat/test/TestException");
 
-			if (call == null) {
-				SyntaxMessage.error("Could not create test suite class", runMethod);
-				return;
-			}
+            TestAnnotation test = (TestAnnotation) method.getAnnotationOfType(TestAnnotation.class);
 
-			tryBlock.addChild(call);
+            if (method.getParameterList().any(Node::isUserMade)) {
+                SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
+            }
 
-			runMethod.addChild(tryBlock);
-			stopTimer(tryBlock, timer);
+            callMethodsWithAnnotationOfType(InitTestAnnotation.class);
 
-			Catch catchBlock = Catch.decodeStatement(runMethod, "catch (TestException e)", Location.INVALID, true);
+            Variable timer = generateTimer(runMethod, method.getName());
 
-			if (catchBlock == null) {
-				SyntaxMessage.error("Could not create test suite class", runMethod);
-				return;
-			}
+            Try tryBlock = Try.decodeStatement(runMethod, "try", Location.INVALID, true);
 
-			runMethod.addChild(catchBlock);
-			stopTimer(catchBlock, timer);
+            if (tryBlock == null) {
+                SyntaxMessage.error("Could not create test suite class", runMethod);
+                return;
+            }
 
-			if (test.writeMessage)
-			{
-				Variable success = (Variable)SyntaxTree.decodeIdentifierAccess(tryBlock, "out:write(\"- Success #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
-				tryBlock.addChild(success);
+            MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "(out)", Location.INVALID, true, false, method);
 
-				Variable failure = (Variable)SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure: #e.message #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
-				catchBlock.addChild(failure);
-			}
+            if (call == null) {
+                SyntaxMessage.error("Could not create test suite class", runMethod);
+                return;
+            }
 
-			callMethodsWithAnnotationOfType(CleanTestAnnotation.class);
+            tryBlock.addChild(call);
 
-			addResultCall(tryBlock, true, timer, method);
-			addResultCall(catchBlock, false, timer, method);
-		});
+            runMethod.addChild(tryBlock);
+            stopTimer(tryBlock, timer);
 
-		callMethodsWithAnnotationOfType(CleanTestClassAnnotation.class);
+            Catch catchBlock = Catch.decodeStatement(runMethod, "catch (TestException e)", Location.INVALID, true);
 
-		Variable write = (Variable)SyntaxTree.decodeIdentifierAccess(runMethod, "out.write(\"\\n\")", Location.INVALID, true);
+            if (catchBlock == null) {
+                SyntaxMessage.error("Could not create test suite class", runMethod);
+                return;
+            }
 
-		runMethod.addChild(write);
-	}
+            runMethod.addChild(catchBlock);
+            stopTimer(catchBlock, timer);
 
-	@Override
-	public boolean onApplied(Node next, boolean throwError)
-	{
-		if (!checkDuplicate(next, throwError))
-		{
-			if (next instanceof ClassDeclaration)
-			{
-				// valid
-			}
-			else
-			{
-				return invalidApplication(next, throwError);
-			}
-		}
+            if (test.writeMessage) {
+                Variable success = (Variable) SyntaxTree.decodeIdentifierAccess(tryBlock, "out:write(\"- Success #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
+                tryBlock.addChild(success);
 
-		return super.onApplied(next, throwError);
-	}
+                Variable failure = (Variable) SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure: #e.message #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
+                catchBlock.addChild(failure);
+            }
 
-	@Override
-	public TestableAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
-	{
-		TestableAnnotation node = new TestableAnnotation(temporaryParent, locationIn);
+            callMethodsWithAnnotationOfType(CleanTestAnnotation.class);
 
-		return cloneTo(node, cloneChildren, cloneAnnotations);
-	}
+            addResultCall(tryBlock, true, timer, method);
+            addResultCall(catchBlock, false, timer, method);
+        });
 
-	public TestableAnnotation cloneTo(TestableAnnotation node)
-	{
-		return cloneTo(node, true, true);
-	}
+        callMethodsWithAnnotationOfType(CleanTestClassAnnotation.class);
 
-	public TestableAnnotation cloneTo(TestableAnnotation node, boolean cloneChildren, boolean cloneAnnotations)
-	{
-		super.cloneTo(node, cloneChildren, cloneAnnotations);
+        Variable write = (Variable) SyntaxTree.decodeIdentifierAccess(runMethod, "out.write(\"\\n\")", Location.INVALID, true);
 
-		node.aliasUsed = aliasUsed;
+        runMethod.addChild(write);
+    }
 
-		return node;
-	}
+    @Override
+    public boolean onApplied(Node next, boolean throwError) {
+        if (!checkDuplicate(next, throwError)) {
+            if (next instanceof ClassDeclaration) {
+                // valid
+            } else {
+                return invalidApplication(next, throwError);
+            }
+        }
 
-	@Override
-	public String[] getAliases()
-	{
-		return new String[] { "testable" };
-	}
+        return super.onApplied(next, throwError);
+    }
+
+    @Override
+    public TestableAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+        TestableAnnotation node = new TestableAnnotation(temporaryParent, locationIn);
+
+        return cloneTo(node, cloneChildren, cloneAnnotations);
+    }
+
+    public TestableAnnotation cloneTo(TestableAnnotation node) {
+        return cloneTo(node, true, true);
+    }
+
+    public TestableAnnotation cloneTo(TestableAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+        super.cloneTo(node, cloneChildren, cloneAnnotations);
+
+        node.aliasUsed = aliasUsed;
+
+        return node;
+    }
+
+    @Override
+    public String[] getAliases() {
+        return new String[]{"testable"};
+    }
 }

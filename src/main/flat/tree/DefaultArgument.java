@@ -6,15 +6,13 @@ import flat.util.Location;
 /**
  * {@link IValue} extension that represents
  *
- * @author	Braden Steffaniak
+ * @author Braden Steffaniak
  */
-public class DefaultArgument extends IValue
-{
+public class DefaultArgument extends IValue {
     /**
      * @see Node#Node(Node, Location)
      */
-    public DefaultArgument(Node temporaryParent, Location locationIn)
-    {
+    public DefaultArgument(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
     }
 
@@ -29,16 +27,15 @@ public class DefaultArgument extends IValue
      * 	<li></li>
      * </ul>
      *
-     * @param parent The parent node of the statement.
+     * @param parent    The parent node of the statement.
      * @param statement The statement to try to decode into a
-     * 		{@link DefaultArgument} instance.
-     * @param location The location of the statement in the source code.
-     * @param require Whether or not to throw an error if anything goes wrong.
+     *                  {@link DefaultArgument} instance.
+     * @param location  The location of the statement in the source code.
+     * @param require   Whether or not to throw an error if anything goes wrong.
      * @return The generated node, if it was possible to translated it
-     * 		into a {@link DefaultArgument}.
+     * into a {@link DefaultArgument}.
      */
-    public static DefaultArgument decodeStatement(Node parent, String statement, Location location, boolean require)
-    {
+    public static DefaultArgument decodeStatement(Node parent, String statement, Location location, boolean require) {
 
 
         return null;
@@ -48,8 +45,7 @@ public class DefaultArgument extends IValue
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public DefaultArgument clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
-    {
+    public DefaultArgument clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
         DefaultArgument node = new DefaultArgument(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -58,8 +54,7 @@ public class DefaultArgument extends IValue
     /**
      * @see Node#cloneTo(Node)
      */
-    public DefaultArgument cloneTo(DefaultArgument node)
-    {
+    public DefaultArgument cloneTo(DefaultArgument node) {
         return cloneTo(node, true, true);
     }
 
@@ -70,8 +65,7 @@ public class DefaultArgument extends IValue
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public DefaultArgument cloneTo(DefaultArgument node, boolean cloneChildren, boolean cloneAnnotations)
-    {
+    public DefaultArgument cloneTo(DefaultArgument node, boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
@@ -82,10 +76,9 @@ public class DefaultArgument extends IValue
      * is working properly.
      *
      * @return The error output, if there was an error. If the test was
-     * 		successful, null is returned.
+     * successful, null is returned.
      */
-    public static String test(TestContext context)
-    {
+    public static String test(TestContext context) {
 
 
         return null;

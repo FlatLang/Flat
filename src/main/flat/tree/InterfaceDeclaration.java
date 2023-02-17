@@ -7,17 +7,15 @@ import flat.util.SyntaxUtils;
 /**
  * {@link Node} extension that represents
  *
- * @author	Braden Steffaniak
+ * @author Braden Steffaniak
  */
-public class InterfaceDeclaration extends Trait
-{
+public class InterfaceDeclaration extends Trait {
     public static final String IDENTIFIER = "interface";
 
     /**
      * @see Node#Node(Node, Location)
      */
-    public InterfaceDeclaration(Node temporaryParent, Location locationIn)
-    {
+    public InterfaceDeclaration(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
     }
 
@@ -32,28 +30,25 @@ public class InterfaceDeclaration extends Trait
      * 	<li></li>
      * </ul>
      *
-     * @param parent The parent node of the statement.
+     * @param parent    The parent node of the statement.
      * @param statement The statement to try to decode into a
-     * 		{@link InterfaceDeclaration} instance.
-     * @param location The location of the statement in the source code.
-     * @param require Whether or not to throw an error if anything goes wrong.
+     *                  {@link InterfaceDeclaration} instance.
+     * @param location  The location of the statement in the source code.
+     * @param require   Whether or not to throw an error if anything goes wrong.
      * @return The generated node, if it was possible to translated it
-     * 		into a {@link InterfaceDeclaration}.
+     * into a {@link InterfaceDeclaration}.
      */
-    public static InterfaceDeclaration decodeStatement(Node parent, String statement, Location location, boolean require)
-    {
+    public static InterfaceDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
         int index = SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER);
 
-        if (index >= 0)
-        {
+        if (index >= 0) {
             statement = statement.substring(0, index) + ClassDeclaration.IDENTIFIER + statement.substring(index + IDENTIFIER.length());
 
             ClassData data = new ClassData(false, false, true);
 
             ClassDeclaration clazz = decodeStatement(parent, statement, location, require, data);
 
-            if (clazz != null)
-            {
+            if (clazz != null) {
                 InterfaceDeclaration n = new InterfaceDeclaration(parent, location);
 
                 clazz.cloneTo(n);
@@ -70,8 +65,7 @@ public class InterfaceDeclaration extends Trait
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public InterfaceDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations)
-    {
+    public InterfaceDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
         InterfaceDeclaration node = new InterfaceDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -80,8 +74,7 @@ public class InterfaceDeclaration extends Trait
     /**
      * @see Node#cloneTo(Node)
      */
-    public InterfaceDeclaration cloneTo(InterfaceDeclaration node)
-    {
+    public InterfaceDeclaration cloneTo(InterfaceDeclaration node) {
         return cloneTo(node, true, true);
     }
 
@@ -92,8 +85,7 @@ public class InterfaceDeclaration extends Trait
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public InterfaceDeclaration cloneTo(InterfaceDeclaration node, boolean cloneChildren, boolean cloneAnnotations)
-    {
+    public InterfaceDeclaration cloneTo(InterfaceDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
@@ -104,10 +96,9 @@ public class InterfaceDeclaration extends Trait
      * is working properly.
      *
      * @return The error output, if there was an error. If the test was
-     * 		successful, null is returned.
+     * successful, null is returned.
      */
-    public static String test(TestContext context)
-    {
+    public static String test(TestContext context) {
 
 
         return null;
