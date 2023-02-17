@@ -313,6 +313,16 @@ public class Variable extends Identifier {
         }
     }
 
+    @Override
+    public Accessible getReferenceTypeNode(boolean requireAccessingNode, boolean skipPriority) {
+        Accessible node = super.getReferenceTypeNode(requireAccessingNode, skipPriority);
+
+        if (node instanceof ObjectReference == false) return node;
+        if (isLocal()) return null;
+
+        return node;
+    }
+
     /**
      * @see Identifier#doesForceOriginalName()
      */

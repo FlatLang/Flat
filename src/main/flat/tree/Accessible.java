@@ -454,6 +454,18 @@ public interface Accessible {
         return n.getParentClass(true);
     }
 
+    default Accessible getReferenceTypeNode() {
+        return getReferenceTypeNode(false);
+    }
+
+    default Accessible getReferenceTypeNode(boolean requireAccessingNode) {
+        return getReferenceTypeNode(requireAccessingNode, false);
+    }
+
+    default Accessible getReferenceTypeNode(boolean requireAccessingNode, boolean skipPriority) {
+        return getReferenceNode(requireAccessingNode, skipPriority);
+    }
+
     /**
      * Get the farthest node that is accessing the specified identifier.<br>
      * <br>
