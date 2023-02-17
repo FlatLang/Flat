@@ -530,55 +530,50 @@ public class SyntaxTree
 	 * Search for the main method, if one exists, in the compiling
 	 * program. For more details on what the main method looks like, see
 	 * {@link SyntaxUtils#isMainMethod(BodyMethodDeclaration)}.
-	 * 
+	 *
 	 * @return The Method representation of the main method.
 	 */
-	public FlatMethodDeclaration getMainMethod(String mainClass)
-	{
+	public FlatMethodDeclaration getMainMethod(String mainClass) {
+		if (mainClass == null) return null;
+
 		MethodDeclaration main = null;
-		
-		for (int i = 0; i < root.getNumChildren(); i++)
-		{
+		boolean printedError = false;
+
+		for (int i = 0; i < root.getNumChildren(); i++) {
 			Node child = root.getChild(i);
-			
-			for (int j = 0; j < child.getNumChildren(); j++)
-			{
+
+			for (int j = 0; j < child.getNumChildren(); j++) {
 				Node child2 = child.getChild(j);
-				
-				if (child2 instanceof ClassDeclaration)
-				{
-					ClassDeclaration classDeclaration = (ClassDeclaration)child2;
-					
-					if (!classDeclaration.isPropertyTrue("functionMap"))
-					{
-						MethodList methods = classDeclaration.getMethodList();
-						
-						for (int k = 0; k < methods.getNumChildren(); k++)
-						{
-							MethodDeclaration methodDeclaration = methods.getChild(k);
-							
-							if (methodDeclaration.containsBody())
-							{
-								if (SyntaxUtils.isMainMethod((BodyMethodDeclaration)methodDeclaration))
-								{
-									if (mainClass == null || methodDeclaration.getParentClass().getClassLocation().equals(mainClass))
-									{
-										if (main != null)
-										{
-											SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", main);
-										}
-										
-										main = methodDeclaration;
-									}
-								}
-							}
+
+				if (child2 instanceof ClassDeclaration == false) continue;
+
+				ClassDeclaration classDeclaration = (ClassDeclaration) child2;
+
+				if (classDeclaration.isPropertyTrue("functionMap")) continue;
+
+				MethodList methods = classDeclaration.getMethodList();
+
+				for (int k = 0; k < methods.getNumChildren(); k++) {
+					MethodDeclaration methodDeclaration = methods.getChild(k);
+
+					if (!methodDeclaration.containsBody()) continue;
+					if (!SyntaxUtils.isMainMethod((BodyMethodDeclaration) methodDeclaration)) continue;
+					if (!methodDeclaration.getParentClass().getClassLocation().equals(mainClass)) continue;
+					if (main != null) {
+						if (!printedError) {
+							SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", main, false);
 						}
+						SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", methodDeclaration, false);
+
+						printedError = true;
 					}
+
+					main = methodDeclaration;
 				}
 			}
 		}
-		
-		return (FlatMethodDeclaration)main;
+
+		return (FlatMethodDeclaration) main;
 	}
     
 	/**
