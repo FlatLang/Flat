@@ -480,6 +480,11 @@ public class MethodCall extends Variable
 		return null;
 	}
 
+	@Override
+	public boolean isAccessedWithinStaticContext() {
+		return super.isAccessedWithinStaticContext() || !isAccessed() && getDeclaration() instanceof InstanceDeclaration && ((InstanceDeclaration)getDeclaration()).isStatic();
+	}
+
 	/**
 	 * Get the Method instance that this MethodCall is calling.
 	 *
