@@ -4,6 +4,7 @@ import flat.TestContext;
 import flat.error.SyntaxErrorException;
 import flat.error.SyntaxMessage;
 import flat.tree.annotations.Annotation;
+import flat.tree.generics.GenericTypeArgumentList;
 import flat.tree.variables.Super;
 import flat.util.Bounds;
 import flat.util.Location;
@@ -25,6 +26,9 @@ public class Cast extends IValue {
      */
     public Cast(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
+
+        GenericTypeArgumentList implementation = new GenericTypeArgumentList(temporaryParent, locationIn.asNew());
+        addChild(implementation);
     }
 
     /**
@@ -36,12 +40,22 @@ public class Cast extends IValue {
     }
 
     public Value getValueNode() {
-        return getNumChildren() > super.getNumDefaultChildren() ? (Value) getChild(super.getNumDefaultChildren() + 0) : null;
+        return getNumChildren() > super.getNumDefaultChildren() ? (Value) getChild(super.getNumDefaultChildren() + 1) : null;
     }
 
     @Override
     public Value getReturnedNode() {
         return getValueNode().getReturnedNode();
+    }
+
+    @Override
+    public int getNumDefaultChildren() {
+        return super.getNumDefaultChildren() + 1;
+    }
+
+    @Override
+    public GenericTypeArgumentList getGenericTypeArgumentList() {
+        return (GenericTypeArgumentList) getChild(super.getNumDefaultChildren() + 0);
     }
 
     public boolean isExplicitCast() {
@@ -103,29 +117,7 @@ public class Cast extends IValue {
     }
 
     private boolean decodeType(String contents, boolean require) {
-		/*if (StringUtils.containsMultipleWords(contents))
-		{
-			return invalidTypeError(contents, require);
-		}*/
-
-        String type = StringUtils.findNextWord(contents);
-
-        if (type == null) {
-            return invalidTypeError(type, require);
-        }
-
-        int index = contents.indexOf(type);
-
-        // If symbols are before the type... can't have that.
-        if (index > 0) {
-            return invalidTypeError(contents, require);
-        }
-
-        if (!checkArray(contents.substring(type.length()), require)) {
-            return false;
-        }
-
-        return setType(type, require);
+        return setType(contents, require);
     }
 
     private boolean checkArray(String postfix, boolean require) {
