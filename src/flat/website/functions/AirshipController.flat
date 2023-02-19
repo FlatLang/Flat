@@ -1,9 +1,9 @@
 package flat/website/functions
 
-import flat/log/Logger
-import flat/json/JsonDeserializer
-import flat/datastruct/HashMap
-import flat/http/Http
+import flat/log
+import flat/json
+import flat/datastruct
+import flat/http
 import flat/server/Request
 import flat/server/Response
 
