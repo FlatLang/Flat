@@ -7,6 +7,7 @@ import flat/datastruct
 import flat/http
 import flat/time
 import flat/cache
+import flat/server/Request
 
 class {
   static Logger log = Logger(StatusPills.class)
@@ -27,7 +28,7 @@ class {
 
   public construct() {}
 
-  public async run() -> String {
+  public async run(Request req) -> String {
     let svgs = svgCache.getOrStore({
       return badges.mapParallel({
         let svgData = Http.get(_x["svg"]).data
@@ -39,20 +40,27 @@ class {
           :add("repoName", _x["repoName"])
       })
     })
+    Console.log(req.query)
 
-    var Int x = 0
-    var Int y = 0
-    let canvasWidth = 800
-    let pillWidth = 80
-    let pillHeight = 20
-    let margin = 1
-    let textMargin = 2
-    let charWidth = 6.7
+    var Double x = 0
+    var Double y = 0
+    let Double canvasWidth = Int.parseOr(req.query["width"], 800)
+    let Double pillHeight = 20.0
+    let Double margin = Int.parseOr(req.query["pill-margin"], 1)
+    let Double textMargin = Int.parseOr(req.query["text-margin"], 2)
+    let Double charWidth = 6.7
+
+    let rowWidths = Double[]
+    let rowCounts = Int[]
+
+    rowCounts.add(0)
 
     let rects = svgs.map({
       let Int width = Math.ceil(_x["label"].count * charWidth + textMargin * 2)
 
       if (x + width > canvasWidth) {
+        rowWidths.add(x - margin)
+        rowCounts.add(0)
         x = 0
         y += pillHeight + margin
       }
@@ -60,8 +68,37 @@ class {
       let rect = Rect(x, y, width, pillHeight)
 
       x += width + margin
+      rowCounts.last = rowCounts.last + 1
 
       return rect
+    })
+
+    rowWidths.add(x - margin)
+
+    let currentOffset = 0.0
+    let lastIndex = 0
+
+    let resizedRects = rects.map({
+      let Int index = Math.round(_x.y / (pillHeight + margin))
+      let count = rowCounts[index]
+      let width = rowWidths[index]
+      let delta = (canvasWidth - width) / count
+      let increase = index == rowCounts.count - 1 && delta > 30 ? 0 : delta
+
+      if (index > lastIndex) {
+        lastIndex = index
+        currentOffset = 0
+      }
+
+      let newRect = _x.copy(
+        x: _x.x + currentOffset,
+        width: _x.width + increase,
+        paddingX: increase
+      )
+
+      currentOffset += increase
+
+      return newRect
     })
 
     let svgContents = svgs.map({
@@ -71,12 +108,12 @@ class {
         title: _x["label"],
         repoName: _x["repoName"],
         success: _x["svg"].contains("passing"),
-        rect: rects[_i],
+        rect: resizedRects[_i],
         textMargin: textMargin
       )
     })
 
-    let clipPaths = rects.map({
+    let clipPaths = resizedRects.map({
       return "|
         <clipPath id=\"clipPath-#{_i}\">
           <rect x=\"#{_x.x}\" y=\"#{_x.y}\" width=\"#{_x.width}\" height=\"#{_x.height}\" ry=\"2\" rx=\"2\"/>
@@ -109,18 +146,19 @@ class {
     String repoName,
     Bool success,
     Rect rect,
-    Int textMargin
+    Double textMargin
   ) -> String {
     let x = rect.x
     let y = rect.y
     let width = rect.width
     let height = rect.height
+    let paddingX = rect.paddingX
     return "|
       <a target=\"_blank\" href=\"#{url}\">
         <title>#{title}</title>
         <g font-family=\"monospace\" font-size=\"11\">
           <rect x=\"#{x}\" y=\"#{y}\" width=\"#{width}\" height=\"#{height}\" ry=\"2\" rx=\"2\" fill=\"url(#{success ? "\#success-fill" : "\#failing-fill"})\"/>
-          <text x=\"#{x + textMargin}\" y=\"#{y + height / 2 + 11 / 2}\" style=\"clip-path: url(\#clipPath-#{id})\">#{title}</text>
+          <text x=\"#{x + textMargin + paddingX / 2}\" y=\"#{y + height / 2 + 11 / 2}\" style=\"clip-path: url(\#clipPath-#{id})\">#{title}</text>
         </g>
       </a>
       |"
@@ -128,10 +166,21 @@ class {
 
   static class Rect {
     public construct(
-      visible Int x,
-      visible Int y,
-      visible Int width,
-      visible Int height
+      visible Double x = 0,
+      visible Double y = 0,
+      visible Double width = 0,
+      visible Double height = 0,
+      visible Double paddingX = 0,
+      visible Double paddingY = 0
     ) {}
+
+    copy(
+      Double: x = x,
+      Double: y = y,
+      Double: width = width,
+      Double: height = height,
+      Double: paddingX = paddingX,
+      Double: paddingY = paddingY
+    ) => Rect(x, y, width, height, paddingX, paddingY)
   }
 }

@@ -36,7 +36,7 @@ class {
       _res.setHeader("x-content-type-options", "nosniff")
       _res.setHeader("x-frame-options", "deny")
       _res.setHeader("x-xss-protection", "0")
-      _res.send(statusPills.run())
+      _res.send(statusPills.run(_req))
     })
 
     server.get("/github-status", {
