@@ -15,6 +15,7 @@ import flat.util.Location;
  */
 public abstract class PropertyMethod extends BodyMethodDeclaration {
     public static final String PARAMETER_NAME = "value";
+    public FieldDeclaration originalField;
 
     private boolean disabled;
 
@@ -120,6 +121,7 @@ public abstract class PropertyMethod extends BodyMethodDeclaration {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.disabled = disabled;
+        node.originalField = originalField;
 
         return node;
     }

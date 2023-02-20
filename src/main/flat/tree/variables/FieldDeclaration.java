@@ -113,6 +113,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     @Override
     public void addChild(Node node) {
         if (node instanceof AccessorMethod || node instanceof MutatorMethod) {
+            ((PropertyMethod)node).originalField = this;
             getParentClass(true).addChild(node);
         } else {
             super.addChild(node);
