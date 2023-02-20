@@ -108,8 +108,7 @@ class {
 
       let newRect = _x.copy(
         x: _x.x + currentOffset,
-        width: _x.width + increase,
-        paddingX: increase
+        width: _x.width + increase
       )
 
       currentOffset += increase
@@ -168,7 +167,6 @@ class {
     let y = rect.y
     let width = rect.width
     let height = rect.height
-    let paddingX = rect.paddingX
     return "|
       <a target=\"_blank\" href=\"#{url}\">
         <title>#{title}</title>
@@ -199,18 +197,14 @@ class {
       visible Double x = 0,
       visible Double y = 0,
       visible Double width = 0,
-      visible Double height = 0,
-      visible Double paddingX = 0,
-      visible Double paddingY = 0
+      visible Double height = 0
     ) {}
 
     copy(
       Double: x = x,
       Double: y = y,
       Double: width = width,
-      Double: height = height,
-      Double: paddingX = paddingX,
-      Double: paddingY = paddingY
-    ) => Rect(x, y, width, height, paddingX, paddingY)
+      Double: height = height
+    ) => Rect(x, y, width, height)
   }
 }
