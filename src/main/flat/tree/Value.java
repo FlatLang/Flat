@@ -1010,7 +1010,7 @@ public abstract class Value extends Node implements AbstractValue {
 
         if (arg != null && !arg.isGenericType() && !arg.isAncestorOf(this)) {
             return builder.append(SyntaxUtils.getPrimitiveFlatType(arg.generateFlatType(context).toString()));
-        } else if (arg != null && context != null && context instanceof GenericTypeArgument == false && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true)) {
+        } else if (arg != null && context != null && context instanceof GenericTypeArgument == false && context.getParentClass() != null && arg.getGenericTypeParameter() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true)) {
             builder.append(arg.getType());
         } else if (defaultGeneric && param != null) {
             builder.append(param.getDefaultType());
