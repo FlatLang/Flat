@@ -128,14 +128,6 @@ class {
       )
     })
 
-    let clipPaths = resizedRects.map({
-      return "|
-        <clipPath id=\"clipPath-#{_i}\">
-          <rect x=\"#{_x.x}\" y=\"#{_x.y}\" width=\"#{_x.width}\" height=\"#{_x.height}\" ry=\"2\" rx=\"2\"/>
-        </clipPath>
-        |"
-    })
-
     return "|
       <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 #{canvasWidth} #{y + pillHeight}\">
         <defs xmlns=\"http://www.w3.org/2000/svg\">
@@ -147,7 +139,6 @@ class {
             <stop stop-color=\"\#D73A49\" offset=\"0%\"/>
             <stop stop-color=\"\#CB2431\" offset=\"100%\"/>
           </linearGradient>
-          #{clipPaths.join("\n")}
         </defs>
         #{svgContents.join("\n")}
       </svg>
@@ -183,7 +174,6 @@ class {
           <text
             x=\"#{x + width / 2}\"
             y=\"#{y + height / 2 + height / 14}\"
-            style=\"clip-path: url(\#clipPath-#{id})\"
             dominant-baseline=\"middle\"
             text-anchor=\"middle\"
           >#{title}</text>
