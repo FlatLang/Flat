@@ -216,15 +216,15 @@ public class Array extends VariableDeclaration implements ArrayCompatible {
                     n.setArrayDimensions(1);
                 } else {
                     TypeList<Value> types = n.getInitializerValues();
-                    Value type = types.getVisibleChild(0).getReturnedNode();
+                    Value value = types.getVisibleChild(0).getReturnedNode();
 
-                    if (type != null) {
+                    if (value != null) {
                         for (int i = 1; i < types.getNumVisibleChildren(); i++) {
-                            type = SyntaxUtils.getTypeInCommon(type, types.getVisibleChild(i).getReturnedNode());
+                            value = SyntaxUtils.getValueInCommon(value, types.getVisibleChild(i).getReturnedNode());
                         }
 
-                        if (type != null) {
-                            n.setType(type.getType());
+                        if (value != null) {
+                            n.setType(value);
                             n.setArrayDimensions(1);
                         }
                     }

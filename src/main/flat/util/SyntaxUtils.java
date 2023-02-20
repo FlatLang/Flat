@@ -1990,6 +1990,14 @@ public class SyntaxUtils {
         if (type1 == null || type2 == null) {
             return null;
         }
+        if (!value1.isGenericType() && !value2.isGenericType()) {
+            if (type1.isOfType(type2)) {
+                return value2;
+            }
+            if (type2.isOfType(type1)) {
+                return value1;
+            }
+        }
 
         ClassDeclaration type3 = type2;
 
