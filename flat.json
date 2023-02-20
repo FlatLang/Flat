@@ -17,7 +17,8 @@
         "github:FlatLang/Time": "master",
         "github:FlatLang/FuCli": "master",
         "github:FlatLang/Logger": "master",
-        "github:FlatLang/Cache": "master"
+        "github:FlatLang/Cache": "master",
+        "github:FlatLang/GitHubClient": "master"
       }
     },
     "cmd": {

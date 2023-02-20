@@ -8,39 +8,55 @@ import flat/http
 import flat/time
 import flat/cache
 import flat/server/Request
+import flat/github
+import flat/github/models
+
+import static flat/github/GitHub
 
 class {
+  static String TOKEN = System.getEnv("GITHUB_FETCH_ACTIONS_TOKEN")
+  static String ORG_NAME = "FlatLang"
   static Logger log = Logger(StatusPills.class)
+  static JsonDeserializer deserializer = JsonDeserializer()
 
-  lazy Array<HashMap<String, String>> badges => JsonDeserializer().parseArray(File("res/badges.json"))
-
-  static File CACHE_FILE = File("pill-cache.json")
-  static Long CACHE_LIFETIME = 30000
-
-  ItemCache<Array<HashMap<String, String>>> svgCache = ItemCache.Builder()
-    .withLifetime(CACHE_LIFETIME)
-    .withStore(ItemJsonFileCacheStore(CACHE_FILE))
+  ItemCache<Array<Workflow>> workflowsCache = ItemCache.Builder()
+    .withLifetime(300000)
+    .withStore(ItemFileCacheStore({ _.toJson() }, { deserializer.parseArray(_).map({ Workflow((HashMap)_x) }) }, File("cache/workflows.json")))
     .build()
 
-  static {
-    CACHE_FILE.deleteSync()
-  }
+  ItemCache<Array<HashMap<String, String>>> svgCache = ItemCache.Builder()
+    .withLifetime(30000)
+    .withStore(ItemJsonFileCacheStore(File("cache/pill.json")))
+    .build()
 
   public construct() {}
 
   public async run(Request req) -> String {
+    let workflows = workflowsCache.getOrStore({
+      return getOrganizationRepos(ORG_NAME, token: TOKEN)
+        .filter({ _.visibility == "public" })
+        .flatMapParallel({ getRepositoryWorkflows(ORG_NAME, _.name, token: TOKEN) })
+        .stream()
+        .filter({ _.state == "active" })
+        .filter({ !_.name.startsWith("Create ") })
+        .filter({ !_.name.startsWith("Prepare ") })
+        .toArray()
+    })
+
     let svgs = svgCache.getOrStore({
-      return badges.mapParallel({
-        let svgData = Http.get(_x["svg"]).data
+      return workflows.mapParallel({
+        let svgData = Http.get(_x.badgeUrl).data
+        let prefix = "https://api.github.com/repos/#{ORG_NAME}/"
+        let repoName = _x.url.substring(prefix.count, _x.url.indexOf('/', start: prefix.count + 1))
+        let workflowPath = _x.path.substring(".github/".count)
 
         return HashMap()
           :add("svg", svgData)
-          :add("url", _x["url"])
-          :add("label", _x["label"])
-          :add("repoName", _x["repoName"])
+          :add("url", "https://github.com/#{ORG_NAME}/#{repoName}/actions/#{workflowPath}")
+          :add("label", _x.name)
+          :add("repoName", repoName)
       })
     })
-    Console.log(req.query)
 
     var Double x = 0
     var Double y = 0
