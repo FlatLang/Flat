@@ -173,8 +173,22 @@ class {
       <a target=\"_blank\" href=\"#{url}\">
         <title>#{title}</title>
         <g font-family=\"monospace\" font-size=\"11\">
-          <rect x=\"#{x}\" y=\"#{y}\" width=\"#{width}\" height=\"#{height}\" ry=\"2\" rx=\"2\" fill=\"url(#{success ? "\#success-fill" : "\#failing-fill"})\"/>
-          <text x=\"#{x + textMargin + paddingX / 2}\" y=\"#{y + height / 2 + 11 / 2}\" style=\"clip-path: url(\#clipPath-#{id})\">#{title}</text>
+          <rect
+            x=\"#{x}\"
+            y=\"#{y}\"
+            width=\"#{width}\"
+            height=\"#{height}\"
+            ry=\"2\"
+            rx=\"2\"
+            fill=\"url(#{success ? "\#success-fill" : "\#failing-fill"})\"
+          />
+          <text
+            x=\"#{x + width / 2}\"
+            y=\"#{y + height / 2 + height / 14}\"
+            style=\"clip-path: url(\#clipPath-#{id})\"
+            dominant-baseline=\"middle\"
+            text-anchor=\"middle\"
+          >#{title}</text>
         </g>
       </a>
       |"
