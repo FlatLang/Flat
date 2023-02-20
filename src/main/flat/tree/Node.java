@@ -6,6 +6,7 @@ import flat.ValidationResult;
 import flat.error.UnimplementedOperationException;
 import flat.tree.annotations.*;
 import flat.tree.exceptionhandling.Try;
+import flat.tree.lambda.LambdaMethodDeclaration;
 import flat.tree.variables.*;
 import flat.util.*;
 
@@ -278,6 +279,14 @@ public abstract class Node implements Listenable, Annotatable {
         }
 
         return null;
+    }
+    public ScopeAncestor getRootScopeAncestor() {
+        FlatMethodDeclaration method = getParentMethod(true);
+
+        if (method instanceof LambdaMethodDeclaration) return ((LambdaMethodDeclaration)method).methodCall.getRootScopeAncestor();
+        if (method != null) return method;
+
+        return getParentScopeAncestor();
     }
 
     public ScopeAncestor getParentScopeAncestor() {
