@@ -26,7 +26,7 @@ class {
 
   ItemCache<Array<HashMap<String, String>>> svgCache = ItemCache.Builder()
     .withLifetime(30000)
-    .withStore(ItemJsonFileCacheStore(File("cache/pill.json")))
+    .withStore(ItemJsonFileCacheStore(File("cache/pills.json")))
     .build()
 
   public construct() {}
