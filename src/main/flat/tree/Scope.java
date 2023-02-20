@@ -343,7 +343,7 @@ public class Scope extends Node {
     public Variable createLocalVariable(Value type) {
         LocalDeclaration decl = new LocalDeclaration(type.getParent(), type.getLocationIn());
 
-        decl.setName("flat_local_" + getParentScopeAncestor().getScope().localVariableID++);
+        decl.setName("flat_local_" + getRootScopeAncestor().getScope().localVariableID++);
 //		decl.setProperty("userMade", false);
         decl.setForceOriginalName(true);
         decl.setType(type.getReturnedNode().getFlatTypeValue(type.getReturnedNode()));
