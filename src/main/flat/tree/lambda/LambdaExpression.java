@@ -106,6 +106,8 @@ public class LambdaExpression extends IIdentifier {
         if (statement.startsWith("(")) {
             endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')') + 1;
 
+            if (endingIndex <= 1) return null;
+
             variables = StringUtils.splitCommas(statement.substring(1, endingIndex - 1), 1);
 
             if (variables.length == 1 && variables[0].length() == 0) {
