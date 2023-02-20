@@ -32,7 +32,7 @@ class {
   public construct() {}
 
   public async run(Request req) -> String {
-    let workflows = workflowsCache.getOrStore({
+    let workflows = workflowsCache.getThenStoreIfInvalid({
       return getOrganizationRepos(ORG_NAME, token: TOKEN)
         .filter({ _.visibility == "public" })
         .flatMapParallel({ getRepositoryWorkflows(ORG_NAME, _.name, token: TOKEN) })
