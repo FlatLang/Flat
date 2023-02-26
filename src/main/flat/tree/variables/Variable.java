@@ -756,7 +756,9 @@ public class Variable extends Identifier {
 
                 if (accessor != null && !accessor.isDisabled() && (isAccessed() || getParentMethod() != accessor)) {
                     if (field.allowsPropertyMethods() && (!field.isTangible() || getParentMethod() != field.getMutatorMethod())) {
-                        MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()", getLocationIn(), true, false, accessor);
+                        String noAwait = isPropertyTrue("noAwait") ? "$" : "";
+
+                        MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()" + noAwait, getLocationIn(), true, false, accessor);
 
                         getParent().replace(this, access);
 

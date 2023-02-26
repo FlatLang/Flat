@@ -1558,7 +1558,14 @@ public class SyntaxTree {
      * @return The Identifier representation of the given statement.
      */
     private static Identifier decodeVariable(Node parent, String statement, Location location, boolean validateAccess) {
-        Identifier node = decodeIdentifier(parent, statement, location, validateAccess);
+        boolean noAwait = statement.length() > 1 && statement.endsWith("$");
+        String noAwaitStatement = statement;
+
+        if (noAwait) {
+            noAwaitStatement = statement.substring(0, statement.length() - 1);
+        }
+
+        Identifier node = decodeIdentifier(parent, noAwaitStatement, location, validateAccess);
 
         if (node == null) {
             Node n = decodeVariable(parent, statement, location, false, false);
@@ -1568,6 +1575,10 @@ public class SyntaxTree {
             }
 
             node = (Identifier) n;
+        }
+
+        if (noAwait && node != null) {
+            node.setProperty("noAwait", true);
         }
 
         return node;
