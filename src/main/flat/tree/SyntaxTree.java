@@ -416,6 +416,7 @@ public class SyntaxTree {
                         }
 
                         c.classInstanceDeclaration.setShorthandAccessor("Class<" + c.getName() + ">(\"" + c.getClassLocation() + "\", " + isInterfaceValue + ", " + extendedClassName + ", " + interfacesArg + ", " + fieldsArg + ", " + functionsArg + extra + ")");
+                        c.classInstanceDeclaration.setType("Class<" + c.getName() + ">");
                         c.getFieldList().addChild(c.classInstanceDeclaration);
                     })),
                 useThreads && STATIC_CLASS_INSTANCE_DECLARATIONS_PARALLEL
