@@ -1990,7 +1990,10 @@ public class SyntaxUtils {
         if (type1 == null || type2 == null) {
             return null;
         }
-        if (!value1.isGenericType() && !value2.isGenericType()) {
+        if (!value1.isGenericType() &&
+            (value1.getGenericTypeArgumentList() == null || value1.getGenericTypeArgumentList().getNumVisibleChildren() == 0) &&
+            !value2.isGenericType() &&
+            (value2.getGenericTypeArgumentList() == null || value2.getGenericTypeArgumentList().getNumVisibleChildren() == 0)) {
             if (type1.isOfType(type2)) {
                 return value2;
             }
