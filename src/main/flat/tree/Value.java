@@ -3,6 +3,7 @@ package flat.tree;
 import flat.Flat;
 import flat.TestContext;
 import flat.ValidationResult;
+import flat.error.SyntaxMessage;
 import flat.tree.FlatParameterList.ReturnParameterList;
 import flat.tree.annotations.NativeAnnotation;
 import flat.tree.annotations.NativeArrayAnnotation;
@@ -1314,6 +1315,12 @@ public abstract class Value extends Node implements AbstractValue {
 //		}
         if (getParentClass() == null) {
             return null;
+        }
+
+        ClassDeclaration ref = getReferenceClass();
+
+        if (ref == null) {
+            SyntaxMessage.error("Could not find declaring type", this);
         }
 
         // use getReferenceNode/getDeclaringClass here??
