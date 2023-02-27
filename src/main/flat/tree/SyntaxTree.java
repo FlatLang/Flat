@@ -513,47 +513,38 @@ public class SyntaxTree {
      *
      * @return The Method representation of the main method.
      */
-    public FlatMethodDeclaration getMainMethod(String mainClass) {
+    public BodyMethodDeclaration getMainMethod(String mainClass) {
         if (mainClass == null) return null;
 
-        MethodDeclaration main = null;
+        BodyMethodDeclaration main = null;
         boolean printedError = false;
 
-        for (int i = 0; i < root.getNumChildren(); i++) {
-            Node child = root.getChild(i);
+        java.util.List<BodyMethodDeclaration> mainMethods = root.getChildStream()
+            .flatMap(Node::getChildStream)
+            .filter(c -> c instanceof ClassDeclaration)
+            .map(c -> (ClassDeclaration)c)
+            .filter(c -> !c.isPropertyTrue("functionMap"))
+            .flatMap(c -> c.getMethodList().getChildTypeStream())
+            .filter(MethodDeclaration::containsBody)
+            .map(m -> (BodyMethodDeclaration)m)
+            .filter(SyntaxUtils::isMainMethod)
+            .filter(m -> m.getParentClass().getClassLocation().equals(mainClass))
+            .collect(Collectors.toList());
 
-            for (int j = 0; j < child.getNumChildren(); j++) {
-                Node child2 = child.getChild(j);
-
-                if (child2 instanceof ClassDeclaration == false) continue;
-
-                ClassDeclaration classDeclaration = (ClassDeclaration) child2;
-
-                if (classDeclaration.isPropertyTrue("functionMap")) continue;
-
-                MethodList methods = classDeclaration.getMethodList();
-
-                for (int k = 0; k < methods.getNumChildren(); k++) {
-                    MethodDeclaration methodDeclaration = methods.getChild(k);
-
-                    if (!methodDeclaration.containsBody()) continue;
-                    if (!SyntaxUtils.isMainMethod((BodyMethodDeclaration) methodDeclaration)) continue;
-                    if (!methodDeclaration.getParentClass().getClassLocation().equals(mainClass)) continue;
-                    if (main != null) {
-                        if (!printedError) {
-                            SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", main, false);
-                        }
-                        SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", methodDeclaration, false);
-
-                        printedError = true;
+            for (BodyMethodDeclaration method : mainMethods) {
+                if (main != null) {
+                    if (!printedError) {
+                        SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", main, false);
                     }
+                    SyntaxMessage.error("Multiple main methods found. Please specify which one you want to run by passing a -main argument to the compiler", method, false);
 
-                    main = methodDeclaration;
+                    printedError = true;
                 }
-            }
-        }
 
-        return (FlatMethodDeclaration) main;
+                main = method;
+            }
+
+        return main;
     }
 
     /**
