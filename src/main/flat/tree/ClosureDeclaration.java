@@ -169,6 +169,7 @@ public class ClosureDeclaration extends Parameter implements CallableMethod, Clo
 
             if (n.decodeSignature(statement, require) && n.validateDeclaration(statement, bounds, require)) {
                 n.checkExternalType();
+                n.genericParameter = n.searchGenericTypeParameter(0);
 
                 return n;
             }
