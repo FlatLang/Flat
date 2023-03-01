@@ -2006,7 +2006,7 @@ public class SyntaxUtils {
 
         while (type2 != null) {
             if (type1.isOfType(type2)) {
-                IIdentifier value = new IIdentifier(value2.getParent(), value2.getLocationIn());
+                GenericTypeArgument value = new GenericTypeArgument(value2.getParent(), value2.getLocationIn());
                 value.setType(value1);
                 value.setTypeValue(type2.getType());
 
@@ -2020,7 +2020,7 @@ public class SyntaxUtils {
 
         while (type1 != null) {
             if (type2.isOfType(type1)) {
-                IValue value = new IValue(value2.getParent(), value2.getLocationIn());
+                GenericTypeArgument value = new GenericTypeArgument(value2.getParent(), value2.getLocationIn());
                 value.setType(value1);
                 value.setTypeValue(type1.getType());
 
