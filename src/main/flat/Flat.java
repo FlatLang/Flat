@@ -402,7 +402,7 @@ public class Flat {
                 System.exit(6);
             }
         } catch (IOException io) {
-
+            throw new RuntimeException(io);
         }
 
         //codeGeneratorEngine = new CCodeGeneratorEngine(this);
