@@ -183,12 +183,6 @@ public class Flat {
         );
     }
 
-    private static <T> T[] concatArrays(T[] array1, T[] array2) {
-        T[] result = Arrays.copyOf(array1, array1.length + array2.length);
-        System.arraycopy(array2, 0, result, array1.length, array2.length);
-        return result;
-    }
-
     /**
      * Method called whenever the compiler is invoked. Supplies the
      * needed information for compiling the given files.
@@ -205,24 +199,16 @@ public class Flat {
                     airshipExectuable += ".cmd";
                 }
 
-                String[] execArgs = new String[]{
-                    airshipExectuable,
-                    "install",
-                    "--debug",
-                    "-q"
-                };
+                ArrayList<String> execArgs = new ArrayList<>();
 
-                if (args.length > 2 && args[2].equalsIgnoreCase("test")) {
-                    execArgs = new String[]{
-                        airshipExectuable,
-                        "install",
-                        "test",
-                        "--debug",
-                        "-q"
-                    };
-                }
+                execArgs.add(airshipExectuable);
 
-                ProcessResponse response = exec(execArgs, new File(args[1]));
+                execArgs.addAll(Arrays.asList(args).subList(2, args.length));
+
+                execArgs.add("--debug");
+                execArgs.add("-q");
+
+                ProcessResponse response = exec(execArgs.toArray(new String[0]), new File(args[1]));
 
                 if (response.exitCode != 0) {
                     stream(response.stderr).forEach(System.err::println);
@@ -230,8 +216,7 @@ public class Flat {
                 }
 
                 String argsString = response.stdout[response.stdout.length - 1].trim();
-                String[] extraArgs = Arrays.copyOfRange(args, Math.min(args.length, 3), args.length);
-                args = concatArrays(StringUtils.splitWhitespace(argsString), extraArgs);
+                args = StringUtils.splitWhitespace(argsString);
                 args = Arrays.copyOfRange(args, 3, args.length);
                 args = Arrays.stream(args).map(StringUtils::removeSurroundingQuotes).toArray(String[]::new);
             } catch (IOException | InterruptedException e) {
@@ -240,12 +225,6 @@ public class Flat {
         }
 
         Flat flat = new Flat(args);
-        instance = flat;
-
-//		if (args.length > 0)
-//		{
-//			args = Arrays.copyOfRange(args, 1, args.length);
-//		}
 
         int returnCode = 0;
 
@@ -273,6 +252,8 @@ public class Flat {
      * compilation process.
      */
     public Flat(String[] args) {
+        instance = this;
+
         if (BENCHMARK > 0) {
             try {
                 System.out.println("Preparing Benchmark...");
