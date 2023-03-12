@@ -1141,6 +1141,32 @@ public abstract class Node implements Listenable, Annotatable {
         return result;
     }
 
+    public ArrayList<Node> getAncestors() {
+        return getAncestors(false);
+    }
+
+    public ArrayList<Node> getAncestors(boolean inclusive) {
+        ArrayList<Node> ancestors = new ArrayList<>();
+
+        Node current = inclusive ? this : getParent();
+
+        while (current != null) {
+            ancestors.add(current);
+
+            current = current.getParent();
+        }
+
+        return ancestors;
+    }
+
+    public Stream<Node> getAncestorsStream() {
+        return getAncestorsStream(false);
+    }
+
+    public Stream<Node> getAncestorsStream(boolean inclusive) {
+        return getAncestors(inclusive).stream();
+    }
+
     public Node getNextNode() {
         return getAdjacentNode(1);
     }
