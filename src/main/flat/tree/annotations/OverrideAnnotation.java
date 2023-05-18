@@ -33,25 +33,25 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
     }
 
     /**
-     * Decode the given statement into a {@link OverrideAnnotation} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link OverrideAnnotation} instance, if possible. If it is
+     * not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent     The parent node of the statement.
-     * @param parameters The statement to try to decode into a
-     *                   {@link OverrideAnnotation} instance.
-     * @param location   The location of the statement in the source code.
-     * @param require    Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link OverrideAnnotation}.
+     * @param parent The parent node of the statement.
+     * @param parameters The statement to try to decode into a {@link OverrideAnnotation} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link OverrideAnnotation}.
      */
-    public static OverrideAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static OverrideAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Override")) {
             OverrideAnnotation n = new OverrideAnnotation(parent, location);
 
@@ -81,9 +81,11 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
             FlatMethodDeclaration[] methods = new FlatMethodDeclaration[0];
 
             if (node instanceof FieldDeclaration) {
-                methods = new FlatMethodDeclaration[]{((FieldDeclaration) node).getAccessorMethod(), ((FieldDeclaration) node).getMutatorMethod()};
+                methods =
+                    new FlatMethodDeclaration[] {((FieldDeclaration) node).getAccessorMethod(),
+                        ((FieldDeclaration) node).getMutatorMethod()};
             } else if (node instanceof FlatMethodDeclaration) {
-                methods = new FlatMethodDeclaration[]{(FlatMethodDeclaration) node};
+                methods = new FlatMethodDeclaration[] {(FlatMethodDeclaration) node};
             } else {
                 invalidApplication(node, true);
             }
@@ -94,7 +96,8 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
                 if (node instanceof FieldDeclaration) {
                     SyntaxMessage.error("Field '" + node + "' does not override any fields", node);
                 } else {
-                    SyntaxMessage.error("Method '" + methods[0] + "' does not override any methods", methods[0]);
+                    SyntaxMessage.error("Method '" + methods[0] + "' does not override any methods",
+                        methods[0]);
                 }
             }
         }
@@ -115,7 +118,8 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public OverrideAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public OverrideAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         OverrideAnnotation node = new OverrideAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -129,13 +133,13 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
     }
 
     /**
-     * Fill the given {@link OverrideAnnotation} with the data that is in the
-     * specified node.
+     * Fill the given {@link OverrideAnnotation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public OverrideAnnotation cloneTo(OverrideAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public OverrideAnnotation cloneTo(OverrideAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -144,11 +148,10 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
     }
 
     /**
-     * Test the {@link OverrideAnnotation} class type to make sure everything
-     * is working properly.
+     * Test the {@link OverrideAnnotation} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -163,6 +166,7 @@ public class OverrideAnnotation extends Annotation implements ModifierAnnotation
 
     @Override
     public String[] getAliases() {
-        return new String[]{"override"};
+        return new String[] {"override"};
     }
 }
+

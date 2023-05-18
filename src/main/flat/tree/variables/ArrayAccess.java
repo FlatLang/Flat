@@ -6,10 +6,9 @@ import flat.tree.*;
 import flat.util.*;
 
 /**
- * Value extension that keeps track of any time an array is being
- * accessed. For example, the statement: "args[34]" is an array access.
- * Obviously the previous code segment does nothing, however these nodes
- * will be intertwined with method calls, assignments, if statements, etc.
+ * Value extension that keeps track of any time an array is being accessed. For example, the
+ * statement: "args[34]" is an array access. Obviously the previous code segment does nothing,
+ * however these nodes will be intertwined with method calls, assignments, if statements, etc.
  *
  * @author Braden Steffaniak
  * @since v0.2 Mar 24, 2014 at 10:45:29 PM
@@ -49,21 +48,19 @@ public class ArrayAccess extends Node implements ArrayCompatible {
     }
 
     /**
-     * Decode the given statement into an ArrayAccess if possible.
-     * If it is not possible, the method will return null.<br>
+     * Decode the given statement into an ArrayAccess if possible. If it is not possible, the method
+     * will return null.<br>
      * <br>
      * An example input would be: "args[34]"
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  ArrayAccess instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a ArrayAccess.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a ArrayAccess instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a ArrayAccess.
      */
-    public static Node decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Node decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (SyntaxUtils.isValidArrayAccess(statement)) {
             ArrayAccess n = new ArrayAccess(parent, location);
 
@@ -93,18 +90,21 @@ public class ArrayAccess extends Node implements ArrayCompatible {
                     if (!clazz.containsArrayBracketOverload()) {
                         reference.getTypeClass(false);
                         clazz.containsArrayBracketOverload();
-                        SyntaxMessage.error("Type '" + clazz.getName() + "' does not implement array brackets", n);
+                        SyntaxMessage.error(
+                            "Type '" + clazz.getName() + "' does not implement array brackets", n);
                     }
 
                     if (!clazz.getArrayBracketOverload().alreadyDecoded()) {
-                        ArrayBracketOverload overload = reference.getTypeClass().getArrayBracketOverload();
+                        ArrayBracketOverload overload =
+                            reference.getTypeClass().getArrayBracketOverload();
 
                         if (overload != null) {
                             overload.decodeArrowBinding();
                         }
                     }
 
-                    MethodCall call = MethodCall.decodeStatement(reference, "get(" + data + ")", location, require, false, clazz.getArrayAccessorMethod());
+                    MethodCall call = MethodCall.decodeStatement(reference, "get(" + data + ")",
+                        location, require, false, clazz.getArrayAccessorMethod());
 
                     if (overloadCall == null) {
                         overloadCall = call;
@@ -122,10 +122,12 @@ public class ArrayAccess extends Node implements ArrayCompatible {
                     Value created = Literal.decodeStatement(n, data, newLoc, require, true);
 
                     if (created == null) {
-                        created = SyntaxTree.decodeValue(n.getAncestorWithScope(), data, newLoc, require);
+                        created =
+                            SyntaxTree.decodeValue(n.getAncestorWithScope(), data, newLoc, require);
 
                         if (created == null) {
-                            SyntaxMessage.queryError("Unknown array access index '" + data + "'", n, newLoc, require);
+                            SyntaxMessage.queryError("Unknown array access index '" + data + "'", n,
+                                newLoc, require);
 
                             return null;
                         }
@@ -156,7 +158,8 @@ public class ArrayAccess extends Node implements ArrayCompatible {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ArrayAccess clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArrayAccess clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ArrayAccess node = new ArrayAccess(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -170,8 +173,7 @@ public class ArrayAccess extends Node implements ArrayCompatible {
     }
 
     /**
-     * Fill the given {@link ArrayAccess} with the data that is in the
-     * specified node.
+     * Fill the given {@link ArrayAccess} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -183,11 +185,10 @@ public class ArrayAccess extends Node implements ArrayCompatible {
     }
 
     /**
-     * Test the ArrayAccess class type to make sure everything
-     * is working properly.
+     * Test the ArrayAccess class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -195,3 +196,4 @@ public class ArrayAccess extends Node implements ArrayCompatible {
         return null;
     }
 }
+

@@ -29,35 +29,39 @@ public class ClosureVariable extends Variable {
     }
 
     /**
-     * Decode the given statement into a {@link ClosureVariable} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link ClosureVariable} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link ClosureVariable} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link ClosureVariable}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link ClosureVariable} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link ClosureVariable}.
      */
-    public static VariableDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static VariableDeclaration decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         FieldDeclaration temp = new FieldDeclaration(parent, location);
         statement = temp.parseModifiers(statement);
 
-        FlatMethodDeclaration method = FlatMethodDeclaration.decodeStatement(parent, statement, location, false);
+        FlatMethodDeclaration method =
+            FlatMethodDeclaration.decodeStatement(parent, statement, location, false);
 
         if (method != null) {
-            VarAnnotation var = (VarAnnotation) temp.getAnnotationOfType(VarAnnotation.class, false, true);
-            FinalAnnotation fin = (FinalAnnotation) temp.getAnnotationOfType(FinalAnnotation.class, false, true);
+            VarAnnotation var =
+                (VarAnnotation) temp.getAnnotationOfType(VarAnnotation.class, false, true);
+            FinalAnnotation fin =
+                (FinalAnnotation) temp.getAnnotationOfType(FinalAnnotation.class, false, true);
 
-            if (var != null || fin != null && (fin.getAliasUsed() == null || !fin.getAliasUsed().equals("final"))) {
+            if (var != null || fin != null
+                && (fin.getAliasUsed() == null || !fin.getAliasUsed().equals("final"))) {
                 Node scopeAncestor = parent.getAncestorWithScope();
 
                 VariableDeclaration node;
@@ -120,7 +124,8 @@ public class ClosureVariable extends Variable {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ClosureVariable clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ClosureVariable clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ClosureVariable node = new ClosureVariable(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -134,13 +139,13 @@ public class ClosureVariable extends Variable {
     }
 
     /**
-     * Fill the given {@link ClosureVariable} with the data that is in the
-     * specified node.
+     * Fill the given {@link ClosureVariable} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ClosureVariable cloneTo(ClosureVariable node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ClosureVariable cloneTo(ClosureVariable node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.type = type;
@@ -149,11 +154,10 @@ public class ClosureVariable extends Variable {
     }
 
     /**
-     * Test the {@link ClosureVariable} class type to make sure everything
-     * is working properly.
+     * Test the {@link ClosureVariable} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -161,3 +165,4 @@ public class ClosureVariable extends Variable {
         return null;
     }
 }
+

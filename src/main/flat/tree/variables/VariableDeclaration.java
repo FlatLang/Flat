@@ -17,9 +17,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * Identifier extension that represents something that returns a value.
- * For the rules on what can and cannot be an value node, refer to
- * {@link #setType(java.lang.String)}
+ * Identifier extension that represents something that returns a value. For the rules on what can
+ * and cannot be an value node, refer to {@link #setType(java.lang.String)}
  *
  * @author Braden Steffaniak
  * @since v0.2.4 May 2, 2014 at 11:14:37 PM
@@ -31,7 +30,8 @@ public class VariableDeclaration extends IIdentifier {
 
     public String[] extraDeclarations;
 
-    public volatile java.util.List<Variable> references = Collections.synchronizedList(new ArrayList<>());
+    public volatile java.util.List<Variable> references =
+        Collections.synchronizedList(new ArrayList<>());
 
     /**
      * @see Node#Node(Node, Location)
@@ -39,7 +39,8 @@ public class VariableDeclaration extends IIdentifier {
     public VariableDeclaration(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
 
-        GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
+        GenericTypeArgumentList implementation =
+            new GenericTypeArgumentList(this, locationIn.asNew());
         addChild(implementation, this);
 
         extraDeclarations = new String[0];
@@ -64,7 +65,8 @@ public class VariableDeclaration extends IIdentifier {
             return false;
         }
 
-        return getTypeClass() != null && getTypeClass().isImmutable() || getImmutableAnnotation() != null;
+        return getTypeClass() != null && getTypeClass().isImmutable()
+            || getImmutableAnnotation() != null;
     }
 
     public ImmutableAnnotation getImmutableAnnotation() {
@@ -130,16 +132,20 @@ public class VariableDeclaration extends IIdentifier {
      * Get the Bounds that contains the extra field declarations.<br>
      * <br>
      * For example:<br>
-     * <blockquote><pre>
-     * public String firstName, lastName, middleI</pre></blockquote>
-     * In the above Field Declaration, the '<code><i>lastName, middleI</i></code>' part of
-     * the declaration is classified as an 'extra' declaration. The Bounds would start
+     * <blockquote>
+     * 
+     * <pre>
+     * public String firstName, lastName, middleI
+     * </pre>
+     * 
+     * </blockquote> In the above Field Declaration, the '<code><i>lastName, middleI</i></code>'
+     * part of the declaration is classified as an 'extra' declaration. The Bounds would start
      * before the comma after '<code><i>firstName</i></code>' and end after
      * '<code><i>lastName, middleI</i></code>' section.
      *
      * @param statement The statement to search for the extra declarations in.
-     * @return The Bounds containing the extra declarations. If there are no
-     * extra declarations, then Bounds.EMPTY is returned.
+     * @return The Bounds containing the extra declarations. If there are no extra declarations,
+     *         then Bounds.EMPTY is returned.
      */
     public Bounds findExtraDeclarations(String statement) {
         String declarations[] = StringUtils.splitCommas(statement, 1);
@@ -189,8 +195,8 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Get whether or not the variable is external. For more information
-     * on external variables, see {@link #setExternal(boolean)}.
+     * Get whether or not the variable is external. For more information on external variables, see
+     * {@link #setExternal(boolean)}.
      *
      * @return Whether or not the variable is external.
      */
@@ -213,13 +219,13 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Set whether or not the variable is external. A variable is external
-     * if it is referenced from a language outside of Flat. For example,
-     * a variable from the C language. Furthermore, a variable is external
-     * if it begins with an externally imported C file's name.<br>
+     * Set whether or not the variable is external. A variable is external if it is referenced from
+     * a language outside of Flat. For example, a variable from the C language. Furthermore, a
+     * variable is external if it begins with an externally imported C file's name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * import "externalFile.h";
      *
      * ...
@@ -231,10 +237,12 @@ public class VariableDeclaration extends IIdentifier {
      *
      * 	// This is the external variable assignment.
      * 	varName = externalFile.variableInstance;
-     * }</pre></blockquote>
-     * In this example, 'externalFile' is the C header file that is
-     * imported. 'variableInstance' is the name of a variable that
-     * is contained within the imported header file.<br>
+     * }
+     * </pre>
+     * 
+     * </blockquote> In this example, 'externalFile' is the C header file that is imported.
+     * 'variableInstance' is the name of a variable that is contained within the imported header
+     * file.<br>
      *
      * @param external Whether or not the variable will be external.
      */
@@ -245,9 +253,8 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Get whether or not the variable's value is volatile. This is used
-     * for exception handling to make sure local variables keep their
-     * values after an exception has been thrown.
+     * Get whether or not the variable's value is volatile. This is used for exception handling to
+     * make sure local variables keep their values after an exception has been thrown.
      *
      * @return Whether or not the variable's value is volatile.
      */
@@ -265,12 +272,10 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Set whether or not the variable's value is volatile. This is used
-     * for exception handling to make sure local variables keep their
-     * values after an exception has been thrown.
+     * Set whether or not the variable's value is volatile. This is used for exception handling to
+     * make sure local variables keep their values after an exception has been thrown.
      *
-     * @param volatileVal Whether or not the variable's value
-     *                    is volatile.
+     * @param volatileVal Whether or not the variable's value is volatile.
      */
     public void setVolatile(boolean volatileVal) {
         this.volatileVal = volatileVal;
@@ -289,11 +294,14 @@ public class VariableDeclaration extends IIdentifier {
     /**
      * Set a specified attribute to true.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * private static int index;</pre></blockquote>
-     * <u><code>private</code></u> sets the visibility of the declaration
-     * to private. <u><code>static</code></u> sets the variable as static.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * private static int index;
+     * </pre>
+     * 
+     * </blockquote> <u><code>private</code></u> sets the visibility of the declaration to private.
+     * <u><code>static</code></u> sets the variable as static.
      *
      * @param attribute The attribute to set true.
      */
@@ -304,17 +312,18 @@ public class VariableDeclaration extends IIdentifier {
     /**
      * Set a specified attribute to true.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * private static int index;</pre></blockquote>
-     * <u><code>private</code></u> is the first attribute (index: 0) that
-     * sets the visibility of the declaration to private.
-     * "<u><code>static</code></u>" is the second attribute (index: 1) that
-     * sets the variable as static.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * private static int index;
+     * </pre>
+     * 
+     * </blockquote> <u><code>private</code></u> is the first attribute (index: 0) that sets the
+     * visibility of the declaration to private. "<u><code>static</code></u>" is the second
+     * attribute (index: 1) that sets the variable as static.
      *
      * @param attribute The attribute to set true.
-     * @param argNum    The index of the attribute in the order that it
-     *                  came in.
+     * @param argNum The index of the attribute in the order that it came in.
      * @return Whether or not an attribute was successfully set.
      */
     public boolean setAttribute(String attribute, int argNum) {
@@ -341,12 +350,11 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Compare the specified variable with the given one to see if they
-     * come from the same declaration.
+     * Compare the specified variable with the given one to see if they come from the same
+     * declaration.
      *
      * @param other The variable to compare with.
-     * @return Whether or not the variables come from the same
-     * declaration.
+     * @return Whether or not the variables come from the same declaration.
      */
     public boolean isSameVariable(Variable other) {
         VariableDeclaration second = other.getDeclaration();
@@ -369,13 +377,12 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Check to see if the statement is declaring an array.
-     * e.g. "<u><code>String names[]</code></u>"
+     * Check to see if the statement is declaring an array. e.g.
+     * "<u><code>String names[]</code></u>"
      *
-     * @param statement      The statement possibly containing array brackets.
-     * @param index          The index to start the search for array brackets at.
-     * @param rightDelimiter The right delimiter possibly containing
-     *                       array brackets.
+     * @param statement The statement possibly containing array brackets.
+     * @param index The index to start the search for array brackets at.
+     * @param rightDelimiter The right delimiter possibly containing array brackets.
      */
     public boolean checkArray(String statement, int index, String rightDelimiter, boolean require) {
         // If it is an array declaration.
@@ -383,7 +390,8 @@ public class VariableDeclaration extends IIdentifier {
             int dimensions = SyntaxUtils.findArrayDimensions(statement, index, false);
 
             if (dimensions < 0) {
-                return SyntaxMessage.queryError("Array brackets cannot contain data", this, require);
+                return SyntaxMessage.queryError("Array brackets cannot contain data", this,
+                    require);
             }
 
             setArrayDimensions(getArrayDimensions() + dimensions);
@@ -393,10 +401,9 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Generate a usable Variable instance that refers to the specified
-     * VariableDeclaration.
+     * Generate a usable Variable instance that refers to the specified VariableDeclaration.
      *
-     * @param parent   The parent of the newly generated Variable.
+     * @param parent The parent of the newly generated Variable.
      * @param location The location of the newly generated Variable.
      * @return The newly generated Variable.
      */
@@ -407,11 +414,10 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Generate a usable Variable instance that refers to the specified
-     * VariableDeclaration from the given Variable instance.
+     * Generate a usable Variable instance that refers to the specified VariableDeclaration from the
+     * given Variable instance.
      *
-     * @param toVar The Variable to set up as a reference to the
-     *              VariableDeclaration.
+     * @param toVar The Variable to set up as a reference to the VariableDeclaration.
      * @return The correctly set up Variable.
      */
     public Variable generateUsableVariable(Variable toVar) {
@@ -512,7 +518,8 @@ public class VariableDeclaration extends IIdentifier {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public VariableDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public VariableDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         VariableDeclaration node = new VariableDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -526,13 +533,13 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Fill the given {@link VariableDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link VariableDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public VariableDeclaration cloneTo(VariableDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public VariableDeclaration cloneTo(VariableDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.external = external;
@@ -550,11 +557,10 @@ public class VariableDeclaration extends IIdentifier {
     }
 
     /**
-     * Test the VariableDeclaration class type to make sure everything
-     * is working properly.
+     * Test the VariableDeclaration class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

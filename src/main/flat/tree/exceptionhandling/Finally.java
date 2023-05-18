@@ -5,9 +5,9 @@ import flat.tree.Node;
 import flat.util.Location;
 
 /**
- * ExceptionHandler extension that represents the declaration of a
- * finally node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * ExceptionHandler extension that represents the declaration of a finally node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Mar 22, 2014 at 4:02:21 PM
@@ -22,20 +22,18 @@ public class Finally extends ExceptionHandler {
     }
 
     /**
-     * Decode the given statement into a Finally instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a Finally instance, if possible. If it is not possible, this
+     * method returns null. <br>
      * The only acceptable input is "finally"
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Finally instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Finally.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Finally instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Finally.
      */
-    public static Finally decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Finally decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.equals("finally")) {
             Finally n = new Finally(parent, location);
 
@@ -46,7 +44,8 @@ public class Finally extends ExceptionHandler {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         builder.append("finally");
 
         if (outputChildren) {
@@ -62,7 +61,8 @@ public class Finally extends ExceptionHandler {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Finally clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Finally clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Finally node = new Finally(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -76,8 +76,7 @@ public class Finally extends ExceptionHandler {
     }
 
     /**
-     * Fill the given {@link Finally} with the data that is in the
-     * specified node.
+     * Fill the given {@link Finally} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -89,11 +88,10 @@ public class Finally extends ExceptionHandler {
     }
 
     /**
-     * Test the Finally class type to make sure everything
-     * is working properly.
+     * Test the Finally class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -101,3 +99,4 @@ public class Finally extends ExceptionHandler {
         return null;
     }
 }
+

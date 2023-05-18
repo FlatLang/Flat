@@ -24,7 +24,8 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation {
         super(temporaryParent, locationIn);
     }
 
-    public static StaticAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static StaticAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Static")) {
             StaticAnnotation n = new StaticAnnotation(parent, location);
 
@@ -67,7 +68,8 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public StaticAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public StaticAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         StaticAnnotation node = new StaticAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -77,7 +79,8 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public StaticAnnotation cloneTo(StaticAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public StaticAnnotation cloneTo(StaticAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -87,6 +90,7 @@ public class StaticAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"static"};
+        return new String[] {"static"};
     }
 }
+

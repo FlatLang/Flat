@@ -37,7 +37,8 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
         this.validated = validated;
     }
 
-    public static PureFunctionAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static PureFunctionAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("Pure")) {
             PureFunctionAnnotation n = new PureFunctionAnnotation(parent, location);
 
@@ -60,13 +61,17 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
         if (result.skipValidation()) {
             return result;
         }
-        if (true) return result;
+        if (true)
+            return result;
         if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && !validated) {
             if (getParent() instanceof FieldDeclaration) {
                 FieldDeclaration field = (FieldDeclaration) getParent();
 
                 if (field.getAccessorMethod() == null || field.getMutatorMethod() == null) {
-                    SyntaxMessage.error("Field '" + field.getDeclaringClass().getName() + "." + field.getName() + "' which does not contain an accessor or mutator function cannot contain pure annotation", field, false);
+                    SyntaxMessage.error("Field '" + field.getDeclaringClass().getName() + "."
+                        + field.getName()
+                        + "' which does not contain an accessor or mutator function cannot contain pure annotation",
+                        field, false);
 
                     result.errorOccurred = true;
 
@@ -91,7 +96,10 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
                     if (var instanceof MethodCall) {
                         MethodCall call = (MethodCall) var;
 
-                        SyntaxMessage.error("Impure function '" + call.getDeclaringClass().getName() + "." + call.getName() + "' cannot be called in pure function '" + method.getDeclaringClass().getName() + "." + method.getName() + "'", call, false);
+                        SyntaxMessage.error("Impure function '" + call.getDeclaringClass().getName()
+                            + "." + call.getName() + "' cannot be called in pure function '"
+                            + method.getDeclaringClass().getName() + "." + method.getName() + "'",
+                            call, false);
                     } else {
                         if (var.getDeclaration() instanceof FieldDeclaration) {
                             String reason = "";
@@ -105,9 +113,15 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
 
                             reason = Character.toUpperCase(reason.charAt(0)) + reason.substring(1);
 
-                            SyntaxMessage.error(reason + "field '" + var.getName() + "' cannot be referenced from pure function '" + method.getDeclaringClass().getName() + "." + method.getName() + "'", var, false);
+                            SyntaxMessage.error(reason + "field '" + var.getName()
+                                + "' cannot be referenced from pure function '"
+                                + method.getDeclaringClass().getName() + "." + method.getName()
+                                + "'", var, false);
                         } else {
-                            SyntaxMessage.error("Property '" + var.getName() + "' cannot be modified in pure function '" + method.getDeclaringClass().getName() + "." + method.getName() + "'", var, false);
+                            SyntaxMessage.error("Property '" + var.getName()
+                                + "' cannot be modified in pure function '"
+                                + method.getDeclaringClass().getName() + "." + method.getName()
+                                + "'", var, false);
                         }
                     }
 
@@ -123,7 +137,11 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
                 final ClosureDeclaration closure = (ClosureDeclaration) declaration;
 
                 validatePure(call -> {
-                    SyntaxMessage.error("Impure function '" + call.getDeclaringClass().getName() + "." + call.getName() + "' cannot be passed as required pure closure '" + closure.getDeclaringClass().getName() + "." + closure.getName() + "'", call, false);
+                    SyntaxMessage.error(
+                        "Impure function '" + call.getDeclaringClass().getName() + "."
+                            + call.getName() + "' cannot be passed as required pure closure '"
+                            + closure.getDeclaringClass().getName() + "." + closure.getName() + "'",
+                        call, false);
 
                     result.errorOccurred = true;
                 }, closure, true);
@@ -134,12 +152,14 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
             } else if (declaration instanceof ExternalMethodDeclaration) {
 
             } else {
-                SyntaxMessage.error("Invalid pure declaration '" + declaration.getName() + "'", (Node) declaration, false);
+                SyntaxMessage.error("Invalid pure declaration '" + declaration.getName() + "'",
+                    (Node) declaration, false);
 
                 result.errorOccurred = true;
             }
 
-            // SyntaxMessage.error("Closure purity not implemented yet for '" + call.getName() + "' in '" + declaration.getName() + "'", call, false);
+            // SyntaxMessage.error("Closure purity not implemented yet for '" + call.getName() + "'
+            // in '" + declaration.getName() + "'", call, false);
         }
 
         return result;
@@ -150,8 +170,10 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
         }, method, allowInstanceModification);
     }
 
-    public boolean validatePure(Consumer<Variable> onImpure, MethodDeclaration method, boolean allowInstanceModification) {
-        if (method.isPure() && (method.getPureAnnotation() == null || method.getPureAnnotation().validated)) {
+    public boolean validatePure(Consumer<Variable> onImpure, MethodDeclaration method,
+        boolean allowInstanceModification) {
+        if (method.isPure()
+            && (method.getPureAnnotation() == null || method.getPureAnnotation().validated)) {
             return true;
         } else if (method.isImpure()) {
             return false;
@@ -159,7 +181,7 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
             return false;
         }
 
-        final boolean[] pure = new boolean[]{true};
+        final boolean[] pure = new boolean[] {true};
 
         if (method instanceof BodyMethodDeclaration) {
             ArrayList<MethodCall> calls = new ArrayList<>();
@@ -184,12 +206,15 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
                             }
                         }
 
-                        Variable ref = var.getAccessingNode() instanceof Variable ? (Variable) var.getAccessingNode() : null;
+                        Variable ref = var.getAccessingNode() instanceof Variable
+                            ? (Variable) var.getAccessingNode()
+                            : null;
 
                         // Should this reference check be recursive?
                         if ((ref == null || (ref.getDeclaration().getParentMethod() != method)) &&
                             !var.isFinal() && var.isBeingModified()) {
-                            if (!allowInstanceModification || var.getDeclaration().getParentClass() != method.getDeclaringClass()) {
+                            if (!allowInstanceModification || var.getDeclaration()
+                                .getParentClass() != method.getDeclaringClass()) {
                                 detach();
                                 pure[0] = false;
 
@@ -201,8 +226,12 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
             }
 
             calls.forEach(x -> {
-                Variable ref = x.getReferenceNode() instanceof Variable ? (Variable) x.getReferenceNode() : null;
-                boolean allowInstance = ref != null && ref.getDeclaration().getParentMethod() == method || x.getReferenceNode() instanceof Instantiation;
+                Variable ref =
+                    x.getReferenceNode() instanceof Variable ? (Variable) x.getReferenceNode()
+                        : null;
+                boolean allowInstance =
+                    ref != null && ref.getDeclaration().getParentMethod() == method
+                        || x.getReferenceNode() instanceof Instantiation;
 
                 if (!validatePure(x.getInferredDeclaration(), allowInstance)) {
                     validatePure(x.getInferredDeclaration(), allowInstance);
@@ -232,16 +261,18 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
         }, closure, allowInstanceModification);
     }
 
-    public boolean validatePure(Consumer<Variable> onImpure, ClosureDeclaration closure, boolean allowInstanceModification) {
+    public boolean validatePure(Consumer<Variable> onImpure, ClosureDeclaration closure,
+        boolean allowInstanceModification) {
         final int index = closure.getParentMethod().getParameterList().getVisibleIndex(this);
         final FlatMethodDeclaration parentMethod = closure.getParentMethod();
 
         final PureFunctionAnnotation self = this;
 
-        final boolean[] pure = new boolean[]{true};
+        final boolean[] pure = new boolean[] {true};
 
         Arrays.stream(parentMethod.getReferencesIncludingOverrides()).forEach(x -> {
-            Parameter param = (Parameter) x.getCallableDeclaration().getParameterList().getParameter(index);
+            Parameter param =
+                (Parameter) x.getCallableDeclaration().getParameterList().getParameter(index);
 
             Value argument = x.getArgument(param.getName());
 
@@ -258,8 +289,10 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
                     self.detach();
                     pure[0] = false;
                 }
-            } else if (argument instanceof Variable && ((Variable) argument).getDeclaration() instanceof ClosureDeclaration) {
-                ClosureDeclaration refClosure = (ClosureDeclaration) ((Variable) argument).getDeclaration();
+            } else if (argument instanceof Variable
+                && ((Variable) argument).getDeclaration() instanceof ClosureDeclaration) {
+                ClosureDeclaration refClosure =
+                    (ClosureDeclaration) ((Variable) argument).getDeclaration();
 
                 if (refClosure.getParentMethod() != argument.getParentMethod()) {
                     if (!validatePure(refClosure, false)) {
@@ -270,10 +303,13 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
             } else if (argument == null) {
 
             } else {
-//				SyntaxMessage.error("Invalid argument '" + param.getName() + "' given for pure closure '" + closure.getDeclaringClass().getName() + "." + closure.getName() + "'", param, false);
-//				
-//				result.errorOccurred = true;
-                throw new UnimplementedOperationException("Unknown type " + argument.getClass().getTypeName());
+                // SyntaxMessage.error("Invalid argument '" + param.getName() + "' given for pure
+                // closure '" + closure.getDeclaringClass().getName() + "." + closure.getName() +
+                // "'", param, false);
+                //
+                // result.errorOccurred = true;
+                throw new UnimplementedOperationException(
+                    "Unknown type " + argument.getClass().getTypeName());
             }
         });
 
@@ -297,7 +333,8 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
     }
 
     @Override
-    public PureFunctionAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public PureFunctionAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         PureFunctionAnnotation node = new PureFunctionAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -307,7 +344,8 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
         return cloneTo(node, true, true);
     }
 
-    public PureFunctionAnnotation cloneTo(PureFunctionAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public PureFunctionAnnotation cloneTo(PureFunctionAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -317,6 +355,7 @@ public class PureFunctionAnnotation extends Annotation implements ModifierAnnota
 
     @Override
     public String[] getAliases() {
-        return new String[]{"pure"};
+        return new String[] {"pure"};
     }
 }
+

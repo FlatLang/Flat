@@ -4,9 +4,8 @@ import flat.TestContext;
 import flat.util.Location;
 
 /**
- * Value extension that represents an Identifier. For the rules on
- * what can and cannot be an Identifier, refer to
- * {@link Identifier#setName(java.lang.String) setName}
+ * Value extension that represents an Identifier. For the rules on what can and cannot be an
+ * Identifier, refer to {@link Identifier#setName(java.lang.String) setName}
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:00:19 PM
@@ -17,11 +16,11 @@ public class IIdentifier extends Identifier {
 
     // Value data..... ...
     // Dont forget about IValue!!!!
-//	private byte	dataType;
-//	
-//	private int		arrayDimensions;
-//	
-//	private String	type;
+    // private byte dataType;
+    //
+    // private int arrayDimensions;
+    //
+    // private String type;
 
     public Type type;
 
@@ -79,7 +78,9 @@ public class IIdentifier extends Identifier {
     @Override
     // Dont forget about IValue!!!!
     public int getArrayDimensions() {
-        return type != null ? type.arrayDimensions : 0;//type instanceof ArrayType ? ((ArrayType)type).arrayDimensions - getArrayAccessDimensions() : 0;
+        return type != null ? type.arrayDimensions : 0;// type instanceof ArrayType ?
+                                                       // ((ArrayType)type).arrayDimensions -
+                                                       // getArrayAccessDimensions() : 0;
     }
 
     /**
@@ -88,34 +89,21 @@ public class IIdentifier extends Identifier {
     @Override
     // Dont forget about IValue!!!!
     public void setArrayDimensions(int arrayDimensions) {
-		/*if (arrayDimensions > 0)
-		{
-			String value = type != null ? type.value : null;
-			byte dataType = type != null ? type.dataType : -1;
-			
-			if (type instanceof ArrayType == false)
-			{
-				ArrayType newType = new ArrayType();
-				newType.type = type;
-				
-				type = newType;
-			}
-			
-			((ArrayType)type).arrayDimensions = arrayDimensions;
-			
-//			if (value != null && dataType == VALUE)
-//			{
-				type.value = value;
-//			}
-//			else
-//			{
-//				type.value = "Array";
-//			}
-		}
-		else if (type instanceof ArrayType)
-		{
-			type = ((ArrayType)type).type;
-		}*/
+        /*
+         * if (arrayDimensions > 0) { String value = type != null ? type.value : null; byte dataType
+         * = type != null ? type.dataType : -1;
+         * 
+         * if (type instanceof ArrayType == false) { ArrayType newType = new ArrayType();
+         * newType.type = type;
+         * 
+         * type = newType; }
+         * 
+         * ((ArrayType)type).arrayDimensions = arrayDimensions;
+         * 
+         * // if (value != null && dataType == VALUE) // { type.value = value; // } // else // { //
+         * type.value = "Array"; // } } else if (type instanceof ArrayType) { type =
+         * ((ArrayType)type).type; }
+         */
         type = type == null ? new Type() : type;
 
         type.arrayDimensions = arrayDimensions;
@@ -151,7 +139,8 @@ public class IIdentifier extends Identifier {
      */
     @Override
     public void setTypeValue(String type) {
-        if (this.type == null || this.type.value == null && this.type.arrayDimensions == 0 && !isFunctionType()) {
+        if (this.type == null
+            || this.type.value == null && this.type.arrayDimensions == 0 && !isFunctionType()) {
             this.type = Type.parse(this, type);
         } else {
             this.type = this.type == null ? new Type() : this.type;
@@ -192,7 +181,8 @@ public class IIdentifier extends Identifier {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public IIdentifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public IIdentifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         IIdentifier node = new IIdentifier(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -206,8 +196,7 @@ public class IIdentifier extends Identifier {
     }
 
     /**
-     * Fill the given {@link Identifier} with the data that is in the
-     * specified node.
+     * Fill the given {@link Identifier} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -235,11 +224,10 @@ public class IIdentifier extends Identifier {
     }
 
     /**
-     * Test the IIdentifier class type to make sure everything
-     * is working properly.
+     * Test the IIdentifier class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -247,3 +235,4 @@ public class IIdentifier extends Identifier {
         return null;
     }
 }
+

@@ -23,11 +23,9 @@ import java.util.stream.Stream;
 import static java.util.Arrays.stream;
 
 /**
- * Class that is the parent of all Nodes on the Tree. Keeps the basic
- * information of where the statement was in the source, and where it was
- * output in the destination file. A Node can have any number of
- * children, however some of the extensions of Node have default
- * children at the start.
+ * Class that is the parent of all Nodes on the Tree. Keeps the basic information of where the
+ * statement was in the source, and where it was output in the destination file. A Node can have any
+ * number of children, however some of the extensions of Node have default children at the start.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:00:11 PM
@@ -52,7 +50,7 @@ public abstract class Node implements Listenable, Annotatable {
      * Create a new Node. Initializes the data.
      *
      * @param temporaryParent The Node to act as the parent temporarily.
-     * @param locationIn      The location of the Node in the source file.
+     * @param locationIn The location of the Node in the source file.
      */
     public Node(Node temporaryParent, Location locationIn) {
         children = new ArrayList<Node>(4);
@@ -82,11 +80,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the number of default children that the specified Node has
-     * right after it is decoded.
+     * Get the number of default children that the specified Node has right after it is decoded.
      *
-     * @return The number of default children that the specified Node has
-     * right after it is decoded.
+     * @return The number of default children that the specified Node has right after it is decoded.
      */
     public int getNumDecodedChildren() {
         return getNumDefaultChildren();
@@ -99,11 +95,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the number of default children that the specified Node has
-     * right after it is created.
+     * Get the number of default children that the specified Node has right after it is created.
      *
-     * @return The number of default children that the specified Node has
-     * right after it is created.
+     * @return The number of default children that the specified Node has right after it is created.
      */
     public int getNumDefaultChildren() {
         return 0;
@@ -128,10 +122,11 @@ public abstract class Node implements Listenable, Annotatable {
             for (Annotation a : annotation.getAnnotations().toArray(new Annotation[0])) {
                 addAnnotation(a);
 
-                //a.validate(getProgram().getPhase());
+                // a.validate(getProgram().getPhase());
             }
         }
-        if (annotation instanceof TargetAnnotation || annotation instanceof TargetRuntimeAnnotation) {
+        if (annotation instanceof TargetAnnotation
+            || annotation instanceof TargetRuntimeAnnotation) {
             return;
         }
 
@@ -154,12 +149,10 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get whether or not the specified Node has had no custom Nodes
-     * added to it. I.e. It is in its default state. I.e. It is in its
-     * post-initialization state.
+     * Get whether or not the specified Node has had no custom Nodes added to it. I.e. It is in its
+     * default state. I.e. It is in its post-initialization state.
      *
-     * @return Whether or not the specified Node has had no custom Nodes
-     * added to it.
+     * @return Whether or not the specified Node has had no custom Nodes added to it.
      */
     public boolean isEmpty() {
         if (getNumVisibleChildren() > 0) {
@@ -176,24 +169,27 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get whether or not the specified Node is waiting for a single
-     * statement to add as a child.<br>
+     * Get whether or not the specified Node is waiting for a single statement to add as a
+     * child.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * // Scenario 1
-     * if (true)
-     * {
-     * 	execute();
+     * if (true) {
+     *     execute();
      * }
      *
      * // Scenario 2
-     * if (true) execute();</pre></blockquote>
-     * In scenario 2, before the execute() method call was decoded,
-     * the if statement node was pending a scope fragment.
+     * if (true)
+     *     execute();
+     * </pre>
+     * 
+     * </blockquote> In scenario 2, before the execute() method call was decoded, the if statement
+     * node was pending a scope fragment.
      *
-     * @return Whether or not the specified Node is waiting for a
-     * single statement to add as a child.
+     * @return Whether or not the specified Node is waiting for a single statement to add as a
+     *         child.
      */
     public boolean pendingScopeFragment(Node next) {
         return false;
@@ -225,8 +221,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the location that the data in the Node is in the source
-     * file/text.
+     * Get the location that the data in the Node is in the source file/text.
      *
      * @return The Location instance holding the information.
      */
@@ -235,8 +230,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Set the location that the data in the Node is in the source
-     * file/text.
+     * Set the location that the data in the Node is in the source file/text.
      *
      * @param locationIn The Location instance holding the information.
      */
@@ -245,8 +239,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the parent of the specified Node. If the Node
-     * does not have a parent, null is returned.
+     * Get the parent of the specified Node. If the Node does not have a parent, null is returned.
      *
      * @return The parent Node instance.
      */
@@ -258,7 +251,8 @@ public abstract class Node implements Listenable, Annotatable {
         return searchVariable(parent, scope, name, true);
     }
 
-    public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors) {
+    public VariableDeclaration searchVariable(Node parent, Scope scope, String name,
+        boolean checkAncestors) {
         Scope childScope = getScope();
 
         if (childScope != null) {
@@ -280,11 +274,14 @@ public abstract class Node implements Listenable, Annotatable {
 
         return null;
     }
+
     public ScopeAncestor getRootScopeAncestor() {
         FlatMethodDeclaration method = getParentMethod(true);
 
-        if (method instanceof LambdaMethodDeclaration) return ((LambdaMethodDeclaration)method).methodCall.getRootScopeAncestor();
-        if (method != null) return method;
+        if (method instanceof LambdaMethodDeclaration)
+            return ((LambdaMethodDeclaration) method).methodCall.getRootScopeAncestor();
+        if (method != null)
+            return method;
 
         return getParentScopeAncestor();
     }
@@ -294,9 +291,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Set a temporary parent for the specified Node. When, if ever,
-     * the Node is formally added to a Node, the temporary parent
-     * will be removed.
+     * Set a temporary parent for the specified Node. When, if ever, the Node is formally added to a
+     * Node, the temporary parent will be removed.
      *
      * @param parent The Node to act as the parent temporarily.
      */
@@ -309,8 +305,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the nearest ancestor Node to the specific Node with
-     * the given Class type.
+     * Get the nearest ancestor Node to the specific Node with the given Class type.
      *
      * @param type The Class type of the Ancestor to search for.
      * @return The nearest ancestor Node to the specific Node.
@@ -320,17 +315,17 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the nearest ancestor Node to the specific Node with
-     * the given Class type.
+     * Get the nearest ancestor Node to the specific Node with the given Class type.
      *
-     * @param type      The Class type of the Ancestor to search for.
+     * @param type The Class type of the Ancestor to search for.
      * @param inclusive Whether or not to check the current Node.
      * @return The nearest ancestor Node to the specific Node.
      */
     public Node getAncestorOfType(Class<?> type, boolean inclusive) {
         Node node = getAncestor(inclusive);
 
-        while (node != null && !type.isAssignableFrom(node.getClass()) && !node.getClass().equals(type)) {
+        while (node != null && !type.isAssignableFrom(node.getClass())
+            && !node.getClass().equals(type)) {
             node = node.getParent();
         }
 
@@ -342,9 +337,10 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     public Node getAncestorOfType(Class<?>[] types, boolean inclusive) {
-        final Node[] node = new Node[]{getAncestor(inclusive)};
+        final Node[] node = new Node[] {getAncestor(inclusive)};
 
-        while (node != null && !stream(types).anyMatch(x -> x.isAssignableFrom(node.getClass()) && !node.getClass().equals(x))) {
+        while (node != null && !stream(types)
+            .anyMatch(x -> x.isAssignableFrom(node.getClass()) && !node.getClass().equals(x))) {
             node[0] = node[0].getParent();
         }
 
@@ -352,8 +348,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the next available ancestor that is of the {@link ScopeAncestor}
-     * Class type.
+     * Get the next available ancestor that is of the {@link ScopeAncestor} Class type.
      *
      * @param inclusive Whether or not to check the current Node.
      * @return The next available ancestor that is a {@link ScopeAncestor}
@@ -369,13 +364,11 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the ancestor of the Node. The ancestor will be the specified
-     * node if the call is inclusive. Otherwise it will return the parent
-     * of the specified Node.
+     * Get the ancestor of the Node. The ancestor will be the specified node if the call is
+     * inclusive. Otherwise it will return the parent of the specified Node.
      *
      * @param inclusive Whether or not to return the specified Node.
-     * @return The specified Node if inclusive, otherwise the parent of
-     * the specified Node.
+     * @return The specified Node if inclusive, otherwise the parent of the specified Node.
      */
     private Node getAncestor(boolean inclusive) {
         if (inclusive) {
@@ -386,24 +379,20 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get whether or not the given Object is an instance of the given
-     * Class.
+     * Get whether or not the given Object is an instance of the given Class.
      *
      * @param clazz The Class to check the Object against.
-     * @return Whether or not the given Object is an instance of the given
-     * Class.
+     * @return Whether or not the given Object is an instance of the given Class.
      */
     public boolean instanceOf(Class<?> clazz) {
-        return instanceOf(new Class<?>[]{clazz});
+        return instanceOf(new Class<?>[] {clazz});
     }
 
     /**
-     * Get whether or not the given Object is an instance of any of the
-     * given Classes.
+     * Get whether or not the given Object is an instance of any of the given Classes.
      *
      * @param classes The Classes to check the Object against.
-     * @return Whether or not the given Object is an instance of the given
-     * Class.
+     * @return Whether or not the given Object is an instance of the given Class.
      */
     public boolean instanceOf(Class<?> classes[]) {
         for (Class<?> c : classes) {
@@ -416,9 +405,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the Scope instance of this Node if it even has
-     * a scope. If the Node does not have a Scope then this
-     * method call will return null.
+     * Get the Scope instance of this Node if it even has a scope. If the Node does not have a Scope
+     * then this method call will return null.
      *
      * @return The Scope instance, if it exists.
      */
@@ -436,8 +424,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Set the Scope of the specified Node to the given
-     * Scope instance.
+     * Set the Scope of the specified Node to the given Scope instance.
      *
      * @param scope The Scope instance to use.
      */
@@ -457,8 +444,7 @@ public abstract class Node implements Listenable, Annotatable {
     /**
      * Get the nearest ancestor that contains a scope. (inclusive)
      *
-     * @return The nearest ancestor to the specified node that has a
-     * scope.
+     * @return The nearest ancestor to the specified node that has a scope.
      */
     public Node getAncestorWithScope() {
         Node node = this;
@@ -495,26 +481,21 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get whether or not the specified node is an ancestor of the given
-     * node.
+     * Get whether or not the specified node is an ancestor of the given node.
      *
      * @param node The node to search for the ancestor of.
-     * @return Whether or not the specified node is an ancestor of the
-     * given node.
+     * @return Whether or not the specified node is an ancestor of the given node.
      */
     public boolean isAncestorOf(Node node) {
         return isAncestorOf(node, false);
     }
 
     /**
-     * Get whether or not the specified node is an ancestor of the given
-     * node.
+     * Get whether or not the specified node is an ancestor of the given node.
      *
-     * @param node      The node to search for the ancestor of.
-     * @param inclusive Whether or not to check if the node itself is a
-     *                  match.
-     * @return Whether or not the specified node is an ancestor of the
-     * given node.
+     * @param node The node to search for the ancestor of.
+     * @param inclusive Whether or not to check if the node itself is a match.
+     * @return Whether or not the specified node is an ancestor of the given node.
      */
     public boolean isAncestorOf(Node node, boolean inclusive) {
         Node current = node.getAncestor(inclusive);
@@ -560,8 +541,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the child Node at the specific index in the children
-     * ArrayList.
+     * Get the child Node at the specific index in the children ArrayList.
      *
      * @param index The index to access the child node from.
      * @return The child Node at the specific index.
@@ -611,8 +591,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the number of children that have been added to the specified
-     * Node after the Node has been decoded.
+     * Get the number of children that have been added to the specified Node after the Node has been
+     * decoded.
      *
      * @return The number of children added to the Node after decoding.
      */
@@ -621,8 +601,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the child that has added at the specified index after the Node
-     * has been decoded.
+     * Get the child that has added at the specified index after the Node has been decoded.
      *
      * @param index The index (starting at 0) of the child to get.
      * @return The child at the given index.
@@ -632,19 +611,17 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Remove the child that was added at the specified index after the
-     * Node has been decoded.
+     * Remove the child that was added at the specified index after the Node has been decoded.
      *
-     * @param index index The index (starting at 0) of the child to
-     *              remove.
+     * @param index index The index (starting at 0) of the child to remove.
      */
     public void removeVisibleChild(int index) {
         removeChild(index + getNumDecodedChildren());
     }
 
     /**
-     * Get the child that was added before the given Node child. On a tree
-     * representation, the node to the left of this Node.
+     * Get the child that was added before the given Node child. On a tree representation, the node
+     * to the left of this Node.
      *
      * @param node The Node to get the child before.
      * @return The Node that was added before the given node.
@@ -654,8 +631,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the child that was added after the given Node child. On a tree
-     * representation, the node to the right of this Node.
+     * Get the child that was added after the given Node child. On a tree representation, the node
+     * to the right of this Node.
      *
      * @param node The Node to get the child after.
      * @return The Node that was added after the given node.
@@ -665,8 +642,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get whether or not the given Node is a child of the specified
-     * Node.
+     * Get whether or not the given Node is a child of the specified Node.
      *
      * @param child The Node to check whether is a child or not.
      * @return Whether or not the given Node is a child.
@@ -741,7 +717,8 @@ public abstract class Node implements Listenable, Annotatable {
 
     public boolean whereChildOfType(Class<?> type, Function<Node, Boolean> test) {
         for (Node n : children) {
-            if (type.isAssignableFrom(n.getClass()) && test.apply(n) || n.whereChildOfType(type, test)) {
+            if (type.isAssignableFrom(n.getClass()) && test.apply(n)
+                || n.whereChildOfType(type, test)) {
                 return true;
             }
         }
@@ -761,12 +738,15 @@ public abstract class Node implements Listenable, Annotatable {
         Value[] types = context.getParentClass().primitiveOverloadTypes;
 
         for (Node n : nodes) {
-            if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array || n instanceof Cast) {
+            if (n instanceof LocalDeclaration || n instanceof Instantiation || n instanceof Array
+                || n instanceof Cast) {
                 if (types != null) {
                     targetContext.replacePrimitiveGenerics(types, (Value) n);
                 }
 
-                targetContext.replacePrimitiveGenerics(getParentMethod().getMethodGenericTypeParameterDeclaration(), context.getMethodGenericTypeParameterDeclaration().getTypes(), (Value) n);
+                targetContext.replacePrimitiveGenerics(
+                    getParentMethod().getMethodGenericTypeParameterDeclaration(),
+                    context.getMethodGenericTypeParameterDeclaration().getTypes(), (Value) n);
             }
         }
     }
@@ -781,10 +761,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Add the specific Node under the given 'toNode' Node as a
-     * child.
+     * Add the specific Node under the given 'toNode' Node as a child.
      *
-     * @param node   The node to set as the child node.
+     * @param node The node to set as the child node.
      * @param toNode The node to add the child to.
      */
     public void addChild(Node node, Node toNode) {
@@ -795,7 +774,7 @@ public abstract class Node implements Listenable, Annotatable {
      * Add the specific Node under the current Node as a child.
      *
      * @param index The index to add the node at.
-     * @param node  The node to set as the child node.
+     * @param node The node to set as the child node.
      */
     public void addChild(int index, Node node) {
         Scope scope = getScope();
@@ -812,11 +791,10 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Add the specific Node under the given 'toNode' Node as a
-     * child.
+     * Add the specific Node under the given 'toNode' Node as a child.
      *
-     * @param index  The index to add the node at.
-     * @param node   The node to set as the child node.
+     * @param index The index to add the node at.
+     * @param node The node to set as the child node.
      * @param toNode The node to add the child to.
      */
     public void addChild(int index, Node node, Node toNode) {
@@ -870,10 +848,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Add the given 'toAdd' node before the given 'node', if the node
-     * exists.
+     * Add the given 'toAdd' node before the given 'node', if the node exists.
      *
-     * @param node  The node to add the child before.
+     * @param node The node to add the child before.
      * @param toAdd The child to add before the given node.
      * @return Whether or not the child was successfully added.
      */
@@ -882,10 +859,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Add the given 'toAdd' node after the given 'node', if the node
-     * exists.
+     * Add the given 'toAdd' node after the given 'node', if the node exists.
      *
-     * @param node  The Node to add the child after.
+     * @param node The Node to add the child after.
      * @param toAdd The Node to add after the given node.
      * @return Whether or not the child was successfully added.
      */
@@ -894,13 +870,11 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Add the given 'toAdd' node relative to the given 'node' at the
-     * given offset index.
+     * Add the given 'toAdd' node relative to the given 'node' at the given offset index.
      *
-     * @param node   The node to add the given 'toAdd' node relatively from.
-     * @param toAdd  The Node to add as a child.
-     * @param offset The offset in which to add the child at relative to
-     *               the given 'node' child.
+     * @param node The node to add the given 'toAdd' node relatively from.
+     * @param toAdd The Node to add as a child.
+     * @param offset The offset in which to add the child at relative to the given 'node' child.
      * @return Whether or not the child was successfully added.
      */
     private boolean addChildAtOffset(Node node, Node toAdd, int offset) {
@@ -924,10 +898,10 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     public void onRemoved(Node parent) {
-//		if (id == 1348265)
-//		{
-//			int j = 5;
-//		}
+        // if (id == 1348265)
+        // {
+        // int j = 5;
+        // }
     }
 
     /**
@@ -951,11 +925,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get whether or not the specified Node is being decoded at
-     * the current moment.
+     * Get whether or not the specified Node is being decoded at the current moment.
      *
-     * @return Whether or not the specified Node is being decoded at
-     * the current moment.
+     * @return Whether or not the specified Node is being decoded at the current moment.
      */
     public boolean isDecoding() {
         return getParent() == null || !getParent().containsChild(this);
@@ -972,7 +944,8 @@ public abstract class Node implements Listenable, Annotatable {
 
         Node from = parent;
 
-        if (!parent.isDecoding() && parent.getNumChildren() > 0 && !parent.containsChild(this) && parent.containsScope()) {
+        if (!parent.isDecoding() && parent.getNumChildren() > 0 && !parent.containsChild(this)
+            && parent.containsScope()) {
             from = parent.getScope();
         }
 
@@ -1018,7 +991,7 @@ public abstract class Node implements Listenable, Annotatable {
     /**
      * Replace the given old Node with the specified replacement.
      *
-     * @param old         The Node to replace.
+     * @param old The Node to replace.
      * @param replacement The replacement Node.
      */
     public void replace(Node old, Node replacement) {
@@ -1029,7 +1002,7 @@ public abstract class Node implements Listenable, Annotatable {
         int index = children.indexOf(old);
 
         if (detach) {
-            old.detach();//this, true);
+            old.detach();// this, true);
         }
 
         if (replacement != null) {
@@ -1075,11 +1048,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Kill off all of the specified Node's children and send them to
-     * the void. MAKE SURE THEY PAY
+     * Kill off all of the specified Node's children and send them to the void. MAKE SURE THEY PAY
      *
-     * @param amount The amount of children to slaughter, starting at the
-     *               first-born.
+     * @param amount The amount of children to slaughter, starting at the first-born.
      */
     public void slaughterEveryLastChild(int amount) {
         if (amount > getNumChildren()) {
@@ -1188,8 +1159,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Give the specified node the given nodes children. This removes the
-     * children from the given oldParent node.
+     * Give the specified node the given nodes children. This removes the children from the given
+     * oldParent node.
      *
      * @param oldParent The parent to inherit the children from.
      */
@@ -1198,12 +1169,12 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Give the specified node the given nodes children. This removes the
-     * children from the given oldParent node.
+     * Give the specified node the given nodes children. This removes the children from the given
+     * oldParent node.
      *
      * @param oldParent The parent to inherit the children from.
-     * @param clone     Whether or not to clone the children and not remove
-     *                  them from the previous owner.
+     * @param clone Whether or not to clone the children and not remove them from the previous
+     *        owner.
      */
     public void inheritChildren(Node oldParent, boolean clone) {
         int index = children.size();
@@ -1263,8 +1234,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get whether or not the Node requires a special form of output.
-     * Examples are non-virtual method calls.
+     * Get whether or not the Node requires a special form of output. Examples are non-virtual
+     * method calls.
      *
      * @return Whether or not the Node requires a special form of output.
      */
@@ -1273,10 +1244,9 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Iterate through the words of the statement. A word is just anything
-     * that is surrounded by whitespace. e.g. In the statement:
-     * "public void test() { }" the words consist of:
-     * [ public, void, test(), {, } ]
+     * Iterate through the words of the statement. A word is just anything that is surrounded by
+     * whitespace. e.g. In the statement: "public void test() { }" the words consist of: [ public,
+     * void, test(), {, } ]
      *
      * @param statement The statement to iterate the words from.
      * @return The given ExtraData instance.
@@ -1286,14 +1256,12 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Iterate through the words of the statement. A word is just anything
-     * that is surrounded by whitespace. e.g. In the statement:
-     * "public void test() { }" the words consist of:
-     * [ public, void, test(), {, } ]
+     * Iterate through the words of the statement. A word is just anything that is surrounded by
+     * whitespace. e.g. In the statement: "public void test() { }" the words consist of: [ public,
+     * void, test(), {, } ]
      *
      * @param statement The statement to iterate the words from.
-     * @param extra     The extra data that may or may not be needed for the
-     *                  interactWord() methods.
+     * @param extra The extra data that may or may not be needed for the interactWord() methods.
      * @return The given ExtraData instance.
      */
     public final ExtraData iterateWords(String statement, ExtraData extra, boolean require) {
@@ -1301,12 +1269,11 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Iterate through each of the groupings of the given Pattern on the
-     * statement. In the default case, it will search for the boundaries
-     * of words and iterate through all of them.
+     * Iterate through each of the groupings of the given Pattern on the statement. In the default
+     * case, it will search for the boundaries of words and iterate through all of them.
      *
      * @param statement The statement to search through.
-     * @param pattern   The Pattern to search with.
+     * @param pattern The Pattern to search with.
      * @return The given ExtraData instance.
      */
     public final ExtraData iterateWords(String statement, Pattern pattern, boolean require) {
@@ -1314,17 +1281,16 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Iterate through each of the groupings of the given Pattern on the
-     * statement. In the default case, it will search for the boundaries
-     * of words and iterate through all of them.
+     * Iterate through each of the groupings of the given Pattern on the statement. In the default
+     * case, it will search for the boundaries of words and iterate through all of them.
      *
      * @param statement The statement to search through.
-     * @param pattern   The Pattern to search with.
-     * @param extra     The extra data that may or may not be needed for the
-     *                  interactWord() methods.
+     * @param pattern The Pattern to search with.
+     * @param extra The extra data that may or may not be needed for the interactWord() methods.
      * @return The given ExtraData instance.
      */
-    public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra, boolean require) {
+    public ExtraData iterateWords(String statement, Pattern pattern, ExtraData extra,
+        boolean require) {
         // Pattern used to find word boundaries.
         Matcher matcher = pattern.matcher(statement);
 
@@ -1361,9 +1327,9 @@ public abstract class Node implements Listenable, Annotatable {
      * Find the words, bounds, and delimiters in the given statement.
      *
      * @param statement The statement to find the information from.
-     * @param matcher   The matcher searching through the statement.
-     * @param extra     The ExtraData containing the lists that will acquire the
-     *                  words, delimiters, and bounds.
+     * @param matcher The matcher searching through the statement.
+     * @param extra The ExtraData containing the lists that will acquire the words, delimiters, and
+     *        bounds.
      */
     public static void findWords(String statement, Matcher matcher, ExtraData extra) {
         int index = 0;
@@ -1434,20 +1400,18 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Method that is to be overridden. Whenever the iterateWords(String)
-     * method is called, this method will be called with the specific word
-     * and the number (order) the word came in the statement.
+     * Method that is to be overridden. Whenever the iterateWords(String) method is called, this
+     * method will be called with the specific word and the number (order) the word came in the
+     * statement.
      *
-     * @param word           The word that was found.
-     * @param bounds         The bounds of the word that was found.
-     * @param leftDelimiter  The text that is between the previous word and
-     *                       the current word.
-     * @param rightDelimiter The text that is between the current word and
-     *                       the next word.
-     * @param extra          The extra data that may or may not be needed for the
-     *                       interactWord() methods.
+     * @param word The word that was found.
+     * @param bounds The bounds of the word that was found.
+     * @param leftDelimiter The text that is between the previous word and the current word.
+     * @param rightDelimiter The text that is between the current word and the next word.
+     * @param extra The extra data that may or may not be needed for the interactWord() methods.
      */
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData extra) {
         return true;
     }
 
@@ -1456,26 +1420,23 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     public boolean isUserMade(boolean checkAncestor) {
-        return (!containsProperty("userMade") || isPropertyTrue("userMade")) && (!checkAncestor || (getParent() == null || getParent().isUserMade()));
+        return (!containsProperty("userMade") || isPropertyTrue("userMade"))
+            && (!checkAncestor || (getParent() == null || getParent().isUserMade()));
     }
 
     /**
-     * Get whether or not the specified Node is used within a
-     * static context.
+     * Get whether or not the specified Node is used within a static context.
      *
-     * @return Whether or not the specified Node is used within a
-     * static context.
+     * @return Whether or not the specified Node is used within a static context.
      */
     public boolean isWithinStaticContext() {
         return getParentMethod(true) == null || !getParentMethod(true).isInstance();
     }
 
     /**
-     * Get whether or not the specified Node is used within an
-     * external context.
+     * Get whether or not the specified Node is used within an external context.
      *
-     * @return Whether or not the specified Node is used within an
-     * external context.
+     * @return Whether or not the specified Node is used within an external context.
      */
     public boolean isWithinExternalContext() {
         if (this instanceof ExternalType) {
@@ -1500,72 +1461,66 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Method that each Node overrides. Returns a String that translates
-     * the data that is stored in the Node to the Java programming
-     * language syntax.
+     * Method that each Node overrides. Returns a String that translates the data that is stored in
+     * the Node to the Java programming language syntax.
      *
      * @return The Java syntax representation of the Node.
      */
     public String generateJavaSource() {
-        throw new UnimplementedOperationException("The Java implementation for this feature has not been implemented yet.");
+        throw new UnimplementedOperationException(
+            "The Java implementation for this feature has not been implemented yet.");
     }
 
     /**
-     * Generate the Flat syntax String that represents the Node.
-     * Essentially, this is the String that is decoded into the node.
-     * It is the input value from the .fat source file.
+     * Generate the Flat syntax String that represents the Node. Essentially, this is the String
+     * that is decoded into the node. It is the input value from the .fat source file.
      *
-     * @return The appended StringBuilder that represents the input String
-     * in Flat syntax.
+     * @return The appended StringBuilder that represents the input String in Flat syntax.
      */
     public final StringBuilder generateFlatInput() {
         return generateFlatInput(true);
     }
 
     /**
-     * Generate the Flat syntax String that represents the Node.
-     * Essentially, this is the String that is decoded into the node.
-     * It is the input value from the .flat source file.
+     * Generate the Flat syntax String that represents the Node. Essentially, this is the String
+     * that is decoded into the node. It is the input value from the .flat source file.
      *
-     * @param outputChildren Whether or not to output the children of the
-     *                       children of the Node as well.
-     * @return The appended StringBuilder that represents the input String
-     * in Flat syntax.
+     * @param outputChildren Whether or not to output the children of the children of the Node as
+     *        well.
+     * @return The appended StringBuilder that represents the input String in Flat syntax.
      */
     public final StringBuilder generateFlatInput(boolean outputChildren) {
         return generateFlatInput(new StringBuilder(), outputChildren);
     }
 
     /**
-     * Generate the Flat syntax String that represents the Node.
-     * Essentially, this is the String that is decoded into the node.
-     * It is the input value from the .flat source file.
+     * Generate the Flat syntax String that represents the Node. Essentially, this is the String
+     * that is decoded into the node. It is the input value from the .flat source file.
      *
      * @param builder The StringBuilder to append the data to.
-     * @return The appended StringBuilder that represents the input String
-     * in Flat syntax.
+     * @return The appended StringBuilder that represents the input String in Flat syntax.
      */
     public final StringBuilder generateFlatInput(StringBuilder builder) {
         return generateFlatInput(builder, true);
     }
 
     /**
-     * Generate the Flat syntax String that represents the Node.
-     * Essentially, this is the String that is decoded into the node.
-     * It is the input value from the .flat source file.
+     * Generate the Flat syntax String that represents the Node. Essentially, this is the String
+     * that is decoded into the node. It is the input value from the .flat source file.
      *
-     * @param builder        The StringBuilder to append the data to.
-     * @param outputChildren Whether or not to output the children of the
-     *                       children of the Node as well.
-     * @return The appended StringBuilder that represents the input String
-     * in Flat syntax.
+     * @param builder The StringBuilder to append the data to.
+     * @param outputChildren Whether or not to output the children of the children of the Node as
+     *        well.
+     * @return The appended StringBuilder that represents the input String in Flat syntax.
      */
     public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren) {
         return generateFlatInput(builder, outputChildren, true);
     }
 
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
-        throw new UnimplementedOperationException("The Flat input implementation for " + getClass().getName() + " has not been implemented yet.");
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
+        throw new UnimplementedOperationException("The Flat input implementation for "
+            + getClass().getName() + " has not been implemented yet.");
     }
 
     public Node followedByScope(boolean scope) {
@@ -1628,8 +1583,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Rollback any changes to external resources that the specified Node
-     * has made, if the Node is not going to be used.
+     * Rollback any changes to external resources that the specified Node has made, if the Node is
+     * not going to be used.
      */
     public void rollback() {
         for (int i = 0; i < getNumChildren(); i++) {
@@ -1642,11 +1597,11 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Generate a String containing information of where the Node is
-     * located in reference to the source input files.
+     * Generate a String containing information of where the Node is located in reference to the
+     * source input files.
      *
-     * @return A String containing information of where the Node is
-     * located in reference to the source input files.
+     * @return A String containing information of where the Node is located in reference to the
+     *         source input files.
      */
     public String getLocationInfo() {
         FileDeclaration file = getFileDeclaration();
@@ -1661,8 +1616,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * If the specified node is within an try block, return the node for
-     * the try block.
+     * If the specified node is within an try block, return the node for the try block.
      *
      * @return The parent Try, if there is one.
      */
@@ -1791,8 +1745,8 @@ public abstract class Node implements Listenable, Annotatable {
     /**
      * Get the ClassDeclaration parent instance of the Node, if one exists.
      *
-     * @param inclusive Whether or not to inclusively check the specified
-     *                  Node to see if it is a ClassDeclaration.
+     * @param inclusive Whether or not to inclusively check the specified Node to see if it is a
+     *        ClassDeclaration.
      * @return The nearest ClassDeclaration instance that contains this node.
      */
     public ClassDeclaration getParentClass(boolean inclusive) {
@@ -1811,8 +1765,8 @@ public abstract class Node implements Listenable, Annotatable {
     /**
      * Get the Method parent instance of the Node, if one exists.
      *
-     * @param inclusive Whether or not to inclusively check the specified
-     *                  Node to see if it is a MethodDeclaration.
+     * @param inclusive Whether or not to inclusively check the specified Node to see if it is a
+     *        MethodDeclaration.
      * @return The nearest Method instance that contains this node.
      */
     public final FlatMethodDeclaration getParentMethod(boolean inclusive) {
@@ -1820,8 +1774,8 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the compiler's controller. The controller is used for
-     * logging, error output, and other compiler options.
+     * Get the compiler's controller. The controller is used for logging, error output, and other
+     * compiler options.
      *
      * @return The compiler's controller instance.
      */
@@ -1832,21 +1786,23 @@ public abstract class Node implements Listenable, Annotatable {
     /**
      * Decode a scope fragment for the Node, if needed.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * // Scenario 1
-     * if (true)
-     * {
-     * 	execute();
+     * if (true) {
+     *     execute();
      * }
      *
      * // Scenario 2
-     * if (true) execute();</pre></blockquote>
-     * In scenario 2, before the execute() method call was the scope
-     * fragment.
+     * if (true)
+     *     execute();
+     * </pre>
+     * 
+     * </blockquote> In scenario 2, before the execute() method call was the scope fragment.
      *
      * @param statement The statement containing the scope fragment.
-     * @param bounds    The bounds of the Node's arguments.
+     * @param bounds The bounds of the Node's arguments.
      * @return Whether or not the scope fragment decoded correctly.
      */
     public boolean decodeScopeFragment(String statement, Bounds bounds) {
@@ -1887,11 +1843,10 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Get the Node that is highest on the tree, up until a scope is hit.
-     * (The Node that is returned will have a scope as a parent)
+     * Get the Node that is highest on the tree, up until a scope is hit. (The Node that is returned
+     * will have a scope as a parent)
      *
-     * @return The Node that is the highest on the tree up until a scope
-     * is found.
+     * @return The Node that is the highest on the tree up until a scope is found.
      */
     public Node getBaseNode() {
         return getBaseNode(false);
@@ -1918,12 +1873,11 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Return a new Node containing a copy of the values of the
-     * specified node, including clones of the children.
+     * Return a new Node containing a copy of the values of the specified node, including clones of
+     * the children.
      *
-     * @param temporaryParent The Node to act as the parent
-     *                        temporarily.
-     * @param locationIn      The Location instance holding the information.
+     * @param temporaryParent The Node to act as the parent temporarily.
+     * @param locationIn The Location instance holding the information.
      * @return A clone of the specified Node.
      */
     public final Node clone(Node temporaryParent, Location locationIn) {
@@ -1935,38 +1889,35 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Return a new Node containing a copy of the values of the
-     * specified node, including clones of the children.
+     * Return a new Node containing a copy of the values of the specified node, including clones of
+     * the children.
      *
-     * @param temporaryParent The Node to act as the parent
-     *                        temporarily.
-     * @param locationIn      The Location instance holding the information.
-     * @param cloneChildren   Whether or not to clone the children of the
-     *                        Node as well.
+     * @param temporaryParent The Node to act as the parent temporarily.
+     * @param locationIn The Location instance holding the information.
+     * @param cloneChildren Whether or not to clone the children of the Node as well.
      * @return A clone of the specified Node.
      */
-    public abstract Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations);
+    public abstract Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations);
 
     /**
-     * Fill the given {@link Node} with the data that is in the
-     * specified node.
+     * Fill the given {@link Node} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
     public Node cloneTo(Node node) {
-        throw new UnsupportedOperationException("Class " + this.getClass().getName() + " must implement cloneTo(Node, boolean)");
+        throw new UnsupportedOperationException(
+            "Class " + this.getClass().getName() + " must implement cloneTo(Node, boolean)");
 
-//		return cloneTo(node, true);
+        // return cloneTo(node, true);
     }
 
     /**
-     * Fill the given {@link Node} with the data that is in the
-     * specified node.
+     * Fill the given {@link Node} with the data that is in the specified node.
      *
-     * @param node          The node to copy the data into.
-     * @param cloneChildren Whether or not to clone the children of the
-     *                      Node as well.
+     * @param node The node to copy the data into.
+     * @param cloneChildren Whether or not to clone the children of the Node as well.
      * @return The cloned node.
      */
     public final Node cloneTo(Node node, boolean cloneChildren) {
@@ -2030,7 +1981,7 @@ public abstract class Node implements Listenable, Annotatable {
             node.children.add(0, child.clone(node, child.getLocationIn()));
         }
 
-        //forEachChild(x -> node.addChild(x.clone(node, x.getLocationIn())));
+        // forEachChild(x -> node.addChild(x.clone(node, x.getLocationIn())));
     }
 
     public void inheritAnnotations(Node from) {
@@ -2045,8 +1996,7 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Generate a String that represents the Node as how it
-     * was decoded.
+     * Generate a String that represents the Node as how it was decoded.
      *
      * @return The Flat input equivalent to the node.
      */
@@ -2061,7 +2011,8 @@ public abstract class Node implements Listenable, Annotatable {
     public static Node newEmptyNode() {
         return new Node(null, null) {
             @Override
-            public Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+            public Node clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+                boolean cloneAnnotations) {
                 return null;
             }
         };
@@ -2229,11 +2180,10 @@ public abstract class Node implements Listenable, Annotatable {
     }
 
     /**
-     * Test the Node class type to make sure everything
-     * is working properly.
+     * Test the Node class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -2241,3 +2191,4 @@ public abstract class Node implements Listenable, Annotatable {
         return null;
     }
 }
+

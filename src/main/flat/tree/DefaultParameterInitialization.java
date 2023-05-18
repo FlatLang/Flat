@@ -15,7 +15,8 @@ public class DefaultParameterInitialization extends Node {
     /**
      * @see Node#Node(Node, Location)
      */
-    public DefaultParameterInitialization(Node temporaryParent, Location locationIn, Parameter parameter) {
+    public DefaultParameterInitialization(Node temporaryParent, Location locationIn,
+        Parameter parameter) {
         super(temporaryParent, locationIn);
 
         this.parameter = parameter;
@@ -39,7 +40,8 @@ public class DefaultParameterInitialization extends Node {
 
         // If methods arent same
         if (getParent().getParent() != parameter.getParent().getParent()) {
-            parameter = ((FlatMethodDeclaration) getParent().getParent()).getParameterList().getParameter(parameter.getIndex());
+            parameter = ((FlatMethodDeclaration) getParent().getParent()).getParameterList()
+                .getParameter(parameter.getIndex());
         }
 
         return result;
@@ -49,8 +51,10 @@ public class DefaultParameterInitialization extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public DefaultParameterInitialization clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        DefaultParameterInitialization node = new DefaultParameterInitialization(temporaryParent, locationIn, parameter);
+    public DefaultParameterInitialization clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        DefaultParameterInitialization node =
+            new DefaultParameterInitialization(temporaryParent, locationIn, parameter);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -63,24 +67,25 @@ public class DefaultParameterInitialization extends Node {
     }
 
     /**
-     * Fill the given {@link DefaultParameterInitialization} with the data that is in the
-     * specified node.
+     * Fill the given {@link DefaultParameterInitialization} with the data that is in the specified
+     * node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public DefaultParameterInitialization cloneTo(DefaultParameterInitialization node, boolean cloneChildren, boolean cloneAnnotations) {
+    public DefaultParameterInitialization cloneTo(DefaultParameterInitialization node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link DefaultParameterInitialization} class type to make sure everything
-     * is working properly.
+     * Test the {@link DefaultParameterInitialization} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -88,3 +93,4 @@ public class DefaultParameterInitialization extends Node {
         return null;
     }
 }
+

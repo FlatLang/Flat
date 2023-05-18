@@ -21,9 +21,8 @@ import flat.util.SyntaxUtils;
 import java.util.AbstractMap;
 
 /**
- * Node extension that represents something that returns a value.
- * For the rules on what can and cannot be an value node, refer to
- * {@link #setType(java.lang.String)}
+ * Node extension that represents something that returns a value. For the rules on what can and
+ * cannot be an value node, refer to {@link #setType(java.lang.String)}
  *
  * @author Braden Steffaniak
  * @since v0.2.4 May 2, 2014 at 11:14:37 PM
@@ -74,7 +73,8 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     public GenericTypeArgumentList getGenericTypeArgumentList() {
-        if (getNumChildren() > super.getNumDefaultChildren() + 0 && getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeArgumentList) {
+        if (getNumChildren() > super.getNumDefaultChildren() + 0
+            && getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeArgumentList) {
             return (GenericTypeArgumentList) getChild(super.getNumDefaultChildren() + 0);
         }
 
@@ -85,12 +85,13 @@ public abstract class Value extends Node implements AbstractValue {
      * Generate a IValue instance from the given type.
      *
      * @param temporaryParent The temporary parent of the new Node.
-     * @param locationIn      The location of the new Node.
-     * @param type            The type to set for the Value.
-     * @param require         Whether or not a successful decode is required.
+     * @param locationIn The location of the new Node.
+     * @param type The type to set for the Value.
+     * @param require Whether or not a successful decode is required.
      * @return The generated IValue instance.
      */
-    public static IValue generateFromType(Node temporaryParent, Location locationIn, String type, boolean require) {
+    public static IValue generateFromType(Node temporaryParent, Location locationIn, String type,
+        boolean require) {
         IValue value = new IValue(temporaryParent, locationIn);
 
         if (!value.setType(type, require, true)) {
@@ -112,13 +113,10 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Get the name of the object reference identifier for the given
-     * Method node. Static methods return "ClassName" and
-     * non-static methods return "this". The given method cannot be
-     * external.
+     * Get the name of the object reference identifier for the given Method node. Static methods
+     * return "ClassName" and non-static methods return "this". The given method cannot be external.
      *
-     * @param methodDeclaration The method to get the object reference identifier
-     *                          name from.
+     * @param methodDeclaration The method to get the object reference identifier name from.
      * @return The name of the object reference identifier.
      */
     public String getObjectReferenceIdentifier(CallableMethod methodDeclaration) {
@@ -132,11 +130,9 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Get the Value that the method was called with for the given
-     * MethodCall's method node, if it was not called with a specific
-     * object. Static methods return the ClassDeclaration and non-static
-     * methods return the "this" instance. The call cannot be that of an
-     * external method.
+     * Get the Value that the method was called with for the given MethodCall's method node, if it
+     * was not called with a specific object. Static methods return the ClassDeclaration and
+     * non-static methods return the "this" instance. The call cannot be that of an external method.
      *
      * @param methodDeclaration The method to get the Value from.
      * @return The Value that the method was called with.
@@ -146,16 +142,13 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Check to see if the given Value type is valid. If it is not,
-     * this will throw an exception if it is required. If it isn't
-     * required it will return false. If it is valid, it will return
+     * Check to see if the given Value type is valid. If it is not, this will throw an exception if
+     * it is required. If it isn't required it will return false. If it is valid, it will return
      * true.<br>
-     * In other words, check if the given String is a primitive type name
-     * or declared class name.
+     * In other words, check if the given String is a primitive type name or declared class name.
      *
-     * @param type    The type to validate.
-     * @param require Whether or not throw an error if anything goes
-     *                wrong.
+     * @param type The type to validate.
+     * @param require Whether or not throw an error if anything goes wrong.
      * @return Whether or not the given value is valid.
      */
     public boolean checkType(String type, boolean require) {
@@ -195,19 +188,19 @@ public abstract class Value extends Node implements AbstractValue {
                 type += "Array<";
             }
 
-//			if ("flat/primitive/number/Int".equals(getTypeClassLocation()))
-//			{
-//				type += "IntArray";
-//			}
-//			else if ("flat/primitive/number/Char".equals(getTypeClassLocation()))
-//			{
-//				type += "CharArray";
-//			}
-//			else if ("flat/primitive/number/Double".equals(getTypeClassLocation()))
-//			{
-//				type += "DoubleArray";
-//			}
-//			else
+            // if ("flat/primitive/number/Int".equals(getTypeClassLocation()))
+            // {
+            // type += "IntArray";
+            // }
+            // else if ("flat/primitive/number/Char".equals(getTypeClassLocation()))
+            // {
+            // type += "CharArray";
+            // }
+            // else if ("flat/primitive/number/Double".equals(getTypeClassLocation()))
+            // {
+            // type += "DoubleArray";
+            // }
+            // else
             {
                 type += "Array<" + getFlatType(this, false) + ">";
             }
@@ -237,33 +230,25 @@ public abstract class Value extends Node implements AbstractValue {
             if (getProgram().getPhase() >= SyntaxTree.PHASE_METHOD_CONTENTS) {
                 convertToPrimitiveType();
             }
-			
-			/*if (args != null)
-			{
-				GenericTypeArgumentList current = getGenericTypeArgumentList();
-				
-				for (int i = 0; i < getArrayDimensions(); i++)
-				{
-					current = current.getVisibleChild(0).getGenericTypeArgumentList();
-				}
-				
-				for (int i = 0; i < args.length; i++)
-				{
-					current.addChild(args[i]);
-				}
-			}*/
+
+            /*
+             * if (args != null) { GenericTypeArgumentList current = getGenericTypeArgumentList();
+             * 
+             * for (int i = 0; i < getArrayDimensions(); i++) { current =
+             * current.getVisibleChild(0).getGenericTypeArgumentList(); }
+             * 
+             * for (int i = 0; i < args.length; i++) { current.addChild(args[i]); } }
+             */
 
             setArrayDimensions(0);
         }
     }
 
     /**
-     * Check whether or not the given value is accessed within its direct
-     * parent class.
+     * Check whether or not the given value is accessed within its direct parent class.
      *
      * @param node The node to check.
-     * @return Whether or not the node was accessed through its parent
-     * class.
+     * @return Whether or not the node was accessed through its parent class.
      */
     public boolean isContainingClass(Value node) {
         ClassDeclaration clazz = node.getParentClass();
@@ -271,7 +256,8 @@ public abstract class Value extends Node implements AbstractValue {
         if (this == clazz) {
             return true;
         } else if (node.getParentMethod() instanceof ExtensionMethodDeclaration) {
-            return node.getParentMethod().getParameterList().getReferenceParameter().getTypeClass() == this;
+            return node.getParentMethod().getParameterList().getReferenceParameter()
+                .getTypeClass() == this;
         } else if (this instanceof Variable) {
             Variable param = (Variable) this;
 
@@ -316,27 +302,33 @@ public abstract class Value extends Node implements AbstractValue {
     /**
      * Get whether a variable's type is a primitive type or not.<br>
      * <br>
-     * For the list of primitive values, see
-     * {@link SyntaxUtils#isPrimitiveType(String)}
+     * For the list of primitive values, see {@link SyntaxUtils#isPrimitiveType(String)}
      *
      * @return Whether a variable's type is a primitive type or not.
      */
     public boolean isPrimitiveType() {
-        return SyntaxUtils.isPrimitiveType(getType()) || (isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType()));// || getType() != null && getType().equals("Number");
+        return SyntaxUtils.isPrimitiveType(getType())
+            || (isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType()));// ||
+                                                                                             // getType()
+                                                                                             // !=
+                                                                                             // null
+                                                                                             // &&
+                                                                                             // getType().equals("Number");
     }
 
     /**
-     * Get whether a value is primitive or not. A value is primitive
-     * if it has a primitive type AND is NOT an array. Arrays are NOT a
-     * primitive type.<br>
+     * Get whether a value is primitive or not. A value is primitive if it has a primitive type AND
+     * is NOT an array. Arrays are NOT a primitive type.<br>
      * <br>
-     * For the list of primitive values, see
-     * {@link SyntaxUtils#isPrimitiveType(String)}.
+     * For the list of primitive values, see {@link SyntaxUtils#isPrimitiveType(String)}.
      *
      * @return Whether a variable is primitive or not.
      */
     public boolean isPrimitive() {
-        return getType() != null && getDataType() == VALUE && (isPrimitiveType() || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType())) && !isPrimitiveArray() && getArrayDimensions() == 0;
+        return getType() != null && getDataType() == VALUE
+            && (isPrimitiveType()
+                || isWithinExternalContext() && SyntaxUtils.isExternalPrimitiveType(getType()))
+            && !isPrimitiveArray() && getArrayDimensions() == 0;
     }
 
     public void setPrimitiveWrapperType() {
@@ -346,8 +338,8 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Get whether or not the variable is an array. A variable is an
-     * array if it has an array dimension of 1 or greater.
+     * Get whether or not the variable is an array. A variable is an array if it has an array
+     * dimension of 1 or greater.
      *
      * @return Whether or not the variable is an array.
      */
@@ -420,13 +412,17 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     public boolean isPrimitiveGenericTypeWrapper() {
-//		ClassDeclaration c = getTypeClass();
-//		
-//		if (c != null)
-//		{
-//			return c.isOfType("flat/datastruct/list/CharArray") || c.isOfType("flat/datastruct/list/IntArray") || c.isOfType("flat/datastruct/list/DoubleArray") ||
-//				c.isOfType("flat/datastruct/list/CharArrayIterator") || c.isOfType("flat/datastruct/list/IntArrayIterator") || c.isOfType("flat/datastruct/list/DoubleArrayIterator");
-//		}
+        // ClassDeclaration c = getTypeClass();
+        //
+        // if (c != null)
+        // {
+        // return c.isOfType("flat/datastruct/list/CharArray") ||
+        // c.isOfType("flat/datastruct/list/IntArray") ||
+        // c.isOfType("flat/datastruct/list/DoubleArray") ||
+        // c.isOfType("flat/datastruct/list/CharArrayIterator") ||
+        // c.isOfType("flat/datastruct/list/IntArrayIterator") ||
+        // c.isOfType("flat/datastruct/list/DoubleArrayIterator");
+        // }
 
         return false;
     }
@@ -449,18 +445,22 @@ public abstract class Value extends Node implements AbstractValue {
     /**
      * Get whether the type of the Value is external or not.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * external type FILE;
      *
-     * FILE varName;</pre></blockquote>
-     * In the code above <u><code>varName</code></u>'s type of
+     * FILE varName;
+     * </pre>
+     * 
+     * </blockquote> In the code above <u><code>varName</code></u>'s type of
      * "<u><code>FILE</code></u>" is external.
      *
      * @return Whether or not the type of the valueNode is external.
      */
     public boolean isExternalType() {
-        return getType() != null && getParentClass() != null && getParentClass().containsExternalType(getType());
+        return getType() != null && getParentClass() != null
+            && getParentClass().containsExternalType(getType());
     }
 
     public boolean isNative() {
@@ -498,10 +498,13 @@ public abstract class Value extends Node implements AbstractValue {
     /**
      * Set the type that this statement returns.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * private static int index;</pre></blockquote>
-     * The type of the variable returns is "int"
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * private static int index;
+     * </pre>
+     * 
+     * </blockquote> The type of the variable returns is "int"
      *
      * @param type The type that this statement returns.
      * @return Whether or not the type was set successfully.
@@ -513,14 +516,16 @@ public abstract class Value extends Node implements AbstractValue {
     /**
      * Set the type that this statement returns.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * private static int index;</pre></blockquote>
-     * The type of the variable returns is "int"
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * private static int index;
+     * </pre>
+     * 
+     * </blockquote> The type of the variable returns is "int"
      *
-     * @param type    The type that this statement returns.
-     * @param require Whether or not to throw an error if anything goes
-     *                wrong.
+     * @param type The type that this statement returns.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the type was set successfully.
      */
     public boolean setType(String type, boolean require) {
@@ -530,14 +535,16 @@ public abstract class Value extends Node implements AbstractValue {
     /**
      * Set the type that this statement returns.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * private static int index;</pre></blockquote>
-     * The type of the variable returns is "int"
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * private static int index;
+     * </pre>
+     * 
+     * </blockquote> The type of the variable returns is "int"
      *
-     * @param type      The type that this statement returns.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
+     * @param type The type that this statement returns.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @param checkType Whether or not to check if the type is valid.
      * @return Whether or not the type was set successfully.
      */
@@ -550,11 +557,14 @@ public abstract class Value extends Node implements AbstractValue {
             if (isExternalType() && isDecoding()) {
                 setDataType(VALUE);
             } else if (!isExternalType()) {
-                boolean primitive = SyntaxUtils.isPrimitiveType(type) || SyntaxUtils.isExternalPrimitiveType(type);
+                boolean primitive =
+                    SyntaxUtils.isPrimitiveType(type) || SyntaxUtils.isExternalPrimitiveType(type);
 
                 if (primitive) {
                     setPrimitive();
-                } else if (getDataType() != Value.DOUBLE_POINTER)//!n.isWithinExternalContext())// || !SyntaxUtils.isExternalPrimitiveType(type))
+                } else if (getDataType() != Value.DOUBLE_POINTER)// !n.isWithinExternalContext())//
+                                                                 // ||
+                                                                 // !SyntaxUtils.isExternalPrimitiveType(type))
                 {
                     setDataType(Value.POINTER);
                 }
@@ -563,7 +573,7 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     public void setPrimitive() {
-//		if (getArrayDimensions() == 0)
+        // if (getArrayDimensions() == 0)
         {
             setDataType(Value.VALUE);
         }
@@ -574,9 +584,8 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Get the ClassDeclaration that represents the type of the specified
-     * Value. If the type is primitive, this will return the
-     * wrapper class of the primitive type.
+     * Get the ClassDeclaration that represents the type of the specified Value. If the type is
+     * primitive, this will return the wrapper class of the primitive type.
      *
      * @return The ClassDeclaration instance of the type.
      */
@@ -597,7 +606,9 @@ public abstract class Value extends Node implements AbstractValue {
             }
         }
 
-        RequireGenericTypeAnnotation required = (RequireGenericTypeAnnotation) getAnnotationOfType(RequireGenericTypeAnnotation.class, true, true);
+        RequireGenericTypeAnnotation required =
+            (RequireGenericTypeAnnotation) getAnnotationOfType(RequireGenericTypeAnnotation.class,
+                true, true);
 
         if ((required != null || defaultGenericType) && isGenericType(false, checkCast)) {
             String type = null;
@@ -626,9 +637,8 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Get the name of the class that represents the type of the specified
-     * Value. If the type is primitive, this will return the wrapper
-     * class name of the primitive type.
+     * Get the name of the class that represents the type of the specified Value. If the type is
+     * primitive, this will return the wrapper class name of the primitive type.
      *
      * @return The name of the class of the type.
      */
@@ -657,9 +667,9 @@ public abstract class Value extends Node implements AbstractValue {
 
         String type = null;
 
-        if (isGenericType(false, checkCast) && getGenericReturnType(checkCast) != null)//getParentClass(true).containsGenericTypeParameter(getType()))
+        if (isGenericType(false, checkCast) && getGenericReturnType(checkCast) != null)// getParentClass(true).containsGenericTypeParameter(getType()))
         {
-            type = getGenericReturnType(checkCast);//getParentClass().getGenericTypeParameter(getType()).getDefaultType();
+            type = getGenericReturnType(checkCast);// getParentClass().getGenericTypeParameter(getType()).getDefaultType();
         } else {
             type = SyntaxUtils.getPrimitiveFlatType(getType(checkCast));
         }
@@ -677,7 +687,8 @@ public abstract class Value extends Node implements AbstractValue {
             }
             if (id.isAccessed()) {
                 if (getGenericTypeParameter() != null) {
-                    GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(this);
+                    GenericTypeArgument arg =
+                        getGenericTypeParameter().getCorrespondingArgument(this);
 
                     if (arg != null) {
                         return arg.getFileDeclaration();
@@ -716,11 +727,12 @@ public abstract class Value extends Node implements AbstractValue {
                     return ((MethodCall) this).getDeclaration().getFileDeclaration();
                 }
 
-                //Flat.debuggingBreakpoint(id instanceof Variable && ((Variable)id).getName().equals("hypotheses"));
+                // Flat.debuggingBreakpoint(id instanceof Variable &&
+                // ((Variable)id).getName().equals("hypotheses"));
                 ClassDeclaration type = ((Accessible) this).getDeclaringClass();
 
                 if (type == null) {
-                    //SyntaxUtils.invalidType(reference, reference.getType(), true);
+                    // SyntaxUtils.invalidType(reference, reference.getType(), true);
                 } else {
                     return type.getFileDeclaration();
                 }
@@ -735,14 +747,18 @@ public abstract class Value extends Node implements AbstractValue {
                 return decl.getReferenceFile();
             }
             if (var.getDeclaration() instanceof VirtualLocalDeclaration) {
-                return ((VirtualLocalDeclaration) var.getDeclaration()).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
+                return ((VirtualLocalDeclaration) var.getDeclaration()).getReference()
+                    .getReturnedNode().getTypeClass().getFileDeclaration();
             }
         } else if (this instanceof LocalDeclaration) {
             if (this instanceof Parameter && getParentMethod() instanceof LambdaMethodDeclaration) {
                 LambdaMethodDeclaration lambda = (LambdaMethodDeclaration) getParentMethod();
 
-                if (lambda.getParameterList().getVisibleIndex(this) >= 0 && lambda.methodCall != null) {
-                    Value corresponding = lambda.getCorrespondingClosureDeclaration().getParameterList().getParameter(lambda.getParameterList().getVisibleIndex(this));
+                if (lambda.getParameterList().getVisibleIndex(this) >= 0
+                    && lambda.methodCall != null) {
+                    Value corresponding =
+                        lambda.getCorrespondingClosureDeclaration().getParameterList()
+                            .getParameter(lambda.getParameterList().getVisibleIndex(this));
 
                     if (corresponding.isGenericType()) {
                         return getFileDeclaration();
@@ -752,18 +768,22 @@ public abstract class Value extends Node implements AbstractValue {
                 }
             }
             if (this instanceof VirtualLocalDeclaration) {
-                return ((VirtualLocalDeclaration) this).getReference().getReturnedNode().getTypeClass().getFileDeclaration();
+                return ((VirtualLocalDeclaration) this).getReference().getReturnedNode()
+                    .getTypeClass().getFileDeclaration();
             } else {
                 LocalDeclaration decl = (LocalDeclaration) this;
 
-                if (decl.isImplicit() && decl.getImplicitType() != null && !decl.getImplicitType().isDecoding() && !decl.getImplicitType().isGenericType()) {
+                if (decl.isImplicit() && decl.getImplicitType() != null
+                    && !decl.getImplicitType().isDecoding()
+                    && !decl.getImplicitType().isGenericType()) {
                     return decl.getImplicitType().getReferenceFile();
                 }
             }
         }
 
         if (this instanceof Accessible && this instanceof VariableDeclaration == false &&
-            this instanceof Instantiation == false && this instanceof StaticClassReference == false &&
+            this instanceof Instantiation == false && this instanceof StaticClassReference == false
+            &&
             getParentMethod() instanceof ExtensionMethodDeclaration) {
             Accessible ref = ((Accessible) this).getReferenceNode();
 
@@ -826,11 +846,9 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Get the data type that is required within the context that the
-     * specified Value is within.
+     * Get the data type that is required within the context that the specified Value is within.
      *
-     * @return The data type that is required within the context that the
-     * specified Value is within.
+     * @return The data type that is required within the context that the specified Value is within.
      */
     public byte getRequiredDataType() {
         Node parent = getParent();
@@ -841,7 +859,7 @@ public abstract class Value extends Node implements AbstractValue {
             MethodCall call = (MethodCall) parent.getAncestorOfType(MethodCall.class);
             Value param = call.getCorrespondingParameter(this);
 
-            //TODO: make support for multidimensional arrays too....
+            // TODO: make support for multidimensional arrays too....
             if (!call.isExternal() || !param.isPointer() || type != VALUE || !isPrimitiveArray()) {
                 type = param.getDataType();
             }
@@ -849,7 +867,8 @@ public abstract class Value extends Node implements AbstractValue {
             Assignment assignment = (Assignment) parent;
             Value assignee = assignment.getAssignedNodeValue();
 
-            if (this instanceof Variable == false || (assignee instanceof Variable && !((Variable) this).isSameVariable((Variable) assignee))) {
+            if (this instanceof Variable == false || (assignee instanceof Variable
+                && !((Variable) this).isSameVariable((Variable) assignee))) {
                 type = assignee.getDataType();
             }
         } else if (parent instanceof Return) {
@@ -860,8 +879,7 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Generate the text that is required for the data type in the
-     * current context.
+     * Generate the text that is required for the data type in the current context.
      *
      * @return The text that is required.
      */
@@ -870,8 +888,7 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Generate the text that is required for the data type in the
-     * current context.
+     * Generate the text that is required for the data type in the current context.
      *
      * @param dataType The data type to compare against.
      * @return The text that is required.
@@ -925,13 +942,13 @@ public abstract class Value extends Node implements AbstractValue {
             GenericTypeParameter param = getGenericTypeParameter();
 
             if (param != null) {
-                if (
-                    !param.isMethodGenericParameter() &&
-                        context != null &&
-                        context.getParentClass() != null &&
-                        context.getParentClass().isOfType(param.getParentClass()) &&
-                        context.getParentClass() != param.getParentClass()) {
-                    return SyntaxUtils.performWalk(context, context, context.getParentClass(), param.getParentClass(), param, true);
+                if (!param.isMethodGenericParameter() &&
+                    context != null &&
+                    context.getParentClass() != null &&
+                    context.getParentClass().isOfType(param.getParentClass()) &&
+                    context.getParentClass() != param.getParentClass()) {
+                    return SyntaxUtils.performWalk(context, context, context.getParentClass(),
+                        param.getParentClass(), param, true);
                 } else if (this instanceof Accessible) {
                     return ((Accessible) this).getGenericTypeArgumentFromParameter(param);
                 } else {
@@ -973,15 +990,17 @@ public abstract class Value extends Node implements AbstractValue {
     /**
      * Generate the Flat syntax for the type of the specified Value's type.
      *
-     * @param builder    The StringBuider to append the data to.
+     * @param builder The StringBuider to append the data to.
      * @param checkArray Whether or not to check if the type is an array.
      * @return The Flat syntax for the type of the Value.
      */
-    public final StringBuilder generateFlatType(StringBuilder builder, Value context, boolean checkArray) {
+    public final StringBuilder generateFlatType(StringBuilder builder, Value context,
+        boolean checkArray) {
         return generateFlatType(builder, context, checkArray, false);
     }
 
-    public StringBuilder generateFlatType(StringBuilder builder, Value context, boolean checkArray, boolean defaultGeneric) {
+    public StringBuilder generateFlatType(StringBuilder builder, Value context, boolean checkArray,
+        boolean defaultGeneric) {
         if (getTypeObject() instanceof FunctionType) {
             return ((FunctionType) getTypeObject()).closure.generateFlatInput(builder);
         }
@@ -993,12 +1012,16 @@ public abstract class Value extends Node implements AbstractValue {
 
         if (isGenericType()) {
             if (param != null) {
-                if (!param.isMethodGenericParameter() && context != null && context.getParentClass() != null && context.getParentClass().isOfType(param.getParentClass())) {
+                if (!param.isMethodGenericParameter() && context != null
+                    && context.getParentClass() != null
+                    && context.getParentClass().isOfType(param.getParentClass())) {
                     if (context.getParentClass() != param.getParentClass()) {
-                        arg = SyntaxUtils.performWalk(context, context, context.getParentClass(), param.getParentClass(), param, true);
+                        arg = SyntaxUtils.performWalk(context, context, context.getParentClass(),
+                            param.getParentClass(), param, true);
 
                         if (arg == null) {
-//							SyntaxUtils.performWalk(context, context.getParentClass(), param.getParentClass(), param, true);
+                            // SyntaxUtils.performWalk(context, context.getParentClass(),
+                            // param.getParentClass(), param, true);
                         } else {
                             return builder.append(arg.generateFlatType());
                         }
@@ -1010,8 +1033,12 @@ public abstract class Value extends Node implements AbstractValue {
         }
 
         if (arg != null && !arg.isGenericType() && !arg.isAncestorOf(this)) {
-            return builder.append(SyntaxUtils.getPrimitiveFlatType(arg.generateFlatType(context).toString()));
-        } else if (arg != null && context != null && context instanceof GenericTypeArgument == false && context.getParentClass() != null && arg.getGenericTypeParameter() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true)) {
+            return builder
+                .append(SyntaxUtils.getPrimitiveFlatType(arg.generateFlatType(context).toString()));
+        } else if (arg != null && context != null && context instanceof GenericTypeArgument == false
+            && context.getParentClass() != null && arg.getGenericTypeParameter() != null
+            && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(),
+                true)) {
             builder.append(arg.getType());
         } else if (defaultGeneric && param != null) {
             builder.append(param.getDefaultType());
@@ -1047,10 +1074,12 @@ public abstract class Value extends Node implements AbstractValue {
         if (needsBoxedBoolCheck) {
             Priority outerP = new Priority(parent, getLocationIn());
 
-            BinaryOperation nullCheck = BinaryOperation.generateNullCheck(outerP.parent, this, this, parent);
+            BinaryOperation nullCheck =
+                BinaryOperation.generateNullCheck(outerP.parent, this, this, parent);
             nullCheck.replaceWith(outerP);
 
-            Variable local = TernaryOperation.getLocalVariableFromNullCheck(nullCheck).getDeclaration().generateUsableVariable(nullCheck, getLocationIn());
+            Variable local = TernaryOperation.getLocalVariableFromNullCheck(nullCheck)
+                .getDeclaration().generateUsableVariable(nullCheck, getLocationIn());
 
             BinaryOperation andOp = BinaryOperation.generateDefault(outerP.parent, getLocationIn());
             andOp.getLeftOperand().replaceWith(nullCheck);
@@ -1068,7 +1097,8 @@ public abstract class Value extends Node implements AbstractValue {
 
         BinaryOperation operation = BinaryOperation.generateDefault(parent, getLocationIn());
         operation.getOperator().setOperator(Operator.NOT_EQUAL);
-        operation.getRightOperand().replaceWith(Literal.decodeStatement(parent, getDefaultLiteralValue(), getLocationIn(), true, true));
+        operation.getRightOperand().replaceWith(
+            Literal.decodeStatement(parent, getDefaultLiteralValue(), getLocationIn(), true, true));
 
         replaceWith(operation);
 
@@ -1099,7 +1129,8 @@ public abstract class Value extends Node implements AbstractValue {
     public String getFlatType(Value context, boolean checkArray, boolean defaultGeneric) {
         Value value = getFlatTypeValue(context);
 
-        return value.generateFlatType(new StringBuilder(), context, checkArray, defaultGeneric).toString();
+        return value.generateFlatType(new StringBuilder(), context, checkArray, defaultGeneric)
+            .toString();
     }
 
     public void importFlatType(FileDeclaration toFile, Value context) {
@@ -1110,7 +1141,8 @@ public abstract class Value extends Node implements AbstractValue {
         importFlatType(toFile, context, checkArray, false);
     }
 
-    public void importFlatType(FileDeclaration toFile, Value context, boolean checkArray, boolean defaultGeneric) {
+    public void importFlatType(FileDeclaration toFile, Value context, boolean checkArray,
+        boolean defaultGeneric) {
         Value type = getFlatTypeValue(context);
 
         GenericTypeArgument arg = null;
@@ -1118,9 +1150,12 @@ public abstract class Value extends Node implements AbstractValue {
 
         if (isGenericType()) {
             if (param != null) {
-                if (!param.isMethodGenericParameter() && context != null && context.getParentClass() != null && context.getParentClass().isOfType(param.getParentClass())) {
+                if (!param.isMethodGenericParameter() && context != null
+                    && context.getParentClass() != null
+                    && context.getParentClass().isOfType(param.getParentClass())) {
                     if (context.getParentClass() != param.getParentClass()) {
-                        arg = SyntaxUtils.performWalk(context, context, context.getParentClass(), param.getParentClass(), param, true);
+                        arg = SyntaxUtils.performWalk(context, context, context.getParentClass(),
+                            param.getParentClass(), param, true);
                     }
                 } else {
                     arg = param.getCorrespondingArgument(context);
@@ -1131,11 +1166,14 @@ public abstract class Value extends Node implements AbstractValue {
         if (arg != null && !arg.isGenericType()) {
             toFile.addImport(arg.getTypeClassLocation());
             arg.importGenericArgumentTypesTo(toFile);
-        } else if (arg != null && context != null && context.getParentClass() != null && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(), true)) {
+        } else if (arg != null && context != null && context.getParentClass() != null
+            && arg.getGenericTypeParameter().getParentClass().encapsulates(context.getParentClass(),
+                true)) {
             toFile.addImport(arg.getTypeClassLocation());
             arg.importGenericArgumentTypesTo(toFile);
         } else if (defaultGeneric && param != null) {
-            toFile.addImport(param.getFileDeclaration().getImport(param.getDefaultType(), false).getClassLocation());
+            toFile.addImport(param.getFileDeclaration().getImport(param.getDefaultType(), false)
+                .getClassLocation());
         } else {
             toFile.addImport(type.getTypeClassLocation());
 
@@ -1162,7 +1200,8 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     public ClassDeclaration getFlatTypeClass() {
-        return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getFlatType(this))));
+        return getProgram().getClassDeclaration(
+            SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getFlatType(this))));
     }
 
     public ClassDeclaration getFlatTypeClass(Value context) {
@@ -1173,8 +1212,10 @@ public abstract class Value extends Node implements AbstractValue {
         return getFlatTypeClass(context, checkArray, true);
     }
 
-    public ClassDeclaration getFlatTypeClass(Value context, boolean checkArray, boolean checkGeneric) {
-        return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, SyntaxUtils.stripGenerics(getFlatType(context, checkArray, checkGeneric))));
+    public ClassDeclaration getFlatTypeClass(Value context, boolean checkArray,
+        boolean checkGeneric) {
+        return getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this,
+            SyntaxUtils.stripGenerics(getFlatType(context, checkArray, checkGeneric))));
     }
 
     public boolean isOriginallyGenericType() {
@@ -1197,7 +1238,8 @@ public abstract class Value extends Node implements AbstractValue {
         ClassDeclaration c = getTypeClass();
 
         if (c != null && getGenericTypeArgumentList() != null) {
-            ClassDeclaration converted = c.getConvertedPrimitiveClass(getGenericTypeArgumentList().getTypes());
+            ClassDeclaration converted =
+                c.getConvertedPrimitiveClass(getGenericTypeArgumentList().getTypes());
 
             if (converted != null) {
                 getFileDeclaration().addImport(converted.getClassLocation());
@@ -1226,15 +1268,15 @@ public abstract class Value extends Node implements AbstractValue {
     public int getArrayAccessDimensions() {
         return arrayAccess != null ? arrayAccess.getNumDimensions() : 0;
     }
-	
-	/*/**
-	 * @see flat.tree.Node#generateFlatInput(StringBuilder, boolean)
-	 *
-	@Override
-	public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren)
-	{
-		return getTarget().generateUseOutput(builder);
-	}*/
+
+    /*
+     * /**
+     * 
+     * @see flat.tree.Node#generateFlatInput(StringBuilder, boolean)
+     *
+     * @Override public StringBuilder generateFlatInput(StringBuilder builder, boolean
+     * outputChildren) { return getTarget().generateUseOutput(builder); }
+     */
 
     public boolean isConstant() {
         return true;
@@ -1245,12 +1287,10 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Get whether or not the specified Node's type can be determined NOT
-     * to be virtual or not at compilation time, i.e. If the program
-     * doesn't have to use the vtable.
+     * Get whether or not the specified Node's type can be determined NOT to be virtual or not at
+     * compilation time, i.e. If the program doesn't have to use the vtable.
      *
-     * @return Wether or not the type can be determined to NOT be virtual
-     * at compilation time.
+     * @return Wether or not the type can be determined to NOT be virtual at compilation time.
      */
     public boolean isVirtualTypeKnown() {
         return getParent() instanceof Super;
@@ -1291,28 +1331,29 @@ public abstract class Value extends Node implements AbstractValue {
             return genericParameter;
         }
         if (getParentMethod(true) != null) {
-            GenericTypeParameter param = getParentMethod(true).getGenericTypeParameter(getFlatType(this, checkArray));
+            GenericTypeParameter param =
+                getParentMethod(true).getGenericTypeParameter(getFlatType(this, checkArray));
 
             if (param != null) {
                 return param;
             }
         }
-//		if (getAncestorOfType(MethodCall.class) != null)
-//		{
-//			MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
-//
-//			ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
-//
-//			if (clazz != null)
-//			{
-//				GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
-//
-//				if (param != null)
-//				{
-//					return param;
-//				}
-//			}
-//		}
+        // if (getAncestorOfType(MethodCall.class) != null)
+        // {
+        // MethodCall call = (MethodCall)getAncestorOfType(MethodCall.class);
+        //
+        // ClassDeclaration clazz = call.getReferenceNode().toValue().getTypeClass();
+        //
+        // if (clazz != null)
+        // {
+        // GenericTypeParameter param = clazz.getGenericTypeParameter(getType(checkArray), this);
+        //
+        // if (param != null)
+        // {
+        // return param;
+        // }
+        // }
+        // }
         if (getParentClass() == null) {
             return null;
         }
@@ -1387,7 +1428,9 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     public String getGenericReturnType(Value context, boolean checkCast) {
-//		GenericTypeParameter param = getGenericTypeParameter(checkCast);//getParentClass().getGenericTypeParameter(getType(checkCast), this);
+        // GenericTypeParameter param =
+        // getGenericTypeParameter(checkCast);//getParentClass().getGenericTypeParameter(getType(checkCast),
+        // this);
 
         String location = SyntaxUtils.getTypeClassLocation(this, getType(), true);
 
@@ -1400,19 +1443,22 @@ public abstract class Value extends Node implements AbstractValue {
         }
 
         return null;
-        //throw new UnimplementedOperationException("The getGenericReturnType() method must be implemented by class " + this.getClass().getName());
+        // throw new UnimplementedOperationException("The getGenericReturnType() method must be
+        // implemented by class " + this.getClass().getName());
     }
 
     public GenericTypeParameterList getGenericTypeParameterDeclaration() {
         return getParentClass().getGenericTypeParameterDeclaration();
-//		throw new UnimplementedOperationException("The getGenericDeclaration() method must be implemented by class " + this.getClass().getName());
+        // throw new UnimplementedOperationException("The getGenericDeclaration() method must be
+        // implemented by class " + this.getClass().getName());
     }
 
     public void replaceGenericArguments(Value target) {
         GenericTypeArgumentList args = getGenericTypeArgumentList();
         GenericTypeArgumentList targetArgs = target.getGenericTypeArgumentList();
 
-        for (int i = 0; i < Math.min(args.getNumVisibleChildren(), targetArgs.getNumVisibleChildren()); i++) {
+        for (int i = 0; i < Math.min(args.getNumVisibleChildren(),
+            targetArgs.getNumVisibleChildren()); i++) {
             GenericTypeArgument arg = args.getVisibleChild(i);
             GenericTypeArgument targetArg = targetArgs.getVisibleChild(i);
 
@@ -1420,9 +1466,11 @@ public abstract class Value extends Node implements AbstractValue {
         }
     }
 
-    private static void replaceGenericArguments(Value context, ClassDeclaration targetClass, GenericTypeArgument arg, GenericTypeArgument target) {
+    private static void replaceGenericArguments(Value context, ClassDeclaration targetClass,
+        GenericTypeArgument arg, GenericTypeArgument target) {
         if (target.isGenericType()) {
-            GenericTypeArgument a = SyntaxUtils.performWalk(context, context, context.getParentClass(), targetClass, target.genericParameter, true);
+            GenericTypeArgument a = SyntaxUtils.performWalk(context, context,
+                context.getParentClass(), targetClass, target.genericParameter, true);
 
             if (a != null) {
                 arg.setType(a);
@@ -1431,7 +1479,8 @@ public abstract class Value extends Node implements AbstractValue {
             GenericTypeArgumentList args = arg.getGenericTypeArgumentList();
             GenericTypeArgumentList targetArgs = target.getGenericTypeArgumentList();
 
-            for (int i = 0; i < Math.min(args.getNumVisibleChildren(), targetArgs.getNumVisibleChildren()); i++) {
+            for (int i = 0; i < Math.min(args.getNumVisibleChildren(),
+                targetArgs.getNumVisibleChildren()); i++) {
                 GenericTypeArgument searchArg = args.getVisibleChild(i);
                 GenericTypeArgument targetArg = targetArgs.getVisibleChild(i);
 
@@ -1478,14 +1527,21 @@ public abstract class Value extends Node implements AbstractValue {
         Value original = value;
         Value flatType = value.getFlatTypeValue(context);
 
-        if (flatType.isGenericType() && ((context != null && isWithinStaticContext() != context.isWithinStaticContext()) || !getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass()))) {
+        if (flatType.isGenericType() && ((context != null
+            && isWithinStaticContext() != context.isWithinStaticContext())
+            || !getParentClass().isOfType(flatType.getGenericTypeParameter().getParentClass()))) {
             setTypeValue(original.getGenericReturnType());
         } else if (value.getType() != null) {
-            String type = SyntaxUtils.getPrimitiveFlatType((extractType ? flatType : original).getType());
+            String type =
+                SyntaxUtils.getPrimitiveFlatType((extractType ? flatType : original).getType());
 
-            if (extractType && !flatType.isExternalType() && !flatType.isGenericType() && getFileDeclaration().getClassDeclaration(type) == null && !getFileDeclaration().containsImport(type, false)) {
-                if ((flatType instanceof LocalDeclaration == false || !((LocalDeclaration) flatType).isImplicit()) &&
-                    (this instanceof LocalDeclaration == false || !((LocalDeclaration) this).isImplicit())) {
+            if (extractType && !flatType.isExternalType() && !flatType.isGenericType()
+                && getFileDeclaration().getClassDeclaration(type) == null
+                && !getFileDeclaration().containsImport(type, false)) {
+                if ((flatType instanceof LocalDeclaration == false
+                    || !((LocalDeclaration) flatType).isImplicit()) &&
+                    (this instanceof LocalDeclaration == false
+                        || !((LocalDeclaration) this).isImplicit())) {
                     getFileDeclaration().addImport(flatType.getTypeClassLocation());
                 }
             }
@@ -1495,13 +1551,15 @@ public abstract class Value extends Node implements AbstractValue {
             setType(type);
             setDataType(original.getDataType());
 
-            if (extractType && (flatType instanceof ClassDeclaration == false || flatType != clazz)) {
+            if (extractType
+                && (flatType instanceof ClassDeclaration == false || flatType != clazz)) {
                 type = value.getFlatTypeValue(context).generateGenericType(context);
 
                 GenericTypeArgumentList args = getGenericTypeArgumentList();
 
                 if (args != null) {
-                    GenericTypeArgumentList newArgs = new GenericTypeArgumentList(null, args.getLocationIn());
+                    GenericTypeArgumentList newArgs =
+                        new GenericTypeArgumentList(null, args.getLocationIn());
 
                     if (original instanceof ClassDeclaration == false && type.length() > 0) {
                         args.slaughterEveryLastVisibleChild();
@@ -1513,22 +1571,28 @@ public abstract class Value extends Node implements AbstractValue {
                         ClassDeclaration typeClass = getTypeClass();
 
                         if (typeClass != null) {
-                            GenericTypeParameterList params = typeClass.getGenericTypeParameterDeclaration();
+                            GenericTypeParameterList params =
+                                typeClass.getGenericTypeParameterDeclaration();
 
                             if (params.getNumParameters() > 0) {
                                 for (int i = 0; i < params.getNumParameters(); i++) {
                                     GenericTypeParameter param = params.getParameter(i);
-                                    GenericTypeArgument arg = new GenericTypeArgument(args, args.getLocationIn());
+                                    GenericTypeArgument arg =
+                                        new GenericTypeArgument(args, args.getLocationIn());
                                     arg.autoAdded = true;
 
                                     if (getParentClass() == typeClass && !isWithinStaticContext()) {
                                         arg.setType(params.getParameter(i).getType());
-                                    } else if (clazz != null && typeClass.genericOverload == clazz) {
-                                        int index = typeClass.genericOverload.getGenericTypeParameter(param.getName()).getVisibleIndex();
+                                    } else if (clazz != null
+                                        && typeClass.genericOverload == clazz) {
+                                        int index = typeClass.genericOverload
+                                            .getGenericTypeParameter(param.getName())
+                                            .getVisibleIndex();
 
                                         if (typeClass.primitiveOverloadTypes[index] instanceof GenericTypeParameter) {
                                             arg = args.getVisibleChild(index);
-                                            arg = arg.clone(newArgs, arg.getLocationIn(), true, true);
+                                            arg =
+                                                arg.clone(newArgs, arg.getLocationIn(), true, true);
                                         } else {
                                             arg.setType(typeClass.primitiveOverloadTypes[index]);
                                         }
@@ -1581,18 +1645,20 @@ public abstract class Value extends Node implements AbstractValue {
     public Value replaceWithUnboxedValue(String type) {
         Value newValue = SyntaxUtils.unboxPrimitive(this, type, true);
 
-//		if (!newValue.containsChild(newValue))
-//		{
-//			replaceWith(newValue);
-//		}
+        // if (!newValue.containsChild(newValue))
+        // {
+        // replaceWith(newValue);
+        // }
 
         return newValue;
     }
 
     public Value replaceWithBoxedValue(Value required, String type) {
-        if (getReturnedNode().isPrimitive() && !required.isPrimitive() && required.getType() != null) {
+        if (getReturnedNode().isPrimitive() && !required.isPrimitive()
+            && required.getType() != null) {
             return replaceWithAutoboxedValue(type);
-        } else if (required.getType() != null && !getType().equals("void") && !getReturnedNode().isPrimitive() && required.isPrimitive()) {
+        } else if (required.getType() != null && !getType().equals("void")
+            && !getReturnedNode().isPrimitive() && required.isPrimitive()) {
             return replaceWithUnboxedValue(type);
         }
 
@@ -1608,8 +1674,7 @@ public abstract class Value extends Node implements AbstractValue {
     }
 
     /**
-     * Fill the given {@link Value} with the data that is in the
-     * specified node.
+     * Fill the given {@link Value} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -1618,7 +1683,8 @@ public abstract class Value extends Node implements AbstractValue {
         return cloneTo(node, cloneChildren, cloneAnnotations, false);
     }
 
-    public Value cloneTo(Value node, boolean cloneChildren, boolean cloneAnnotations, boolean copyFacadeValues) {
+    public Value cloneTo(Value node, boolean cloneChildren, boolean cloneAnnotations,
+        boolean copyFacadeValues) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         if (copyFacadeValues) {
@@ -1636,24 +1702,28 @@ public abstract class Value extends Node implements AbstractValue {
 
     public Literal generateDefaultValue(Node parent, Location location) {
         if (!isPrimitive()) {
-            return (Literal) Literal.decodeStatement(parent, Literal.NULL_IDENTIFIER, location, true, true);
-        } else if (getTypeClass().isOfType(getProgram().getClassDeclaration("flat/primitive/number/Char"))) {
+            return (Literal) Literal.decodeStatement(parent, Literal.NULL_IDENTIFIER, location,
+                true, true);
+        } else if (getTypeClass()
+            .isOfType(getProgram().getClassDeclaration("flat/primitive/number/Char"))) {
             return (Literal) Literal.decodeStatement(parent, "'\\0'", location, true, true);
-        } else if (getTypeClass().isOfType(getProgram().getClassDeclaration("flat/primitive/number/Number"))) {
+        } else if (getTypeClass()
+            .isOfType(getProgram().getClassDeclaration("flat/primitive/number/Number"))) {
             return (Literal) Literal.decodeStatement(parent, "0", location, true, true);
-        } else if (getTypeClass().isOfType(getProgram().getClassDeclaration("flat/primitive/Bool"))) {
+        } else if (getTypeClass()
+            .isOfType(getProgram().getClassDeclaration("flat/primitive/Bool"))) {
             return (Literal) Literal.decodeStatement(parent, "false", location, true, true);
         }
 
-        throw new UnsupportedOperationException("Value of type '" + getType() + "' does not have a default value.");
+        throw new UnsupportedOperationException(
+            "Value of type '" + getType() + "' does not have a default value.");
     }
 
     /**
-     * Test the Value class type to make sure everything
-     * is working properly.
+     * Test the Value class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -1661,3 +1731,4 @@ public abstract class Value extends Node implements AbstractValue {
         return null;
     }
 }
+

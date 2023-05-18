@@ -11,9 +11,9 @@ import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
 
 /**
- * MethodDeclaration extension that represents the declaration of an
- * external method node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * MethodDeclaration extension that represents the declaration of an external method node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:10:53 PM
@@ -74,26 +74,23 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
     }
 
     /**
-     * Decode the given statement into a ExternalMethodDeclaration instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a ExternalMethodDeclaration instance, if possible. If it is
+     * not possible, this method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>external int getAge(String name, int age)</li>
-     * 	<li>external int calculateArea(int width, int height)</li>
-     * 	<li>external void doNothing() as pointlessFunction</li>
+     * <li>external int getAge(String name, int age)</li>
+     * <li>external int calculateArea(int width, int height)</li>
+     * <li>external void doNothing() as pointlessFunction</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  ExternalMethodDeclaration instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Method.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a ExternalMethodDeclaration instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Method.
      */
-    public static ExternalMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static ExternalMethodDeclaration decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         Bounds bounds = StringUtils.findWordBounds(statement, ExternalMethodDeclaration.PREFIX);
 
         if (bounds.isValid() && bounds.getStart() < statement.indexOf('(')) {
@@ -103,7 +100,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
                 ExternalMethodDeclaration n = new ExternalMethodDeclaration(parent, location);
 
                 int start = 0;
-                int end = StringUtils.findNextNonWhitespaceIndex(methodSignature, SyntaxUtils.findCharInBaseScope(methodSignature, '(') - 1, -1) + 1;
+                int end = StringUtils.findNextNonWhitespaceIndex(methodSignature,
+                    SyntaxUtils.findCharInBaseScope(methodSignature, '(') - 1, -1) + 1;
 
                 boolean quotes = methodSignature.charAt(end - 1) == '"';
 
@@ -120,7 +118,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
                 }
 
                 // TODO: 10/7/2016 make this name foolproof
-                methodSignature = methodSignature.substring(0, start) + "__extMethod" + methodSignature.substring(end);
+                methodSignature = methodSignature.substring(0, start) + "__extMethod"
+                    + methodSignature.substring(end);
 
                 String withAlias = methodSignature;
                 methodSignature = trimAlias(methodSignature);
@@ -128,7 +127,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
                 statement = methodSignature;
                 methodSignature = n.formMethodSignature(methodSignature);
 
-                MethodDeclaration method = FlatMethodDeclaration.decodeStatement(n, methodSignature, location.asNew(), require);
+                MethodDeclaration method = FlatMethodDeclaration.decodeStatement(n, methodSignature,
+                    location.asNew(), require);
 
                 if (method != null) {
                     method.cloneTo(n);
@@ -150,11 +150,14 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
 
     /**
      * Form the Flat-style method signature.<br>
-     * For example:
-     * <blockquote><pre>
-     * String in  = "int getValue(String type)";
-     * String out = formMethodSignature(in);</pre></blockquote>
-     * The 'out' String would contain the value of "getValue(String type) -> int"
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * String in = "int getValue(String type)";
+     * String out = formMethodSignature(in);
+     * </pre>
+     * 
+     * </blockquote> The 'out' String would contain the value of "getValue(String type) -> int"
      *
      * @param methodSignature The external type method signature.
      * @return The Flat-style method signature.
@@ -173,7 +176,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
             SyntaxMessage.error("External method definition missing return type", this);
         }
 
-        Bounds symbols = StringUtils.findGroupedCharsBounds(methodSignature, end + 1, StringUtils.SYMBOLS_CHARS, StringUtils.WHITESPACE);
+        Bounds symbols = StringUtils.findGroupedCharsBounds(methodSignature, end + 1,
+            StringUtils.SYMBOLS_CHARS, StringUtils.WHITESPACE);
 
         if (symbols.isValid()) {
             end = symbols.getEnd();
@@ -181,7 +185,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
 
         String type = methodSignature.substring(start + 1, end + 1);
 
-        methodSignature = methodSignature.substring(0, start + 1) + methodSignature.substring(end + 1);
+        methodSignature =
+            methodSignature.substring(0, start + 1) + methodSignature.substring(end + 1);
 
         if (!type.equals("void")) {
             methodSignature += " -> " + type;
@@ -192,14 +197,16 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
 
     /**
      * Trim the alias signature off of the external method declaration.<br>
-     * For example:
-     * <blockquote><pre>
-     * String in  = "int getValue(String type) as ext_getValue";
-     * String out = trimAlias(in);</pre></blockquote>
-     * The 'out' String would contain "int getValue(String type)"
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * String in = "int getValue(String type) as ext_getValue";
+     * String out = trimAlias(in);
+     * </pre>
+     * 
+     * </blockquote> The 'out' String would contain "int getValue(String type)"
      *
-     * @param methodSignature The external method declaration signature to
-     *                        trim the alias from.
+     * @param methodSignature The external method declaration signature to trim the alias from.
      * @return The trimmed method signature.
      */
     private static String trimAlias(String methodSignature) {
@@ -210,21 +217,24 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
             return methodSignature;
         }
 
-        return methodSignature.substring(0, StringUtils.findNextNonWhitespaceIndex(methodSignature, index - 1, -1) + 1);
+        return methodSignature.substring(0,
+            StringUtils.findNextNonWhitespaceIndex(methodSignature, index - 1, -1) + 1);
     }
 
     /**
      * Decode the alias name for the external method.<br>
-     * For example:
-     * <blockquote><pre>
-     * external int externalMethod() as myAlias</pre></blockquote>
-     * The above declaration declares an external method that can be
-     * called as "myAlias()" and returns an integer result.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * external int externalMethod() as myAlias
+     * </pre>
+     * 
+     * </blockquote> The above declaration declares an external method that can be called as
+     * "myAlias()" and returns an integer result.
      *
-     * @param statement       The statement containing the method declaration.
+     * @param statement The statement containing the method declaration.
      * @param methodSignature The signature of the external method.
-     * @param require         Whether or not to throw an error if anything goes
-     *                        wrong.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the alias was successfully decoded.
      */
     private boolean decodeAlias(String statement, String methodSignature, boolean require) {
@@ -242,10 +252,12 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
     }
 
     /**
-     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String, Node.ExtraData)
+     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String,
+     *      Node.ExtraData)
      */
     @Override
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData extra) {
         if (extra.getWordNumber() == 0) {
             if (!word.equals("as")) {
                 fail(word, bounds);
@@ -264,7 +276,7 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
     /**
      * Output an error because the word iteration failed.
      *
-     * @param word   The word that failed to be decoded.
+     * @param word The word that failed to be decoded.
      * @param bounds The Bounds of the word.
      */
     private void fail(String word, Bounds bounds) {
@@ -289,7 +301,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
 
         if (methods.length > 1) {
             getParentClass().getMethods(getName());
-            SyntaxMessage.error("Non-external method with name '" + alias + "' already exists", this, false);
+            SyntaxMessage.error("Non-external method with name '" + alias + "' already exists",
+                this, false);
 
             return result.errorOccurred();
         }
@@ -301,7 +314,8 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ExternalMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalMethodDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ExternalMethodDeclaration node = new ExternalMethodDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -315,13 +329,13 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
     }
 
     /**
-     * Fill the given {@link ExternalMethodDeclaration} with the data that is in
-     * the specified node.
+     * Fill the given {@link ExternalMethodDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ExternalMethodDeclaration cloneTo(ExternalMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalMethodDeclaration cloneTo(ExternalMethodDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.alias = alias;
@@ -330,11 +344,11 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
     }
 
     /**
-     * Test the {@link ExternalMethodDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link ExternalMethodDeclaration} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -342,3 +356,4 @@ public class ExternalMethodDeclaration extends MethodDeclaration {
         return null;
     }
 }
+

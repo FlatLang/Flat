@@ -1,8 +1,7 @@
 package flat.error;
 
 /**
- * Runtime Exception that is thrown if there is an error that was decoded
- * in the syntax.
+ * Runtime Exception that is thrown if there is an error that was decoded in the syntax.
  *
  * @author Braden Steffaniak
  * @since v0.2.8 May 26, 2014 at 4:24:19 PM
@@ -18,3 +17,4 @@ public class TypeError extends SyntaxErrorException {
         super(info, type);
     }
 }
+

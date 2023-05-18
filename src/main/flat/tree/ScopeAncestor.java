@@ -9,8 +9,7 @@ import java.util.HashMap;
  */
 public interface ScopeAncestor {
     /**
-     * Get a unique integer used for differentiating local variables
-     * within the scope.
+     * Get a unique integer used for differentiating local variables within the scope.
      *
      * @return A unique identifier for local variables.
      */
@@ -47,3 +46,4 @@ public interface ScopeAncestor {
         return name;
     }
 }
+

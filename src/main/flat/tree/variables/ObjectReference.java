@@ -27,7 +27,9 @@ public class ObjectReference extends Variable {
 
     @Override
     public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType) {
-        if (getParentMethod() instanceof ExtensionMethodDeclaration || getParentMethod() instanceof PropertyMethod && ((PropertyMethod) getParentMethod()).getDeclaration() instanceof ExtensionFieldDeclaration) {
+        if (getParentMethod() instanceof ExtensionMethodDeclaration
+            || getParentMethod() instanceof PropertyMethod && ((PropertyMethod) getParentMethod())
+                .getDeclaration() instanceof ExtensionFieldDeclaration) {
             return getFileDeclaration().getImportedClass(this, getType());
         }
 
@@ -48,7 +50,9 @@ public class ObjectReference extends Variable {
 
         for (int i = 0; i < params.getNumVisibleChildren(); i++) {
             if (params.getVisibleChild(i).getName().equals(param.getType())) {
-                return getGenericTypeArgumentList().getNumVisibleChildren() > 0 ? getGenericTypeArgumentList().getVisibleChild(i) : null;
+                return getGenericTypeArgumentList().getNumVisibleChildren() > 0
+                    ? getGenericTypeArgumentList().getVisibleChild(i)
+                    : null;
             }
         }
 
@@ -74,12 +78,13 @@ public class ObjectReference extends Variable {
         Variable var = SyntaxTree.getUsableExistingNode(method, identifier, method.getLocationIn());
 
         if (var != null) {
-            //var.cloneTo(this, false);
+            // var.cloneTo(this, false);
             setDeclaration(var.getDeclaration());
 
-            addChild(0, var.getGenericTypeArgumentList().clone(this, getLocationIn().asNew()), this);
+            addChild(0, var.getGenericTypeArgumentList().clone(this, getLocationIn().asNew()),
+                this);
         } else {
-            setDeclaration(method.getParentClass());//.cloneTo(this, false);
+            setDeclaration(method.getParentClass());// .cloneTo(this, false);
 
             addChild(0, new GenericTypeArgumentList(this, getLocationIn()), this);
         }
@@ -94,7 +99,8 @@ public class ObjectReference extends Variable {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ObjectReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ObjectReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ObjectReference node = new ObjectReference(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -108,24 +114,23 @@ public class ObjectReference extends Variable {
     }
 
     /**
-     * Fill the given {@link ObjectReference} with the data that is in the
-     * specified node.
+     * Fill the given {@link ObjectReference} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ObjectReference cloneTo(ObjectReference node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ObjectReference cloneTo(ObjectReference node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link ObjectReference} class type to make sure everything
-     * is working properly.
+     * Test the {@link ObjectReference} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -133,3 +138,4 @@ public class ObjectReference extends Variable {
         return null;
     }
 }
+

@@ -50,8 +50,10 @@ public class FirstClassClosureDeclaration extends ClosureDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public FirstClassClosureDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        FirstClassClosureDeclaration node = new FirstClassClosureDeclaration(temporaryParent, locationIn);
+    public FirstClassClosureDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        FirstClassClosureDeclaration node =
+            new FirstClassClosureDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -64,13 +66,14 @@ public class FirstClassClosureDeclaration extends ClosureDeclaration {
     }
 
     /**
-     * Fill the given {@link FirstClassClosureDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link FirstClassClosureDeclaration} with the data that is in the specified
+     * node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public synchronized FirstClassClosureDeclaration cloneTo(FirstClassClosureDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public synchronized FirstClassClosureDeclaration cloneTo(FirstClassClosureDeclaration node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.reference = reference;
@@ -79,11 +82,11 @@ public class FirstClassClosureDeclaration extends ClosureDeclaration {
     }
 
     /**
-     * Test the {@link FirstClassClosureDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link FirstClassClosureDeclaration} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

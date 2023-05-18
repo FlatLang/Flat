@@ -23,7 +23,8 @@ public class TestResultAnnotation extends Annotation implements ModifierAnnotati
         super(temporaryParent, locationIn);
     }
 
-    public static TestResultAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static TestResultAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("TestResult")) {
             TestResultAnnotation n = new TestResultAnnotation(parent, location);
 
@@ -68,7 +69,8 @@ public class TestResultAnnotation extends Annotation implements ModifierAnnotati
     }
 
     @Override
-    public TestResultAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestResultAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         TestResultAnnotation node = new TestResultAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,7 +80,8 @@ public class TestResultAnnotation extends Annotation implements ModifierAnnotati
         return cloneTo(node, true, true);
     }
 
-    public TestResultAnnotation cloneTo(TestResultAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestResultAnnotation cloneTo(TestResultAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -88,6 +91,7 @@ public class TestResultAnnotation extends Annotation implements ModifierAnnotati
 
     @Override
     public String[] getAliases() {
-        return new String[]{"test_result"};
+        return new String[] {"test_result"};
     }
 }
+

@@ -6,16 +6,18 @@ import flat.tree.Node;
 import flat.util.Location;
 
 /**
- * Node extension that represents an Exception instance that is to
- * be thrown within a Throw statement.
- * <blockquote><pre>
+ * Node extension that represents an Exception instance that is to be thrown within a Throw
+ * statement. <blockquote>
+ * 
+ * <pre>
  * // Instantiate a new Exception type.
  * ExceptionName varName = new ExceptionName(... optional arguments ...);
  *
  * // Throw the generated Exception type.
- * throw varName;</pre></blockquote>
- * For more information on what
- * it looks like to throw an Exception, see
+ * throw varName;
+ * </pre>
+ * 
+ * </blockquote> For more information on what it looks like to throw an Exception, see
  * {@link Throw#decodeStatement(Node, String, Location, boolean)}.
  *
  * @author Braden Steffaniak
@@ -40,14 +42,12 @@ public class Exception extends Node {
     }
 
     /**
-     * Set the type of Exception that is being generated. If the type
-     * is unique to anything created prior to this, the id of the
-     * generated Exception will also be unique. If the Exception
-     * type has already been used before, it will use the already
-     * generated id that belongs to the Exception.
+     * Set the type of Exception that is being generated. If the type is unique to anything created
+     * prior to this, the id of the generated Exception will also be unique. If the Exception type
+     * has already been used before, it will use the already generated id that belongs to the
+     * Exception.
      *
-     * @param type The name (type) of the Exception that is being
-     *             generated.
+     * @param type The name (type) of the Exception that is being generated.
      */
     public void setType(ClassDeclaration type) {
         this.type = type;
@@ -57,7 +57,8 @@ public class Exception extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Exception clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Exception clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Exception node = new Exception(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -71,8 +72,7 @@ public class Exception extends Node {
     }
 
     /**
-     * Fill the given {@link Exception} with the data that is in the
-     * specified node.
+     * Fill the given {@link Exception} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -86,11 +86,10 @@ public class Exception extends Node {
     }
 
     /**
-     * Test the Exception class type to make sure everything
-     * is working properly.
+     * Test the Exception class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -98,3 +97,4 @@ public class Exception extends Node {
         return null;
     }
 }
+

@@ -12,9 +12,9 @@ import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
 
 /**
- * Value extension that represents what one type is being casted
- * to another. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more information on what a cast looks like.
+ * Value extension that represents what one type is being casted to another. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more information on what a cast
+ * looks like.
  *
  * @author Braden Steffaniak
  * @since v0.2.25 Aug 3, 2014 at 1:52:00 PM
@@ -27,7 +27,8 @@ public class Cast extends IValue {
     public Cast(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
 
-        GenericTypeArgumentList implementation = new GenericTypeArgumentList(temporaryParent, locationIn.asNew());
+        GenericTypeArgumentList implementation =
+            new GenericTypeArgumentList(temporaryParent, locationIn.asNew());
         addChild(implementation);
     }
 
@@ -40,7 +41,9 @@ public class Cast extends IValue {
     }
 
     public Value getValueNode() {
-        return getNumChildren() > super.getNumDefaultChildren() ? (Value) getChild(super.getNumDefaultChildren() + 1) : null;
+        return getNumChildren() > super.getNumDefaultChildren()
+            ? (Value) getChild(super.getNumDefaultChildren() + 1)
+            : null;
     }
 
     @Override
@@ -74,29 +77,29 @@ public class Cast extends IValue {
     }
 
     /**
-     * Decode the given statement into a {@link Cast} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Cast} instance, if possible. If it is not possible,
+     * this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>(Int)5.2</li>
-     * 	<li>(Value)getChild(getNumChildren())</li>
-     * 	<li>(String[])array</li>
+     * <li>(Int)5.2</li>
+     * <li>(Value)getChild(getNumChildren())</li>
+     * <li>(String[])array</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Cast} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Cast}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Cast} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Cast}.
      */
-    public static Cast decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Cast decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.charAt(0) == '(') {
             Cast n = new Cast(parent, location);
             Bounds bounds = SyntaxUtils.findParenthesesBounds(n, statement);
-            String contents = StringUtils.removeSurroundingParenthesis(statement, bounds).extractString(statement);
+            String contents = StringUtils.removeSurroundingParenthesis(statement, bounds)
+                .extractString(statement);
 
             Annotation a = Annotation.decodeStatement(n, contents, location, false);
 
@@ -167,7 +170,9 @@ public class Cast extends IValue {
                 getTypeClass().isRelatedTo(type);
             }
 
-            SyntaxMessage.error("Cannot cast from type '" + node.getReturnedNode().getTypeClassName() + "' to type '" + getTypeClassName() + "'", this);
+            SyntaxMessage
+                .error("Cannot cast from type '" + node.getReturnedNode().getTypeClassName()
+                    + "' to type '" + getTypeClassName() + "'", this);
         }
 
         if (!array) {
@@ -194,14 +199,16 @@ public class Cast extends IValue {
     }
 
     private boolean invalidTypeError(String type, boolean require) {
-        return SyntaxMessage.queryError("Cannot cast to invalid type '" + type + "'", this, require);
+        return SyntaxMessage.queryError("Cannot cast to invalid type '" + type + "'", this,
+            require);
     }
 
     /**
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Cast clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Cast clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Cast node = new Cast(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -215,8 +222,7 @@ public class Cast extends IValue {
     }
 
     /**
-     * Fill the given {@link Cast} with the data that is in the
-     * specified node.
+     * Fill the given {@link Cast} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -228,11 +234,10 @@ public class Cast extends IValue {
     }
 
     /**
-     * Test the {@link Cast} class type to make sure everything
-     * is working properly.
+     * Test the {@link Cast} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
         Cast node = null;
@@ -266,3 +271,4 @@ public class Cast extends IValue {
         return null;
     }
 }
+

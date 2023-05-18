@@ -7,7 +7,8 @@ import flat.tree.Parameter;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class PublicAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier {
+public class PublicAnnotation extends ApplicableAnnotationBase
+    implements ModifierAnnotation, VisibilityModifier {
     public String aliasUsed;
 
     @Override
@@ -24,7 +25,8 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
         super(temporaryParent, locationIn);
     }
 
-    public static PublicAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static PublicAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Public") || name.equals("+")) {
             PublicAnnotation n = new PublicAnnotation(parent, location);
 
@@ -35,7 +37,8 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("public");
     }
 
@@ -87,7 +90,8 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
     }
 
     @Override
-    public PublicAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public PublicAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         PublicAnnotation node = new PublicAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -97,7 +101,8 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
         return cloneTo(node, true, true);
     }
 
-    public PublicAnnotation cloneTo(PublicAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public PublicAnnotation cloneTo(PublicAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -107,6 +112,7 @@ public class PublicAnnotation extends ApplicableAnnotationBase implements Modifi
 
     @Override
     public String[] getAliases() {
-        return new String[]{"public", "+"};
+        return new String[] {"public", "+"};
     }
 }
+

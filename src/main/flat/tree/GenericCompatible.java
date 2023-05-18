@@ -25,15 +25,16 @@ public interface GenericCompatible {
     public static final char GENERIC_END_CHAR = GENERIC_END.charAt(0);
 
     /**
-     * Get the list of names that the ClassDeclaration accepts as generic
-     * declarations.<br>
-     * For example:
-     * <blockquote><pre>
-     * public class Map&lt;Key, Value&gt;
-     * {
+     * Get the list of names that the ClassDeclaration accepts as generic declarations.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * public class Map&lt;Key, Value&gt; {
      *
-     * }</pre></blockquote>
-     * The example above displays two generic parameters "Key" and "Value"<br>
+     * }
+     * </pre>
+     * 
+     * </blockquote> The example above displays two generic parameters "Key" and "Value"<br>
      * These are used to abstract the data type used within the class "Map"
      *
      * @return A String array containing the names of the generic parameters.
@@ -83,7 +84,8 @@ public interface GenericCompatible {
         Flat.debuggingBreakpoint(getGenericTypeArgumentInstance(parameterName, value) == null);
         GenericTypeArgument type = getGenericTypeArgumentInstance(parameterName, value);
 
-        if (SyntaxMessage.queryError("Unable to find generic argument", (Node) this, type == null)) {
+        if (SyntaxMessage.queryError("Unable to find generic argument", (Node) this,
+            type == null)) {
             return null;
         }
 
@@ -102,7 +104,8 @@ public interface GenericCompatible {
         return getGenericTypeArgumentInstance(parameterName, value, true);
     }
 
-    default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value, boolean require) {
+    default GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value,
+        boolean require) {
         VariableDeclaration decl = (VariableDeclaration) this;
         ClassDeclaration clazz = null;
 
@@ -112,26 +115,32 @@ public interface GenericCompatible {
             clazz = decl.getDeclaringClass();
         }
 
-        if (decl instanceof Parameter && decl.getParentMethod().getMethodGenericTypeParameterDeclaration().containsParameter(parameterName)) {
-            int index = decl.getParentMethod().getMethodGenericTypeParameterDeclaration().getParameterIndex(parameterName);
+        if (decl instanceof Parameter && decl.getParentMethod()
+            .getMethodGenericTypeParameterDeclaration().containsParameter(parameterName)) {
+            int index = decl.getParentMethod().getMethodGenericTypeParameterDeclaration()
+                .getParameterIndex(parameterName);
 
             if (value instanceof MethodCall) {
-                GenericTypeArgumentList args = ((MethodCall) value).getMethodGenericTypeArgumentList();
+                GenericTypeArgumentList args =
+                    ((MethodCall) value).getMethodGenericTypeArgumentList();
 
                 if (args.getNumVisibleChildren() > index) {
                     return args.getVisibleChild(index);
                 }
             }
 
-            GenericTypeParameter param = decl.getParentMethod().getMethodGenericTypeParameterDeclaration().getParameter(parameterName);
+            GenericTypeParameter param = decl.getParentMethod()
+                .getMethodGenericTypeParameterDeclaration().getParameter(parameterName);
 
             // TODO: needs to support arrays
-            GenericTypeArgument arg = new GenericTypeArgument((Node) this, ((Node) this).getLocationIn().asNew());
+            GenericTypeArgument arg =
+                new GenericTypeArgument((Node) this, ((Node) this).getLocationIn().asNew());
             arg.setTypeValue(param.getDefaultType());
 
             return arg;
         } else {
-            return clazz.getGenericTypeParameter(parameterName, (GenericCompatible) value).getCorrespondingArgument((GenericCompatible) value);
+            return clazz.getGenericTypeParameter(parameterName, (GenericCompatible) value)
+                .getCorrespondingArgument((GenericCompatible) value);
         }
     }
 
@@ -143,7 +152,8 @@ public interface GenericCompatible {
         addGenericTypeArgumentName(getGenericTypeArgumentList(), parameterName);
     }
 
-    default void addGenericTypeArgumentName(GenericTypeArgumentList list, GenericTypeParameter parameter) {
+    default void addGenericTypeArgumentName(GenericTypeArgumentList list,
+        GenericTypeParameter parameter) {
         GenericTypeArgument type = getGenericTypeArgumentName(parameter);
 
         list.addChild(type);
@@ -167,7 +177,8 @@ public interface GenericCompatible {
         decodeGenericTypeArguments(statement, genericBounds, true);
     }
 
-    default void decodeGenericTypeArguments(String statement, Bounds genericBounds, boolean endingsIncluded) {
+    default void decodeGenericTypeArguments(String statement, Bounds genericBounds,
+        boolean endingsIncluded) {
         Bounds clone = genericBounds.clone();
 
         if (endingsIncluded) {
@@ -199,16 +210,16 @@ public interface GenericCompatible {
     }
 
     /**
-     * Test the GenericCompatible class type to make sure everything
-     * is working properly.
+     * Test the GenericCompatible class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     static String test(TestContext context) {
         context.importClass("flat/datastruct/list/Stack");
 
-        Node declaration = SyntaxTree.decodeScopeContents(context.method, "Stack<String> s = new Stack()", Location.INVALID, false);
+        Node declaration = SyntaxTree.decodeScopeContents(context.method,
+            "Stack<String> s = new Stack()", Location.INVALID, false);
 
         if (declaration == null) {
             return "Could not decode generic declaration";
@@ -225,7 +236,8 @@ public interface GenericCompatible {
         }
 
         try {
-            Node node = SyntaxTree.decodeScopeContents(context.method, "s.push(\"str\")", Location.INVALID, true);
+            Node node = SyntaxTree.decodeScopeContents(context.method, "s.push(\"str\")",
+                Location.INVALID, true);
 
             context.method.addChild(node);
         } catch (SyntaxErrorException e) {
@@ -233,7 +245,8 @@ public interface GenericCompatible {
         }
 
         try {
-            Node node = SyntaxTree.decodeScopeContents(context.method, "s.push(null)", Location.INVALID, true);
+            Node node = SyntaxTree.decodeScopeContents(context.method, "s.push(null)",
+                Location.INVALID, true);
 
             context.method.addChild(node);
         } catch (SyntaxErrorException e) {
@@ -243,3 +256,4 @@ public interface GenericCompatible {
         return null;
     }
 }
+

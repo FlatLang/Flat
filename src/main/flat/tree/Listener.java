@@ -8,3 +8,4 @@ package flat.tree;
 public interface Listener {
     public void onAdded(Node parent, Node added);
 }
+

@@ -6,7 +6,8 @@ import flat.tree.Node;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class TestSuccessAnnotation extends Annotation implements ModifierAnnotation, NestAnnotation {
+public class TestSuccessAnnotation extends Annotation
+    implements ModifierAnnotation, NestAnnotation {
     public String aliasUsed;
 
     @Override
@@ -23,7 +24,8 @@ public class TestSuccessAnnotation extends Annotation implements ModifierAnnotat
         super(temporaryParent, locationIn);
     }
 
-    public static TestSuccessAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static TestSuccessAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("TestSuccess")) {
             TestSuccessAnnotation n = new TestSuccessAnnotation(parent, location);
 
@@ -68,7 +70,8 @@ public class TestSuccessAnnotation extends Annotation implements ModifierAnnotat
     }
 
     @Override
-    public TestSuccessAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestSuccessAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         TestSuccessAnnotation node = new TestSuccessAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,7 +81,8 @@ public class TestSuccessAnnotation extends Annotation implements ModifierAnnotat
         return cloneTo(node, true, true);
     }
 
-    public TestSuccessAnnotation cloneTo(TestSuccessAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestSuccessAnnotation cloneTo(TestSuccessAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -88,6 +92,7 @@ public class TestSuccessAnnotation extends Annotation implements ModifierAnnotat
 
     @Override
     public String[] getAliases() {
-        return new String[]{"test_success"};
+        return new String[] {"test_success"};
     }
 }
+

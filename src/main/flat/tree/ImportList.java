@@ -7,8 +7,7 @@ import flat.util.SyntaxUtils;
 import java.util.Arrays;
 
 /**
- * Node extension that contains children of the type Import.
- * Contains all of a files imports.
+ * Node extension that contains children of the type Import. Contains all of a files imports.
  *
  * @author Braden Steffaniak
  * @since v0.1 Apr 2, 2014 at 8:49:52 PM
@@ -36,8 +35,7 @@ public class ImportList extends TypeList<Import> {
      * Get the Import node with the given import location, if it exists.
      *
      * @param importLocation The location of the import.
-     * @return The Import with the specified import location, if it
-     * exists.
+     * @return The Import with the specified import location, if it exists.
      */
     public Import getImport(String importLocation) {
         return getImport(importLocation, true);
@@ -47,8 +45,7 @@ public class ImportList extends TypeList<Import> {
      * Get the Import node with the given import location, if it exists.
      *
      * @param importLocation The location of the import.
-     * @return The Import with the specified import location, if it
-     * exists.
+     * @return The Import with the specified import location, if it exists.
      */
     public Import getImport(String importLocation, boolean absoluteLocation) {
         return getImport(importLocation, true, true);
@@ -58,8 +55,7 @@ public class ImportList extends TypeList<Import> {
      * Get the Import node with the given import location, if it exists.
      *
      * @param importLocation The location of the import.
-     * @return The Import with the specified import location, if it
-     * exists.
+     * @return The Import with the specified import location, if it exists.
      */
     public Import getImport(String importLocation, boolean absoluteLocation, boolean aliased) {
         if (importLocation == null) {
@@ -146,7 +142,9 @@ public class ImportList extends TypeList<Import> {
 
     private ClassDeclaration checkForChildClass(ClassDeclaration clazz, String childClass) {
         while (childClass.length() > 0) {
-            String current = childClass.contains(".") ? childClass.substring(0, childClass.indexOf('.')) : childClass;
+            String current =
+                childClass.contains(".") ? childClass.substring(0, childClass.indexOf('.'))
+                    : childClass;
 
             clazz = Arrays.stream(clazz.getEncapsulatedClasses())
                 .filter(c -> c.getName().equals(current))
@@ -188,7 +186,8 @@ public class ImportList extends TypeList<Import> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ImportList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ImportList clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ImportList node = new ImportList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -202,8 +201,7 @@ public class ImportList extends TypeList<Import> {
     }
 
     /**
-     * Fill the given {@link ImportList} with the data that is in the
-     * specified node.
+     * Fill the given {@link ImportList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -215,11 +213,10 @@ public class ImportList extends TypeList<Import> {
     }
 
     /**
-     * Test the ImportList class type to make sure everything
-     * is working properly.
+     * Test the ImportList class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -227,3 +224,4 @@ public class ImportList extends TypeList<Import> {
         return null;
     }
 }
+

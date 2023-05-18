@@ -6,8 +6,8 @@ import flat.tree.TypeList;
 import flat.util.Location;
 
 /**
- * {@link FieldList} extensions that contains all of the public Field
- * instances of a ClassDeclaration.
+ * {@link FieldList} extensions that contains all of the public Field instances of a
+ * ClassDeclaration.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 10:00:50 PM
@@ -25,7 +25,8 @@ public class InstanceFieldList extends TypeList<FieldDeclaration> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public InstanceFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public InstanceFieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         InstanceFieldList node = new InstanceFieldList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -39,24 +40,23 @@ public class InstanceFieldList extends TypeList<FieldDeclaration> {
     }
 
     /**
-     * Fill the given {@link InstanceFieldList} with the data that is in the
-     * specified node.
+     * Fill the given {@link InstanceFieldList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public InstanceFieldList cloneTo(InstanceFieldList node, boolean cloneChildren, boolean cloneAnnotations) {
+    public InstanceFieldList cloneTo(InstanceFieldList node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the InstanceFieldList class type to make sure everything
-     * is working properly.
+     * Test the InstanceFieldList class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

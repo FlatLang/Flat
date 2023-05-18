@@ -15,9 +15,9 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 /**
- * MethodDeclaration extension that represents the declaration of a Constructor
- * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * MethodDeclaration extension that represents the declaration of a Constructor node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:50:47 PM
@@ -92,28 +92,27 @@ public class Constructor extends BodyMethodDeclaration {
     }
 
     /**
-     * Decode the given statement into a Constructor instance, if
-     * possible. If it is not possible, this method returns null. A
-     * constructor must have the same name as the class that it is
+     * Decode the given statement into a Constructor instance, if possible. If it is not possible,
+     * this method returns null. A constructor must have the same name as the class that it is
      * within. Constructors also do not have a return value.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>public ClassName()</li>
-     * 	<li>private ClassName(int numChildren, String name)</li>
-     * 	<li>public ClassName(Node parent, Location location)</li>
+     * <li>public ClassName()</li>
+     * <li>private ClassName(int numChildren, String name)</li>
+     * <li>public ClassName(Node parent, Location location)</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Constructor instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Constructor.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Constructor instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Constructor.
      */
-    public static Constructor decodeStatement(Node parent, String statement, Location location, boolean require) {
-        BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(parent, statement, location, false);
+    public static Constructor decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
+        BodyMethodDeclaration method =
+            BodyMethodDeclaration.decodeStatement(parent, statement, location, false);
 
         if (method != null && method.getName().equals(IDENTIFIER)) {
             Constructor n = new Constructor(parent, location);
@@ -127,7 +126,7 @@ public class Constructor extends BodyMethodDeclaration {
             if (params.getNumVisibleChildren() > 0) {
                 type.append("<");
 
-                int[] i = new int[]{0};
+                int[] i = new int[] {0};
 
                 params.forEachVisibleListChild(param -> {
                     if (i[0]++ != 0) {
@@ -145,16 +144,17 @@ public class Constructor extends BodyMethodDeclaration {
             n.setStatic(true);
             n.setDataType(POINTER);
 
-//			GenericTypeParameterList params = n.getMethodGenericTypeParameterDeclaration();
-//			GenericTypeParameterList classParams = parentClass.getGenericTypeParameterDeclaration();
-//			
-//			for (int i = 0; i < classParams.getNumParameters(); i++)
-//			{
-//				GenericTypeParameter param = new GenericTypeParameter(params, Location.INVALID);
-//				param.setType(classParams.getParameter(i));
-//				
-//				params.addChild(param);
-//			}
+            // GenericTypeParameterList params = n.getMethodGenericTypeParameterDeclaration();
+            // GenericTypeParameterList classParams =
+            // parentClass.getGenericTypeParameterDeclaration();
+            //
+            // for (int i = 0; i < classParams.getNumParameters(); i++)
+            // {
+            // GenericTypeParameter param = new GenericTypeParameter(params, Location.INVALID);
+            // param.setType(classParams.getParameter(i));
+            //
+            // params.addChild(param);
+            // }
 
             return n;
         }
@@ -162,8 +162,10 @@ public class Constructor extends BodyMethodDeclaration {
         return null;
     }
 
-    public FlatMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration type, GenericTypeArgumentList args) {
-        return getExistingConvertedPrimitiveMethod(type.getExistingConvertedPrimitiveClass(args.getTypes()));
+    public FlatMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration type,
+        GenericTypeArgumentList args) {
+        return getExistingConvertedPrimitiveMethod(
+            type.getExistingConvertedPrimitiveClass(args.getTypes()));
     }
 
     public FlatMethodDeclaration getExistingConvertedPrimitiveMethod(ClassDeclaration c) {
@@ -175,15 +177,18 @@ public class Constructor extends BodyMethodDeclaration {
             filter.checkProperties = false;
 
             Value[] original = getParameterList().getTypes();
-            Value[] types = getParameterList().clone(getParameterList().getParent(), getParameterList().getLocationIn(), true, true).getTypes();
+            Value[] types = getParameterList().clone(getParameterList().getParent(),
+                getParameterList().getLocationIn(), true, true).getTypes();
 
             if (c.genericOverload != null) {
                 for (int i = 0; i < types.length; i++) {
-                    c.genericOverload.replacePrimitiveGenerics(c.primitiveOverloadTypes, original[i], types[i]);
+                    c.genericOverload.replacePrimitiveGenerics(c.primitiveOverloadTypes,
+                        original[i], types[i]);
                 }
             }
 
-            return (FlatMethodDeclaration) c.getMethod((GenericCompatible) null, c.getName(), filter, types);
+            return (FlatMethodDeclaration) c.getMethod((GenericCompatible) null, c.getName(),
+                filter, types);
         }
 
         return null;
@@ -259,14 +264,15 @@ public class Constructor extends BodyMethodDeclaration {
         if (!initializedInitMethod) {
             java.util.List<MethodCall> superCalls = Flat.keepSuperCallInConstructor
                 ? getScope().getChildStream()
-                .filter(c -> c instanceof MethodCall)
-                .map(c -> (MethodCall) c)
-                .filter(MethodCall::isSuperCall)
-                .collect(Collectors.toList())
+                    .filter(c -> c instanceof MethodCall)
+                    .map(c -> (MethodCall) c)
+                    .filter(MethodCall::isSuperCall)
+                    .collect(Collectors.toList())
                 : new ArrayList<>();
 
             initMethod.getScope().slaughterEveryLastVisibleChild();
-            initMethod.getScope().getVariableList().closureContextDeclarations = getScope().getVariableList().closureContextDeclarations;
+            initMethod.getScope().getVariableList().closureContextDeclarations =
+                getScope().getVariableList().closureContextDeclarations;
             initMethod.getScope().inheritChildren(getScope());
             initMethod.setLocationIn(getLocationIn());
             initMethod.getScope().localVariableID = getScope().localVariableID;
@@ -275,7 +281,8 @@ public class Constructor extends BodyMethodDeclaration {
 
             String args = generateParameterOutput(this);
 
-            MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")", Location.INVALID, true, false, initMethod);
+            MethodCall init = MethodCall.decodeStatement(this, "this(" + args + ")",
+                Location.INVALID, true, false, initMethod);
             addChild(init);
 
             SyntaxTree.validateNodes(getParameterList(), phase);
@@ -305,13 +312,15 @@ public class Constructor extends BodyMethodDeclaration {
     private String generateParameterOutput(FlatMethodDeclaration method, Constructor inherited) {
         StringBuilder args = new StringBuilder();
 
-        if (inherited == null || method.areCompatibleParameterTypes(getContext(), inherited.getParameterList().getTypes())) {
+        if (inherited == null || method.areCompatibleParameterTypes(getContext(),
+            inherited.getParameterList().getTypes())) {
             for (int i = 0; i < method.getParameterList().getNumVisibleChildren(); i++) {
                 if (i > 0) {
                     args.append(", ");
                 }
 
-                args.append(method.getParameter(i).getName()).append(": ").append(method.getParameter(i).getName());
+                args.append(method.getParameter(i).getName()).append(": ")
+                    .append(method.getParameter(i).getName());
             }
         }
 
@@ -319,10 +328,9 @@ public class Constructor extends BodyMethodDeclaration {
     }
 
     /**
-     * Validate that the specified statement really is a Constructor
-     * declaration.
+     * Validate that the specified statement really is a Constructor declaration.
      *
-     * @param data    The data that will specify if there was an error.
+     * @param data The data that will specify if there was an error.
      * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the statement is a Constructor declaration.
      */
@@ -339,10 +347,12 @@ public class Constructor extends BodyMethodDeclaration {
     }
 
     /**
-     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String, Node.ExtraData)
+     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String,
+     *      Node.ExtraData)
      */
     @Override
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData extra) {
         if (super.interactWord(word, bounds, leftDelimiter, rightDelimiter, extra)) {
 
             if (extra.isLastWord()) {
@@ -363,7 +373,8 @@ public class Constructor extends BodyMethodDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Constructor clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Constructor clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Constructor node = new Constructor(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -377,8 +388,7 @@ public class Constructor extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link Constructor} with the data that is in the
-     * specified node.
+     * Fill the given {@link Constructor} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -390,11 +400,10 @@ public class Constructor extends BodyMethodDeclaration {
     }
 
     /**
-     * Test the Constructor class type to make sure everything
-     * is working properly.
+     * Test the Constructor class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

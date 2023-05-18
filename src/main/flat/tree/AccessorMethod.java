@@ -28,24 +28,24 @@ public class AccessorMethod extends PropertyMethod {
     }
 
     /**
-     * Decode the given statement into a {@link AccessorMethod} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link AccessorMethod} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>no get</li>
-     * 	<li>get</li>
+     * <li>no get</li>
+     * <li>get</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link AccessorMethod} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link AccessorMethod}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link AccessorMethod} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link AccessorMethod}.
      */
-    public static AccessorMethod decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static AccessorMethod decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (StringUtils.findNextWord(statement).equals(DISABLED_IDENTIFIER)) {
             String remainder = statement.substring(DISABLED_IDENTIFIER.length() + 1).trim();
 
@@ -73,7 +73,8 @@ public class AccessorMethod extends PropertyMethod {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public AccessorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AccessorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         AccessorMethod node = new AccessorMethod(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -87,24 +88,23 @@ public class AccessorMethod extends PropertyMethod {
     }
 
     /**
-     * Fill the given {@link AccessorMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link AccessorMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public AccessorMethod cloneTo(AccessorMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AccessorMethod cloneTo(AccessorMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link AccessorMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link AccessorMethod} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -112,3 +112,4 @@ public class AccessorMethod extends PropertyMethod {
         return null;
     }
 }
+

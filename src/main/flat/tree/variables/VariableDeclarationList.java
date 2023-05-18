@@ -24,20 +24,17 @@ public class VariableDeclarationList extends List {
     }
 
     /**
-     * Get whether or not there is a Variable within the list with
-     * the given name.
+     * Get whether or not there is a Variable within the list with the given name.
      *
      * @param variableName The name of the variable to search for.
-     * @return Whether or not there is a Variable within the list with
-     * the given name.
+     * @return Whether or not there is a Variable within the list with the given name.
      */
     public boolean containsVariable(String variableName, Scope scope) {
         return getVariable(variableName, scope) != null;
     }
 
     /**
-     * Get the Variable from the list with the given name, if it
-     * exists.
+     * Get the Variable from the list with the given name, if it exists.
      *
      * @param variableName The name of the variable to get.
      * @return The Variable with the given name.
@@ -47,15 +44,15 @@ public class VariableDeclarationList extends List {
 
         for (int i = getNumChildren() - 1; i >= 0; i--) {
             LocalDeclaration variable = (LocalDeclaration) getChild(i);
-			
-			/*Scope declScope = variable.getParentScopeAncestor().getScope(variable.getScopeID());
-			
-			if (declScope == null)
-			{
-				declScope = variable.getAncestorWithScope().getScope();
-			}*/
 
-            if (variable.getName().equals(variableName) && scope.getID() >= variable.getScopeID())//declScope.isAncestorOf(scope, true))
+            /*
+             * Scope declScope = variable.getParentScopeAncestor().getScope(variable.getScopeID());
+             * 
+             * if (declScope == null) { declScope = variable.getAncestorWithScope().getScope(); }
+             */
+
+            if (variable.getName().equals(variableName) && scope.getID() >= variable.getScopeID())// declScope.isAncestorOf(scope,
+                                                                                                  // true))
             {
                 valid = variable;
             }
@@ -93,7 +90,8 @@ public class VariableDeclarationList extends List {
     public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren) {
         for (int i = 0; i < getNumChildren(); i++) {
             if (getChild(i).isUserMade(false)) {
-                builder.append(getChild(i).generateFlatInput().toString().replaceAll("\n", " ")).append('\n');
+                builder.append(getChild(i).generateFlatInput().toString().replaceAll("\n", " "))
+                    .append('\n');
             }
         }
 
@@ -104,7 +102,8 @@ public class VariableDeclarationList extends List {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public VariableDeclarationList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public VariableDeclarationList clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         VariableDeclarationList node = new VariableDeclarationList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -118,13 +117,13 @@ public class VariableDeclarationList extends List {
     }
 
     /**
-     * Fill the given {@link VariableDeclarationList} with the data that is in the
-     * specified node.
+     * Fill the given {@link VariableDeclarationList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public VariableDeclarationList cloneTo(VariableDeclarationList node, boolean cloneChildren, boolean cloneAnnotations) {
+    public VariableDeclarationList cloneTo(VariableDeclarationList node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.closureContextDeclarations = new ArrayList<>(closureContextDeclarations.size());
@@ -137,11 +136,10 @@ public class VariableDeclarationList extends List {
     }
 
     /**
-     * Test the VariableDeclarationList class type to make sure everything
-     * is working properly.
+     * Test the VariableDeclarationList class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -149,3 +147,4 @@ public class VariableDeclarationList extends List {
         return null;
     }
 }
+

@@ -17,8 +17,7 @@ import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 /**
- * Class that is used to generate syntax tree data for a given file
- * and source data.
+ * Class that is used to generate syntax tree data for a given file and source data.
  *
  * @author Braden Steffaniak
  * @since v0.2.1 Apr 29, 2014 at 8:04:48 PM
@@ -46,15 +45,13 @@ public class TreeGenerator implements Runnable {
     private Stack<Node> parentStack;
     private Stack<Node> pendingScopeFragment;
 
-    private static final char EITHER_STATEMENT_END_CHARS[] = new char[]{'\n', ';', '{', '}'};
+    private static final char EITHER_STATEMENT_END_CHARS[] = new char[] {'\n', ';', '{', '}'};
 
     /**
-     * Create a tree generator instance with the given filename and
-     * source data.
+     * Create a tree generator instance with the given filename and source data.
      *
-     * @param file   The file to generate the tree for.
-     * @param source The source within the file to generate the tree
-     *               for.
+     * @param file The file to generate the tree for.
+     * @param source The source within the file to generate the tree for.
      */
     public TreeGenerator(File file, String source, SyntaxTree tree) {
         this.file = file;
@@ -70,8 +67,7 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Initialize the data back to default values before any
-     * traversing of the code is done.
+     * Initialize the data back to default values before any traversing of the code is done.
      *
      * @param node
      * @param offset
@@ -96,8 +92,8 @@ public class TreeGenerator implements Runnable {
     /**
      * Calculate the horizontal offset from which the statement starts at.
      *
-     * @param statementStart The index of the first character of the
-     *                       statement within the source code.
+     * @param statementStart The index of the first character of the statement within the source
+     *        code.
      * @return The horizontal offset of the statement.
      */
     private int calculateOffset(int statementStart) {
@@ -111,8 +107,7 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * The method that is used to actually do the act of generating
-     * the tree data.
+     * The method that is used to actually do the act of generating the tree data.
      */
     public void run() {
         int phase = tree.getPhase();
@@ -144,8 +139,7 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Generate the syntax tree nodes for all of the class nodes and
-     * import nodes.
+     * Generate the syntax tree nodes for all of the class nodes and import nodes.
      *
      * @param file The file that is generating the syntax tree.
      */
@@ -169,8 +163,7 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Generate the syntax tree nodes for all of the field nodes and
-     * method nodes.
+     * Generate the syntax tree nodes for all of the field nodes and method nodes.
      *
      * @param file The file that is generating the syntax tree.
      */
@@ -185,12 +178,14 @@ public class TreeGenerator implements Runnable {
             controller.log("Phase two for '" + node.getClassLocation() + "'...");
 
             // Finds the starting scope '{'
-            int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+            int startingIndex =
+                StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
             // Finds the ending scope '}'
             int endingIndex = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 
             int contentStart = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-            int contentEnd = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+            int contentEnd =
+                StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
 
             // If there is no content to decode.
             if (contentStart >= contentEnd) {
@@ -203,16 +198,21 @@ public class TreeGenerator implements Runnable {
             decodeInnerClasses(node);
 
             if (node.arrayBracketOverload != null) {
-                decodeScopeContentsNode(node.arrayBracketOverload, false, SyntaxTree.ARRAY_BRACKET_OVERLOAD_DECODE, true);
+                decodeScopeContentsNode(node.arrayBracketOverload, false,
+                    SyntaxTree.ARRAY_BRACKET_OVERLOAD_DECODE, true);
             }
         }
     }
 
     private void decodeFields(ClassDeclaration node) {
-        decodeScopeContents(node.getFieldList().getPrivateFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-        decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-        decodeScopeContents(node.getFieldList().getPublicFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
-        decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false, SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+        decodeScopeContents(node.getFieldList().getPrivateFieldList(), false,
+            SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+        decodeScopeContents(node.getFieldList().getPrivateStaticFieldList(), false,
+            SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+        decodeScopeContents(node.getFieldList().getPublicFieldList(), false,
+            SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
+        decodeScopeContents(node.getFieldList().getPublicStaticFieldList(), false,
+            SyntaxTree.FIELD_SCOPE_CHILD_DECODE, true);
     }
 
     private void decodeInnerClasses(ClassDeclaration node) {
@@ -257,34 +257,47 @@ public class TreeGenerator implements Runnable {
     /**
      * Decode all of the Scope's contents.
      */
-    private void decodeScopeContents(List scopeAncestors, boolean requiresScope, Class<?>[] searchTypes, boolean skipScopes) {
+    private void decodeScopeContents(List scopeAncestors, boolean requiresScope,
+        Class<?>[] searchTypes, boolean skipScopes) {
         for (int i = 0; i < scopeAncestors.getNumChildren(); i++) {
-            decodeScopeContentsNode(scopeAncestors.getChild(i), requiresScope, searchTypes, skipScopes);
+            decodeScopeContentsNode(scopeAncestors.getChild(i), requiresScope, searchTypes,
+                skipScopes);
         }
 
         popParents();
     }
 
-    private void decodeScopeContentsNode(Node node, boolean requiresScope, Class<?>[] searchTypes, boolean skipScopes) {
+    private void decodeScopeContentsNode(Node node, boolean requiresScope, Class<?>[] searchTypes,
+        boolean skipScopes) {
         if (node.getLocationIn().getBounds().isValid() && node.isUserMade()) {
             if ((!requiresScope || node.containsScope())) {
                 String oldSource = source;
                 Matcher oldMatcher = statementStartMatcher;
-                source = node.getOriginalFile() != null ? node.getOriginalFile().getSource() : source;
-                statementStartMatcher = node.getOriginalFile() != null ? Patterns.STATEMENT_START.matcher(source) : statementStartMatcher;
+                source =
+                    node.getOriginalFile() != null ? node.getOriginalFile().getSource() : source;
+                statementStartMatcher =
+                    node.getOriginalFile() != null ? Patterns.STATEMENT_START.matcher(source)
+                        : statementStartMatcher;
 
-                int startingIndex = StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
+                int startingIndex =
+                    StringUtils.findNextNonWhitespaceIndex(source, node.getLocationIn().getEnd());
                 int endingIndex = StringUtils.findEndingMatch(source, startingIndex, '{', '}');
 
-                int contentStart = StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
-                int contentEnd = StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
+                int contentStart =
+                    StringUtils.findNextNonWhitespaceIndex(source, startingIndex + 1);
+                int contentEnd =
+                    StringUtils.findNextNonWhitespaceIndex(source, endingIndex - 1, -1) + 1;
 
                 if (startingIndex >= 0 && source.charAt(startingIndex) != '{') {
                     if (requiresScope && node instanceof AbstractMethodDeclaration == false) {
-                        if ((node instanceof PropertyMethod == false || !((PropertyMethod) node).isDisabled()) &&
-                            (node instanceof ArrayOverloadMethod == false || !((ArrayOverloadMethod) node).isDisabled())) {
-                            if (node.getScope() == null || node.getScope().getNumVisibleChildren() <= 0) {
-                                SyntaxMessage.error("Scope expected after this statement", node, false);
+                        if ((node instanceof PropertyMethod == false
+                            || !((PropertyMethod) node).isDisabled()) &&
+                            (node instanceof ArrayOverloadMethod == false
+                                || !((ArrayOverloadMethod) node).isDisabled())) {
+                            if (node.getScope() == null
+                                || node.getScope().getNumVisibleChildren() <= 0) {
+                                SyntaxMessage.error("Scope expected after this statement", node,
+                                    false);
                             }
                         }
                     }
@@ -305,16 +318,14 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Traverse the given source code and generate the tree along with the
-     * data and parameters that are given.
+     * Traverse the given source code and generate the tree along with the data and parameters that
+     * are given.
      *
-     * @param parent      The Node to stem all of the following decoded
-     *                    data from.
-     * @param offset      The character offset within the file's source text
-     *                    overall.
+     * @param parent The Node to stem all of the following decoded data from.
+     * @param offset The character offset within the file's source text overall.
      * @param searchTypes The type of Nodes to try to decode.
-     * @param skipScopes  Whether or not to skip the scopes of anything
-     *                    that contains a scope. If true, only decode the header.
+     * @param skipScopes Whether or not to skip the scopes of anything that contains a scope. If
+     *        true, only decode the header.
      */
     public void traverseCode(Node parent, int offset, Class<?> searchTypes[], boolean skipScopes) {
         init(parent, offset);
@@ -346,18 +357,18 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Search for the next statement. If a statement is found, return
-     * it in a Node format, if not return null.
+     * Search for the next statement. If a statement is found, return it in a Node format, if not
+     * return null.
      *
-     * @param previous    The previously decoded node.
-     * @param offset      The offset in the source file that the statement is.
+     * @param previous The previously decoded node.
+     * @param offset The offset in the source file that the statement is.
      * @param searchTypes The type of Nodes to try to decode.
-     * @param skipScopes  Whether or not to skip the scopes of anything
-     *                    that contains a scope. If true, only decode the header.
-     * @return The Node containing the information, or null if it is
-     * not found.
+     * @param skipScopes Whether or not to skip the scopes of anything that contains a scope. If
+     *        true, only decode the header.
+     * @return The Node containing the information, or null if it is not found.
      */
-    private Node getNextStatement(Node previous, int offset, Class<?> searchTypes[], boolean skipScopes) {
+    private Node getNextStatement(Node previous, int offset, Class<?> searchTypes[],
+        boolean skipScopes) {
         if (parentStack.peek() instanceof ExternalCodeBlock) {
             ExternalCodeBlock block = (ExternalCodeBlock) parentStack.peek();
 
@@ -368,17 +379,20 @@ public class TreeGenerator implements Runnable {
 
             parentStack.pop();
 
-            block.setContents(String.join("\n", source.substring(start, brace).trim().split("\\s*\\n\\s*")));
+            block.setContents(
+                String.join("\n", source.substring(start, brace).trim().split("\\s*\\n\\s*")));
 
             if (updateParents(statementStartIndex, statementStartIndex + 1, previous)) {
-                statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
+                statementStartIndex =
+                    StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
 
                 if (statementStartIndex > 0 && source.charAt(statementStartIndex) == '}') {
                     if (!parentStack.isEmpty()) {
                         parentStack.pop();
                     }
 
-                    statementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
+                    statementStartIndex =
+                        StringUtils.findNextNonWhitespaceIndex(source, statementStartIndex + 1);
                 }
             }
 
@@ -387,7 +401,8 @@ public class TreeGenerator implements Runnable {
             }
         }
 
-        while ((statementEndIndex = calculateStatementEnd(statementStartIndex)) >= 0 && !statementStartMatcher.hitEnd() && !parentStack.isEmpty()) {
+        while ((statementEndIndex = calculateStatementEnd(statementStartIndex)) >= 0
+            && !statementStartMatcher.hitEnd() && !parentStack.isEmpty()) {
             char endChar = '\0';
 
             int newStatementStartIndex = statementStartIndex;
@@ -396,12 +411,14 @@ public class TreeGenerator implements Runnable {
                 endChar = source.charAt(statementEndIndex);
 
                 if (statementStartMatcher.find(statementEndIndex + 1)) {
-                    newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source, statementStartMatcher.start());
+                    newStatementStartIndex = StringUtils.findNextNonWhitespaceIndex(source,
+                        statementStartMatcher.start());
                 }
             }
 
             boolean scope = endChar == '{';
-            int endBound = StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex - 1, -1) + 1;
+            int endBound =
+                StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex - 1, -1) + 1;
             int lineOffset = calculateOffset(endBound);
             String statement = source.substring(statementStartIndex, endBound);
             Location location = new Location(lineNumber, lineOffset, statementStartIndex, endBound);
@@ -420,19 +437,27 @@ public class TreeGenerator implements Runnable {
                 controller.pushFlags();
 
                 try {
-                    node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes, false);
+                    node = decodeStatementAndCheck(statement, location, scope, searchTypes,
+                        skipScopes, false);
 
                     if (node != null) {
                         node.validate(tree.getPhase());
                     }
                 } catch (SyntaxErrorException e) {
-                    if (expectCompileError.types.stream().anyMatch(x -> x.isAssignableFrom(e.getClass()))) {
+                    if (expectCompileError.types.stream()
+                        .anyMatch(x -> x.isAssignableFrom(e.getClass()))) {
                         hitExpected = true;
                     }
                 }
 
                 if (!hitExpected) {
-                    SyntaxMessage.error("Expected '" + String.join(", ", expectCompileError.types.stream().map(Class::getSimpleName).collect(Collectors.toList())) + "'", expectCompileError, location);
+                    SyntaxMessage
+                        .error(
+                            "Expected '" + String.join(", ",
+                                expectCompileError.types.stream().map(Class::getSimpleName)
+                                    .collect(Collectors.toList()))
+                                + "'",
+                            expectCompileError, location);
                 } else {
                     ArrayList errors = tree.getRoot().getProgram().getController().errors;
 
@@ -454,7 +479,8 @@ public class TreeGenerator implements Runnable {
 
                 skipNextStatement = skipNextStatement ||
                     (a instanceof TargetAnnotation && !((TargetAnnotation) a).currentTarget()) ||
-                    (a instanceof TargetRuntimeAnnotation && !((TargetRuntimeAnnotation) a).currentTargetRuntime());
+                    (a instanceof TargetRuntimeAnnotation
+                        && !((TargetRuntimeAnnotation) a).currentTargetRuntime());
 
                 statement = Annotation.getFragment(statement);
 
@@ -468,7 +494,8 @@ public class TreeGenerator implements Runnable {
 
                     a.getFileDeclaration().addPendingAnnotation(a);
 
-                    node = decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes);
+                    node = decodeStatementAndCheck(statement, location, scope, searchTypes,
+                        skipScopes);
 
                     a.getFileDeclaration().removePendingAnnotation(a);
 
@@ -478,7 +505,7 @@ public class TreeGenerator implements Runnable {
                         } else {
                             node.addAnnotation(a);
                         }
-                        //a.onNextStatementDecoded(node);
+                        // a.onNextStatementDecoded(node);
                     }
                 } else {
                     break;
@@ -497,12 +524,14 @@ public class TreeGenerator implements Runnable {
             updateLineNumber(statementStartIndex, newStatementStartIndex);
 
             oldStatementStartIndex = statementStartIndex;
-            statementStartIndex = newStatementStartIndex > statementStartIndex ? newStatementStartIndex : statementStartIndex;
+            statementStartIndex =
+                newStatementStartIndex > statementStartIndex ? newStatementStartIndex
+                    : statementStartIndex;
 
             if (node != null) {
                 return node.followedByScope(scope);
             } else if (skipScopes) {
-//				statementStartIndex = oldStatementStartIndex;
+                // statementStartIndex = oldStatementStartIndex;
             }
 
             updateParents(node);
@@ -516,20 +545,21 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Calculate the index in which the next statement end is located at,
-     * after the given currentEnd.
+     * Calculate the index in which the next statement end is located at, after the given
+     * currentEnd.
      *
      * @param currentEnd The index to search after.
      * @return The new statement end index.
      */
     private int calculateStatementEnd(int currentEnd) {
-        currentEnd = SyntaxUtils.findCharInBaseScope(source, EITHER_STATEMENT_END_CHARS, currentEnd);
+        currentEnd =
+            SyntaxUtils.findCharInBaseScope(source, EITHER_STATEMENT_END_CHARS, currentEnd);
 
         if (currentEnd < 0) {
-//			if (StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex + 1) < 0)
-//			{
-//				return -1;
-//			}
+            // if (StringUtils.findNextNonWhitespaceIndex(source, statementEndIndex + 1) < 0)
+            // {
+            // return -1;
+            // }
 
             return source.length();
         } else if (source.charAt(currentEnd) == ';') {
@@ -539,8 +569,10 @@ public class TreeGenerator implements Runnable {
         int prevCharIndex = StringUtils.findNextNonWhitespaceIndex(source, currentEnd - 1, -1);
         int nextCharIndex = StringUtils.findNextNonWhitespaceIndex(source, currentEnd + 1);
 
-        if (fileDeclaration != null && fileDeclaration.getProgram().getPhase() == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
-            if (prevCharIndex > 3 && source.charAt(currentEnd) == '{' && source.substring(prevCharIndex - 1, prevCharIndex + 1).equals("=>")) {
+        if (fileDeclaration != null
+            && fileDeclaration.getProgram().getPhase() == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
+            if (prevCharIndex > 3 && source.charAt(currentEnd) == '{'
+                && source.substring(prevCharIndex - 1, prevCharIndex + 1).equals("=>")) {
                 int end = SyntaxUtils.findEndingBrace(source, currentEnd + 1) + 1;
 
                 if (end > currentEnd) {
@@ -557,7 +589,7 @@ public class TreeGenerator implements Runnable {
     /**
      * Calculate the statement end's return value.
      *
-     * @param currentEnd    The current end value of the statement.
+     * @param currentEnd The current end value of the statement.
      * @param nextCharIndex The next char to the right of the current end.
      * @param prevCharIndex The next char to the left of the current end.
      * @return The return value of the statement end.
@@ -577,23 +609,26 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Check whether or not to continue the search for the end of the
-     * statement.
+     * Check whether or not to continue the search for the end of the statement.
      *
      * @param nextCharIndex The next char to the right of the current end.
      * @param prevCharIndex The next char to the left of the current end.
-     * @return Whether or not to continue the search for the end of the
-     * statement.
+     * @return Whether or not to continue the search for the end of the statement.
      */
     private boolean checkStatementContinuation(int prevCharIndex, int nextCharIndex) {
         Bounds prevWordBounds = StringUtils.findNextWordBounds(source, prevCharIndex, -1);
 
-        int nextNextCharIndex = StringUtils.findNextNonWhitespaceIndex(source, StringUtils.findNextWhitespaceIndex(source, nextCharIndex + 1));
+        int nextNextCharIndex = StringUtils.findNextNonWhitespaceIndex(source,
+            StringUtils.findNextWhitespaceIndex(source, nextCharIndex + 1));
 
         // Whether or not the current statement needs the next line to complete the statement
-        boolean pendingCompletion = StringUtils.containsChar(source, StringUtils.STMT_PRE_CONT_CHARS, prevCharIndex) && !UnaryOperation.containsUnaryOperator(source, prevCharIndex, prevWordBounds.getEnd(), -1);
+        boolean pendingCompletion =
+            StringUtils.containsChar(source, StringUtils.STMT_PRE_CONT_CHARS, prevCharIndex)
+                && !UnaryOperation.containsUnaryOperator(source, prevCharIndex,
+                    prevWordBounds.getEnd(), -1);
 
-        if (pendingCompletion && (source.charAt(prevCharIndex) + "").equals(GenericTypeArgument.GENERIC_END)) {
+        if (pendingCompletion
+            && (source.charAt(prevCharIndex) + "").equals(GenericTypeArgument.GENERIC_END)) {
             if (source.substring(prevCharIndex - 1, prevCharIndex + 1).equals("=>")) {
                 if (!parentStack.isEmpty() && parentStack.peek() instanceof Match) {
                     return false;
@@ -604,7 +639,10 @@ public class TreeGenerator implements Runnable {
         }
 
         // Whether or not the next statement needs a fragment before it to complete the statement
-        boolean requiresCompletion = StringUtils.containsChar(source, StringUtils.STMT_POST_CONT_CHARS, nextCharIndex) && (!UnaryOperation.containsUnaryOperator(source, nextCharIndex, nextNextCharIndex) || StringUtils.findGroupedSymbols(source, nextCharIndex).equals("-"));
+        boolean requiresCompletion =
+            StringUtils.containsChar(source, StringUtils.STMT_POST_CONT_CHARS, nextCharIndex)
+                && (!UnaryOperation.containsUnaryOperator(source, nextCharIndex, nextNextCharIndex)
+                    || StringUtils.findGroupedSymbols(source, nextCharIndex).equals("-"));
 
         String prevWord = prevWordBounds.extractString(source);
 
@@ -612,18 +650,17 @@ public class TreeGenerator implements Runnable {
             return false;
         }
 
-        return pendingCompletion ^ requiresCompletion || (prevWord.equals("return") && pendingCompletion && parentStack.check().getParentMethod().getType() != null);
+        return pendingCompletion ^ requiresCompletion || (prevWord.equals("return")
+            && pendingCompletion && parentStack.check().getParentMethod().getType() != null);
     }
 
     /**
-     * Check the given Node to see if it is pending a scope fragment or
-     * not. For more information on what a scope fragment is, see
-     * {@link Node#decodeScopeFragment(String, Bounds)}
+     * Check the given Node to see if it is pending a scope fragment or not. For more information on
+     * what a scope fragment is, see {@link Node#decodeScopeFragment(String, Bounds)}
      *
-     * @param node    The Node to check.
-     * @param endChar The character that ends the statement of the given
-     *                Node.
-     * @param scope   Whether or not the Node starts a scope.
+     * @param node The Node to check.
+     * @param endChar The character that ends the statement of the given Node.
+     * @param scope Whether or not the Node starts a scope.
      */
     private void checkScopeFragment(Node node, char endChar, boolean scope) {
         if (node == null || scope || pendingScopeFragment.check() == node || endChar == ';') {
@@ -636,24 +673,23 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Try to decode the statement. If there is a syntax error within
-     * the given statement, then the method will try to compensate for
-     * error.
+     * Try to decode the statement. If there is a syntax error within the given statement, then the
+     * method will try to compensate for error.
      *
-     * @param statement   The statement to try to decode.
-     * @param location    The location of the statement in the source
-     *                    file.
-     * @param scope       Whether or not the statement starts off a scope.
-     * @param searchTypes The types of nodes that the statement could
-     *                    possibly be.
-     * @param skipScopes  Whether or not to skip the scopes of anything
-     *                    that contains a scope. If true, only decode the header.
+     * @param statement The statement to try to decode.
+     * @param location The location of the statement in the source file.
+     * @param scope Whether or not the statement starts off a scope.
+     * @param searchTypes The types of nodes that the statement could possibly be.
+     * @param skipScopes Whether or not to skip the scopes of anything that contains a scope. If
+     *        true, only decode the header.
      */
-    private Node decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[], boolean skipScopes) {
+    private Node decodeStatementAndCheck(String statement, Location location, boolean scope,
+        Class<?> searchTypes[], boolean skipScopes) {
         return decodeStatementAndCheck(statement, location, scope, searchTypes, skipScopes, true);
     }
 
-    private Node decodeStatementAndCheck(String statement, Location location, boolean scope, Class<?> searchTypes[], boolean skipScopes, boolean catchException) {
+    private Node decodeStatementAndCheck(String statement, Location location, boolean scope,
+        Class<?> searchTypes[], boolean skipScopes, boolean catchException) {
         if (skipNextStatement) {
             skipNextStatement = false;
 
@@ -677,7 +713,8 @@ public class TreeGenerator implements Runnable {
                 if (parent.getParentClass(true) == null) {
                     parentStack.push(ClassDeclaration.generateTemporaryClass(parent, location));
                 } else if (parent.getParentMethod(true) == null) {
-                    parentStack.push(BodyMethodDeclaration.generateTemporaryMethod(parent, location));
+                    parentStack
+                        .push(BodyMethodDeclaration.generateTemporaryMethod(parent, location));
                 } else {
                     parentStack.push(Scope.generateEmptyScope(parent, location));
                 }
@@ -690,12 +727,11 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Update the tree's parent stack, indices, and line numbers, if
-     * necessary.
+     * Update the tree's parent stack, indices, and line numbers, if necessary.
      *
-     * @param node       The previously decoded node.
-     * @param skipScopes Whether or not to skip the scopes of anything
-     *                   that contains a scope. If true, only decode the header.
+     * @param node The previously decoded node.
+     * @param skipScopes Whether or not to skip the scopes of anything that contains a scope. If
+     *        true, only decode the header.
      */
     private void updateTree(Node node, boolean skipScopes) {
         if (node == null) {
@@ -704,7 +740,8 @@ public class TreeGenerator implements Runnable {
             return;
         }
 
-        if (skipScopes && (node.containsScope() || node instanceof ArrayBracketOverload || node instanceof FieldDeclaration || node instanceof ClassDeclaration)) {
+        if (skipScopes && (node.containsScope() || node instanceof ArrayBracketOverload
+            || node instanceof FieldDeclaration || node instanceof ClassDeclaration)) {
             skipScope();
         }
 
@@ -712,7 +749,9 @@ public class TreeGenerator implements Runnable {
             parentStack.peek().addChild(node);
         }
 
-        if (((statementEndIndex >= 0 && statementEndIndex < source.length() && !skipScopes && source.charAt(statementEndIndex) == '{') || (pendingScopeFragment.check() == node && node.pendingScopeFragment(null))) ||
+        if (((statementEndIndex >= 0 && statementEndIndex < source.length() && !skipScopes
+            && source.charAt(statementEndIndex) == '{')
+            || (pendingScopeFragment.check() == node && node.pendingScopeFragment(null))) ||
             (!skipScopes && node.getDecodedParent() instanceof LambdaExpression)) {
             parentStack.push(node.getDecodedParent());
         }
@@ -734,7 +773,8 @@ public class TreeGenerator implements Runnable {
             return;
         }
 
-        int endingIndex = StringUtils.findNextNonWhitespaceIndex(source, StringUtils.findEndingMatch(source, statementEndIndex, '{', '}') + 1);
+        int endingIndex = StringUtils.findNextNonWhitespaceIndex(source,
+            StringUtils.findEndingMatch(source, statementEndIndex, '{', '}') + 1);
         int end = endingIndex;
         int temp = end;
 
@@ -777,18 +817,18 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Check to see if an ending curly brace has been parsed. If so,
-     * pop the last parent off the stack.
+     * Check to see if an ending curly brace has been parsed. If so, pop the last parent off the
+     * stack.
      */
     private void updateParents(Node current) {
         updateParents(oldStatementStartIndex, statementStartIndex, current);
     }
 
     /**
-     * Check to see if an ending curly brace has been parsed. If so,
-     * pop the last parent off the stack.
+     * Check to see if an ending curly brace has been parsed. If so, pop the last parent off the
+     * stack.
      *
-     * @param start          The index to start the search at.
+     * @param start The index to start the search at.
      * @param statementStart The index to end the search at.
      */
     private boolean updateParents(int start, int statementStart, Node current) {
@@ -800,7 +840,9 @@ public class TreeGenerator implements Runnable {
 
         checkPendingScopeFragment(current);
 
-        if (start >= 0 && start < statementStart && (current instanceof BodyMethodDeclaration == false || !skipPoppingParent(((BodyMethodDeclaration) current).shorthandAction))) {
+        if (start >= 0 && start < statementStart
+            && (current instanceof BodyMethodDeclaration == false
+                || !skipPoppingParent(((BodyMethodDeclaration) current).shorthandAction))) {
             String sub = source.substring(start, statementStart);
 
             int index = -1;
@@ -867,11 +909,10 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Decode the specified statement String at the given Location into a
-     * Node instance.
+     * Decode the specified statement String at the given Location into a Node instance.
      *
-     * @param statement   The statement String to decode into a Node.
-     * @param location    The location of the statement in the source text.
+     * @param statement The statement String to decode into a Node.
+     * @param location The location of the statement in the source text.
      * @param searchTypes The type of Nodes to try to decode.
      * @return The result Node of decoding the statement String.
      */
@@ -886,22 +927,19 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Update the number of new lines that exist between (inclusive)
-     * the bounds of [start, end].
+     * Update the number of new lines that exist between (inclusive) the bounds of [start, end].
      *
-     * @param start The starting index to begin the search for new
-     *              lines at.
-     * @param end   The ending index to end the search for new lines at.
+     * @param start The starting index to begin the search for new lines at.
+     * @param end The ending index to end the search for new lines at.
      */
     private void updateLineNumber(int start, int end) {
         lineNumber += StringUtils.numNewLines(start, end, source);
     }
 
     /**
-     * Adjust the given location to be relative within its parent
-     * scope.
+     * Adjust the given location to be relative within its parent scope.
      *
-     * @param node     The previously decoded node.
+     * @param node The previously decoded node.
      * @param location The Location to adjust.
      */
     private void adjustLocation(Node node, Location location) {
@@ -916,8 +954,11 @@ public class TreeGenerator implements Runnable {
             scope = parentStack.peek(i);
 
             if ((phase == SyntaxTree.PHASE_METHOD_CONTENTS && scope instanceof MethodDeclaration) ||
-                (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS && node instanceof PropertyMethod) ||
-                (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS && scope instanceof ClassDeclaration) ||
+                (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS && node instanceof PropertyMethod)
+                ||
+                (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS
+                    && scope instanceof ClassDeclaration)
+                ||
                 (phase == SyntaxTree.PHASE_CLASS_DECLARATION && scope instanceof FileDeclaration)) {
                 break;
             }
@@ -929,11 +970,10 @@ public class TreeGenerator implements Runnable {
     }
 
     /**
-     * Test the TreeGenerator class type to make sure everything
-     * is working properly.
+     * Test the TreeGenerator class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

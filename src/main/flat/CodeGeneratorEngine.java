@@ -21,8 +21,7 @@ public abstract class CodeGeneratorEngine {
         this.tree = controller.getTree();
     }
 
-    public void init() {
-    }
+    public void init() {}
 
     public File writeFile(String fileName, File parentDir, String source) throws IOException {
         return FileUtils.writeFile(fileName, parentDir, source);
@@ -59,8 +58,7 @@ public abstract class CodeGeneratorEngine {
     }
 
     /**
-     * Generate the C Source and Header output from the data contained
-     * within the syntax tree.
+     * Generate the C Source and Header output from the data contained within the syntax tree.
      */
     public abstract void generateOutput();
 
@@ -69,8 +67,9 @@ public abstract class CodeGeneratorEngine {
     public abstract void writeFiles();
 
     /**
-     * Insert the main method into the correct file. Also set up the
-     * initialization for the program within the main method.
+     * Insert the main method into the correct file. Also set up the initialization for the program
+     * within the main method.
      */
     public abstract void insertMainMethod();
 }
+

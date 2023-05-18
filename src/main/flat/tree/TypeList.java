@@ -10,8 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * {@link List} extension that abstracts a general list type that can only
- * hold Value types.
+ * {@link List} extension that abstracts a general list type that can only hold Value types.
  *
  * @author Braden Steffaniak
  * @since v0.2.29 Aug 21, 2014 at 11:00:40 PM
@@ -178,7 +177,8 @@ public class TypeList<E extends Node> extends List implements Iterable<E> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public TypeList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public TypeList<E> clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         TypeList<E> node = new TypeList<E>(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -192,8 +192,7 @@ public class TypeList<E extends Node> extends List implements Iterable<E> {
     }
 
     /**
-     * Fill the given {@link TypeList} with the data that is in the
-     * specified node.
+     * Fill the given {@link TypeList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -205,11 +204,10 @@ public class TypeList<E extends Node> extends List implements Iterable<E> {
     }
 
     /**
-     * Test the FieldList class type to make sure everything
-     * is working properly.
+     * Test the FieldList class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -217,3 +215,4 @@ public class TypeList<E extends Node> extends List implements Iterable<E> {
         return null;
     }
 }
+

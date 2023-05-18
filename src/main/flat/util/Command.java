@@ -27,10 +27,10 @@ public class Command {
     }
 
     /**
-     * Create a command with the specified Display instance, command,
-     * and directory to issue the command in.
+     * Create a command with the specified Display instance, command, and directory to issue the
+     * command in.
      *
-     * @param command   The shell command to issue to the Operating System.
+     * @param command The shell command to issue to the Operating System.
      * @param directory The directory to issue the command in.
      */
     public Command(String command, File directory) {
@@ -40,7 +40,9 @@ public class Command {
         while (m.find()) {
             String s = m.group(1);
 
-            s = (s.startsWith("\"") || s.startsWith("'")) && (s.endsWith("\"") || s.endsWith("'")) ? s.substring(1, s.length() - 1) : s;
+            s = (s.startsWith("\"") || s.startsWith("'")) && (s.endsWith("\"") || s.endsWith("'"))
+                ? s.substring(1, s.length() - 1)
+                : s;
 
             list.add(s);
         }
@@ -49,15 +51,14 @@ public class Command {
     }
 
     /**
-     * Create a command with the specified Display instance, commands,
-     * and directory to issue the commands in.
+     * Create a command with the specified Display instance, commands, and directory to issue the
+     * commands in.
      *
-     * @param commands  The list of shell commands to issue to the
-     *                  Operating System.
+     * @param commands The list of shell commands to issue to the Operating System.
      * @param directory The directory to issue the commands in.
      */
     public Command(String commands[], String directory) {
-//		this.commands = commands;
+        // this.commands = commands;
         this(commands, new File(directory));
     }
 
@@ -78,7 +79,7 @@ public class Command {
     }
 
     public void execute(String title) throws IOException {
-//		System.out.println(Arrays.asList(commands) + ", " + directory);
+        // System.out.println(Arrays.asList(commands) + ", " + directory);
 
         ProcessBuilder builder = new ProcessBuilder(commands);
 
@@ -92,8 +93,8 @@ public class Command {
         final InputStream errorStream = new FileInputStream(error);
         final InputStream inputStream = new FileInputStream(input);
 
-//		builder.redirectError(error);
-//		builder.redirectInput(input);
+        // builder.redirectError(error);
+        // builder.redirectInput(input);
 
         final Result result = new Result();
         final ExecValues values = new ExecValues();
@@ -104,11 +105,13 @@ public class Command {
             public void run() {
                 commandThread2 = new Thread() {
                     public void run() {
-                        values.lsr = new LogStreamReader(process.getInputStream(), listeners, System.getProperty("user.dir") + "/");
+                        values.lsr = new LogStreamReader(process.getInputStream(), listeners,
+                            System.getProperty("user.dir") + "/");
                         values.thread = new Thread(values.lsr, "LogStreamReader");
                         values.thread.start();
 
-                        values.reader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+                        values.reader =
+                            new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
                         try {
                             String line = null;
@@ -135,7 +138,8 @@ public class Command {
                                 }
 
                                 if (builder.length() > 0) {
-                                    while (builder.charAt(builder.length() - 1) == '\n' || builder.charAt(builder.length() - 1) == '\r') {
+                                    while (builder.charAt(builder.length() - 1) == '\n'
+                                        || builder.charAt(builder.length() - 1) == '\r') {
                                         builder.deleteCharAt(builder.length() - 1);
                                     }
 
@@ -202,6 +206,7 @@ public class Command {
     }
 }
 
+
 /**
  * @version Mar 24, 2013 at 1:35:58 AM
  * @author Braden Steffaniak
@@ -254,3 +259,4 @@ class LogStreamReader implements Runnable {
         running = false;
     }
 }
+

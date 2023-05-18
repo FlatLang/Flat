@@ -12,7 +12,8 @@ public class AutoFinalAnnotation extends Annotation {
         super(temporaryParent, locationIn);
     }
 
-    public static AutoFinalAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static AutoFinalAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("AutoFinal")) {
             AutoFinalAnnotation n = new AutoFinalAnnotation(parent, location);
 
@@ -35,11 +36,13 @@ public class AutoFinalAnnotation extends Annotation {
         for (Node n : nodes) {
             VariableDeclaration declaration = (VariableDeclaration) n;
 
-            if (declaration instanceof FlatMethodDeclaration == false && !declaration.isVar() && declaration.isUserMade() && !declaration.isFinal()) {
+            if (declaration instanceof FlatMethodDeclaration == false && !declaration.isVar()
+                && declaration.isUserMade() && !declaration.isFinal()) {
                 if (!declaration.isPropertyTrue("forLoopVariable")) {
                     declaration.isUserMade();
                     declaration.isFinal();
-                    declaration.addAnnotation(new FinalAnnotation(declaration, declaration.getLocationIn()));
+                    declaration.addAnnotation(
+                        new FinalAnnotation(declaration, declaration.getLocationIn()));
                 }
             }
         }
@@ -51,7 +54,7 @@ public class AutoFinalAnnotation extends Annotation {
     public boolean onApplied(Node next, boolean throwError) {
         if (!checkDuplicate(next, throwError)) {
             if (next instanceof ClassDeclaration || next.containsScope()) {
-//			((InstanceDeclaration)next).setStatic(true);
+                // ((InstanceDeclaration)next).setStatic(true);
             } else {
                 return invalidApplication(next, throwError);
             }
@@ -61,7 +64,8 @@ public class AutoFinalAnnotation extends Annotation {
     }
 
     @Override
-    public AutoFinalAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AutoFinalAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         AutoFinalAnnotation node = new AutoFinalAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -71,9 +75,11 @@ public class AutoFinalAnnotation extends Annotation {
         return cloneTo(node, true, true);
     }
 
-    public AutoFinalAnnotation cloneTo(AutoFinalAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AutoFinalAnnotation cloneTo(AutoFinalAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 }
+

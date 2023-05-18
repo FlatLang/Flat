@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 
 /**
- * Value extension that represents the declaration of a method
- * call node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Value extension that represents the declaration of a method call node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 10:04:31 PM
@@ -37,13 +37,16 @@ public class MethodCall extends Variable {
     public MethodCall(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
 
-        MethodCallArgumentList arguments = new MethodCallArgumentList(this, new Location(locationIn));
-        GenericTypeArgumentList genericArguments = new GenericTypeArgumentList(this, locationIn.asNew());
-        //GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
+        MethodCallArgumentList arguments =
+            new MethodCallArgumentList(this, new Location(locationIn));
+        GenericTypeArgumentList genericArguments =
+            new GenericTypeArgumentList(this, locationIn.asNew());
+        // GenericTypeArgumentList implementation = new GenericTypeArgumentList(this,
+        // locationIn.asNew());
 
         addChild(arguments);
         addChild(genericArguments);
-        //addChild(implementation);
+        // addChild(implementation);
     }
 
     @Override
@@ -61,8 +64,10 @@ public class MethodCall extends Variable {
 
     @Override
     public ClassDeclaration getTypeClass(boolean checkCast, boolean defaultGenericType) {
-        if (isPrimitiveOverload() && getFlatMethod().genericOverload != null && getFlatMethod().genericOverload.getFileDeclaration() != null) {
-            ClassDeclaration d = getFlatMethod().genericOverload.getFileDeclaration().getClassDeclaration(getType());
+        if (isPrimitiveOverload() && getFlatMethod().genericOverload != null
+            && getFlatMethod().genericOverload.getFileDeclaration() != null) {
+            ClassDeclaration d =
+                getFlatMethod().genericOverload.getFileDeclaration().getClassDeclaration(getType());
 
             if (d != null) {
                 return d;
@@ -81,17 +86,18 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * The the Node that represents the arguments to the method call.
-     * For example:<br>
-     * <blockquote><pre>
-     * methodName(5, "Arg2", 3 * n);</pre></blockquote>
-     * In the previous statement, the data within the parenthesis are the
-     * arguments passed to the method. The Argument returned by this
-     * method would contain a node for each of the arguments passed, in
-     * the correct order from left to right.
+     * The the Node that represents the arguments to the method call. For example:<br>
+     * <blockquote>
+     * 
+     * <pre>
+     * methodName(5, "Arg2", 3 * n);
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, the data within the parenthesis are the arguments
+     * passed to the method. The Argument returned by this method would contain a node for each of
+     * the arguments passed, in the correct order from left to right.
      *
-     * @return The Node that represents the arguments to the method
-     * call.
+     * @return The Node that represents the arguments to the method call.
      */
     public MethodCallArgumentList getArgumentList() {
         return (MethodCallArgumentList) getChild(super.getNumDefaultChildren() + 0);
@@ -108,7 +114,7 @@ public class MethodCall extends Variable {
         }
 
         if (getParent() instanceof Instantiation) {
-//			return ((Instantiation)getParent()).getGenericTypeArgumentList();
+            // return ((Instantiation)getParent()).getGenericTypeArgumentList();
         }
 
         return super.getGenericTypeArgumentList();
@@ -144,13 +150,16 @@ public class MethodCall extends Variable {
         CallableMethod callable = getInferredDeclaration();
 
         if (callable instanceof BodyMethodDeclaration) {
-            VirtualMethodDeclaration virtual = ((FlatMethodDeclaration) callable).getVirtualMethod();
+            VirtualMethodDeclaration virtual =
+                ((FlatMethodDeclaration) callable).getVirtualMethod();
 
             if (virtual != null) {
                 FlatParameterList params = virtual.getParameterList();
 
-                for (int i = 0; i < Math.min(getArgumentList().getNumVisibleChildren(), params.getNumParameters()); i++) {
-                    if (params.getParameter(i).isGenericType() && !((Value) getArgumentList().getVisibleChild(i)).isGenericType()) {
+                for (int i = 0; i < Math.min(getArgumentList().getNumVisibleChildren(),
+                    params.getNumParameters()); i++) {
+                    if (params.getParameter(i).isGenericType()
+                        && !((Value) getArgumentList().getVisibleChild(i)).isGenericType()) {
                         return true;
                     }
                 }
@@ -170,7 +179,17 @@ public class MethodCall extends Variable {
      */
     @Override
     public boolean isVirtualTypeKnown() {
-        return !isVirtual() || getMethodDeclaration() instanceof FlatMethodDeclaration == false || getParent() instanceof Instantiation || super.isVirtualTypeKnown() || getParentClass().isPropertyTrue("functionMap");// || containsPrimitiveGenericParameters();//(!getName().equals("toString") && (getParent() instanceof Instantiation || (getMethodDeclaration() instanceof FlatMethodDeclaration && !((FlatMethodDeclaration)getMethodDeclaration()).isOverridden()) || super.isVirtualTypeKnown())) || getParentClass().isPropertyTrue("functionMap");
+        return !isVirtual() || getMethodDeclaration() instanceof FlatMethodDeclaration == false
+            || getParent() instanceof Instantiation || super.isVirtualTypeKnown()
+            || getParentClass().isPropertyTrue("functionMap");// ||
+                                                              // containsPrimitiveGenericParameters();//(!getName().equals("toString")
+                                                              // && (getParent() instanceof
+                                                              // Instantiation ||
+                                                              // (getMethodDeclaration() instanceof
+                                                              // FlatMethodDeclaration &&
+                                                              // !((FlatMethodDeclaration)getMethodDeclaration()).isOverridden())
+                                                              // || super.isVirtualTypeKnown())) ||
+                                                              // getParentClass().isPropertyTrue("functionMap");
     }
 
     public boolean isVirtual() {
@@ -182,11 +201,9 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Get whether or not the specified Node is used within an
-     * external context.
+     * Get whether or not the specified Node is used within an external context.
      *
-     * @return Whether or not the specified Node is used within an
-     * external context.
+     * @return Whether or not the specified Node is used within an external context.
      */
     public boolean isWithinExternalContext() {
         CallableMethod method = null;
@@ -223,28 +240,25 @@ public class MethodCall extends Variable {
      */
     @Override
     public boolean isSpecial() {
-		/*if (getInferredDeclaration().isVirtual())
-		{
-			if (isVirtualTypeKnown())//isAccessed() && ((Value)getAccessingNode()).isVirtualTypeKnown())
-			{
-				return true;
-			}
-
-			return false;
-		}*/
+        /*
+         * if (getInferredDeclaration().isVirtual()) { if (isVirtualTypeKnown())//isAccessed() &&
+         * ((Value)getAccessingNode()).isVirtualTypeKnown()) { return true; }
+         * 
+         * return false; }
+         */
 
         return true;
     }
 
     /**
-     * Get the Method instance that this MethodCall is calling in the
-     * form of a CallableMethod.
+     * Get the Method instance that this MethodCall is calling in the form of a CallableMethod.
      *
-     * @return The Method instance that this MethodCall is
-     * calling.
+     * @return The Method instance that this MethodCall is calling.
      */
     public CallableMethod getInferredDeclaration() {
-        return getMethodDeclaration() instanceof CallableMethod ? (CallableMethod) getMethodDeclaration() : null;
+        return getMethodDeclaration() instanceof CallableMethod
+            ? (CallableMethod) getMethodDeclaration()
+            : null;
     }
 
     public CallableMethod getCallableDeclaration() {
@@ -252,7 +266,8 @@ public class MethodCall extends Variable {
 
         if (method != null && method.isVirtual() && !isVirtualTypeKnown()) {
             if (!isAccessed() || getAccessingNode() instanceof Super == false) {
-                VirtualMethodDeclaration virtual = ((FlatMethodDeclaration) method).getVirtualMethod();
+                VirtualMethodDeclaration virtual =
+                    ((FlatMethodDeclaration) method).getVirtualMethod();
 
                 if (virtual != null) {
                     return virtual;
@@ -274,49 +289,49 @@ public class MethodCall extends Variable {
         return context;
     }
 
-//	public boolean isPure(BodyMethodDeclaration context, boolean allowInstanceModification)
-//	{
-//		if (getInferredDeclaration() instanceof BodyMethodDeclaration)
-//		{
-//			BodyMethodDeclaration bodyFunc = (BodyMethodDeclaration)getInferredDeclaration();
-//
-//			if (!bodyFunc.checkPure(true))//!bodyFunc.isPure())
-//			{
-//				if (getReferenceNode() instanceof Variable)
-//				{
-//					Variable ref = (Variable)getReferenceNode();
-//
-////					if (ref.isFinal())
-////					{
-////						return bodyFunc.checkPure(true);
-////					}
-////					else if (allowInstanceModification)
-////					{
-////						if (ref.getDeclaration().getParentMethod() == context)
-////						{
-////							return bodyFunc.checkPure(true);
-////						}
-////					}
-////
-////					return false;
-//
-////					return bodyFunc.checkPure(true);
-//				}
-////				else if (bodyFunc.isStatic())
-////				{
-////					return bodyFunc.checkPure(false);
-////				}
-//
-//				return false;
-//			}
-//		}
-//		else
-//		{
-//			return getCallableDeclaration().checkPure(this, allowInstanceModification);
-//		}
-//
-//		return true;
-//	}
+    // public boolean isPure(BodyMethodDeclaration context, boolean allowInstanceModification)
+    // {
+    // if (getInferredDeclaration() instanceof BodyMethodDeclaration)
+    // {
+    // BodyMethodDeclaration bodyFunc = (BodyMethodDeclaration)getInferredDeclaration();
+    //
+    // if (!bodyFunc.checkPure(true))//!bodyFunc.isPure())
+    // {
+    // if (getReferenceNode() instanceof Variable)
+    // {
+    // Variable ref = (Variable)getReferenceNode();
+    //
+    //// if (ref.isFinal())
+    //// {
+    //// return bodyFunc.checkPure(true);
+    //// }
+    //// else if (allowInstanceModification)
+    //// {
+    //// if (ref.getDeclaration().getParentMethod() == context)
+    //// {
+    //// return bodyFunc.checkPure(true);
+    //// }
+    //// }
+    ////
+    //// return false;
+    //
+    //// return bodyFunc.checkPure(true);
+    // }
+    //// else if (bodyFunc.isStatic())
+    //// {
+    //// return bodyFunc.checkPure(false);
+    //// }
+    //
+    // return false;
+    // }
+    // }
+    // else
+    // {
+    // return getCallableDeclaration().checkPure(this, allowInstanceModification);
+    // }
+    //
+    // return true;
+    // }
 
     public Value getArgument(String name) {
         Value[] values = getArgumentList().getArgumentsInOrder();
@@ -333,8 +348,7 @@ public class MethodCall extends Variable {
     /**
      * Get the Method instance that this MethodCall is calling.
      *
-     * @return The Method instance that this MethodCall is
-     * calling.
+     * @return The Method instance that this MethodCall is calling.
      */
     private VariableDeclaration searchMethodDeclaration() {
         return searchMethodDeclaration(getName());
@@ -363,7 +377,8 @@ public class MethodCall extends Variable {
             return constructor;
         }
         if (getParent() instanceof Super) {
-            return ((Super) getParent()).getTypeClass().getMethod((GenericCompatible) null, name, getArgumentList().getTypes());
+            return ((Super) getParent()).getTypeClass().getMethod((GenericCompatible) null, name,
+                getArgumentList().getTypes());
         }
 
         Pair<ClassDeclaration, SearchFilter>[] classes = getDeclaringClasses();
@@ -378,7 +393,8 @@ public class MethodCall extends Variable {
                 SyntaxMessage.error("Could not find declaring class for '" + name + "'", this);
             }
 
-            MethodDeclaration method = clazz.a.getMethod(getReferenceNode().getContext(), name, clazz.b, getArgumentList());
+            MethodDeclaration method = clazz.a.getMethod(getReferenceNode().getContext(), name,
+                clazz.b, getArgumentList());
 
             if (method != null) {
                 return method;
@@ -399,12 +415,12 @@ public class MethodCall extends Variable {
                         v.setDeclaration(field);
                         v.setType(arg.generateFlatType(arg).toString());
 
-                        return v.type.closure;//((FunctionType)arg.getTypeObject()).closure;
+                        return v.type.closure;// ((FunctionType)arg.getTypeObject()).closure;
                     }
                 } else if (field.getTypeObject() instanceof FunctionType) {
-                    //				ClosureVariable v = new ClosureVariable(parent, getLocationIn());
-                    //				v.setDeclaration(field);
-                    //				v.setType(field.generateFlatType(field).toString());
+                    // ClosureVariable v = new ClosureVariable(parent, getLocationIn());
+                    // v.setDeclaration(field);
+                    // v.setType(field.generateFlatType(field).toString());
 
                     return ((FunctionType) field.getTypeObject()).closure;
                 }
@@ -416,14 +432,15 @@ public class MethodCall extends Variable {
 
     @Override
     public boolean isAccessedWithinStaticContext() {
-        return super.isAccessedWithinStaticContext() || !isAccessed() && getDeclaration() instanceof InstanceDeclaration && ((InstanceDeclaration) getDeclaration()).isStatic();
+        return super.isAccessedWithinStaticContext()
+            || !isAccessed() && getDeclaration() instanceof InstanceDeclaration
+                && ((InstanceDeclaration) getDeclaration()).isStatic();
     }
 
     /**
      * Get the Method instance that this MethodCall is calling.
      *
-     * @return The Method instance that this MethodCall is
-     * calling.
+     * @return The Method instance that this MethodCall is calling.
      */
     public VariableDeclaration getMethodDeclaration() {
         return getDeclaration();
@@ -434,11 +451,13 @@ public class MethodCall extends Variable {
             return null;
         }
 
-        VariableDeclaration closure = SyntaxTree.findDeclaration(parent, name);//searchVariable(getParent(), getAncestorWithScope().getScope(), name);
+        VariableDeclaration closure = SyntaxTree.findDeclaration(parent, name);// searchVariable(getParent(),
+                                                                               // getAncestorWithScope().getScope(),
+                                                                               // name);
 
         closure = closure != null ? closure.getOriginalDeclaration() : null;
 
-        //Parameter param = getParentMethod().getParameter(name);
+        // Parameter param = getParentMethod().getParameter(name);
 
         if (closure instanceof ClosureDeclaration) {
             return (ClosureDeclaration) closure;
@@ -464,18 +483,20 @@ public class MethodCall extends Variable {
     }
 
     public FlatMethodDeclaration getFlatMethod() {
-        return getCallableDeclaration() instanceof FlatMethodDeclaration ? (FlatMethodDeclaration) getCallableDeclaration() : null;
+        return getCallableDeclaration() instanceof FlatMethodDeclaration
+            ? (FlatMethodDeclaration) getCallableDeclaration()
+            : null;
     }
 
     public boolean isSuperCall() {
-        return declaration instanceof InitializationMethod && declaration.getParentClass() != getParentClass();
+        return declaration instanceof InitializationMethod
+            && declaration.getParentClass() != getParentClass();
     }
 
     /**
-     * Get the name of the object reference identifier for the given
-     * MethodCall's method node. Static methods return
-     * "__static__ClassName" and non-static methods return "this".
-     * The call cannot be that of an external method.
+     * Get the name of the object reference identifier for the given MethodCall's method node.
+     * Static methods return "__static__ClassName" and non-static methods return "this". The call
+     * cannot be that of an external method.
      *
      * @return The name of the object reference identifier.
      */
@@ -484,11 +505,9 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Get the Value that the method was called with for the given
-     * MethodCall's method node, if it was not called with a specific
-     * object. Static methods return "__static__ClassName" and non-static
-     * methods return "this". The call cannot be that of an external
-     * method.
+     * Get the Value that the method was called with for the given MethodCall's method node, if it
+     * was not called with a specific object. Static methods return "__static__ClassName" and
+     * non-static methods return "this". The call cannot be that of an external method.
      *
      * @return The Value that the method was called with.
      */
@@ -501,17 +520,15 @@ public class MethodCall extends Variable {
      */
     @Override
     public Accessible getReferenceNode() {
-		/*if (getFlatMethod() instanceof ArrayAccessorMethod)
-		{
-			Accessible a = super.getReferenceNode();//.getReferenceNode()
-
-			while (a instanceof MethodCall && ((MethodCall)a).getFlatMethod() instanceof ArrayAccessorMethod)
-			{
-				a = a.getReferenceNode();
-			}
-
-			return a.getReferenceNode();
-		}*/
+        /*
+         * if (getFlatMethod() instanceof ArrayAccessorMethod) { Accessible a =
+         * super.getReferenceNode();//.getReferenceNode()
+         * 
+         * while (a instanceof MethodCall && ((MethodCall)a).getFlatMethod() instanceof
+         * ArrayAccessorMethod) { a = a.getReferenceNode(); }
+         * 
+         * return a.getReferenceNode(); }
+         */
 
         Accessible ref = super.getReferenceNode();
 
@@ -522,34 +539,32 @@ public class MethodCall extends Variable {
         return ref;
     }
 
-	/*public Accessible getAccessingNode()
-	{
-		Accessible a = super.getAccessingNode();
-
-		if (a instanceof Instantiation)
-		{
-			return null;
-		}
-
-		return a;
-	}*/
+    /*
+     * public Accessible getAccessingNode() { Accessible a = super.getAccessingNode();
+     * 
+     * if (a instanceof Instantiation) { return null; }
+     * 
+     * return a; }
+     */
 
     /**
      * Get the Parameter that the given argument represents.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public void run(int a, int b, int c)
      * {
      * 	...
      * }
      *
-     * run(432, 1, 5);</pre></blockquote>
-     * If you were to call getCorrespondingParameter(1) on the method
-     * call above, you would receive the b Parameter.
+     * run(432, 1, 5);
+     * </pre>
+     * 
+     * </blockquote> If you were to call getCorrespondingParameter(1) on the method call above, you
+     * would receive the b Parameter.
      *
-     * @param argument The argument to get the corresponding parameter
-     *                 from.
+     * @param argument The argument to get the corresponding parameter from.
      * @return The Parameter that represents the given argument.
      */
     public Value getCorrespondingParameter(Value argument) {
@@ -565,22 +580,24 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Get the Parameter that the given index represents. The
-     * parameters are ordered from left to right, 0 being the first.<br>
+     * Get the Parameter that the given index represents. The parameters are ordered from left to
+     * right, 0 being the first.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public void run(int a, int b, int c)
      * {
      * 	...
      * }
      *
-     * run(432, 1, 5);</pre></blockquote>
-     * If you were to call getCorrespondingParameter(2) on the method
-     * call above, you would receive the c Parameter.
+     * run(432, 1, 5);
+     * </pre>
+     * 
+     * </blockquote> If you were to call getCorrespondingParameter(2) on the method call above, you
+     * would receive the c Parameter.
      *
-     * @param argIndex The index of the argument to get the corresponding
-     *                 parameter from.
+     * @param argIndex The index of the argument to get the corresponding parameter from.
      * @return The Parameter at the given index.
      */
     public Value getCorrespondingParameter(int argIndex) {
@@ -618,10 +635,9 @@ public class MethodCall extends Variable {
     }
 
     public byte getDataType(boolean checkGeneric, boolean checkCast) {
-		/*if (isPrimitiveGenericType())
-		{
-			return Value.POINTER;
-		}*/
+        /*
+         * if (isPrimitiveGenericType()) { return Value.POINTER; }
+         */
 
         return super.getDataType(checkGeneric, checkCast);
     }
@@ -651,8 +667,7 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * @param throwException Whether or not to throw an exception if a
-     *                       generic type cannot be found.
+     * @param throwException Whether or not to throw an exception if a generic type cannot be found.
      * @return The
      */
     private GenericCompatible getGenericCompatibleDeclaration(boolean throwException) {
@@ -660,13 +675,14 @@ public class MethodCall extends Variable {
     }
 
     private Variable getGenericCompatible(boolean throwException) {
-        Node last = getLastAncestorOfType(new Class[]{MethodCallArgumentList.class, Variable.class, Instantiation.class}, false);
+        Node last = getLastAncestorOfType(
+            new Class[] {MethodCallArgumentList.class, Variable.class, Instantiation.class}, false);
 
         if (last instanceof Variable) {
             Variable var = (Variable) last;
 
             if (var.getDeclaration() instanceof MutatorMethod) {
-                return var;//.getDeclaringClass().getField(var.getName());
+                return var;// .getDeclaringClass().getField(var.getName());
             }
         }
 
@@ -679,25 +695,27 @@ public class MethodCall extends Variable {
             Value val = assign.getAssigneeNode();
 
             if (val instanceof Variable) {
-                return ((Variable) val);//.getDeclaration();
+                return ((Variable) val);// .getDeclaration();
             }
         }
 
         Accessible identifier = getReferenceNode();
 
         if (identifier instanceof Variable) {
-			/*VariableDeclaration decl = ((Variable)identifier).getDeclaration();
+            /*
+             * VariableDeclaration decl = ((Variable)identifier).getDeclaration();
+             * 
+             * if (decl instanceof Parameter && ((Parameter)decl).isObjectReference()) { return
+             * decl.getTypeClass(); }
+             */
 
-			if (decl instanceof Parameter && ((Parameter)decl).isObjectReference())
-			{
-				return decl.getTypeClass();
-			}*/
-
-            return (Variable) identifier;//decl;
+            return (Variable) identifier;// decl;
         }
 
         if (throwException) {
-            SyntaxMessage.error("Unable to determine generic type declaration for method call '" + getName() + "'", this);
+            SyntaxMessage.error(
+                "Unable to determine generic type declaration for method call '" + getName() + "'",
+                this);
         }
 
         return null;
@@ -714,28 +732,20 @@ public class MethodCall extends Variable {
 
         return arg.getType();
 
-		/*VariableDeclaration method  = getMethodDeclaration();
-		GenericCompatible   generic = getGenericCompatibleDeclaration();
-
-		if (method.isGenericType())
-		{
-			GenericTypeArgument arg = generic.getGenericTypeArgumentInstance(method.getType(), this, false);
-
-			if (arg != null)
-			{
-				return arg.getGenericReturnType();
-			}
-			else if (getParentMethod().containsGenericTypeParameter(method.getType()))
-			{
-				return getParentMethod().getGenericTypeParameter(method.getType()).getDefaultType();
-			}
-			else
-			{
-				SyntaxMessage.error("Invalid generic type '" + method.getType() + "'", this);
-			}
-		}
-
-		return super.getGenericReturnType();*/
+        /*
+         * VariableDeclaration method = getMethodDeclaration(); GenericCompatible generic =
+         * getGenericCompatibleDeclaration();
+         * 
+         * if (method.isGenericType()) { GenericTypeArgument arg =
+         * generic.getGenericTypeArgumentInstance(method.getType(), this, false);
+         * 
+         * if (arg != null) { return arg.getGenericReturnType(); } else if
+         * (getParentMethod().containsGenericTypeParameter(method.getType())) { return
+         * getParentMethod().getGenericTypeParameter(method.getType()).getDefaultType(); } else {
+         * SyntaxMessage.error("Invalid generic type '" + method.getType() + "'", this); } }
+         * 
+         * return super.getGenericReturnType();
+         */
     }
 
     public Value[] getTypes() {
@@ -757,7 +767,8 @@ public class MethodCall extends Variable {
             if (method.doesOverride()) {
                 VirtualMethodDeclaration virtual = method.getVirtualMethod();
 
-                if (virtual.isGenericType() || virtual.getGenericTypeArgumentList().getNumVisibleChildren() > 0) {
+                if (virtual.isGenericType()
+                    || virtual.getGenericTypeArgumentList().getNumVisibleChildren() > 0) {
                     return virtual;
                 }
             }
@@ -767,95 +778,90 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Decode the given statement into a MethodCall instance, if
-     * possible. If it is not possible, this method returns null.<br>
-     * To determine whether or not a method is called externally,
-     * refer to {@link #isExternal()} for more details on what an
-     * external call looks like.
-     * <br>
+     * Decode the given statement into a MethodCall instance, if possible. If it is not possible,
+     * this method returns null.<br>
+     * To determine whether or not a method is called externally, refer to {@link #isExternal()} for
+     * more details on what an external call looks like. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
-     * 	<li>externalFile.cFunctionName()</li>
-     * 	<li>methodName('q', 5 * (2 / 3))</li>
+     * <li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+     * <li>externalFile.cFunctionName()</li>
+     * <li>methodName('q', 5 * (2 / 3))</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  MethodCall instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a MethodCall.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a MethodCall instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a MethodCall.
      */
-    public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static MethodCall decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, true);
     }
 
     /**
-     * Decode the given statement into a MethodCall instance, if
-     * possible. If it is not possible, this method returns null.<br>
-     * To determine whether or not a method is called externally,
-     * refer to {@link #isExternal()} for more details on what an
-     * external call looks like.
-     * <br>
+     * Decode the given statement into a MethodCall instance, if possible. If it is not possible,
+     * this method returns null.<br>
+     * To determine whether or not a method is called externally, refer to {@link #isExternal()} for
+     * more details on what an external call looks like. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
-     * 	<li>externalFile.cFunctionName()</li>
-     * 	<li>methodName('q', 5 * (2 / 3))</li>
+     * <li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+     * <li>externalFile.cFunctionName()</li>
+     * <li>methodName('q', 5 * (2 / 3))</li>
      * </ul>
      *
-     * @param parent         The parent node of the statement.
-     * @param statement      The statement to try to decode into a
-     *                       MethodCall instance.
-     * @param location       The location of the statement in the source code.
-     * @param require        Whether or not to throw an error if anything goes wrong.
-     * @param validateAccess Whether or not to check if method call can be
-     *                       accessed legally.
-     * @return The generated node, if it was possible to translated it
-     * into a MethodCall.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a MethodCall instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @param validateAccess Whether or not to check if method call can be accessed legally.
+     * @return The generated node, if it was possible to translated it into a MethodCall.
      */
-    public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess) {
+    public static MethodCall decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean validateAccess) {
         return decodeStatement(parent, statement, location, require, validateAccess, null);
     }
 
     /**
-     * Decode the given statement into a MethodCall instance, if
-     * possible. If it is not possible, this method returns null.<br>
-     * To determine whether or not a method is called externally,
-     * refer to {@link #isExternal()} for more details on what an
-     * external call looks like.
-     * <br>
+     * Decode the given statement into a MethodCall instance, if possible. If it is not possible,
+     * this method returns null.<br>
+     * To determine whether or not a method is called externally, refer to {@link #isExternal()} for
+     * more details on what an external call looks like. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
-     * 	<li>externalFile.cFunctionName()</li>
-     * 	<li>methodName('q', 5 * (2 / 3))</li>
+     * <li>methodName(5, varName, methodThatReturnsAValue(), "arg1")</li>
+     * <li>externalFile.cFunctionName()</li>
+     * <li>methodName('q', 5 * (2 / 3))</li>
      * </ul>
      *
-     * @param parent         The parent node of the statement.
-     * @param statement      The statement to try to decode into a
-     *                       MethodCall instance.
-     * @param location       The location of the statement in the source code.
-     * @param require        Whether or not to throw an error if anything goes wrong.
-     * @param validateAccess Whether or not to check if method call can be
-     *                       accessed legally.
-     * @return The generated node, if it was possible to translated it
-     * into a MethodCall.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a MethodCall instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @param validateAccess Whether or not to check if method call can be accessed legally.
+     * @return The generated node, if it was possible to translated it into a MethodCall.
      */
-    public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod callableMethod) {
-        return decodeStatement(parent, statement, location, require, validateAccess, callableMethod, false);
+    public static MethodCall decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean validateAccess, CallableMethod callableMethod) {
+        return decodeStatement(parent, statement, location, require, validateAccess, callableMethod,
+            false);
     }
 
-    public static MethodCall decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod callableMethod, boolean requireConstructor) {
-        SyntaxUtils.StatementLiteralNameData[] statementLiteralNameData = SyntaxUtils.getStatementLiteralNameData(statement);
+    public static MethodCall decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean validateAccess, CallableMethod callableMethod,
+        boolean requireConstructor) {
+        SyntaxUtils.StatementLiteralNameData[] statementLiteralNameData =
+            SyntaxUtils.getStatementLiteralNameData(statement);
 
         for (SyntaxUtils.StatementLiteralNameData data : statementLiteralNameData) {
-            statement = statement.replace('`' + data.literalNameData.literalName + '`', data.literalNameData.validName);
+            statement = statement.replace('`' + data.literalNameData.literalName + '`',
+                data.literalNameData.validName);
         }
 
-        String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
+        String[][] modifierData =
+            SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
 
         if (modifierData != null) {
             statement = modifierData[0][0];
@@ -877,11 +883,14 @@ public class MethodCall extends Variable {
                 }
             }
 
-            Bounds genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false, '-');
+            Bounds genericBounds = StringUtils.findContentBoundsWithin(statement,
+                VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false, '-');
 
             if (genericBounds.isValid()) {
                 String params = genericBounds.extractString(statement);
-                genericBounds = StringUtils.findContentBoundsWithin(statement, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, true, '-');
+                genericBounds = StringUtils.findContentBoundsWithin(statement,
+                    VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, true,
+                    '-');
 
                 statement = genericBounds.trimString(statement);
 
@@ -896,7 +905,8 @@ public class MethodCall extends Variable {
                 return null;
             }
 
-            if (requireConstructor && parent.getReferenceFile().getImportList().getAbsoluteClassLocation(data.name) == null) {
+            if (requireConstructor && parent.getReferenceFile().getImportList()
+                .getAbsoluteClassLocation(data.name) == null) {
                 return null;
             }
 
@@ -910,9 +920,12 @@ public class MethodCall extends Variable {
                 n.setDeclaration((VariableDeclaration) callableMethod);
             }
 
-            boolean skipArgumentChecks = callableMethod != null && (callableMethod instanceof PropertyMethod || parent.getParentClass().isPropertyTrue("functionMap"));
+            boolean skipArgumentChecks =
+                callableMethod != null && (callableMethod instanceof PropertyMethod
+                    || parent.getParentClass().isPropertyTrue("functionMap"));
 
-            if (!n.decodeArguments(statement, bounds, require) || !n.deduceMethodCallGenericArguments()) {
+            if (!n.decodeArguments(statement, bounds, require)
+                || !n.deduceMethodCallGenericArguments()) {
                 return null;
             }
 
@@ -940,9 +953,11 @@ public class MethodCall extends Variable {
             n.setMethodCallGenericArgumentTypes();
             n.addDefaultGenericTypeArguments();
 
-            if (!skipArgumentChecks && !n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require)) {
+            if (!skipArgumentChecks
+                && !n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require)) {
                 n.validateArguments(n.getFileDeclaration(), n.getLocationIn(), require);
-                SyntaxMessage.queryError("Invalid arguments passed in function call '" + statement + "'", n, require);
+                SyntaxMessage.queryError(
+                    "Invalid arguments passed in function call '" + statement + "'", n, require);
 
                 return null;
             }
@@ -986,7 +1001,8 @@ public class MethodCall extends Variable {
             importFlatType(getFileDeclaration(), this);
 
             genericTypeArgumentList = new GenericTypeArgumentList(this, Location.INVALID);
-            decodeGenericTypeArguments(type.substring(index + 1, type.length() - 1), genericTypeArgumentList);
+            decodeGenericTypeArguments(type.substring(index + 1, type.length() - 1),
+                genericTypeArgumentList);
         }
     }
 
@@ -1013,7 +1029,8 @@ public class MethodCall extends Variable {
     @Override
     public GenericTypeParameter getGenericTypeParameter(boolean checkArray) {
         if (getFlatMethod() != null) {
-            GenericTypeParameterList params = getFlatMethod().getMethodGenericTypeParameterDeclaration();
+            GenericTypeParameterList params =
+                getFlatMethod().getMethodGenericTypeParameterDeclaration();
 
             if (params.containsParameter(getType())) {
                 return params.getParameter(getType());
@@ -1024,23 +1041,25 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Decode the name of the method call. Check that it is all up to
-     * flying squid.
+     * Decode the name of the method call. Check that it is all up to flying squid.
      *
      * @param statement The method call statement.
-     * @param bounds    The bounds of the arguments.
-     * @param require   Whether or not to throw an error if anything goes wrong.
+     * @param bounds The bounds of the arguments.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the method name decoded correctly.
      */
-    private boolean decodeMethodName(String statement, Bounds bounds, MethodData data, boolean require) {
+    private boolean decodeMethodName(String statement, Bounds bounds, MethodData data,
+        boolean require) {
         // Parenthesis index
-        int parenIndex = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1);
+        int parenIndex =
+            StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1);
         int nameEnd = StringUtils.findNextNonWhitespaceIndex(statement, parenIndex - 1, -1) + 1;
 
         String methodCall = statement.substring(0, nameEnd);
 
         try {
-            String error = iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES, data, require).error;
+            String error =
+                iterateWords(methodCall, Patterns.IDENTIFIER_BOUNDARIES, data, require).error;
 
             if (error != null) {
                 return false;
@@ -1057,13 +1076,11 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Make sure that the method call is authorized to be made. Check if
-     * the method is visible and that it is referenced in the correct
-     * context. (e.g. Accessing a non-static method within a static
-     * context)
+     * Make sure that the method call is authorized to be made. Check if the method is visible and
+     * that it is referenced in the correct context. (e.g. Accessing a non-static method within a
+     * static context)
      *
-     * @param method The MethodDeclaration that this method call is
-     *               calling.
+     * @param method The MethodDeclaration that this method call is calling.
      */
     private void validateAccess(CallableMethod method) {
         if (method instanceof ClosureDeclaration) {
@@ -1072,21 +1089,25 @@ public class MethodCall extends Variable {
 
         if (!SyntaxUtils.isVisible(getParentClass(), ((MethodDeclaration) method))) {
             SyntaxUtils.isVisible(getParentClass(), ((MethodDeclaration) method));
-            SyntaxMessage.error("Method '" + method.getName() + "' of class '" + method.getParentClass().getClassLocation() + "' is not visible from class '" + getParentClass().getClassLocation() + "'", this);
+            SyntaxMessage.error("Method '" + method.getName() + "' of class '"
+                + method.getParentClass().getClassLocation() + "' is not visible from class '"
+                + getParentClass().getClassLocation() + "'", this);
         }
         if (isAccessedWithinStaticContext() && !method.isStatic()) {
             isAccessedWithinStaticContext();
-            SyntaxMessage.error("Method '" + method.getName() + "' cannot be called from within a static context", this);
+            SyntaxMessage.error(
+                "Method '" + method.getName() + "' cannot be called from within a static context",
+                this);
         }
     }
 
     /**
-     * Decode all of the given arguments to the method call. Return
-     * true if it was successfully decoded.
+     * Decode all of the given arguments to the method call. Return true if it was successfully
+     * decoded.
      *
      * @param statement The method call statement.
-     * @param bounds    The bounds of the arguments.
-     * @param require   Whether or not to throw an error if anything goes wrong.
+     * @param bounds The bounds of the arguments.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the arguments decoded successfully.
      */
     public boolean decodeArguments(String statement, Bounds bounds, boolean require) {
@@ -1111,8 +1132,7 @@ public class MethodCall extends Variable {
         public A a;
         public B b;
 
-        public Pair() {
-        }
+        public Pair() {}
 
         public Pair(A a, B b) {
             this.a = a;
@@ -1120,11 +1140,13 @@ public class MethodCall extends Variable {
         }
     }
 
-    private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter, Value corresponding, GenericTypeParameter target) {
+    private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter,
+        Value corresponding, GenericTypeParameter target) {
         return recursiveGenericParamSearch(parameter, corresponding, corresponding, target);
     }
 
-    private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter, Value corresponding, Value subContext, GenericTypeParameter target) {
+    private Pair<GenericTypeParameter, Value> recursiveGenericParamSearch(Value parameter,
+        Value corresponding, Value subContext, GenericTypeParameter target) {
         GenericTypeParameter param = parameter.getGenericTypeParameter();
 
         if (param != null && param.getType().equals(target.getType())) {
@@ -1134,7 +1156,8 @@ public class MethodCall extends Variable {
                 param = required.genericParameter;
                 required = ((GenericTypeArgument) required).getTangibleNode();
 
-                corresponding = SyntaxUtils.performWalk(corresponding, subContext, corresponding.getTypeClass(), required.getTypeClass(), param);
+                corresponding = SyntaxUtils.performWalk(corresponding, subContext,
+                    corresponding.getTypeClass(), required.getTypeClass(), param);
             }
 
             return new Pair<>(param, corresponding);
@@ -1143,11 +1166,14 @@ public class MethodCall extends Variable {
             GenericTypeArgumentList args = corresponding.getGenericTypeArgumentList();
 
             if (params != null && args != null) {
-                // TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A, Out>(ValueDistance<A, A> other, ...)
-                for (int i = 0; i < Math.min(args.getNumVisibleChildren(), params.getNumVisibleChildren()); i++) {
+                // TODO: needs to accommodate for multi-param arg thing e.g. pairilize<A,
+                // Out>(ValueDistance<A, A> other, ...)
+                for (int i = 0; i < Math.min(args.getNumVisibleChildren(),
+                    params.getNumVisibleChildren()); i++) {
                     Value arg = args.getVisibleChild(i);
 
-                    Pair<GenericTypeParameter, Value> p = recursiveGenericParamSearch(params.getVisibleChild(i), arg, corresponding, target);
+                    Pair<GenericTypeParameter, Value> p = recursiveGenericParamSearch(
+                        params.getVisibleChild(i), arg, corresponding, target);
 
                     if (p != null) {
                         return p;
@@ -1184,7 +1210,8 @@ public class MethodCall extends Variable {
             Value[] args = getArgumentList().getArgumentsInOrder();
             Value[] types = genParams.getTypes();
 
-            int start = Math.min(types.length, getMethodGenericTypeArgumentList().getNumVisibleChildren());
+            int start =
+                Math.min(types.length, getMethodGenericTypeArgumentList().getNumVisibleChildren());
 
             for (int i = start - 1; i >= 0; i--) {
                 GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(i);
@@ -1195,48 +1222,57 @@ public class MethodCall extends Variable {
             }
 
             // Find least common denominator type for nth method generic type argument
-            // e.g.   public reduce<Out>(func(Out, Type, Int, List) -> Out, Out initialValue) -> Out
+            // e.g. public reduce<Out>(func(Out, Type, Int, List) -> Out, Out initialValue) -> Out
             //
-            //        let x = reduce({ _.hashCodeLong + 5 }, "asdf")
+            // let x = reduce({ _.hashCodeLong + 5 }, "asdf")
             //
-            //        when searching for Out's type, it checks lambda's return type of Int and
-            //        the type of initialValue which is String. The common type between those is Object.
+            // when searching for Out's type, it checks lambda's return type of Int and
+            // the type of initialValue which is String. The common type between those is Object.
             for (int n = start; n < genParams.getNumVisibleChildren(); n++) {
                 Value common = types[n];
 
                 for (int i = 0; i < Math.min(args.length, params.getNumParameters()); i++) {
                     if (args[i] instanceof LambdaExpression == false) {
-                        Pair<GenericTypeParameter, Value> pair = recursiveGenericParamSearch(params.getParameter(i), args[i], genParams.getParameter(n));
+                        Pair<GenericTypeParameter, Value> pair = recursiveGenericParamSearch(
+                            params.getParameter(i), args[i], genParams.getParameter(n));
 
                         if (pair != null) {
                             if (common == types[n]) {
                                 common = pair.b.getReturnedNode();
-                                common = common instanceof ClosureVariable ? ((FunctionType) common.getTypeObject()).closure : common;
+                                common = common instanceof ClosureVariable
+                                    ? ((FunctionType) common.getTypeObject()).closure
+                                    : common;
                             } else {
-                                common = SyntaxUtils.getValueInCommon(common, pair.b.getReturnedNode());
+                                common =
+                                    SyntaxUtils.getValueInCommon(common, pair.b.getReturnedNode());
                             }
                         }
                     }
                 }
 
                 if (flatMethod instanceof ExtensionMethodDeclaration) {
-                    Pair<GenericTypeParameter, Value> pair = recursiveGenericParamSearch(params.getReferenceParameter(), getReferenceNode().toValue(), genParams.getParameter(n));
+                    Pair<GenericTypeParameter, Value> pair =
+                        recursiveGenericParamSearch(params.getReferenceParameter(),
+                            getReferenceNode().toValue(), genParams.getParameter(n));
 
                     if (pair != null) {
                         if (common == types[n]) {
                             common = pair.b.getReturnedNode();
-                            common = common instanceof ClosureVariable ? ((FunctionType) common.getTypeObject()).closure : common;
+                            common = common instanceof ClosureVariable
+                                ? ((FunctionType) common.getTypeObject()).closure
+                                : common;
                         } else {
                             common = SyntaxUtils.getValueInCommon(common, pair.b.getReturnedNode());
                         }
                     }
                 }
 
-//				if (common != types[n])
+                // if (common != types[n])
                 {
                     if (start <= n) {
                         if (getMethodGenericTypeArgumentList().getNumVisibleChildren() <= n) {
-                            GenericTypeArgument arg = new GenericTypeArgument(getMethodGenericTypeArgumentList(), Location.INVALID);
+                            GenericTypeArgument arg = new GenericTypeArgument(
+                                getMethodGenericTypeArgumentList(), Location.INVALID);
                             arg.autoAdded = true;
                             arg.setType(common);
                             getMethodGenericTypeArgumentList().addChild(arg);
@@ -1244,7 +1280,8 @@ public class MethodCall extends Variable {
                             getMethodGenericTypeArgumentList().getVisibleChild(n).setType(common);
                         }
                     } else {
-                        GenericTypeArgument arg = getMethodGenericTypeArgumentList().getVisibleChild(n);
+                        GenericTypeArgument arg =
+                            getMethodGenericTypeArgumentList().getVisibleChild(n);
                         arg.autoAdded = true;
 
                         if (common != null) {
@@ -1269,10 +1306,12 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String, Node.ExtraData)
+     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String,
+     *      Node.ExtraData)
      */
     @Override
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData extra) {
         MethodData data = (MethodData) extra;
 
         if (extra.isLastWord() && leftDelimiter.length() == 0) {
@@ -1297,21 +1336,22 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Check to see if the arguments passed to the method call
-     * fulfills the required parameters of the method declaration.
+     * Check to see if the arguments passed to the method call fulfills the required parameters of
+     * the method declaration.
      *
      * @param fileDeclaration The FileDeclaration that this method call is within.
-     * @param location        The location of the arguments that are being
-     *                        passed.
-     * @param require         Whether or not to throw an error if anything goes wrong.
-     * @return True if the method call's arguments fulfill the
-     * requirements of the Method declaration's parameters.
+     * @param location The location of the arguments that are being passed.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return True if the method call's arguments fulfill the requirements of the Method
+     *         declaration's parameters.
      */
-    private boolean validateArguments(FileDeclaration fileDeclaration, Location location, boolean require) {
+    private boolean validateArguments(FileDeclaration fileDeclaration, Location location,
+        boolean require) {
         CallableMethod methodDeclaration = getInferredDeclaration();
 
         if (methodDeclaration == null) {
-            return SyntaxMessage.queryError("Incompatible arguments for method call '" + getName() + "'", this, require);
+            return SyntaxMessage.queryError(
+                "Incompatible arguments for method call '" + getName() + "'", this, require);
         }
 
         ParameterList parameters = methodDeclaration.getParameterList();
@@ -1334,11 +1374,7 @@ public class MethodCall extends Variable {
                 startIndex = Math.min(startIndex, parameters.getFirstNamedParameterIndex());
             }
 
-            for (
-                int i = startIndex;
-                i < arguments.getNumVisibleChildren();
-                i++
-            ) {
+            for (int i = startIndex; i < arguments.getNumVisibleChildren(); i++) {
                 if (arguments.getArgumentName(i) == null) {
                     Value arg = arguments.getVisibleChild(i);
 
@@ -1361,22 +1397,30 @@ public class MethodCall extends Variable {
                 Parameter param = (Parameter) parameters.getParameter(i);
                 Value arg = order[i];
 
-                if (param instanceof ClosureDeclaration && param.isAsync() && arg instanceof Closure) {
+                if (param instanceof ClosureDeclaration && param.isAsync()
+                    && arg instanceof Closure) {
                     Closure closure = (Closure) arg;
 
                     if (closure.isLambda() && !closure.getDeclaration().isAsync()) {
-                        closure.getDeclaration().addAnnotation(new AsyncAnnotation(this, Location.INVALID));
+                        closure.getDeclaration()
+                            .addAnnotation(new AsyncAnnotation(this, Location.INVALID));
                     }
                 }
-                if (arg instanceof DefaultArgument == false && getArgumentList().getArgumentName(position++) == null) {
+                if (arg instanceof DefaultArgument == false
+                    && getArgumentList().getArgumentName(position++) == null) {
                     if (param.requireNamed) {
-                        SyntaxMessage.error("Argument '" + arg.generateFlatInput() + "' requires name '" + param.getName() + "'. E.g.: '" + param.getName() + ": " + arg.generateFlatInput() + "'", arg);
+                        SyntaxMessage.error("Argument '" + arg.generateFlatInput()
+                            + "' requires name '" + param.getName() + "'. E.g.: '" + param.getName()
+                            + ": " + arg.generateFlatInput() + "'", arg);
                     }
                 }
             }
         }
 
-        if (!methodDeclaration.areCompatibleParameterTypes(this, methodDeclaration instanceof FlatMethodDeclaration ? arguments.getTypes((FlatMethodDeclaration) methodDeclaration) : arguments.getTypes())) {
+        if (!methodDeclaration.areCompatibleParameterTypes(this,
+            methodDeclaration instanceof FlatMethodDeclaration
+                ? arguments.getTypes((FlatMethodDeclaration) methodDeclaration)
+                : arguments.getTypes())) {
             return false;
         }
 
@@ -1395,11 +1439,14 @@ public class MethodCall extends Variable {
             FlatMethodDeclaration converted = method.getConvertedPrimitiveMethod(this);
 
             if (converted != null) {
-                GenericTypeParameterList convertedParams = converted.getMethodGenericTypeParameterDeclaration();
-                GenericTypeParameterList currentParams = method.getMethodGenericTypeParameterDeclaration();
+                GenericTypeParameterList convertedParams =
+                    converted.getMethodGenericTypeParameterDeclaration();
+                GenericTypeParameterList currentParams =
+                    method.getMethodGenericTypeParameterDeclaration();
 
                 if (converted instanceof Constructor) {
-                    convertedParams = converted.getParentClass().getGenericTypeParameterDeclaration();
+                    convertedParams =
+                        converted.getParentClass().getGenericTypeParameterDeclaration();
                     currentParams = method.getParentClass().getGenericTypeParameterDeclaration();
                 }
 
@@ -1410,12 +1457,15 @@ public class MethodCall extends Variable {
                 if (convertedParams.getNumVisibleChildren() == 0) {
                     args.slaughterEveryLastVisibleChild();
                 } else if (convertedParams.getNumParameters() != args.getNumVisibleChildren()) {
-                    GenericTypeArgumentList newArgs = new GenericTypeArgumentList(this, args.getLocationIn());
+                    GenericTypeArgumentList newArgs =
+                        new GenericTypeArgumentList(this, args.getLocationIn());
 
                     int position = 0;
 
-                    for (int i = 0; i < currentParams.getNumParameters() && position < convertedParams.getNumParameters(); i++) {
-                        if (currentParams.getVisibleChild(i).getType().equals(convertedParams.getVisibleChild(position).getType())) {
+                    for (int i = 0; i < currentParams.getNumParameters()
+                        && position < convertedParams.getNumParameters(); i++) {
+                        if (currentParams.getVisibleChild(i).getType()
+                            .equals(convertedParams.getVisibleChild(position).getType())) {
                             if (args.getNumVisibleChildren() > i) {
                                 newArgs.addChild(args.getVisibleChild(i));
                                 position++;
@@ -1430,11 +1480,10 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Decode and add the arguments given within the array into Nodes that
-     * are translatable into C.
+     * Decode and add the arguments given within the array into Nodes that are translatable into C.
      *
      * @param arguments The arguments to decode and then add.
-     * @param location  The location of the method call in the source code.
+     * @param location The location of the method call in the source code.
      */
     private boolean addArguments(String arguments[], Location location, boolean require) {
         MethodCallArgumentList parent = getArgumentList();
@@ -1470,23 +1519,28 @@ public class MethodCall extends Variable {
                         arg = TernaryOperation.decodeStatement(parent, argument, location, false);
 
                         if (arg == null) {
-                            arg = BinaryOperation.decodeStatement(parent, argument, location, false);
+                            arg =
+                                BinaryOperation.decodeStatement(parent, argument, location, false);
 
                             if (arg == null) {
-                                arg = SyntaxTree.decodeScopeContents(parent, argument, location, false);
+                                arg = SyntaxTree.decodeScopeContents(parent, argument, location,
+                                    false);
 
                                 if (arg == null) {
                                     arg = Array.decodeStatement(parent, argument, location, false);
 
                                     if (parent.isWithinExternalContext()) {
-                                        arg = Literal.decodeStatement(parent, argument, location, true);
+                                        arg = Literal.decodeStatement(parent, argument, location,
+                                            true);
                                     }
 
                                     if (arg == null) {
                                         if (require) {
                                             validateCharacters(parent, argument, location);
 
-                                            SyntaxMessage.error("Could not decode argument '" + argument + "'", parent, location);
+                                            SyntaxMessage.error(
+                                                "Could not decode argument '" + argument + "'",
+                                                parent, location);
                                         }
 
                                         return false;
@@ -1497,7 +1551,7 @@ public class MethodCall extends Variable {
                     }
                 }
 
-                //arg = new MethodCallArgument(parent, location, (Value)arg);
+                // arg = new MethodCallArgument(parent, location, (Value)arg);
 
                 parent.addChild(arg);
                 previous = (Value) arg;
@@ -1505,7 +1559,8 @@ public class MethodCall extends Variable {
                 if (arg instanceof Assignment) {
                     arg.onAfterDecoded();
                 }
-                if (usedNamedArgs && getArgumentList().getArgumentName(i) == null && arg instanceof Variable) {
+                if (usedNamedArgs && getArgumentList().getArgumentName(i) == null
+                    && arg instanceof Variable) {
                     Variable v = (Variable) arg;
 
                     if (!v.doesAccess()) {
@@ -1515,7 +1570,9 @@ public class MethodCall extends Variable {
                 }
 
                 if (requiresName) {
-                    SyntaxMessage.error("Once a named argument is used, all of the following arguments must be named as well.", arg);
+                    SyntaxMessage.error(
+                        "Once a named argument is used, all of the following arguments must be named as well.",
+                        arg);
                 }
             } else {
                 SyntaxMessage.error("Expected an argument definition", this);
@@ -1526,11 +1583,10 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Validate that the characters in the given argument are valid
-     * identifier-type characters with no symbols.
+     * Validate that the characters in the given argument are valid identifier-type characters with
+     * no symbols.
      *
-     * @param parent   The MethodCallArgumentList Node that the argument
-     *                 was being added to.
+     * @param parent The MethodCallArgumentList Node that the argument was being added to.
      * @param argument The argument String to validate.
      * @param location The location of the argument in the source text.
      */
@@ -1539,19 +1595,22 @@ public class MethodCall extends Variable {
         String postfix = StringUtils.findGroupedSymbols(argument, argument.length() - 1, -1);
 
         if (prefix.length() > 0) {
-            SyntaxMessage.error("Unknown symbol" + (prefix.length() > 1 ? "s" : "") + " '" + prefix + "'", parent, location);
+            SyntaxMessage.error(
+                "Unknown symbol" + (prefix.length() > 1 ? "s" : "") + " '" + prefix + "'", parent,
+                location);
         } else if (postfix.length() > 0) {
-            SyntaxMessage.error("Unknown symbol" + (postfix.length() > 1 ? "s" : "") + " '" + postfix + "'", parent, location);
+            SyntaxMessage.error(
+                "Unknown symbol" + (postfix.length() > 1 ? "s" : "") + " '" + postfix + "'", parent,
+                location);
         }
     }
 
     /**
-     * Get the Flat input representation of this Method Call node.
-     * That is, the String that the decoder method decoded to attain
-     * this node.
+     * Get the Flat input representation of this Method Call node. That is, the String that the
+     * decoder method decoded to attain this node.
      *
-     * @param outputChildren Whether or not to output the children of the
-     *                       children of the Node as well.
+     * @param outputChildren Whether or not to output the children of the children of the Node as
+     *        well.
      * @return The String representing the method call in Flat syntax.
      */
     public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren) {
@@ -1609,7 +1668,8 @@ public class MethodCall extends Variable {
         }
     }
 
-    private void addCommonDefaultGenericParameters(FlatMethodDeclaration decl, GenericTypeParameterList params, GenericTypeArgumentList args) {
+    private void addCommonDefaultGenericParameters(FlatMethodDeclaration decl,
+        GenericTypeParameterList params, GenericTypeArgumentList args) {
         for (int i = args.getNumVisibleChildren(); i < params.getNumVisibleChildren(); i++) {
             GenericTypeArgument arg = new GenericTypeArgument(args, getLocationIn().asNew());
             arg.autoAdded = true;
@@ -1620,7 +1680,8 @@ public class MethodCall extends Variable {
 
             if (decl.isExtension()) {
                 // FIXME: this does not handle tested generics
-                GenericTypeArgumentList refArgs = decl.getParameterList().getReferenceParameter().getGenericTypeArgumentList();
+                GenericTypeArgumentList refArgs =
+                    decl.getParameterList().getReferenceParameter().getGenericTypeArgumentList();
 
                 int index = -1;
 
@@ -1632,7 +1693,8 @@ public class MethodCall extends Variable {
                 }
 
                 if (index != -1) {
-                    common = getReferenceNode().toValue().getGenericTypeArgumentList().getVisibleChild(index);
+                    common = getReferenceNode().toValue().getGenericTypeArgumentList()
+                        .getVisibleChild(index);
                 }
             }
 
@@ -1641,14 +1703,15 @@ public class MethodCall extends Variable {
 
                 if (p instanceof ClosureDeclaration) {
                     Value v = (Value) getArgumentList().getVisibleChild(n);
-                    v = v instanceof ClosureVariable ? ((FunctionType) v.getTypeObject()).closure : v;
+                    v = v instanceof ClosureVariable ? ((FunctionType) v.getTypeObject()).closure
+                        : v;
 
                     common = common == null ? v : SyntaxUtils.getTypeInCommon(common, v);
                 }
             }
 
             if (common == null) {
-                arg.setTypeValue(param.getDefaultType());//.getFlatType(this));
+                arg.setTypeValue(param.getDefaultType());// .getFlatType(this));
             } else {
                 arg.setType(common);
             }
@@ -1658,7 +1721,8 @@ public class MethodCall extends Variable {
     }
 
     public boolean isCallingClosureVariable() {
-        return declaration instanceof FirstClassClosureDeclaration && ((FirstClassClosureDeclaration) declaration).reference instanceof ClosureVariable;
+        return declaration instanceof FirstClassClosureDeclaration
+            && ((FirstClassClosureDeclaration) declaration).reference instanceof ClosureVariable;
     }
 
     public ClosureVariable getClosureVariable() {
@@ -1714,7 +1778,8 @@ public class MethodCall extends Variable {
             if (accessing instanceof Variable || accessing instanceof Literal) {
                 Value var = accessing.toValue();
 
-                if (var.isPrimitiveType() && var.getTypeClass() != null && var.getDataType() != Value.POINTER) {
+                if (var.isPrimitiveType() && var.getTypeClass() != null
+                    && var.getDataType() != Value.POINTER) {
                     SearchFilter filter = new SearchFilter();
                     filter.checkAncestor = false;
                     filter.checkStatic = true;
@@ -1737,7 +1802,10 @@ public class MethodCall extends Variable {
             }
 
         } else if (phase == SyntaxTree.PHASE_PRE_GENERATION) {
-            FlatMethodDeclaration flatMethodDeclaration = getMethodDeclaration() instanceof FlatMethodDeclaration ? (FlatMethodDeclaration) getMethodDeclaration() : null;
+            FlatMethodDeclaration flatMethodDeclaration =
+                getMethodDeclaration() instanceof FlatMethodDeclaration
+                    ? (FlatMethodDeclaration) getMethodDeclaration()
+                    : null;
 
             if (flatMethodDeclaration != null && flatMethodDeclaration.asyncOverload != null) {
                 if (parent.getParentMethod(true).isAsync()) {
@@ -1749,7 +1817,8 @@ public class MethodCall extends Variable {
                 }
             }
 
-            if (isCallingClosureVariable() && (getBaseNode() instanceof Assignment == false || !getBaseNode().containsProperty("userMade"))) {
+            if (isCallingClosureVariable() && (getBaseNode() instanceof Assignment == false
+                || !getBaseNode().containsProperty("userMade"))) {
                 ClosureVariable var = getClosureVariable();
 
                 Variable v = getAncestorWithScope().getScope().createLocalVariable(var);
@@ -1770,17 +1839,18 @@ public class MethodCall extends Variable {
 
                 flat += (flat.length() > 0 ? "." : "") + getName();
 
-//				root.toValue().replaceWith(a);
+                // root.toValue().replaceWith(a);
                 Node n = SyntaxTree.decodeScopeContents(getBaseNode(), flat, getLocationIn(), true);
 
                 a.setProperty("methodCall", this);
 
-                a.getAssignmentNode().replaceWith(n);//root.toValue());
+                a.getAssignmentNode().replaceWith(n);// root.toValue());
                 root.toValue().replaceWith(a);
 
                 root.toValue().parent = a.parent;
 
-                ((FirstClassClosureDeclaration) getCallableMethodBase()).reference = a.getAssignedNode();
+                ((FirstClassClosureDeclaration) getCallableMethodBase()).reference =
+                    a.getAssignedNode();
 
                 result.returnedNode = a;
 
@@ -1801,8 +1871,10 @@ public class MethodCall extends Variable {
     }
 
     @Override
-    public StringBuilder generateFlatType(StringBuilder builder, Value context, boolean checkArray, boolean defaultGeneric) {
-        if (declaration instanceof FirstClassClosureDeclaration && declaration.parent instanceof GenericTypeArgument) {
+    public StringBuilder generateFlatType(StringBuilder builder, Value context, boolean checkArray,
+        boolean defaultGeneric) {
+        if (declaration instanceof FirstClassClosureDeclaration
+            && declaration.parent instanceof GenericTypeArgument) {
             FirstClassClosureDeclaration f = (FirstClassClosureDeclaration) declaration;
 
             return f.generateFlatInput(builder);
@@ -1829,14 +1901,15 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Check to see if a local declaration is required to keep a virtual
-     * method from being called too many times.
+     * Check to see if a local declaration is required to keep a virtual method from being called
+     * too many times.
      *
-     * @return Whether or not a local declaration for a virtual method
-     * call is required.
+     * @return Whether or not a local declaration for a virtual method call is required.
      */
     private boolean localDeclarationRequired() {
-        return false;//getInferredDeclaration().isVirtual() && !isVirtualTypeKnown() && isAccessed() && getAccessingNode() instanceof MethodCall;// && !getAccessingNode().isVirtualTypeKnown();
+        return false;// getInferredDeclaration().isVirtual() && !isVirtualTypeKnown() &&
+                     // isAccessed() && getAccessingNode() instanceof MethodCall;// &&
+                     // !getAccessingNode().isVirtualTypeKnown();
     }
 
     @Override
@@ -1876,9 +1949,11 @@ public class MethodCall extends Variable {
     }
 
     @Override
-    public GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value, boolean require) {
+    public GenericTypeArgument getGenericTypeArgumentInstance(String parameterName, Node value,
+        boolean require) {
         if (this.isChainNavigation()) {
-            return getReferenceNode().toValue().getGenericTypeArgumentInstance(parameterName, value, require);
+            return getReferenceNode().toValue().getGenericTypeArgumentInstance(parameterName, value,
+                require);
         }
 
         return super.getGenericTypeArgumentInstance(parameterName, value, require);
@@ -1906,7 +1981,8 @@ public class MethodCall extends Variable {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public MethodCall clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public MethodCall clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         MethodCall node = new MethodCall(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -1920,8 +1996,7 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Fill the given {@link MethodCall} with the data that is in the
-     * specified node.
+     * Fill the given {@link MethodCall} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -1938,11 +2013,10 @@ public class MethodCall extends Variable {
     }
 
     /**
-     * Test the MethodCall class type to make sure everything
-     * is working properly.
+     * Test the MethodCall class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

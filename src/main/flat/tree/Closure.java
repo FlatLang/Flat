@@ -15,9 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Identifier extension that represents the use of a variable
- * type. Harnesses the needed information of each variable, such as
- * whether or not it is constant, external, or an array, and its type.
+ * Identifier extension that represents the use of a variable type. Harnesses the needed information
+ * of each variable, such as whether or not it is constant, external, or an array, and its type.
  *
  * @author Braden Steffaniak
  * @since v0.2.14 Jul 5, 2014 at 9:02:42 PM
@@ -36,20 +35,17 @@ public class Closure extends Variable {
     public Closure(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
     }
-	
-	/*public Closure(Variable variable)
-	{
-		this(variable.getParent(), variable.getLocationIn());
-		
-		setDeclaration(variable.getDeclaration());
-		
-		if (variable.getDeclaration() instanceof ClosureDeclaration)
-		{
-			closureDeclaration = (ClosureDeclaration)variable.getDeclaration();
-		}
-		
-		this.variable = variable;
-	}*/
+
+    /*
+     * public Closure(Variable variable) { this(variable.getParent(), variable.getLocationIn());
+     * 
+     * setDeclaration(variable.getDeclaration());
+     * 
+     * if (variable.getDeclaration() instanceof ClosureDeclaration) { closureDeclaration =
+     * (ClosureDeclaration)variable.getDeclaration(); }
+     * 
+     * this.variable = variable; }
+     */
 
     public boolean isLambda() {
         return getMethodDeclaration() instanceof LambdaMethodDeclaration;
@@ -64,28 +60,27 @@ public class Closure extends Variable {
     }
 
     /**
-     * Get the ClosureDeclaration instance that corresponds with the
-     * specified Closure.
+     * Get the ClosureDeclaration instance that corresponds with the specified Closure.
      *
      * @return The Closure Declaration instance.
      */
     public ClosureDeclaration getClosureDeclaration() {
-//		return (ClosureDeclaration)getParentMethod().getParameterList().getParameter(name);
+        // return (ClosureDeclaration)getParentMethod().getParameterList().getParameter(name);
 
         if (closureDeclaration != null) {
             return closureDeclaration;
         } else if (isDecoding() && getMethodCall() != null) {
             int argNum = getMethodCall().getArgumentList().getArgumentsInOrder().length;
 
-            return (ClosureDeclaration) getMethodCall().getInferredDeclaration().getParameterList().getParameter(argNum);
+            return (ClosureDeclaration) getMethodCall().getInferredDeclaration().getParameterList()
+                .getParameter(argNum);
         }
 
-        return null;//(ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
+        return null;// (ClosureDeclaration)getMethodCall().getCorrespondingParameter((Value)getRootNode());
     }
 
     /**
-     * Get the MethodCall instance that this Closure is being passed
-     * within.
+     * Get the MethodCall instance that this Closure is being passed within.
      *
      * @return The parent MethodCall instance.
      */
@@ -101,8 +96,7 @@ public class Closure extends Variable {
     /**
      * Get the MethodDeclaration that this Closure is representing.
      *
-     * @return The MethodDeclaration that is being passed as the closure
-     * to the MethodCall.
+     * @return The MethodDeclaration that is being passed as the closure to the MethodCall.
      */
     public FlatMethodDeclaration getMethodDeclaration() {
         if (getDeclaration() != null) {
@@ -115,10 +109,9 @@ public class Closure extends Variable {
     /**
      * Get the MethodDeclaration that this Closure is representing.
      *
-     * @param name The name of the method that may be needed if the
-     *             specified Node is still being decoded.
-     * @return The MethodDeclaration that is being passed as the closure
-     * to the MethodCall.
+     * @param name The name of the method that may be needed if the specified Node is still being
+     *        decoded.
+     * @return The MethodDeclaration that is being passed as the closure to the MethodCall.
      */
     private FlatMethodDeclaration getMethodDeclaration(String name) {
         return getMethodDeclaration((GenericCompatible) null, name);
@@ -128,15 +121,18 @@ public class Closure extends Variable {
         return getMethodDeclaration(context, name, null);
     }
 
-    private FlatMethodDeclaration getMethodDeclaration(GenericCompatible context, String name, ClassDeclaration declaringClass) {
-        return getMethodDeclaration(context == null ? null : new GenericCompatible[]{context}, name, declaringClass);
+    private FlatMethodDeclaration getMethodDeclaration(GenericCompatible context, String name,
+        ClassDeclaration declaringClass) {
+        return getMethodDeclaration(context == null ? null : new GenericCompatible[] {context},
+            name, declaringClass);
     }
 
     private FlatMethodDeclaration getMethodDeclaration(GenericCompatible[] contexts, String name) {
         return getMethodDeclaration(contexts, name, null);
     }
 
-    private FlatMethodDeclaration getMethodDeclaration(GenericCompatible[] contexts, String name, ClassDeclaration declaringClass) {
+    private FlatMethodDeclaration getMethodDeclaration(GenericCompatible[] contexts, String name,
+        ClassDeclaration declaringClass) {
         MethodList.SearchFilter filter = new MethodList.SearchFilter();
         filter.staticValue = true;
         filter.allowMoreParameters = true;
@@ -152,37 +148,36 @@ public class Closure extends Variable {
         ClosureDeclaration closure = getClosureDeclaration();
 
         if (closure != null) {
-            return (FlatMethodDeclaration) declaringClass.getMethod(contexts, name, filter, closure.getParameterList().getTypes(), false, true, true);
+            return (FlatMethodDeclaration) declaringClass.getMethod(contexts, name, filter,
+                closure.getParameterList().getTypes(), false, true, true);
         }
 
         return null;
     }
 
     /**
-     * Decode the given statement into a Closure instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a Closure instance, if possible. If it is not possible, this
+     * method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>Person findPerson(String, int)</li>
-     * 	<li>int calculateArea(int, int)</li>
-     * 	<li>void callback()</li>
+     * <li>Person findPerson(String, int)</li>
+     * <li>int calculateArea(int, int)</li>
+     * <li>void callback()</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Closure instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Closure.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Closure instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Closure.
      */
-    public static Closure decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Closure decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, null);
     }
 
-    public static Closure decodeStatement(Node parent, String statement, Location location, boolean require, ClassDeclaration declaringClass) {
+    public static Closure decodeStatement(Node parent, String statement, Location location,
+        boolean require, ClassDeclaration declaringClass) {
         Closure n = new Closure(parent, location);
 
         if (n.decodeName(statement, require, declaringClass)) {
@@ -211,13 +206,11 @@ public class Closure extends Variable {
     }
 
     /**
-     * Decode the name of the Closure. Validate that the closure is a
-     * valid representation for the ClosureDeclaration.
+     * Decode the name of the Closure. Validate that the closure is a valid representation for the
+     * ClosureDeclaration.
      *
-     * @param name    The name of the method that is being passed as a
-     *                closure.
-     * @param require Whether or not to throw an error if anything goes
-     *                wrong.
+     * @param name The name of the method that is being passed as a closure.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the name decoded successfully.
      */
     private boolean decodeName(String name, boolean require, ClassDeclaration declaringClass) {
@@ -276,14 +269,18 @@ public class Closure extends Variable {
                             ClassDeclaration ref = getReferenceNode().toValue().getTypeClass();
 
                             if (ref != null) {
-                                ArrayList<MethodDeclaration> methods = new ArrayList<>(Arrays.asList(ref.getMethods(declarations[0].getName())));
+                                ArrayList<MethodDeclaration> methods = new ArrayList<>(
+                                    Arrays.asList(ref.getMethods(declarations[0].getName())));
 
                                 methods = ClassDeclaration.filterOverrides(methods);
 
                                 if (methods.size() > 1) {
-                                    SyntaxMessage.error("Ambiguous function '" + methods.get(0).getName() + "' required for function reference", this);
+                                    SyntaxMessage
+                                        .error("Ambiguous function '" + methods.get(0).getName()
+                                            + "' required for function reference", this);
                                 } else if (methods.size() == 1) {
-                                    FlatMethodDeclaration method = (FlatMethodDeclaration) methods.get(0);
+                                    FlatMethodDeclaration method =
+                                        (FlatMethodDeclaration) methods.get(0);
 
                                     String type = method.getFunctionReferenceType();
 
@@ -308,7 +305,8 @@ public class Closure extends Variable {
             return null;
         }
 
-        Parameter param = (Parameter) getMethodCall().getCorrespondingParameter((Value) getRootNode());
+        Parameter param =
+            (Parameter) getMethodCall().getCorrespondingParameter((Value) getRootNode());
 
         if (param instanceof ClosureDeclaration) {
             return (ClosureDeclaration) param;
@@ -324,7 +322,8 @@ public class Closure extends Variable {
                 param = method.getParameter(getVisibleIndex());
 
                 if (param != null && param.isGenericType()) {
-                    GenericTypeArgument arg = param.getGenericTypeParameter().getCorrespondingArgument(call);
+                    GenericTypeArgument arg =
+                        param.getGenericTypeParameter().getCorrespondingArgument(call);
 
                     if (arg != null && arg.getTypeObject() instanceof FunctionType) {
                         return ((FunctionType) arg.getTypeObject()).closure;
@@ -351,19 +350,19 @@ public class Closure extends Variable {
         MethodCall call = getMethodCall();
 
         if (call != null) {
-//			ClassDeclaration type = call.getReferenceNode().toValue().getTypeClass();
-//			
-//			if (type.isPrimitiveOverload())
-//			{
-//				MethodDeclaration[] methods = type.getMethods(call.getName());
-//				
-//				for (MethodDeclaration m : methods)
-//				{
-//					FlatMethodDeclaration method = (FlatMethodDeclaration)m;
-//					
-//					method.checkConvertToClass(type);
-//				}
-//			}
+            // ClassDeclaration type = call.getReferenceNode().toValue().getTypeClass();
+            //
+            // if (type.isPrimitiveOverload())
+            // {
+            // MethodDeclaration[] methods = type.getMethods(call.getName());
+            //
+            // for (MethodDeclaration m : methods)
+            // {
+            // FlatMethodDeclaration method = (FlatMethodDeclaration)m;
+            //
+            // method.checkConvertToClass(type);
+            // }
+            // }
         }
 
         if (closureDeclaration == null) {
@@ -374,14 +373,16 @@ public class Closure extends Variable {
             return true;
         }
 
-        MethodDeclaration declaration = getMethodDeclaration(call, declarations[0].getName(), declaringClass);
+        MethodDeclaration declaration =
+            getMethodDeclaration(call, declarations[0].getName(), declaringClass);
 
         if (declaration == null) {
             if (declarations[0] instanceof LambdaMethodDeclaration) {
                 declaration = declarations[0];
             } else {
                 getMethodDeclaration(call, declarations[0].getName(), declaringClass);
-                SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible", this);
+                SyntaxMessage.error("Method '" + declarations[0].getName() + "' is not compatible",
+                    this);
 
                 return false;
             }
@@ -427,34 +428,36 @@ public class Closure extends Variable {
     }
 
     /**
-     * Validate that the given MethodDeclaration is compatible with
-     * the ClosureDeclaration.
+     * Validate that the given MethodDeclaration is compatible with the ClosureDeclaration.
      *
-     * @param method The MethodDeclaration that is being passed as
-     *               a Closure.
+     * @param method The MethodDeclaration that is being passed as a Closure.
      */
     private void validateType(MethodDeclaration method) {
         ClosureDeclaration declaration = getClosureDeclaration();
 
-        if (declaration.getType() != null && declaration.getTypeObject() instanceof FunctionType == false && (method.getTypeClass(true, true) == null || !method.getTypeClass(true, true).isOfType(declaration.getTypeClass(true, true)))) {
+        if (declaration.getType() != null
+            && declaration.getTypeObject() instanceof FunctionType == false
+            && (method.getTypeClass(true, true) == null || !method.getTypeClass(true, true)
+                .isOfType(declaration.getTypeClass(true, true)))) {
             ClassDeclaration c = method.getTypeClass(true, true);
             if (c != null) {
                 c.isOfType(declaration.getTypeClass(true, true));
             }
-            SyntaxMessage.error("The method '" + method.getName() + "()' return type of '" + method.getType() + "' is not compatible with required closure type of '" + declaration.getType() + "'", this);
+            SyntaxMessage.error("The method '" + method.getName() + "()' return type of '"
+                + method.getType() + "' is not compatible with required closure type of '"
+                + declaration.getType() + "'", this);
         }
 
         validateParameters(declaration, method);
     }
 
     /**
-     * Validate that the parameters of the MethodDeclaration are
-     * compatible with the ClosureDeclaration.
+     * Validate that the parameters of the MethodDeclaration are compatible with the
+     * ClosureDeclaration.
      *
-     * @param declaration The ClosureDeclaration that is required from
-     *                    the Closure method call argument.
-     * @param method      The MethodDeclaration that is being passed as
-     *                    a Closure.
+     * @param declaration The ClosureDeclaration that is required from the Closure method call
+     *        argument.
+     * @param method The MethodDeclaration that is being passed as a Closure.
      */
     private void validateParameters(ClosureDeclaration declaration, MethodDeclaration method) {
         ParameterList<Value> list1 = declaration.getParameterList();
@@ -465,39 +468,39 @@ public class Closure extends Variable {
     }
 
     /**
-     * Validate that the number of parameters of the MethodDeclaration
-     * that is being passed as a Closure equals the number of parameters
-     * required by the ClosureDeclaration.
+     * Validate that the number of parameters of the MethodDeclaration that is being passed as a
+     * Closure equals the number of parameters required by the ClosureDeclaration.
      *
-     * @param method The MethodDeclaration that is being passed as
-     *               a Closure.
-     * @param list1  The ParameterList of the ClosureDeclaration.
-     * @param list2  The ParameterList of the MethodDeclaration.
+     * @param method The MethodDeclaration that is being passed as a Closure.
+     * @param list1 The ParameterList of the ClosureDeclaration.
+     * @param list2 The ParameterList of the MethodDeclaration.
      */
-    private void validateNumParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2) {
-//		if (list1.getNumVisibleChildren() != list2.getNumVisibleChildren())
-//		{
+    private void validateNumParameters(MethodDeclaration method, ParameterList<Value> list1,
+        ParameterList<Parameter> list2) {
+        // if (list1.getNumVisibleChildren() != list2.getNumVisibleChildren())
+        // {
         if (list1.getNumVisibleChildren() < list2.getNumVisibleChildren()) {
-            SyntaxMessage.error("The method '" + method.getName() + "()' contains too many parameters for the closure", this);
+            SyntaxMessage.error("The method '" + method.getName()
+                + "()' contains too many parameters for the closure", this);
         }
-//			else
-//			{
-//				SyntaxMessage.error("The method '" + method.getName() + "()' contains not enough parameters for the closure", this);
-//			}
-//		}
+        // else
+        // {
+        // SyntaxMessage.error("The method '" + method.getName() + "()' contains not enough
+        // parameters for the closure", this);
+        // }
+        // }
     }
 
     /**
-     * Validate the individual parameters of the MethodDeclaration
-     * to see if they are compatible with the required parameters
-     * of the ClosureDeclaration.
+     * Validate the individual parameters of the MethodDeclaration to see if they are compatible
+     * with the required parameters of the ClosureDeclaration.
      *
-     * @param method The MethodDeclaration that is being passed as
-     *               a Closure.
-     * @param list1  The ParameterList of the ClosureDeclaration.
-     * @param list2  The ParameterList of the MethodDeclaration.
+     * @param method The MethodDeclaration that is being passed as a Closure.
+     * @param list1 The ParameterList of the ClosureDeclaration.
+     * @param list2 The ParameterList of the MethodDeclaration.
      */
-    private void validateIndividualParameters(MethodDeclaration method, ParameterList<Value> list1, ParameterList<Parameter> list2) {
+    private void validateIndividualParameters(MethodDeclaration method, ParameterList<Value> list1,
+        ParameterList<Parameter> list2) {
         for (int i = 0; i < list2.getNumVisibleChildren(); i++) {
             Value value1 = list1.getParameter(i);
             Value value2 = list2.getParameter(i);
@@ -527,7 +530,10 @@ public class Closure extends Variable {
                 }
 
                 if (!valid) {
-                    SyntaxMessage.error("Argument " + (i + 1) + " of the method '" + method.getName() + "()' of type '" + value2.getType() + "' is not compatible for required closure type of '" + value1.getType() + "'", this, false);
+                    SyntaxMessage.error("Argument " + (i + 1) + " of the method '"
+                        + method.getName() + "()' of type '" + value2.getType()
+                        + "' is not compatible for required closure type of '" + value1.getType()
+                        + "'", this, false);
                 }
             }
         }
@@ -537,7 +543,8 @@ public class Closure extends Variable {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Closure clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Closure clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Closure node = new Closure(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -551,8 +558,7 @@ public class Closure extends Variable {
     }
 
     /**
-     * Fill the given {@link Closure} with the data that is in the
-     * specified node.
+     * Fill the given {@link Closure} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -568,11 +574,10 @@ public class Closure extends Variable {
     }
 
     /**
-     * Test the Closure class type to make sure everything
-     * is working properly.
+     * Test the Closure class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

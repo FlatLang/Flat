@@ -13,17 +13,22 @@ interface RunnableTests {
     default void implementTestRunner() {
         ClassDeclaration clazz = (ClassDeclaration) ((Node) this).parent;
 
-        if (!clazz.implementsInterface(((Node) this).getProgram().getClassDeclaration("flat/test/TestRunner"))) {
+        if (!clazz.implementsInterface(
+            ((Node) this).getProgram().getClassDeclaration("flat/test/TestRunner"))) {
             ((Node) this).getFileDeclaration().addImport("flat/test/TestRunner");
 
-            TraitImplementation implementation = TraitImplementation.decodeStatement(clazz, "TestRunner", Location.INVALID, true);
+            TraitImplementation implementation =
+                TraitImplementation.decodeStatement(clazz, "TestRunner", Location.INVALID, true);
 
             clazz.getInterfacesImplementationList().addChild(implementation);
         }
     }
 
-    default FieldDeclaration addFieldInitialization(String type, String name, String initialization) {
-        FieldDeclaration field = FieldDeclaration.decodeStatement(((Node) this).getParentClass(true), "static visible " + type + " " + name + " = " + initialization, Location.INVALID, true);
+    default FieldDeclaration addFieldInitialization(String type, String name,
+        String initialization) {
+        FieldDeclaration field = FieldDeclaration.decodeStatement(
+            ((Node) this).getParentClass(true),
+            "static visible " + type + " " + name + " = " + initialization, Location.INVALID, true);
 
         ((Node) this).getParentClass().addChild(field);
         field.onAfterDecoded();
@@ -31,13 +36,15 @@ interface RunnableTests {
         return field;
     }
 
-    default MethodCall.Pair<FieldDeclaration, FieldDeclaration> generateTestRunnerFields(String testRunnerType, String name, String initializer) {
+    default MethodCall.Pair<FieldDeclaration, FieldDeclaration> generateTestRunnerFields(
+        String testRunnerType, String name, String initializer) {
         ((Annotation) this).getFileDeclaration().addImport("flat/test/TestRunnerModel");
 
         FieldDeclaration runner = addFieldInitialization(testRunnerType, name, initializer);
         runner.validate(((Annotation) this).getProgram().getPhase());
 
-        FieldDeclaration override = FieldDeclaration.decodeStatement(((Annotation) this).parent, "visible TestRunnerModel model => " + name, Location.INVALID, true);
+        FieldDeclaration override = FieldDeclaration.decodeStatement(((Annotation) this).parent,
+            "visible TestRunnerModel model => " + name, Location.INVALID, true);
 
         ((Annotation) this).parent.addChild(override);
         override.onAfterDecoded();
@@ -47,40 +54,48 @@ interface RunnableTests {
         return new MethodCall.Pair<>(runner, override);
     }
 
-//	default Assignment initializeTestCases(InitializationMethod parent)
-//	{
-//		((Node)this).getFileDeclaration().addImport("flat/test/TestCase");
-//
-//		String initializerValues = ((TestableAnnotation)parent.getParentClass(true).getAnnotationOfType(TestableAnnotation.class)).getTestCaseInitializer();
-//
-//		Assignment a = Assignment.decodeStatement(parent, "this.testCases = " + initializerValues, Location.INVALID, true);
-//
-//		if (parent.getScope().getFirstStatement() == null)
-//		{
-//			parent.getScope().addChild(a);
-//		}
-//		else
-//		{
-//			parent.getScope().addChildBefore(parent.getScope().getFirstStatement(), a);
-//		}
-//
-//		a.onAfterDecoded();
-//
-//		return a;
-//	}
+    // default Assignment initializeTestCases(InitializationMethod parent)
+    // {
+    // ((Node)this).getFileDeclaration().addImport("flat/test/TestCase");
+    //
+    // String initializerValues =
+    // ((TestableAnnotation)parent.getParentClass(true).getAnnotationOfType(TestableAnnotation.class)).getTestCaseInitializer();
+    //
+    // Assignment a = Assignment.decodeStatement(parent, "this.testCases = " + initializerValues,
+    // Location.INVALID, true);
+    //
+    // if (parent.getScope().getFirstStatement() == null)
+    // {
+    // parent.getScope().addChild(a);
+    // }
+    // else
+    // {
+    // parent.getScope().addChildBefore(parent.getScope().getFirstStatement(), a);
+    // }
+    //
+    // a.onAfterDecoded();
+    //
+    // return a;
+    // }
 
-    default Assignment initializeTestSuiteRunners(InitializationMethod parent, TestSuiteAnnotation suite) {
+    default Assignment initializeTestSuiteRunners(InitializationMethod parent,
+        TestSuiteAnnotation suite) {
         ((Node) this).getFileDeclaration().addImport("flat/test/TestCase");
 
-        String initializerValues = "[" /*+ String.join(", ", Arrays.stream((String[])suite.parameters.get("classes"))
-			.map(x -> suite.getFileDeclaration().getImportedClass(parent, x))
-			.collect(Collectors.toList()))*/ + "]";
+        String initializerValues = "[" /*
+                                        * + String.join(", ",
+                                        * Arrays.stream((String[])suite.parameters.get("classes"))
+                                        * .map(x ->
+                                        * suite.getFileDeclaration().getImportedClass(parent, x))
+                                        * .collect(Collectors.toList()))
+                                        */ + "]";
 
         if (initializerValues.length() == 2) {
             initializerValues = "TestRunner[0]";
         }
 
-        Assignment a = Assignment.decodeStatement(parent, "this.testRunners = " + initializerValues, Location.INVALID, true);
+        Assignment a = Assignment.decodeStatement(parent, "this.testRunners = " + initializerValues,
+            Location.INVALID, true);
 
         if (parent.getScope().getFirstStatement() == null) {
             parent.getScope().addChild(a);
@@ -124,21 +139,28 @@ interface RunnableTests {
 
         getMethodsWithTypeAnnotation(type).forEach(method -> {
             if (method.getParameterList().any(x -> x.isUserMade())) {
-                SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
+                SyntaxMessage.error(
+                    "Test method '" + method.getName() + "' cannot contain parameters", method);
             }
 
-            MethodCall call = MethodCall.decodeStatement(runMethod, method.getName() + "(out)", Location.INVALID, true, false, method);
+            MethodCall call = MethodCall.decodeStatement(runMethod, method.getName() + "(out)",
+                Location.INVALID, true, false, method);
 
             runMethod.addChild(call);
         });
     }
 
-    default void writeMessage(Literal message, FlatMethodDeclaration method, boolean newLine, String outputStream) {
+    default void writeMessage(Literal message, FlatMethodDeclaration method, boolean newLine,
+        String outputStream) {
         writeMessage(message, method, newLine, outputStream, "write");
     }
 
-    default void writeMessage(Literal message, FlatMethodDeclaration method, boolean newLine, String outputStream, String functionName) {
-        Node write = (Node) SyntaxTree.decodeIdentifierAccess(method, outputStream + "." + functionName + "(" + message.generateFlatInput() + (newLine ? " + \"\\n\"" : "") + ")", Location.INVALID, true);
+    default void writeMessage(Literal message, FlatMethodDeclaration method, boolean newLine,
+        String outputStream, String functionName) {
+        Node write =
+            (Node) SyntaxTree.decodeIdentifierAccess(method, outputStream + "." + functionName + "("
+                + message.generateFlatInput() + (newLine ? " + \"\\n\"" : "") + ")",
+                Location.INVALID, true);
 
         Node first = method.getScope().getFirstStatement();
 
@@ -152,9 +174,11 @@ interface RunnableTests {
     default Variable generateTimer(Node parent, String prefix) {
         parent.getFileDeclaration().addImport("flat/time/Timer");
 
-        String timerName = parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer", true);
+        String timerName =
+            parent.getAncestorWithScope().getScope().getUniqueName(prefix + "Timer", true);
 
-        Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = Timer().start()", Location.INVALID, true);
+        Assignment a = Assignment.decodeStatement(parent, "let " + timerName + " = Timer().start()",
+            Location.INVALID, true);
 
         parent.addChild(a);
         a.onAfterDecoded();
@@ -163,7 +187,8 @@ interface RunnableTests {
     }
 
     default Variable stopTimer(Node parent, Variable timer) {
-        Variable stopped = (Variable) SyntaxTree.decodeIdentifierAccess(parent, timer.getName() + ".stop()", Location.INVALID, true, false, true);
+        Variable stopped = (Variable) SyntaxTree.decodeIdentifierAccess(parent,
+            timer.getName() + ".stop()", Location.INVALID, true, false, true);
 
         parent.addChild(stopped);
         stopped.onAfterDecoded();
@@ -171,22 +196,30 @@ interface RunnableTests {
         return stopped;
     }
 
-    default void addResultCall(Node parent, boolean success, Variable timer, FlatMethodDeclaration method) {
+    default void addResultCall(Node parent, boolean success, Variable timer,
+        FlatMethodDeclaration method) {
         parent.getFileDeclaration().addImport("flat/test/TestResult");
 
         TestAnnotation test = (TestAnnotation) method.getAnnotationOfType(TestAnnotation.class);
 
-        String description = test.parameters.containsKey("message") && ((Literal) test.parameters.get("message")).isStringInstantiation() ? ", " + ((Node) test.parameters.get("message")).generateFlatInput() : "";
+        String description = test.parameters.containsKey("message")
+            && ((Literal) test.parameters.get("message")).isStringInstantiation()
+                ? ", " + ((Node) test.parameters.get("message")).generateFlatInput()
+                : "";
 
         String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult", true);
         String failureMessage = success ? "" : ", e.message";
-        Assignment a = Assignment.decodeStatement(parent, "let " + name + " = TestResult(" + (success ? "true" : "false") + ", " + timer.getName() + ", " + test.generateTestCase().getName() + failureMessage + ")", Location.INVALID, true);
+        Assignment a = Assignment.decodeStatement(parent,
+            "let " + name + " = TestResult(" + (success ? "true" : "false") + ", " + timer.getName()
+                + ", " + test.generateTestCase().getName() + failureMessage + ")",
+            Location.INVALID, true);
 
         parent.addChild(a);
         a.onAfterDecoded();
 
         Consumer<FlatMethodDeclaration> callFunction = m -> {
-            MethodCall call = MethodCall.decodeStatement(parent, m.getName() + "(" + name + ")", Location.INVALID, true, false, m);
+            MethodCall call = MethodCall.decodeStatement(parent, m.getName() + "(" + name + ")",
+                Location.INVALID, true, false, m);
 
             parent.addChild(call);
             call.onAfterDecoded();
@@ -201,10 +234,12 @@ interface RunnableTests {
         getMethodsWithTypeAnnotation(TestResultAnnotation.class).forEach(callFunction);
 
         if (parent.getParentMethod(true).getParameter("onResult") != null) {
-            MethodCall call = MethodCall.decodeStatement(parent, "onResult(" + name + ")", Location.INVALID, true, false);
+            MethodCall call = MethodCall.decodeStatement(parent, "onResult(" + name + ")",
+                Location.INVALID, true, false);
 
             parent.addChild(call);
             call.onAfterDecoded();
         }
     }
 }
+

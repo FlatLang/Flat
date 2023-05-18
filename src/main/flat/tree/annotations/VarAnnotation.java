@@ -34,7 +34,8 @@ public class VarAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("var");
     }
 
@@ -46,10 +47,10 @@ public class VarAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public boolean onNextStatementDecoded(Node next) {
-//		if (next instanceof LocalDeclaration && next instanceof Parameter == false)
-//		{
-//			((LocalDeclaration)next).setImplicit(true);
-//		}
+        // if (next instanceof LocalDeclaration && next instanceof Parameter == false)
+        // {
+        // ((LocalDeclaration)next).setImplicit(true);
+        // }
 
         return super.onNextStatementDecoded(next);
     }
@@ -68,7 +69,8 @@ public class VarAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public VarAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public VarAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         VarAnnotation node = new VarAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,7 +80,8 @@ public class VarAnnotation extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public VarAnnotation cloneTo(VarAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public VarAnnotation cloneTo(VarAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -88,6 +91,7 @@ public class VarAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"var"};
+        return new String[] {"var"};
     }
 }
+

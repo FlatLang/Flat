@@ -7,7 +7,8 @@ import flat.tree.Parameter;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class PrivateAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier {
+public class PrivateAnnotation extends ApplicableAnnotationBase
+    implements ModifierAnnotation, VisibilityModifier {
     public String aliasUsed;
 
     @Override
@@ -24,7 +25,8 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
         super(temporaryParent, locationIn);
     }
 
-    public static PrivateAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static PrivateAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Private") || name.equals("-")) {
             PrivateAnnotation n = new PrivateAnnotation(parent, location);
 
@@ -35,7 +37,8 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("private");
     }
 
@@ -87,7 +90,8 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
     }
 
     @Override
-    public PrivateAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public PrivateAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         PrivateAnnotation node = new PrivateAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -97,7 +101,8 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
         return cloneTo(node, true, true);
     }
 
-    public PrivateAnnotation cloneTo(PrivateAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public PrivateAnnotation cloneTo(PrivateAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -107,6 +112,7 @@ public class PrivateAnnotation extends ApplicableAnnotationBase implements Modif
 
     @Override
     public String[] getAliases() {
-        return new String[]{"private"};
+        return new String[] {"private"};
     }
 }
+

@@ -38,7 +38,8 @@ public class Flat {
 
     private long flags;
     private long startTime, endTime;
-    private static volatile int processedSteps = 0, stepsToProcess = 0, estimatedStepsToProcess = 0, lastProgress = 0;
+    private static volatile int processedSteps = 0, stepsToProcess = 0, estimatedStepsToProcess = 0,
+        lastProgress = 0;
     private static boolean logged = false;
 
     public File outputFile;
@@ -64,7 +65,7 @@ public class Flat {
     public HashSet<String> includeDirectories;
     public HashSet<String> defaultImports;
     public HashSet<String> defaultStaticImports;
-    public ArrayList<File> inputFiles, excludeFiles;//, includeDirectories;
+    public ArrayList<File> inputFiles, excludeFiles;// , includeDirectories;
     public Stack<Long> flagsStack;
 
     public HashMap<File, ArrayList<File>> libraryFiles;
@@ -84,10 +85,10 @@ public class Flat {
     public static final boolean PRIMITIVE_OVERLOADS = false;
 
     public static final boolean DEBUG = false;
-    //	public static final boolean	DEBUG         = true;
-//	public static final boolean USE_INSTALLED_TARGET = false;
+    // public static final boolean DEBUG = true;
+    // public static final boolean USE_INSTALLED_TARGET = false;
     public static final boolean USE_INSTALLED_TARGET = true;
-    //	public static final boolean USE_INSTALLED_STDLIB = false;
+    // public static final boolean USE_INSTALLED_STDLIB = false;
     public static final boolean USE_INSTALLED_STDLIB = true;
 
     // Set to 0 to not benchmark.
@@ -157,8 +158,7 @@ public class Flat {
 
     public static ProcessResponse exec(
         String[] cmd,
-        File workingDirectory
-    ) throws IOException, InterruptedException {
+        File workingDirectory) throws IOException, InterruptedException {
         Process p = Runtime.getRuntime().exec(cmd, null, workingDirectory.getCanonicalFile());
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -179,16 +179,15 @@ public class Flat {
         return new ProcessResponse(
             stdout.toArray(new String[0]),
             stderr.toArray(new String[0]),
-            exitCode
-        );
+            exitCode);
     }
 
     /**
-     * Method called whenever the compiler is invoked. Supplies the
-     * needed information for compiling the given files.
+     * Method called whenever the compiler is invoked. Supplies the needed information for compiling
+     * the given files.
      *
-     * @param args The String array containing the locations of the files
-     *             to compile, as well as other compiler arguments.
+     * @param args The String array containing the locations of the files to compile, as well as
+     *        other compiler arguments.
      */
     public static void main(String[] args) {
         if (args.length > 1 && args[0].equalsIgnoreCase("airship")) {
@@ -218,7 +217,8 @@ public class Flat {
                 String argsString = response.stdout[response.stdout.length - 1].trim();
                 args = StringUtils.splitWhitespace(argsString);
                 args = Arrays.copyOfRange(args, 3, args.length);
-                args = Arrays.stream(args).map(StringUtils::removeSurroundingQuotes).toArray(String[]::new);
+                args = Arrays.stream(args).map(StringUtils::removeSurroundingQuotes)
+                    .toArray(String[]::new);
             } catch (IOException | InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -248,8 +248,7 @@ public class Flat {
     }
 
     /**
-     * Method used to initialize the compiler data and start the
-     * compilation process.
+     * Method used to initialize the compiler data and start the compilation process.
      */
     public Flat(String[] args) {
         instance = this;
@@ -279,21 +278,22 @@ public class Flat {
         messages = new ArrayList<>();
         flagsStack = new Stack<>();
 
-//		cSourceFiles       = new ArrayList<>();
-//		cHeaderFiles       = new ArrayList<>();
+        // cSourceFiles = new ArrayList<>();
+        // cHeaderFiles = new ArrayList<>();
         includeDirectories = new HashSet<>();
         defaultImports = new HashSet<>();
         defaultStaticImports = new HashSet<>();
         outputDirectories = new HashMap<>();
 
-        testClasses = false;//BENCHMARK <= 0;
+        testClasses = false;// BENCHMARK <= 0;
 
         readCliArgs(args);
 
         if (installDirectoryArg != null) {
         } else if (OS == WINDOWS) {
             if (System.getenv("FLAT_HOME") == null) {
-                System.err.println("FLAT_HOME environment variable is not set. Learn how to set them at http://flat-lang.org/docs/getting-started/configure-environment");
+                System.err.println(
+                    "FLAT_HOME environment variable is not set. Learn how to set them at http://flat-lang.org/docs/getting-started/configure-environment");
 
                 System.exit(1);
             }
@@ -310,7 +310,8 @@ public class Flat {
         }
 
         if (!installDirectory.isDirectory()) {
-            System.err.println("Missing Flat install directory located at '" + installDirectory.getAbsolutePath() + "'");
+            System.err.println("Missing Flat install directory located at '"
+                + installDirectory.getAbsolutePath() + "'");
 
             System.exit(1);
         }
@@ -330,7 +331,8 @@ public class Flat {
             if (!USE_INSTALLED_TARGET) {
                 enginePath = "..";
             } else if (OS == WINDOWS) {
-                enginePath = installDirectory.getAbsolutePath();//System.getenv("APPDATA") + "/Flat";
+                enginePath = installDirectory.getAbsolutePath();// System.getenv("APPDATA") +
+                                                                // "/Flat";
             } else if (OS == MACOSX) {
                 enginePath = installDirectory.getAbsolutePath();
             } else if (OS == LINUX) {
@@ -343,22 +345,29 @@ public class Flat {
 
             File engineDir = new File(enginePath);
 
-            Optional<File> existingFile = Arrays.stream(engineDir.listFiles()).filter(x -> x.isDirectory() && x.getName().equalsIgnoreCase(folderName)).findFirst();
+            Optional<File> existingFile = Arrays.stream(engineDir.listFiles())
+                .filter(x -> x.isDirectory() && x.getName().equalsIgnoreCase(folderName))
+                .findFirst();
 
             if (!existingFile.isPresent()) {
-                System.err.println("Could not find target directory for " + target + " compilation target in '" + new File(enginePath + "/" + folderName).getCanonicalPath() + "'");
+                System.err.println(
+                    "Could not find target directory for " + target + " compilation target in '"
+                        + new File(enginePath + "/" + folderName).getCanonicalPath() + "'");
 
                 System.exit(1);
             }
 
             targetEngineWorkingDir = existingFile.get().getCanonicalFile();
 
-            formattedTarget = targetEngineWorkingDir.getName().substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
+            formattedTarget = targetEngineWorkingDir.getName()
+                .substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
 
-            File engineJar = new File(enginePath + "/Flat-" + formattedTarget + "/target/flat-" + formattedTarget.toLowerCase() + ".jar");
+            File engineJar = new File(enginePath + "/Flat-" + formattedTarget + "/target/flat-"
+                + formattedTarget.toLowerCase() + ".jar");
 
             if (!engineJar.isFile()) {
-                System.err.println("Could not find built target jar for " + target + " compilation target in '" + engineJar.getAbsolutePath() + "'");
+                System.err.println("Could not find built target jar for " + target
+                    + " compilation target in '" + engineJar.getAbsolutePath() + "'");
 
                 System.exit(1);
             }
@@ -374,15 +383,22 @@ public class Flat {
                 URL url = engineJar.toURI().toURL();
 
                 // Create a new class loader with the directory
-                ClassLoader cl = new URLClassLoader(new URL[]{url}, this.getClass().getClassLoader());
+                ClassLoader cl =
+                    new URLClassLoader(new URL[] {url}, this.getClass().getClassLoader());
 
-                Class codeGeneratorEngineClass = cl.loadClass("flat." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CodeGeneratorEngine");
-                Class compileEngineClass = cl.loadClass("flat." + formattedTarget.toLowerCase() + ".engines." + formattedTarget + "CompileEngine");
+                Class codeGeneratorEngineClass =
+                    cl.loadClass("flat." + formattedTarget.toLowerCase() + ".engines."
+                        + formattedTarget + "CodeGeneratorEngine");
+                Class compileEngineClass = cl.loadClass("flat." + formattedTarget.toLowerCase()
+                    + ".engines." + formattedTarget + "CompileEngine");
 
-                java.lang.reflect.Constructor codeGeneratorEngineConstructor = codeGeneratorEngineClass.getConstructor(Flat.class);
-                java.lang.reflect.Constructor compileEngineConstructor = compileEngineClass.getConstructor(Flat.class);
+                java.lang.reflect.Constructor codeGeneratorEngineConstructor =
+                    codeGeneratorEngineClass.getConstructor(Flat.class);
+                java.lang.reflect.Constructor compileEngineConstructor =
+                    compileEngineClass.getConstructor(Flat.class);
 
-                codeGeneratorEngine = (CodeGeneratorEngine) codeGeneratorEngineConstructor.newInstance(this);
+                codeGeneratorEngine =
+                    (CodeGeneratorEngine) codeGeneratorEngineConstructor.newInstance(this);
                 compileEngine = (CompileEngine) compileEngineConstructor.newInstance(this);
 
                 codeGeneratorEngine.init();
@@ -405,8 +421,8 @@ public class Flat {
             throw new RuntimeException(io);
         }
 
-        //codeGeneratorEngine = new CCodeGeneratorEngine(this);
-        //compileEngine = new CCompileEngine(this);
+        // codeGeneratorEngine = new CCodeGeneratorEngine(this);
+        // compileEngine = new CCompileEngine(this);
     }
 
     /**
@@ -437,56 +453,55 @@ public class Flat {
         if (DEBUG) {
             testClasses();
 
-            args = new String[]
-                {
-//				"../Flat.c",
-//				"../plumber/plumbercalc",
-//							"../Flat-Testing/example",
-//							"../Flat-Testing/stabilitytest",
-//							"-l", "../Test",
-//							"-d", "../FlatCompilerOutput/" + target,
-//				"-package-output-directory", "flat", "../StandardLibrary/" + target,
-//				"-dir", formatPath(directory + "../example"),
-//				"-dir", formatPath(directory + "../stabilitytest"),
-//				"-run",
-//				"-csource",
-//				"-formatc",
-//				testClasses ? "-v" : "",
-//				"-v",
-//				"-gcc",
-//				"-tcc",
-//				"-small",
-//				"-cargs",
-//				"-keepc",
-//				"-qp",
-//							"-main",
-//				"example/Lab",
-//							"stabilitytest/StabilityTest",
-//				"plumbercalc/tests/AllTestsRunner",
-//				"example/TestTest",
-//				"example/SvgChart",
-//				"example/SvgFractal",
-//				"example/HashMapDemo",
-//				"example/HashSetDemo",
-//				"-nogc",
-//				"-no-c-output",
-//				"-dry",
-//				"-force",
-//				"-force-check",
-//				"-no-notes",
-//				"-no-warnings",
-//				"-no-errors",
-//				"-no-optimize",
-//				"-target", target,
-//				"-library",
-//							"-o", formatPath(directory + "bin/Executable")
-                };
+            args = new String[] {
+                // "../Flat.c",
+                // "../plumber/plumbercalc",
+                // "../Flat-Testing/example",
+                // "../Flat-Testing/stabilitytest",
+                // "-l", "../Test",
+                // "-d", "../FlatCompilerOutput/" + target,
+                // "-package-output-directory", "flat", "../StandardLibrary/" + target,
+                // "-dir", formatPath(directory + "../example"),
+                // "-dir", formatPath(directory + "../stabilitytest"),
+                // "-run",
+                // "-csource",
+                // "-formatc",
+                // testClasses ? "-v" : "",
+                // "-v",
+                // "-gcc",
+                // "-tcc",
+                // "-small",
+                // "-cargs",
+                // "-keepc",
+                // "-qp",
+                // "-main",
+                // "example/Lab",
+                // "stabilitytest/StabilityTest",
+                // "plumbercalc/tests/AllTestsRunner",
+                // "example/TestTest",
+                // "example/SvgChart",
+                // "example/SvgFractal",
+                // "example/HashMapDemo",
+                // "example/HashSetDemo",
+                // "-nogc",
+                // "-no-c-output",
+                // "-dry",
+                // "-force",
+                // "-force-check",
+                // "-no-notes",
+                // "-no-warnings",
+                // "-no-errors",
+                // "-no-optimize",
+                // "-target", target,
+                // "-library",
+                // "-o", formatPath(directory + "bin/Executable")
+            };
 
-//			args = new String[] {
-//				"C:/Users/Braden/test.flat",
-//				"-o",
-//				"C:/Users/Braden/test"
-//			};
+            // args = new String[] {
+            // "C:/Users/Braden/test.flat",
+            // "-o",
+            // "C:/Users/Braden/test"
+            // };
         } else if (ANDROID_DEBUG) {
             enableFlag(DRY_RUN);
         } else {
@@ -494,7 +509,8 @@ public class Flat {
                 System.out.println("Flat " + VERSION);
 
                 if (args.length == 0) {
-                    System.err.println("Input files and/or directories must be specified to be compiled.");
+                    System.err.println(
+                        "Input files and/or directories must be specified to be compiled.");
 
                     System.exit(1);
                 }
@@ -508,20 +524,20 @@ public class Flat {
         enableFlag(SINGLE_THREAD);
         enableFlag(REPLACE_LOG_LINE);
         postArgsList.add("-single-file");
-//		postArgsList.add("-line-numbers");
+        // postArgsList.add("-line-numbers");
         postArgsList.add("-no-optimize");
         postArgsList.add("-v");
-//		postArgsList.add("-target");
-//		postArgsList.add(target);
+        // postArgsList.add("-target");
+        // postArgsList.add(target);
 
         postArgs = postArgsList.toArray(new String[0]);
 
-//		for (String location : standardFiles)
-//		{
-//			location = removeSurroundingQuotes(location);
-//
-//			inputFiles.add(new File(location));
-//		}
+        // for (String location : standardFiles)
+        // {
+        // location = removeSurroundingQuotes(location);
+        //
+        // inputFiles.add(new File(location));
+        // }
 
         args = appendArguments(args, postArgs);
 
@@ -533,16 +549,17 @@ public class Flat {
     /**
      * Compile the input files given within the args.
      *
-     * @param args The String array containing the locations of the files
-     *             to compile, as well as other compiler arguments.
+     * @param args The String array containing the locations of the files to compile, as well as
+     *        other compiler arguments.
      */
     public void compile(String args[], boolean generateCode) {
         codeGeneratorEngine.initializeOutputDirectory();
 
-//		log("Flat " + VERSION + " Copyright (C) 2014  Braden Steffaniak <BradenSteffaniak@gmail.com>\n" +
-//				"This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
-//				"This is free software, and you are welcome to redistribute it\n" +
-//				"under certain conditions");//; type show c for details.");
+        // log("Flat " + VERSION + " Copyright (C) 2014 Braden Steffaniak
+        // <BradenSteffaniak@gmail.com>\n" +
+        // "This program comes with ABSOLUTELY NO WARRANTY\n" + //; for details type show w." +
+        // "This is free software, and you are welcome to redistribute it\n" +
+        // "under certain conditions");//; type show c for details.");
 
         workingDir = new File(getWorkingDirectoryPath());
 
@@ -623,22 +640,26 @@ public class Flat {
 
                         log("Generating output...");
                         codeGeneratorEngine.generateOutput();
-                        log("Generating output took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
+                        log("Generating output took "
+                            + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
                         time = newTime;
 
                         log("Inserting main method...");
                         codeGeneratorEngine.insertMainMethod();
-                        log("Inserting main method took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
+                        log("Inserting main method took "
+                            + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
                         time = newTime;
 
                         log("Formatting output...");
                         codeGeneratorEngine.formatOutput();
-                        log("Formatting output took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
+                        log("Formatting output took "
+                            + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
                         time = newTime;
 
                         log("Writing files...");
                         codeGeneratorEngine.writeFiles();
-                        log("Writing files took " + ((newTime = System.currentTimeMillis()) - time) + "ms", true);
+                        log("Writing files took " + ((newTime = System.currentTimeMillis()) - time)
+                            + "ms", true);
                         time = newTime;
 
                     }
@@ -699,7 +720,7 @@ public class Flat {
     /**
      * Output the log message from the compiler.
      *
-     * @param flags   The flags that verify whether the compiler is verbose.
+     * @param flags The flags that verify whether the compiler is verbose.
      * @param message The message describing what happened.
      */
     public static void log(long flags, String message, boolean persist) {
@@ -745,7 +766,9 @@ public class Flat {
         String percentage = (processedSteps * 100 / targetSteps) + "%";
         int percentagePosition = 0;
         String suffix = "] " +
-            repeatSpaces(String.valueOf(targetSteps).length() - String.valueOf(processedSteps).length()) +
+            repeatSpaces(
+                String.valueOf(targetSteps).length() - String.valueOf(processedSteps).length())
+            +
             processedSteps + "/" + targetSteps + " " +
             "eta " + repeatSpaces(Math.max(0, 3 - etaValue.length())) + etaValue;
         StringBuilder progress = new StringBuilder();
@@ -755,7 +778,8 @@ public class Flat {
         for (int i = 0; i < progressLength; i++) {
             int progressPosition = lastProgress * progressLength / 100;
 
-            if (percentagePosition < percentage.length() && i >= progressLength / 2 - percentage.length() / 2) {
+            if (percentagePosition < percentage.length()
+                && i >= progressLength / 2 - percentage.length() / 2) {
                 progress.append(percentage.charAt(percentagePosition));
                 percentagePosition++;
                 if (i >= progressPosition) {
@@ -844,19 +868,20 @@ public class Flat {
     }
 
     /**
-     * Add the given external import location to be added to the
-     * compilation list.
+     * Add the given external import location to be added to the compilation list.
      *
-     * @param file     The File that is importing the location.
+     * @param file The File that is importing the location.
      * @param location The location that is being imported.
      */
     public void addExternalImport(FileDeclaration file, String location) {
         if (!StringUtils.containsString(location, FileDeclaration.DEFAULT_IMPORTS)) {
-//			location = file.getFile().getParent() + "/" + location;
+            // location = file.getFile().getParent() + "/" + location;
             String absoluteLocation = location.substring(0, location.length() - 1) + target;
-            absoluteLocation = FileUtils.findFileLocation(absoluteLocation, includeDirectories.toArray(new String[0]));
+            absoluteLocation = FileUtils.findFileLocation(absoluteLocation,
+                includeDirectories.toArray(new String[0]));
 
-            if (absoluteLocation != null && !StringUtils.containsString(externalImports, absoluteLocation)) {
+            if (absoluteLocation != null
+                && !StringUtils.containsString(externalImports, absoluteLocation)) {
                 externalImports.add(absoluteLocation);
                 externalIncludes.add(location);
             }
@@ -949,7 +974,8 @@ public class Flat {
             }
             // If the user is trying to set the output location.
             else if (arg.equals("-o")) {
-                validateArgumentSize(args, postArgs.length + i + 1, "-o", "Expected output file name after argument '-o'");
+                validateArgumentSize(args, postArgs.length + i + 1, "-o",
+                    "Expected output file name after argument '-o'");
 
                 outputFile = new File(args[i + 1]);
 
@@ -1110,7 +1136,8 @@ public class Flat {
                 if (lastInput == i - 1) {
                     if (args[i].startsWith("glob:")) {
                         try {
-                            addIfNotExists(inputFiles, getFiles(args[i].substring("glob:".length())));
+                            addIfNotExists(inputFiles,
+                                getFiles(args[i].substring("glob:".length())));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -1133,7 +1160,8 @@ public class Flat {
         }
 
         if (outputFile == null && outputDirectory == null) {
-            System.err.println("You must specify an output file using the -o argument. e.g. 'flatc Test.flat -o Test'");
+            System.err.println(
+                "You must specify an output file using the -o argument. e.g. 'flatc Test.flat -o Test'");
 
             System.exit(1);
         }
@@ -1150,7 +1178,7 @@ public class Flat {
 
     public static String[] splitParentDirectory(String path, boolean checkGlob) {
         if (new File(path).isDirectory()) {
-            return new String[]{path, ""};
+            return new String[] {path, ""};
         }
         if (new File(path).isAbsolute()) {
             String suffix = "";
@@ -1168,7 +1196,7 @@ public class Flat {
                 }
             }
 
-            return new String[]{path, suffix};
+            return new String[] {path, suffix};
         }
 
         String suffix = "";
@@ -1187,7 +1215,7 @@ public class Flat {
             }
         }
 
-        return new String[]{Paths.get(home, path).normalize().toString(), suffix};
+        return new String[] {Paths.get(home, path).normalize().toString(), suffix};
     }
 
     public static void addIfNotExists(ArrayList<File> list, List<File> toAdd) {
@@ -1200,8 +1228,7 @@ public class Flat {
                         throw new RuntimeException(e);
                     }
                 }))
-                .collect(Collectors.toList())
-        );
+                .collect(Collectors.toList()));
     }
 
     public static List<File> getFiles(final Path directory, final String glob) throws IOException {
@@ -1286,7 +1313,7 @@ public class Flat {
      * Check if the specific flag is enabled for the given set of flags.
      *
      * @param flags The flags to verify the flag with.
-     * @param flag  The flag to check if is enabled.
+     * @param flag The flag to check if is enabled.
      * @return Whether or not the flag is enabled.
      */
     public static boolean isFlagEnabled(long flags, long flag) {
@@ -1356,7 +1383,8 @@ public class Flat {
         outputMessages(success, warningCount, errorCount, true);
     }
 
-    private void outputMessages(boolean success, int warningCount, int errorCount, boolean outputResult) {
+    private void outputMessages(boolean success, int warningCount, int errorCount,
+        boolean outputResult) {
         for (String s : messages) {
             System.out.println(s);
         }
@@ -1411,53 +1439,53 @@ public class Flat {
         outputMessages(success, warningCount, errorCount);
 
         if (isFlagEnabled(RUNTIME)) {
-//			final Command c = new Command("start bin/Executa.exe", workingDir);
-//
-//			c.addCommandListener(new CommandListener()
-//			{
-//
-//				@Override
-//				public void resultReceived(int result)
-//				{
-//					if (result != 0)
-//					{
-//						System.err.println("error.");
-//					}
-//				}
-//
-//				@Override
-//				public void messageReceived(String message)
-//				{
-//					System.out.println(message);
-//				}
-//
-//				@Override
-//				public void errorReceived(String message)
-//				{
-//					System.err.println(message);
-//				}
-//
-//				@Override
-//				public void commandExecuted()
-//				{
-//					try
-//					{
-//						c.terminate();
-//					}
-//					catch (InterruptedException e)
-//					{
-//						e.printStackTrace();
-//					}
-//				}
-//			});
-//			try
-//			{
-//				c.execute();
-//			}
-//			catch (IOException e)
-//			{
-//				e.printStackTrace();
-//			}
+            // final Command c = new Command("start bin/Executa.exe", workingDir);
+            //
+            // c.addCommandListener(new CommandListener()
+            // {
+            //
+            // @Override
+            // public void resultReceived(int result)
+            // {
+            // if (result != 0)
+            // {
+            // System.err.println("error.");
+            // }
+            // }
+            //
+            // @Override
+            // public void messageReceived(String message)
+            // {
+            // System.out.println(message);
+            // }
+            //
+            // @Override
+            // public void errorReceived(String message)
+            // {
+            // System.err.println(message);
+            // }
+            //
+            // @Override
+            // public void commandExecuted()
+            // {
+            // try
+            // {
+            // c.terminate();
+            // }
+            // catch (InterruptedException e)
+            // {
+            // e.printStackTrace();
+            // }
+            // }
+            // });
+            // try
+            // {
+            // c.execute();
+            // }
+            // catch (IOException e)
+            // {
+            // e.printStackTrace();
+            // }
         }
 
         if (!ANDROID_DEBUG) {
@@ -1475,8 +1503,7 @@ public class Flat {
     }
 
     /**
-     * Call the test case methods for all of the classes to make sure they
-     * are working correctly.
+     * Call the test case methods for all of the classes to make sure they are working correctly.
      */
     private void testClasses() {
         if (testClasses) {
@@ -1522,121 +1549,223 @@ public class Flat {
                                                         error = ElseStatement.test(context);
 
                                                         if (error == null) {
-                                                            error = ExternalMethodDeclaration.test(context);
+                                                            error = ExternalMethodDeclaration
+                                                                .test(context);
 
                                                             if (error == null) {
                                                                 error = ExternalType.test(context);
 
                                                                 if (error == null) {
-                                                                    error = ExternalTypeList.test(context);
+                                                                    error = ExternalTypeList
+                                                                        .test(context);
 
                                                                     if (error == null) {
-                                                                        error = FileDeclaration.test(context);
+                                                                        error = FileDeclaration
+                                                                            .test(context);
 
                                                                         if (error == null) {
-                                                                            error = ForLoop.test(context);
+                                                                            error = ForLoop
+                                                                                .test(context);
 
                                                                             if (error == null) {
-                                                                                error = Identifier.test(context);
+                                                                                error = Identifier
+                                                                                    .test(context);
 
                                                                                 if (error == null) {
-                                                                                    error = IfStatement.test(context);
+                                                                                    error =
+                                                                                        IfStatement
+                                                                                            .test(
+                                                                                                context);
 
                                                                                     if (error == null) {
-                                                                                        error = IIdentifier.test(context);
+                                                                                        error =
+                                                                                            IIdentifier
+                                                                                                .test(
+                                                                                                    context);
 
                                                                                         if (error == null) {
-                                                                                            error = Import.test(context);
+                                                                                            error =
+                                                                                                Import
+                                                                                                    .test(
+                                                                                                        context);
 
                                                                                             if (error == null) {
-                                                                                                error = ImportList.test(context);
+                                                                                                error =
+                                                                                                    ImportList
+                                                                                                        .test(
+                                                                                                            context);
 
                                                                                                 if (error == null) {
-                                                                                                    error = InstanceDeclaration.test(context);
+                                                                                                    error =
+                                                                                                        InstanceDeclaration
+                                                                                                            .test(
+                                                                                                                context);
 
                                                                                                     if (error == null) {
-                                                                                                        error = Instantiation.test(context);
+                                                                                                        error =
+                                                                                                            Instantiation
+                                                                                                                .test(
+                                                                                                                    context);
 
                                                                                                         if (error == null) {
-                                                                                                            error = IValue.test(context);
+                                                                                                            error =
+                                                                                                                IValue
+                                                                                                                    .test(
+                                                                                                                        context);
 
                                                                                                             if (error == null) {
-                                                                                                                error = Literal.test(context);
+                                                                                                                error =
+                                                                                                                    Literal
+                                                                                                                        .test(
+                                                                                                                            context);
 
                                                                                                                 if (error == null) {
-                                                                                                                    error = LocalDeclaration.test(context);
+                                                                                                                    error =
+                                                                                                                        LocalDeclaration
+                                                                                                                            .test(
+                                                                                                                                context);
 
                                                                                                                     if (error == null) {
-                                                                                                                        error = Loop.test(context);
+                                                                                                                        error =
+                                                                                                                            Loop.test(
+                                                                                                                                context);
 
                                                                                                                         if (error == null) {
-                                                                                                                            error = LoopInitialization.test(context);
+                                                                                                                            error =
+                                                                                                                                LoopInitialization
+                                                                                                                                    .test(
+                                                                                                                                        context);
 
                                                                                                                             if (error == null) {
-                                                                                                                                error = LoopUpdate.test(context);
+                                                                                                                                error =
+                                                                                                                                    LoopUpdate
+                                                                                                                                        .test(
+                                                                                                                                            context);
 
                                                                                                                                 if (error == null) {
-                                                                                                                                    error = MethodCall.test(context);
+                                                                                                                                    error =
+                                                                                                                                        MethodCall
+                                                                                                                                            .test(
+                                                                                                                                                context);
 
                                                                                                                                     if (error == null) {
-                                                                                                                                        error = MethodCallArgumentList.test(context);
+                                                                                                                                        error =
+                                                                                                                                            MethodCallArgumentList
+                                                                                                                                                .test(
+                                                                                                                                                    context);
 
                                                                                                                                         if (error == null) {
-                                                                                                                                            error = MethodDeclaration.test(context);
+                                                                                                                                            error =
+                                                                                                                                                MethodDeclaration
+                                                                                                                                                    .test(
+                                                                                                                                                        context);
 
                                                                                                                                             if (error == null) {
-                                                                                                                                                error = MethodList.test(context);
+                                                                                                                                                error =
+                                                                                                                                                    MethodList
+                                                                                                                                                        .test(
+                                                                                                                                                            context);
 
                                                                                                                                                 if (error == null) {
-                                                                                                                                                    error = Node.test(context);
+                                                                                                                                                    error =
+                                                                                                                                                        Node.test(
+                                                                                                                                                            context);
 
                                                                                                                                                     if (error == null) {
-                                                                                                                                                        error = Operator.test(context);
+                                                                                                                                                        error =
+                                                                                                                                                            Operator
+                                                                                                                                                                .test(
+                                                                                                                                                                    context);
 
                                                                                                                                                         if (error == null) {
-                                                                                                                                                            error = Parameter.test(context);
+                                                                                                                                                            error =
+                                                                                                                                                                Parameter
+                                                                                                                                                                    .test(
+                                                                                                                                                                        context);
 
                                                                                                                                                             if (error == null) {
-                                                                                                                                                                error = ParameterList.test(context);
+                                                                                                                                                                error =
+                                                                                                                                                                    ParameterList
+                                                                                                                                                                        .test(
+                                                                                                                                                                            context);
 
                                                                                                                                                                 if (error == null) {
-                                                                                                                                                                    error = Priority.test(context);
+                                                                                                                                                                    error =
+                                                                                                                                                                        Priority
+                                                                                                                                                                            .test(
+                                                                                                                                                                                context);
 
                                                                                                                                                                     if (error == null) {
-                                                                                                                                                                        error = Program.test(context);
+                                                                                                                                                                        error =
+                                                                                                                                                                            Program
+                                                                                                                                                                                .test(
+                                                                                                                                                                                    context);
 
                                                                                                                                                                         if (error == null) {
-                                                                                                                                                                            error = Return.test(context);
+                                                                                                                                                                            error =
+                                                                                                                                                                                Return
+                                                                                                                                                                                    .test(
+                                                                                                                                                                                        context);
 
                                                                                                                                                                             if (error == null) {
-                                                                                                                                                                                error = Scope.test(context);
+                                                                                                                                                                                error =
+                                                                                                                                                                                    Scope
+                                                                                                                                                                                        .test(
+                                                                                                                                                                                            context);
 
                                                                                                                                                                                 if (error == null) {
-                                                                                                                                                                                    error = SyntaxTree.test(context);
+                                                                                                                                                                                    error =
+                                                                                                                                                                                        SyntaxTree
+                                                                                                                                                                                            .test(
+                                                                                                                                                                                                context);
 
                                                                                                                                                                                     if (error == null) {
-                                                                                                                                                                                        error = TreeGenerator.test(context);
+                                                                                                                                                                                        error =
+                                                                                                                                                                                            TreeGenerator
+                                                                                                                                                                                                .test(
+                                                                                                                                                                                                    context);
 
                                                                                                                                                                                         if (error == null) {
-                                                                                                                                                                                            error = UnaryOperation.test(context);
+                                                                                                                                                                                            error =
+                                                                                                                                                                                                UnaryOperation
+                                                                                                                                                                                                    .test(
+                                                                                                                                                                                                        context);
 
                                                                                                                                                                                             if (error == null) {
-                                                                                                                                                                                                error = Until.test(context);
+                                                                                                                                                                                                error =
+                                                                                                                                                                                                    Until
+                                                                                                                                                                                                        .test(
+                                                                                                                                                                                                            context);
 
                                                                                                                                                                                                 if (error == null) {
-                                                                                                                                                                                                    error = Value.test(context);
+                                                                                                                                                                                                    error =
+                                                                                                                                                                                                        Value
+                                                                                                                                                                                                            .test(
+                                                                                                                                                                                                                context);
 
                                                                                                                                                                                                     if (error == null) {
-                                                                                                                                                                                                        error = VTable.test(context);
+                                                                                                                                                                                                        error =
+                                                                                                                                                                                                            VTable
+                                                                                                                                                                                                                .test(
+                                                                                                                                                                                                                    context);
 
                                                                                                                                                                                                         if (error == null) {
-                                                                                                                                                                                                            error = GenericCompatible.test(context);
+                                                                                                                                                                                                            error =
+                                                                                                                                                                                                                GenericCompatible
+                                                                                                                                                                                                                    .test(
+                                                                                                                                                                                                                        context);
 
                                                                                                                                                                                                             if (error == null) {
-                                                                                                                                                                                                                error = WhileLoop.test(context);
+                                                                                                                                                                                                                error =
+                                                                                                                                                                                                                    WhileLoop
+                                                                                                                                                                                                                        .test(
+                                                                                                                                                                                                                            context);
 
                                                                                                                                                                                                                 if (error == null) {
-                                                                                                                                                                                                                    error = Match.test(context);
+                                                                                                                                                                                                                    error =
+                                                                                                                                                                                                                        Match
+                                                                                                                                                                                                                            .test(
+                                                                                                                                                                                                                                context);
                                                                                                                                                                                                                 }
                                                                                                                                                                                                             }
                                                                                                                                                                                                         }

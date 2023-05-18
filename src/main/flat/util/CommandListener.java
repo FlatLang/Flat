@@ -18,3 +18,4 @@ public interface CommandListener {
 
     public void errorReceived(String message);
 }
+

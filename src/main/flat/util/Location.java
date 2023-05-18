@@ -1,9 +1,9 @@
 package flat.util;
 
 /**
- * Class that contains information for a line number and character offset.
- * Used in the compilation process, in the event that there is an error
- * or warning, for knowing where exactly it occurred in the source code.
+ * Class that contains information for a line number and character offset. Used in the compilation
+ * process, in the event that there is an error or warning, for knowing where exactly it occurred in
+ * the source code.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 7, 2014 at 10:11:40 AM
@@ -24,8 +24,8 @@ public class Location {
     }
 
     /**
-     * Copy the location data from the given Location variable into
-     * a newly instantiated Location instance.
+     * Copy the location data from the given Location variable into a newly instantiated Location
+     * instance.
      *
      * @param loc The location to copy the data from.
      */
@@ -34,15 +34,14 @@ public class Location {
     }
 
     /**
-     * Constructor that initializes the lineNumber and offset to the
-     * given values.
+     * Constructor that initializes the lineNumber and offset to the given values.
      *
      * @param lineNumber The lineNumber that the Location represents.
-     * @param offset     The character offset horizontally on the current line.
-     * @param start      The character offset that the Location represents as
-     *                   the start throughout the whole source text.
-     * @param end        The character offset that the Location represents as
-     *                   the end throughout the whole source text.
+     * @param offset The character offset horizontally on the current line.
+     * @param start The character offset that the Location represents as the start throughout the
+     *        whole source text.
+     * @param end The character offset that the Location represents as the end throughout the whole
+     *        source text.
      */
     public Location(int lineNumber, int offset, int start, int end) {
         // Initialize default data.
@@ -72,44 +71,40 @@ public class Location {
     }
 
     /**
-     * Get the character offset that the Location represents as the start
-     * throughout the whole source text.
+     * Get the character offset that the Location represents as the start throughout the whole
+     * source text.
      *
-     * @return The character offset that the Location represents as the
-     * start throughout the whole source text.
+     * @return The character offset that the Location represents as the start throughout the whole
+     *         source text.
      */
     public int getStart() {
         return bounds.getStart();
     }
 
     /**
-     * Get the character offset that the Location represents as the end
-     * throughout the whole source text.
+     * Get the character offset that the Location represents as the end throughout the whole source
+     * text.
      *
-     * @return The character offset that the Location represents as the end
-     * throughout the whole source text.
+     * @return The character offset that the Location represents as the end throughout the whole
+     *         source text.
      */
     public int getEnd() {
         return bounds.getEnd();
     }
 
     /**
-     * Get character offset that the Location represents on the
-     * specified line number.
+     * Get character offset that the Location represents on the specified line number.
      *
-     * @return The character offset that the Location represents on the
-     * specified line number.
+     * @return The character offset that the Location represents on the specified line number.
      */
     public int getOffset() {
         return offset;
     }
 
     /**
-     * Set character offset that the Location represents on the
-     * specified line number.
+     * Set character offset that the Location represents on the specified line number.
      *
-     * @param offset The character offset that the Location represents
-     *               on the specified line number.
+     * @param offset The character offset that the Location represents on the specified line number.
      */
     public void setOffset(int offset) {
         this.offset = offset;
@@ -118,9 +113,13 @@ public class Location {
     /**
      * Add the given amount to each of the Location's offset value.<br>
      * <br>
-     * This is the same as calling the following:
-     * <blockquote><pre>
-     * bounds.setOffset(bounds.getOffset() + amount);</pre></blockquote>
+     * This is the same as calling the following: <blockquote>
+     * 
+     * <pre>
+     * bounds.setOffset(bounds.getOffset() + amount);
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param amount The amount to add to the Location's offset.
      */
@@ -131,9 +130,13 @@ public class Location {
     /**
      * Subtract the given amount from each of the Location's offset value.<br>
      * <br>
-     * This is the same as calling the following:
-     * <blockquote><pre>
-     * bounds.setOffset(bounds.getOffset() - amount);</pre></blockquote>
+     * This is the same as calling the following: <blockquote>
+     * 
+     * <pre>
+     * bounds.setOffset(bounds.getOffset() - amount);
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param amount The amount to subtract from the Location's offset.
      */
@@ -142,11 +145,9 @@ public class Location {
     }
 
     /**
-     * Get the Bounds of the Location's offset. The starting and ending
-     * offsets.
+     * Get the Bounds of the Location's offset. The starting and ending offsets.
      *
-     * @return The Bounds instance containing the starting and ending
-     * offsets.
+     * @return The Bounds instance containing the starting and ending offsets.
      */
     public Bounds getBounds() {
         return bounds;
@@ -159,10 +160,10 @@ public class Location {
     /**
      * Set the Bounds that the location encapsulates.
      *
-     * @param start The character offset that the Location represents as
-     *              the start on the specified line.
-     * @param end   The character offset that the Location represents as
-     *              the end on the specified line.
+     * @param start The character offset that the Location represents as the start on the specified
+     *        line.
+     * @param end The character offset that the Location represents as the end on the specified
+     *        line.
      */
     public void setBounds(int start, int end) {
         bounds.setStart(start);
@@ -172,10 +173,14 @@ public class Location {
     /**
      * Add the given amount to each of the Bounds's start and end values.<br>
      * <br>
-     * This is the same as calling the following:
-     * <blockquote><pre>
+     * This is the same as calling the following: <blockquote>
+     * 
+     * <pre>
      * bounds.setStart(bounds.getStart() + amount);
-     * bounds.setEnd(bounds.getEnd() + amount);</pre></blockquote>
+     * bounds.setEnd(bounds.getEnd() + amount);
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param amount The amount to add to the Bounds's values.
      */
@@ -187,13 +192,17 @@ public class Location {
     /**
      * Add the given amounts to each of the Bounds's start and end values.<br>
      * <br>
-     * This is the same as calling the following:
-     * <blockquote><pre>
+     * This is the same as calling the following: <blockquote>
+     * 
+     * <pre>
      * bounds.setStart(bounds.getStart() + startAmount);
-     * bounds.setEnd(bounds.getEnd() + endAmount);</pre></blockquote>
+     * bounds.setEnd(bounds.getEnd() + endAmount);
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param startAmount The amount to add to the Bounds's start value.
-     * @param endAmount   The amount to add to the Bounds's end value.
+     * @param endAmount The amount to add to the Bounds's end value.
      */
     public void moveBounds(int startAmount, int endAmount) {
         bounds.setStart(bounds.getStart() + startAmount);
@@ -201,17 +210,19 @@ public class Location {
     }
 
     /**
-     * Subtract the given amounts to each of the Bounds's start and end
-     * values.<br>
+     * Subtract the given amounts to each of the Bounds's start and end values.<br>
      * <br>
-     * This is the same as calling the following:
-     * <blockquote><pre>
+     * This is the same as calling the following: <blockquote>
+     * 
+     * <pre>
      * bounds.setStart(bounds.getStart() - startAmount);
-     * bounds.setEnd(bounds.getEnd() - endAmount);</pre></blockquote>
+     * bounds.setEnd(bounds.getEnd() - endAmount);
+     * </pre>
+     * 
+     * </blockquote>
      *
-     * @param startAmount The amount to subtract to the Bounds's start
-     *                    value.
-     * @param endAmount   The amount to subtract to the Bounds's end value.
+     * @param startAmount The amount to subtract to the Bounds's start value.
+     * @param endAmount The amount to subtract to the Bounds's end value.
      */
     public void subtractBounds(int startAmount, int endAmount) {
         bounds.setStart(bounds.getStart() - startAmount);
@@ -219,13 +230,16 @@ public class Location {
     }
 
     /**
-     * Subtract the given amount from each of the Bounds's start and end
-     * values.<br>
+     * Subtract the given amount from each of the Bounds's start and end values.<br>
      * <br>
-     * This is the same as calling the following:
-     * <blockquote><pre>
+     * This is the same as calling the following: <blockquote>
+     * 
+     * <pre>
      * bounds.setStart(bounds.getStart() - amount);
-     * bounds.setEnd(bounds.getEnd() - amount);</pre></blockquote>
+     * bounds.setEnd(bounds.getEnd() - amount);
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param amount The amount to subtract from the Bounds's values.
      */
@@ -237,13 +251,17 @@ public class Location {
     /**
      * Add the given amounts to each of the Bounds's start and end values.<br>
      * <br>
-     * This is the same as calling the following:
-     * <blockquote><pre>
+     * This is the same as calling the following: <blockquote>
+     * 
+     * <pre>
      * bounds.setStart(bounds.getStart() + startAmount);
-     * bounds.setEnd(bounds.getStart() + endAmount);</pre></blockquote>
+     * bounds.setEnd(bounds.getStart() + endAmount);
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param startAmount The amount to add as the Bounds's start value.
-     * @param endAmount   The amount to add as the Bounds's end value.
+     * @param endAmount The amount to add as the Bounds's end value.
      */
     public void addBounds(int startAmount, int endAmount) {
         bounds.setStart(bounds.getStart() + startAmount);
@@ -251,8 +269,7 @@ public class Location {
     }
 
     /**
-     * Get whether the line number is a valid location in a source
-     * file, or just generated.
+     * Get whether the line number is a valid location in a source file, or just generated.
      *
      * @return Whether or not the Location is valid in the source file.
      */
@@ -273,3 +290,4 @@ public class Location {
         return "Line " + lineNumber + " " + bounds;
     }
 }
+

@@ -18,7 +18,8 @@ public class TraitImplementation extends IValue implements GenericCompatible {
     public TraitImplementation(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
 
-        GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
+        GenericTypeArgumentList implementation =
+            new GenericTypeArgumentList(this, locationIn.asNew());
         addChild(implementation, this);
     }
 
@@ -39,25 +40,25 @@ public class TraitImplementation extends IValue implements GenericCompatible {
     }
 
     /**
-     * Decode the given statement into a {@link TraitImplementation} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link TraitImplementation} instance, if possible. If it is
+     * not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link TraitImplementation} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link TraitImplementation}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link TraitImplementation} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link TraitImplementation}.
      */
-    public static TraitImplementation decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static TraitImplementation decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         TraitImplementation n = new TraitImplementation(parent, location);
 
         int numWords = StringUtils.findNumWords(statement);
@@ -77,7 +78,8 @@ public class TraitImplementation extends IValue implements GenericCompatible {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public TraitImplementation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public TraitImplementation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         TraitImplementation node = new TraitImplementation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -91,13 +93,13 @@ public class TraitImplementation extends IValue implements GenericCompatible {
     }
 
     /**
-     * Fill the given {@link TraitImplementation} with the data that is in the
-     * specified node.
+     * Fill the given {@link TraitImplementation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public TraitImplementation cloneTo(TraitImplementation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public TraitImplementation cloneTo(TraitImplementation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
@@ -109,11 +111,10 @@ public class TraitImplementation extends IValue implements GenericCompatible {
     }
 
     /**
-     * Test the {@link TraitImplementation} class type to make sure everything
-     * is working properly.
+     * Test the {@link TraitImplementation} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -121,3 +122,4 @@ public class TraitImplementation extends IValue implements GenericCompatible {
         return null;
     }
 }
+

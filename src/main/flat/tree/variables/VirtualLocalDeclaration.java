@@ -47,13 +47,13 @@ public class VirtualLocalDeclaration extends LocalDeclaration {
     }
 
     /**
-     * Fill the given {@link VirtualLocalDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link VirtualLocalDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public VirtualLocalDeclaration cloneTo(VirtualLocalDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public VirtualLocalDeclaration cloneTo(VirtualLocalDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.reference = reference;
@@ -62,11 +62,11 @@ public class VirtualLocalDeclaration extends LocalDeclaration {
     }
 
     /**
-     * Test the {@link VirtualLocalDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link VirtualLocalDeclaration} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -74,3 +74,4 @@ public class VirtualLocalDeclaration extends LocalDeclaration {
         return null;
     }
 }
+

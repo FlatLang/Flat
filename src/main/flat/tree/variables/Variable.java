@@ -17,9 +17,8 @@ import flat.util.SyntaxUtils;
 import java.util.AbstractMap;
 
 /**
- * Identifier extension that represents the use of a variable
- * type. Harnesses the needed information of each variable, such as
- * whether or not it is constant, external, or an array, and its type.
+ * Identifier extension that represents the use of a variable type. Harnesses the needed information
+ * of each variable, such as whether or not it is constant, external, or an array, and its type.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:02:42 PM
@@ -102,16 +101,21 @@ public class Variable extends Identifier {
                     for (Node n : children) {
                         MethodCall m = (MethodCall) n;
 
-                        if (m.getName().equals("isOfType") && m.getDeclaringClass().getClassLocation().endsWith("flat/meta/Class")) {
+                        if (m.getName().equals("isOfType") && m.getDeclaringClass()
+                            .getClassLocation().endsWith("flat/meta/Class")) {
                             Accessible r = m.getReferenceNode().getReferenceNode();
 
-                            if (r instanceof Variable && ((Variable) r).declaration == declaration) {
+                            if (r instanceof Variable
+                                && ((Variable) r).declaration == declaration) {
                                 Accessible root = m.getRootAccessNode();
                                 Node parent = root.getParent();
 
-                                boolean negated = parent instanceof UnaryOperation && ((UnaryOperation) parent).getOperator().getOperator().equals(Operator.BANG);
+                                boolean negated =
+                                    parent instanceof UnaryOperation && ((UnaryOperation) parent)
+                                        .getOperator().getOperator().equals(Operator.BANG);
 
-                                Value cloneType = ((Variable) r).cloneTo(new IValue(parent, getLocationIn()), true, true, true);
+                                Value cloneType = ((Variable) r)
+                                    .cloneTo(new IValue(parent, getLocationIn()), true, true, true);
                                 cloneType.setTypeValue(m.getArgument("other").getType());
 
                                 return new AbstractMap.SimpleEntry<>(cloneType, negated);
@@ -137,7 +141,8 @@ public class Variable extends Identifier {
     }
 
     public Accessible getCArgumentReferenceContext() {
-        if (isAccessed() && getAccessingNode() instanceof MethodCall || getAccessedNode() instanceof Closure) {
+        if (isAccessed() && getAccessingNode() instanceof MethodCall
+            || getAccessedNode() instanceof Closure) {
             return getAccessingNode();
         }
 
@@ -155,20 +160,22 @@ public class Variable extends Identifier {
 
     @Override
     public GenericTypeParameter getExtendedGenericParameter(GenericTypeParameter type) {
-//		if (genericParameter == null)
+        // if (genericParameter == null)
         {
             ClassDeclaration refClass = getReferenceNode().toValue().getTypeClass();
 
-            if (refClass != null && refClass != type.getParentClass() && refClass.isOfType(type.getParentClass())) {
-                GenericTypeArgument arg = SyntaxUtils.performWalk(this, this, refClass, type.getParentClass(), type, true);
+            if (refClass != null && refClass != type.getParentClass()
+                && refClass.isOfType(type.getParentClass())) {
+                GenericTypeArgument arg = SyntaxUtils.performWalk(this, this, refClass,
+                    type.getParentClass(), type, true);
 
                 if (arg != null) {
-//					genericParameter = arg.getGenericTypeParameter();
-//					
-//					if (genericParameter != null)
-//					{
-//						return genericParameter;
-//					}
+                    // genericParameter = arg.getGenericTypeParameter();
+                    //
+                    // if (genericParameter != null)
+                    // {
+                    // return genericParameter;
+                    // }
                     GenericTypeParameter extracted = arg.getGenericTypeParameter();
 
                     if (extracted != null) {
@@ -201,12 +208,11 @@ public class Variable extends Identifier {
     }
 
     /**
-     * Compare the specified variable with the given one to see if they
-     * come from the same declaration.
+     * Compare the specified variable with the given one to see if they come from the same
+     * declaration.
      *
      * @param other The variable to compare with.
-     * @return Whether or not the variables come from the same
-     * declaration.
+     * @return Whether or not the variables come from the same declaration.
      */
     public boolean isSameVariable(Variable other) {
         VariableDeclaration first = getDeclaration();
@@ -216,9 +222,8 @@ public class Variable extends Identifier {
     }
 
     /**
-     * Get whether or not the specified Variable is a local variable. It
-     * is a local variable if it was declared inside a method.
-     * TODO: Can optimize to realize that if a parent is a method only
+     * Get whether or not the specified Variable is a local variable. It is a local variable if it
+     * was declared inside a method. TODO: Can optimize to realize that if a parent is a method only
      * node, stop there and return true.
      *
      * @return Whether or not the specified Variable is local.
@@ -232,46 +237,45 @@ public class Variable extends Identifier {
      *
      * @return The ClassDeclaration instance that declared this variable.
      */
-//	public ClassDeclaration getDeclaringClass()
-//	{
-//		VariableDeclaration var = getDeclaration();
-//		
-//		Accessible ref = getReferenceNode();
-//		FileDeclaration file = null;
-//		
-//		if (getParent() == ref.getParent())//ref.getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
-//		{
-//			file = getFileDeclaration();
-//		}
-//		else
-//		{
-//			file = ref.getDeclaringClass().getFileDeclaration();
-//		}
-//		
-//		if (var.isGenericType())
-//		{
-//			return SyntaxUtils.getImportedClass(file, var.getGenericReturnType());
-//		}
-//		
-//		ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, var.getType());
-//		
-//		if (clazz == null)
-//		{
-//			return super.getDeclaringClass();
-//		}
-//		
-//		return clazz;
-//	}
+    // public ClassDeclaration getDeclaringClass()
+    // {
+    // VariableDeclaration var = getDeclaration();
+    //
+    // Accessible ref = getReferenceNode();
+    // FileDeclaration file = null;
+    //
+    // if (getParent() ==
+    // ref.getParent())//ref.getName().equals(ParameterList.OBJECT_REFERENCE_IDENTIFIER))
+    // {
+    // file = getFileDeclaration();
+    // }
+    // else
+    // {
+    // file = ref.getDeclaringClass().getFileDeclaration();
+    // }
+    //
+    // if (var.isGenericType())
+    // {
+    // return SyntaxUtils.getImportedClass(file, var.getGenericReturnType());
+    // }
+    //
+    // ClassDeclaration clazz = SyntaxUtils.getImportedClass(file, var.getType());
+    //
+    // if (clazz == null)
+    // {
+    // return super.getDeclaringClass();
+    // }
+    //
+    // return clazz;
+    // }
     public GenericCompatible getContext() {
         return this;
     }
 
     /**
-     * Get the Instance/LocalDeclaration that declares the
-     * specified variable.
+     * Get the Instance/LocalDeclaration that declares the specified variable.
      *
-     * @return The Instance/LocalDeclaration that declares the
-     * specified variable.
+     * @return The Instance/LocalDeclaration that declares the specified variable.
      */
     public VariableDeclaration getDeclaration() {
         return declaration;
@@ -283,11 +287,9 @@ public class Variable extends Identifier {
     }
 
     /**
-     * Set the Instance/LocalDeclaration that declares the
-     * specified variable.
+     * Set the Instance/LocalDeclaration that declares the specified variable.
      *
-     * @param declaration The Instance/LocalDeclaration that declares the
-     *                    specified variable.
+     * @param declaration The Instance/LocalDeclaration that declares the specified variable.
      */
     public void setDeclaration(VariableDeclaration declaration) {
         this.declaration = declaration;
@@ -317,8 +319,10 @@ public class Variable extends Identifier {
     public Accessible getReferenceTypeNode(boolean requireAccessingNode, boolean skipPriority) {
         Accessible node = super.getReferenceTypeNode(requireAccessingNode, skipPriority);
 
-        if (node instanceof ObjectReference == false) return node;
-        if (isLocal()) return null;
+        if (node instanceof ObjectReference == false)
+            return node;
+        if (isLocal())
+            return null;
 
         return node;
     }
@@ -332,8 +336,7 @@ public class Variable extends Identifier {
     }
 
     /**
-     * Get whether or not the variable is external. For more information
-     * on external variables.
+     * Get whether or not the variable is external. For more information on external variables.
      *
      * @return Whether or not the variable is external.
      */
@@ -366,7 +369,7 @@ public class Variable extends Identifier {
      */
     @Override
     public void setArrayDimensions(int arrayDimensions) {
-        //declaration.setArrayDimensions(arrayDimensions);
+        // declaration.setArrayDimensions(arrayDimensions);
     }
 
     public void swapNames(Variable other) {
@@ -484,7 +487,8 @@ public class Variable extends Identifier {
         GenericTypeArgument arg = super.getGenericTypeArgument(index, value, require);
 
         if (arg != null && arg.isGenericType()) {
-            GenericTypeArgument extracted = getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
+            GenericTypeArgument extracted =
+                getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
 
             if (extracted != null) {
                 return extracted;
@@ -495,11 +499,13 @@ public class Variable extends Identifier {
     }
 
     public GenericTypeArgument getIntelligentGenericTypeArgument(int index) {
-        return getIntelligentGenericTypeArgument(getGenericTypeArgumentList().getVisibleChild(index));
+        return getIntelligentGenericTypeArgument(
+            getGenericTypeArgumentList().getVisibleChild(index));
     }
 
     public GenericTypeArgument getIntelligentGenericTypeArgument(GenericTypeArgument arg) {
-        GenericTypeArgument extractedType = getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
+        GenericTypeArgument extractedType =
+            getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
 
         if (extractedType != null) {
             return extractedType;
@@ -551,7 +557,8 @@ public class Variable extends Identifier {
 
     public boolean isBeingModified() {
         if (getReturnedNode() == this) {
-            if (getParent() instanceof UnaryOperation && ((UnaryOperation) getParent()).getOperator().doesModify()) {
+            if (getParent() instanceof UnaryOperation
+                && ((UnaryOperation) getParent()).getOperator().doesModify()) {
                 return true;
             }
 
@@ -574,7 +581,8 @@ public class Variable extends Identifier {
                 Parameter p = (Parameter) getDeclaration();
 
                 if (p.isUnnamedParameter()) {
-                    ((LambdaMethodDeclaration) p.getParentMethod()).updateUnnamedParameterPosition();
+                    ((LambdaMethodDeclaration) p.getParentMethod())
+                        .updateUnnamedParameterPosition();
                 }
             }
 
@@ -592,22 +600,22 @@ public class Variable extends Identifier {
             return null;
         }
 
-//		Accessible ref = getReferenceNode();
-//		
-//		if (ref != null)
-//		{
-//			ClassDeclaration type = ref.toValue().getTypeClass();
-//			
-//			if (type != null && type.isOfType(getReferenceDeclaration().getParentClass()))
-//			{
-//				GenericTypeParameter param = type.getGenericTypeParameter(getType(checkCast), this);
-//				
-//				if (param != null)
-//				{
-//					return param;
-//				}
-//			}
-//		}
+        // Accessible ref = getReferenceNode();
+        //
+        // if (ref != null)
+        // {
+        // ClassDeclaration type = ref.toValue().getTypeClass();
+        //
+        // if (type != null && type.isOfType(getReferenceDeclaration().getParentClass()))
+        // {
+        // GenericTypeParameter param = type.getGenericTypeParameter(getType(checkCast), this);
+        //
+        // if (param != null)
+        // {
+        // return param;
+        // }
+        // }
+        // }
 
         return declaration.getGenericTypeParameter();
     }
@@ -633,20 +641,16 @@ public class Variable extends Identifier {
     }
 
     public Accessible getCorrespondingImplicitValue() {
-		/*if (declaration instanceof LocalDeclaration && ((LocalDeclaration)declaration).isImplicit())
-		{
-			Accessible root = getRootAccessNode();
-			
-			if (root.getParent().getParent() instanceof Assignment)
-			{
-				Assignment a = (Assignment)root.getParent().getParent();
-				
-				if (a.getAssigneeNode() == root)
-				{
-					return (Accessible)a.getAssignmentNode().getReturnedNode();
-				}
-			}
-		}*/
+        /*
+         * if (declaration instanceof LocalDeclaration &&
+         * ((LocalDeclaration)declaration).isImplicit()) { Accessible root = getRootAccessNode();
+         * 
+         * if (root.getParent().getParent() instanceof Assignment) { Assignment a =
+         * (Assignment)root.getParent().getParent();
+         * 
+         * if (a.getAssigneeNode() == root) { return
+         * (Accessible)a.getAssignmentNode().getReturnedNode(); } } }
+         */
 
         if (declaration instanceof LocalDeclaration) {
             Value v = ((LocalDeclaration) declaration).correspondingImplicit;
@@ -694,7 +698,8 @@ public class Variable extends Identifier {
         if (phase >= SyntaxTree.PHASE_METHOD_CONTENTS) {
             if (getDeclaration() != null) {
                 if (!getDeclaration().isAccessible()) {
-                    SyntaxMessage.error("The field '" + getName() + "' is not accessible", this, false);
+                    SyntaxMessage.error("The field '" + getName() + "' is not accessible", this,
+                        false);
 
                     getParent().removeChild(this);
 
@@ -707,7 +712,8 @@ public class Variable extends Identifier {
                     if (accessed.getName().equals("class")) {
                         Identifier nextAccessed = accessed.getAccessedNode();
 
-                        if (nextAccessed instanceof MethodCall && nextAccessed.getName().equals("isOfType")) {
+                        if (nextAccessed instanceof MethodCall
+                            && nextAccessed.getName().equals("isOfType")) {
                             MethodCall call = (MethodCall) nextAccessed;
                             MethodCallArgumentList argList = call.getArgumentList();
 
@@ -716,9 +722,11 @@ public class Variable extends Identifier {
                             if (args.length == 1 && args[0] instanceof StaticClassReference) {
                                 StaticClassReference ref = (StaticClassReference) args[0];
 
-                                String bool = getTypeClass().isOfType(ref.getTypeClass()) ? "true" : "false";
+                                String bool =
+                                    getTypeClass().isOfType(ref.getTypeClass()) ? "true" : "false";
 
-                                Literal literal = (Literal) Literal.decodeStatement(parent, bool, getLocationIn(), true, true);
+                                Literal literal = (Literal) Literal.decodeStatement(parent, bool,
+                                    getLocationIn(), true, true);
 
                                 if (call.doesAccess()) {
                                     literal.setAccessedNode(call.getAccessedNode());
@@ -732,7 +740,8 @@ public class Variable extends Identifier {
                             }
                         }
 
-                        StaticClassReference replacement = StaticClassReference.decodeStatement(getParent(), getTypeClassName(), getLocationIn(), true);
+                        StaticClassReference replacement = StaticClassReference.decodeStatement(
+                            getParent(), getTypeClassName(), getLocationIn(), true);
 
                         if (replacement != null) {
                             replaceWith(replacement);
@@ -754,11 +763,14 @@ public class Variable extends Identifier {
                 FieldDeclaration field = (FieldDeclaration) getDeclaration();
                 AccessorMethod accessor = field.getAccessorMethod();
 
-                if (accessor != null && !accessor.isDisabled() && (isAccessed() || getParentMethod() != accessor)) {
-                    if (field.allowsPropertyMethods() && (!field.isTangible() || getParentMethod() != field.getMutatorMethod())) {
+                if (accessor != null && !accessor.isDisabled()
+                    && (isAccessed() || getParentMethod() != accessor)) {
+                    if (field.allowsPropertyMethods()
+                        && (!field.isTangible() || getParentMethod() != field.getMutatorMethod())) {
                         String noAwait = isPropertyTrue("noAwait") ? "$" : "";
 
-                        MethodCall access = MethodCall.decodeStatement(getParent(), getName() + "()" + noAwait, getLocationIn(), true, false, accessor);
+                        MethodCall access = MethodCall.decodeStatement(getParent(),
+                            getName() + "()" + noAwait, getLocationIn(), true, false, accessor);
 
                         getParent().replace(this, access);
 
@@ -790,9 +802,12 @@ public class Variable extends Identifier {
             extraArgs += ", " + name + args.getVisibleChild(i).generateFlatInput();
         }
 
-        String syntax = getType() + "." + call.getName() + "(" + root.generateFlatInputUntil(this).toString() + extraArgs + ")";
+        String syntax = getType() + "." + call.getName() + "("
+            + root.generateFlatInputUntil(this).toString() + extraArgs + ")";
 
-        Value staticCall = SyntaxTree.decodeIdentifierAccess(root.getParent(), syntax, call.getLocationIn(), true, false).toValue();
+        Value staticCall = SyntaxTree
+            .decodeIdentifierAccess(root.getParent(), syntax, call.getLocationIn(), true, false)
+            .toValue();
 
         Identifier accessed = call.getAccessedNode();
 
@@ -818,7 +833,8 @@ public class Variable extends Identifier {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Variable clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Variable clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Variable node = new Variable(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -832,8 +848,7 @@ public class Variable extends Identifier {
     }
 
     /**
-     * Fill the given {@link Variable} with the data that is in the
-     * specified node.
+     * Fill the given {@link Variable} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -849,7 +864,7 @@ public class Variable extends Identifier {
             cloneAnnotationsTo(node);
         }
 
-        //super.cloneTo(node, cloneChildren, cloneAnnotations);
+        // super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         if (cloneChildren) {
             cloneChildrenTo(node);
@@ -859,11 +874,10 @@ public class Variable extends Identifier {
     }
 
     /**
-     * Test the Variable class type to make sure everything
-     * is working properly.
+     * Test the Variable class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -872,6 +886,7 @@ public class Variable extends Identifier {
     }
 
     public String toString() {
-        return generateFlatInput() + " of type " + generateFlatType(this);// + generateGenericType();
+        return generateFlatInput() + " of type " + generateFlatType(this);// +
+                                                                          // generateGenericType();
     }
 }

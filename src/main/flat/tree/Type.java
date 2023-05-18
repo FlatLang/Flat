@@ -43,3 +43,4 @@ public class Type {
         return cloneTo(new Type());
     }
 }
+

@@ -21,25 +21,24 @@ public class RegexLiteral extends Instantiation {
     }
 
     /**
-     * Decode the given statement into a {@link RegexLiteral} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link RegexLiteral} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link RegexLiteral} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link RegexLiteral}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link RegexLiteral} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link RegexLiteral}.
      */
-    public static RegexLiteral decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static RegexLiteral decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.startsWith("/")) {
             int endIndex = StringUtils.findEndingChar(statement, '/', 2, 1);
 
@@ -50,11 +49,14 @@ public class RegexLiteral extends Instantiation {
 
                 String escapedString = n.originalValue.replaceAll("[\\\\]", "\\\\\\\\");
 
-                Instantiation inst = Instantiation.decodeStatement(parent, "Pattern(\"" + escapedString + "\")", location, false);
+                Instantiation inst = Instantiation.decodeStatement(parent,
+                    "Pattern(\"" + escapedString + "\")", location, false);
 
                 if (inst == null) {
-                    Instantiation.decodeStatement(parent, "Pattern(\"" + escapedString + "\")", location, false);
-                    SyntaxMessage.queryError("Unable to decode regex literal '" + statement + "'", n, require);
+                    Instantiation.decodeStatement(parent, "Pattern(\"" + escapedString + "\")",
+                        location, false);
+                    SyntaxMessage.queryError("Unable to decode regex literal '" + statement + "'",
+                        n, require);
 
                     return null;
                 }
@@ -77,7 +79,8 @@ public class RegexLiteral extends Instantiation {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public RegexLiteral clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public RegexLiteral clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         RegexLiteral node = new RegexLiteral(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -91,13 +94,13 @@ public class RegexLiteral extends Instantiation {
     }
 
     /**
-     * Fill the given {@link RegexLiteral} with the data that is in the
-     * specified node.
+     * Fill the given {@link RegexLiteral} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public RegexLiteral cloneTo(RegexLiteral node, boolean cloneChildren, boolean cloneAnnotations) {
+    public RegexLiteral cloneTo(RegexLiteral node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.originalValue = originalValue;
@@ -106,11 +109,10 @@ public class RegexLiteral extends Instantiation {
     }
 
     /**
-     * Test the {@link RegexLiteral} class type to make sure everything
-     * is working properly.
+     * Test the {@link RegexLiteral} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -118,3 +120,4 @@ public class RegexLiteral extends Instantiation {
         return null;
     }
 }
+

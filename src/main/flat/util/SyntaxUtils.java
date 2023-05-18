@@ -29,14 +29,14 @@ import static flat.tree.Value.POINTER;
  * @version v0.2.41 Dec 17, 2014 at 7:48:17 PM
  */
 public class SyntaxUtils {
-    private static final int CHAR = 1, BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5, DOUBLE = 6, NUMBER = 6;
+    private static final int CHAR = 1, BYTE = 1, SHORT = 2, INT = 3, LONG = 4, FLOAT = 5,
+        DOUBLE = 6, NUMBER = 6;
 
-    public static final char[] WHITESPACE = new char[]{' ', '\t', '\n', '\r'};
+    public static final char[] WHITESPACE = new char[] {' ', '\t', '\n', '\r'};
 
     /**
-     * Get the rank of the given primitive type in terms of assignment
-     * hierarchy. For example: integers can be assigned to long types and
-     * not vice-versa.
+     * Get the rank of the given primitive type in terms of assignment hierarchy. For example:
+     * integers can be assigned to long types and not vice-versa.
      *
      * @param primitiveType The primitive type to get the rank of.
      * @return The rank of the given primitive type.
@@ -64,8 +64,7 @@ public class SyntaxUtils {
     }
 
     /**
-     * Compare the ranks of the two given primitive types and return the
-     * higher one.
+     * Compare the ranks of the two given primitive types and return the higher one.
      *
      * @param type1 The first primitive type to check.
      * @param type2 The second primitive type to check.
@@ -83,17 +82,20 @@ public class SyntaxUtils {
     }
 
     /**
-     * Check to see if the given primitive is compatible with the required
-     * primitive type.<br>
+     * Check to see if the given primitive is compatible with the required primitive type.<br>
      * <br>
      * For example:<br>
-     * <blockquote><pre>Int abc = 'a'</pre></blockquote>
-     * In the previous code sample, Int is the required type and Char is
-     * the given type.
+     * <blockquote>
+     * 
+     * <pre>
+     * Int abc = 'a'
+     * </pre>
+     * 
+     * </blockquote> In the previous code sample, Int is the required type and Char is the given
+     * type.
      *
      * @param required The required primitive type.
-     * @param given    The given primitive type to check against the required
-     *                 primitive type.
+     * @param given The given primitive type to check against the required primitive type.
      * @return Whether or not the two primitive types are compatible.
      */
     public static boolean arePrimitiveTypesCompatible(String required, String given) {
@@ -124,20 +126,22 @@ public class SyntaxUtils {
      * <br>
      * Primitive types include:
      * <ul>
-     * 	<li>Int</li>
-     * 	<li>Char</li>
-     * 	<li>Long</li>
-     * 	<li>Bool</li>
-     * 	<li>Short</li>
-     * 	<li>Float</li>
-     * 	<li>Double</li>
+     * <li>Int</li>
+     * <li>Char</li>
+     * <li>Long</li>
+     * <li>Bool</li>
+     * <li>Short</li>
+     * <li>Float</li>
+     * <li>Double</li>
      * </ul>
      *
      * @param type The type to check.
      * @return Whether or not the type is primitive.
      */
     public static boolean isPrimitiveType(String type) {
-        return type == null || type.equals("Int") || type.equals("Char") || type.equals("Long") || type.equals("Bool") || type.equals("Short") || type.equals("Float") || type.equals("Double") || type.equals("Byte");
+        return type == null || type.equals("Int") || type.equals("Char") || type.equals("Long")
+            || type.equals("Bool") || type.equals("Short") || type.equals("Float")
+            || type.equals("Double") || type.equals("Byte");
     }
 
     public static String getPrimitiveExternalType(String type) {
@@ -199,11 +203,11 @@ public class SyntaxUtils {
      * <br>
      * Primitive types include:
      * <ul>
-     * 	<li>int</li>
-     * 	<li>char</li>
-     * 	<li>long</li>
-     * 	<li>float</li>
-     * 	<li>double</li>
+     * <li>int</li>
+     * <li>char</li>
+     * <li>long</li>
+     * <li>float</li>
+     * <li>double</li>
      * </ul>
      *
      * @param type The type to check.
@@ -290,8 +294,8 @@ public class SyntaxUtils {
      * Find the next available dot operator index within the given String.
      *
      * @param str The String to find the dot operator within.
-     * @return The index of the dot operator. If a dot operator is not
-     * found, then -1 is returned instead.
+     * @return The index of the dot operator. If a dot operator is not found, then -1 is returned
+     *         instead.
      */
     public static int findDotOperator(String str) {
         return findCharInBaseScope(str, '.', 0);
@@ -300,10 +304,10 @@ public class SyntaxUtils {
     /**
      * Find the next available dot operator index within the given String.
      *
-     * @param str   The String to find the dot operator within.
+     * @param str The String to find the dot operator within.
      * @param start The index to start the search at.
-     * @return The index of the dot operator. If a dot operator is not
-     * found, then -1 is returned instead.
+     * @return The index of the dot operator. If a dot operator is not found, then -1 is returned
+     *         instead.
      */
     public static int findDotOperator(String str, int start) {
         return findCharInBaseScope(str, '.', start);
@@ -313,8 +317,8 @@ public class SyntaxUtils {
      * Find the next available chain operator index within the given String.
      *
      * @param str The String to find the chain operator within.
-     * @return The index of the chain operator. If a chain operator is not
-     * found, then -1 is returned instead.
+     * @return The index of the chain operator. If a chain operator is not found, then -1 is
+     *         returned instead.
      */
     public static int findChainOperator(String str) {
         return findCharInBaseScope(str, ':', 0);
@@ -323,10 +327,10 @@ public class SyntaxUtils {
     /**
      * Find the next available chain operator index within the given String.
      *
-     * @param str   The String to find the chain operator within.
+     * @param str The String to find the chain operator within.
      * @param start The index to start the search at.
-     * @return The index of the chain operator. If a chain operator is not
-     * found, then -1 is returned instead.
+     * @return The index of the chain operator. If a chain operator is not found, then -1 is
+     *         returned instead.
      */
     public static int findChainOperator(String str, int start) {
         return findCharInBaseScope(str, ':', start);
@@ -336,8 +340,8 @@ public class SyntaxUtils {
      * Find the next available dot or chain operator index within the given String.
      *
      * @param str The String to find the dot or chain operator within.
-     * @return The index of the dot or chain operator. If a dot or chain operator is not
-     * found, then -1 is returned instead.
+     * @return The index of the dot or chain operator. If a dot or chain operator is not found, then
+     *         -1 is returned instead.
      */
     public static int findDotOrChainOperator(String str) {
         return findDotOrChainOperator(str, 0);
@@ -346,22 +350,21 @@ public class SyntaxUtils {
     /**
      * Find the next available dot or chain operator index within the given String.
      *
-     * @param str   The String to find the dot or chain operator within.
+     * @param str The String to find the dot or chain operator within.
      * @param start The index to start the search at.
-     * @return The index of the dot or chain operator. If a dot or chain operator is not
-     * found, then -1 is returned instead.
+     * @return The index of the dot or chain operator. If a dot or chain operator is not found, then
+     *         -1 is returned instead.
      */
     public static int findDotOrChainOperator(String str, int start) {
-        return findCharInBaseScope(str, new char[]{'.', ':'}, start);
+        return findCharInBaseScope(str, new char[] {'.', ':'}, start);
     }
 
     /**
-     * Check to see if the given char exists within the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Check to see if the given char exists within the base scope of the given haystack String. The
+     * base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needle   The character to search for in the String.
+     * @param needle The character to search for in the String.
      * @return Whether or not the char exists within the base scope.
      */
     public static boolean containsCharInBaseScope(String haystack, char needle) {
@@ -369,116 +372,113 @@ public class SyntaxUtils {
     }
 
     /**
-     * Find the next available instance of the given character in the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Find the next available instance of the given character in the base scope of the given
+     * haystack String. The base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needle   The character to search for in the String.
-     * @return The index of the character. If the character is not
-     * found, then -1 is returned instead.
+     * @param needle The character to search for in the String.
+     * @return The index of the character. If the character is not found, then -1 is returned
+     *         instead.
      */
     public static int findCharInBaseScope(String haystack, char needle) {
         return findCharInBaseScope(haystack, needle, 0);
     }
 
     /**
-     * Find the next available instance of the given character in the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Find the next available instance of the given character in the base scope of the given
+     * haystack String. The base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needle   The character to search for in the String.
-     * @param start    The index to start the search at.
-     * @return The index of the character. If the character is not
-     * found, then -1 is returned instead.
+     * @param needle The character to search for in the String.
+     * @param start The index to start the search at.
+     * @return The index of the character. If the character is not found, then -1 is returned
+     *         instead.
      */
     public static int findCharInBaseScope(String haystack, char needle, int start) {
         return findCharInBaseScope(haystack, needle, start, 0);
     }
 
-    public static int findCharInBaseScope(String haystack, char needle, int start, int searchGenerics) {
-        return findCharInBaseScope(haystack, new char[]{needle}, start, searchGenerics);
+    public static int findCharInBaseScope(String haystack, char needle, int start,
+        int searchGenerics) {
+        return findCharInBaseScope(haystack, new char[] {needle}, start, searchGenerics);
     }
 
     /**
-     * Find the next available instance of the given character in the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Find the next available instance of the given character in the base scope of the given
+     * haystack String. The base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needles  The characters to search for in the String.
-     * @return The index of the character. If the character is not
-     * found, then -1 is returned instead.
+     * @param needles The characters to search for in the String.
+     * @return The index of the character. If the character is not found, then -1 is returned
+     *         instead.
      */
     public static int findCharInBaseScope(String haystack, char[] needles) {
         return findCharInBaseScope(haystack, needles, 0);
     }
 
     /**
-     * Find the next available instance of the given character in the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Find the next available instance of the given character in the base scope of the given
+     * haystack String. The base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needles  The characters to search for in the String.
-     * @param start    The index to start the search at.
-     * @return The index of the character. If the character is not
-     * found, then -1 is returned instead.
+     * @param needles The characters to search for in the String.
+     * @param start The index to start the search at.
+     * @return The index of the character. If the character is not found, then -1 is returned
+     *         instead.
      */
     public static int findCharInBaseScope(String haystack, char needles[], int start) {
         return findCharInBaseScope(haystack, needles, start, 0);
     }
 
-    public static int findCharInBaseScope(String haystack, char needles[], int start, int searchGenerics) {
-        return findStringInBaseScope(haystack, StringUtils.toString(needles), start, searchGenerics);
+    public static int findCharInBaseScope(String haystack, char needles[], int start,
+        int searchGenerics) {
+        return findStringInBaseScope(haystack, StringUtils.toString(needles), start,
+            searchGenerics);
     }
 
     /**
-     * Find the next available instance of the given String in the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Find the next available instance of the given String in the base scope of the given haystack
+     * String. The base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needle   The String to search for in the String.
-     * @return The index to search for in the String. If the String is
-     * not found, then -1 is returned instead.
+     * @param needle The String to search for in the String.
+     * @return The index to search for in the String. If the String is not found, then -1 is
+     *         returned instead.
      */
     public static int findStringInBaseScope(String haystack, String needle) {
         return findStringInBaseScope(haystack, needle, 0);
     }
 
     /**
-     * Find the next available instance of the given String in the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Find the next available instance of the given String in the base scope of the given haystack
+     * String. The base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needle   The String to search for in the String.
-     * @param start    The index to start the search at.
-     * @return The index to search for in the String. If the String is
-     * not found, then -1 is returned instead.
+     * @param needle The String to search for in the String.
+     * @param start The index to start the search at.
+     * @return The index to search for in the String. If the String is not found, then -1 is
+     *         returned instead.
      */
     public static int findStringInBaseScope(String haystack, String needle, int start) {
-        return findStringInBaseScope(haystack, new String[]{needle}, start);
+        return findStringInBaseScope(haystack, new String[] {needle}, start);
     }
 
     /**
-     * Find the next available instance of the given String in the
-     * base scope of the given haystack String. The base scope means
-     * outside of any quotes, parenthesis, and/or brackets.
+     * Find the next available instance of the given String in the base scope of the given haystack
+     * String. The base scope means outside of any quotes, parenthesis, and/or brackets.
      *
      * @param haystack The String to find the character within.
-     * @param needles  The String to search for in the String.
-     * @param start    The index to start the search at.
-     * @return The index to search for in the String. If the String is
-     * not found, then -1 is returned instead.
+     * @param needles The String to search for in the String.
+     * @param start The index to start the search at.
+     * @return The index to search for in the String. If the String is not found, then -1 is
+     *         returned instead.
      */
     public static int findStringInBaseScope(String haystack, String needles[], int start) {
         return findStringInBaseScope(haystack, needles, start, 0);
     }
 
-    public static int findStringInBaseScope(String haystack, String needles[], int start, int searchGenerics) {
+    public static int findStringInBaseScope(String haystack, String needles[], int start,
+        int searchGenerics) {
         while (start < haystack.length()) {
             char c = haystack.charAt(start);
 
@@ -509,15 +509,15 @@ public class SyntaxUtils {
                     return -1;
                 }
             }
-//			else if (c == '{')
-//			{
-//				start = StringUtils.findEndingMatch(haystack, start, '{', '}') + 1;
-//
-//				if (start <= 0)
-//				{
-//					return -1;
-//				}
-//			}
+            // else if (c == '{')
+            // {
+            // start = StringUtils.findEndingMatch(haystack, start, '{', '}') + 1;
+            //
+            // if (start <= 0)
+            // {
+            // return -1;
+            // }
+            // }
             else if (searchGenerics != 0 && c == '<') {
                 if (searchGenerics == 1) {
                     start = StringUtils.findEndingMatch(haystack, start, '<', '>') + 1;
@@ -529,7 +529,9 @@ public class SyntaxUtils {
                     int i = StringUtils.findEndingMatch(haystack, start, '<', '>') + 1;
 
                     if (i > 0) {
-                        char e = i < haystack.length() ? StringUtils.findNextNonWhitespaceChar(haystack, i) : 0;
+                        char e = i < haystack.length()
+                            ? StringUtils.findNextNonWhitespaceChar(haystack, i)
+                            : 0;
 
                         if (i >= haystack.length() || e == '(' || e == ',') {
                             start = i;
@@ -543,10 +545,10 @@ public class SyntaxUtils {
                     throw new RuntimeException("Invalid searchGenerics value of " + searchGenerics);
                 }
             }
-//			else if (c == '=')
-//			{
-//				return -1;
-//			}
+            // else if (c == '=')
+            // {
+            // return -1;
+            // }
             else {
                 start++;
             }
@@ -603,12 +605,10 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get whether or not the given node is a String literal,
-     * or variable.
+     * Get whether or not the given node is a String literal, or variable.
      *
      * @param node The node to verify whether or not it is a String.
-     * @return Whether or not the given node is a String literal,
-     * or variable.
+     * @return Whether or not the given node is a String literal, or variable.
      */
     public static boolean isString(Node node) {
         if (node instanceof Literal && !((Literal) node).doesAccess()) {
@@ -628,8 +628,8 @@ public class SyntaxUtils {
     /**
      * Get the class name of the type that the literal value implies.<br>
      * <br>
-     * For example: "this is a String literal" would return "String"
-     * because String is the class name of the String literal type.
+     * For example: "this is a String literal" would return "String" because String is the class
+     * name of the String literal type.
      *
      * @param literal The literal to find the type name of.
      * @return The class name of the type that the literal value implies.
@@ -637,7 +637,8 @@ public class SyntaxUtils {
     public static String getLiteralTypeName(Node node, String literal) {
         if (literal.equals(Literal.NULL_IDENTIFIER)) {
             return "Object";
-        } else if (literal.equals(Literal.TRUE_IDENTIFIER) || literal.equals(Literal.FALSE_IDENTIFIER)) {
+        } else if (literal.equals(Literal.TRUE_IDENTIFIER)
+            || literal.equals(Literal.FALSE_IDENTIFIER)) {
             return "Bool";
         } else if (isCharLiteral(literal)) {
             return "Char";
@@ -659,7 +660,8 @@ public class SyntaxUtils {
                     return "Long";
                 }
 
-                SyntaxMessage.error("Number literal out of primitive number range of [" + Long.MIN_VALUE + ", " + Long.MAX_VALUE + "]", node);
+                SyntaxMessage.error("Number literal out of primitive number range of ["
+                    + Long.MIN_VALUE + ", " + Long.MAX_VALUE + "]", node);
 
                 return null;
             } else if (isDouble(literal)) {
@@ -671,7 +673,8 @@ public class SyntaxUtils {
                     return "Double";
                 }
 
-                SyntaxMessage.error("Decimal literal out of primitive decimal range of [" + Double.MIN_VALUE + ", " + Double.MAX_VALUE + "]", node);
+                SyntaxMessage.error("Decimal literal out of primitive decimal range of ["
+                    + Double.MIN_VALUE + ", " + Double.MAX_VALUE + "]", node);
 
                 return null;
             } else if (isHexadecimal(literal)) {
@@ -683,32 +686,31 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get whether or not the given String value represents one of the
-     * following:
+     * Get whether or not the given String value represents one of the following:
      * <ul>
-     * 	<li>{@link #isStringLiteral(String) String literal}</li>
-     * 	<li>{@link #isCharLiteral(String) Character literal}</li>
-     * 	<li>{@link #isNumber(String) Number literal}</li>
+     * <li>{@link #isStringLiteral(String) String literal}</li>
+     * <li>{@link #isCharLiteral(String) Character literal}</li>
+     * <li>{@link #isNumber(String) Number literal}</li>
      * </ul>
      *
      * @param value The String of text to validate.
      * @return Whether or not the given String value represents a literal.
      */
     public static boolean isLiteral(Node node, String value) {
-        return getLiteralTypeName(node, value) != null;//isCharLiteral(value) || isStringLiteral(value) || isNumber(value);
+        return getLiteralTypeName(node, value) != null;// isCharLiteral(value) ||
+                                                       // isStringLiteral(value) || isNumber(value);
     }
 
     /**
-     * Get whether or not the given String value represents a character
-     * literal. A character literal consists of a a single character
-     * surrounded by single quotes.<br>
+     * Get whether or not the given String value represents a character literal. A character literal
+     * consists of a a single character surrounded by single quotes.<br>
      * <br>
      * Possible inputs:
      * <ul>
-     * 	<li>'a'</li>
-     * 	<li>'2'</li>
-     * 	<li>'%'</li>
-     * 	<li>'/'</li>
+     * <li>'a'</li>
+     * <li>'2'</li>
+     * <li>'%'</li>
+     * <li>'/'</li>
      * </ul>
      *
      * @param value The String of text to validate.
@@ -719,23 +721,23 @@ public class SyntaxUtils {
             return value.charAt(0) == '\'' && value.charAt(value.length() - 1) == '\'';
         }
         if (value.length() == 4) {
-            return value.charAt(0) == '\'' && value.charAt(1) == '\\' && value.charAt(value.length() - 1) == '\'';
+            return value.charAt(0) == '\'' && value.charAt(1) == '\\'
+                && value.charAt(value.length() - 1) == '\'';
         }
 
         return false;
     }
 
     /**
-     * Get whether or not the given String value represents a String
-     * literal. A String literal consists of a collection of characters
-     * surrounded by double quotes.<br>
+     * Get whether or not the given String value represents a String literal. A String literal
+     * consists of a collection of characters surrounded by double quotes.<br>
      * <br>
      * Possible inputs:
      * <ul>
-     * 	<li>"This is + asdf-523$#$%#4 a String input"</li>
-     * 	<li>"123123123"</li>
-     * 	<li>"More string inputs"</li>
-     * 	<li>"\"Fake quotes around it.\""</li>
+     * <li>"This is + asdf-523$#$%#4 a String input"</li>
+     * <li>"123123123"</li>
+     * <li>"More string inputs"</li>
+     * <li>"\"Fake quotes around it.\""</li>
      * </ul>
      *
      * @param value The String of text to validate.
@@ -814,10 +816,10 @@ public class SyntaxUtils {
      * <br>
      * Possible inputs:
      * <ul>
-     * 	<li>-1231412</li>
-     * 	<li>1231412</li>
-     * 	<li>4141.12312</li>
-     * 	<li>-4141.12312</li>
+     * <li>-1231412</li>
+     * <li>1231412</li>
+     * <li>4141.12312</li>
+     * <li>-4141.12312</li>
      * </ul>
      *
      * @param value The String of text to validate.
@@ -841,7 +843,8 @@ public class SyntaxUtils {
         int decimalIndex = value.indexOf('.');
         String decimal = decimalIndex >= 0 ? value.substring(decimalIndex) : "";
 
-        StringBuilder output = new StringBuilder(value.substring(negative ? 1 : 0, decimalIndex >= 0 ? decimalIndex : value.length()));
+        StringBuilder output = new StringBuilder(
+            value.substring(negative ? 1 : 0, decimalIndex >= 0 ? decimalIndex : value.length()));
 
         for (int i = 4; i < output.length(); i += 3) {
             if (output.charAt(output.length() - i) != '_') {
@@ -859,10 +862,10 @@ public class SyntaxUtils {
      * <br>
      * Possible inputs:
      * <ul>
-     * 	<li>-1231412</li>
-     * 	<li>1231412</li>
-     * 	<li>4141.12312</li>
-     * 	<li>-4141.12312</li>
+     * <li>-1231412</li>
+     * <li>1231412</li>
+     * <li>4141.12312</li>
+     * <li>-4141.12312</li>
      * </ul>
      *
      * @param value The String of text to validate.
@@ -915,10 +918,10 @@ public class SyntaxUtils {
      * <br>
      * Possible inputs:
      * <ul>
-     * 	<li>-1231412</li>
-     * 	<li>1231412</li>
-     * 	<li>4141.12312</li>
-     * 	<li>-4141.12312</li>
+     * <li>-1231412</li>
+     * <li>1231412</li>
+     * <li>4141.12312</li>
+     * <li>-4141.12312</li>
      * </ul>
      *
      * @param value The String of text to validate.
@@ -975,18 +978,20 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get whether or not the given String is a valid variable assignment.
-     * Assignments contain an identifier or array access on the left
-     * hand side of the assignment, and anything that returns a value on
-     * the right hand side.<br>
+     * Get whether or not the given String is a valid variable assignment. Assignments contain an
+     * identifier or array access on the left hand side of the assignment, and anything that returns
+     * a value on the right hand side.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * variable_NAME1 = (calculateSize() + 5) / array[index]</pre></blockquote>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * variable_NAME1 = (calculateSize() + 5) / array[index]
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param statement The String of text to validate.
-     * @return Whether or not the given String is a valid variable
-     * assignment.
+     * @return Whether or not the given String is a valid variable assignment.
      */
     public static boolean isVariableAssignment(String statement) {
         int index = findCharInBaseScope(statement, '=');
@@ -995,10 +1000,11 @@ public class SyntaxUtils {
             return false;
         }
 
-        int binary = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, index - 1).getStart();
+        int binary =
+            StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, index - 1).getStart();
 
         if (binary - 1 != index && binary != index && binary != index - 1) {
-            binary = StringUtils.findStrings(statement, new String[]{"=>"}, index - 1).getStart();
+            binary = StringUtils.findStrings(statement, new String[] {"=>"}, index - 1).getStart();
 
             return binary - 1 != index && binary != index && binary != index - 1;
         }
@@ -1007,13 +1013,13 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get whether or not the given String is a valid identifier.
-     * Identifiers can contain characters of the following types:
+     * Get whether or not the given String is a valid identifier. Identifiers can contain characters
+     * of the following types:
      * <ul>
-     * 	<li>A-Z</li>
-     * 	<li>a-z</li>
-     * 	<li>0-9</li>
-     * 	<li>The '_' character (underscore)</li>
+     * <li>A-Z</li>
+     * <li>a-z</li>
+     * <li>0-9</li>
+     * <li>The '_' character (underscore)</li>
      * </ul>
      * It should also be noted that numbers cannot start an identifier.
      *
@@ -1034,8 +1040,7 @@ public class SyntaxUtils {
      * For example: "<code>getName().publicVarName.methodName().var[72]</code>"
      *
      * @param value The String of text to validate.
-     * @return Whether or not the given String is a valid identifier
-     * access.
+     * @return Whether or not the given String is a valid identifier access.
      */
     public static boolean isValidIdentifierAccess(String value) {
         if (value.length() <= 0) {
@@ -1062,9 +1067,13 @@ public class SyntaxUtils {
     /**
      * Get whether or not the given statement is an array access.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * variableName[index]</pre></blockquote>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * variableName[index]
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param value The statement to test.
      * @return Whether or not the given statement is an array access.
@@ -1078,20 +1087,25 @@ public class SyntaxUtils {
     /**
      * Get whether or not the given statement is a method call.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * containingInstance.methodName(arguments, arguments, ..., arguments)</pre></blockquote>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * containingInstance.methodName(arguments, arguments, ..., arguments)
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param statement The statement to test.
      * @return Whether or not the given statement is a method call.
      */
     public static boolean isMethodCall(String statement) {
-//		Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
-//
-//		if (bounds.getStart() == 0)
-//		{
-//			return StringUtils.findEndingMatch(statement, bounds.getEnd() - 1, '(', ')') == statement.length() - 1;
-//		}
+        // Bounds bounds = Regex.boundsOf(statement, Patterns.PRE_METHOD_CALL);
+        //
+        // if (bounds.getStart() == 0)
+        // {
+        // return StringUtils.findEndingMatch(statement, bounds.getEnd() - 1, '(', ')') ==
+        // statement.length() - 1;
+        // }
 
         boolean checkedIdentifier = false;
         int index = statement.indexOf('<');
@@ -1119,7 +1133,8 @@ public class SyntaxUtils {
         } else {
             index = statement.indexOf('(', index);
 
-            if (index < 0 || !checkedIdentifier && !SyntaxUtils.isValidIdentifier(statement.substring(0, index).trim())) {
+            if (index < 0 || !checkedIdentifier
+                && !SyntaxUtils.isValidIdentifier(statement.substring(0, index).trim())) {
                 return false;
             }
 
@@ -1134,16 +1149,18 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get whether or not the given statement is an array
-     * initialization.<br>
+     * Get whether or not the given statement is an array initialization.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * new dataType[size]...[size]</pre></blockquote>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * new dataType[size]...[size]
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param statement The statement to test.
-     * @return Whether or not the given statement is an array
-     * initialization.
+     * @return Whether or not the given statement is an array initialization.
      */
     public static boolean isArrayInitialization(String statement) {
         String withoutGenerics = statement;
@@ -1162,11 +1179,9 @@ public class SyntaxUtils {
     }
 
     /**
-     * Calculate the Bounds of the data that is within the parentheses
-     * in the given statement.
+     * Calculate the Bounds of the data that is within the parentheses in the given statement.
      *
-     * @param parent    The node to throw an error with if anything goes
-     *                  wrong.
+     * @param parent The node to throw an error with if anything goes wrong.
      * @param statement The statement containing parentheses.
      * @return The bounds of the data within the parentheses.
      */
@@ -1191,37 +1206,34 @@ public class SyntaxUtils {
     }
 
     /**
-     * Calculate the Bounds of the data that is within the parentheses
-     * in the given statement.
+     * Calculate the Bounds of the data that is within the parentheses in the given statement.
      *
-     * @param parent    The node to throw an error with if anything goes
-     *                  wrong.
+     * @param parent The node to throw an error with if anything goes wrong.
      * @param statement The statement containing parentheses.
      * @return The bounds of the data within the parentheses.
      */
     public static Bounds findInnerParenthesesBounds(Node parent, String statement) {
-        return StringUtils.removeSurroundingParenthesis(statement, findParenthesesBounds(parent, statement));
+        return StringUtils.removeSurroundingParenthesis(statement,
+            findParenthesesBounds(parent, statement));
     }
 
     /**
-     * Calculate the number of dimensions that the given array has, if
-     * any.<br>
+     * Calculate the number of dimensions that the given array has, if any.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * int array[][][] = new int[5][6][7];</pre></blockquote>
-     * The above array declaration has three dimensions. In essence, the
-     * number of dimensions is the amount of brackets that the array
-     * variable declaration contains.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * int array[][][] = new int[5][6][7];
+     * </pre>
+     * 
+     * </blockquote> The above array declaration has three dimensions. In essence, the number of
+     * dimensions is the amount of brackets that the array variable declaration contains.<br>
      * <br>
-     * However, you need to pass only one part of the above code example.
-     * Either pass the declaration, or the instantiation, or else the
-     * number of dimensions will be counted twice.
+     * However, you need to pass only one part of the above code example. Either pass the
+     * declaration, or the instantiation, or else the number of dimensions will be counted twice.
      *
-     * @param statement       The statement to find the number of dimensions
-     *                        from.
-     * @param contentPossible Whether or not content is allowed to exist
-     *                        within the set of brackets.
+     * @param statement The statement to find the number of dimensions from.
+     * @param contentPossible Whether or not content is allowed to exist within the set of brackets.
      * @return The number of dimensions that the given array has, if any.
      */
     public static int findArrayDimensions(String statement, boolean contentPossible) {
@@ -1229,25 +1241,23 @@ public class SyntaxUtils {
     }
 
     /**
-     * Calculate the number of dimensions that the given array has, if
-     * any.<br>
+     * Calculate the number of dimensions that the given array has, if any.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * int array[][][] = new int[5][6][7];</pre></blockquote>
-     * The above array declaration has three dimensions. In essence, the
-     * number of dimensions is the amount of brackets that the array
-     * variable declaration contains.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * int array[][][] = new int[5][6][7];
+     * </pre>
+     * 
+     * </blockquote> The above array declaration has three dimensions. In essence, the number of
+     * dimensions is the amount of brackets that the array variable declaration contains.<br>
      * <br>
-     * However, you need to pass only one part of the above code example.
-     * Either pass the declaration, or the instantiation, or else the
-     * number of dimensions will be counted twice.
+     * However, you need to pass only one part of the above code example. Either pass the
+     * declaration, or the instantiation, or else the number of dimensions will be counted twice.
      *
-     * @param statement       The statement to find the number of dimensions
-     *                        from.
-     * @param start           The index to start the search at.
-     * @param contentPossible Whether or not content is allowed to exist
-     *                        within the set of brackets.
+     * @param statement The statement to find the number of dimensions from.
+     * @param start The index to start the search at.
+     * @param contentPossible Whether or not content is allowed to exist within the set of brackets.
      * @return The number of dimensions that the given array has, if any.
      */
     public static int findArrayDimensions(String statement, int start, boolean contentPossible) {
@@ -1285,19 +1295,25 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get whether or not the given Method is a valid main method.
-     * The main method has the method header as the following:
-     * <blockquote><pre>
+     * Get whether or not the given Method is a valid main method. The main method has the method
+     * header as the following: <blockquote>
+     * 
+     * <pre>
      * public static void main(String args[])
      * {
      * 	...
-     * }</pre></blockquote>
+     * }
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param methodDeclaration The Method instance to validate.
      * @return Whether or not the given Method is a valid main method.
      */
     public static boolean isMainMethod(BodyMethodDeclaration methodDeclaration) {
-        if (methodDeclaration.getName() != null && methodDeclaration.getName().equals("main") && methodDeclaration.isStatic() && methodDeclaration.getType() == null && methodDeclaration.getVisibility() == FieldDeclaration.PUBLIC) {
+        if (methodDeclaration.getName() != null && methodDeclaration.getName().equals("main")
+            && methodDeclaration.isStatic() && methodDeclaration.getType() == null
+            && methodDeclaration.getVisibility() == FieldDeclaration.PUBLIC) {
             ParameterList<Parameter> params = methodDeclaration.getParameterList();
 
             if (params.getNumVisibleChildren() == 1) {
@@ -1313,32 +1329,31 @@ public class SyntaxUtils {
     }
 
     /**
-     * Check to see if the given Variable needs to be set as
-     * volatile to retain its value after a throw statement
-     * has been thrown.
+     * Check to see if the given Variable needs to be set as volatile to retain its value after a
+     * throw statement has been thrown.
      *
      * @param variable The Variable to check.
      */
     public static void checkVolatile(Variable variable) {
         if (variable.isLocal()) {
-            if (variable.getParentTry() != null && variable.getDeclaration().getParentTry() != variable.getParentTry()) {
+            if (variable.getParentTry() != null
+                && variable.getDeclaration().getParentTry() != variable.getParentTry()) {
                 variable.setVolatile(true);
             }
         }
     }
 
     /**
-     * Get whether or not the given Declaration is able to be accessed
-     * from the given ClassDeclaration context.
+     * Get whether or not the given Declaration is able to be accessed from the given
+     * ClassDeclaration context.
      *
-     * @param accessedFrom The ClassDeclaration context that the Declaration
-     *                     was accessed from.
-     * @param declaration  The Declaration that was accessed from the
-     *                     given ClassDeclaration context.
-     * @return Whether or not the given Declaration is able to be
-     * accessed from the given ClassDeclaration context.
+     * @param accessedFrom The ClassDeclaration context that the Declaration was accessed from.
+     * @param declaration The Declaration that was accessed from the given ClassDeclaration context.
+     * @return Whether or not the given Declaration is able to be accessed from the given
+     *         ClassDeclaration context.
      */
-    private static boolean isAccessibleFrom(ClassDeclaration accessedFrom, InstanceDeclaration declaration) {
+    private static boolean isAccessibleFrom(ClassDeclaration accessedFrom,
+        InstanceDeclaration declaration) {
         if (declaration.getParentClass(true).isAncestorOf(accessedFrom, true)) {
             return true;
         }
@@ -1349,18 +1364,19 @@ public class SyntaxUtils {
     }
 
     /**
-     * Validate that the given MethodDeclaration can be accessed through
-     * the given Identifier accessor.
+     * Validate that the given MethodDeclaration can be accessed through the given Identifier
+     * accessor.
      *
      * @param accessor The Identifier that is accessing the method.
      * @param accessed The MethodDeclaration that was accessed.
-     * @param parent   The parent to use as the context for the error,
-     *                 if one happens.
+     * @param parent The parent to use as the context for the error, if one happens.
      */
-    public static void validateMethodAccess(Accessible accessor, MethodDeclaration accessed, Node parent) {
+    public static void validateMethodAccess(Accessible accessor, MethodDeclaration accessed,
+        Node parent) {
         if (!accessed.isExternal() && !accessed.isStatic()) {
             if (accessor instanceof ClassDeclaration) {
-                SyntaxMessage.error("Cannot call a non-static method from a static context", parent);
+                SyntaxMessage.error("Cannot call a non-static method from a static context",
+                    parent);
             }
         }
 
@@ -1374,22 +1390,23 @@ public class SyntaxUtils {
 
         if (!isAccessibleFrom(((Value) accessor).getParentClass(), accessed)) {
             isAccessibleFrom(((Value) accessor).getParentClass(), accessed);
-            SyntaxMessage.error("Method '" + accessed.getName() + "' of class '" + accessed.getParentClass().classInstanceDeclaration + "' is not visible from class '" + ((Value) accessor).getParentClass().getClassLocation() + "'", parent);
+            SyntaxMessage.error("Method '" + accessed.getName() + "' of class '"
+                + accessed.getParentClass().classInstanceDeclaration
+                + "' is not visible from class '"
+                + ((Value) accessor).getParentClass().getClassLocation() + "'", parent);
         }
     }
 
     /**
-     * Get the ClassDeclaration that contains the accessed identifier. For more
-     * information on what an identifierAccess looks like, see
-     * {@link #isValidIdentifierAccess(String)}.
+     * Get the ClassDeclaration that contains the accessed identifier. For more information on what
+     * an identifierAccess looks like, see {@link #isValidIdentifierAccess(String)}.
      *
-     * @param reference        The ClassDeclaration context that the identifier was
-     *                         accessed from.
-     * @param identifierAccess The trace of the identifier that was
-     *                         accessed.
+     * @param reference The ClassDeclaration context that the identifier was accessed from.
+     * @param identifierAccess The trace of the identifier that was accessed.
      * @return The ClassDeclaration that contains the accessed identifier.
      */
-    public static ClassDeclaration getClassType(ClassDeclaration reference, String identifierAccess) {
+    public static ClassDeclaration getClassType(ClassDeclaration reference,
+        String identifierAccess) {
         if (!isValidIdentifierAccess(identifierAccess)) {
             return null;
         }
@@ -1411,10 +1428,8 @@ public class SyntaxUtils {
     /**
      * Get the ClassDeclaration that contains the accessed identifier.
      *
-     * @param reference   The ClassDeclaration context that the identifier was
-     *                    accessed from.
-     * @param identifiers A list of identifiers leading up to the
-     *                    identifier that is being accessed.
+     * @param reference The ClassDeclaration context that the identifier was accessed from.
+     * @param identifiers A list of identifiers leading up to the identifier that is being accessed.
      * @return The ClassDeclaration that contains the accessed identifier.
      */
     private static ClassDeclaration getClassType(ClassDeclaration reference, String identifiers[]) {
@@ -1429,7 +1444,8 @@ public class SyntaxUtils {
         if (!identifier.equals("this")) {
             identifier = getIdentifierName(identifier);
 
-            FileDeclaration f = (FileDeclaration) reference.getAncestorOfType(FileDeclaration.class);
+            FileDeclaration f =
+                (FileDeclaration) reference.getAncestorOfType(FileDeclaration.class);
 
             if (f.getImportList().containsImport(identifier)) {
                 return f.getProgram().getClassDeclaration(identifier);
@@ -1438,7 +1454,8 @@ public class SyntaxUtils {
             InstanceDeclaration dec = reference.getDeclaration(identifier);
 
             if (!isAccessibleFrom(reference, dec)) {
-                SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible", reference.getController());
+                SyntaxMessage.error("Variable '" + dec.getName() + "' is not visible",
+                    reference.getController());
             }
 
             current = dec.getProgram().getClassDeclaration(dec.getType());
@@ -1456,28 +1473,29 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get the identifier name that is represented by the given access
-     * String variable.<br>
+     * Get the identifier name that is represented by the given access String variable.<br>
      * <br>
      * For example:
      * <ul>
-     * 	<li><code>testName()</code> <i>returns</i> <code>testName</code></li>
-     * 	<li><code>arrayAccess[54]</code> <i>returns</i> <code>arrayAccess</code></li>
-     * 	<li><code>idName32</code> <i>returns</i> <code>idName32</code></li>
-     * 	<li><code>methodCall (String name, int args)</code> <i>returns</i> <code>methodCall</code></li>
+     * <li><code>testName()</code> <i>returns</i> <code>testName</code></li>
+     * <li><code>arrayAccess[54]</code> <i>returns</i> <code>arrayAccess</code></li>
+     * <li><code>idName32</code> <i>returns</i> <code>idName32</code></li>
+     * <li><code>methodCall (String name, int args)</code> <i>returns</i>
+     * <code>methodCall</code></li>
      * </ul>
      *
-     * @param access The identifier access to get the identifier name
-     *               from.
+     * @param access The identifier access to get the identifier name from.
      * @return The name of the identifier from given access String.
      */
     public static String getIdentifierName(String access) {
         if (isMethodCall(access)) {
-            int endIndex = StringUtils.findNextNonWhitespaceIndex(access, access.indexOf('(') - 1, -1) + 1;
+            int endIndex =
+                StringUtils.findNextNonWhitespaceIndex(access, access.indexOf('(') - 1, -1) + 1;
 
             access = access.substring(0, endIndex);
         } else if (isValidArrayAccess(access)) {
-            int endIndex = StringUtils.findNextNonWhitespaceIndex(access, access.indexOf('[') - 1, -1) + 1;
+            int endIndex =
+                StringUtils.findNextNonWhitespaceIndex(access, access.indexOf('[') - 1, -1) + 1;
 
             access = access.substring(0, endIndex);
         }
@@ -1542,16 +1560,14 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get whether or not the declaration is accessible from the
-     * given accessor context.
+     * Get whether or not the declaration is accessible from the given accessor context.
      *
      * @param accessingClass The Identifier that is accessing the type.
-     * @param declaration    The declaration of the type that is being
-     *                       accessed.
-     * @return Whether or not the declaration is accessible from the
-     * given accessor context.
+     * @param declaration The declaration of the type that is being accessed.
+     * @return Whether or not the declaration is accessible from the given accessor context.
      */
-    public static boolean isVisible(ClassDeclaration accessingClass, InstanceDeclaration declaration) {
+    public static boolean isVisible(ClassDeclaration accessingClass,
+        InstanceDeclaration declaration) {
         if (declaration.getVisibility() == InstanceDeclaration.PRIVATE) {
             ClassDeclaration clazz2 = declaration.getParentClass(true).getRootOverloadedClass();
             accessingClass = accessingClass.getRootOverloadedClass();
@@ -1571,7 +1587,8 @@ public class SyntaxUtils {
     }
 
     private static boolean checkClassCommonality(ClassDeclaration class1, ClassDeclaration class2) {
-        return class1.isAncestorOf(class2, true) || class2.isAncestorOf(class1, true) || class1.encapsulates(class2, true);
+        return class1.isAncestorOf(class2, true) || class2.isAncestorOf(class1, true)
+            || class1.encapsulates(class2, true);
     }
 
     public static Identifier generatePrimitiveFacade(MethodCall call) {
@@ -1608,7 +1625,8 @@ public class SyntaxUtils {
             input += call.getAccessedNode().generateFlatInput();
         }
 
-        Identifier output = (Identifier) SyntaxTree.decodeScopeContents(id.getParent(), input, call.getLocationIn(), true);
+        Identifier output = (Identifier) SyntaxTree.decodeScopeContents(id.getParent(), input,
+            call.getLocationIn(), true);
 
         return output;
     }
@@ -1624,14 +1642,12 @@ public class SyntaxUtils {
     }
 
     /**
-     * Try to autobox the given primitive Node, if it truly has a
-     * primitive value. If the given Value does not have a primitive
-     * type, then null is returned.
+     * Try to autobox the given primitive Node, if it truly has a primitive value. If the given
+     * Value does not have a primitive type, then null is returned.
      *
      * @param primitive The Value to try to autobox.
-     * @return An instantiation from the corresponding primitive wrapper
-     * class. If the given value is not primitive, then null is
-     * returned.
+     * @return An instantiation from the corresponding primitive wrapper class. If the given value
+     *         is not primitive, then null is returned.
      */
     public static Value autoboxPrimitive(Value primitive) {
         if (!Flat.PRIMITIVE_OVERLOADS) {
@@ -1652,7 +1668,8 @@ public class SyntaxUtils {
 
             primitive.getFileDeclaration().addImport(returned.getTypeClassLocation());
 
-            node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
+            node = Instantiation.decodeStatement(primitive.getParent(), instantiation,
+                primitive.getLocationIn(), true, false);
 
             MethodCall call = (MethodCall) node.getIdentifier();
             ArgumentList list = call.getArgumentList();
@@ -1683,7 +1700,8 @@ public class SyntaxUtils {
         if (primitive instanceof Accessible) {
             Priority p = new Priority(primitive.getParent(), primitive.getLocationIn());
 
-            Accessible value = SyntaxTree.decodeAccessible(primitive.getReturnedNode(), "value", Location.INVALID, true, false);
+            Accessible value = SyntaxTree.decodeAccessible(primitive.getReturnedNode(), "value",
+                Location.INVALID, true, false);
 
             Cast c = new Cast(p, primitive.getLocationIn());
             c.setTypeValue(type);
@@ -1701,21 +1719,21 @@ public class SyntaxUtils {
                 primitive.replaceWith(p);
             }
 
-            return p;//(Value)SyntaxTree.decodeIdentifierAccess(primitive.parent, primitive.generateFlatInput().toString() + ".value", Location.INVALID, true);
+            return p;// (Value)SyntaxTree.decodeIdentifierAccess(primitive.parent,
+                     // primitive.generateFlatInput().toString() + ".value", Location.INVALID,
+                     // true);
         }
 
         return primitive;
     }
 
     /**
-     * Try to autobox the given primitive Node, if it truly has a
-     * primitive value. If the given Value does not have a primitive
-     * type, then null is returned.
+     * Try to autobox the given primitive Node, if it truly has a primitive value. If the given
+     * Value does not have a primitive type, then null is returned.
      *
      * @param primitive The Value to try to autobox.
-     * @return An instantiation from the corresponding primitive wrapper
-     * class. If the given value is not primitive, then null is
-     * returned.
+     * @return An instantiation from the corresponding primitive wrapper class. If the given value
+     *         is not primitive, then null is returned.
      */
     public static Instantiation autoboxPrimitiveOnly(Value primitive) {
         Instantiation node = null;
@@ -1723,9 +1741,11 @@ public class SyntaxUtils {
         if (primitive.isPrimitiveType() && primitive instanceof Accessible) {
             String className = primitive.getType();
 
-            String instantiation = className + '(' + ((Accessible) primitive).getRootAccessNode().generateFlatInputUntil((Accessible) primitive) + ')';
+            String instantiation = className + '(' + ((Accessible) primitive).getRootAccessNode()
+                .generateFlatInputUntil((Accessible) primitive) + ')';
 
-            node = Instantiation.decodeStatement(primitive.getParent(), instantiation, primitive.getLocationIn(), true, false);
+            node = Instantiation.decodeStatement(primitive.getParent(), instantiation,
+                primitive.getLocationIn(), true, false);
         }
 
         return node;
@@ -1751,18 +1771,19 @@ public class SyntaxUtils {
     }
 
     /**
-     * Check whether or not the given type is valid within the
-     * context of the given Value.<br>
+     * Check whether or not the given type is valid within the context of the given Value.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * NonExistingType varName;</pre></blockquote>
-     * In the example above, "<code>NonExistingType</code>" is not an
-     * existing Class and is therefore not a valid type.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * NonExistingType varName;
+     * </pre>
+     * 
+     * </blockquote> In the example above, "<code>NonExistingType</code>" is not an existing Class
+     * and is therefore not a valid type.
      *
-     * @param value The Value to use as the context in which the type
-     *              is being declared.
-     * @param type  The type to be tested.
+     * @param value The Value to use as the context in which the type is being declared.
+     * @param type The type to be tested.
      * @return Whether or not the given type is valid.
      */
     public static boolean isValidType(Value value, String type) {
@@ -1776,11 +1797,13 @@ public class SyntaxUtils {
     }
 
     private static boolean checkGenericType(Value value, String type) {
-        if (value.getParentMethod(true) != null && value.getParentMethod(true).containsGenericTypeParameter(type)) {
+        if (value.getParentMethod(true) != null
+            && value.getParentMethod(true).containsGenericTypeParameter(type)) {
             return true;
         }
 
-        return value.getParentClass(true) == null ? true : value.getParentClass(true).containsGenericTypeParameter(type);
+        return value.getParentClass(true) == null ? true
+            : value.getParentClass(true).containsGenericTypeParameter(type);
     }
 
     private static Value getValidValue(Value value) {
@@ -1849,13 +1872,17 @@ public class SyntaxUtils {
                 if (genericCheck.doesUseGenericTypes()) {
                     String genericName = value.getType();
 
-                    GenericTypeArgument generic = genericCheck.getTypeClass().getGenericTypeParameter(genericName, value).getCorrespondingArgument(value);//getCorrespondingGenericType(genericCheck.getTypeClass(), genericCheck.getDeclaration(), genericName);
+                    GenericTypeArgument generic =
+                        genericCheck.getTypeClass().getGenericTypeParameter(genericName, value)
+                            .getCorrespondingArgument(value);// getCorrespondingGenericType(genericCheck.getTypeClass(),
+                                                             // genericCheck.getDeclaration(),
+                                                             // genericName);
 
                     return generic.getType();
                 }
             }
 
-            return type;//value.getParentClass().getGenericTypeParameter(type).getDefaultType();
+            return type;// value.getParentClass().getGenericTypeParameter(type).getDefaultType();
         }
 
         String location = null;
@@ -1871,7 +1898,7 @@ public class SyntaxUtils {
         clazz = value.getProgram().getClassDeclaration(location);
 
         if (clazz != null) {
-            if (true)//SyntaxUtils.validateImported(value, location))
+            if (true)// SyntaxUtils.validateImported(value, location))
             {
                 return type;
             }
@@ -1887,18 +1914,17 @@ public class SyntaxUtils {
     }
 
     /**
-     * Check whether or not the two given values are compatible
-     * through comparison or arithmetic.
+     * Check whether or not the two given values are compatible through comparison or arithmetic.
      *
      * @param value1 The first Value to check.
      * @param value2 The second Value to check.
-     * @return Whether or not the two given values are compatible
-     * through comparison or arithmetic.
+     * @return Whether or not the two given values are compatible through comparison or arithmetic.
      */
     public static boolean validateCompatibleTypes(Value value1, Value value2) {
         if (value1.isExternalType() && value2.isExternalType()) {
             return value1.getType().equals(value2.getType());
-        } else if (value1.isGenericType() && value2.isGenericType() && value1.getType().equals(value2.getType())) {
+        } else if (value1.isGenericType() && value2.isGenericType()
+            && value1.getType().equals(value2.getType())) {
             return true;
         }
 
@@ -1906,19 +1932,20 @@ public class SyntaxUtils {
     }
 
     /**
-     * Get the base class type that the two Values have in common. If
-     * the two nodes do not have anything in common, null is returned.
+     * Get the base class type that the two Values have in common. If the two nodes do not have
+     * anything in common, null is returned.
      *
      * @param value1 The first Value to check.
      * @param value2 The second Value to check.
-     * @return The ClassDeclaration instance that the two Values have in
-     * common. If they have nothing in common, null is returned.
+     * @return The ClassDeclaration instance that the two Values have in common. If they have
+     *         nothing in common, null is returned.
      */
     public static ClassDeclaration getTypeInCommon(Value value1, Value value2) {
         if (value1 == null || value2 == null) {
             return null;
         }
-        if (value1.isPrimitive() && value2.isPrimitive() && value1.getType() != null && value2.getType() != null) {
+        if (value1.isPrimitive() && value2.isPrimitive() && value1.getType() != null
+            && value2.getType() != null) {
             String type = getHighestPrimitiveType(value1.getType(), value2.getType());
 
             return value1.getType().equals(type) ? value1.getTypeClass() : value2.getTypeClass();
@@ -1978,7 +2005,8 @@ public class SyntaxUtils {
     }
 
     public static Value getValueInCommon(Value value1, Value value2) {
-        if (value1.isPrimitive() && value2.isPrimitive() && value1.getType() != null && value2.getType() != null) {
+        if (value1.isPrimitive() && value2.isPrimitive() && value1.getType() != null
+            && value2.getType() != null) {
             String type = getHighestPrimitiveType(value1.getType(), value2.getType());
 
             return value1.getType().equals(type) ? value1 : value2;
@@ -1991,9 +2019,12 @@ public class SyntaxUtils {
             return null;
         }
         if (!value1.isGenericType() &&
-            (value1.getGenericTypeArgumentList() == null || value1.getGenericTypeArgumentList().getNumVisibleChildren() == 0) &&
+            (value1.getGenericTypeArgumentList() == null
+                || value1.getGenericTypeArgumentList().getNumVisibleChildren() == 0)
+            &&
             !value2.isGenericType() &&
-            (value2.getGenericTypeArgumentList() == null || value2.getGenericTypeArgumentList().getNumVisibleChildren() == 0)) {
+            (value2.getGenericTypeArgumentList() == null
+                || value2.getGenericTypeArgumentList().getNumVisibleChildren() == 0)) {
             if (type1.isOfType(type2)) {
                 return value2;
             }
@@ -2006,7 +2037,8 @@ public class SyntaxUtils {
 
         while (type2 != null) {
             if (type1.isOfType(type2)) {
-                GenericTypeArgument value = new GenericTypeArgument(value2.getParent(), value2.getLocationIn());
+                GenericTypeArgument value =
+                    new GenericTypeArgument(value2.getParent(), value2.getLocationIn());
                 value.setType(value1);
                 value.setTypeValue(type2.getType());
 
@@ -2020,7 +2052,8 @@ public class SyntaxUtils {
 
         while (type1 != null) {
             if (type2.isOfType(type1)) {
-                GenericTypeArgument value = new GenericTypeArgument(value2.getParent(), value2.getLocationIn());
+                GenericTypeArgument value =
+                    new GenericTypeArgument(value2.getParent(), value2.getLocationIn());
                 value.setType(value1);
                 value.setTypeValue(type1.getType());
 
@@ -2033,30 +2066,31 @@ public class SyntaxUtils {
         return null;
     }
 
-//	/**
-//	 * Get the base class type that the two Values have in common. If
-//	 * the two nodes do not have anything in common, null is returned.
-//	 *
-//	 * @param value1 The first Value to check.
-//	 * @param value2 The second Value to check.
-//	 * @return The ClassDeclaration instance that the two Values have in
-//	 * 		common. If they have nothing in common, null is returned.
-//	 */
-//	public static ClassDeclaration getTypeInCommon(Value value1, Value value2)
-//	{
-//		Program program = value1.getProgram();
-//
-//		return program.getClassDeclaration(getTypeInCommon(program, value1.getType(), value2.getType()));
-//	}
+    // /**
+    // * Get the base class type that the two Values have in common. If
+    // * the two nodes do not have anything in common, null is returned.
+    // *
+    // * @param value1 The first Value to check.
+    // * @param value2 The second Value to check.
+    // * @return The ClassDeclaration instance that the two Values have in
+    // * common. If they have nothing in common, null is returned.
+    // */
+    // public static ClassDeclaration getTypeInCommon(Value value1, Value value2)
+    // {
+    // Program program = value1.getProgram();
+    //
+    // return program.getClassDeclaration(getTypeInCommon(program, value1.getType(),
+    // value2.getType()));
+    // }
 
     /**
      * Get the type in common between the two given types.
      *
      * @param context The program that the two types are located in.
-     * @param type1   The first type to compare.
-     * @param type2   The second type to compare.
-     * @return The type in common between the two types. If there is
-     * no type in common, null is returned.
+     * @param type1 The first type to compare.
+     * @param type2 The second type to compare.
+     * @return The type in common between the two types. If there is no type in common, null is
+     *         returned.
      */
     public static String getTypeInCommon(Program context, String type1, String type2) {
         ClassDeclaration clazz1 = context.getClassDeclaration(type1);
@@ -2090,13 +2124,12 @@ public class SyntaxUtils {
     }
 
     /**
-     * Check to see if the given clazz is an instanceof any of the
-     * classes in the given type array.
+     * Check to see if the given clazz is an instanceof any of the classes in the given type array.
      *
      * @param types The types to check against.
      * @param clazz The type to check for.
-     * @return Whether or not the given clazz is an instanceof any of
-     * the classes in the given array.
+     * @return Whether or not the given clazz is an instanceof any of the classes in the given
+     *         array.
      */
     public static boolean checkTypes(Class<?> types[], Class<?> clazz) {
         for (Class<?> type : types) {
@@ -2109,10 +2142,12 @@ public class SyntaxUtils {
     }
 
     public static ClassDeclaration searchInnerClasses(Node node, ClassDeclaration c, String name) {
-        ArrayList<ClassDeclaration> classes = c.getInnerClasses(false).filterVisibleListChildren(inner -> inner.getName().equals(name));
+        ArrayList<ClassDeclaration> classes = c.getInnerClasses(false)
+            .filterVisibleListChildren(inner -> inner.getName().equals(name));
 
         if (classes.size() > 1) {
-            SyntaxMessage.error("Ambiguous class name '" + name + "', cannot determine correct class to reference for value type.", node);
+            SyntaxMessage.error("Ambiguous class name '" + name
+                + "', cannot determine correct class to reference for value type.", node);
             return null;
         } else if (classes.size() == 0) {
             return c.getInnerClasses(false)
@@ -2155,7 +2190,8 @@ public class SyntaxUtils {
             .collect(Collectors.toList());
 
         if (classes.size() > 1) {
-            SyntaxMessage.error("Ambiguous class name '" + name + "', cannot determine correct class to reference for value type.", node);
+            SyntaxMessage.error("Ambiguous class name '" + name
+                + "', cannot determine correct class to reference for value type.", node);
             return null;
         } else if (classes.size() == 0) {
             return null;
@@ -2192,33 +2228,31 @@ public class SyntaxUtils {
                 return closest;
             }
 
-            return Flat.instance.getTree().getRoot().getClassDeclaration(file.getImportList().getAbsoluteClassLocation(type));
+            return Flat.instance.getTree().getRoot()
+                .getClassDeclaration(file.getImportList().getAbsoluteClassLocation(type));
         }
 
         return null;
     }
 
     /**
-     * Check to see if the 'given' type is compatible with the
-     * required type.
+     * Check to see if the 'given' type is compatible with the required type.
      *
-     * @param context  The program that the two types are located in.
-     * @param required The type that the 'given' type is required
-     *                 to be compatible with.
-     * @param given    The given type to check against the required type.
+     * @param context The program that the two types are located in.
+     * @param required The type that the 'given' type is required to be compatible with.
+     * @param given The given type to check against the required type.
      * @return Whether or not the two types are compatible.
      */
     public static boolean isTypeCompatible(Program context, String required, String given) {
-        return isTypeCompatible(context.getClassDeclaration(given), context.getClassDeclaration(given), context.getClassDeclaration(required));
+        return isTypeCompatible(context.getClassDeclaration(given),
+            context.getClassDeclaration(given), context.getClassDeclaration(required));
     }
 
     /**
-     * Check to see if the 'given' type is compatible with the
-     * required type.
+     * Check to see if the 'given' type is compatible with the required type.
      *
-     * @param required The type that the 'given' type is required
-     *                 to be compatible with.
-     * @param given    The given type to check against the required type.
+     * @param required The type that the 'given' type is required to be compatible with.
+     * @param given The given type to check against the required type.
      * @return Whether or not the two types are compatible.
      */
     public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given) {
@@ -2235,13 +2269,18 @@ public class SyntaxUtils {
         return true;
     }
 
-    public static boolean areTypesCompatible(GenericCompatible[] contexts, Value[] required, Value[] given) {
+    public static boolean areTypesCompatible(GenericCompatible[] contexts, Value[] required,
+        Value[] given) {
         return areTypesCompatible(contexts, required, given, true);
     }
 
-    public static boolean areTypesCompatible(GenericCompatible[] contexts, Value[] required, Value[] given, boolean searchGenerics) {
+    public static boolean areTypesCompatible(GenericCompatible[] contexts, Value[] required,
+        Value[] given, boolean searchGenerics) {
         for (int i = 0; i < required.length && i < given.length; i++) {
-            if (!isTypeCompatible(contexts == null ? null : (contexts.length > i ? contexts[i] : contexts[contexts.length - 1]), required[i], given[i], searchGenerics)) {
+            if (!isTypeCompatible(
+                contexts == null ? null
+                    : (contexts.length > i ? contexts[i] : contexts[contexts.length - 1]),
+                required[i], given[i], searchGenerics)) {
                 return false;
             }
         }
@@ -2309,7 +2348,8 @@ public class SyntaxUtils {
         public int index;
         public LiteralNameData literalNameData;
 
-        public StatementLiteralNameData(String statement, int index, LiteralNameData literalNameData) {
+        public StatementLiteralNameData(String statement, int index,
+            LiteralNameData literalNameData) {
             this.statement = statement;
             this.index = index;
             this.literalNameData = literalNameData;
@@ -2355,11 +2395,10 @@ public class SyntaxUtils {
                 new StatementLiteralNameData(
                     statement,
                     index,
-                    literalData
-                )
-            );
+                    literalData));
 
-            index = statement.indexOf('`' + literalData.literalName + '`', index) + literalData.literalName.length() + 2;
+            index = statement.indexOf('`' + literalData.literalName + '`', index)
+                + literalData.literalName.length() + 2;
         }
 
         return data.toArray(new StatementLiteralNameData[0]);
@@ -2394,15 +2433,17 @@ public class SyntaxUtils {
         return getParametersDistance(null, required, given);
     }
 
-    public static ValueDistance getParametersDistance(Value context, Value[] required, Value[] given) {
+    public static ValueDistance getParametersDistance(Value context, Value[] required,
+        Value[] given) {
         return getParametersDistance(context, required, given, false);
     }
 
-    public static ValueDistance getParametersDistance(Value context, Value[] required, Value[] given, boolean defaultGeneric) {
+    public static ValueDistance getParametersDistance(Value context, Value[] required,
+        Value[] given, boolean defaultGeneric) {
         ValueDistance pair = new ValueDistance(0, 0);
 
         for (int i = 0; i < Math.min(required.length, given.length); i++) {
-//			if (!required[i].isGenericType())
+            // if (!required[i].isGenericType())
             {
                 ClassDeclaration g = given[i].getFlatTypeClass(context, false, defaultGeneric);
                 ClassDeclaration r = required[i].getFlatTypeClass(context, false, defaultGeneric);
@@ -2410,8 +2451,12 @@ public class SyntaxUtils {
                 if (g != null && r != null) {
                     getDistance(context, g, r, defaultGeneric, pair);
                 } else if (given[i].isGenericType() != required[i].isGenericType()) {
-                    if (given[i].isGenericType() && !given[i].getGenericReturnType().equals(required[i].getReturnedNode().getType()) ||
-                        required[i].isGenericType() && !required[i].getGenericReturnType().equals(given[i].getReturnedNode().getType())) {
+                    if (given[i].isGenericType()
+                        && !given[i].getGenericReturnType()
+                            .equals(required[i].getReturnedNode().getType())
+                        ||
+                        required[i].isGenericType() && !required[i].getGenericReturnType()
+                            .equals(given[i].getReturnedNode().getType())) {
                         pair.genericDistance++;
                     }
                 }
@@ -2425,11 +2470,13 @@ public class SyntaxUtils {
         return getDistance(null, g, r, false);
     }
 
-    public static ValueDistance getDistance(Value context, Value g, Value r, boolean defaultGeneric) {
+    public static ValueDistance getDistance(Value context, Value g, Value r,
+        boolean defaultGeneric) {
         return getDistance(context, g, r, defaultGeneric, new ValueDistance(0, 0));
     }
 
-    public static ValueDistance getDistance(Value context, Value g, Value r, boolean defaultGeneric, ValueDistance pair) {
+    public static ValueDistance getDistance(Value context, Value g, Value r, boolean defaultGeneric,
+        ValueDistance pair) {
         if (g.isPrimitiveType() || r.isPrimitiveType()) {
             if (g.isPrimitiveType() && r.isPrimitiveType()) {
                 int dist = getPrimitiveDistance(r.getType(), g.getType());
@@ -2453,8 +2500,10 @@ public class SyntaxUtils {
                     GenericTypeArgumentList gargs = g.getGenericTypeArgumentList();
                     GenericTypeArgumentList rargs = r.getGenericTypeArgumentList();
 
-                    for (int n = 0; n < Math.min(gargs.getNumVisibleChildren(), rargs.getNumVisibleChildren()); n++) {
-                        getDistance(context, gargs.getVisibleChild(n), rargs.getVisibleChild(n), defaultGeneric, pair);
+                    for (int n = 0; n < Math.min(gargs.getNumVisibleChildren(),
+                        rargs.getNumVisibleChildren()); n++) {
+                        getDistance(context, gargs.getVisibleChild(n), rargs.getVisibleChild(n),
+                            defaultGeneric, pair);
                     }
                 }
             }
@@ -2464,45 +2513,47 @@ public class SyntaxUtils {
     }
 
     /**
-     * Check to see if the 'given' type is compatible with the
-     * required type.
+     * Check to see if the 'given' type is compatible with the required type.
      *
-     * @param required      The type that the 'given' type is required
-     *                      to be compatible with.
-     * @param given         The given type to check against the required type.
-     * @param searchGeneric Whether or not to search for the actual generic
-     *                      return type.
+     * @param required The type that the 'given' type is required to be compatible with.
+     * @param given The given type to check against the required type.
+     * @param searchGeneric Whether or not to search for the actual generic return type.
      * @return Whether or not the two types are compatible.
      */
-    public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric) {
+    public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given,
+        boolean searchGeneric) {
         return isTypeCompatible(context, required, given, searchGeneric, 0);
     }
 
     /**
-     * Check to see if the 'given' type is compatible with the
-     * required type.
+     * Check to see if the 'given' type is compatible with the required type.
      *
-     * @param required        The type that the 'given' type is required
-     *                        to be compatible with.
-     * @param given           The given type to check against the required type.
-     * @param searchGeneric   Whether or not to search for the actual generic
-     *                        return type.
-     * @param arrayDifference The difference that is allowed between the two
-     *                        type's array dimensions. Difference =
-     *                        required.dimensions - given.dimensions.
+     * @param required The type that the 'given' type is required to be compatible with.
+     * @param given The given type to check against the required type.
+     * @param searchGeneric Whether or not to search for the actual generic return type.
+     * @param arrayDifference The difference that is allowed between the two type's array
+     *        dimensions. Difference = required.dimensions - given.dimensions.
      * @return Whether or not the two types are compatible.
      */
-    public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given, boolean searchGeneric, int arrayDifference) {
+    public static boolean isTypeCompatible(GenericCompatible context, Value required, Value given,
+        boolean searchGeneric, int arrayDifference) {
         if (required == null ^ given == null) {
             return false;
-        } else if (given != null && given.isFunctionType() && required.getTypeClass() != null && required.getTypeClass().getClassLocation().equals("flat/Object")) {
+        } else if (given != null && given.isFunctionType() && required.getTypeClass() != null
+            && required.getTypeClass().getClassLocation().equals("flat/Object")) {
             return true;
         }
-        if (required != null && (required instanceof ClosureDeclaration && !(given.isFunctionType() || given instanceof Closure || given instanceof ClosureDeclaration || given instanceof Variable && ((Variable) given).getDeclaration() instanceof ClosureVariableDeclaration))) {
+        if (required != null && (required instanceof ClosureDeclaration && !(given.isFunctionType()
+            || given instanceof Closure || given instanceof ClosureDeclaration
+            || given instanceof Variable
+                && ((Variable) given).getDeclaration() instanceof ClosureVariableDeclaration))) {
             return false;
         }
 
-        if (given instanceof FlatMethodDeclaration && ((FlatMethodDeclaration) given).shorthandAction != null || required instanceof FlatMethodDeclaration && ((FlatMethodDeclaration) required).shorthandAction != null) {
+        if (given instanceof FlatMethodDeclaration
+            && ((FlatMethodDeclaration) given).shorthandAction != null
+            || required instanceof FlatMethodDeclaration
+                && ((FlatMethodDeclaration) required).shorthandAction != null) {
             return true;
         }
 
@@ -2510,8 +2561,10 @@ public class SyntaxUtils {
             return true;
         }
 
-        if (context != null && given instanceof ClosureDeclaration == false && given.isGenericType() && context instanceof Constructor == false) {
-            GenericTypeParameter param = given.getGenericTypeParameter();//((Value)context).getTypeClass().getGenericTypeParameter(given.getType(), given);
+        if (context != null && given instanceof ClosureDeclaration == false && given.isGenericType()
+            && context instanceof Constructor == false) {
+            GenericTypeParameter param = given.getGenericTypeParameter();// ((Value)context).getTypeClass().getGenericTypeParameter(given.getType(),
+                                                                         // given);
 
             Value value = param.getTypeValue(context);
 
@@ -2522,7 +2575,7 @@ public class SyntaxUtils {
                     newContext = null;
                 }
 
-                //SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
+                // SyntaxUtils.getImportedClass(given.getFileDeclaration(), arg.getType());
 
                 if (isTypeCompatible(newContext, required, value, false)) {
                     return true;
@@ -2530,69 +2583,81 @@ public class SyntaxUtils {
             }
         }
 
-//		if (given instanceof Instantiation == false)
-//		{
-//			GenericTypeArgumentList requiredArgs = required.getGenericTypeArgumentList();
-//			GenericTypeArgumentList givenArgs = given.getGenericTypeArgumentList();
-//
-//			if (requiredArgs != null && givenArgs != null)
-//			{
-//				if (requiredArgs.getNumVisibleChildren() != givenArgs.getNumVisibleChildren())
-//				{
-//					return false;
-//				}
-//				else if (requiredArgs.getNumVisibleChildren() > 0)
-//				{
-//					for (int i = 0; i < requiredArgs.getNumVisibleChildren(); i++)
-//					{
-//						GenericTypeArgument requiredArg = requiredArgs.getVisibleChild(i);
-//						GenericTypeArgument givenArg = givenArgs.getVisibleChild(i);
-//
-//						/*if (requiredArg != required && givenArg != given && !isTypeCompatible(givenArg.getContext(), requiredArg, givenArg))
-//						{
-//							return false;
-//						}*/
-//					}
-//				}
-//			}
-//		}
+        // if (given instanceof Instantiation == false)
+        // {
+        // GenericTypeArgumentList requiredArgs = required.getGenericTypeArgumentList();
+        // GenericTypeArgumentList givenArgs = given.getGenericTypeArgumentList();
+        //
+        // if (requiredArgs != null && givenArgs != null)
+        // {
+        // if (requiredArgs.getNumVisibleChildren() != givenArgs.getNumVisibleChildren())
+        // {
+        // return false;
+        // }
+        // else if (requiredArgs.getNumVisibleChildren() > 0)
+        // {
+        // for (int i = 0; i < requiredArgs.getNumVisibleChildren(); i++)
+        // {
+        // GenericTypeArgument requiredArg = requiredArgs.getVisibleChild(i);
+        // GenericTypeArgument givenArg = givenArgs.getVisibleChild(i);
+        //
+        // /*if (requiredArg != required && givenArg != given &&
+        // !isTypeCompatible(givenArg.getContext(), requiredArg, givenArg))
+        // {
+        // return false;
+        // }*/
+        // }
+        // }
+        // }
+        // }
 
         if (given instanceof Closure || given instanceof ClosureVariable) {
             return true;
         }
-        if (given.isWithinExternalContext() && given.getType() != null && getPrimitiveExternalType(given.getType()).equals(required.getType())) {
+        if (given.isWithinExternalContext() && given.getType() != null
+            && getPrimitiveExternalType(given.getType()).equals(required.getType())) {
             return true;
-        } else if (required.getArrayDimensions() - given.getArrayDimensions() - arrayDifference != 0) {
+        } else if (required.getArrayDimensions() - given.getArrayDimensions()
+            - arrayDifference != 0) {
             return false;
         }
 
         String genType1 = given.isGenericType() ? given.getGenericReturnType() : given.getType();
-        String genType2 = required.isGenericType() ? required.getGenericReturnType() : required.getType();
+        String genType2 =
+            required.isGenericType() ? required.getGenericReturnType() : required.getType();
 
         if (genType1 != null && genType1.equals(genType2) || genType1 == genType2) {
             return true;
         }
 
-        VariableDeclaration givenDeclaration = given instanceof VariableDeclaration ? (VariableDeclaration) given : (given instanceof Variable ? ((Variable) given).getDeclaration() : null);
-        VariableDeclaration requiredDeclaration = required instanceof VariableDeclaration ? (VariableDeclaration) required : (required instanceof Variable ? ((Variable) required).getDeclaration() : null);
+        VariableDeclaration givenDeclaration =
+            given instanceof VariableDeclaration ? (VariableDeclaration) given
+                : (given instanceof Variable ? ((Variable) given).getDeclaration() : null);
+        VariableDeclaration requiredDeclaration =
+            required instanceof VariableDeclaration ? (VariableDeclaration) required
+                : (required instanceof Variable ? ((Variable) required).getDeclaration() : null);
 
-        if (requiredDeclaration instanceof ClosureDeclaration && givenDeclaration instanceof ClosureDeclaration == false &&
+        if (requiredDeclaration instanceof ClosureDeclaration
+            && givenDeclaration instanceof ClosureDeclaration == false &&
             given.isFunctionType()) {
             givenDeclaration = ((FunctionType) given.getTypeObject()).closure;
         }
 
-        if (givenDeclaration instanceof ClosureDeclaration && requiredDeclaration instanceof ClosureDeclaration) {
+        if (givenDeclaration instanceof ClosureDeclaration
+            && requiredDeclaration instanceof ClosureDeclaration) {
             ClassDeclaration requiredClass = requiredDeclaration.getTypeClass();
             ClassDeclaration givenClass = givenDeclaration.getTypeClass();
 
-            if (!((givenClass == null && requiredClass == null) || (requiredClass != null && givenClass != null && requiredClass.isAncestorOf(givenClass, true)))) {
+            if (!((givenClass == null && requiredClass == null) || (requiredClass != null
+                && givenClass != null && requiredClass.isAncestorOf(givenClass, true)))) {
                 return false;
             }
 
             ClosureDeclaration r = (ClosureDeclaration) requiredDeclaration;
             ClosureDeclaration g = (ClosureDeclaration) givenDeclaration;
 
-            if (r.getParameterList().getNumParameters() != g.getParameterList().getNumParameters()) {
+            if (r.getParameterList().getNumParameters() != g.getParameterList()
+                .getNumParameters()) {
                 return false;
             }
 
@@ -2600,7 +2665,10 @@ public class SyntaxUtils {
                 Value requiredParam = r.getParameterList().getParameter(i);
                 Value givenParam = g.getParameterList().getParameter(i);
 
-                if (givenParam.getTypeClass() == null || !givenParam.getTypeClass().isOfType(requiredParam.getTypeClass()))//!isTypeCompatible(/*givenParam.getContext()*/null, requiredParam, givenParam))
+                if (givenParam.getTypeClass() == null
+                    || !givenParam.getTypeClass().isOfType(requiredParam.getTypeClass()))// !isTypeCompatible(/*givenParam.getContext()*/null,
+                                                                                         // requiredParam,
+                                                                                         // givenParam))
                 {
                     return false;
                 }
@@ -2615,7 +2683,8 @@ public class SyntaxUtils {
             }
 
             if (!(required instanceof Value)) {
-                throw new UnimplementedOperationException("The validation of generic type " + required.getClass().getName() + " is not implemented.");
+                throw new UnimplementedOperationException("The validation of generic type "
+                    + required.getClass().getName() + " is not implemented.");
             }
 
             GenericTypeParameter param = required.getGenericTypeParameter();
@@ -2624,7 +2693,8 @@ public class SyntaxUtils {
                 GenericTypeArgument arg = param.getCorrespondingArgument(context);
 
                 if (arg != null) {
-                    Value value = arg.cloneTo(new GenericTypeArgument(arg.getParent(), arg.getLocationIn()), false, true);
+                    Value value = arg.cloneTo(
+                        new GenericTypeArgument(arg.getParent(), arg.getLocationIn()), false, true);
                     value.setArrayDimensions(required.getArrayDimensions());
 
                     if (!isTypeCompatible(context, value, given, false)) {
@@ -2636,7 +2706,9 @@ public class SyntaxUtils {
                             param.getCorrespondingArgument(context);
                         }
 
-                        SyntaxMessage.error("Incorrect type '" + given.getType() + "' given for required generic type of '" + value.getType() + "' type", given);
+                        SyntaxMessage.error("Incorrect type '" + given.getType()
+                            + "' given for required generic type of '" + value.getType() + "' type",
+                            given);
 
                         return false;
                     } else {
@@ -2669,15 +2741,20 @@ public class SyntaxUtils {
 
         if (arePrimitiveTypesCompatible(required.getTypeClassName(), given.getTypeClassName())) {
             return true;
-        } else if (required.isGenericType() && given.isGenericType() && required.getGenericTypeParameter() == given.getGenericTypeParameter()) {
+        } else if (required.isGenericType() && given.isGenericType()
+            && required.getGenericTypeParameter() == given.getGenericTypeParameter()) {
             return true;
-        } else if (required.getTypeClassLocation() == null || given.getTypeClassLocation() == null) {
+        } else if (required.getTypeClassLocation() == null
+            || given.getTypeClassLocation() == null) {
             return false;
         } else if (Literal.isNullLiteral(given) && !required.isPrimitive()) {
             return true;
         }
-        if (required instanceof Parameter && required.isPrimitive() && Literal.isNullLiteral(given)) {
-            int index = ((ParameterList) required.parent).getParameterIndex(((Parameter) required).getName()) - ((ParameterList) required.parent).getParameterOffset();
+        if (required instanceof Parameter && required.isPrimitive()
+            && Literal.isNullLiteral(given)) {
+            int index = ((ParameterList) required.parent)
+                .getParameterIndex(((Parameter) required).getName())
+                - ((ParameterList) required.parent).getParameterOffset();
 
             if (!required.getParentMethod().genericOverload.getParameter(index).isPrimitive()) {
                 given.replaceWithDefaultLiteralValue(required);
@@ -2693,32 +2770,31 @@ public class SyntaxUtils {
         assigned.replaceWith(generateArraySetterCallFromAccess(assigned, assignment));
     }
 
-    public static MethodCall generateArraySetterCallFromAccess(Variable assigned, Value assignment) {
-        String call = "set(" + ((MethodCall) assigned).getArgumentList().getVisibleChild(0).generateFlatInput() + ", " + assignment.generateFlatInput() + ")";
+    public static MethodCall generateArraySetterCallFromAccess(Variable assigned,
+        Value assignment) {
+        String call = "set("
+            + ((MethodCall) assigned).getArgumentList().getVisibleChild(0).generateFlatInput()
+            + ", " + assignment.generateFlatInput() + ")";
 
-        return MethodCall.decodeStatement(assigned.getParent(), call, assigned.getLocationIn(), true, false, ((Variable) assigned.getParent()).getTypeClass().getArrayMutatorMethod());
+        return MethodCall.decodeStatement(assigned.getParent(), call, assigned.getLocationIn(),
+            true, false, ((Variable) assigned.getParent()).getTypeClass().getArrayMutatorMethod());
     }
 
     /**
-     * Check to see if the FileDeclaration already has the given class
-     * imported or not.
+     * Check to see if the FileDeclaration already has the given class imported or not.
      *
-     * @param file  The File to check to see whether or not has the class
-     *              imported.
+     * @param file The File to check to see whether or not has the class imported.
      * @param clazz The class to see if the File has imported.
-     * @return Whether or not the File already has the given class
-     * imported.
+     * @return Whether or not the File already has the given class imported.
      */
     public static boolean isImported(FileDeclaration file, String clazz) {
         return file.containsImport(clazz) || file.containsClass(clazz);
     }
 
     /**
-     * Validate that given class has been imported by the given node's
-     * FileDeclaration.
+     * Validate that given class has been imported by the given node's FileDeclaration.
      *
-     * @param node  The node that needs to validate that the class
-     *              has been imported.
+     * @param node The node that needs to validate that the class has been imported.
      * @param clazz The class to check to see if has been imported.
      * @return Whether or not the class has been imported.
      */
@@ -2731,21 +2807,19 @@ public class SyntaxUtils {
     }
 
     /**
-     * Validate that given class has been imported by the given node's
-     * FileDeclaration.
+     * Validate that given class has been imported by the given node's FileDeclaration.
      *
-     * @param node     The node that needs to validate that the class
-     *                 has been imported.
-     * @param clazz    The class to check to see if has been imported.
-     * @param location The location to point the error at if the class
-     *                 has not been imported.
+     * @param node The node that needs to validate that the class has been imported.
+     * @param clazz The class to check to see if has been imported.
+     * @param location The location to point the error at if the class has not been imported.
      * @return Whether or not the class has been imported.
      */
     public static boolean validateImported(Node node, String clazz, Location location) {
         return validateImported(node, clazz, true, location);
     }
 
-    public static boolean validateImported(Node node, String clazz, boolean fullPath, Location location) {
+    public static boolean validateImported(Node node, String clazz, boolean fullPath,
+        Location location) {
         if (!fullPath) {
             ClassDeclaration c = node.getFileDeclaration().getImportedClass(node, clazz);
 
@@ -2779,21 +2853,25 @@ public class SyntaxUtils {
         throwImportException(parent, type, location, true);
     }
 
-    public static void throwImportException(Node parent, String type, Location location, boolean throwException) {
-        SyntaxMessage.error("Type '" + type + "' is not imported", parent, location, throwException);
+    public static void throwImportException(Node parent, String type, Location location,
+        boolean throwException) {
+        SyntaxMessage.error("Type '" + type + "' is not imported", parent, location,
+            throwException);
     }
 
     public static boolean invalidType(Node parent, String type, boolean require) {
-        return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, require, "type");
+        return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, require,
+            "type");
     }
 
-    public static boolean invalidType(Node parent, String type, boolean require, boolean throwException) {
-        return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent, throwException, require);
+    public static boolean invalidType(Node parent, String type, boolean require,
+        boolean throwException) {
+        return SyntaxMessage.queryError("Type '" + type + "' does not exist", parent,
+            throwException, require);
     }
 
     /**
-     * Check to see if the type is a basic type and does not
-     * have a class to represent it.
+     * Check to see if the type is a basic type and does not have a class to represent it.
      *
      * @param type The type to check.
      * @return Whether or not it is a basic type.
@@ -2815,16 +2893,19 @@ public class SyntaxUtils {
                 if (value1 instanceof ClosureDeclaration ^ value2 instanceof ClosureDeclaration) {
                     return false;
                 }
-                if (value1.getType() == null ^ value2.getType() == null || value1.getType() != null && !value1.getType().equals(value2.getType())) {
+                if (value1.getType() == null ^ value2.getType() == null
+                    || value1.getType() != null && !value1.getType().equals(value2.getType())) {
                     return false;
                 }
 
-                return areSameTypes(((ClosureDeclaration) value1).getParameterList().getTypes(), ((ClosureDeclaration) value2).getParameterList().getTypes());
+                return areSameTypes(((ClosureDeclaration) value1).getParameterList().getTypes(),
+                    ((ClosureDeclaration) value2).getParameterList().getTypes());
             } else {
                 String type1 = types1[i].getType();
                 String type2 = types2[i].getType();
 
-                if ((type1 == null ^ type2 == null) || !type1.equals(type2) || value1.getArrayDimensions() != value2.getArrayDimensions()) {
+                if ((type1 == null ^ type2 == null) || !type1.equals(type2)
+                    || value1.getArrayDimensions() != value2.getArrayDimensions()) {
                     return false;
                 }
             }
@@ -2902,13 +2983,15 @@ public class SyntaxUtils {
         return findIdentifierBounds(source, start, false, false);
     }
 
-    public static Bounds findIdentifierBounds(String source, int start, boolean includeGroupings, boolean includeUnary) {
+    public static Bounds findIdentifierBounds(String source, int start, boolean includeGroupings,
+        boolean includeUnary) {
         start = StringUtils.findNextNonWhitespaceIndex(source, start);
 
         if (!includeGroupings) {
             start = StringUtils.findNextLetterIndex(source, start, 1);
         } else if (StringUtils.findEndingMatch(source, start, source.charAt(start)) > 0) {
-            return checkIdentifierUnary(source, start, StringUtils.findEndingMatch(source, start, source.charAt(start)) + 1, includeUnary);
+            return checkIdentifierUnary(source, start,
+                StringUtils.findEndingMatch(source, start, source.charAt(start)) + 1, includeUnary);
         }
 
         int current = start;
@@ -2951,7 +3034,8 @@ public class SyntaxUtils {
         }
     }
 
-    private static Bounds checkIdentifierUnary(String source, int start, int end, boolean includeUnary) {
+    private static Bounds checkIdentifierUnary(String source, int start, int end,
+        boolean includeUnary) {
         if (includeUnary) {
             String symbols = StringUtils.findGroupedSymbols(source, end);
 
@@ -2978,16 +3062,19 @@ public class SyntaxUtils {
         return args.toArray(new GenericTypeArgument[0]);
     }
 
-    public static GenericTypeArgument getGenericTypeArgumentName(Node parent, GenericTypeParameter parameter) {
+    public static GenericTypeArgument getGenericTypeArgumentName(Node parent,
+        GenericTypeParameter parameter) {
         GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID, parameter);
         type.setType(parameter.getType(), true, false, true);
 
         return type;
     }
 
-    public static GenericTypeArgument getGenericTypeArgumentName(Node parent, String parameterName) {
+    public static GenericTypeArgument getGenericTypeArgumentName(Node parent,
+        String parameterName) {
         boolean nullable = parameterName.endsWith("?");
-        if (nullable) parameterName = parameterName.substring(0, parameterName.length() - 1);
+        if (nullable)
+            parameterName = parameterName.substring(0, parameterName.length() - 1);
 
         GenericTypeArgument type = new GenericTypeArgument(parent, Location.INVALID);
         type.setType(parameterName, true, false, true);
@@ -2997,16 +3084,16 @@ public class SyntaxUtils {
             type.explicitlyNullable = true;
         }
 
-		/*DeclarationData data = new DeclarationData();
-
-		GenericTypeParameterList.searchGenerics(parameterName, data);
-		type.iterateWords(parameterName, data, true);
-
-		if (data.containsSkipBounds())
-		{
-			//type.setType(data.getSkipBounds(0).trimString(parameterName), true, false);
-			int j = 4;
-		}*/
+        /*
+         * DeclarationData data = new DeclarationData();
+         * 
+         * GenericTypeParameterList.searchGenerics(parameterName, data);
+         * type.iterateWords(parameterName, data, true);
+         * 
+         * if (data.containsSkipBounds()) {
+         * //type.setType(data.getSkipBounds(0).trimString(parameterName), true, false); int j = 4;
+         * }
+         */
 
         return type;
     }
@@ -3054,9 +3141,11 @@ public class SyntaxUtils {
             return true;
         } else if (type1 == null || type2 == null) {
             return type1 == null && type2 == null;
-        } else if (type1.equals("String") && value2.getArrayDimensions() == 1 && type2.equals("Char")) {
+        } else if (type1.equals("String") && value2.getArrayDimensions() == 1
+            && type2.equals("Char")) {
             return value1 instanceof Literal;
-        } else if (type2.equals("String") && value1.getArrayDimensions() == 1 && type1.equals("Char")) {
+        } else if (type2.equals("String") && value1.getArrayDimensions() == 1
+            && type1.equals("Char")) {
             return value2 instanceof Literal;
         }
 
@@ -3071,7 +3160,8 @@ public class SyntaxUtils {
         return temp;
     }
 
-    public static String getConvertedFlatContents(Scope scope, Node parent, FlatMethodDeclaration conversionTarget) {
+    public static String getConvertedFlatContents(Scope scope, Node parent,
+        FlatMethodDeclaration conversionTarget) {
         Scope temp = SyntaxUtils.cloneToScope(scope, parent);
 
         temp.extractLambdas();
@@ -3080,7 +3170,8 @@ public class SyntaxUtils {
         return temp.getFlatContents();
     }
 
-    public static void parseConvertedContentsTo(Scope scope, Node parent, FlatMethodDeclaration conversionTarget, Node to) {
+    public static void parseConvertedContentsTo(Scope scope, Node parent,
+        FlatMethodDeclaration conversionTarget, Node to) {
         String code = SyntaxUtils.getConvertedFlatContents(scope, parent, conversionTarget);
 
         TreeGenerator generator = new TreeGenerator(null, code, parent.getProgram().getTree());
@@ -3088,23 +3179,32 @@ public class SyntaxUtils {
         generator.traverseCode(to, 0, null, false);
     }
 
-    public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, GenericTypeArgument argument) {
-        return performWalk(context, subContext, current, required, argument.getGenericTypeParameter());
+    public static GenericTypeArgument performWalk(Value context, Value subContext,
+        ClassDeclaration current, ClassDeclaration required, GenericTypeArgument argument) {
+        return performWalk(context, subContext, current, required,
+            argument.getGenericTypeParameter());
     }
 
-    public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter) {
+    public static GenericTypeArgument performWalk(Value context, Value subContext,
+        ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter) {
         return performWalk(context, subContext, current, required, parameter, false);
     }
 
-    public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter, boolean allowGeneric) {
-        return performWalk(context, subContext, current, required, parameter.getVisibleIndex(), allowGeneric);
+    public static GenericTypeArgument performWalk(Value context, Value subContext,
+        ClassDeclaration current, ClassDeclaration required, GenericTypeParameter parameter,
+        boolean allowGeneric) {
+        return performWalk(context, subContext, current, required, parameter.getVisibleIndex(),
+            allowGeneric);
     }
 
-    public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, int parameterIndex) {
+    public static GenericTypeArgument performWalk(Value context, Value subContext,
+        ClassDeclaration current, ClassDeclaration required, int parameterIndex) {
         return performWalk(context, subContext, current, required, parameterIndex, false);
     }
 
-    public static GenericTypeArgument performWalk(Value context, Value subContext, ClassDeclaration current, ClassDeclaration required, int parameterIndex, boolean allowGeneric) {
+    public static GenericTypeArgument performWalk(Value context, Value subContext,
+        ClassDeclaration current, ClassDeclaration required, int parameterIndex,
+        boolean allowGeneric) {
         Stack<IValue> path = new Stack<>();
 
         path = performWalk(current, required, path);
@@ -3118,9 +3218,11 @@ public class SyntaxUtils {
                 GenericTypeArgument arg = null;
 
                 if (type.isPrimitiveOverload()) {
-                    GenericTypeParameter param = type.genericOverload.getGenericTypeParameter(parameterIndex);
+                    GenericTypeParameter param =
+                        type.genericOverload.getGenericTypeParameter(parameterIndex);
 
-                    GenericTypeParameter corresponding = type.getGenericTypeParameter(param.getName());
+                    GenericTypeParameter corresponding =
+                        type.getGenericTypeParameter(param.getName());
 
                     if (corresponding != null) {
                         arg = value.getGenericTypeArgument(corresponding.getVisibleIndex());
@@ -3144,23 +3246,26 @@ public class SyntaxUtils {
         }
 
         if (current.isPrimitiveOverload() && current.genericOverload == required) {
-            GenericTypeParameter param = current.genericOverload.getGenericTypeParameter(parameterIndex);
+            GenericTypeParameter param =
+                current.genericOverload.getGenericTypeParameter(parameterIndex);
 
             GenericTypeParameter corresponding = current.getGenericTypeParameter(param.getName());
 
             if (corresponding != null) {
-//				arg = value.getGenericTypeArgument(corresponding.getVisibleIndex());
+                // arg = value.getGenericTypeArgument(corresponding.getVisibleIndex());
             } else {
                 return (GenericTypeArgument) current.primitiveOverloadTypes[parameterIndex];
             }
-        } else if (subContext.getGenericTypeArgumentList() != null && subContext.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex) {
+        } else if (subContext.getGenericTypeArgumentList() != null
+            && subContext.getGenericTypeArgumentList().getNumVisibleChildren() > parameterIndex) {
             return subContext.getGenericTypeArgument(parameterIndex);
         }
 
         return null;
     }
 
-    public static Stack<IValue> performWalk(ClassDeclaration current, ClassDeclaration required, Stack<IValue> path) {
+    public static Stack<IValue> performWalk(ClassDeclaration current, ClassDeclaration required,
+        Stack<IValue> path) {
         if (required instanceof Trait) {
             TraitImplementation implementation = checkInterface(current, (Trait) required);
 

@@ -12,9 +12,9 @@ import flat.util.SyntaxUtils;
 import java.util.HashMap;
 
 /**
- * Node extension that represents a unary operator node type.
- * See {@link #decodeStatement(Node, String, Location, boolean)} for more
- * details on what correct inputs look like.
+ * Node extension that represents a unary operator node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 10:00:11 PM
@@ -72,61 +72,53 @@ public class UnaryOperation extends IValue {
     }
 
     /**
-     * Check whether or not the next sequence of chars in the given source
-     * is a unary operator.
+     * Check whether or not the next sequence of chars in the given source is a unary operator.
      *
      * @param source The source to check.
-     * @param index  The index to start the search at.
-     * @return Whether or not the next sequence of chars is a unary
-     * operator.
+     * @param index The index to start the search at.
+     * @return Whether or not the next sequence of chars is a unary operator.
      */
     public static boolean isUnaryOperator(CharSequence source, int index) {
         return isUnaryOperator(source, index, 1);
     }
 
     /**
-     * Check whether or not the next sequence of chars in the given source
-     * is a unary operator.
+     * Check whether or not the next sequence of chars in the given source is a unary operator.
      *
-     * @param source    The source to check.
-     * @param index     The index to start the search at.
-     * @param direction The direction to search in, e.g., 1 is forward and
-     *                  -1 is backward.
-     * @return Whether or not the next sequence of chars is a unary
-     * operator.
+     * @param source The source to check.
+     * @param index The index to start the search at.
+     * @param direction The direction to search in, e.g., 1 is forward and -1 is backward.
+     * @return Whether or not the next sequence of chars is a unary operator.
      */
     public static boolean isUnaryOperator(CharSequence source, int index, int direction) {
         return containsUnaryOperator(source, index, direction > 0 ? source.length() : 0, direction);
     }
 
     /**
-     * Check whether or not the next sequence of chars in the given source
-     * is a unary operator.
+     * Check whether or not the next sequence of chars in the given source is a unary operator.
      *
-     * @param source    The source to check.
-     * @param index     The index to start the search at.
+     * @param source The source to check.
+     * @param index The index to start the search at.
      * @param stopIndex The index to stop the search at.
-     * @return Whether or not the next sequence of chars is a unary
-     * operator.
+     * @return Whether or not the next sequence of chars is a unary operator.
      */
     public static boolean containsUnaryOperator(CharSequence source, int index, int stopIndex) {
         return containsUnaryOperator(source, index, stopIndex, 1);
     }
 
     /**
-     * Check whether or not the next sequence of chars in the given source
-     * is a unary operator.
+     * Check whether or not the next sequence of chars in the given source is a unary operator.
      *
-     * @param source    The source to check.
-     * @param index     The index to start the search at.
+     * @param source The source to check.
+     * @param index The index to start the search at.
      * @param stopIndex The index to stop the search at.
-     * @param direction The direction to search in, e.g., 1 is forward and
-     *                  -1 is backward.
-     * @return Whether or not the next sequence of chars is a unary
-     * operator.
+     * @param direction The direction to search in, e.g., 1 is forward and -1 is backward.
+     * @return Whether or not the next sequence of chars is a unary operator.
      */
-    public static boolean containsUnaryOperator(CharSequence source, int index, int stopIndex, int direction) {
-        Bounds bounds = StringUtils.findStrings(source, Operator.UNARY_OPERATORS_NO_MINUS, index, direction);
+    public static boolean containsUnaryOperator(CharSequence source, int index, int stopIndex,
+        int direction) {
+        Bounds bounds =
+            StringUtils.findStrings(source, Operator.UNARY_OPERATORS_NO_MINUS, index, direction);
 
         if (!validBounds(bounds, stopIndex, direction)) {
             bounds = StringUtils.findStrings(source, Operator.MINUS, index, direction);
@@ -146,15 +138,20 @@ public class UnaryOperation extends IValue {
     }
 
     private static boolean validBounds(Bounds bounds, int stopIndex, int direction) {
-        return bounds.isValid() && (direction > 0 && bounds.getEnd() < stopIndex || direction < 0 && bounds.getStart() >= stopIndex);
+        return bounds.isValid() && (direction > 0 && bounds.getEnd() < stopIndex
+            || direction < 0 && bounds.getStart() >= stopIndex);
     }
 
     /**
      * The the Node that represents the variable in the operation.<br>
      * For example:<br>
-     * <blockquote><pre>
-     * var++;</pre></blockquote>
-     * In the previous statement, 'var' is the variable.
+     * <blockquote>
+     * 
+     * <pre>
+     * var++;
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, 'var' is the variable.
      *
      * @return The Node that represents the variable in the operation.
      */
@@ -202,9 +199,13 @@ public class UnaryOperation extends IValue {
     /**
      * The the Node that represents the operator in the operation.<br>
      * For example:<br>
-     * <blockquote><pre>
-     * var++;</pre></blockquote>
-     * In the previous statement, '++' is the operator.
+     * <blockquote>
+     * 
+     * <pre>
+     * var++;
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, '++' is the operator.
      *
      * @return The Node that represents the operator in the operation.
      */
@@ -233,34 +234,33 @@ public class UnaryOperation extends IValue {
     }
 
     /**
-     * Decode the given statement into a UnaryOperation instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a UnaryOperation instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>asdf.var++</li>
-     * 	<li>++asdf.var</li>
-     * 	<li>asdf.var--</li>
-     * 	<li>--asdf.var</li>
-     * 	<li>var--</li>
-     * 	<li>--var</li>
-     * 	<li>var++</li>
-     * 	<li>++var</li>
-     * 	<li>++array[5]</li>
-     * 	<li>array[5]--</li>
-     * 	<li>!asdf.var</li>
-     * 	<li>!var</li>
+     * <li>asdf.var++</li>
+     * <li>++asdf.var</li>
+     * <li>asdf.var--</li>
+     * <li>--asdf.var</li>
+     * <li>var--</li>
+     * <li>--var</li>
+     * <li>var++</li>
+     * <li>++var</li>
+     * <li>++array[5]</li>
+     * <li>array[5]--</li>
+     * <li>!asdf.var</li>
+     * <li>!var</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  UnaryOperation instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a UnaryOperation.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a UnaryOperation instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a UnaryOperation.
      */
-    public static UnaryOperation decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static UnaryOperation decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         Bounds bounds = StringUtils.findStrings(statement, Operator.UNARY_OPERATORS);
 
         if (bounds.getStart() >= 0) {
@@ -292,8 +292,8 @@ public class UnaryOperation extends IValue {
      * Decode, and add, the Operator if possible.
      *
      * @param statement The statement to extract the Operator from.
-     * @param bounds    The bounds of the Operator.
-     * @param location  The location that the Operator was found at.
+     * @param bounds The bounds of the Operator.
+     * @param location The location that the Operator was found at.
      * @return Whether or not the operator decoded successfully.
      */
     private boolean decodeOperator(String statement, Bounds bounds, Location location) {
@@ -314,11 +314,10 @@ public class UnaryOperation extends IValue {
     }
 
     /**
-     * Calculate the Bounds of the identifier that the unary operation is
-     * acting on.
+     * Calculate the Bounds of the identifier that the unary operation is acting on.
      *
      * @param statement The statement to find the Bounds in.
-     * @param bounds    The Bounds of the unary operator.
+     * @param bounds The Bounds of the unary operator.
      * @return The calculated Bounds of the found identifier.
      */
     private Bounds calculateIdentifierBounds(String statement, Bounds bounds) {
@@ -353,19 +352,20 @@ public class UnaryOperation extends IValue {
      *
      * @param contents The String representing the Identifier Value.
      * @param location The location that the Identifier represents.
-     * @param bounds   The unary operator's Bounds.
-     * @param require  Whether or not to throw an error if anything goes
-     *                 wrong.
+     * @param bounds The unary operator's Bounds.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the Identifier Value decoded successfully.
      */
-    private boolean decodeIdentifierValue(String contents, Location location, Bounds bounds, boolean require) {
+    private boolean decodeIdentifierValue(String contents, Location location, Bounds bounds,
+        boolean require) {
         Value value = SyntaxTree.decodeValue(this, contents, location, false);
 
         if (value == null) {
-            //value = ArrayAccess.decodeStatement(this, contents, location, false);
+            // value = ArrayAccess.decodeStatement(this, contents, location, false);
 
             if (value == null) {
-                return SyntaxMessage.queryError("Undeclared value '" + contents + "'", this, require);
+                return SyntaxMessage.queryError("Undeclared value '" + contents + "'", this,
+                    require);
             }
         } else if (value instanceof BinaryOperation) {
             return false;
@@ -425,7 +425,8 @@ public class UnaryOperation extends IValue {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public UnaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public UnaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         UnaryOperation node = new UnaryOperation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -439,24 +440,23 @@ public class UnaryOperation extends IValue {
     }
 
     /**
-     * Fill the given {@link UnaryOperation} with the data that is in the
-     * specified node.
+     * Fill the given {@link UnaryOperation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public UnaryOperation cloneTo(UnaryOperation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public UnaryOperation cloneTo(UnaryOperation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the UnaryOperation class type to make sure everything
-     * is working properly.
+     * Test the UnaryOperation class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -464,3 +464,4 @@ public class UnaryOperation extends IValue {
         return null;
     }
 }
+

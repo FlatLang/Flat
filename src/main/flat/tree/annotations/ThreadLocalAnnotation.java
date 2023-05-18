@@ -25,7 +25,8 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
         super(temporaryParent, locationIn);
     }
 
-    public static ThreadLocalAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static ThreadLocalAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("ThreadLocal")) {
             ThreadLocalAnnotation n = new ThreadLocalAnnotation(parent, location);
 
@@ -44,12 +45,15 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
     private void initializeField(FieldDeclaration field, GenericTypeArgument arg) {
         FieldDeclaration.InitializationContext context = field.getInitializationContext();
 
-        Instantiation replacement = Instantiation.decodeStatement(context.parents[0], field.generateFlatType(field) + "(" + arg.getDefaultLiteralValue() + ")", Location.INVALID, true, false);
+        Instantiation replacement = Instantiation.decodeStatement(context.parents[0],
+            field.generateFlatType(field) + "(" + arg.getDefaultLiteralValue() + ")",
+            Location.INVALID, true, false);
 
         if (field.initializationValue != null) {
             Node parent = ((Node) field.initializationValue).parent;
 
-            ((MethodCall) replacement.getIdentifier()).getArgumentList().getVisibleChild(0).replaceWith((Value) field.initializationValue);
+            ((MethodCall) replacement.getIdentifier()).getArgumentList().getVisibleChild(0)
+                .replaceWith((Value) field.initializationValue);
 
             parent.addChild(replacement);
         } else {
@@ -69,7 +73,8 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 
         if (result.skipValidation()) {
             return result;
-        } else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS && !getProgram().getController().target.equals("c")) {
+        } else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS
+            && !getProgram().getController().target.equals("c")) {
             FieldDeclaration field = (FieldDeclaration) parent;
 
             GenericTypeArgument arg = new GenericTypeArgument(field, Location.INVALID);
@@ -89,7 +94,9 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
                     MethodCall call = null;
 
                     if (var.isBeingModified()) {
-                        call = MethodCall.decodeStatement(var, "set(" + arg.getDefaultLiteralValue() + ")", var.getLocationIn(), true, false);
+                        call = MethodCall.decodeStatement(var,
+                            "set(" + arg.getDefaultLiteralValue() + ")", var.getLocationIn(), true,
+                            false);
 
                         if (var.parent.parent instanceof Assignment) {
                             Assignment ass = (Assignment) var.parent.parent;
@@ -98,12 +105,14 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
                                 continue;
                             }
 
-                            call.getArgumentList().getVisibleChild(0).replaceWith(ass.getAssignmentNode());
+                            call.getArgumentList().getVisibleChild(0)
+                                .replaceWith(ass.getAssignmentNode());
 
                             ass.replaceWith(var);
                         }
                     } else {
-                        call = MethodCall.decodeStatement(var, "get()", var.getLocationIn(), true, false);
+                        call = MethodCall.decodeStatement(var, "get()", var.getLocationIn(), true,
+                            false);
                     }
 
                     Identifier temp = var.getAccessedNode();
@@ -118,7 +127,8 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
                             if (ass.getAssignedNodeValue() instanceof Variable) {
                                 VariableDeclaration decl = ass.getAssignedNode().declaration;
 
-                                if (decl instanceof LocalDeclaration && ((LocalDeclaration) decl).isImplicit()) {
+                                if (decl instanceof LocalDeclaration
+                                    && ((LocalDeclaration) decl).isImplicit()) {
                                     ((LocalDeclaration) decl).implicitType = call.getReturnedNode();
                                 }
                             }
@@ -147,7 +157,8 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
     }
 
     @Override
-    public ThreadLocalAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ThreadLocalAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ThreadLocalAnnotation node = new ThreadLocalAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -157,7 +168,8 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
         return cloneTo(node, true, true);
     }
 
-    public ThreadLocalAnnotation cloneTo(ThreadLocalAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ThreadLocalAnnotation cloneTo(ThreadLocalAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -167,6 +179,7 @@ public class ThreadLocalAnnotation extends Annotation implements ModifierAnnotat
 
     @Override
     public String[] getAliases() {
-        return new String[]{"thread_local"};
+        return new String[] {"thread_local"};
     }
 }
+

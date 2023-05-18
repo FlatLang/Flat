@@ -8,8 +8,7 @@ import flat.util.Location;
 import flat.util.StringUtils;
 
 /**
- * InstanceDeclaration extension that represents the declaration of a method
- * node type.
+ * InstanceDeclaration extension that represents the declaration of a method node type.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:10:53 PM
@@ -50,11 +49,10 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
     }
 
     /**
-     * Get whether or not the specified MethodDeclaration contains a body
-     * or not. The default is false.
+     * Get whether or not the specified MethodDeclaration contains a body or not. The default is
+     * false.
      *
-     * @return Whether or not the specified MethodDeclaration contains a
-     * body.
+     * @return Whether or not the specified MethodDeclaration contains a body.
      */
     public boolean containsBody() {
         return false;
@@ -102,35 +100,39 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
     }
 
     /**
-     * The the ParameterList that represents the parameters of the
-     * method.<br>
+     * The the ParameterList that represents the parameters of the method.<br>
      * For example:<br>
-     * <blockquote><pre>
-     * public void methodName(int age, String name);</pre></blockquote>
-     * In the previous statement, the data within the parenthesis are the
-     * parameters of the method. The ParameterList returned by this
-     * method would contain a node for each of the parameter specified, in
-     * the correct order from left to right.
+     * <blockquote>
+     * 
+     * <pre>
+     * public void methodName(int age, String name);
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, the data within the parenthesis are the parameters
+     * of the method. The ParameterList returned by this method would contain a node for each of the
+     * parameter specified, in the correct order from left to right.
      *
-     * @return The ParameterList that represents the parameters of the
-     * method.
+     * @return The ParameterList that represents the parameters of the method.
      */
     public ParameterList<Parameter> getParameterList() {
         return (ParameterList<Parameter>) getChild(super.getNumDefaultChildren());
     }
 
     /**
-     * Get the Parameter that the given index represents. The
-     * parameters are ordered from left to right, 0 being the first.<br>
+     * Get the Parameter that the given index represents. The parameters are ordered from left to
+     * right, 0 being the first.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public void run(int a, int b, int c)
      * {
      * 	...
-     * }</pre></blockquote>
-     * If you were to call getParameter(2) on the method
-     * above, you would receive the c Parameter.
+     * }
+     * </pre>
+     * 
+     * </blockquote> If you were to call getParameter(2) on the method above, you would receive the
+     * c Parameter.
      *
      * @param parameterIndex The index parameter to get.
      * @return The Parameter at the given index.
@@ -140,12 +142,11 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
     }
 
     /**
-     * Find the String representing the signature of the bodyless
-     * method that is currently being decoded from the given
-     * statement String.
+     * Find the String representing the signature of the bodyless method that is currently being
+     * decoded from the given statement String.
      *
      * @param statement The String containing the method signature.
-     * @param remove    The Bounds to remove from the statement.
+     * @param remove The Bounds to remove from the statement.
      * @return The signature for the bodyless method to decode.
      */
     public static String findMethodSignature(String statement, Bounds remove) {
@@ -169,9 +170,8 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
     /**
      * Decode the given parameters that were declared for the Method.
      *
-     * @param parameterList The statement that contains the parameters
-     *                      separated by commas.
-     * @param require       Whether or not a successful decode is required.
+     * @param parameterList The statement that contains the parameters separated by commas.
+     * @param require Whether or not a successful decode is required.
      * @return Whether or not the parameters were decoded correctly.
      */
     public boolean decodeParameters(String parameterList, boolean require) {
@@ -188,7 +188,8 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
                 Parameter param = Parameter.decodeStatement(this, parameters[i], location, require);
 
                 if (param == null) {
-                    return SyntaxMessage.queryError("Incorrect parameter definition", this, require);
+                    return SyntaxMessage.queryError("Incorrect parameter definition", this,
+                        require);
                 }
 
                 getParameterList().addChild(param);
@@ -208,24 +209,23 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
     }
 
     /**
-     * Fill the given {@link MethodDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link MethodDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public MethodDeclaration cloneTo(MethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public MethodDeclaration cloneTo(MethodDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the MethodDeclaration class type to make sure everything
-     * is working properly.
+     * Test the MethodDeclaration class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -233,3 +233,4 @@ public abstract class MethodDeclaration extends InstanceDeclaration implements C
         return null;
     }
 }
+

@@ -25,7 +25,8 @@ public class AnonymousCompilerMethod extends BodyMethodDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public AnonymousCompilerMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AnonymousCompilerMethod clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         AnonymousCompilerMethod node = new AnonymousCompilerMethod(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -39,24 +40,24 @@ public class AnonymousCompilerMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link AnonymousCompilerMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link AnonymousCompilerMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public AnonymousCompilerMethod cloneTo(AnonymousCompilerMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AnonymousCompilerMethod cloneTo(AnonymousCompilerMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link AnonymousCompilerMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link AnonymousCompilerMethod} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -64,3 +65,4 @@ public class AnonymousCompilerMethod extends BodyMethodDeclaration {
         return null;
     }
 }
+

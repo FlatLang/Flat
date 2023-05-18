@@ -32,29 +32,31 @@ public class DataClassDeclaration extends ClassDeclaration {
     }
 
     /**
-     * Decode the given statement into a {@link DataClassDeclaration} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link DataClassDeclaration} instance, if possible. If it
+     * is not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link DataClassDeclaration} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link DataClassDeclaration}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link DataClassDeclaration} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link DataClassDeclaration}.
      */
-    public static DataClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static DataClassDeclaration decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         int index = SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER);
 
-        if (index >= 0 && StringUtils.findNextWhitespaceIndex(statement, index + IDENTIFIER.length()) == index + IDENTIFIER.length()) {
-            statement = statement.substring(0, index) + statement.substring(index + IDENTIFIER.length() + 1);
+        if (index >= 0 && StringUtils.findNextWhitespaceIndex(statement,
+            index + IDENTIFIER.length()) == index + IDENTIFIER.length()) {
+            statement = statement.substring(0, index)
+                + statement.substring(index + IDENTIFIER.length() + 1);
 
             ClassData data = new ClassData(false, false, true);
 
@@ -99,8 +101,10 @@ public class DataClassDeclaration extends ClassDeclaration {
 
             getFields().forEach((field) -> {
                 if (field.initializationValue instanceof Value) {
-                    FieldDeclaration builderField = builderClass.getField(field.getName() + "_value");
-                    builderField.initializationValue = ((Value) field.initializationValue).generateFlatInput().toString();
+                    FieldDeclaration builderField =
+                        builderClass.getField(field.getName() + "_value");
+                    builderField.initializationValue =
+                        ((Value) field.initializationValue).generateFlatInput().toString();
                     builderField.decodeInitializationValue();
                 }
             });
@@ -139,7 +143,10 @@ public class DataClassDeclaration extends ClassDeclaration {
             .filter(f -> !f.containsAccessorMethod());
 
         if (doesExtendClass() && getExtendedClassDeclaration() instanceof DataClassDeclaration) {
-            return Stream.concat(((DataClassDeclaration) getExtendedClassDeclaration()).getFields().stream(), fields).collect(Collectors.toList());
+            return Stream
+                .concat(((DataClassDeclaration) getExtendedClassDeclaration()).getFields().stream(),
+                    fields)
+                .collect(Collectors.toList());
         } else {
             return fields.collect(Collectors.toList());
         }
@@ -152,7 +159,8 @@ public class DataClassDeclaration extends ClassDeclaration {
             .map(f -> f.getFlatType(this) + " " + f.getName() + " = " + f.getName())
             .collect(Collectors.joining(", "));
 
-        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copy(" + params + ") -> " + getFlatType(), Location.INVALID, true);
+        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this,
+            "public copy(" + params + ") -> " + getFlatType(), Location.INVALID, true);
 
         if (func == null) {
             SyntaxMessage.error("Failed to create copy function for data class", this);
@@ -172,8 +180,7 @@ public class DataClassDeclaration extends ClassDeclaration {
             func.getScope(),
             getName() + genericArgs + "(" + args + ")",
             Location.INVALID,
-            true
-        );
+            true);
 
         Return returnStatement = new Return(func.getScope(), Location.INVALID);
         returnStatement.getReturnValues().addChild(returnValue);
@@ -196,7 +203,9 @@ public class DataClassDeclaration extends ClassDeclaration {
             .map(f -> ", " + f.getFlatType(this) + ": " + f.getName() + " = " + f.getName())
             .collect(Collectors.joining(""));
 
-        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "public copyTo<TargetType extends " + getName() + ">(" + params + ") -> TargetType", Location.INVALID, true);
+        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this,
+            "public copyTo<TargetType extends " + getName() + ">(" + params + ") -> TargetType",
+            Location.INVALID, true);
 
         if (func == null) {
             SyntaxMessage.error("Failed to create copyTo function for data class", this);
@@ -217,8 +226,7 @@ public class DataClassDeclaration extends ClassDeclaration {
             func.getScope(),
             paramName + ".toBuilder()" + calls + ".build()",
             Location.INVALID,
-            true
-        );
+            true);
 
         Return returnStatement = new Return(func.getScope(), Location.INVALID);
         returnStatement.getReturnValues().addChild(returnValue);
@@ -228,7 +236,8 @@ public class DataClassDeclaration extends ClassDeclaration {
     }
 
     private void addEqualsFunctions() {
-        BodyMethodDeclaration objectFunc = BodyMethodDeclaration.decodeStatement(this, "override public equals(Object other) -> Bool", Location.INVALID, true);
+        BodyMethodDeclaration objectFunc = BodyMethodDeclaration.decodeStatement(this,
+            "override public equals(Object other) -> Bool", Location.INVALID, true);
 
         if (objectFunc == null) {
             SyntaxMessage.error("Failed to create equals function override for data class", this);
@@ -241,7 +250,8 @@ public class DataClassDeclaration extends ClassDeclaration {
 
         addChild(objectFunc);
 
-        BodyMethodDeclaration classFunc = BodyMethodDeclaration.decodeStatement(this, "public equals(" + getName() + " other) -> Bool", Location.INVALID, true);
+        BodyMethodDeclaration classFunc = BodyMethodDeclaration.decodeStatement(this,
+            "public equals(" + getName() + " other) -> Bool", Location.INVALID, true);
 
         if (classFunc == null) {
             SyntaxMessage.error("Failed to create equals function overload for data class", this);
@@ -268,7 +278,8 @@ public class DataClassDeclaration extends ClassDeclaration {
             return;
         }
 
-        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "override public toString() -> String", Location.INVALID, true);
+        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this,
+            "override public toString() -> String", Location.INVALID, true);
 
         if (func == null) {
             SyntaxMessage.error("Failed to create toString function override for data class", this);
@@ -280,7 +291,9 @@ public class DataClassDeclaration extends ClassDeclaration {
             .collect(Collectors.toList());
 
         String values = fields.stream()
-            .map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + " != null && " + f.getName() + ".class.isOfType(String.class) ? '\"' + " + f.getName() + ".toString() + '\"' : " + f.getName() + ".toString()}")
+            .map(f -> "      \\\"" + f.getName() + "\\\": #{" + f.getName() + " != null && "
+                + f.getName() + ".class.isOfType(String.class) ? '\"' + " + f.getName()
+                + ".toString() + '\"' : " + f.getName() + ".toString()}")
             .collect(Collectors.joining(",\n"))
             .trim();
 
@@ -298,7 +311,8 @@ public class DataClassDeclaration extends ClassDeclaration {
     }
 
     private void addToJsonFunction() {
-        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this, "override public toJson() -> String", Location.INVALID, true);
+        BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this,
+            "override public toJson() -> String", Location.INVALID, true);
 
         if (func == null) {
             SyntaxMessage.error("Failed to create toJson function override for data class", this);
@@ -324,40 +338,49 @@ public class DataClassDeclaration extends ClassDeclaration {
     private ClassDeclaration getBuilderClass() {
         TypeList<ClassDeclaration> innerClasses = getInnerClasses(false);
 
-        return innerClasses.filterListChildren(c -> c.getName().equals("Builder")).stream().findFirst().get();
+        return innerClasses.filterListChildren(c -> c.getName().equals("Builder")).stream()
+            .findFirst().get();
     }
 
     private void addBuilderClass() {
         String genericParams = getGenericTypeParameterDeclaration().generateFlatInput().toString();
         String genericArgs = getGenericTypeArgumentList().generateFlatInput().toString();
-        ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this, "public static class Builder" + genericParams, Location.INVALID, true);
+        ClassDeclaration builderClass = ClassDeclaration.decodeStatement(this,
+            "public static class Builder" + genericParams, Location.INVALID, true);
 
         List<FieldDeclaration> fields = getFields();
 
         fields.forEach((field) -> {
             String fieldType = field.getFlatType(this);
-            FieldDeclaration mutableField = FieldDeclaration.decodeStatement(builderClass, "var " + fieldType + " " + field.getName() + "_value", Location.INVALID, true);
+            FieldDeclaration mutableField = FieldDeclaration.decodeStatement(builderClass,
+                "var " + fieldType + " " + field.getName() + "_value", Location.INVALID, true);
             mutableField.onAfterDecoded();
 
-            BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public " + field.getName() + "(" + fieldType + " value) -> Builder" + genericParams, Location.INVALID, true);
+            BodyMethodDeclaration assignFunc = BodyMethodDeclaration.decodeStatement(builderClass,
+                "public " + field.getName() + "(" + fieldType + " value) -> Builder"
+                    + genericParams,
+                Location.INVALID, true);
             assignFunc.shorthandAction = "this";
             assignFunc.onAfterDecoded();
 
             builderClass.addChild(mutableField);
             builderClass.addChild(assignFunc);
 
-            Assignment assignment = Assignment.decodeStatement(assignFunc, field.getName() + "_value = value", Location.INVALID, true);
+            Assignment assignment = Assignment.decodeStatement(assignFunc,
+                field.getName() + "_value = value", Location.INVALID, true);
 
             assignFunc.addChild(assignment);
         });
 
-        BodyMethodDeclaration buildFunc = BodyMethodDeclaration.decodeStatement(builderClass, "public build() -> " + getName() + genericArgs, Location.INVALID, true);
+        BodyMethodDeclaration buildFunc = BodyMethodDeclaration.decodeStatement(builderClass,
+            "public build() -> " + getName() + genericArgs, Location.INVALID, true);
 
         String args = getDataClassConstructor()
             .getParameterList()
             .getChildStream()
             .filter(f -> f instanceof ReferenceParameter == false)
-            .map(param -> ((Parameter) param).getName() + ": " + ((Parameter) param).getName() + "_value")
+            .map(param -> ((Parameter) param).getName() + ": " + ((Parameter) param).getName()
+                + "_value")
             .collect(Collectors.joining(", "));
 
         buildFunc.shorthandAction = getName() + genericArgs + "(" + args + ")";
@@ -372,20 +395,21 @@ public class DataClassDeclaration extends ClassDeclaration {
             builderClass,
             "public construct(" + constructorParams + ")",
             Location.INVALID,
-            true
-        );
+            true);
 
         builderClass.addChild(constructor);
 
         fields.forEach((field) -> {
-            Assignment assignment = Assignment.decodeStatement(constructor, "this." + field.getName() + "_value = " + field.getName(), Location.INVALID, true);
+            Assignment assignment = Assignment.decodeStatement(constructor,
+                "this." + field.getName() + "_value = " + field.getName(), Location.INVALID, true);
 
             constructor.addChild(assignment);
         });
 
         addChild(builderClass);
 
-        BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(this, "public toBuilder() -> Builder" + genericParams, Location.INVALID, true);
+        BodyMethodDeclaration toBuilderFunc = BodyMethodDeclaration.decodeStatement(this,
+            "public toBuilder() -> Builder" + genericParams, Location.INVALID, true);
 
         String toBuilderArgs = fields.stream()
             .map(f -> f.getName() + ": " + f.getName())
@@ -406,8 +430,7 @@ public class DataClassDeclaration extends ClassDeclaration {
                 .getChildStream()
                 .filter(f -> f instanceof ReferenceParameter == false)
                 .map(p -> (Parameter) p)
-                .allMatch(p -> fields.stream().anyMatch(f -> f.getName().equals(p.getName())))
-            )
+                .allMatch(p -> fields.stream().anyMatch(f -> f.getName().equals(p.getName()))))
             .findFirst()
             .orElse(null);
     }
@@ -426,7 +449,8 @@ public class DataClassDeclaration extends ClassDeclaration {
                         initialization = (String) f.initializationValue;
                     }
 
-                    return "this " + f.getFlatType(this) + " " + f.getName() + " = " + initialization;
+                    return "this " + f.getFlatType(this) + " " + f.getName() + " = "
+                        + initialization;
                 })
                 .collect(Collectors.joining(", "));
 
@@ -434,8 +458,7 @@ public class DataClassDeclaration extends ClassDeclaration {
                 this,
                 "public construct(" + params + ")",
                 Location.INVALID,
-                true
-            );
+                true);
 
             addChild(constructor);
         }
@@ -445,7 +468,8 @@ public class DataClassDeclaration extends ClassDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public DataClassDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public DataClassDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         DataClassDeclaration node = new DataClassDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -459,24 +483,23 @@ public class DataClassDeclaration extends ClassDeclaration {
     }
 
     /**
-     * Fill the given {@link DataClassDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link DataClassDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public DataClassDeclaration cloneTo(DataClassDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public DataClassDeclaration cloneTo(DataClassDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link DataClassDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link DataClassDeclaration} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

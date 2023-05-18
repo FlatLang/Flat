@@ -4,9 +4,8 @@ import flat.TestContext;
 import flat.util.Location;
 
 /**
- * Node extension that represents something that returns a value.
- * For the rules on what can and cannot be an value node, refer to
- * {@link #setType(java.lang.String)}
+ * Node extension that represents something that returns a value. For the rules on what can and
+ * cannot be an value node, refer to {@link #setType(java.lang.String)}
  *
  * @author Braden Steffaniak
  * @since v0.2.4 May 2, 2014 at 11:14:37 PM
@@ -14,11 +13,11 @@ import flat.util.Location;
  */
 public class IValue extends Value {
     // Dont forget about IIdentifier!!!!
-//	private byte	dataType;
-//
-//	private int		arrayDimensions;
-//
-//	private String	type;
+    // private byte dataType;
+    //
+    // private int arrayDimensions;
+    //
+    // private String type;
 
     public Type type;
 
@@ -36,7 +35,9 @@ public class IValue extends Value {
     @Override
     // Dont forget about IIdentifier!!!!
     public int getArrayDimensions() {
-        return type != null ? type.arrayDimensions : 0;//type instanceof ArrayType ? ((ArrayType)type).arrayDimensions - getArrayAccessDimensions() : 0;
+        return type != null ? type.arrayDimensions : 0;// type instanceof ArrayType ?
+                                                       // ((ArrayType)type).arrayDimensions -
+                                                       // getArrayAccessDimensions() : 0;
     }
 
     /**
@@ -45,34 +46,21 @@ public class IValue extends Value {
     @Override
     // Dont forget about IIdentifier!!!!
     public void setArrayDimensions(int arrayDimensions) {
-		/*if (arrayDimensions > 0)
-		{
-			String value = type != null ? type.value : null;
-			byte dataType = type != null ? type.dataType : -1;
-			
-			if (type instanceof ArrayType == false)
-			{
-				ArrayType newType = new ArrayType();
-				newType.type = type;
-				
-				type = newType;
-			}
-			
-			((ArrayType)type).arrayDimensions = arrayDimensions;
-			
-//			if (value != null && dataType == VALUE)
-//			{
-				type.value = value;
-//			}
-//			else
-//			{
-//				type.value = "Array";
-//			}
-		}
-		else if (type instanceof ArrayType)
-		{
-			type = ((ArrayType)type).type;
-		}*/
+        /*
+         * if (arrayDimensions > 0) { String value = type != null ? type.value : null; byte dataType
+         * = type != null ? type.dataType : -1;
+         * 
+         * if (type instanceof ArrayType == false) { ArrayType newType = new ArrayType();
+         * newType.type = type;
+         * 
+         * type = newType; }
+         * 
+         * ((ArrayType)type).arrayDimensions = arrayDimensions;
+         * 
+         * // if (value != null && dataType == VALUE) // { type.value = value; // } // else // { //
+         * type.value = "Array"; // } } else if (type instanceof ArrayType) { type =
+         * ((ArrayType)type).type; }
+         */
         type = type == null ? new Type() : type;
 
         type.arrayDimensions = arrayDimensions;
@@ -150,7 +138,8 @@ public class IValue extends Value {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public IValue clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public IValue clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         IValue node = new IValue(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -164,8 +153,7 @@ public class IValue extends Value {
     }
 
     /**
-     * Fill the given {@link Value} with the data that is in the
-     * specified node.
+     * Fill the given {@link Value} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -191,18 +179,17 @@ public class IValue extends Value {
         return super.onAfterDecoded();
     }
 
-    //	@Override
-//	public String toString()
-//	{
-//		return getTypeStringValue();
-//	}
+    // @Override
+    // public String toString()
+    // {
+    // return getTypeStringValue();
+    // }
 
     /**
-     * Test the IValue class type to make sure everything
-     * is working properly.
+     * Test the IValue class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -210,3 +197,4 @@ public class IValue extends Value {
         return null;
     }
 }
+

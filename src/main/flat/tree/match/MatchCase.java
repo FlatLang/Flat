@@ -63,11 +63,10 @@ public abstract class MatchCase extends Node implements MatchChild {
     }
 
     /**
-     * Test the {@link MatchCase} class type to make sure everything
-     * is working properly.
+     * Test the {@link MatchCase} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -75,3 +74,4 @@ public abstract class MatchCase extends Node implements MatchChild {
         return null;
     }
 }
+

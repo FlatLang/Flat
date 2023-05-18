@@ -25,7 +25,8 @@ public class AwaitAnnotation extends Annotation implements ModifierAnnotation {
         super(temporaryParent, locationIn);
     }
 
-    public static AwaitAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static AwaitAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Await")) {
             AwaitAnnotation n = new AwaitAnnotation(parent, location);
 
@@ -77,7 +78,8 @@ public class AwaitAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public AwaitAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AwaitAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         AwaitAnnotation node = new AwaitAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -87,7 +89,8 @@ public class AwaitAnnotation extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public AwaitAnnotation cloneTo(AwaitAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AwaitAnnotation cloneTo(AwaitAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -97,6 +100,7 @@ public class AwaitAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"await"};
+        return new String[] {"await"};
     }
 }
+

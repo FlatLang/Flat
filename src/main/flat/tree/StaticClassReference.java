@@ -10,9 +10,8 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
- * {@link IIdentifier} extension that represents the use of a Static
- * Class name to reference a static instance within the specified
- * Class.
+ * {@link IIdentifier} extension that represents the use of a Static Class name to reference a
+ * static instance within the specified Class.
  *
  * @author Braden Steffaniak
  * @since v0.2.9 Aug 23, 2014 at 11:25:19 PM
@@ -27,29 +26,32 @@ public class StaticClassReference extends IIdentifier {
     }
 
     /**
-     * Decode the given statement into a {@link StaticClassReference} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link StaticClassReference} instance, if possible. If it
+     * is not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>Math</li>
-     * 	<li>Object</li>
-     * 	<li>ClassName</li>
+     * <li>Math</li>
+     * <li>Object</li>
+     * <li>ClassName</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link StaticClassReference} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link StaticClassReference}.`
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link StaticClassReference} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link StaticClassReference}.`
      */
-    public static StaticClassReference decodeStatement(Node parent, String statement, Location location, boolean require) {
-        Node ref = parent instanceof Accessible && ((Accessible) parent).canAccess() ? ((Accessible) parent).toValue().getTypeClass() : parent;
+    public static StaticClassReference decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
+        Node ref = parent instanceof Accessible && ((Accessible) parent).canAccess()
+            ? ((Accessible) parent).toValue().getTypeClass()
+            : parent;
         ref = ref == null ? parent : ref;
 
-        if (ref.getFileDeclaration().getClassDeclaration(statement) != null || ref.getFileDeclaration().containsImport(statement, false, true)) {
+        if (ref.getFileDeclaration().getClassDeclaration(statement) != null
+            || ref.getFileDeclaration().containsImport(statement, false, true)) {
             StaticClassReference n = new StaticClassReference(parent, location);
 
             n.setName(statement);
@@ -62,7 +64,11 @@ public class StaticClassReference extends IIdentifier {
     }
 
     public boolean isMetaClass() {
-        return !isDecoding() && !doesAccess() && (parent instanceof MethodCallArgumentList == false || parent.parent.isDecoding() || !((MethodCallArgumentList) parent).getMethodDeclaration().getParentClass().getClassLocation().equals("flat/meta/Class")) && parent.getAncestorOfType(GenericTypeArgumentList.class, true) != null;
+        return !isDecoding() && !doesAccess()
+            && (parent instanceof MethodCallArgumentList == false || parent.parent.isDecoding()
+                || !((MethodCallArgumentList) parent).getMethodDeclaration().getParentClass()
+                    .getClassLocation().equals("flat/meta/Class"))
+            && parent.getAncestorOfType(GenericTypeArgumentList.class, true) != null;
     }
 
     @Override
@@ -75,9 +81,8 @@ public class StaticClassReference extends IIdentifier {
             StaticClassReference ref = (StaticClassReference) getParent();
             ClassDeclaration typeClass = ref.getTypeClass(checkCast, defaultGenericType);
             ClassDeclaration tc = Stream.concat(
-                    Arrays.stream(typeClass.getEncapsulatedClasses()),
-                    Arrays.stream(typeClass.getSiblingClasses())
-                )
+                Arrays.stream(typeClass.getEncapsulatedClasses()),
+                Arrays.stream(typeClass.getSiblingClasses()))
                 .filter(c -> c.getName().equals(getName()))
                 .findFirst()
                 .orElse(null);
@@ -94,9 +99,8 @@ public class StaticClassReference extends IIdentifier {
             StaticClassReference ref = (StaticClassReference) getParent();
             ClassDeclaration typeClass = ref.getTypeClass(checkCast, false);
             ClassDeclaration tc = Stream.concat(
-                    Arrays.stream(typeClass.getEncapsulatedClasses()),
-                    Arrays.stream(typeClass.getSiblingClasses())
-                )
+                Arrays.stream(typeClass.getEncapsulatedClasses()),
+                Arrays.stream(typeClass.getSiblingClasses()))
                 .filter(c -> c.getName().equals(getName()))
                 .findFirst()
                 .orElse(null);
@@ -131,10 +135,11 @@ public class StaticClassReference extends IIdentifier {
     @Override
     public boolean onAfterDecoded() {
         if (!doesAccess()) {
-            Variable var = (Variable) SyntaxTree.decodeIdentifier(this, "class", getLocationIn(), false);
+            Variable var =
+                (Variable) SyntaxTree.decodeIdentifier(this, "class", getLocationIn(), false);
 
             if (var != null) {
-//				setAccessedNode(var);
+                // setAccessedNode(var);
             }
         }
 
@@ -154,7 +159,8 @@ public class StaticClassReference extends IIdentifier {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public StaticClassReference clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public StaticClassReference clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         StaticClassReference node = new StaticClassReference(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -168,24 +174,23 @@ public class StaticClassReference extends IIdentifier {
     }
 
     /**
-     * Fill the given {@link StaticClassReference} with the data that is in the
-     * specified node.
+     * Fill the given {@link StaticClassReference} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public StaticClassReference cloneTo(StaticClassReference node, boolean cloneChildren, boolean cloneAnnotations) {
+    public StaticClassReference cloneTo(StaticClassReference node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link StaticClassReference} class type to make sure everything
-     * is working properly.
+     * Test the {@link StaticClassReference} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

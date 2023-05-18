@@ -7,8 +7,7 @@ import flat.util.Location;
 import java.util.ArrayList;
 
 /**
- * Node extension that represents a list of parameters for a flat
- * method.
+ * Node extension that represents a list of parameters for a flat method.
  *
  * @author Braden Steffaniak
  * @since v0.2.38 Nov 11, 2014 at 3:44:42 PM
@@ -58,7 +57,9 @@ public class FlatParameterList extends ParameterList<Parameter> {
     }
 
     public void addReturnParameter(String type) {
-        Parameter p = Parameter.decodeStatement(this, type + " ret" + (returnParameters.getNumVisibleChildren() + 1), getLocationIn().asNew(), true, false, true);
+        Parameter p = Parameter.decodeStatement(this,
+            type + " ret" + (returnParameters.getNumVisibleChildren() + 1), getLocationIn().asNew(),
+            true, false, true);
         p.setForceOriginalName(true);
         p.validateType();
         p.setIsValueReference(true);
@@ -80,7 +81,8 @@ public class FlatParameterList extends ParameterList<Parameter> {
     public Parameter getParameter(int parameterIndex) {
         Parameter param = super.getParameter(parameterIndex);
 
-        if (param == null && returnParameters.getNumVisibleChildren() > parameterIndex - getNumVisibleChildren()) {
+        if (param == null && returnParameters.getNumVisibleChildren() > parameterIndex
+            - getNumVisibleChildren()) {
             param = returnParameters.getVisibleChild(parameterIndex - getNumVisibleChildren());
         }
 
@@ -102,7 +104,8 @@ public class FlatParameterList extends ParameterList<Parameter> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public FlatParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public FlatParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         FlatParameterList node = new FlatParameterList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -116,13 +119,13 @@ public class FlatParameterList extends ParameterList<Parameter> {
     }
 
     /**
-     * Fill the given {@link FlatParameterList} with the data that is in the
-     * specified node.
+     * Fill the given {@link FlatParameterList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public FlatParameterList cloneTo(FlatParameterList node, boolean cloneChildren, boolean cloneAnnotations) {
+    public FlatParameterList cloneTo(FlatParameterList node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.returnParameters = returnParameters.clone(node, getLocationIn().asNew(), true, true);
@@ -131,11 +134,10 @@ public class FlatParameterList extends ParameterList<Parameter> {
     }
 
     /**
-     * Test the FlatParameterList class type to make sure everything
-     * is working properly.
+     * Test the FlatParameterList class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -144,8 +146,7 @@ public class FlatParameterList extends ParameterList<Parameter> {
     }
 
     /**
-     * ParameterList extension that represents the extraneous return
-     * values that the method returns.
+     * ParameterList extension that represents the extraneous return values that the method returns.
      *
      * @author Braden Steffaniak
      * @since v0.2.42 Dec 26, 2014 at 4:14:42 PM
@@ -167,7 +168,8 @@ public class FlatParameterList extends ParameterList<Parameter> {
          * @see Node#clone(Node, Location, boolean)
          */
         @Override
-        public ReturnParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+        public ReturnParameterList clone(Node temporaryParent, Location locationIn,
+            boolean cloneChildren, boolean cloneAnnotations) {
             ReturnParameterList node = new ReturnParameterList(temporaryParent, locationIn);
 
             return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -181,16 +183,17 @@ public class FlatParameterList extends ParameterList<Parameter> {
         }
 
         /**
-         * Fill the given {@link ReturnParameterList} with the data that is in the
-         * specified node.
+         * Fill the given {@link ReturnParameterList} with the data that is in the specified node.
          *
          * @param node The node to copy the data into.
          * @return The cloned node.
          */
-        public ReturnParameterList cloneTo(ReturnParameterList node, boolean cloneChildren, boolean cloneAnnotations) {
+        public ReturnParameterList cloneTo(ReturnParameterList node, boolean cloneChildren,
+            boolean cloneAnnotations) {
             super.cloneTo(node, cloneChildren, cloneAnnotations);
 
             return node;
         }
     }
 }
+

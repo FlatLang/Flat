@@ -41,25 +41,24 @@ public class Repeat extends Loop {
     }
 
     /**
-     * Decode the given statement into a {@link Repeat} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Repeat} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>repeat</li>
-     * 	<li>repeat (10)</li>
-     * 	<li>repeat (string.count)</li>
+     * <li>repeat</li>
+     * <li>repeat (10)</li>
+     * <li>repeat (string.count)</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Repeat} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Repeat}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Repeat} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Repeat}.
      */
-    public static Repeat decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Repeat decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (true) {
             return null;
         }
@@ -76,7 +75,9 @@ public class Repeat extends Loop {
                 Bounds parenthesis = SyntaxUtils.findParenthesesBounds(n, rest);
 
                 if (parenthesis != Bounds.EMPTY) {
-                    Value value = SyntaxTree.decodeValue(parent, StringUtils.removeSurroundingParenthesis(parenthesis.extractString(rest)), location, require);
+                    Value value = SyntaxTree.decodeValue(parent,
+                        StringUtils.removeSurroundingParenthesis(parenthesis.extractString(rest)),
+                        location, require);
 
                     n.addChild(value, n);
 
@@ -108,7 +109,8 @@ public class Repeat extends Loop {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Repeat clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Repeat clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Repeat node = new Repeat(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -122,8 +124,7 @@ public class Repeat extends Loop {
     }
 
     /**
-     * Fill the given {@link Repeat} with the data that is in the
-     * specified node.
+     * Fill the given {@link Repeat} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -135,11 +136,10 @@ public class Repeat extends Loop {
     }
 
     /**
-     * Test the {@link Repeat} class type to make sure everything
-     * is working properly.
+     * Test the {@link Repeat} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -147,3 +147,4 @@ public class Repeat extends Loop {
         return null;
     }
 }
+

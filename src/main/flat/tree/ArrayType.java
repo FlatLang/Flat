@@ -27,3 +27,4 @@ public class ArrayType extends Type {
         return cloneTo(new ArrayType());
     }
 }
+

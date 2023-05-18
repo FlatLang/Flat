@@ -23,7 +23,10 @@ public abstract class PropertyMethod extends BodyMethodDeclaration {
      * @see Node#Node(Node, Location)
      */
     public PropertyMethod(Node temporaryParent, Location locationIn) {
-        super(temporaryParent, new Location(locationIn.getLineNumber() + temporaryParent.getLocationIn().getLineNumber(), locationIn.getOffset(), locationIn.getStart(), locationIn.getEnd()));
+        super(temporaryParent,
+            new Location(
+                locationIn.getLineNumber() + temporaryParent.getLocationIn().getLineNumber(),
+                locationIn.getOffset(), locationIn.getStart(), locationIn.getEnd()));
     }
 
     public VariableDeclaration getDeclaration() {
@@ -39,7 +42,8 @@ public abstract class PropertyMethod extends BodyMethodDeclaration {
                     return f;
                 }
             } else if (n.getScope() != null) {
-                LocalDeclaration d = n.getScope().getVariableList().getVariable(getName(), n.getScope());
+                LocalDeclaration d =
+                    n.getScope().getVariableList().getVariable(getName(), n.getScope());
 
                 if (d != null) {
                     return d;
@@ -111,13 +115,13 @@ public abstract class PropertyMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link PropertyMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link PropertyMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public PropertyMethod cloneTo(PropertyMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public PropertyMethod cloneTo(PropertyMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.disabled = disabled;
@@ -127,11 +131,10 @@ public abstract class PropertyMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Test the {@link PropertyMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link PropertyMethod} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -141,3 +144,4 @@ public abstract class PropertyMethod extends BodyMethodDeclaration {
 
     public abstract String getMethodPrefix();
 }
+

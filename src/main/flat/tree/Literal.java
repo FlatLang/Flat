@@ -12,8 +12,8 @@ import flat.util.SyntaxUtils;
 import java.util.regex.Matcher;
 
 /**
- * Value extension that represents a literal within the code. For
- * example, a number literal and a String literal.
+ * Value extension that represents a literal within the code. For example, a number literal and a
+ * String literal.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 10:34:30 PM
@@ -31,7 +31,7 @@ public class Literal extends IValue implements Accessible {
 
     public static final String GARBAGE_IDENTIFIER = "flat_garbageData";
 
-//	public static final String	C_NULL_OUTPUT		= "(Object*)0";
+    // public static final String C_NULL_OUTPUT = "(Object*)0";
 
     /**
      * @see Node#Node(Node, Location)
@@ -104,9 +104,8 @@ public class Literal extends IValue implements Accessible {
     }
 
     /**
-     * Set the value of the literal. If the literal's value is set within
-     * an external context, the value will be generated in a c syntax sort
-     * of way.
+     * Set the value of the literal. If the literal's value is set within an external context, the
+     * value will be generated in a c syntax sort of way.
      *
      * @param value The value to set the literal as.
      */
@@ -134,8 +133,7 @@ public class Literal extends IValue implements Accessible {
 
     /**
      * Get the data type that the literal represents.<br>
-     * see {@link Value#getDataType()} for
-     * more information on what possible data types there are.
+     * see {@link Value#getDataType()} for more information on what possible data types there are.
      *
      * @return The data type that the literal represents.
      */
@@ -144,7 +142,8 @@ public class Literal extends IValue implements Accessible {
     }
 
     public byte getDataType(boolean checkGeneric, boolean checkCast) {
-        if (SyntaxUtils.isStringLiteral(value) && (!isStringInstantiation() || isWithinExternalContext())) {
+        if (SyntaxUtils.isStringLiteral(value)
+            && (!isStringInstantiation() || isWithinExternalContext())) {
             return 1;
         }
 
@@ -157,11 +156,11 @@ public class Literal extends IValue implements Accessible {
     }
 
     /**
-     * Get whether or not the value of the literal is an
-     * instantiation of a String from a String constructor.
+     * Get whether or not the value of the literal is an instantiation of a String from a String
+     * constructor.
      *
-     * @return Whether or not the value of the literal is an
-     * instantiation of a String from a String constructor.
+     * @return Whether or not the value of the literal is an instantiation of a String from a String
+     *         constructor.
      */
     public boolean isStringInstantiation() {
         if (SyntaxUtils.isStringLiteral(value)) {
@@ -228,11 +227,11 @@ public class Literal extends IValue implements Accessible {
     }
 
     /**
-     * @param mustBeLiteral Whether or not the statement must be a literal
-     *                      to decode.
+     * @param mustBeLiteral Whether or not the statement must be a literal to decode.
      * @see #decodeStatement(Node, String, Location, boolean)
      */
-    public static Value decodeStatement(Node parent, String statement, Location location, boolean require, boolean mustBeLiteral) {
+    public static Value decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean mustBeLiteral) {
         if (mustBeLiteral && !SyntaxUtils.isLiteral(parent, statement)) {
             RegexLiteral regex = RegexLiteral.decodeStatement(parent, statement, location, require);
 
@@ -247,28 +246,26 @@ public class Literal extends IValue implements Accessible {
     }
 
     /**
-     * Decode the given statement into a Literal instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a Literal instance, if possible. If it is not possible, this
+     * method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>123</li>
-     * 	<li>-321</li>
-     * 	<li>121.32</li>
-     * 	<li>'a'</li>
-     * 	<li>'\''</li>
-     * 	<li>"Text String"</li>
+     * <li>123</li>
+     * <li>-321</li>
+     * <li>121.32</li>
+     * <li>'a'</li>
+     * <li>'\''</li>
+     * <li>"Text String"</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Literal instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Literal.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Literal instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Literal.
      */
-    public static Value decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Value decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         String literalType = SyntaxUtils.getLiteralTypeName(parent, statement);
 
         if (literalType != null || parent.isWithinExternalContext()) {
@@ -325,10 +322,12 @@ public class Literal extends IValue implements Accessible {
     }
 
     public Instantiation getStringInstantiation() {
-        return Instantiation.decodeStatement(this.getParent(), "String(" + this.value + ")", this.getLocationIn(), true);
+        return Instantiation.decodeStatement(this.getParent(), "String(" + this.value + ")",
+            this.getLocationIn(), true);
     }
 
-    private static String insertExpression(String str, int index, int offset, int end, int lastEnd, int endOffset, StringBuilder builder) {
+    private static String insertExpression(String str, int index, int offset, int end, int lastEnd,
+        int endOffset, StringBuilder builder) {
         String expression = str.substring(index + offset, end).trim();
 
         if (index > 1) {
@@ -354,8 +353,7 @@ public class Literal extends IValue implements Accessible {
 
         StringBuilder builder = new StringBuilder();
 
-        outer:
-        while (index >= 0 && end >= 0) {
+        outer: while (index >= 0 && end >= 0) {
             while (StringUtils.isCharacterEscaped(str, index)) {
                 index = str.indexOf("#", index + 1);
 
@@ -378,7 +376,8 @@ public class Literal extends IValue implements Accessible {
                 }
 
                 if (end > index) {
-                    String s = insertExpression(str, index, offset, end, lastEnd, lastOffset, builder);
+                    String s =
+                        insertExpression(str, index, offset, end, lastEnd, lastOffset, builder);
 
                     if (s != null) {
                         return s;
@@ -413,7 +412,9 @@ public class Literal extends IValue implements Accessible {
         }
 
         if (getType().equals("String")) {
-            KeepWhitespaceAnnotation annotation = (KeepWhitespaceAnnotation) getAnnotationOfType(KeepWhitespaceAnnotation.class, true);
+            KeepWhitespaceAnnotation annotation =
+                (KeepWhitespaceAnnotation) getAnnotationOfType(KeepWhitespaceAnnotation.class,
+                    true);
 
             if (annotation != null) {
                 if (annotation.indent != null) {
@@ -452,7 +453,8 @@ public class Literal extends IValue implements Accessible {
                 if (getAncestorOfType(Return.class) != null) {
                     if (parent.getParentMethod().isPrimitiveOverload()) {
                         if (parent.getAncestorOfType(MethodCallArgumentList.class, true) == null) {
-                            Value def = generateDefaultValue(parent, getLocationIn(), parent.getParentMethod());
+                            Value def = generateDefaultValue(parent, getLocationIn(),
+                                parent.getParentMethod());
 
                             replaceWith(def);
 
@@ -472,7 +474,8 @@ public class Literal extends IValue implements Accessible {
                         Assignment a = (Assignment) base;
 
                         if (a.getAssignedNodeValue().getReturnedNode().isPrimitive()) {
-                            Value def = generateDefaultValue(parent, getLocationIn(), a.getAssignedNodeValue().getReturnedNode());
+                            Value def = generateDefaultValue(parent, getLocationIn(),
+                                a.getAssignedNodeValue().getReturnedNode());
 
                             Value v = this;
 
@@ -539,7 +542,8 @@ public class Literal extends IValue implements Accessible {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Literal clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Literal clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Literal node = new Literal(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -553,8 +557,7 @@ public class Literal extends IValue implements Accessible {
     }
 
     /**
-     * Fill the given {@link Literal} with the data that is in the
-     * specified node.
+     * Fill the given {@link Literal} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -571,11 +574,10 @@ public class Literal extends IValue implements Accessible {
     }
 
     /**
-     * Test the Literal class type to make sure everything
-     * is working properly.
+     * Test the Literal class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -583,3 +585,4 @@ public class Literal extends IValue implements Accessible {
         return null;
     }
 }
+

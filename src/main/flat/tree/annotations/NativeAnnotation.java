@@ -36,34 +36,35 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation {
     public boolean onApplied(Node appliedTo, boolean throwError) {
         checkDuplicate(appliedTo, throwError);
 
-        return appliedTo instanceof VariableDeclaration || appliedTo instanceof Assignment || super.onApplied(appliedTo, throwError);
+        return appliedTo instanceof VariableDeclaration || appliedTo instanceof Assignment
+            || super.onApplied(appliedTo, throwError);
     }
 
     @Override
     public String[] getAliases() {
-        return new String[]{"native"};
+        return new String[] {"native"};
     }
 
     /**
-     * Decode the given statement into a {@link NativeAnnotation} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link NativeAnnotation} instance, if possible. If it is
+     * not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent     The parent node of the statement.
-     * @param parameters The statement to try to decode into a
-     *                   {@link NativeAnnotation} instance.
-     * @param location   The location of the statement in the source code.
-     * @param require    Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link NativeAnnotation}.
+     * @param parent The parent node of the statement.
+     * @param parameters The statement to try to decode into a {@link NativeAnnotation} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link NativeAnnotation}.
      */
-    public static NativeAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static NativeAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Native")) {
             NativeAnnotation n = new NativeAnnotation(parent, location);
 
@@ -89,7 +90,7 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation {
         ModifierAnnotation.super.onAdded(parent);
 
         if (parent instanceof Assignment && !parent.isDecoding()) {
-//			((Assignment)parent).getAssignedNode().getDeclaration().addAnnotation(this);
+            // ((Assignment)parent).getAssignedNode().getDeclaration().addAnnotation(this);
         }
 
         super.onAdded(parent);
@@ -114,7 +115,8 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public NativeAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public NativeAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         NativeAnnotation node = new NativeAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -128,13 +130,13 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     /**
-     * Fill the given {@link NativeAnnotation} with the data that is in the
-     * specified node.
+     * Fill the given {@link NativeAnnotation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public NativeAnnotation cloneTo(NativeAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public NativeAnnotation cloneTo(NativeAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -143,11 +145,10 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     /**
-     * Test the {@link NativeAnnotation} class type to make sure everything
-     * is working properly.
+     * Test the {@link NativeAnnotation} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -155,3 +156,4 @@ public class NativeAnnotation extends Annotation implements ModifierAnnotation {
         return null;
     }
 }
+

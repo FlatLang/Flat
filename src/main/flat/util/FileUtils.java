@@ -6,8 +6,7 @@ import java.io.*;
 import java.util.function.Consumer;
 
 /**
- * Utility methods for File operations, such as: reading, writing, and
- * manipulating file extensions.
+ * Utility methods for File operations, such as: reading, writing, and manipulating file extensions.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 19, 2014 at 1:51:23 AM
@@ -15,13 +14,11 @@ import java.util.function.Consumer;
  */
 public class FileUtils {
     /**
-     * Read the contents of a File instance and return the contents in
-     * a String instance.
+     * Read the contents of a File instance and return the contents in a String instance.
      *
      * @param file The File to read from.
      * @return The contents of the File.
-     * @throws IOException Thrown if there was an error reading from the
-     *                     file.
+     * @throws IOException Thrown if there was an error reading from the file.
      */
     public static String readFile(File file) throws IOException {
         StringBuilder source = new StringBuilder();
@@ -46,11 +43,10 @@ public class FileUtils {
     }
 
     /**
-     * Write the given 'source' text to a new file created in the current
-     * working directory.
+     * Write the given 'source' text to a new file created in the current working directory.
      *
      * @param fileName The name of the file to write the contents in.
-     * @param source   The contents to write into the new file.
+     * @param source The contents to write into the new file.
      * @return The newly written File instance.
      * @throws IOException Thrown if there is an error writing the file.
      */
@@ -63,13 +59,14 @@ public class FileUtils {
     /**
      * Write the given 'source' text to the file at the specified location.
      *
-     * @param fileName  The name of the file to write the contents in.
+     * @param fileName The name of the file to write the contents in.
      * @param parentDir The directory to write the file inside of.
-     * @param source    The contents to write into the new file.
+     * @param source The contents to write into the new file.
      * @return The newly written File instance.
      * @throws IOException Thrown if there is an error writing the file.
      */
-    public static File writeFile(String fileName, File parentDir, String source) throws IOException {
+    public static File writeFile(String fileName, File parentDir, String source)
+        throws IOException {
         File file = new File(parentDir, fileName);
 
         PrintWriter writer = getFileWriter(file);
@@ -162,8 +159,7 @@ public class FileUtils {
     /**
      * Remove all of the relative syntax from the given path.<br>
      * <br>
-     * For example: Passing a path of "C:/folder/../dir1/dir2" would
-     * return a path of "C:/dir1/dir2"
+     * For example: Passing a path of "C:/folder/../dir1/dir2" would return a path of "C:/dir1/dir2"
      *
      * @param path The path to remove the relative syntax from.
      * @return The newly formatted path.
@@ -187,12 +183,12 @@ public class FileUtils {
     }
 
     /**
-     * Find the location that the given filename is located within the
-     * compilation's library directories.
+     * Find the location that the given filename is located within the compilation's library
+     * directories.
      *
      * @param filename The name of the file to search for.
-     * @return The location of the file with the given filename. If the
-     * location was not found, null is returned.
+     * @return The location of the file with the given filename. If the location was not found, null
+     *         is returned.
      */
     public static String findFileLocation(String filename, String[] directories) {
         for (String dir : directories) {
@@ -217,17 +213,18 @@ public class FileUtils {
     }
 
     public static boolean writeIfDifferent(File file, String source) throws IOException {
-        return writeIfDifferent(file, writer ->
-        {
+        return writeIfDifferent(file, writer -> {
             writer.write(source);
         }, false);
     }
 
-    public static boolean writeIfDifferent(File file, Consumer<PrintWriter> write) throws IOException {
+    public static boolean writeIfDifferent(File file, Consumer<PrintWriter> write)
+        throws IOException {
         return writeIfDifferent(file, write, false);
     }
 
-    public static boolean writeIfDifferent(File file, Consumer<PrintWriter> write, boolean force) throws IOException {
+    public static boolean writeIfDifferent(File file, Consumer<PrintWriter> write, boolean force)
+        throws IOException {
         long lastModified = file.lastModified();
 
         String previous = null;
@@ -238,8 +235,8 @@ public class FileUtils {
 
         final StringBuilder builder = new StringBuilder();
 
-//		final String lineSeparator = java.security.AccessController.doPrivileged(
-//			new sun.security.action.GetPropertyAction("line.separator"));
+        // final String lineSeparator = java.security.AccessController.doPrivileged(
+        // new sun.security.action.GetPropertyAction("line.separator"));
 
         PrintWriter writer = new PrintWriter(new FileWriter(file)) {
             @Override
@@ -301,7 +298,8 @@ public class FileUtils {
         return force || checkModified(file, lastModified, previous, builder.toString());
     }
 
-    public static boolean checkModified(File file, long lastModified, String previous, String current) {
+    public static boolean checkModified(File file, long lastModified, String previous,
+        String current) {
         if (previous != null && current.trim().equals(previous.trim())) {
             file.setLastModified(lastModified);
 
@@ -378,3 +376,4 @@ public class FileUtils {
         }
     }
 }
+

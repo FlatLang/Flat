@@ -13,27 +13,23 @@ import java.util.regex.Pattern;
  */
 public class Regex {
     /**
-     * Check whether or not the given src String matches the given Pattern
-     * at the start of the src.
+     * Check whether or not the given src String matches the given Pattern at the start of the src.
      *
-     * @param src     The source to check with the Pattern.
+     * @param src The source to check with the Pattern.
      * @param pattern The Pattern to test the source against.
-     * @return Whether or not the given src String matches the given
-     * Pattern at the start.
+     * @return Whether or not the given src String matches the given Pattern at the start.
      */
     public static boolean startsWith(String src, Pattern pattern) {
         return matches(src, 0, pattern);
     }
 
     /**
-     * Check whether or not the given src String matches the given Pattern
-     * at the specified index.
+     * Check whether or not the given src String matches the given Pattern at the specified index.
      *
-     * @param src     The source to check with the Pattern.
-     * @param index   The index to see if it matches at.
+     * @param src The source to check with the Pattern.
+     * @param index The index to see if it matches at.
      * @param pattern The Pattern to test the source against.
-     * @return Whether or not the given src String matches the given
-     * Pattern at the specified index.
+     * @return Whether or not the given src String matches the given Pattern at the specified index.
      */
     public static boolean matches(String src, int index, Pattern pattern) {
         Matcher matcher = pattern.matcher(src);
@@ -46,13 +42,11 @@ public class Regex {
     }
 
     /**
-     * Check whether or not the given src String matches the given Pattern
-     * exactly.
+     * Check whether or not the given src String matches the given Pattern exactly.
      *
-     * @param src     The source to check with the Pattern.
+     * @param src The source to check with the Pattern.
      * @param pattern The Pattern to test the source against.
-     * @return Whether or not the given src String matches the given
-     * Pattern exactly..
+     * @return Whether or not the given src String matches the given Pattern exactly..
      */
     public static boolean matches(String src, Pattern pattern) {
         Matcher matcher = pattern.matcher(src);
@@ -65,10 +59,10 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the start
+     * index of the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param regex The regex pattern to search for in the src String.
      * @return The start index of the next possible occurrence, if any.
      */
@@ -77,10 +71,10 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the start
+     * index of the finding.
      *
-     * @param src     The source String to search through.
+     * @param src The source String to search through.
      * @param pattern The Pattern to search for in the src String.
      * @return The start index of the next possible occurrence, if any.
      */
@@ -89,12 +83,11 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the start
+     * index of the finding.
      *
-     * @param src     The source String to search through.
-     * @param matcher The Matcher instance that searches for the Pattern
-     *                in the src String.
+     * @param src The source String to search through.
+     * @param matcher The Matcher instance that searches for the Pattern in the src String.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOf(String src, Matcher matcher) {
@@ -102,10 +95,10 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the start
+     * index of the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The index to start the search at.
      * @param regex The regex pattern to search for in the src String.
      * @return The start index of the next possible occurrence, if any.
@@ -117,11 +110,11 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the start
+     * index of the finding.
      *
-     * @param src     The source String to search through.
-     * @param start   The start index of the search.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
      * @param pattern The Pattern to search for in the src String.
      * @return The start index of the next possible occurrence, if any.
      */
@@ -132,13 +125,12 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the start
+     * index of the finding.
      *
-     * @param src     The source String to search through.
-     * @param start   The start index of the search.
-     * @param matcher The Matcher instance that searches for the Pattern
-     *                in the src String.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param matcher The Matcher instance that searches for the Pattern in the src String.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOf(String src, int start, Matcher matcher) {
@@ -150,11 +142,11 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOf(String src, char c) {
@@ -162,12 +154,12 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOf(String src, int start, char c) {
@@ -175,15 +167,13 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src              The source String to search through.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[]) {
@@ -191,11 +181,11 @@ public class Regex {
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOf(String src, char c) {
@@ -203,12 +193,12 @@ public class Regex {
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOf(String src, int start, char c) {
@@ -216,28 +206,27 @@ public class Regex {
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src              The source String to search through.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
      * @return The start index of the last possible occurrence, if any.
      */
-    public static int lastIndexOf(String src, char c, char excludePrefixes[], char excludePostfixes[]) {
+    public static int lastIndexOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[]) {
         return indexOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, -1);
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src       The source String to search through.
-     * @param start     The start index of the search.
-     * @param c         The char to search for.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
      * @param direction The direction to search for the match in.
      * @return The start index of the next possible occurrence, if any.
      */
@@ -246,436 +235,438 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src              The source String to search through.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
-     * @param direction        The direction to search for the match in.
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param direction The direction to search for the match in.
      * @return The start index of the next possible occurrence, if any.
      */
-    public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], int direction) {
+    public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[],
+        int direction) {
         return indexOf(src, 0, c, excludePrefixes, excludePostfixes, direction);
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src              The source String to search through.
-     * @param start            The start index of the search.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
-     * @param direction        The direction to search for the match in.
-     * @return The start index of the next possible occurrence, if any.
-     */
-    public static int indexOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], int direction) {
-        return indexOf(src, start, c, excludePrefixes, excludePostfixes, null, null, null, null, direction);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @return The start index of the next possible occurrence, if any.
-     */
-    public static int lastIndexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return indexOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, -1);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @return The start index of the next possible occurrence, if any.
-     */
-    public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return indexOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @param direction               The direction to search for the match in.
-     * @return The start index of the next possible occurrence, if any.
-     */
-    public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
-        return indexOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @return The start index of the next possible occurrence, if any.
-     */
-    public static int indexOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return indexOf(src, start, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
-     *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param direction The direction to search for the match in.
+     * @return The start index of the next possible occurrence, if any.
+     */
+    public static int indexOf(String src, int start, char c, char excludePrefixes[],
+        char excludePostfixes[], int direction) {
+        return indexOf(src, start, c, excludePrefixes, excludePostfixes, null, null, null, null,
+            direction);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
+     *
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @return The start index of the next possible occurrence, if any.
+     */
+    public static int lastIndexOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
+        return indexOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, -1);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
+     *
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @return The start index of the next possible occurrence, if any.
+     */
+    public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[],
+        char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[],
+        boolean excludeBinaryBackslash[]) {
+        return indexOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
+     *
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @param direction The direction to search for the match in.
+     * @return The start index of the next possible occurrence, if any.
+     */
+    public static int indexOf(String src, char c, char excludePrefixes[], char excludePostfixes[],
+        char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[],
+        boolean excludeBinaryBackslash[], int direction) {
+        return indexOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
+     *
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @return The start index of the next possible occurrence, if any.
+     */
+    public static int indexOf(String src, int start, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
+        return indexOf(src, start, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
+     *
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeText(String src, int start, char c) {
-        return indexOf(src, start, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return indexOf(src, start, c, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeTextAndParentheses(String src, int start, char c) {
-        return indexOf(src, start, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return indexOf(src, start, c, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeText(String src, char c) {
-        return indexOf(src, 0, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return indexOf(src, 0, c, new char[] {}, new char[] {}, new char[] {'"'}, new boolean[] {},
+            new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeTextAndParentheses(String src, char c) {
-        return indexOf(src, 0, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return indexOf(src, 0, c, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeText(String src, int start, char cs[]) {
-        return indexOf(src, start, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return indexOf(src, start, cs, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeTextAndParentheses(String src, int start, char cs[]) {
-        return indexOf(src, start, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return indexOf(src, start, cs, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeText(String src, char cs[]) {
-        return indexOf(src, 0, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return indexOf(src, 0, cs, new char[] {}, new char[] {}, new char[] {'"'}, new boolean[] {},
+            new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the next possible occurrence, if any.
      */
     public static int indexOfExcludeTextAndParentheses(String src, char cs[]) {
-        return indexOf(src, 0, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return indexOf(src, 0, cs, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeText(String src, int start, char c) {
-        return indexOf(src, start, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true}, -1);
+        return indexOf(src, start, c, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeTextAndParentheses(String src, int start, char c) {
-        return indexOf(src, start, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return indexOf(src, start, c, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeText(String src, char c) {
-        return indexOf(src, src.length() - 1, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return indexOf(src, src.length() - 1, c, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeTextAndParentheses(String src, char c) {
-        return indexOf(src, src.length() - 1, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return indexOf(src, src.length() - 1, c, new char[] {'('}, new char[] {')'},
+            new char[] {'"'}, new boolean[] {false}, new boolean[] {false}, new boolean[] {true},
+            -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeText(String src, int start, char cs[]) {
-        return indexOf(src, start, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true}, -1);
+        return indexOf(src, start, cs, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeTextAndParentheses(String src, int start, char cs[]) {
-        return indexOf(src, start, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return indexOf(src, start, cs, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeText(String src, char cs[]) {
-        return indexOf(src, src.length() - 1, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true}, -1);
+        return indexOf(src, src.length() - 1, cs, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding. The
-     * occurrence cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The start index of the last possible occurrence, if any.
      */
     public static int lastIndexOfExcludeTextAndParentheses(String src, char cs[]) {
-        return indexOf(src, src.length() - 1, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return indexOf(src, src.length() - 1, cs, new char[] {'('}, new char[] {')'},
+            new char[] {'"'}, new boolean[] {false}, new boolean[] {false}, new boolean[] {true},
+            -1);
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * start index of the finding.
      *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @param direction               The direction to search for the match in.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @param direction The direction to search for the match in.
      * @return The start index of the next possible occurrence, if any.
      */
-    public static int indexOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
-        return indexOf(src, start, new char[]{c}, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
+    public static int indexOf(String src, int start, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
+        return indexOf(src, start, new char[] {c}, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding.
      *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param cs                      The chars to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param cs The chars to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
      * @return The start index of the next possible occurrence, if any.
      */
-    public static int indexOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return indexOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+    public static int indexOf(String src, int start, char cs[], char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
+        return indexOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the start index of the finding.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * start index of the finding.
      *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param cs                      The chars to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @param direction               The direction to search for the match in.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param cs The chars to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @param direction The direction to search for the match in.
      * @return The start index of the next possible occurrence, if any.
      */
-    public static int indexOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
-        return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction).getStart();
+    public static int indexOf(String src, int start, char cs[], char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
+        return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction)
+                .getStart();
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the Bounds of
+     * the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param regex The regex pattern to search for in the src String.
      * @return The Bounds of the next possible occurrence, if any.
      */
@@ -684,10 +675,10 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the Bounds of
+     * the finding.
      *
-     * @param src     The source String to search through.
+     * @param src The source String to search through.
      * @param pattern The Pattern to search for in the src String.
      * @return The Bounds of the next possible occurrence, if any.
      */
@@ -696,12 +687,11 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the Bounds of
+     * the finding.
      *
-     * @param src     The source String to search through.
-     * @param matcher The Matcher instance that searches for the Pattern
-     *                in the src String.
+     * @param src The source String to search through.
+     * @param matcher The Matcher instance that searches for the Pattern in the src String.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOf(String src, Matcher matcher) {
@@ -709,10 +699,10 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the Bounds of
+     * the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
      * @param regex The regex pattern to search for in the src String.
      * @return The Bounds of the next possible occurrence, if any.
@@ -724,11 +714,11 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the Bounds of
+     * the finding.
      *
-     * @param src     The source String to search through.
-     * @param start   The start index of the search.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
      * @param pattern The Pattern to search for in the src String.
      * @return The Bounds of the next possible occurrence, if any.
      */
@@ -739,13 +729,12 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the Pattern within the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the Pattern within the src String and return the Bounds of
+     * the finding.
      *
-     * @param src     The source String to search through.
-     * @param start   The start index of the search.
-     * @param matcher The Matcher instance that searches for the Pattern
-     *                in the src String.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param matcher The Matcher instance that searches for the Pattern in the src String.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOf(String src, int start, Matcher matcher) {
@@ -757,11 +746,11 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOf(String src, char c) {
@@ -769,12 +758,12 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOf(String src, int start, char c) {
@@ -782,27 +771,26 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src              The source String to search through.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
      * @return The Bounds of the next possible occurrence, if any.
      */
-    public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[]) {
+    public static Bounds boundsOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[]) {
         return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, 1);
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOf(String src, char c) {
@@ -810,12 +798,12 @@ public class Regex {
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOf(String src, int start, char c) {
@@ -823,28 +811,27 @@ public class Regex {
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src              The source String to search through.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
      * @return The Bounds of the last possible occurrence, if any.
      */
-    public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[]) {
+    public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[]) {
         return boundsOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, -1);
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src       The source String to search through.
-     * @param start     The start index of the search.
-     * @param c         The char to search for.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
      * @param direction The direction to search for the match in.
      * @return The Bounds of the next possible occurrence, if any.
      */
@@ -853,428 +840,429 @@ public class Regex {
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src              The source String to search through.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
-     * @param direction        The direction to search for the match in.
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param direction The direction to search for the match in.
      * @return The Bounds of the next possible occurrence, if any.
      */
-    public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], int direction) {
+    public static Bounds boundsOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[], int direction) {
         return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, direction);
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src              The source String to search through.
-     * @param start            The start index of the search.
-     * @param c                The char to search for.
-     * @param excludePrefixes  Prefix chars to exclude from the search.
-     *                         e.g. '('
-     * @param excludePostfixes Postfix chars to exclude from the search.
-     *                         e.g. ')'
-     * @param direction        The direction to search for the match in.
-     * @return The Bounds of the next possible occurrence, if any.
-     */
-    public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], int direction) {
-        return boundsOf(src, start, c, excludePrefixes, excludePostfixes, null, null, null, null, direction);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @return The Bounds of the next possible occurrence, if any.
-     */
-    public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return boundsOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, -1);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @return The Bounds of the next possible occurrence, if any.
-     */
-    public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @param direction               The direction to search for the match in.
-     * @return The Bounds of the next possible occurrence, if any.
-     */
-    public static Bounds boundsOf(String src, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
-        return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
-     *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @return The Bounds of the next possible occurrence, if any.
-     */
-    public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return boundsOf(src, start, c, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
-    }
-
-    /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
-     *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param direction The direction to search for the match in.
+     * @return The Bounds of the next possible occurrence, if any.
+     */
+    public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[],
+        char excludePostfixes[], int direction) {
+        return boundsOf(src, start, c, excludePrefixes, excludePostfixes, null, null, null, null,
+            direction);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
+     *
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @return The Bounds of the next possible occurrence, if any.
+     */
+    public static Bounds lastBoundsOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
+        return boundsOf(src, src.length() - 1, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, -1);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
+     *
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @return The Bounds of the next possible occurrence, if any.
+     */
+    public static Bounds boundsOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
+        return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
+     *
+     * @param src The source String to search through.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @param direction The direction to search for the match in.
+     * @return The Bounds of the next possible occurrence, if any.
+     */
+    public static Bounds boundsOf(String src, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
+        return boundsOf(src, 0, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
+     *
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @return The Bounds of the next possible occurrence, if any.
+     */
+    public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
+        return boundsOf(src, start, c, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+    }
+
+    /**
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
+     *
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeText(String src, int start, char c) {
-        return boundsOf(src, start, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return boundsOf(src, start, c, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeTextAndParentheses(String src, int start, char c) {
-        return boundsOf(src, start, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return boundsOf(src, start, c, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeText(String src, char c) {
-        return boundsOf(src, 0, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return boundsOf(src, 0, c, new char[] {}, new char[] {}, new char[] {'"'}, new boolean[] {},
+            new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeTextAndParentheses(String src, char c) {
-        return boundsOf(src, 0, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return boundsOf(src, 0, c, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeText(String src, int start, char cs[]) {
-        return boundsOf(src, start, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return boundsOf(src, start, cs, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeTextAndParentheses(String src, int start, char cs[]) {
-        return boundsOf(src, start, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return boundsOf(src, start, cs, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeText(String src, char cs[]) {
-        return boundsOf(src, 0, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return boundsOf(src, 0, cs, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the next possible occurrence, if any.
      */
     public static Bounds boundsOfExcludeTextAndParentheses(String src, char cs[]) {
-        return boundsOf(src, 0, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true});
+        return boundsOf(src, 0, cs, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true});
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeText(String src, int start, char c) {
-        return boundsOf(src, start, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true}, -1);
+        return boundsOf(src, start, c, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param c     The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeTextAnd(String src, int start, char c) {
-        return boundsOf(src, start, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return boundsOf(src, start, c, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeText(String src, char c) {
-        return boundsOf(src, src.length() - 1, c, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true});
+        return boundsOf(src, src.length() - 1, c, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true});
     }
 
     /**
-     * Search for the last occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param c   The char to search for.
+     * @param c The char to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeTextAndParentheses(String src, char c) {
-        return boundsOf(src, src.length() - 1, c, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return boundsOf(src, src.length() - 1, c, new char[] {'('}, new char[] {')'},
+            new char[] {'"'}, new boolean[] {false}, new boolean[] {false}, new boolean[] {true},
+            -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeText(String src, int start, char cs[]) {
-        return boundsOf(src, start, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true}, -1);
+        return boundsOf(src, start, cs, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
-     * @param src   The source String to search through.
+     * @param src The source String to search through.
      * @param start The start index of the search.
-     * @param cs    The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeTextAndParentheses(String src, int start, char cs[]) {
-        return boundsOf(src, start, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return boundsOf(src, start, cs, new char[] {'('}, new char[] {')'}, new char[] {'"'},
+            new boolean[] {false}, new boolean[] {false}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeText(String src, char cs[]) {
-        return boundsOf(src, src.length() - 1, cs, new char[]{}, new char[]{}, new char[]{'"'}, new boolean[]{}, new boolean[]{}, new boolean[]{true}, -1);
+        return boundsOf(src, src.length() - 1, cs, new char[] {}, new char[] {}, new char[] {'"'},
+            new boolean[] {}, new boolean[] {}, new boolean[] {true}, -1);
     }
 
     /**
-     * Search for the last occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding. The occurrence
-     * cannot be within parentheses or double quotes.
+     * Search for the last occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding. The occurrence cannot be within parentheses or double quotes.
      *
      * @param src The source String to search through.
-     * @param cs  The chars to search for.
+     * @param cs The chars to search for.
      * @return The Bounds of the last possible occurrence, if any.
      */
     public static Bounds lastBoundsOfExcludeTextAndParentheses(String src, char cs[]) {
-        return boundsOf(src, src.length() - 1, cs, new char[]{'('}, new char[]{')'}, new char[]{'"'}, new boolean[]{false}, new boolean[]{false}, new boolean[]{true}, -1);
+        return boundsOf(src, src.length() - 1, cs, new char[] {'('}, new char[] {')'},
+            new char[] {'"'}, new boolean[] {false}, new boolean[] {false}, new boolean[] {true},
+            -1);
     }
 
     /**
-     * Search for the next occurrence of the given character 'c' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given character 'c' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param c                       The char to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @param direction               The direction to search for the match in.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param c The char to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @param direction The direction to search for the match in.
      * @return The Bounds of the next possible occurrence, if any.
      */
-    public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
-        return boundsOf(src, start, new char[]{c}, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, direction);
+    public static Bounds boundsOf(String src, int start, char c, char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
+        return boundsOf(src, start, new char[] {c}, excludePrefixes, excludePostfixes,
+            excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash,
+            direction);
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param cs                      The chars to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param cs The chars to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
      * @return The Bounds of the next possible occurrence, if any.
      */
-    public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
-        return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary, excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
+    public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[]) {
+        return boundsOf(src, start, cs, excludePrefixes, excludePostfixes, excludeBinary,
+            excludePrefixBackslash, excludePostfixBackslash, excludeBinaryBackslash, 1);
     }
 
     /**
-     * Search for the next occurrence of the given characters 'cs' in the
-     * src String and return the Bounds of the finding.
+     * Search for the next occurrence of the given characters 'cs' in the src String and return the
+     * Bounds of the finding.
      *
-     * @param src                     The source String to search through.
-     * @param start                   The start index of the search.
-     * @param cs                      The chars to search for.
-     * @param excludePrefixes         Prefix chars to exclude from the search.
-     *                                e.g. '('
-     * @param excludePostfixes        Postfix chars to exclude from the search.
-     *                                e.g. ')'
-     * @param excludeBinary           Binary chars to exclude from the search.
-     *                                e.g. '"'
-     * @param excludePrefixBackslash  Prefix chars to escape check before
-     *                                excluding. e.g. '(' and "\(" would be skipped over.
-     * @param excludePostfixBackslash Postfix chars to escape check before
-     *                                excluding. e.g. ')' and "\)" would be skipped over.
-     * @param excludeBinaryBackslash  Binary chars to escape check before
-     *                                excluding. e.g. '"' and "\"" would be skipped over.
-     * @param direction               The direction to search for the match in.
+     * @param src The source String to search through.
+     * @param start The start index of the search.
+     * @param cs The chars to search for.
+     * @param excludePrefixes Prefix chars to exclude from the search. e.g. '('
+     * @param excludePostfixes Postfix chars to exclude from the search. e.g. ')'
+     * @param excludeBinary Binary chars to exclude from the search. e.g. '"'
+     * @param excludePrefixBackslash Prefix chars to escape check before excluding. e.g. '(' and
+     *        "\(" would be skipped over.
+     * @param excludePostfixBackslash Postfix chars to escape check before excluding. e.g. ')' and
+     *        "\)" would be skipped over.
+     * @param excludeBinaryBackslash Binary chars to escape check before excluding. e.g. '"' and
+     *        "\"" would be skipped over.
+     * @param direction The direction to search for the match in.
      * @return The Bounds of the next possible occurrence, if any.
      */
-    public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[], char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[], boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
+    public static Bounds boundsOf(String src, int start, char cs[], char excludePrefixes[],
+        char excludePostfixes[], char excludeBinary[], boolean excludePrefixBackslash[],
+        boolean excludePostfixBackslash[], boolean excludeBinaryBackslash[], int direction) {
         if (excludePrefixes == null) {
             excludePrefixes = new char[0];
         }
@@ -1304,7 +1292,8 @@ public class Regex {
 
             if ((p = StringUtils.searchChar(excludePrefixes, c)) >= 0) {
                 if (i == 0 || !excludePrefixBackslash[p] || src.charAt(i - 1) != '\\') {
-                    i = StringUtils.findEndingMatch(src, i, excludePrefixes[p], excludePostfixes[p]);
+                    i = StringUtils.findEndingMatch(src, i, excludePrefixes[p],
+                        excludePostfixes[p]);
 
                     if (i < 0) {
                         break;
@@ -1329,11 +1318,10 @@ public class Regex {
     }
 
     /**
-     * Get the list of all of the occurrences of the Regex pattern
-     * from the given String and Pattern. Return all the occurrences
-     * in a String array.
+     * Get the list of all of the occurrences of the Regex pattern from the given String and
+     * Pattern. Return all the occurrences in a String array.
      *
-     * @param input   The String to search for the occurrences within.
+     * @param input The String to search for the occurrences within.
      * @param pattern The Pattern to search the input String with.
      * @return A String array of the occurrences from the Pattern.
      */
@@ -1344,9 +1332,8 @@ public class Regex {
     }
 
     /**
-     * Get the list of all of the occurrences of the Regex pattern
-     * from the given matcher. Return all the occurrences in a String
-     * array.
+     * Get the list of all of the occurrences of the Regex pattern from the given matcher. Return
+     * all the occurrences in a String array.
      *
      * @param matcher The matcher to get the occurrences from.
      * @return A String array of the occurrences from the matcher.
@@ -1366,9 +1353,9 @@ public class Regex {
     /**
      * Get the sign of the integer. Possible return values:
      * <ul>
-     * 	<li>num > 0 returns 1</li>
-     * 	<li>num == 0 returns 0</li>
-     * 	<li>num < 0 returns -1</li>
+     * <li>num > 0 returns 1</li>
+     * <li>num == 0 returns 0</li>
+     * <li>num < 0 returns -1</li>
      * </ul>
      *
      * @param num The number to get the sign of.
@@ -1384,3 +1371,4 @@ public class Regex {
         return num;
     }
 }
+

@@ -6,7 +6,8 @@ import flat.tree.Node;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class CleanTestClassAnnotation extends Annotation implements ModifierAnnotation, NestAnnotation {
+public class CleanTestClassAnnotation extends Annotation
+    implements ModifierAnnotation, NestAnnotation {
     public String aliasUsed;
 
     @Override
@@ -23,7 +24,8 @@ public class CleanTestClassAnnotation extends Annotation implements ModifierAnno
         super(temporaryParent, locationIn);
     }
 
-    public static CleanTestClassAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static CleanTestClassAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("CleanTestClass")) {
             CleanTestClassAnnotation n = new CleanTestClassAnnotation(parent, location);
 
@@ -68,7 +70,8 @@ public class CleanTestClassAnnotation extends Annotation implements ModifierAnno
     }
 
     @Override
-    public CleanTestClassAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public CleanTestClassAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         CleanTestClassAnnotation node = new CleanTestClassAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,7 +81,8 @@ public class CleanTestClassAnnotation extends Annotation implements ModifierAnno
         return cloneTo(node, true, true);
     }
 
-    public CleanTestClassAnnotation cloneTo(CleanTestClassAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public CleanTestClassAnnotation cloneTo(CleanTestClassAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -88,6 +92,7 @@ public class CleanTestClassAnnotation extends Annotation implements ModifierAnno
 
     @Override
     public String[] getAliases() {
-        return new String[]{"clean_test_class"};
+        return new String[] {"clean_test_class"};
     }
 }
+

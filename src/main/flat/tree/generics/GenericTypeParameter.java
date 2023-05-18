@@ -7,9 +7,8 @@ import flat.util.Location;
 import flat.util.SyntaxUtils;
 
 /**
- * {@link Node} extension that represents a generic type parameter.
- * Contains the information of a generic type parameter. Information
- * such as the name of the parameter and the default type.
+ * {@link Node} extension that represents a generic type parameter. Contains the information of a
+ * generic type parameter. Information such as the name of the parameter and the default type.
  *
  * @author Braden Steffaniak
  * @since v0.2.41 Dec 7, 2014 at 11:01:21 PM
@@ -55,14 +54,14 @@ public class GenericTypeParameter extends IValue {
     public void setDefaultType(String type) {
         this.defaultType = type;
 
-//		if (SyntaxUtils.isPrimitiveType(type))
-//		{
-//			setDataType(VALUE);
-//		}
-//		else
-//		{
-//			setDataType(POINTER);
-//		}
+        // if (SyntaxUtils.isPrimitiveType(type))
+        // {
+        // setDataType(VALUE);
+        // }
+        // else
+        // {
+        // setDataType(POINTER);
+        // }
     }
 
     public boolean isMethodGenericParameter() {
@@ -81,22 +80,26 @@ public class GenericTypeParameter extends IValue {
             return result;
         }
 
-        if (phase == SyntaxTree.PHASE_CLASS_DECLARATION || (getParentMethod() != null && phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)) {
-            if (!getDefaultType().equals("Object") && !SyntaxUtils.validateImported(this, getDefaultType(), false)) {
+        if (phase == SyntaxTree.PHASE_CLASS_DECLARATION
+            || (getParentMethod() != null && phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS)) {
+            if (!getDefaultType().equals("Object")
+                && !SyntaxUtils.validateImported(this, getDefaultType(), false)) {
                 SyntaxUtils.validateImported(this, getDefaultType(), false);
                 SyntaxUtils.throwImportException(this, getDefaultType(), getLocationIn(), false);
 
                 result = result.errorOccurred(this);
             }
         }
-		
-		/*GenericTypeArgumentList args = getGenericTypeArgumentList();
-		GenericTypeParameterList decl = getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this, getDefaultType())).getGenericTypeParameterDeclaration();
-		
-		for (int i = args.getNumVisibleChildren(); i < decl.getNumParameters(); i++)
-		{
-			args.addChild(SyntaxUtils.getGenericTypeArgumentName(this, decl.getParameter(i).getDefaultType()));
-		}*/
+
+        /*
+         * GenericTypeArgumentList args = getGenericTypeArgumentList(); GenericTypeParameterList
+         * decl = getProgram().getClassDeclaration(SyntaxUtils.getTypeClassLocation(this,
+         * getDefaultType())).getGenericTypeParameterDeclaration();
+         * 
+         * for (int i = args.getNumVisibleChildren(); i < decl.getNumParameters(); i++) {
+         * args.addChild(SyntaxUtils.getGenericTypeArgumentName(this,
+         * decl.getParameter(i).getDefaultType())); }
+         */
 
         return result;
     }
@@ -121,7 +124,8 @@ public class GenericTypeParameter extends IValue {
     @Override
     public String getFlatType(Value context, boolean checkArray, boolean defaultGeneric) {
         if (context instanceof MethodCall) {
-            GenericTypeArgumentList args = ((MethodCall) context).getMethodGenericTypeArgumentList();
+            GenericTypeArgumentList args =
+                ((MethodCall) context).getMethodGenericTypeArgumentList();
 
             if (args.getNumVisibleChildren() > getIndex()) {
                 GenericTypeArgument arg = args.getVisibleChild(getIndex());
@@ -152,7 +156,8 @@ public class GenericTypeParameter extends IValue {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public GenericTypeParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeParameter clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         GenericTypeParameter node = new GenericTypeParameter(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -166,13 +171,13 @@ public class GenericTypeParameter extends IValue {
     }
 
     /**
-     * Fill the given {@link GenericTypeParameter} with the data that is in the
-     * specified node.
+     * Fill the given {@link GenericTypeParameter} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public GenericTypeParameter cloneTo(GenericTypeParameter node, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeParameter cloneTo(GenericTypeParameter node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.defaultType = defaultType;
@@ -182,11 +187,10 @@ public class GenericTypeParameter extends IValue {
     }
 
     /**
-     * Test the {@link GenericTypeParameter} class type to make sure everything
-     * is working properly.
+     * Test the {@link GenericTypeParameter} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

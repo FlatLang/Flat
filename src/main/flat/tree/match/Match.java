@@ -44,14 +44,13 @@ public class Match extends ControlStatement {
     }
 
     /**
-     * Whether or not the specified switch case can be translated into
-     * a conventional switch statement in C. Essentially if the values
-     * in the case statements are constants, then it is a traditional
-     * switch. Otherwise the switch is converted into an if-else statement
-     * at compile time.
+     * Whether or not the specified switch case can be translated into a conventional switch
+     * statement in C. Essentially if the values in the case statements are constants, then it is a
+     * traditional switch. Otherwise the switch is converted into an if-else statement at compile
+     * time.
      *
-     * @return Whether or not the specified switch case is a valid
-     * switch statement in the C language.
+     * @return Whether or not the specified switch case is a valid switch statement in the C
+     *         language.
      */
     public boolean isConventionalSwitch() {
         return conventional;
@@ -66,14 +65,17 @@ public class Match extends ControlStatement {
      * Get the value that is being switched over.<br>
      * <br>
      * For example:<br>
-     * <blockquote><pre>
+     * <blockquote>
+     * 
+     * <pre>
      * switch (num)
      * 	case (value) ...
-     * 	default ...</pre></blockquote>
-     * On the line '<code>switch (num)</code>' in the above switch statement, the
-     * '<code><i>num</i></code>' component of the case statement is the
-     * {@link Value Value} Node that is returned from
-     * this method.
+     * 	default ...
+     * </pre>
+     * 
+     * </blockquote> On the line '<code>switch (num)</code>' in the above switch statement, the
+     * '<code><i>num</i></code>' component of the case statement is the {@link Value Value} Node
+     * that is returned from this method.
      *
      * @return The value that is being switched over.
      */
@@ -82,12 +84,10 @@ public class Match extends ControlStatement {
     }
 
     /**
-     * Get the {@link Variable Variable} that
-     * allows the if-else structure to work like a traditional switch statement
-     * in that it allows fallthroughs.
+     * Get the {@link Variable Variable} that allows the if-else structure to work like a
+     * traditional switch statement in that it allows fallthroughs.
      *
-     * @return Get the {@link Variable Variable}
-     * that is used to generate fallthrough scenarios.
+     * @return Get the {@link Variable Variable} that is used to generate fallthrough scenarios.
      */
     public Variable getLocalFallthrough() {
         if (getNumVisibleChildren() > 0) {
@@ -104,12 +104,14 @@ public class Match extends ControlStatement {
 
             } else if (node instanceof Case) {
                 if (getLastVisibleChild() instanceof Default) {
-                    SyntaxMessage.error("'default' statement must be the last statement in a switch", node);
+                    SyntaxMessage
+                        .error("'default' statement must be the last statement in a switch", node);
                 }
 
                 Case c = (Case) node;
 
-                if (c.getValue() instanceof Literal == false || ((Literal) c.getValue()).isStringInstantiation()) {
+                if (c.getValue() instanceof Literal == false
+                    || ((Literal) c.getValue()).isStringInstantiation()) {
                     if (strict) {
                         SyntaxMessage.error("Switch statements cannot have variable cases", c);
                     }
@@ -117,7 +119,9 @@ public class Match extends ControlStatement {
                     conventional = false;
                 }
             } else {
-                SyntaxMessage.error("Match statements only allow 'case' and 'default' statements as children", node);
+                SyntaxMessage.error(
+                    "Match statements only allow 'case' and 'default' statements as children",
+                    node);
             }
         }
 
@@ -125,14 +129,12 @@ public class Match extends ControlStatement {
     }
 
     /**
-     * Get whether or not the specified switch statement requires a fallthrough
-     * facade to be generated. This occurs when the switch statement has to be
-     * generated as an if-else statement and there are fallthroughs that are
-     * needed to make the switch statement function correctly.
+     * Get whether or not the specified switch statement requires a fallthrough facade to be
+     * generated. This occurs when the switch statement has to be generated as an if-else statement
+     * and there are fallthroughs that are needed to make the switch statement function correctly.
      *
-     * @return Whether or not the specified switch statement requires
-     * a fallthrough variable to make the if-else statement
-     * emulate a traditional switch statement.
+     * @return Whether or not the specified switch statement requires a fallthrough variable to make
+     *         the if-else statement emulate a traditional switch statement.
      */
     public boolean requiresLocalFallthroughVariable() {
         if (isConventionalSwitch()) {
@@ -163,10 +165,9 @@ public class Match extends ControlStatement {
     }
 
     /**
-     * Get whether or not the switch statement requires a loop facade
-     * to allow the switch to break out of the switch and skip the remaining
-     * case statements. This is required when the switch statement is
-     * emulated by an if-else statement.
+     * Get whether or not the switch statement requires a loop facade to allow the switch to break
+     * out of the switch and skip the remaining case statements. This is required when the switch
+     * statement is emulated by an if-else statement.
      *
      * @return Whether or not the switch statement requires a loop facade.
      */
@@ -191,29 +192,30 @@ public class Match extends ControlStatement {
     }
 
     /**
-     * Decode the given statement into a {@link Match} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Match} instance, if possible. If it is not possible,
+     * this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>match (value)</li>
-     * 	<li>match (name)</li>
-     * 	<li>match (person.calculateAge())</li>
+     * <li>match (value)</li>
+     * <li>match (name)</li>
+     * <li>match (person.calculateAge())</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Match} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Match}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Match} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Match}.
      */
-    public static Match decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Match decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         String type = StringUtils.findNextWord(statement);
 
-        if ((type.equals("match") || type.equals("switch")) && SyntaxUtils.findStringInBaseScope(statement, type) >= 0) {
-            int index = StringUtils.findNextNonWhitespaceIndex(statement, type.length());//statement.indexOf('(', IDENTIFIER.length());
+        if ((type.equals("match") || type.equals("switch"))
+            && SyntaxUtils.findStringInBaseScope(statement, type) >= 0) {
+            int index = StringUtils.findNextNonWhitespaceIndex(statement, type.length());// statement.indexOf('(',
+                                                                                         // IDENTIFIER.length());
 
             Match n = new Match(parent, location);
             n.strict = type.equals("switch");
@@ -224,7 +226,8 @@ public class Match extends ControlStatement {
                 return null;
             }
 
-            String contents = statement.substring(index);//SyntaxUtils.findInnerParenthesesBounds(n, statement).extractString(statement);
+            String contents = statement.substring(index);// SyntaxUtils.findInnerParenthesesBounds(n,
+                                                         // statement).extractString(statement);
 
             if (n.decodeControlValue(contents, require)) {
                 return n;
@@ -238,14 +241,17 @@ public class Match extends ControlStatement {
      * Decode the value that the switch statement will be switching over.
      *
      * @param contents The String containing the value to switch over.
-     * @param require  Whether or not to throw an error if anything goes wrong.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the control value was decoded successfully.
      */
     private boolean decodeControlValue(String contents, boolean require) {
-        Value value = SyntaxTree.decodeValue(getParent(), contents, getLocationIn().asNew(), require);
+        Value value =
+            SyntaxTree.decodeValue(getParent(), contents, getLocationIn().asNew(), require);
 
         if (value == null) {
-            return SyntaxMessage.queryError("Unable to decode " + (strict ? "switch" : "match") + " statement control value", this, require);
+            return SyntaxMessage.queryError(
+                "Unable to decode " + (strict ? "switch" : "match") + " statement control value",
+                this, require);
         }
 
         addChild(value, this);
@@ -263,15 +269,20 @@ public class Match extends ControlStatement {
 
         if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
             if (getLocalFallthrough() == null && requiresLocalFallthroughVariable()) {
-                Literal falseVal = (Literal) Literal.decodeStatement(getParent().getAncestorWithScope(), Literal.FALSE_IDENTIFIER, Location.INVALID, true);
+                Literal falseVal =
+                    (Literal) Literal.decodeStatement(getParent().getAncestorWithScope(),
+                        Literal.FALSE_IDENTIFIER, Location.INVALID, true);
 
-                Variable localFallthrough = getAncestorWithScope().getScope().registerLocalVariable(falseVal, true);
+                Variable localFallthrough =
+                    getAncestorWithScope().getScope().registerLocalVariable(falseVal, true);
 
                 addChild(localFallthrough, this);
             }
-            if (!getControlValue().isConsistent() && (!(getControlValue() instanceof Variable) || !((Variable) getControlValue()).doesForceOriginalName())) {
-//				Assignment decl = Assignment.decodeStatement(getParent(), , location, require)
-                Variable var = getAncestorWithScope().getScope().registerLocalVariable(getControlValue(), true);
+            if (!getControlValue().isConsistent() && (!(getControlValue() instanceof Variable)
+                || !((Variable) getControlValue()).doesForceOriginalName())) {
+                // Assignment decl = Assignment.decodeStatement(getParent(), , location, require)
+                Variable var = getAncestorWithScope().getScope()
+                    .registerLocalVariable(getControlValue(), true);
 
                 replace(getControlValue(), var);
             }
@@ -287,8 +298,10 @@ public class Match extends ControlStatement {
                         return;
                     }
 
-                    Assignment replacement = Assignment.generateDefault(child.getScope(), child.getLocationIn());
-                    Variable variable = declaration.generateUsableVariable(replacement, child.getLocationIn());
+                    Assignment replacement =
+                        Assignment.generateDefault(child.getScope(), child.getLocationIn());
+                    Variable variable =
+                        declaration.generateUsableVariable(replacement, child.getLocationIn());
                     variable.setProperty("userMade", false);
                     replacement.getAssigneeNodes().addChild(variable);
                     lastChild.replaceWith(replacement);
@@ -322,7 +335,8 @@ public class Match extends ControlStatement {
     }
 
     private void expressionError(Node n) {
-        SyntaxMessage.error("Invalid case value '" + n.generateFlatInput() + "' for expression", this);
+        SyntaxMessage.error("Invalid case value '" + n.generateFlatInput() + "' for expression",
+            this);
     }
 
     private Value getTypeInCommon() {
@@ -379,7 +393,8 @@ public class Match extends ControlStatement {
             Value common = getTypeInCommon();
 
             if (common != null && !SyntaxUtils.validateCompatibleTypes(getParentMethod(), common)) {
-                SyntaxMessage.error("Match return type of '" + common.getFlatType() + "' is not compatible with function return type", this);
+                SyntaxMessage.error("Match return type of '" + common.getFlatType()
+                    + "' is not compatible with function return type", this);
             }
         }
 
@@ -387,7 +402,8 @@ public class Match extends ControlStatement {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         builder.append("match ");
 
         return getControlValue().generateFlatInput(builder);
@@ -397,7 +413,8 @@ public class Match extends ControlStatement {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Match clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Match clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Match node = new Match(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -411,8 +428,7 @@ public class Match extends ControlStatement {
     }
 
     /**
-     * Fill the given {@link Match} with the data that is in the
-     * specified node.
+     * Fill the given {@link Match} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -424,14 +440,14 @@ public class Match extends ControlStatement {
     }
 
     /**
-     * Test the {@link Match} class type to make sure everything
-     * is working properly.
+     * Test the {@link Match} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
-        context.method.addChild(SyntaxTree.decodeScopeContents(context.method, "Int num = 3", Location.INVALID));
+        context.method.addChild(
+            SyntaxTree.decodeScopeContents(context.method, "Int num = 3", Location.INVALID));
 
         Match s = decodeStatement(context.method, "match (num)", Location.INVALID, false);
 
@@ -458,3 +474,4 @@ public class Match extends ControlStatement {
         return null;
     }
 }
+

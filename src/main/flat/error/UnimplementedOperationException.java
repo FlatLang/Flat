@@ -1,8 +1,7 @@
 package flat.error;
 
 /**
- * Runtime Exception that is thrown if an operation has not been
- * implemented yet, or ever.
+ * Runtime Exception that is thrown if an operation has not been implemented yet, or ever.
  *
  * @author Braden Steffaniak
  * @since v0.2.13 Jun 8, 2014 at 3:11:16 PM
@@ -18,3 +17,4 @@ public class UnimplementedOperationException extends RuntimeException {
         super(message);
     }
 }
+

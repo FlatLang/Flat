@@ -96,16 +96,16 @@ public class Priority extends Value implements Accessible {
         return getReturnedContents().getGenericTypeParameter(checkArray);
     }
 
-    //	@Override
-//	public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
-//	{
-//		if (!doesAccess())
-//		{
-//			return getReturnedContents().getGenericTypeParameter(checkArray);
-//		}
-//		
-//		return super.getGenericTypeParameter(checkArray);
-//	}
+    // @Override
+    // public GenericTypeParameter getGenericTypeParameter(boolean checkArray)
+    // {
+    // if (!doesAccess())
+    // {
+    // return getReturnedContents().getGenericTypeParameter(checkArray);
+    // }
+    //
+    // return super.getGenericTypeParameter(checkArray);
+    // }
 
     @Override
     public String getGenericReturnType(Value context, boolean checkCast) {
@@ -115,24 +115,25 @@ public class Priority extends Value implements Accessible {
 
         return super.getGenericReturnType(context, checkCast);
     }
-	
-	/*public GenericTypeArgument getGenericTypeArgumentFromParameter(String type)
-	{
-		return ((Accessible)getReturnedContents()).getGenericTypeArgumentFromParameter(type);
-	}*/
+
+    /*
+     * public GenericTypeArgument getGenericTypeArgumentFromParameter(String type) { return
+     * ((Accessible)getReturnedContents()).getGenericTypeArgumentFromParameter(type); }
+     */
 
     /**
-     * Get the Value that represents the contents inside the
-     * parentheses.<br>
+     * Get the Value that represents the contents inside the parentheses.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * int j = (32 + 3 * 3);</pre></blockquote>
-     * In the statement above, The binary operation "<u><code>32 + 3 * 3</code></u>"
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * int j = (32 + 3 * 3);
+     * </pre>
+     * 
+     * </blockquote> In the statement above, The binary operation "<u><code>32 + 3 * 3</code></u>"
      * is the contents of the Priority node.
      *
-     * @return The Value that represents the contents inside
-     * the parentheses.
+     * @return The Value that represents the contents inside the parentheses.
      */
     public Value getContents() {
         return (Value) getChild(0);
@@ -166,7 +167,8 @@ public class Priority extends Value implements Accessible {
         if (getContents() instanceof Cast) {
             return getContents().getFlatTypeValue(context);
         } else {
-            return getContents().getReturnedNode().getFlatTypeValue(getContents().getReturnedNode());
+            return getContents().getReturnedNode()
+                .getFlatTypeValue(getContents().getReturnedNode());
         }
     }
 
@@ -235,7 +237,8 @@ public class Priority extends Value implements Accessible {
      */
     @Override
     public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren) {
-        builder.append('(').append(getContents().generateFlatInput(outputChildren)).append(')').append(generateFlatArrayAccess());
+        builder.append('(').append(getContents().generateFlatInput(outputChildren)).append(')')
+            .append(generateFlatArrayAccess());
 
         if (outputChildren) {
             generateAccessedNode(builder, safeNavigation);
@@ -256,26 +259,24 @@ public class Priority extends Value implements Accessible {
     }
 
     /**
-     * Decode the given statement into a Priority instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a Priority instance, if possible. If it is not possible, this
+     * method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>(5 + 4)</li>
-     * 	<li>(getName() + " is here")</li>
-     * 	<li>( 54 * (2 + 4) )</li>
+     * <li>(5 + 4)</li>
+     * <li>(getName() + " is here")</li>
+     * <li>( 54 * (2 + 4) )</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Priority instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Priority.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Priority instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Priority.
      */
-    public static Priority decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Priority decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.charAt(0) == '(') {
             Priority n = new Priority(parent, location);
 
@@ -299,12 +300,11 @@ public class Priority extends Value implements Accessible {
     }
 
     /**
-     * Validate that the given statement is a Priority. To see what a
-     * Priority looks like see {@link #decodeStatement(Node, String, Location, boolean)}
+     * Validate that the given statement is a Priority. To see what a Priority looks like see
+     * {@link #decodeStatement(Node, String, Location, boolean)}
      *
      * @param statement The statement to validate.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the given statement is a valid Priority.
      */
     private boolean validatePriority(String statement, boolean require) {
@@ -318,58 +318,55 @@ public class Priority extends Value implements Accessible {
     }
 
     /**
-     * Decode the contents of the Priority. The contents is the data
-     * within the parentheses.
+     * Decode the contents of the Priority. The contents is the data within the parentheses.
      *
-     * @param contents The contents within the parentheses of the
-     *                 statement.
-     * @param location The location of the contents within the source
-     *                 file.
-     * @param require  Whether or not to throw an error if anything goes
-     *                 wrong.
+     * @param contents The contents within the parentheses of the statement.
+     * @param location The location of the contents within the source file.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the contents decoded successfully.
      */
     private boolean decodeContents(String contents, Location location, boolean require) {
         Value node = null;
 
-//		Value node = null
-//		
-//		until (node != null)
-//		{
-//			node = Literal.decodeStatement(this, contents, location, true, true),
-//			node = UnaryOperation.decodeStatement(this, contents, location, require),
-//			node = BinaryOperation.decodeStatement(this, contents, location, require),
-//			node = SyntaxTree.getUsableExistingNode(this, contents, location),
-//			
-//			SyntaxMessage.queryError("Could not decode contents '" + contents + "'", this, require)
-//		}
-//		
-//		addChild(node)
-//		
-//		return true
+        // Value node = null
+        //
+        // until (node != null)
+        // {
+        // node = Literal.decodeStatement(this, contents, location, true, true),
+        // node = UnaryOperation.decodeStatement(this, contents, location, require),
+        // node = BinaryOperation.decodeStatement(this, contents, location, require),
+        // node = SyntaxTree.getUsableExistingNode(this, contents, location),
+        //
+        // SyntaxMessage.queryError("Could not decode contents '" + contents + "'", this, require)
+        // }
+        //
+        // addChild(node)
+        //
+        // return true
 
         node = SyntaxTree.decodeValue(getAncestorWithScope(), contents, location, require);
 
-//		node = Literal.decodeStatement(this, contents, location, true, true);
-//		
-//		if (node == null)
-//		{
-//			node = UnaryOperation.decodeStatement(this, contents, location, require);
-//			
-//			if (node == null)
-//			{
-//				node = BinaryOperation.decodeStatement(this, contents, location, require);
-//				
-//				if (node == null)
-//				{
-//					node = SyntaxTree.getUsableExistingNode(this, contents, location);
+        // node = Literal.decodeStatement(this, contents, location, true, true);
+        //
+        // if (node == null)
+        // {
+        // node = UnaryOperation.decodeStatement(this, contents, location, require);
+        //
+        // if (node == null)
+        // {
+        // node = BinaryOperation.decodeStatement(this, contents, location, require);
+        //
+        // if (node == null)
+        // {
+        // node = SyntaxTree.getUsableExistingNode(this, contents, location);
 
         if (node == null) {
-            return SyntaxMessage.queryError("Could not decode contents '" + contents + "'", this, require);
+            return SyntaxMessage.queryError("Could not decode contents '" + contents + "'", this,
+                require);
         }
-//				}
-//			}
-//		}
+        // }
+        // }
+        // }
 
         addChild(node);
 
@@ -393,7 +390,8 @@ public class Priority extends Value implements Accessible {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Priority clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Priority clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Priority node = new Priority(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -407,8 +405,7 @@ public class Priority extends Value implements Accessible {
     }
 
     /**
-     * Fill the given {@link Priority} with the data that is in the
-     * specified node.
+     * Fill the given {@link Priority} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -423,11 +420,10 @@ public class Priority extends Value implements Accessible {
     }
 
     /**
-     * Test the Priority class type to make sure everything
-     * is working properly.
+     * Test the Priority class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

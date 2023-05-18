@@ -10,7 +10,8 @@ public class ExtensionAnnotation extends Annotation {
         super(temporaryParent, locationIn);
     }
 
-    public static ExtensionAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static ExtensionAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Extension")) {
             ExtensionAnnotation n = new ExtensionAnnotation(parent, location);
 
@@ -24,12 +25,12 @@ public class ExtensionAnnotation extends Annotation {
 
     @Override
     public String[] defaultParameterNames() {
-        return new String[]{"class"};
+        return new String[] {"class"};
     }
 
     @Override
     public String[][] defaultParameterTypes() {
-        return new String[][]{{"String"}};
+        return new String[][] {{"String"}};
     }
 
     @Override
@@ -38,7 +39,8 @@ public class ExtensionAnnotation extends Annotation {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("let");
     }
 
@@ -58,7 +60,7 @@ public class ExtensionAnnotation extends Annotation {
     public boolean onApplied(Node next, boolean throwError) {
         if (!checkDuplicate(next, throwError)) {
             if (next instanceof VariableDeclaration) {
-//			((VariableDeclaration)next).isFinal = true;
+                // ((VariableDeclaration)next).isFinal = true;
             } else {
                 return invalidApplication(next, throwError);
             }
@@ -68,7 +70,8 @@ public class ExtensionAnnotation extends Annotation {
     }
 
     @Override
-    public ExtensionAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExtensionAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ExtensionAnnotation node = new ExtensionAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,9 +81,11 @@ public class ExtensionAnnotation extends Annotation {
         return cloneTo(node, true, true);
     }
 
-    public ExtensionAnnotation cloneTo(ExtensionAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExtensionAnnotation cloneTo(ExtensionAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 }
+

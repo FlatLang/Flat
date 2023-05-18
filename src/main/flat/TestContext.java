@@ -21,13 +21,14 @@ public class TestContext {
     public BodyMethodDeclaration method;
 
     public TestContext() {
-        controller = Flat.generateTemporaryController(new String[]{});
+        controller = Flat.generateTemporaryController(new String[] {});
 
         reset();
     }
 
     public void importClass(String className) {
-        Import importNode = Import.decodeStatement(clazz, "import \"" + className + "\"", Location.INVALID, true);
+        Import importNode =
+            Import.decodeStatement(clazz, "import \"" + className + "\"", Location.INVALID, true);
 
         clazz.getFileDeclaration().addChild(importNode);
     }
@@ -38,3 +39,4 @@ public class TestContext {
         program = clazz.getProgram();
     }
 }
+

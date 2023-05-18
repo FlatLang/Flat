@@ -6,10 +6,9 @@ import flat.tree.*;
 import flat.util.Location;
 
 /**
- * {@link TypeList} extension that represents a generic type implementation.
- * Contains the information of a generic type implementation.
- * Contains all of the types that are being implemented into a generic
- * declaration.
+ * {@link TypeList} extension that represents a generic type implementation. Contains the
+ * information of a generic type implementation. Contains all of the types that are being
+ * implemented into a generic declaration.
  *
  * @author Braden Steffaniak
  * @since v0.2.41 Dec 7, 2014 at 9:49:27 PM
@@ -28,8 +27,10 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument> {
         return generateFlatInput(builder, outputChildren, null);
     }
 
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, Value context) {
-        if (getNumVisibleChildren() == 0) return builder;
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        Value context) {
+        if (getNumVisibleChildren() == 0)
+            return builder;
 
         GenericTypeArgument[] args = new GenericTypeArgument[getNumVisibleChildren()];
 
@@ -39,23 +40,28 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument> {
             args[i] = getVisibleChild(i);
             autoAdded[i] = args[i].autoAdded;
 
-            if (i == 0 && autoAdded[i]) return builder;
+            if (i == 0 && autoAdded[i])
+                return builder;
 
-            if (!args[i].isGenericType() || getParent() instanceof GenericTypeArgument) continue;
+            if (!args[i].isGenericType() || getParent() instanceof GenericTypeArgument)
+                continue;
 
             GenericTypeParameter param = args[i].getGenericTypeParameter();
 
-            if (param == null) continue;
+            if (param == null)
+                continue;
 
             GenericTypeArgument arg = param.getCorrespondingArgument(context);
 
-            if (arg != null) args[i] = arg;
+            if (arg != null)
+                args[i] = arg;
         }
 
         builder.append(GenericCompatible.GENERIC_START);
 
         for (int i = 0; i < args.length; i++) {
-            if (autoAdded[i]) break;
+            if (autoAdded[i])
+                break;
 
             if (i > 0) {
                 builder.append(", ");
@@ -105,7 +111,8 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public GenericTypeArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeArgumentList clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         GenericTypeArgumentList node = new GenericTypeArgumentList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -119,24 +126,24 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument> {
     }
 
     /**
-     * Fill the given {@link GenericTypeArgumentList} with the data that is in the
-     * specified node.
+     * Fill the given {@link GenericTypeArgumentList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public GenericTypeArgumentList cloneTo(GenericTypeArgumentList node, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeArgumentList cloneTo(GenericTypeArgumentList node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link GenericTypeArgumentList} class type to make sure everything
-     * is working properly.
+     * Test the {@link GenericTypeArgumentList} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -159,3 +166,4 @@ public class GenericTypeArgumentList extends TypeList<GenericTypeArgument> {
         return s;
     }
 }
+

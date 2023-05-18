@@ -17,7 +17,8 @@ public abstract class VTable extends IIdentifier {
 
         ClassDeclaration c = getParentClass();
 
-        String type = c.getClassLocation().replace('/', '_').replace('.', '_') + '_' + getVTableType() + "_VTable";
+        String type = c.getClassLocation().replace('/', '_').replace('.', '_') + '_'
+            + getVTableType() + "_VTable";
         setType(type, true, false, false);
 
         setName(type + "_val", true);
@@ -49,8 +50,7 @@ public abstract class VTable extends IIdentifier {
     }
 
     /**
-     * Fill the given {@link VTable} with the data that is in the
-     * specified node.
+     * Fill the given {@link VTable} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -62,11 +62,10 @@ public abstract class VTable extends IIdentifier {
     }
 
     /**
-     * Test the VTable class type to make sure everything
-     * is working properly.
+     * Test the VTable class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -78,3 +77,4 @@ public abstract class VTable extends IIdentifier {
 
     public abstract FlatMethodDeclaration[] getVirtualMethods();
 }
+

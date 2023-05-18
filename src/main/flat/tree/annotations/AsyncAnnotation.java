@@ -25,7 +25,8 @@ public class AsyncAnnotation extends Annotation implements ModifierAnnotation {
         super(temporaryParent, locationIn);
     }
 
-    public static AsyncAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static AsyncAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Async")) {
             AsyncAnnotation n = new AsyncAnnotation(parent, location);
 
@@ -61,7 +62,8 @@ public class AsyncAnnotation extends Annotation implements ModifierAnnotation {
     @Override
     public boolean onApplied(Node next, boolean throwError) {
         if (!checkDuplicate(next, throwError)) {
-            if (next instanceof FlatMethodDeclaration || next instanceof LambdaExpression || next instanceof Parameter) {
+            if (next instanceof FlatMethodDeclaration || next instanceof LambdaExpression
+                || next instanceof Parameter) {
                 // valid
             } else {
                 return invalidApplication(next, throwError);
@@ -72,7 +74,8 @@ public class AsyncAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public AsyncAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AsyncAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         AsyncAnnotation node = new AsyncAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -82,7 +85,8 @@ public class AsyncAnnotation extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public AsyncAnnotation cloneTo(AsyncAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AsyncAnnotation cloneTo(AsyncAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -92,6 +96,7 @@ public class AsyncAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"async"};
+        return new String[] {"async"};
     }
 }
+

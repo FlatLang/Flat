@@ -22,7 +22,8 @@ public class ExternalNameAnnotation extends Annotation implements ModifierAnnota
         super(temporaryParent, locationIn);
     }
 
-    public static ExternalNameAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static ExternalNameAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("ExternalName")) {
             ExternalNameAnnotation n = new ExternalNameAnnotation(parent, location);
 
@@ -36,12 +37,12 @@ public class ExternalNameAnnotation extends Annotation implements ModifierAnnota
 
     @Override
     public String[] defaultParameterNames() {
-        return new String[]{"name"};
+        return new String[] {"name"};
     }
 
     @Override
     public String[][] defaultParameterTypes() {
-        return new String[][]{{"Identifier"}};
+        return new String[][] {{"Identifier"}};
     }
 
     @Override
@@ -85,7 +86,8 @@ public class ExternalNameAnnotation extends Annotation implements ModifierAnnota
     }
 
     @Override
-    public ExternalNameAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalNameAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ExternalNameAnnotation node = new ExternalNameAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -95,7 +97,8 @@ public class ExternalNameAnnotation extends Annotation implements ModifierAnnota
         return cloneTo(node, true, true);
     }
 
-    public ExternalNameAnnotation cloneTo(ExternalNameAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalNameAnnotation cloneTo(ExternalNameAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -105,6 +108,7 @@ public class ExternalNameAnnotation extends Annotation implements ModifierAnnota
 
     @Override
     public String[] getAliases() {
-        return new String[]{"external_name"};
+        return new String[] {"external_name"};
     }
 }
+

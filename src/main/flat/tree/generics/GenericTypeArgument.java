@@ -8,10 +8,9 @@ import flat.tree.variables.VariableDeclaration;
 import flat.util.Location;
 
 /**
- * {@link IValue} extension that represents a generic type implementation.
- * Contains the information of a generic type implementation.
- * Contains all of the types that are being implemented into a generic
- * declaration.
+ * {@link IValue} extension that represents a generic type implementation. Contains the information
+ * of a generic type implementation. Contains all of the types that are being implemented into a
+ * generic declaration.
  *
  * @author Braden Steffaniak
  * @since v0.2.41 Dec 7, 2014 at 10:22:46 PM
@@ -30,7 +29,8 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
         addChild(new GenericTypeArgumentList(this, locationIn), this);
     }
 
-    public GenericTypeArgument(Node temporaryParent, Location locationIn, GenericTypeParameter parameter) {
+    public GenericTypeArgument(Node temporaryParent, Location locationIn,
+        GenericTypeParameter parameter) {
         this(temporaryParent, locationIn);
         genericParameter = parameter;
     }
@@ -71,16 +71,20 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
      */
     @Override
     public GenericTypeArgumentList getGenericTypeArgumentList() {
-        return getNumVisibleChildren() > 0 ? (GenericTypeArgumentList) getChild(super.getNumDefaultChildren() + 0) : null;
+        return getNumVisibleChildren() > 0
+            ? (GenericTypeArgumentList) getChild(super.getNumDefaultChildren() + 0)
+            : null;
     }
 
     public GenericTypeArgumentList getParentGenericTypeArgumentList() {
-        return getParent() instanceof GenericTypeArgumentList ? (GenericTypeArgumentList) getParent() : null;
+        return getParent() instanceof GenericTypeArgumentList
+            ? (GenericTypeArgumentList) getParent()
+            : null;
     }
 
     /**
-     * Get the index that the specified argument can be accessed by
-     * at the declaration of the parameters.
+     * Get the index that the specified argument can be accessed by at the declaration of the
+     * parameters.
      *
      * @return The index.
      */
@@ -90,10 +94,12 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
         if (getParent() instanceof ClosureParameterList) {
             String type = getType(false);
 
-            int index = getParentMethod().getMethodGenericTypeParameterDeclaration().getParameterIndex(type);
+            int index = getParentMethod().getMethodGenericTypeParameterDeclaration()
+                .getParameterIndex(type);
 
             if (index < 0) {
-                index = getParentClass().getGenericTypeParameterDeclaration().getParameterIndex(type);
+                index =
+                    getParentClass().getGenericTypeParameterDeclaration().getParameterIndex(type);
             }
 
             return index;
@@ -163,8 +169,9 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
      */
     @Override
     public String getGenericReturnType(Value context, boolean checkCast) {
-        if (((Value) getContext()).getGenericTypeParameterDeclaration().containsParameter(getType())) {
-            return getFlatType(this, true, true);//getDefaultType();
+        if (((Value) getContext()).getGenericTypeParameterDeclaration()
+            .containsParameter(getType())) {
+            return getFlatType(this, true, true);// getDefaultType();
         }
 
         return getType();
@@ -212,7 +219,8 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
                 }
             }
         } else {
-            throw new UnimplementedOperationException("forwards checking not implemented yet... Looks like its time to do that.");
+            throw new UnimplementedOperationException(
+                "forwards checking not implemented yet... Looks like its time to do that.");
         }
 
         return null;
@@ -220,15 +228,16 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 
     @Override
     public GenericTypeParameter getGenericTypeParameter(boolean checkArray) {
-//		if (getParentGenericTypeArgumentList() != null && getParentGenericTypeArgumentList().parent instanceof GenericTypeArgument)
-//		{
-//			GenericTypeArgument arg = (GenericTypeArgument)getParentGenericTypeArgumentList().parent;
-//			
-//			if (arg.getTypeClass() != null)
-//			{
-//				return arg.getTypeClass().getGenericTypeParameter(getIndex());
-//			}
-//		}
+        // if (getParentGenericTypeArgumentList() != null &&
+        // getParentGenericTypeArgumentList().parent instanceof GenericTypeArgument)
+        // {
+        // GenericTypeArgument arg = (GenericTypeArgument)getParentGenericTypeArgumentList().parent;
+        //
+        // if (arg.getTypeClass() != null)
+        // {
+        // return arg.getTypeClass().getGenericTypeParameter(getIndex());
+        // }
+        // }
 
         if (getParentMethod() != null) {
             GenericTypeParameter methodParam = getParentMethod().getGenericTypeParameter(getType());
@@ -243,7 +252,9 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
 
     @Override
     public GenericTypeParameter searchGenericTypeParameter(int index, boolean checkArray) {
-        if (genericParameter == null && getParent() instanceof ClosureDeclaration == false && getParent() instanceof VariableDeclaration && getParent() instanceof ClassDeclaration == false) {
+        if (genericParameter == null && getParent() instanceof ClosureDeclaration == false
+            && getParent() instanceof VariableDeclaration
+            && getParent() instanceof ClassDeclaration == false) {
             ClassDeclaration c = ((Value) getParent()).getTypeClass();
 
             if (c != null) {
@@ -263,7 +274,8 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
         return generateFlatInput(builder, outputChildren, null);
     }
 
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, Value context) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        Value context) {
         return builder.append(getFlatType(context));
     }
 
@@ -293,54 +305,57 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
         return param != null && context.getParentClass() == param.getParentClass();
     }
 
-//	@Override
-//	public Value getFlatTypeValue(Value context)
-//	{
-//		if (context instanceof GenericTypeArgument)
-//		{
-//			context = ((GenericTypeArgument)context).getTangibleNode();
-//		}
-//		
-//		if (isGenericType())
-//		{
-//			GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
-//			
-//			if (arg != null && arg != this && arg != getParent().getParent())
-//			{
-//				return arg.getFlatTypeValue(context);
-//			}
-//			
-//			GenericTypeArgument value = clone(getParent(), getLocationIn(), false, true);
-//			
-//			if (context == null || getParentClass() != context.getParentClass())
-//			{
-//				value.setTypeValue(getDefaultType());
-//			}
-//			
-//			return value;
-//		}
-//		
-//		if (getGenericTypeArgumentList() != null && getGenericTypeArgumentList().getNumVisibleChildren() > 0)
-//		{
-//			GenericTypeArgument clone = clone(getParent(), getLocationIn(), true, true);
-//			
-//			for (int i = 0; i < clone.getGenericTypeArgumentList().getNumVisibleChildren(); i++)
-//			{
-//				clone.getGenericTypeArgumentList().getVisibleChild(i)
-//					.replaceWith(getGenericTypeArgumentList().getVisibleChild(i).getFlatTypeValue(context).clone(getGenericTypeArgumentList(), getLocationIn(), true, true));
-//			}
-//			
-//			return clone;
-//		}
-//		
-//		return clone(getParent(), getLocationIn(), false, true);
-//	}
+    // @Override
+    // public Value getFlatTypeValue(Value context)
+    // {
+    // if (context instanceof GenericTypeArgument)
+    // {
+    // context = ((GenericTypeArgument)context).getTangibleNode();
+    // }
+    //
+    // if (isGenericType())
+    // {
+    // GenericTypeArgument arg = getGenericTypeParameter().getCorrespondingArgument(context);
+    //
+    // if (arg != null && arg != this && arg != getParent().getParent())
+    // {
+    // return arg.getFlatTypeValue(context);
+    // }
+    //
+    // GenericTypeArgument value = clone(getParent(), getLocationIn(), false, true);
+    //
+    // if (context == null || getParentClass() != context.getParentClass())
+    // {
+    // value.setTypeValue(getDefaultType());
+    // }
+    //
+    // return value;
+    // }
+    //
+    // if (getGenericTypeArgumentList() != null &&
+    // getGenericTypeArgumentList().getNumVisibleChildren() > 0)
+    // {
+    // GenericTypeArgument clone = clone(getParent(), getLocationIn(), true, true);
+    //
+    // for (int i = 0; i < clone.getGenericTypeArgumentList().getNumVisibleChildren(); i++)
+    // {
+    // clone.getGenericTypeArgumentList().getVisibleChild(i)
+    // .replaceWith(getGenericTypeArgumentList().getVisibleChild(i).getFlatTypeValue(context).clone(getGenericTypeArgumentList(),
+    // getLocationIn(), true, true));
+    // }
+    //
+    // return clone;
+    // }
+    //
+    // return clone(getParent(), getLocationIn(), false, true);
+    // }
 
     /**
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public GenericTypeArgument clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeArgument clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         GenericTypeArgument node = new GenericTypeArgument(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -354,13 +369,13 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
     }
 
     /**
-     * Fill the given {@link GenericTypeArgument} with the data that is in the
-     * specified node.
+     * Fill the given {@link GenericTypeArgument} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public GenericTypeArgument cloneTo(GenericTypeArgument node, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeArgument cloneTo(GenericTypeArgument node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.allocatedOnHeap = allocatedOnHeap;
@@ -370,11 +385,10 @@ public class GenericTypeArgument extends IIdentifier implements GenericCompatibl
     }
 
     /**
-     * Test the {@link GenericTypeArgument} class type to make sure everything
-     * is working properly.
+     * Test the {@link GenericTypeArgument} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

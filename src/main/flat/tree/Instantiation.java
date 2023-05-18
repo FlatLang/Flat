@@ -13,9 +13,9 @@ import flat.util.SyntaxUtils;
 import java.util.Arrays;
 
 /**
- * Value extension that represents the declaration of an
- * instantiation node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Value extension that represents the declaration of an instantiation node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Apr 3, 2014 at 7:53:35 PM
@@ -28,7 +28,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
     public Instantiation(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
 
-        GenericTypeArgumentList implementation = new GenericTypeArgumentList(temporaryParent, locationIn.asNew());
+        GenericTypeArgumentList implementation =
+            new GenericTypeArgumentList(temporaryParent, locationIn.asNew());
         addChild(implementation);
     }
 
@@ -85,15 +86,15 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
     }
 
     /**
-     * Get the node represents the type of instance that is being
-     * instantiated. For example, a method call or an array
-     * initialization node.
+     * Get the node represents the type of instance that is being instantiated. For example, a
+     * method call or an array initialization node.
      *
-     * @return The node that represents the type of instance that is
-     * being instantiated.
+     * @return The node that represents the type of instance that is being instantiated.
      */
     public Identifier getIdentifier() {
-        return getNumChildren() > super.getNumDefaultChildren() + 1 ? (Identifier) getChild(super.getNumDefaultChildren() + 1) : null;
+        return getNumChildren() > super.getNumDefaultChildren() + 1
+            ? (Identifier) getChild(super.getNumDefaultChildren() + 1)
+            : null;
     }
 
     /**
@@ -159,59 +160,56 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
     }
 
     /**
-     * Decode the given statement into an Instantiation instance, if
-     * possible. If it is not possible, this method returns null.<br>
-     * Instantiations always begin with the 'new' keyword.
-     * <br>
+     * Decode the given statement into an Instantiation instance, if possible. If it is not
+     * possible, this method returns null.<br>
+     * Instantiations always begin with the 'new' keyword. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>new Person("Joe")</li>
-     * 	<li>new Armadillo()</li>
-     * 	<li>new String("asdf", 32)</li>
+     * <li>new Person("Joe")</li>
+     * <li>new Armadillo()</li>
+     * <li>new String("asdf", 32)</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Instantiation instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Instantiation.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Instantiation instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Instantiation.
      */
-    public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Instantiation decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, true);
     }
 
     /**
-     * Decode the given statement into an Instantiation instance, if
-     * possible. If it is not possible, this method returns null.<br>
-     * Instantiations always begin with the 'new' keyword.
-     * <br>
+     * Decode the given statement into an Instantiation instance, if possible. If it is not
+     * possible, this method returns null.<br>
+     * Instantiations always begin with the 'new' keyword. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>new Person("Joe")</li>
-     * 	<li>new Armadillo()</li>
-     * 	<li>new String("asdf", 32)</li>
+     * <li>new Person("Joe")</li>
+     * <li>new Armadillo()</li>
+     * <li>new String("asdf", 32)</li>
      * </ul>
      *
-     * @param parent         The parent node of the statement.
-     * @param statement      The statement to try to decode into a
-     *                       Instantiation instance.
-     * @param location       The location of the statement in the source code.
-     * @param require        Whether or not to throw an error if anything goes wrong.
-     * @param validateAccess Whether or not to check if method call can be
-     *                       accessed legally.
-     * @return The generated node, if it was possible to translated it
-     * into a Instantiation.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Instantiation instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @param validateAccess Whether or not to check if method call can be accessed legally.
+     * @return The generated node, if it was possible to translated it into a Instantiation.
      */
-    public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess) {
+    public static Instantiation decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean validateAccess) {
         return decodeStatement(parent, statement, location, require, validateAccess, null);
     }
 
-    public static Instantiation decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateAccess, CallableMethod reference) {
+    public static Instantiation decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean validateAccess, CallableMethod reference) {
         Instantiation n = new Instantiation(parent, location);
 
-        String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
+        String[][] modifierData =
+            SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
 
         if (modifierData != null) {
             statement = modifierData[0][0];
@@ -231,32 +229,34 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
      * <br>
      * For example: "<code>String()</code>"
      *
-     * @param instantiation  The instantiation as exemplified above.
-     * @param location       The location that the instantiation occurred.
-     * @param require        Whether or not the given statement is the beginning of
-     *                       a scope.
-     * @param validateAccess Whether or not to check if method call can be
-     *                       accessed legally.
+     * @param instantiation The instantiation as exemplified above.
+     * @param location The location that the instantiation occurred.
+     * @param require Whether or not the given statement is the beginning of a scope.
+     * @param validateAccess Whether or not to check if method call can be accessed legally.
      * @return The generated Instantiation.
      */
-    private Instantiation decodeInstantiation(String instantiation, Location location, boolean require, boolean validateAccess) {
+    private Instantiation decodeInstantiation(String instantiation, Location location,
+        boolean require, boolean validateAccess) {
         return decodeInstantiation(instantiation, location, require, validateAccess, null);
     }
 
-    private Instantiation decodeInstantiation(String instantiation, Location location, boolean require, boolean validateAccess, CallableMethod reference) {
+    private Instantiation decodeInstantiation(String instantiation, Location location,
+        boolean require, boolean validateAccess, CallableMethod reference) {
         Identifier child = null;
         String params = null;
-        Bounds bounds = StringUtils.findContentBoundsWithin(instantiation, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false);
+        Bounds bounds = StringUtils.findContentBoundsWithin(instantiation,
+            VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0, false);
 
         if (bounds.isValid()) {
             params = bounds.extractString(instantiation);
-            bounds = StringUtils.findContentBoundsWithin(instantiation, VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0);
+            bounds = StringUtils.findContentBoundsWithin(instantiation,
+                VariableDeclaration.GENERIC_START, VariableDeclaration.GENERIC_END, 0);
 
-            //instantiation = bounds.trimString(instantiation);
+            // instantiation = bounds.trimString(instantiation);
         }
 
         if (bounds.isValid()) {
-            //decodeGenericTypeArguments(params);
+            // decodeGenericTypeArguments(params);
         }
 
         String className = null;
@@ -264,13 +264,14 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
         if (SyntaxUtils.isMethodCall(instantiation)) {
             className = StringUtils.findNextWord(instantiation);
 
-//			setTypeValue(className);
-//			
-//			ClassDeclaration clazz = getFileDeclaration().getImportedClass(this, className);
-//			
-//			instantiation = clazz.getName() + instantiation.substring(className.length());
-//			
-            MethodCall methodCall = MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference, true);
+            // setTypeValue(className);
+            //
+            // ClassDeclaration clazz = getFileDeclaration().getImportedClass(this, className);
+            //
+            // instantiation = clazz.getName() + instantiation.substring(className.length());
+            //
+            MethodCall methodCall = MethodCall.decodeStatement(this, instantiation, location,
+                require, validateAccess, reference, true);
 
             if (methodCall == null) {
                 return null;
@@ -281,16 +282,20 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
                 if (callType != null) {
                     setTypeValue(className);
 
-                    if (!callType.isOfType(getTypeClass()) && type != null && type.getConstructorList().getNumVisibleChildren() > 0) {
-                        MethodCall.decodeStatement(this, instantiation, location, require, validateAccess, reference);
-                        SyntaxMessage.queryError("Incompatible arguments given to " + getName() + " constructor", this, require);
+                    if (!callType.isOfType(getTypeClass()) && type != null
+                        && type.getConstructorList().getNumVisibleChildren() > 0) {
+                        MethodCall.decodeStatement(this, instantiation, location, require,
+                            validateAccess, reference);
+                        SyntaxMessage.queryError(
+                            "Incompatible arguments given to " + getName() + " constructor", this,
+                            require);
 
                         return null;
                     }
                 }
             }
 
-//			methodCall.declaration.getGenericTypeArgumentList().cloneChildrenTo(getGenericTypeArgumentList());
+            // methodCall.declaration.getGenericTypeArgumentList().cloneChildrenTo(getGenericTypeArgumentList());
 
             child = methodCall;
         } else if (SyntaxUtils.isArrayInitialization(instantiation)) {
@@ -310,7 +315,8 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
         }
 
         if (child == null) {
-            SyntaxMessage.queryError("Unable to parse instantiation of '" + instantiation + "'", this, require);
+            SyntaxMessage.queryError("Unable to parse instantiation of '" + instantiation + "'",
+                this, require);
 
             return null;
         }
@@ -331,20 +337,21 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
         return builder.append(getIdentifier().generateFlatInput(outputChildren));
     }
 
-//	/**
-//	 * @see flat.tree.Identifier#generateCSourceName(java.lang.StringBuilder, java.lang.String)
-//	 */
-//	@Override
-//	public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
-//	{
-//		return builder.append(getName());
-//	}
+    // /**
+    // * @see flat.tree.Identifier#generateCSourceName(java.lang.StringBuilder, java.lang.String)
+    // */
+    // @Override
+    // public StringBuilder generateCSourceName(StringBuilder builder, String uniquePrefix)
+    // {
+    // return builder.append(getName());
+    // }
 
     /**
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Instantiation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Instantiation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Instantiation node = new Instantiation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -358,24 +365,23 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
     }
 
     /**
-     * Fill the given {@link Instantiation} with the data that is in the
-     * specified node.
+     * Fill the given {@link Instantiation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public Instantiation cloneTo(Instantiation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public Instantiation cloneTo(Instantiation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the Instantiation class type to make sure everything
-     * is working properly.
+     * Test the Instantiation class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -383,3 +389,4 @@ public class Instantiation extends IIdentifier implements GenericCompatible {
         return null;
     }
 }
+

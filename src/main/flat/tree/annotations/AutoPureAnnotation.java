@@ -11,7 +11,8 @@ public class AutoPureAnnotation extends Annotation {
         super(temporaryParent, locationIn);
     }
 
-    public static AutoPureAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static AutoPureAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("AutoPure")) {
             AutoPureAnnotation n = new AutoPureAnnotation(parent, location);
 
@@ -34,10 +35,12 @@ public class AutoPureAnnotation extends Annotation {
         for (Node n : nodes) {
             FlatMethodDeclaration declaration = (FlatMethodDeclaration) n;
 
-            if (declaration.isUserMade() && declaration.getPureAnnotation() == null && declaration.getImpureAnnotation() == null) {
+            if (declaration.isUserMade() && declaration.getPureAnnotation() == null
+                && declaration.getImpureAnnotation() == null) {
                 declaration.isUserMade();
                 declaration.isPure();
-                declaration.addAnnotation(new PureFunctionAnnotation(declaration, declaration.getLocationIn()));
+                declaration.addAnnotation(
+                    new PureFunctionAnnotation(declaration, declaration.getLocationIn()));
             }
         }
 
@@ -48,7 +51,7 @@ public class AutoPureAnnotation extends Annotation {
     public boolean onApplied(Node next, boolean throwError) {
         if (!checkDuplicate(next, throwError)) {
             if (next instanceof ClassDeclaration || next.containsScope()) {
-//			((InstanceDeclaration)next).setStatic(true);
+                // ((InstanceDeclaration)next).setStatic(true);
             } else {
                 return invalidApplication(next, throwError);
             }
@@ -58,7 +61,8 @@ public class AutoPureAnnotation extends Annotation {
     }
 
     @Override
-    public AutoPureAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AutoPureAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         AutoPureAnnotation node = new AutoPureAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -68,9 +72,11 @@ public class AutoPureAnnotation extends Annotation {
         return cloneTo(node, true, true);
     }
 
-    public AutoPureAnnotation cloneTo(AutoPureAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AutoPureAnnotation cloneTo(AutoPureAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 }
+

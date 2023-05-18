@@ -29,7 +29,7 @@ public class Annotation extends Node {
     public static final HashMap<String, Constructor> MODIFIERS = new HashMap<>();
 
     static {
-        Class<?>[] classes = new Class<?>[]{
+        Class<?>[] classes = new Class<?>[] {
             AbstractAnnotation.class,
             NativeAnnotation.class,
             NativeArrayAnnotation.class,
@@ -74,7 +74,8 @@ public class Annotation extends Node {
 
         Arrays.stream(classes).forEach(c -> {
             try {
-                java.lang.reflect.Constructor constructor = c.getConstructor(Node.class, Location.class);
+                java.lang.reflect.Constructor constructor =
+                    c.getConstructor(Node.class, Location.class);
 
                 ModifierAnnotation a = (ModifierAnnotation) constructor.newInstance(null, null);
 
@@ -139,7 +140,8 @@ public class Annotation extends Node {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         if (this instanceof ModifierAnnotation) {
             ModifierAnnotation mod = (ModifierAnnotation) this;
 
@@ -167,7 +169,8 @@ public class Annotation extends Node {
         String assigned;
 
         if (colon < 0 && parsedExplicit[0]) {
-            return SyntaxMessage.queryError("Must explicitly specify parameter name for '" + parameter + "'", this, true);
+            return SyntaxMessage.queryError(
+                "Must explicitly specify parameter name for '" + parameter + "'", this, true);
         } else if (colon < 0) {
             assigned = defaultParameterNames()[index];
         } else {
@@ -177,7 +180,8 @@ public class Annotation extends Node {
         String assignment = parameter.substring(colon + 1).trim();
 
         if (!SyntaxUtils.isValidIdentifier(assigned)) {
-            return SyntaxMessage.queryError("Invalid annotation parameter name '" + assigned + "'", this, true);
+            return SyntaxMessage.queryError("Invalid annotation parameter name '" + assigned + "'",
+                this, true);
         }
 
         Object value;
@@ -187,24 +191,27 @@ public class Annotation extends Node {
                 int end = StringUtils.findEndingMatch(assignment, 0, '[', ']');
 
                 if (end != assignment.length() - 1) {
-                    return SyntaxMessage.queryError("Invalid annotation parameter value '" + assignment + "'", this, true);
+                    return SyntaxMessage.queryError(
+                        "Invalid annotation parameter value '" + assignment + "'", this, true);
                 }
 
                 value = StringUtils.splitCommas(assignment.substring(1, end).trim(), 1);
             } else {
-                value = new String[]{assignment};
+                value = new String[] {assignment};
             }
         } else if (defaultParameterTypes()[index][0].equals("Identifier")) {
             if (SyntaxUtils.isValidIdentifier(assignment)) {
                 value = assignment;
             } else {
-                return SyntaxMessage.queryError("Invalid annotation parameter value '" + assignment + "'", this, true);
+                return SyntaxMessage.queryError(
+                    "Invalid annotation parameter value '" + assignment + "'", this, true);
             }
         } else {
             value = SyntaxTree.decodeValue(getParent(), assignment, getLocationIn(), true);
 
             if (value == null) {
-                return SyntaxMessage.queryError("Invalid annotation parameter value '" + assignment + "'", this, true);
+                return SyntaxMessage.queryError(
+                    "Invalid annotation parameter value '" + assignment + "'", this, true);
             }
         }
 
@@ -214,12 +221,13 @@ public class Annotation extends Node {
     }
 
     public boolean parseParameters(String parameters) {
-        final boolean[] parsedExplicit = new boolean[]{false};
-        final int[] index = new int[]{0};
+        final boolean[] parsedExplicit = new boolean[] {false};
+        final int[] index = new int[] {0};
 
-        return parameters.length() == 0 || Arrays.stream(StringUtils.splitCommas(parameters)).allMatch(parameter -> {
-            return parseParameter(parameter, index[0]++, parsedExplicit);
-        });
+        return parameters.length() == 0
+            || Arrays.stream(StringUtils.splitCommas(parameters)).allMatch(parameter -> {
+                return parseParameter(parameter, index[0]++, parsedExplicit);
+            });
     }
 
     public Annotation getAnnotationOfType(Class type) {
@@ -253,26 +261,25 @@ public class Annotation extends Node {
     }
 
     /**
-     * Decode the given statement into a {@link Annotation} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Annotation} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>[RequireGenericType(E extends Number)]</li>
-     * 	<li>[RequireGenericType E extends Number]</li>
-     * 	<li>[SomeAnnotation]</li>
-     * 	<li>[SomethingWithParams(values=["thing1", "Thing2"], size=5)]</li>
+     * <li>[RequireGenericType(E extends Number)]</li>
+     * <li>[RequireGenericType E extends Number]</li>
+     * <li>[SomeAnnotation]</li>
+     * <li>[SomethingWithParams(values=["thing1", "Thing2"], size=5)]</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Annotation} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Annotation}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Annotation} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Annotation}.
      */
-    public static Annotation decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Annotation decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.startsWith("[")) {
             int index = StringUtils.findEndingMatch(statement, 0, '[', ']');
 
@@ -289,127 +296,309 @@ public class Annotation extends Node {
 
                     arguments = StringUtils.removeSurroundingParenthesis(arguments);
 
-                    Annotation n = RequireGenericTypeAnnotation.decodeStatement(parent, name, arguments, location, require);
+                    Annotation n = RequireGenericTypeAnnotation.decodeStatement(parent, name,
+                        arguments, location, require);
 
                     if (n == null) {
-                        n = PublicAnnotation.decodeStatement(parent, name, arguments, location, require);
+                        n = PublicAnnotation.decodeStatement(parent, name, arguments, location,
+                            require);
 
                         if (n == null) {
-                            n = VisibleAnnotation.decodeStatement(parent, name, arguments, location, require);
+                            n = VisibleAnnotation.decodeStatement(parent, name, arguments, location,
+                                require);
 
                             if (n == null) {
-                                n = PrivateAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                n = PrivateAnnotation.decodeStatement(parent, name, arguments,
+                                    location, require);
 
                                 if (n == null) {
-                                    n = FinalAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                    n = FinalAnnotation.decodeStatement(parent, name, arguments,
+                                        location, require);
 
                                     if (n == null) {
-                                        n = StaticAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                        n = StaticAnnotation.decodeStatement(parent, name,
+                                            arguments, location, require);
 
                                         if (n == null) {
-                                            n = AbstractAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                            n = AbstractAnnotation.decodeStatement(parent, name,
+                                                arguments, location, require);
 
                                             if (n == null) {
-                                                n = PassingAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                n = PassingAnnotation.decodeStatement(parent, name,
+                                                    arguments, location, require);
 
                                                 if (n == null) {
-                                                    n = ImmutableAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                    n = ImmutableAnnotation.decodeStatement(parent,
+                                                        name, arguments, location, require);
 
                                                     if (n == null) {
-                                                        n = PureFunctionAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                        n = PureFunctionAnnotation.decodeStatement(
+                                                            parent, name, arguments, location,
+                                                            require);
 
                                                         if (n == null) {
-                                                            n = ImpureFunctionAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                            n = ImpureFunctionAnnotation
+                                                                .decodeStatement(parent, name,
+                                                                    arguments, location, require);
 
                                                             if (n == null) {
-                                                                n = SyncAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                n = SyncAnnotation.decodeStatement(
+                                                                    parent, name, arguments,
+                                                                    location, require);
 
                                                                 if (n == null) {
-                                                                    n = ThreadLocalAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                    n = ThreadLocalAnnotation
+                                                                        .decodeStatement(parent,
+                                                                            name, arguments,
+                                                                            location, require);
 
                                                                     if (n == null) {
-                                                                        n = CompilerVisibleAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                        n = CompilerVisibleAnnotation
+                                                                            .decodeStatement(parent,
+                                                                                name, arguments,
+                                                                                location, require);
 
                                                                         if (n == null) {
-                                                                            n = ExternalNameAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                            n = ExternalNameAnnotation
+                                                                                .decodeStatement(
+                                                                                    parent, name,
+                                                                                    arguments,
+                                                                                    location,
+                                                                                    require);
 
                                                                             if (n == null) {
-                                                                                n = TestAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                n = TestAnnotation
+                                                                                    .decodeStatement(
+                                                                                        parent,
+                                                                                        name,
+                                                                                        arguments,
+                                                                                        location,
+                                                                                        require);
 
                                                                                 if (n == null) {
-                                                                                    n = TestableAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                    n = TestableAnnotation
+                                                                                        .decodeStatement(
+                                                                                            parent,
+                                                                                            name,
+                                                                                            arguments,
+                                                                                            location,
+                                                                                            require);
 
                                                                                     if (n == null) {
-                                                                                        n = TestSuiteAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                        n = TestSuiteAnnotation
+                                                                                            .decodeStatement(
+                                                                                                parent,
+                                                                                                name,
+                                                                                                arguments,
+                                                                                                location,
+                                                                                                require);
 
                                                                                         if (n == null) {
-                                                                                            n = KeepWhitespaceAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                            n = KeepWhitespaceAnnotation
+                                                                                                .decodeStatement(
+                                                                                                    parent,
+                                                                                                    name,
+                                                                                                    arguments,
+                                                                                                    location,
+                                                                                                    require);
 
                                                                                             if (n == null) {
-                                                                                                n = TestSuccessAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                n = TestSuccessAnnotation
+                                                                                                    .decodeStatement(
+                                                                                                        parent,
+                                                                                                        name,
+                                                                                                        arguments,
+                                                                                                        location,
+                                                                                                        require);
 
                                                                                                 if (n == null) {
-                                                                                                    n = TestFailureAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                    n = TestFailureAnnotation
+                                                                                                        .decodeStatement(
+                                                                                                            parent,
+                                                                                                            name,
+                                                                                                            arguments,
+                                                                                                            location,
+                                                                                                            require);
 
                                                                                                     if (n == null) {
-                                                                                                        n = TestResultAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                        n = TestResultAnnotation
+                                                                                                            .decodeStatement(
+                                                                                                                parent,
+                                                                                                                name,
+                                                                                                                arguments,
+                                                                                                                location,
+                                                                                                                require);
 
                                                                                                         if (n == null) {
-                                                                                                            n = InitTestAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                            n = InitTestAnnotation
+                                                                                                                .decodeStatement(
+                                                                                                                    parent,
+                                                                                                                    name,
+                                                                                                                    arguments,
+                                                                                                                    location,
+                                                                                                                    require);
 
                                                                                                             if (n == null) {
-                                                                                                                n = CleanTestAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                n = CleanTestAnnotation
+                                                                                                                    .decodeStatement(
+                                                                                                                        parent,
+                                                                                                                        name,
+                                                                                                                        arguments,
+                                                                                                                        location,
+                                                                                                                        require);
 
                                                                                                                 if (n == null) {
-                                                                                                                    n = InitTestClassAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                    n = InitTestClassAnnotation
+                                                                                                                        .decodeStatement(
+                                                                                                                            parent,
+                                                                                                                            name,
+                                                                                                                            arguments,
+                                                                                                                            location,
+                                                                                                                            require);
 
                                                                                                                     if (n == null) {
-                                                                                                                        n = CleanTestClassAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                        n = CleanTestClassAnnotation
+                                                                                                                            .decodeStatement(
+                                                                                                                                parent,
+                                                                                                                                name,
+                                                                                                                                arguments,
+                                                                                                                                location,
+                                                                                                                                require);
 
                                                                                                                         if (n == null) {
-                                                                                                                            n = ObsoleteAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                            n = ObsoleteAnnotation
+                                                                                                                                .decodeStatement(
+                                                                                                                                    parent,
+                                                                                                                                    name,
+                                                                                                                                    arguments,
+                                                                                                                                    location,
+                                                                                                                                    require);
 
                                                                                                                             if (n == null) {
-                                                                                                                                n = OverrideAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                n = OverrideAnnotation
+                                                                                                                                    .decodeStatement(
+                                                                                                                                        parent,
+                                                                                                                                        name,
+                                                                                                                                        arguments,
+                                                                                                                                        location,
+                                                                                                                                        require);
 
                                                                                                                                 if (n == null) {
-                                                                                                                                    n = AutoFinalAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                    n = AutoFinalAnnotation
+                                                                                                                                        .decodeStatement(
+                                                                                                                                            parent,
+                                                                                                                                            name,
+                                                                                                                                            arguments,
+                                                                                                                                            location,
+                                                                                                                                            require);
 
                                                                                                                                     if (n == null) {
-                                                                                                                                        n = TargetAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                        n = TargetAnnotation
+                                                                                                                                            .decodeStatement(
+                                                                                                                                                parent,
+                                                                                                                                                name,
+                                                                                                                                                arguments,
+                                                                                                                                                location,
+                                                                                                                                                require);
 
                                                                                                                                         if (n == null) {
-                                                                                                                                            n = TargetRuntimeAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                            n = TargetRuntimeAnnotation
+                                                                                                                                                .decodeStatement(
+                                                                                                                                                    parent,
+                                                                                                                                                    name,
+                                                                                                                                                    arguments,
+                                                                                                                                                    location,
+                                                                                                                                                    require);
 
                                                                                                                                             if (n == null) {
-                                                                                                                                                n = ExpectCompileErrorAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                n = ExpectCompileErrorAnnotation
+                                                                                                                                                    .decodeStatement(
+                                                                                                                                                        parent,
+                                                                                                                                                        name,
+                                                                                                                                                        arguments,
+                                                                                                                                                        location,
+                                                                                                                                                        require);
 
                                                                                                                                                 if (n == null) {
-                                                                                                                                                    n = NativeAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                    n = NativeAnnotation
+                                                                                                                                                        .decodeStatement(
+                                                                                                                                                            parent,
+                                                                                                                                                            name,
+                                                                                                                                                            arguments,
+                                                                                                                                                            location,
+                                                                                                                                                            require);
 
                                                                                                                                                     if (n == null) {
-                                                                                                                                                        n = NativeArrayAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                        n = NativeArrayAnnotation
+                                                                                                                                                            .decodeStatement(
+                                                                                                                                                                parent,
+                                                                                                                                                                name,
+                                                                                                                                                                arguments,
+                                                                                                                                                                location,
+                                                                                                                                                                require);
 
                                                                                                                                                         if (n == null) {
-                                                                                                                                                            n = AsyncAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                            n = AsyncAnnotation
+                                                                                                                                                                .decodeStatement(
+                                                                                                                                                                    parent,
+                                                                                                                                                                    name,
+                                                                                                                                                                    arguments,
+                                                                                                                                                                    location,
+                                                                                                                                                                    require);
 
                                                                                                                                                             if (n == null) {
-                                                                                                                                                                n = AwaitAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                                n = AwaitAnnotation
+                                                                                                                                                                    .decodeStatement(
+                                                                                                                                                                        parent,
+                                                                                                                                                                        name,
+                                                                                                                                                                        arguments,
+                                                                                                                                                                        location,
+                                                                                                                                                                        require);
 
                                                                                                                                                                 if (n == null) {
-                                                                                                                                                                    n = LazyAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                                    n = LazyAnnotation
+                                                                                                                                                                        .decodeStatement(
+                                                                                                                                                                            parent,
+                                                                                                                                                                            name,
+                                                                                                                                                                            arguments,
+                                                                                                                                                                            location,
+                                                                                                                                                                            require);
 
                                                                                                                                                                     if (n == null) {
-                                                                                                                                                                        n = InlineAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                                        n = InlineAnnotation
+                                                                                                                                                                            .decodeStatement(
+                                                                                                                                                                                parent,
+                                                                                                                                                                                name,
+                                                                                                                                                                                arguments,
+                                                                                                                                                                                location,
+                                                                                                                                                                                require);
 
                                                                                                                                                                         if (n == null) {
-                                                                                                                                                                            n = DataIgnoreAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                                            n = DataIgnoreAnnotation
+                                                                                                                                                                                .decodeStatement(
+                                                                                                                                                                                    parent,
+                                                                                                                                                                                    name,
+                                                                                                                                                                                    arguments,
+                                                                                                                                                                                    location,
+                                                                                                                                                                                    require);
 
                                                                                                                                                                             if (n == null) {
-                                                                                                                                                                                n = DataEqualsIgnoreAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                                                n = DataEqualsIgnoreAnnotation
+                                                                                                                                                                                    .decodeStatement(
+                                                                                                                                                                                        parent,
+                                                                                                                                                                                        name,
+                                                                                                                                                                                        arguments,
+                                                                                                                                                                                        location,
+                                                                                                                                                                                        require);
 
                                                                                                                                                                                 if (n == null) {
-                                                                                                                                                                                    n = DataToStringIgnoreAnnotation.decodeStatement(parent, name, arguments, location, require);
+                                                                                                                                                                                    n = DataToStringIgnoreAnnotation
+                                                                                                                                                                                        .decodeStatement(
+                                                                                                                                                                                            parent,
+                                                                                                                                                                                            name,
+                                                                                                                                                                                            arguments,
+                                                                                                                                                                                            location,
+                                                                                                                                                                                            require);
                                                                                                                                                                                 }
                                                                                                                                                                             }
                                                                                                                                                                         }
@@ -513,9 +702,10 @@ public class Annotation extends Node {
     public boolean onNextStatementDecoded(Node next) {
         if (next != null) {
             if (getParent() != null) {
-//				getLocationIn().setLineNumber(getLocationIn().getLineNumber() - getParent().getLineNumber());
+                // getLocationIn().setLineNumber(getLocationIn().getLineNumber() -
+                // getParent().getLineNumber());
             }
-            //if (next instanceof Annotation)
+            // if (next instanceof Annotation)
             {
                 next.addAnnotation(this);
             }
@@ -526,7 +716,8 @@ public class Annotation extends Node {
 
     public boolean duplicateApplication(Node node, boolean require) {
         if (require) {
-            SyntaxMessage.error("Duplicate '" + getClass().getName() + "' annotation applied to expression", node);
+            SyntaxMessage.error(
+                "Duplicate '" + getClass().getName() + "' annotation applied to expression", node);
         }
 
         return false;
@@ -544,18 +735,22 @@ public class Annotation extends Node {
 
     public boolean invalidApplication(Node node, boolean require) {
         if (require) {
-            SyntaxMessage.error(getClass().getSimpleName() + " is applied to an invalid type '" + parent.getClass().getSimpleName() + "'", node);
+            SyntaxMessage.error(getClass().getSimpleName() + " is applied to an invalid type '"
+                + parent.getClass().getSimpleName() + "'", node);
         }
 
         return false;
     }
 
     public boolean invalidArgument(String name, boolean require) {
-        return SyntaxMessage.queryError(getClass().getSimpleName() + " given invalid argument '" + name + "'", this, require);
+        return SyntaxMessage.queryError(
+            getClass().getSimpleName() + " given invalid argument '" + name + "'", this, require);
     }
 
     public boolean missingExpression(boolean require) {
-        return SyntaxMessage.queryError(getClass().getSimpleName() + " is missing an expression to be applied to", this, require);
+        return SyntaxMessage.queryError(
+            getClass().getSimpleName() + " is missing an expression to be applied to", this,
+            require);
     }
 
     public boolean requiresArguments(boolean require) {
@@ -570,7 +765,8 @@ public class Annotation extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Annotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Annotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Annotation node = new Annotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -584,8 +780,7 @@ public class Annotation extends Node {
     }
 
     /**
-     * Fill the given {@link Annotation} with the data that is in the
-     * specified node.
+     * Fill the given {@link Annotation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -603,11 +798,10 @@ public class Annotation extends Node {
     }
 
     /**
-     * Test the {@link Annotation} class type to make sure everything
-     * is working properly.
+     * Test the {@link Annotation} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

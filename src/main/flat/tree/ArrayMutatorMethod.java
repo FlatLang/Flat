@@ -26,24 +26,24 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod {
     }
 
     /**
-     * Decode the given statement into a {@link ArrayMutatorMethod} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link ArrayMutatorMethod} instance, if possible. If it is
+     * not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>no set</li>
-     * 	<li>set</li>
+     * <li>no set</li>
+     * <li>set</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link ArrayMutatorMethod} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link ArrayMutatorMethod}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link ArrayMutatorMethod} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link ArrayMutatorMethod}.
      */
-    public static ArrayMutatorMethod decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static ArrayMutatorMethod decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         if (StringUtils.findNextWord(statement).equals(DISABLED_IDENTIFIER)) {
             String remainder = statement.substring(DISABLED_IDENTIFIER.length() + 1).trim();
 
@@ -72,7 +72,8 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod {
             n.addIndexParameter();
 
             if (StringUtils.findNextNonWhitespaceChar(statement, IDENTIFIER.length()) == '(') {
-                String parameterList = SyntaxUtils.findInnerParenthesesBounds(n, statement).extractString(statement);
+                String parameterList =
+                    SyntaxUtils.findInnerParenthesesBounds(n, statement).extractString(statement);
 
                 if (!n.decodeParameters(parameterList, require)) {
                     return null;
@@ -88,7 +89,9 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod {
     }
 
     private void addDefaultParameter() {
-        Parameter p = Parameter.decodeStatement(this, getArrayBracketOverload().generateFlatType() + " " + PARAMETER_NAME, getLocationIn().asNew(), true);
+        Parameter p = Parameter.decodeStatement(this,
+            getArrayBracketOverload().generateFlatType() + " " + PARAMETER_NAME,
+            getLocationIn().asNew(), true);
         getArrayBracketOverload().cloneTo(p, false, false);
         p.setName(PARAMETER_NAME);
 
@@ -108,10 +111,12 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod {
 
         if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
             if (!isDisabled()) {
-                Return returnValue = (Return) SyntaxTree.decodeScopeContents(this, "return " + getParameter(1).getName(), getLocationIn());
+                Return returnValue = (Return) SyntaxTree.decodeScopeContents(this,
+                    "return " + getParameter(1).getName(), getLocationIn());
 
                 if (returnValue == null) {
-                    SyntaxMessage.error("Could not decode implicit return statement for mutator method", this);
+                    SyntaxMessage.error(
+                        "Could not decode implicit return statement for mutator method", this);
                 }
 
                 addChild(returnValue);
@@ -125,7 +130,8 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ArrayMutatorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArrayMutatorMethod clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ArrayMutatorMethod node = new ArrayMutatorMethod(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -139,24 +145,23 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod {
     }
 
     /**
-     * Fill the given {@link ArrayMutatorMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link ArrayMutatorMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ArrayMutatorMethod cloneTo(ArrayMutatorMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArrayMutatorMethod cloneTo(ArrayMutatorMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link ArrayMutatorMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link ArrayMutatorMethod} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -164,3 +169,4 @@ public class ArrayMutatorMethod extends ArrayOverloadMethod {
         return null;
     }
 }
+

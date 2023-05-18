@@ -62,12 +62,14 @@ public class NamedArgumentModifier extends Annotation implements ModifierAnnotat
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append(aliasUsed);
     }
 
     @Override
-    public NamedArgumentModifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public NamedArgumentModifier clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         NamedArgumentModifier node = new NamedArgumentModifier(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -77,7 +79,8 @@ public class NamedArgumentModifier extends Annotation implements ModifierAnnotat
         return cloneTo(node, true, true);
     }
 
-    public NamedArgumentModifier cloneTo(NamedArgumentModifier node, boolean cloneChildren, boolean cloneAnnotations) {
+    public NamedArgumentModifier cloneTo(NamedArgumentModifier node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -87,6 +90,7 @@ public class NamedArgumentModifier extends Annotation implements ModifierAnnotat
 
     @Override
     public String[] getAliases() {
-        return new String[]{"named"};
+        return new String[] {"named"};
     }
 }
+

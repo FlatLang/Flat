@@ -20,7 +20,10 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration {
      * @see Node#Node(Node, Location)
      */
     public ArrayOverloadMethod(Node temporaryParent, Location locationIn) {
-        super(temporaryParent, locationIn);//new Location(locationIn.getLineNumber() + temporaryParent.getLocationIn().getLineNumber(), locationIn.getOffset(), locationIn.getStart(), locationIn.getEnd()));
+        super(temporaryParent, locationIn);// new Location(locationIn.getLineNumber() +
+                                           // temporaryParent.getLocationIn().getLineNumber(),
+                                           // locationIn.getOffset(), locationIn.getStart(),
+                                           // locationIn.getEnd()));
 
         setVisibility(PUBLIC);
     }
@@ -30,7 +33,9 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration {
     }
 
     public void addIndexParameter() {
-        Parameter p = Parameter.decodeStatement(this, getArrayBracketOverload().getIndexValue().generateFlatInput().toString(), getLocationIn().asNew(), true);
+        Parameter p = Parameter.decodeStatement(this,
+            getArrayBracketOverload().getIndexValue().generateFlatInput().toString(),
+            getLocationIn().asNew(), true);
         getArrayBracketOverload().getIndexValue().cloneTo(p, false, true);
 
         getParameterList().addChild(p);
@@ -87,13 +92,13 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link ArrayOverloadMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link ArrayOverloadMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ArrayOverloadMethod cloneTo(ArrayOverloadMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArrayOverloadMethod cloneTo(ArrayOverloadMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.disabled = disabled;
@@ -102,11 +107,10 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Test the {@link ArrayOverloadMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link ArrayOverloadMethod} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -118,3 +122,4 @@ public abstract class ArrayOverloadMethod extends BodyMethodDeclaration {
         return "ArrayValue";
     }
 }
+

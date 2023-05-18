@@ -24,15 +24,16 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
 
     @Override
     public String[] defaultParameterNames() {
-        return new String[]{"classes"};
+        return new String[] {"classes"};
     }
 
     @Override
     public String[][] defaultParameterTypes() {
-        return new String[][]{{"list"}};
+        return new String[][] {{"list"}};
     }
 
-    public static TestSuiteAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static TestSuiteAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("TestSuite")) {
             TestSuiteAnnotation n = new TestSuiteAnnotation(parent, location);
 
@@ -63,7 +64,9 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
                 parent.getFileDeclaration().addImport("flat/io/OutputStream");
                 parent.getFileDeclaration().addImport("flat/test/TestResult");
 
-                method = BodyMethodDeclaration.decodeStatement(parent, "public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
+                method = BodyMethodDeclaration.decodeStatement(parent,
+                    "public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out)",
+                    Location.INVALID, true);
 
                 parent.addChild(method);
 
@@ -82,27 +85,36 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
             for (String className : classNames) {
                 ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
 
-                SyntaxMessage.queryError("Class '" + className + "' is not imported", this, c == null);
-                SyntaxMessage.queryError("Class '" + className + "' is does not contain Testable annotation", this, !c.containsAnnotationOfType(TestableAnnotation.class));
-                SyntaxMessage.queryError("Testable class '" + className + "' requires a default constructor", this, !c.containsDefaultConstructor());
+                SyntaxMessage.queryError("Class '" + className + "' is not imported", this,
+                    c == null);
+                SyntaxMessage.queryError(
+                    "Class '" + className + "' is does not contain Testable annotation", this,
+                    !c.containsAnnotationOfType(TestableAnnotation.class));
+                SyntaxMessage.queryError(
+                    "Testable class '" + className + "' requires a default constructor", this,
+                    !c.containsDefaultConstructor());
             }
             if (containsResultFunction) {
                 getFileDeclaration().addImport("flat/test/TestResult");
                 propagationFunction = getParentClass(true).generateAnonymousFunction();
 
-                Parameter param = Parameter.decodeStatement(propagationFunction.getParameterList(), "TestResult result", Location.INVALID, true);
+                Parameter param = Parameter.decodeStatement(propagationFunction.getParameterList(),
+                    "TestResult result", Location.INVALID, true);
                 propagationFunction.getParameterList().addChild(param);
 
                 getParentClass(true).addChild(propagationFunction);
 
-                IfStatement ifStatement = IfStatement.decodeStatement(propagationFunction, "if (result.success)", Location.INVALID, true);
+                IfStatement ifStatement = IfStatement.decodeStatement(propagationFunction,
+                    "if (result.success)", Location.INVALID, true);
                 propagationFunction.addChild(ifStatement);
 
-                ElseStatement elseStatement = ElseStatement.decodeStatement(propagationFunction, "else", Location.INVALID, true);
+                ElseStatement elseStatement = ElseStatement.decodeStatement(propagationFunction,
+                    "else", Location.INVALID, true);
                 propagationFunction.addChild(elseStatement);
 
                 Function<FlatMethodDeclaration, MethodCall> generateCall = m -> {
-                    return MethodCall.decodeStatement(propagationFunction, m.getName() + "(result)", Location.INVALID, true);
+                    return MethodCall.decodeStatement(propagationFunction, m.getName() + "(result)",
+                        Location.INVALID, true);
                 };
 
                 getMethodsWithTypeAnnotation(TestSuccessAnnotation.class).forEach(m -> {
@@ -135,19 +147,22 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
     }
 
     public FieldDeclaration checkGenerateField() {
-        if (getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream().map(x -> (TestSuiteAnnotation) x).allMatch(x -> x.suiteInitializer != null)) {
+        if (getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream()
+            .map(x -> (TestSuiteAnnotation) x).allMatch(x -> x.suiteInitializer != null)) {
             getFileDeclaration().addImport("flat/test/TestSuiteRunnerModel");
             getFileDeclaration().addImport("flat/test/TestSuite");
             FlatMethodDeclaration method = getRunTestsMethod();
 
             String name = method.getScope().getUniqueName("_" + method.getName() + "TestSuite");
 
-            String initializer = "[" + getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream()
-                .map(x -> (TestSuiteAnnotation) x)
-                .map(x -> "TestSuite(" + x.suiteInitializer + ")")
-                .collect(Collectors.joining(", ")) + "]";
+            String initializer =
+                "[" + getParentClass().getAnnotationsOfType(TestSuiteAnnotation.class).stream()
+                    .map(x -> (TestSuiteAnnotation) x)
+                    .map(x -> "TestSuite(" + x.suiteInitializer + ")")
+                    .collect(Collectors.joining(", ")) + "]";
 
-            MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestSuiteRunnerModel", name, "TestSuiteRunnerModel(" + initializer + ")");
+            MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields(
+                "TestSuiteRunnerModel", name, "TestSuiteRunnerModel(" + initializer + ")");
 
             return fields.a;
         }
@@ -168,10 +183,13 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
             })
             .filter(Objects::nonNull)
             .map(x -> {
-                TestableAnnotation annotation = (TestableAnnotation) x.getAnnotationOfType(TestableAnnotation.class);
+                TestableAnnotation annotation =
+                    (TestableAnnotation) x.getAnnotationOfType(TestableAnnotation.class);
 
                 if (annotation == null) {
-                    SyntaxMessage.error("Class " + x + " does not have a valid 'testable' annotation", getController());
+                    SyntaxMessage.error(
+                        "Class " + x + " does not have a valid 'testable' annotation",
+                        getController());
                 }
 
                 return annotation;
@@ -188,23 +206,26 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
     }
 
     public void insertMessage() {
-//		if (parameters.containsKey("message"))
-//		{
-//			Literal message = (Literal)parameters.get("message");
-//
-//			if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length() > 2)
-//			{
-//				message.value = "\"================== " + message.value.substring(1, message.value.length() - 1) + " ==================\"";
-//
-//				writeMessage(message);
-//			}
-//		}
-//		else
-//		{
-//			ClassDeclaration clazz = (ClassDeclaration)parent;
-//
-//			writeMessage((Literal)Literal.decodeStatement(parent, "\"================== Testing " + clazz.getName() + " ==================\"", Location.INVALID, true, true));
-//		}
+        // if (parameters.containsKey("message"))
+        // {
+        // Literal message = (Literal)parameters.get("message");
+        //
+        // if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length()
+        // > 2)
+        // {
+        // message.value = "\"================== " + message.value.substring(1,
+        // message.value.length() - 1) + " ==================\"";
+        //
+        // writeMessage(message);
+        // }
+        // }
+        // else
+        // {
+        // ClassDeclaration clazz = (ClassDeclaration)parent;
+        //
+        // writeMessage((Literal)Literal.decodeStatement(parent, "\"================== Testing " +
+        // clazz.getName() + " ==================\"", Location.INVALID, true, true));
+        // }
     }
 
     public void writeMessage(Literal message) {
@@ -223,18 +244,20 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
         String[] classNames = (String[]) parameters.get("classes");
 
         for (String className : classNames) {
-            Assignment call = Assignment.decodeStatement(runMethod, "let test" + className + " = " + className + "()", getLocationIn(), true);
+            Assignment call = Assignment.decodeStatement(runMethod,
+                "let test" + className + " = " + className + "()", getLocationIn(), true);
 
             runMethod.addChild(call);
             call.onAfterDecoded();
 
             ClassDeclaration c = getFileDeclaration().getImportedClass(this, className);
 
-            TestableAnnotation testable = (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
+            TestableAnnotation testable =
+                (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
 
             c.getMethodList().forEachFlatMethod(x -> {
                 if (x instanceof InitializationMethod) {
-//					initializeTestCases((InitializationMethod)x);
+                    // initializeTestCases((InitializationMethod)x);
                 }
             });
 
@@ -245,10 +268,13 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
             .map(name -> getFileDeclaration().getImportedClass(this, name))
             .filter(c -> !c.containsAnnotationOfType(IgnoreAnnotation.class))
             .filter(c -> {
-                TestableAnnotation testable = (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
+                TestableAnnotation testable =
+                    (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
 
                 if (testable == null) {
-                    SyntaxMessage.error("Class " + c + " does not have a valid 'testable' annotation", getController());
+                    SyntaxMessage.error(
+                        "Class " + c + " does not have a valid 'testable' annotation",
+                        getController());
                     return false;
                 }
 
@@ -262,7 +288,8 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
                     return true;
                 }
 
-                TestableAnnotation testable = (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
+                TestableAnnotation testable =
+                    (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
 
                 return !testable.getMethodsWithTypeAnnotation(OnlyAnnotation.class).isEmpty();
             })
@@ -273,11 +300,14 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
         }
 
         testableClasses.forEach(c -> {
-            TestableAnnotation testable = (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
+            TestableAnnotation testable =
+                (TestableAnnotation) c.getAnnotationOfType(TestableAnnotation.class);
 
             FlatMethodDeclaration method = testable.getRunTestsMethod();
 
-            Variable call = (Variable) SyntaxTree.decodeIdentifierAccess(runMethod, "test" + c.getName() + "." + method.getName() + "(onResult, out)", getLocationIn(), true);
+            Variable call = (Variable) SyntaxTree.decodeIdentifierAccess(runMethod,
+                "test" + c.getName() + "." + method.getName() + "(onResult, out)", getLocationIn(),
+                true);
 
             runMethod.addChild(call);
         });
@@ -297,7 +327,8 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
     }
 
     @Override
-    public TestSuiteAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestSuiteAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         TestSuiteAnnotation node = new TestSuiteAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -307,9 +338,11 @@ public class TestSuiteAnnotation extends Annotation implements RunnableTests {
         return cloneTo(node, true, true);
     }
 
-    public TestSuiteAnnotation cloneTo(TestSuiteAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestSuiteAnnotation cloneTo(TestSuiteAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 }
+

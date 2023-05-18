@@ -23,23 +23,22 @@ public class Fallthrough extends Node implements MatchChild {
     }
 
     /**
-     * Decode the given statement into a {@link Fallthrough} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Fallthrough} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>fallthrough</li>
+     * <li>fallthrough</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Fallthrough} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Fallthrough}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Fallthrough} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Fallthrough}.
      */
-    public static Fallthrough decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Fallthrough decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.equals(IDENTIFIER)) {
             Fallthrough n = new Fallthrough(parent, location);
 
@@ -50,14 +49,16 @@ public class Fallthrough extends Node implements MatchChild {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("fallthrough");
     }
 
     @Override
     public void onAdded(Node parent) {
         if (parent.getBaseNode() instanceof Case == false) {
-            SyntaxMessage.error("Fallthrough statements are only compatible within case statements", this);
+            SyntaxMessage.error("Fallthrough statements are only compatible within case statements",
+                this);
         }
     }
 
@@ -65,7 +66,8 @@ public class Fallthrough extends Node implements MatchChild {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Fallthrough clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Fallthrough clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Fallthrough node = new Fallthrough(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -79,8 +81,7 @@ public class Fallthrough extends Node implements MatchChild {
     }
 
     /**
-     * Fill the given {@link Fallthrough} with the data that is in the
-     * specified node.
+     * Fill the given {@link Fallthrough} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -92,11 +93,10 @@ public class Fallthrough extends Node implements MatchChild {
     }
 
     /**
-     * Test the {@link Fallthrough} class type to make sure everything
-     * is working properly.
+     * Test the {@link Fallthrough} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -108,3 +108,4 @@ public class Fallthrough extends Node implements MatchChild {
         return IDENTIFIER;
     }
 }
+

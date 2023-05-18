@@ -21,15 +21,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Declaration extension that represents the declaration of a method
- * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Declaration extension that represents the declaration of a method node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.2.21 Jul 30, 2014 at 1:45:00 PM
  * @version v0.2.44 Jul 13, 2015 at 1:28:17 AM
  */
-public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAncestor, ClosureCompatible {
+public class FlatMethodDeclaration extends MethodDeclaration
+    implements ScopeAncestor, ClosureCompatible {
     public boolean usedShorthandAction;
 
     public int uniqueID, overloadID;
@@ -68,7 +69,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 
         replace(super.getParameterList(), parameters);
 
-        GenericTypeParameterList methodParams = new GenericTypeParameterList(this, locationIn.asNew());
+        GenericTypeParameterList methodParams =
+            new GenericTypeParameterList(this, locationIn.asNew());
         addChild(methodParams, this);
     }
 
@@ -85,7 +87,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             SearchFilter filter = new SearchFilter();
             filter.checkAncestor = false;
 
-            return clazz.getMethod((GenericCompatible) null, getName(), filter, getParameterList().getTypes(), true) != null;
+            return clazz.getMethod((GenericCompatible) null, getName(), filter,
+                getParameterList().getTypes(), true) != null;
         }
 
         return false;
@@ -110,7 +113,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     public VirtualMethodDeclaration getVirtualMethod() {
-        return virtualMethod == null && doesOverride() ? getOverriddenMethod().getVirtualMethod() : virtualMethod;
+        return virtualMethod == null && doesOverride() ? getOverriddenMethod().getVirtualMethod()
+            : virtualMethod;
     }
 
     @Override
@@ -119,7 +123,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     public GenericTypeParameterList getMethodGenericTypeParameterDeclaration() {
-        if (getNumChildren() > super.getNumDefaultChildren() && super.getChild(super.getNumDefaultChildren() + 0) instanceof GenericTypeParameterList) {
+        if (getNumChildren() > super.getNumDefaultChildren() && super.getChild(
+            super.getNumDefaultChildren() + 0) instanceof GenericTypeParameterList) {
             return (GenericTypeParameterList) super.getChild(super.getNumDefaultChildren() + 0);
         }
 
@@ -183,18 +188,17 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Get a unique integer used for differentiating methods that are
-     * overloaded.
+     * Get a unique integer used for differentiating methods that are overloaded.
      *
      * @return A unique identifier for overloaded methods.
      */
     public int getOverloadID() {
-        return overloadID < 0 && doesOverride() ? getOverriddenMethod().getOverloadID() : overloadID;
+        return overloadID < 0 && doesOverride() ? getOverriddenMethod().getOverloadID()
+            : overloadID;
     }
 
     /**
-     * Set a unique integer used for differentiating methods that are
-     * overloaded.
+     * Set a unique integer used for differentiating methods that are overloaded.
      *
      * @param id A unique identifier for overloaded methods.
      */
@@ -203,8 +207,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Get whether or not the method overrides another method or is
-     * overridden by another method.
+     * Get whether or not the method overrides another method or is overridden by another method.
      *
      * @return Whether or not the method is virtual.
      */
@@ -214,7 +217,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     @Override
-    public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors) {
+    public VariableDeclaration searchVariable(Node parent, Scope scope, String name,
+        boolean checkAncestors) {
         VariableDeclaration var = super.searchVariable(parent, scope, name, checkAncestors);
 
         if (var != null) {
@@ -241,29 +245,27 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Get whether or not the specified Method has overridden a method
-     * from a super class
+     * Get whether or not the specified Method has overridden a method from a super class
      *
-     * @return Whether or not the specified Method has overridden a
-     * method from a super class.
+     * @return Whether or not the specified Method has overridden a method from a super class.
      */
     public boolean doesOverride() {
         return overridenMethod != null;
     }
 
     /**
-     * Get the Method instance that this Method overrides, if one
-     * exists.
+     * Get the Method instance that this Method overrides, if one exists.
      *
-     * @return The Method instance that this Method overrides, if
-     * one exists.
+     * @return The Method instance that this Method overrides, if one exists.
      */
     public FlatMethodDeclaration getOverriddenMethod() {
         return overridenMethod;
     }
 
     private FlatMethodDeclaration getOverriddenMethod(SearchFilter filter) {
-        if (getVisibility() == PRIVATE && (this instanceof PropertyMethod == false || getParentClass().getField(getName()) == null || !getParentClass().getField(getName()).isPropertyTrue("inheritedFromTrait"))) {
+        if (getVisibility() == PRIVATE && (this instanceof PropertyMethod == false
+            || getParentClass().getField(getName()) == null
+            || !getParentClass().getField(getName()).isPropertyTrue("inheritedFromTrait"))) {
             return null;
         }
 
@@ -272,17 +274,21 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         if (extension != null) {
             String name = this instanceof Constructor ? extension.getName() : getName();
 
-            FlatMethodDeclaration method = (FlatMethodDeclaration) extension.getMethod(getContext(), name, filter, getParameterList().getTypes());
+            FlatMethodDeclaration method = (FlatMethodDeclaration) extension.getMethod(getContext(),
+                name, filter, getParameterList().getTypes());
 
-            if (method != null && method != this && SyntaxUtils.isTypeCompatible(this, method, this)) {
+            if (method != null && method != this
+                && SyntaxUtils.isTypeCompatible(this, method, this)) {
                 return method;
             }
         }
 
         for (Trait inter : getParentClass().getImplementedInterfaces()) {
-            FlatMethodDeclaration method = (FlatMethodDeclaration) inter.getMethod(getContext(), getName(), filter, getParameterList().getTypes());
+            FlatMethodDeclaration method = (FlatMethodDeclaration) inter.getMethod(getContext(),
+                getName(), filter, getParameterList().getTypes());
 
-            if (method != null && method != this && SyntaxUtils.isTypeCompatible(this, method, this)) {
+            if (method != null && method != this
+                && SyntaxUtils.isTypeCompatible(this, method, this)) {
                 return method;
             }
         }
@@ -291,30 +297,25 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Get whether or not the specified Method has been overridden by
-     * a sub class.
+     * Get whether or not the specified Method has been overridden by a sub class.
      *
-     * @return Whether or not the specified Method has been
-     * overridden.
+     * @return Whether or not the specified Method has been overridden.
      */
     public boolean isOverridden() {
         return overridingMethods.size() > 0;
     }
 
     /**
-     * Get the Method instance that overrides this Method, if
-     * any exists.
+     * Get the Method instance that overrides this Method, if any exists.
      *
-     * @return The Method instance that overrides this Method, if
-     * any exists.
+     * @return The Method instance that overrides this Method, if any exists.
      */
     public FlatMethodDeclaration[] getOverridingMethods() {
         return overridingMethods.toArray(new FlatMethodDeclaration[0]);
     }
 
     /**
-     * Get whether or not a Method instance overrides the given
-     * method.
+     * Get whether or not a Method instance overrides the given method.
      *
      * @param overridingMethod The Method to check.
      */
@@ -333,8 +334,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     /**
      * Add a Method instance that overrides this Method.
      *
-     * @param overridingMethod The Method instance that overrides
-     *                         this Method.
+     * @param overridingMethod The Method instance that overrides this Method.
      */
     private void addOverridingMethod(FlatMethodDeclaration overridingMethod) {
         this.overridingMethods.add(overridingMethod);
@@ -358,11 +358,15 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             if (!m.isExternal()) {
                 FlatMethodDeclaration method = (FlatMethodDeclaration) m;
 
-                if (SyntaxUtils.areSameTypes(getParameterList().getTypes(), method.getParameterList().getTypes())) {
+                if (SyntaxUtils.areSameTypes(getParameterList().getTypes(),
+                    method.getParameterList().getTypes())) {
                     if (method.getParentClass() == getParentClass()) {
-                        if (SyntaxUtils.isSameType(getParameterList().getObjectReference(), method.getParameterList().getObjectReference())) {
-                            SyntaxUtils.areSameTypes(getParameterList().getTypes(), method.getParameterList().getTypes());
-                            SyntaxUtils.isSameType(getParameterList().getObjectReference(), method.getParameterList().getObjectReference());
+                        if (SyntaxUtils.isSameType(getParameterList().getObjectReference(),
+                            method.getParameterList().getObjectReference())) {
+                            SyntaxUtils.areSameTypes(getParameterList().getTypes(),
+                                method.getParameterList().getTypes());
+                            SyntaxUtils.isSameType(getParameterList().getObjectReference(),
+                                method.getParameterList().getObjectReference());
                             method.getParentClass();
                             getParentClass();
                             SyntaxMessage.error("Duplicate method '" + getName() + "'", this);
@@ -413,7 +417,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         return generateFlatInput(builder, outputChildren, true);
     }
 
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean outputType) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean outputType) {
         builder.append(getVisibilityText());
 
         if (!isInstance()) {
@@ -444,31 +449,30 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Decode the given statement into a Method instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a Method instance, if possible. If it is not possible, this
+     * method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>public Person findPerson(String name, int age)</li>
-     * 	<li>private int calculateArea(int width, int height)</li>
-     * 	<li>public void doNothing()</li>
+     * <li>public Person findPerson(String name, int age)</li>
+     * <li>private int calculateArea(int width, int height)</li>
+     * <li>public void doNothing()</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Method instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Method.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Method instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Method.
      */
-    public static FlatMethodDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static FlatMethodDeclaration decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         if (validateMethodDeclaration(statement)) {
-            SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getFirstLiteralNameData(statement);
+            SyntaxUtils.LiteralNameData literalNameData =
+                SyntaxUtils.getFirstLiteralNameData(statement);
 
             if (literalNameData != null) {
-                statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
+                statement = statement.replace('`' + literalNameData.literalName + '`',
+                    literalNameData.validName);
             }
 
             FlatMethodDeclaration n = new FlatMethodDeclaration(parent, location);
@@ -477,21 +481,23 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             // Bounds of the data within the parentheses.
             Bounds bounds = SyntaxUtils.findInnerParenthesesBounds(n, statement);
 
-            if (n.decodeSignature(statement, require) && n.validateDeclaration(statement, bounds, require)) {
+            if (n.decodeSignature(statement, require)
+                && n.validateDeclaration(statement, bounds, require)) {
                 n.checkExternalType();
 
                 if (parent.getParentClass(true) instanceof Trait) {
-					/*if (n.getVisibility() != PRIVATE)
-					{
-						SyntaxMessage.error("Trait functions cannot have visibility modifiers", n);
-					}
-					
-					n.setVisibility(PUBLIC);*/
+                    /*
+                     * if (n.getVisibility() != PRIVATE) {
+                     * SyntaxMessage.error("Trait functions cannot have visibility modifiers", n); }
+                     * 
+                     * n.setVisibility(PUBLIC);
+                     */
                 }
 
                 // Temporary workaround for crappy closure declaration implementation
                 // Won't make this mistake in the rewrite.
-                if (parent.getFileDeclaration().containsPendingAnnotationOfType(PublicAnnotation.class)) {
+                if (parent.getFileDeclaration()
+                    .containsPendingAnnotationOfType(PublicAnnotation.class)) {
                     n.setVisibility(PUBLIC);
                 }
 
@@ -508,7 +514,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     public boolean checkOverrides() {
-        if (getParentClass().getName().equals("Object")) return false;
+        if (getParentClass().getName().equals("Object"))
+            return false;
 
         if (overridenMethod == null) {
             SearchFilter filter = new SearchFilter();
@@ -537,20 +544,22 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
      * Validate that the given statement is a method declaration.
      *
      * @param statement The statement to validate.
-     * @return Whether or not the given statement is a valid method
-     * declaration.
+     * @return Whether or not the given statement is a valid method declaration.
      */
     private static boolean validateMethodDeclaration(String statement) {
-        SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getFirstLiteralNameData(statement);
+        SyntaxUtils.LiteralNameData literalNameData =
+            SyntaxUtils.getFirstLiteralNameData(statement);
 
         if (literalNameData != null) {
-            statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
+            statement = statement.replace('`' + literalNameData.literalName + '`',
+                literalNameData.validName);
         }
 
         int firstParenthIndex = statement.indexOf('(');
-        int endBound = StringUtils.findNextCharacter(statement, StringUtils.SYMBOLS_CHARS, firstParenthIndex - 1, -1);
+        int endBound = StringUtils.findNextCharacter(statement, StringUtils.SYMBOLS_CHARS,
+            firstParenthIndex - 1, -1);
         int startBound = 0;
-        //Bounds bounds = StringUtils.findNextWordBounds(statement, firstParenthIndex, -1);
+        // Bounds bounds = StringUtils.findNextWordBounds(statement, firstParenthIndex, -1);
 
         if (endBound >= 0) {
             if (statement.charAt(endBound) != GENERIC_END_CHAR) {
@@ -578,28 +587,33 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             endBound = 0;
         }
 
-        if (StringUtils.findNextCharacter(statement.substring(0, startBound) + statement.substring(endBound), StringUtils.SYMBOLS_CHARS, 0, 1) < firstParenthIndex - (endBound - startBound) - 1) {
+        if (StringUtils.findNextCharacter(
+            statement.substring(0, startBound) + statement.substring(endBound),
+            StringUtils.SYMBOLS_CHARS, 0, 1) < firstParenthIndex - (endBound - startBound) - 1) {
             return false;
         }
 
-        return firstParenthIndex >= 0 && !StringUtils.findNextWord(statement).equals(ExternalMethodDeclaration.PREFIX);
+        return firstParenthIndex >= 0
+            && !StringUtils.findNextWord(statement).equals(ExternalMethodDeclaration.PREFIX);
     }
 
     /**
      * Check to see if the return type of the method is an external type.
      */
     private void checkExternalType() {
-//		if (getParentClass().containsExternalType(getType()))
-//		{
-//			setDataType(IValue.POINTER);
-//		}
+        // if (getParentClass().containsExternalType(getType()))
+        // {
+        // setDataType(IValue.POINTER);
+        // }
     }
 
     public FlatMethodDeclaration getExistingConvertedPrimitiveMethod(Value[] args) {
-        return getExistingConvertedPrimitiveMethod(args, getMethodGenericTypeParameterDeclaration().getTypes());
+        return getExistingConvertedPrimitiveMethod(args,
+            getMethodGenericTypeParameterDeclaration().getTypes());
     }
 
-    public FlatMethodDeclaration getExistingConvertedPrimitiveMethod(Value[] args, Value[] methodArgs) {
+    public FlatMethodDeclaration getExistingConvertedPrimitiveMethod(Value[] args,
+        Value[] methodArgs) {
         if (!Flat.PRIMITIVE_OVERLOADS) {
             return null;
         }
@@ -614,15 +628,19 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                     Value arg = args[i].getReturnedNode();
 
                     if (arg.getDataType() != param.getDataType() ||
-                        arg.getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass())) {
+                        arg.getTypeClass() == null
+                        || !arg.getTypeClass().isOfType(param.getTypeClass())) {
                         compatible = false;
-                    } else if ((genericOverload != null && genericOverload.getParameter(i).isGenericType()) &&
-                        arg.isPrimitive() && param.isPrimitive() && !arg.getType().equals(param.getType())) {
+                    } else if ((genericOverload != null
+                        && genericOverload.getParameter(i).isGenericType()) &&
+                        arg.isPrimitive() && param.isPrimitive()
+                        && !arg.getType().equals(param.getType())) {
                         compatible = false;
                     }
                 }
 
-                GenericTypeParameterList genParams = converted.getMethodGenericTypeParameterDeclaration();
+                GenericTypeParameterList genParams =
+                    converted.getMethodGenericTypeParameterDeclaration();
 
                 if (genParams.getNumVisibleChildren() != methodArgs.length) {
                     compatible = false;
@@ -632,9 +650,11 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                         Value arg = methodArgs[i].getReturnedNode();
 
                         if (arg.getDataType() != param.getDataType() ||
-                            arg.getTypeClass() == null || !arg.getTypeClass().isOfType(param.getTypeClass())) {
+                            arg.getTypeClass() == null
+                            || !arg.getTypeClass().isOfType(param.getTypeClass())) {
                             compatible = false;
-                        } else if (arg.isPrimitive() && param.isPrimitive() && !arg.getType().equals(param.getType())) {
+                        } else if (arg.isPrimitive() && param.isPrimitive()
+                            && !arg.getType().equals(param.getType())) {
                             compatible = false;
                         }
                     }
@@ -652,15 +672,18 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             }
         }
 
-//		RequireGenericTypeAnnotation require = (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
-//		
-//		if (require != null)
-//		{
-//			if (!SyntaxUtils.areTypesCompatible(new GenericCompatible[] { this }, require.getGenericTypeParameterDeclaration().getTypes(), types))
-//			{
-//				return null;
-//			}
-//		}
+        // RequireGenericTypeAnnotation require =
+        // (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class,
+        // false, false);
+        //
+        // if (require != null)
+        // {
+        // if (!SyntaxUtils.areTypesCompatible(new GenericCompatible[] { this },
+        // require.getGenericTypeParameterDeclaration().getTypes(), types))
+        // {
+        // return null;
+        // }
+        // }
 
         return null;
     }
@@ -682,7 +705,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         return null;
     }
 
-    public FlatMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types, final Value[] methodTypes) {
+    public FlatMethodDeclaration convertToClass(ClassDeclaration parent, final Value[] types,
+        final Value[] methodTypes) {
         if (!Flat.PRIMITIVE_OVERLOADS) {
             return null;
         }
@@ -695,7 +719,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
         clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
         getGenericTypeArgumentList().cloneChildrenTo(clone.getGenericTypeArgumentList());
-//		clone.setName("zca_" + clone.getName());
+        // clone.setName("zca_" + clone.getName());
 
         GenericTypeParameterList methodParams = clone.getMethodGenericTypeParameterDeclaration();
 
@@ -713,20 +737,25 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             param.setDefaultType(methodTypes[i].getType());
         }
 
-        RequireGenericTypeAnnotation require = (RequireGenericTypeAnnotation) getAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+        RequireGenericTypeAnnotation require =
+            (RequireGenericTypeAnnotation) getAnnotationOfType(RequireGenericTypeAnnotation.class,
+                false, false);
 
         if (require != null) {
-            if (!SyntaxUtils.areTypesCompatible(new GenericCompatible[]{this}, require.getGenericTypeParameterDeclaration().getTypes(), types)) {
+            if (!SyntaxUtils.areTypesCompatible(new GenericCompatible[] {this},
+                require.getGenericTypeParameterDeclaration().getTypes(), types)) {
                 return null;
             }
         }
 
         if (getGenericTypeArgumentList().getNumVisibleChildren() > 0) {
-            clone.getGenericTypeArgumentList().replaceWith(getGenericTypeArgumentList().clone(clone.getGenericTypeArgumentList(), getLocationIn(), true, true));
+            clone.getGenericTypeArgumentList().replaceWith(getGenericTypeArgumentList()
+                .clone(clone.getGenericTypeArgumentList(), getLocationIn(), true, true));
         }
 
         ParameterList<Parameter> originalParameterList = getParameterList();
-        ParameterList<Parameter> parameterList = originalParameterList.clone(clone, getLocationIn(), true, true);
+        ParameterList<Parameter> parameterList =
+            originalParameterList.clone(clone, getLocationIn(), true, true);
 
         clone.getParameterList().replaceWith(parameterList);
 
@@ -735,7 +764,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         for (int i = 0; i < parameterList.getNumParameters(); i++) {
             Parameter param = parameterList.getParameter(i);
 
-            changed |= referenceClass.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), param, true);
+            changed |= referenceClass.replacePrimitiveGenerics(types,
+                originalParameterList.getParameter(i), param, true);
         }
 
         referenceClass.replacePrimitiveGenerics(types, this, clone);
@@ -747,7 +777,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         clone.shorthandAction = null;
 
         for (int i = 0; i < parameterList.getNumParameters(); i++) {
-            changed |= parent.replacePrimitiveGenerics(types, originalParameterList.getParameter(i), parameterList.getParameter(i));
+            changed |= parent.replacePrimitiveGenerics(types, originalParameterList.getParameter(i),
+                parameterList.getParameter(i));
         }
 
         if (clone instanceof Constructor) {
@@ -757,7 +788,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             changed = true;
         }
 
-//		if (changed)
+        // if (changed)
         {
             SearchFilter filter = new SearchFilter();
             filter.requireExactMatch = true;
@@ -766,9 +797,11 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             filter.defaultGeneric = true;
             filter.checkProperties = true;
 
-            MethodDeclaration[] found = parent.getMethods(new GenericCompatible[]{parent}, clone.getName(), filter, clone.getParameterList().getTypes(), false);
+            MethodDeclaration[] found = parent.getMethods(new GenericCompatible[] {parent},
+                clone.getName(), filter, clone.getParameterList().getTypes(), false);
 
-            if (found.length == 0)// && (clone instanceof PropertyMethod == false || parent.getField(clone.getName(), false) == null))
+            if (found.length == 0)// && (clone instanceof PropertyMethod == false ||
+                                  // parent.getField(clone.getName(), false) == null))
             {
                 parent.addChild(clone);
 
@@ -777,7 +810,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                 correspondingPrimitiveOverloads.add(clone);
 
                 for (Parameter p : clone.getParameterList().getOptionalParameters()) {
-                    DefaultParameterInitialization init = new DefaultParameterInitialization(clone, p.getLocationIn(), p);
+                    DefaultParameterInitialization init =
+                        new DefaultParameterInitialization(clone, p.getLocationIn(), p);
 
                     clone.addChild(init);
                 }
@@ -791,7 +825,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         return null;
     }
 
-    public FlatMethodDeclaration convertPrimitiveMethod(MethodCall call, Value returnType, Node addTo, Value[] types, Value[] methodTypes, ArrayList<Value[]> closureTypes) {
+    public FlatMethodDeclaration convertPrimitiveMethod(MethodCall call, Value returnType,
+        Node addTo, Value[] types, Value[] methodTypes, ArrayList<Value[]> closureTypes) {
         if (!Flat.PRIMITIVE_OVERLOADS) {
             return null;
         }
@@ -831,7 +866,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             }
         });
 
-        addTo = addTo == null ? /*call.getReferenceNode().toValue().getTypeClass()*/getParent() : addTo;
+        addTo = addTo == null ? /* call.getReferenceNode().toValue().getTypeClass() */getParent()
+            : addTo;
 
         int closureIndex = 0;
 
@@ -841,7 +877,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         }
 
         for (int i = 0; i < types.length; i++) {
-            Parameter param = getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
+            Parameter param =
+                getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true);
 
             if (param != types[i]) {
                 param.setType(types[i]);
@@ -866,7 +903,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                             if (val instanceof Variable) {
                                 VariableDeclaration decl = ((Variable) val).declaration;
 
-                                if (decl instanceof ReferenceParameter || decl instanceof InstanceDeclaration && decl.getParentClass() == getParentClass()) {
+                                if (decl instanceof ReferenceParameter
+                                    || decl instanceof InstanceDeclaration
+                                        && decl.getParentClass() == getParentClass()) {
                                     addTo = moveToClass(method, call);
                                 }
                             }
@@ -879,7 +918,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         }
 
         for (int i = types.length; i < getParameterList().getNumParameters(); i++) {
-            method.getParameterList().addChild(getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true));
+            method.getParameterList().addChild(
+                getParameter(i).clone(method.getParameterList(), getLocationIn(), true, true));
         }
 
         primitiveOverloads.add(method);
@@ -893,7 +933,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     private ClassDeclaration moveToClass(FlatMethodDeclaration original, Variable var) {
         ClassDeclaration newClass = var.getDeclaringClass();
 
-        if (!newClass.isPrimitiveOverload() && newClass != getDeclaringClass() && newClass.isOfType(getDeclaringClass())) {
+        if (!newClass.isPrimitiveOverload() && newClass != getDeclaringClass()
+            && newClass.isOfType(getDeclaringClass())) {
             newClass = getDeclaringClass();
         }
 
@@ -919,7 +960,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         }
 
         Accessible ref = call.getReferenceNode();
-        Value[] argTypes = ref.toValue().getGenericTypeArgumentList() != null ? ref.toValue().getGenericTypeArgumentList().getTypes() : null;
+        Value[] argTypes = ref.toValue().getGenericTypeArgumentList() != null
+            ? ref.toValue().getGenericTypeArgumentList().getTypes()
+            : null;
 
         FlatParameterList parameters = getParameterList();
 
@@ -936,19 +979,22 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             isPrimitive |= checkType(argTypes, types, i, arg, param, closureTypes);
         }
 
-//		RequireGenericTypeAnnotation require = (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
-//		
-//		if (require != null)
-//		{
-//			for (GenericTypeParameter param : require.getGenericTypeParameterDeclaration())
-//			{
-//				isPrimitive |= SyntaxUtils.isPrimitiveType(param.getDefaultType());
-//			}
-//		}
+        // RequireGenericTypeAnnotation require =
+        // (RequireGenericTypeAnnotation)getAnnotationOfType(RequireGenericTypeAnnotation.class,
+        // false, false);
+        //
+        // if (require != null)
+        // {
+        // for (GenericTypeParameter param : require.getGenericTypeParameterDeclaration())
+        // {
+        // isPrimitive |= SyntaxUtils.isPrimitiveType(param.getDefaultType());
+        // }
+        // }
 
         GenericTypeParameterList methodGenParams = getMethodGenericTypeParameterDeclaration();
 
-        for (int i = 0; i < Math.min(methodArgs.length, methodGenParams.getNumVisibleChildren()); i++) {
+        for (int i = 0; i < Math.min(methodArgs.length,
+            methodGenParams.getNumVisibleChildren()); i++) {
             Value arg = methodArgs[i].getReturnedNode();
             Value param = methodGenParams.getVisibleChild(i);
 
@@ -956,9 +1002,11 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         }
 
         Value returnType = call;
-        Node addTo = isInstance() ? ref.toValue().getTypeClass() : call.getInferredDeclaration().getParentClass();//call.getReferenceNode().toValue().getTypeClass();//getParent();
+        Node addTo = isInstance() ? ref.toValue().getTypeClass()
+            : call.getInferredDeclaration().getParentClass();// call.getReferenceNode().toValue().getTypeClass();//getParent();
 
-        if (call.getType() != null && call.getGenericTypeArgumentList().getNumVisibleChildren() > 0) {
+        if (call.getType() != null
+            && call.getGenericTypeArgumentList().getNumVisibleChildren() > 0) {
             String s = generateFlatType(call).toString();
 
             GenericTypeArgument arg = new GenericTypeArgument(this, Location.INVALID);
@@ -966,26 +1014,31 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 
             if (arg.convertToPrimitiveType()) {
                 returnType = arg;
-//				addTo = arg.getTypeClass();
+                // addTo = arg.getTypeClass();
             }
 
-//			isPrimitive |= ClassDeclaration.replacePrimitiveGenerics(getMethodGenericTypeParameterDeclaration(), methodArgs, call, call, true);
+            // isPrimitive |=
+            // ClassDeclaration.replacePrimitiveGenerics(getMethodGenericTypeParameterDeclaration(),
+            // methodArgs, call, call, true);
         }
 
         if (isPrimitive) {
-            return convertPrimitiveMethod(call, returnType, addTo, types, methodTypes, closureTypes);
+            return convertPrimitiveMethod(call, returnType, addTo, types, methodTypes,
+                closureTypes);
         }
 
         return null;
     }
 
-    public boolean checkType(Value[] argTypes, Value[] types, int i, Value arg, Value param, ArrayList<Value[]> closureTypes) {
+    public boolean checkType(Value[] argTypes, Value[] types, int i, Value arg, Value param,
+        ArrayList<Value[]> closureTypes) {
         boolean isPrimitive = false;
 
         if (arg instanceof DefaultArgument == false &&
             arg.getType() != null && (arg.isPrimitive() && !param.isPrimitive() ||
-            !param.isGenericType() && param.getTypeClass() != null && !param.getTypeClass().isPrimitiveOverload() &&
-                arg.getTypeClass() != null && arg.getTypeClass().isPrimitiveOverload())) {
+                !param.isGenericType() && param.getTypeClass() != null
+                    && !param.getTypeClass().isPrimitiveOverload() &&
+                    arg.getTypeClass() != null && arg.getTypeClass().isPrimitiveOverload())) {
             types[i] = arg;
 
             isPrimitive = true;
@@ -1003,7 +1056,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                 if (varg.declaration.isFunctionType()) {
                     callable = ((FunctionType) varg.declaration.getTypeObject()).closure;
                 } else {
-                    if (varg.declaration.getOriginalDeclaration() instanceof CallableMethod == false) {
+                    if (varg.declaration
+                        .getOriginalDeclaration() instanceof CallableMethod == false) {
                         return false;
                     }
 
@@ -1013,7 +1067,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                 ParameterList aParams = callable.getParameterList();
                 ParameterList<Value> cParams = closure.getParameterList();
 
-                Value[] closureValues = new Value[Math.min(aParams.getNumParameters(), cParams.getNumParameters())];
+                Value[] closureValues =
+                    new Value[Math.min(aParams.getNumParameters(), cParams.getNumParameters())];
 
                 for (int n = 0; n < closureValues.length; n++) {
                     Value aarg = aParams.getParameter(n);
@@ -1025,9 +1080,11 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                         isPrimitive = true;
                     } else {
                         if (aarg.getGenericTypeArgumentList().getNumVisibleChildren() > 0) {
-                            closureValues[n] = (Value) aarg.clone(aarg.getParent(), aarg.getLocationIn(), true, true);
+                            closureValues[n] = (Value) aarg.clone(aarg.getParent(),
+                                aarg.getLocationIn(), true, true);
 
-                            if (getParentClass().replacePrimitiveGenerics(argTypes, aparam, closureValues[n])) {
+                            if (getParentClass().replacePrimitiveGenerics(argTypes, aparam,
+                                closureValues[n])) {
                                 isPrimitive = true;
                             } else {
                                 closureValues[n] = aparam;
@@ -1046,9 +1103,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Find the String representing the signature of the bodyless
-     * method that is currently being decoded from the given
-     * statement String.
+     * Find the String representing the signature of the bodyless method that is currently being
+     * decoded from the given statement String.
      *
      * @param statement The String containing the method signature.
      * @return The signature for the bodyless method to decode.
@@ -1067,14 +1123,12 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Validate that the method declaration is correct. Make sure that a
-     * return type is specified, its parameters are declared correctly,
-     * and other issues.
+     * Validate that the method declaration is correct. Make sure that a return type is specified,
+     * its parameters are declared correctly, and other issues.
      *
      * @param statement The statement containing the method declaration.
-     * @param bounds    The Bounds of the parameters.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
+     * @param bounds The Bounds of the parameters.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the declaration is valid.
      */
     private boolean validateDeclaration(String statement, Bounds bounds, boolean require) {
@@ -1097,8 +1151,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
      * For example: "<u><code>public static calculateArea -> Int</code></u>"
      *
      * @param statement The statement to decode the signature from.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the signature was successfully decoded.
      */
     public boolean decodeSignature(String statement, boolean require) {
@@ -1151,9 +1204,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     /**
      * Decode the given parameters that were declared for the Method.
      *
-     * @param parameterList The statement that contains the parameters
-     *                      separated by commas.
-     * @param require       Whether or not a successful decode is required.
+     * @param parameterList The statement that contains the parameters separated by commas.
+     * @param require Whether or not a successful decode is required.
      * @return Whether or not the parameters were decoded correctly.
      */
     public boolean decodeParameters(String parameterList, boolean require) {
@@ -1166,7 +1218,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                 if (parameters[i].length() > 0) {
                     ArrayList<Annotation> annotations = new ArrayList<>();
 
-                    Annotation a = Annotation.decodeStatement(this, parameters[i], location, require);
+                    Annotation a =
+                        Annotation.decodeStatement(this, parameters[i], location, require);
 
                     while (a != null) {
                         parameters[i] = Annotation.getFragment(parameters[i]);
@@ -1176,10 +1229,13 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                         a = Annotation.decodeStatement(this, parameters[i], location, require);
                     }
 
-                    Parameter param = Parameter.decodeStatement(this, parameters[i], location, require, isUserMade(), isUserMade() || getParentClass().isPropertyTrue("functionMap"));
+                    Parameter param = Parameter.decodeStatement(this, parameters[i], location,
+                        require, isUserMade(),
+                        isUserMade() || getParentClass().isPropertyTrue("functionMap"));
 
                     if (param == null) {
-                        return SyntaxMessage.queryError("Incorrect parameter definition", this, require);
+                        return SyntaxMessage.queryError("Incorrect parameter definition", this,
+                            require);
                     }
 
                     for (Annotation anno : annotations) {
@@ -1235,18 +1291,23 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String, Node.ExtraData)
+     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String,
+     *      Node.ExtraData)
      */
     @Override
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData extra) {
         MethodData data = (MethodData) extra;
 
-        if (data.error != null || extra.isLastWord() || !setAttribute(word, extra.getWordNumber())) {
+        if (data.error != null || extra.isLastWord()
+            || !setAttribute(word, extra.getWordNumber())) {
             if (leftDelimiter.equals("->") || (getType() != null && leftDelimiter.equals(","))) {
                 addType(word);
 
-                if (rightDelimiter.startsWith(GENERIC_START) && rightDelimiter.endsWith(GENERIC_END)) {
-                    addGenericTypeArgumentName(rightDelimiter.substring(GENERIC_START.length(), rightDelimiter.length() - GENERIC_END.length()));
+                if (rightDelimiter.startsWith(GENERIC_START)
+                    && rightDelimiter.endsWith(GENERIC_END)) {
+                    addGenericTypeArgumentName(rightDelimiter.substring(GENERIC_START.length(),
+                        rightDelimiter.length() - GENERIC_END.length()));
                 }
 
                 if (!checkArray(data.signature, bounds.getEnd(), rightDelimiter, extra.require)) {
@@ -1280,7 +1341,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     public String generateFlatClosureReference(Identifier context) {
         String reference = "";
 
-        reference += /*context.getName() + "." +*/ getName();
+        reference += /* context.getName() + "." + */ getName();
 
         return reference;
     }
@@ -1319,7 +1380,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             this.cloneTo(virtualMethod, false, true);
             virtualMethod.objectReference = new ObjectReference(virtualMethod);
 
-//			getParentClass().addChild(virtualMethod);
+            // getParentClass().addChild(virtualMethod);
         }
     }
 
@@ -1351,7 +1412,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                     value.parent = m;
                     value.onAfterDecoded();
 
-                    getParentClass().replacePrimitiveGenerics(m.getParentClass().primitiveOverloadTypes, this, value);
+                    getParentClass().replacePrimitiveGenerics(
+                        m.getParentClass().primitiveOverloadTypes, this, value);
 
                     m.setType(value);
                 }
@@ -1360,7 +1422,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     public void throwInferTypeError() {
-        SyntaxMessage.error("Unable to infer return value of arrow binding for function '" + getName() + "'. Please add an explicit return type to any functions that the arrow binding returns.", this);
+        SyntaxMessage.error("Unable to infer return value of arrow binding for function '"
+            + getName()
+            + "'. Please add an explicit return type to any functions that the arrow binding returns.",
+            this);
     }
 
     public Value inferShorthandActionType(String action, Value contents) {
@@ -1375,7 +1440,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                 if (closure.declarations.length == 1) {
                     setType(closure.declarations[0].getFunctionReferenceType());
                 } else if (closure.declarations.length > 1) {
-                    SyntaxMessage.error("Ambiguous function '" + action + "'. Explicitly specify the type of function that is returned by function '" + getName() + "' to resolve this", this);
+                    SyntaxMessage.error("Ambiguous function '" + action
+                        + "'. Explicitly specify the type of function that is returned by function '"
+                        + getName() + "' to resolve this", this);
                 } else {
                     SyntaxMessage.error("Could not find function '" + action + "'", this);
                 }
@@ -1397,7 +1464,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 
             } else {
                 if (returned instanceof Closure == false && setType) {
-                    setType(returned);//returned.getFlatTypeValue(returned));
+                    setType(returned);// returned.getFlatTypeValue(returned));
                 }
 
                 Return r = new Return(this, getLocationIn());
@@ -1436,7 +1503,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
 
             if (overridenMethod.getType() != null) {
                 if (getType() == null) {
-                    SyntaxMessage.error("Method " + getParentClass().getName() + "." + getName() + " does not override return type of method " + overridenMethod.getParentClass().getName() + "." + overridenMethod.getName(), this);
+                    SyntaxMessage.error("Method " + getParentClass().getName() + "." + getName()
+                        + " does not override return type of method "
+                        + overridenMethod.getParentClass().getName() + "."
+                        + overridenMethod.getName(), this);
                     return;
                 }
                 setDataType(overridenMethod.getDataType());
@@ -1454,7 +1524,9 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
                 } else if (n instanceof Assignment) {
                     Assignment assign = (Assignment) n;
 
-                    if (getTypeObject() != null && assign.getAssignedNodeValue().getReturnedNode().isPrimitive() && !isPrimitive()) {
+                    if (getTypeObject() != null
+                        && assign.getAssignedNodeValue().getReturnedNode().isPrimitive()
+                        && !isPrimitive()) {
                         assign.getAssignmentNode().replaceWithUnboxedValue();
                     }
                 }
@@ -1499,7 +1571,7 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
         }
 
         if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
-            //TODO: Is this necessary?
+            // TODO: Is this necessary?
             getParameterList().validate(phase);
 
             if (genericOverload == null || !genericOverload.usedShorthandAction) {
@@ -1507,11 +1579,13 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
             }
 
             if (!isAsync()) {
-                if (getParameterList().getChildStream().anyMatch(p -> p.containsAnnotationOfType(LazyAnnotation.class))) {
+                if (getParameterList().getChildStream()
+                    .anyMatch(p -> p.containsAnnotationOfType(LazyAnnotation.class))) {
                     asyncOverload = (FlatMethodDeclaration) clone(getParent(), getLocationIn());
 
                     asyncOverload.setName(asyncOverload.getName() + "_async");
-                    asyncOverload.addAnnotation(new AsyncAnnotation(asyncOverload, asyncOverload.getLocationIn()));
+                    asyncOverload.addAnnotation(
+                        new AsyncAnnotation(asyncOverload, asyncOverload.getLocationIn()));
 
                     getParent().addChild(asyncOverload);
                 }
@@ -1556,7 +1630,8 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public FlatMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public FlatMethodDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         FlatMethodDeclaration node = new FlatMethodDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -1570,13 +1645,13 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Fill the given {@link FlatMethodDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link FlatMethodDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public FlatMethodDeclaration cloneTo(FlatMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public FlatMethodDeclaration cloneTo(FlatMethodDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.objectReference = objectReference;
@@ -1624,11 +1699,10 @@ public class FlatMethodDeclaration extends MethodDeclaration implements ScopeAnc
     }
 
     /**
-     * Test the MethodDeclaration class type to make sure everything
-     * is working properly.
+     * Test the MethodDeclaration class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

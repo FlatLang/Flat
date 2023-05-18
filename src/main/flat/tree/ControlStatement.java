@@ -49,7 +49,8 @@ public class ControlStatement extends IValue {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ControlStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ControlStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ControlStatement node = new ControlStatement(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -63,24 +64,23 @@ public class ControlStatement extends IValue {
     }
 
     /**
-     * Fill the given {@link ControlStatement} with the data that is in the
-     * specified node.
+     * Fill the given {@link ControlStatement} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ControlStatement cloneTo(ControlStatement node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ControlStatement cloneTo(ControlStatement node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link ControlStatement} class type to make sure everything
-     * is working properly.
+     * Test the {@link ControlStatement} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -88,3 +88,4 @@ public class ControlStatement extends IValue {
         return null;
     }
 }
+

@@ -18,7 +18,8 @@ public class ExtendedClass extends IValue implements GenericCompatible {
     public ExtendedClass(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
 
-        GenericTypeArgumentList implementation = new GenericTypeArgumentList(this, locationIn.asNew());
+        GenericTypeArgumentList implementation =
+            new GenericTypeArgumentList(this, locationIn.asNew());
         addChild(implementation, this);
     }
 
@@ -39,25 +40,24 @@ public class ExtendedClass extends IValue implements GenericCompatible {
     }
 
     /**
-     * Decode the given statement into a {@link ExtendedClass} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link ExtendedClass} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link ExtendedClass} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link ExtendedClass}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link ExtendedClass} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link ExtendedClass}.
      */
-    public static ExtendedClass decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static ExtendedClass decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         ExtendedClass n = new ExtendedClass(parent, location);
 
         int numWords = StringUtils.findNumWords(statement);
@@ -77,7 +77,8 @@ public class ExtendedClass extends IValue implements GenericCompatible {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ExtendedClass clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExtendedClass clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ExtendedClass node = new ExtendedClass(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -91,13 +92,13 @@ public class ExtendedClass extends IValue implements GenericCompatible {
     }
 
     /**
-     * Fill the given {@link ExtendedClass} with the data that is in the
-     * specified node.
+     * Fill the given {@link ExtendedClass} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ExtendedClass cloneTo(ExtendedClass node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExtendedClass cloneTo(ExtendedClass node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
@@ -109,11 +110,10 @@ public class ExtendedClass extends IValue implements GenericCompatible {
     }
 
     /**
-     * Test the {@link ExtendedClass} class type to make sure everything
-     * is working properly.
+     * Test the {@link ExtendedClass} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -121,3 +121,4 @@ public class ExtendedClass extends IValue implements GenericCompatible {
         return null;
     }
 }
+

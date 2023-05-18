@@ -23,7 +23,8 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration {
     /**
      * @see Node#Node(Node, Location)
      */
-    public InterfaceMethodDeclaration(Node temporaryParent, Location locationIn, BodyMethodDeclaration method) {
+    public InterfaceMethodDeclaration(Node temporaryParent, Location locationIn,
+        BodyMethodDeclaration method) {
         super(temporaryParent, locationIn);
 
         int oldId = uniqueID;
@@ -50,7 +51,8 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration {
 
         if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
             if (!containsScope) {
-                AbstractMethodDeclaration abst = new AbstractMethodDeclaration(this, getLocationIn());
+                AbstractMethodDeclaration abst =
+                    new AbstractMethodDeclaration(this, getLocationIn());
                 abst.createFrom(this);
 
                 replaceWith(abst);
@@ -68,8 +70,10 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public InterfaceMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        InterfaceMethodDeclaration node = new InterfaceMethodDeclaration(temporaryParent, locationIn);
+    public InterfaceMethodDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        InterfaceMethodDeclaration node =
+            new InterfaceMethodDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -82,13 +86,14 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link InterfaceMethodDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link InterfaceMethodDeclaration} with the data that is in the specified
+     * node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public InterfaceMethodDeclaration cloneTo(InterfaceMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public InterfaceMethodDeclaration cloneTo(InterfaceMethodDeclaration node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.containsScope = containsScope;
@@ -97,11 +102,11 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration {
     }
 
     /**
-     * Test the {@link InterfaceMethodDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link InterfaceMethodDeclaration} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -109,3 +114,4 @@ public class InterfaceMethodDeclaration extends BodyMethodDeclaration {
         return null;
     }
 }
+

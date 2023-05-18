@@ -13,11 +13,10 @@ public class Bounds {
     private int start, end;
 
     /**
-     * Create a Bounds instance with the specified start and
-     * end location.
+     * Create a Bounds instance with the specified start and end location.
      *
      * @param start The start location of the Bound.
-     * @param end   The end location of the Bound.
+     * @param end The end location of the Bound.
      */
     public Bounds(int start, int end) {
         this.start = start;
@@ -61,9 +60,14 @@ public class Bounds {
     }
 
     /**
-     * Extract a substring from the given source at the specified bound's
-     * start and end. This is equivalent to the following:
-     * <blockquote><pre>source.substring(Bounds.getStart(), Bounds.getEnd())</pre></blockquote>
+     * Extract a substring from the given source at the specified bound's start and end. This is
+     * equivalent to the following: <blockquote>
+     * 
+     * <pre>
+     * source.substring(Bounds.getStart(), Bounds.getEnd())
+     * </pre>
+     * 
+     * </blockquote>
      *
      * @param source The String to get the substring from.
      * @return The extracted substring.
@@ -128,8 +132,7 @@ public class Bounds {
     }
 
     /**
-     * Get whether or not the bounds are positive and that they have
-     * a length.
+     * Get whether or not the bounds are positive and that they have a length.
      *
      * @return Whether or not the Bounds is valid.
      */
@@ -152,8 +155,8 @@ public class Bounds {
     }
 
     /**
-     * Generate a String representation of the Bounds Object
-     * containing the start and end position of the Bounds.
+     * Generate a String representation of the Bounds Object containing the start and end position
+     * of the Bounds.
      *
      * @return A String representation of the Bounds Object.
      * @see java.lang.Object#toString()
@@ -163,9 +166,9 @@ public class Bounds {
     }
 
     /**
-     * Clone the values from the specified Bounds instance into the given
-     * Bounds instance. This overwrites the existing values in the given
-     * Bounds instance in favor for the specified Bounds's values.
+     * Clone the values from the specified Bounds instance into the given Bounds instance. This
+     * overwrites the existing values in the given Bounds instance in favor for the specified
+     * Bounds's values.
      *
      * @param bounds The Bounds to set the values of.
      */
@@ -175,8 +178,7 @@ public class Bounds {
     }
 
     /**
-     * Clone the specified Bounds's values into a brand spankin' new
-     * Bounds instance.
+     * Clone the specified Bounds's values into a brand spankin' new Bounds instance.
      *
      * @return The new Bounds instance.
      * @see java.lang.Object#clone()
@@ -186,8 +188,7 @@ public class Bounds {
     }
 
     /**
-     * Class specifically for the EMPTY Bounds constant. Prevents the
-     * modification of the values.
+     * Class specifically for the EMPTY Bounds constant. Prevents the modification of the values.
      *
      * @author Braden Steffaniak
      * @since v0.2.13 Jun 17, 2014 at 3:03:39 PM
@@ -202,20 +203,21 @@ public class Bounds {
          * @see Bounds#setStart(int)
          */
         public void setStart(int start) {
-            throw new EmptyBoundsModificationException("You cannot modify the start value of the EMPTY Bounds instance.");
+            throw new EmptyBoundsModificationException(
+                "You cannot modify the start value of the EMPTY Bounds instance.");
         }
 
         /**
          * @see Bounds#setEnd(int)
          */
         public void setEnd(int end) {
-            throw new EmptyBoundsModificationException("You cannot modify the end value of the EMPTY Bounds instance.");
+            throw new EmptyBoundsModificationException(
+                "You cannot modify the end value of the EMPTY Bounds instance.");
         }
     }
 
     /**
-     * Exception thrown when the final EMPTY bounds is attempted to be
-     * modified.
+     * Exception thrown when the final EMPTY bounds is attempted to be modified.
      *
      * @author Braden Steffaniak
      * @since v0.2.13 Jun 12, 2014 at 12:29:46 PM
@@ -223,11 +225,9 @@ public class Bounds {
      */
     public static class EmptyBoundsModificationException extends RuntimeException {
         /**
-         * Create an exception for when the final EMPTY Bounds type is
-         * attempted to be modified.
+         * Create an exception for when the final EMPTY Bounds type is attempted to be modified.
          *
-         * @param message The message describing what was trying to be
-         *                modified.
+         * @param message The message describing what was trying to be modified.
          */
         public EmptyBoundsModificationException(String message) {
             super(message);

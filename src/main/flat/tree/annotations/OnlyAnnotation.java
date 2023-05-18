@@ -6,7 +6,8 @@ import flat.tree.FlatMethodDeclaration;
 import flat.tree.Node;
 import flat.util.Location;
 
-public class OnlyAnnotation extends Annotation implements ModifierAnnotation, RunnableTests, NestAnnotation {
+public class OnlyAnnotation extends Annotation
+    implements ModifierAnnotation, RunnableTests, NestAnnotation {
     public String aliasUsed;
 
     @Override
@@ -54,7 +55,8 @@ public class OnlyAnnotation extends Annotation implements ModifierAnnotation, Ru
     }
 
     @Override
-    public OnlyAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public OnlyAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         OnlyAnnotation node = new OnlyAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -64,7 +66,8 @@ public class OnlyAnnotation extends Annotation implements ModifierAnnotation, Ru
         return cloneTo(node, true, true);
     }
 
-    public OnlyAnnotation cloneTo(OnlyAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public OnlyAnnotation cloneTo(OnlyAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -74,6 +77,7 @@ public class OnlyAnnotation extends Annotation implements ModifierAnnotation, Ru
 
     @Override
     public String[] getAliases() {
-        return new String[]{"only"};
+        return new String[] {"only"};
     }
 }
+

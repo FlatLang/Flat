@@ -13,9 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Node extension that represents a whole Flat program. The
- * purpose of this Node is to keep track of each FileDeclaration within
- * a compiled program and contain methods to manipulate the
+ * Node extension that represents a whole Flat program. The purpose of this Node is to keep track of
+ * each FileDeclaration within a compiled program and contain methods to manipulate the
  * FileDeclarations.
  *
  * @author Braden Steffaniak
@@ -41,8 +40,7 @@ public class Program extends TypeList<FileDeclaration> {
     }
 
     /**
-     * Instantiate and initialize a Program that contains a reference
-     * to the compiler's controller.
+     * Instantiate and initialize a Program that contains a reference to the compiler's controller.
      *
      * @param controller The controller of the compiler.
      * @see Node#Node(Node, Location)
@@ -59,10 +57,9 @@ public class Program extends TypeList<FileDeclaration> {
     }
 
     /**
-     * Override addChild(Node) method to make it synchronized. Needs
-     * to be synchronized so that the threads dont try to write their
-     * file nodes to the Program at the same time and end up creating
-     * empty spaces in the tree.
+     * Override addChild(Node) method to make it synchronized. Needs to be synchronized so that the
+     * threads dont try to write their file nodes to the Program at the same time and end up
+     * creating empty spaces in the tree.
      *
      * @see Node#addChild(Node)
      */
@@ -86,7 +83,8 @@ public class Program extends TypeList<FileDeclaration> {
         for (FileDeclaration file : tree.getFiles()) {
             for (ClassDeclaration clazz : file.getClassDeclarations()) {
                 if (clazz instanceof Trait) {
-                    FlatMethodDeclaration[][] methodLists = new FlatMethodDeclaration[][]{clazz.getMethods(), clazz.getPropertyMethodList().getMethods()};
+                    FlatMethodDeclaration[][] methodLists = new FlatMethodDeclaration[][] {
+                        clazz.getMethods(), clazz.getPropertyMethodList().getMethods()};
 
                     for (FlatMethodDeclaration[] list : methodLists) {
                         for (FlatMethodDeclaration method : list) {
@@ -132,16 +130,14 @@ public class Program extends TypeList<FileDeclaration> {
     }
 
     /**
-     * Add Imports for all of the classes within the same package as the
-     * given FileDeclaration.
+     * Add Imports for all of the classes within the same package as the given FileDeclaration.
      */
     public void addAutoImports() {
         forEachVisibleListChild(file -> file.addAutoImports());
     }
 
     /**
-     * Add Imports for all of the classes within the same package as the
-     * given FileDeclaration.
+     * Add Imports for all of the classes within the same package as the given FileDeclaration.
      *
      * @param file The FileDeclaration to add the Imports to.
      */
@@ -151,7 +147,8 @@ public class Program extends TypeList<FileDeclaration> {
         for (int i = 0; i < getNumVisibleChildren(); i++) {
             FileDeclaration child = getVisibleChild(i);
 
-            if (!child.isExternalFile() && file != child && dir.equals(child.getFile().getParent())) {
+            if (!child.isExternalFile() && file != child
+                && dir.equals(child.getFile().getParent())) {
                 ClassDeclaration clazz = child.getClassDeclaration();
 
                 if (clazz != null && clazz instanceof ExtensionDeclaration == false) {
@@ -162,8 +159,8 @@ public class Program extends TypeList<FileDeclaration> {
     }
 
     /**
-     * Get the compiler's controller. The controller is used for
-     * logging, error output, and other compiler options.
+     * Get the compiler's controller. The controller is used for logging, error output, and other
+     * compiler options.
      *
      * @return The compiler's controller instance.
      */
@@ -176,27 +173,31 @@ public class Program extends TypeList<FileDeclaration> {
             int index = classLocation.indexOf('.');
 
             if (index > 0) {
-                return new String[]{classLocation.substring(0, index), classLocation.substring(index + 1)};
+                return new String[] {classLocation.substring(0, index),
+                    classLocation.substring(index + 1)};
             }
         }
 
-        return new String[]{classLocation};
+        return new String[] {classLocation};
     }
 
     /**
      * Get the Program's ClassDeclaration with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class Person
      * {
      *
      * 	...
      *
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getClass("Person")</code>" would return the
-     * ClassDeclaration for the "<code>Person</code>" class.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getClass("Person")</code>" would return the ClassDeclaration for the
+     * "<code>Person</code>" class.
      *
      * @param classLocation The name of the class to search for.
      * @return The ClassDeclaration for the class, if it exists.
@@ -226,7 +227,8 @@ public class Program extends TypeList<FileDeclaration> {
 
         forEachVisibleListChild(file -> {
             if (packageLocation.equals(file.getPackage().getLocation())) {
-                classes.addAll(Arrays.stream(file.getClassDeclarations()).collect(Collectors.toList()));
+                classes.addAll(
+                    Arrays.stream(file.getClassDeclarations()).collect(Collectors.toList()));
             }
         });
 
@@ -303,7 +305,8 @@ public class Program extends TypeList<FileDeclaration> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Program clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Program clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Program node = new Program(controller, tree);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -317,8 +320,7 @@ public class Program extends TypeList<FileDeclaration> {
     }
 
     /**
-     * Fill the given {@link Program} with the data that is in the
-     * specified node.
+     * Fill the given {@link Program} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -332,11 +334,10 @@ public class Program extends TypeList<FileDeclaration> {
     }
 
     /**
-     * Test the Program class type to make sure everything
-     * is working properly.
+     * Test the Program class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

@@ -8,8 +8,7 @@ import flat.util.Location;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * Class that holds the information for a message that will be
- * output from the compiler.
+ * Class that holds the information for a message that will be output from the compiler.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:28:08 PM
@@ -31,7 +30,7 @@ public class Message {
     /**
      * Create a new message instance with the given message.
      *
-     * @param message    The message that describes what happened.
+     * @param message The message that describes what happened.
      * @param controller The controller of the compiling program.
      */
     public Message(String message, Flat controller) {
@@ -40,11 +39,10 @@ public class Message {
     }
 
     /**
-     * Create a new message instance with the given message that
-     * is representing the given node.
+     * Create a new message instance with the given message that is representing the given node.
      *
      * @param message The message that describes what happened.
-     * @param node    The node that the message is talking about.
+     * @param node The node that the message is talking about.
      */
     public Message(String message, Node node, Location location) {
         this.file = node.getOriginalFile();
@@ -66,9 +64,8 @@ public class Message {
     /**
      * Output a message from the compiler.
      *
-     * @param type           The type of message that is being output.
-     * @param throwException Whether or not to throw a
-     *                       SyntaxErrorException.
+     * @param type The type of message that is being output.
+     * @param throwException Whether or not to throw a SyntaxErrorException.
      */
     public void outputMessage(int type, boolean throwException) {
         outputMessage(type, throwException, null);
@@ -100,7 +97,8 @@ public class Message {
 
             if (exceptionType != null) {
                 try {
-                    e = (SyntaxErrorException) SyntaxMessage.ERROR_TYPES.get(exceptionType).newInstance(info, type);
+                    e = (SyntaxErrorException) SyntaxMessage.ERROR_TYPES.get(exceptionType)
+                        .newInstance(info, type);
                 } catch (InstantiationException ex) {
                     e.printStackTrace();
                 } catch (IllegalAccessException ex) {
@@ -116,3 +114,4 @@ public class Message {
         }
     }
 }
+

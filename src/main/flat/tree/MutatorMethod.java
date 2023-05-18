@@ -31,28 +31,28 @@ public class MutatorMethod extends PropertyMethod {
     }
 
     /**
-     * Decode the given statement into a {@link MutatorMethod} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link MutatorMethod} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>no set</li>
-     * 	<li>set</li>
+     * <li>no set</li>
+     * <li>set</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link MutatorMethod} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link MutatorMethod}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link MutatorMethod} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link MutatorMethod}.
      */
-    public static MutatorMethod decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static MutatorMethod decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, null);
     }
 
-    public static MutatorMethod decodeStatement(Node parent, String statement, Location location, boolean require, Value type) {
+    public static MutatorMethod decodeStatement(Node parent, String statement, Location location,
+        boolean require, Value type) {
         type = type == null ? (Value) parent : type;
 
         if (StringUtils.findNextWord(statement).equals(DISABLED_IDENTIFIER)) {
@@ -74,7 +74,8 @@ public class MutatorMethod extends PropertyMethod {
             n.setVisibility(n.getParentField().getVisibility());
 
             if (StringUtils.findNextNonWhitespaceChar(statement, IDENTIFIER.length()) == '(') {
-                String parameterList = SyntaxUtils.findInnerParenthesesBounds(n, statement).extractString(statement);
+                String parameterList =
+                    SyntaxUtils.findInnerParenthesesBounds(n, statement).extractString(statement);
 
                 if (!n.decodeParameters(parameterList, require)) {
                     return null;
@@ -90,7 +91,8 @@ public class MutatorMethod extends PropertyMethod {
     }
 
     private void addDefaultParameter(Value type) {
-        Parameter p = Parameter.decodeStatement(this, type.generateFlatType() + " " + PARAMETER_NAME, getLocationIn().asNew(), true);
+        Parameter p = Parameter.decodeStatement(this,
+            type.generateFlatType() + " " + PARAMETER_NAME, getLocationIn().asNew(), true);
         getParentField().cloneTo(p, true, false);
         p.setName(PARAMETER_NAME);
 
@@ -110,10 +112,12 @@ public class MutatorMethod extends PropertyMethod {
 
         if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
             if (!isDisabled()) {
-                Return returnValue = (Return) SyntaxTree.decodeScopeContents(this, "return " + getParameter(0).getName(), getLocationIn());
+                Return returnValue = (Return) SyntaxTree.decodeScopeContents(this,
+                    "return " + getParameter(0).getName(), getLocationIn());
 
                 if (returnValue == null) {
-                    SyntaxMessage.error("Could not decode implicit return statement for mutator method", this);
+                    SyntaxMessage.error(
+                        "Could not decode implicit return statement for mutator method", this);
                 }
 
                 addChild(returnValue);
@@ -127,7 +131,8 @@ public class MutatorMethod extends PropertyMethod {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public MutatorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public MutatorMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         MutatorMethod node = new MutatorMethod(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -141,24 +146,23 @@ public class MutatorMethod extends PropertyMethod {
     }
 
     /**
-     * Fill the given {@link MutatorMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link MutatorMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public MutatorMethod cloneTo(MutatorMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public MutatorMethod cloneTo(MutatorMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link MutatorMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link MutatorMethod} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -166,3 +170,4 @@ public class MutatorMethod extends PropertyMethod {
         return null;
     }
 }
+

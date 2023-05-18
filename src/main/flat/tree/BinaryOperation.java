@@ -21,10 +21,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Node extension that represents the use of a binary operator.
- * For example: "153 + 4 / 2" represents two binary operator nodes.
- * The first node consists of the "153" as the left hand value, and
- * the binary node "4 / 2"
+ * Node extension that represents the use of a binary operator. For example: "153 + 4 / 2"
+ * represents two binary operator nodes. The first node consists of the "153" as the left hand
+ * value, and the binary node "4 / 2"
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:20:35 PM
@@ -64,10 +63,13 @@ public class BinaryOperation extends IValue {
     /**
      * Get the left operand within the BinaryOperation.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * 43 - 12</pre></blockquote>
-     * In the previous binary operation, 43 is the left operand.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * 43 - 12
+     * </pre>
+     * 
+     * </blockquote> In the previous binary operation, 43 is the left operand.
      *
      * @return The left operand in the operation.
      */
@@ -78,10 +80,13 @@ public class BinaryOperation extends IValue {
     /**
      * Get the operator within the BinaryOperation.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * 43 - 12</pre></blockquote>
-     * In the previous binary operation, '-' is the operator.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * 43 - 12
+     * </pre>
+     * 
+     * </blockquote> In the previous binary operation, '-' is the operator.
      *
      * @return The operator in the operation.
      */
@@ -92,10 +97,13 @@ public class BinaryOperation extends IValue {
     /**
      * Get the right operand within the BinaryOperation.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * 43 - 12</pre></blockquote>
-     * In the previous binary operation, 12 is the right operand.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * 43 - 12
+     * </pre>
+     * 
+     * </blockquote> In the previous binary operation, 12 is the right operand.
      *
      * @return The right operand in the operation.
      */
@@ -112,7 +120,9 @@ public class BinaryOperation extends IValue {
             return getLeftOperand().generateFlatInput(builder, outputChildren);
         }
 
-        return getLeftOperand().generateFlatInput(builder, outputChildren).append(' ').append(getOperator().generateFlatInput(outputChildren)).append(' ').append(getRightOperand().generateFlatInput(outputChildren));
+        return getLeftOperand().generateFlatInput(builder, outputChildren).append(' ')
+            .append(getOperator().generateFlatInput(outputChildren)).append(' ')
+            .append(getRightOperand().generateFlatInput(outputChildren));
     }
 
     public static BinaryOperation generateNullCheck(Node parent, Value value) {
@@ -123,10 +133,12 @@ public class BinaryOperation extends IValue {
         return generateNullCheck(parent, value, root, null);
     }
 
-    public static BinaryOperation generateNullCheck(Node parent, Value value, Value root, Node replaceOn) {
+    public static BinaryOperation generateNullCheck(Node parent, Value value, Value root,
+        Node replaceOn) {
         Node scopeNode = parent.getNearestScopeAncestor();
 
-        if ((scopeNode instanceof ControlStatement || scopeNode instanceof WhileLoop))// && scopeNode.isDecoding())
+        if ((scopeNode instanceof ControlStatement || scopeNode instanceof WhileLoop))// &&
+                                                                                      // scopeNode.isDecoding())
         {
             boolean wasIf = scopeNode instanceof IfStatement;
 
@@ -138,7 +150,8 @@ public class BinaryOperation extends IValue {
         }
 
         Variable local = scopeNode.getScope().createLocalVariable(root);
-        local.declaration.addAnnotation(new VarAnnotation(local.declaration, local.declaration.getLocationIn()));
+        local.declaration
+            .addAnnotation(new VarAnnotation(local.declaration, local.declaration.getLocationIn()));
         local.detach();
         local.declaration.setProperty("userMade", false);
         local.declaration.setProperty("fromAssignment", true);
@@ -156,7 +169,8 @@ public class BinaryOperation extends IValue {
 
         nullCheck.getLeftOperand().replaceWith(Priority.generateFrom(assignment));
         nullCheck.getOperator().setOperator("!=");
-        nullCheck.getRightOperand().replaceWith(Literal.decodeStatement(parent, "null", value.getLocationIn(), true));
+        nullCheck.getRightOperand()
+            .replaceWith(Literal.decodeStatement(parent, "null", value.getLocationIn(), true));
 
         return nullCheck;
     }
@@ -166,8 +180,7 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Validate that the given statement is a possible candidate to being
-     * a binary operator node.
+     * Validate that the given statement is a possible candidate to being a binary operator node.
      *
      * @param statement The statement to validate.
      * @return Whether or not the statement is valid.
@@ -182,7 +195,8 @@ public class BinaryOperation extends IValue {
 
         Bounds operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
         if (operatorLoc.getStart() == 0)
-            operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, operatorLoc.getEnd() + 1);
+            operatorLoc = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS,
+                operatorLoc.getEnd() + 1);
 
         if (operatorLoc.getStart() < 0) {
             return false;
@@ -192,30 +206,28 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Decode the given statement into a BinaryOperation if possible.
-     * If it is not possible, the method will return null. The requirements
-     * of a BinaryOperation include: Contains an operator such as '!=',
-     * '>=', '<=', '>', '<', '*', '/', '+', '-', and '%' surrounded by two
-     * comparable values.<br>
+     * Decode the given statement into a BinaryOperation if possible. If it is not possible, the
+     * method will return null. The requirements of a BinaryOperation include: Contains an operator
+     * such as '!=', '>=', '<=', '>', '<', '*', '/', '+', '-', and '%' surrounded by two comparable
+     * values.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>5 / 2</li>
-     * 	<li>(a.getWidth() + b.getHeight) / array.getSize()</li>
-     * 	<li>variableName % 2 == 0</li>
+     * <li>5 / 2</li>
+     * <li>(a.getWidth() + b.getHeight) / array.getSize()</li>
+     * <li>variableName % 2 == 0</li>
      * </ul>
      * <p>
      * The last two examples contain two BinaryOperations.
      *
-     * @param parent    The parent of the current statement.
-     * @param statement The statement to translate into a BinaryOperation
-     *                  if possible.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated Node, if it was possible to translated it
-     * into a BinaryOperation.
+     * @param parent The parent of the current statement.
+     * @param statement The statement to translate into a BinaryOperation if possible.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated Node, if it was possible to translated it into a BinaryOperation.
      */
-    public static Value decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Value decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (!validateStatement(parent, statement)) {
             return null;
         }
@@ -232,12 +244,14 @@ public class BinaryOperation extends IValue {
         Location operatorLoc = new Location(location);
         Bounds operatorBounds = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS);
         if (operatorBounds.getStart() == 0)
-            operatorBounds = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, operatorBounds.getEnd() + 1);
+            operatorBounds = StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS,
+                operatorBounds.getEnd() + 1);
 
         operatorLoc.setBounds(operatorBounds);
         operatorLoc.setLineNumber(location.getLineNumber());
 
-        if (statement.charAt(operatorLoc.getStart()) == '>' && statement.charAt(operatorLoc.getStart() - 1) == '=') {
+        if (statement.charAt(operatorLoc.getStart()) == '>'
+            && statement.charAt(operatorLoc.getStart() - 1) == '=') {
             return null;
         }
 
@@ -261,10 +275,9 @@ public class BinaryOperation extends IValue {
     /**
      * Decode the left and right operands.
      *
-     * @param statement   The statement to translate into a BinaryOperation
-     *                    if possible.
+     * @param statement The statement to translate into a BinaryOperation if possible.
      * @param operatorLoc The Location of the operator in the operation.
-     * @param require     Whether or not to throw an error if anything goes wrong.
+     * @param require Whether or not to throw an error if anything goes wrong.
      */
     private void decodeOperands(String statement, Location operatorLoc, boolean require) {
         Value lhn = decodeLeftOperand(statement, operatorLoc);
@@ -288,15 +301,15 @@ public class BinaryOperation extends IValue {
         validateOperation(lhn, rhn, operator);
 
         if (operatorVal.equals(Operator.DIVIDE)) {
-//			validateDivideByZero(rhn);
+            // validateDivideByZero(rhn);
         }
     }
 
     /**
      * Validate that the operands are compatible with the operation.
      *
-     * @param lhn      The left operand.
-     * @param rhn      The right operand.
+     * @param lhn The left operand.
+     * @param rhn The right operand.
      * @param operator The operator of the operation.
      */
     private void validateOperation(Value lhn, Value rhn, Operator operator) {
@@ -315,12 +328,14 @@ public class BinaryOperation extends IValue {
             String operatorType = operator.getType();
 
             if (common == null) {
-                ClassDeclaration integerClass = parent.getProgram().getClassDeclaration("flat/primitive/number/Int");
+                ClassDeclaration integerClass =
+                    parent.getProgram().getClassDeclaration("flat/primitive/number/Int");
 
                 ClassDeclaration leftClass = returnedLeft.getTypeClass();
                 ClassDeclaration rightClass = returnedRight.getTypeClass();
 
-                if (operatorType == null || !operatorType.equals("Bool") || rightClass != null && !rightClass.isOfType(integerClass) && !rightClass.isOfType(integerClass)) {
+                if (operatorType == null || !operatorType.equals("Bool") || rightClass != null
+                    && !rightClass.isOfType(integerClass) && !rightClass.isOfType(integerClass)) {
                     if (lhn instanceof LocalDeclaration && rhn instanceof LocalDeclaration) {
                         throw new BinarySyntaxException("", false);
                     }
@@ -328,7 +343,8 @@ public class BinaryOperation extends IValue {
                     rhn.getReturnedNode().getTypeClass();
                     lhn.getReturnedNode().getFlatTypeValue(lhn.getReturnedNode()).getTypeClass();
                     rhn.getReturnedNode().getFlatTypeValue(rhn.getReturnedNode()).getTypeClass();
-                    SyntaxMessage.error("Type '" + returnedLeft.getType() + "' and '" + returnedRight.getType() + "' are not compatible", this);
+                    SyntaxMessage.error("Type '" + returnedLeft.getType() + "' and '"
+                        + returnedRight.getType() + "' are not compatible", this);
                 }
             }
 
@@ -341,9 +357,8 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Validate that the denominator of the division is not zero. If this
-     * assumption cannot be made, then it adds a check before the division
-     * is made.
+     * Validate that the denominator of the division is not zero. If this assumption cannot be made,
+     * then it adds a check before the division is made.
      *
      * @param value The value that is the denominator.
      */
@@ -373,12 +388,11 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Method used to generate a divide by zero check before any division.
-     * This ensures that there never is a division by zero without an
-     * exception being thrown.
+     * Method used to generate a divide by zero check before any division. This ensures that there
+     * never is a division by zero without an exception being thrown.
      *
-     * @param parent   The parent of the node to create.
-     * @param value    The denominator that is being divided.
+     * @param parent The parent of the node to create.
+     * @param value The denominator that is being divided.
      * @param location The location of the division in the source code.
      * @return The node to check the exception.
      */
@@ -397,16 +411,18 @@ public class BinaryOperation extends IValue {
 
         String denominatorVar = Flat.LANGUAGE_NAME.toLowerCase() + "_zero_check" + checkId++;
 
-        Assignment assignment = Assignment.decodeStatement(parent, value.getType() + " " + denominatorVar + " = " + denominator, location, true);
+        Assignment assignment = Assignment.decodeStatement(parent,
+            value.getType() + " " + denominatorVar + " = " + denominator, location, true);
 
         Variable assignee = (Variable) assignment.getAssigneeNode();
-//		assignee.setForceOriginalName(true);
+        // assignee.setForceOriginalName(true);
         assignee.getDeclaration().setForceOriginalName(true);
         assignee.setForceOriginalName(true);
 
         parent.addChild(assignment);
 
-        IfStatement ifStatement = IfStatement.decodeStatement(parent, "if (" + denominatorVar + " == 0)", location, true);
+        IfStatement ifStatement =
+            IfStatement.decodeStatement(parent, "if (" + denominatorVar + " == 0)", location, true);
         parent.addChild(ifStatement);
 
         Throw throwNode = generateDivideByZeroThrow(parent, location);
@@ -418,12 +434,13 @@ public class BinaryOperation extends IValue {
     /**
      * Generate an exception throw node for a DivideByZeroException.
      *
-     * @param parent   The parent of the node to create.
+     * @param parent The parent of the node to create.
      * @param location The location of the division.
      * @return The Throw for the DivideByZeroException.
      */
     private static Throw generateDivideByZeroThrow(Node parent, Location location) {
-        Throw throwNode = Throw.decodeStatement(parent, "throw new DivideByZeroException()", location, true);
+        Throw throwNode =
+            Throw.decodeStatement(parent, "throw new DivideByZeroException()", location, true);
 
         return throwNode;
     }
@@ -431,14 +448,14 @@ public class BinaryOperation extends IValue {
     /**
      * Decode the left operand of the operation.
      *
-     * @param statement   The statement to translate into a BinaryOperation
-     *                    if possible.
+     * @param statement The statement to translate into a BinaryOperation if possible.
      * @param operatorLoc The Location of the operator in the operation.
      * @return The left hand operand.
      */
     private Value decodeLeftOperand(String statement, Location operatorLoc) {
         Value lhn = null;
-        Bounds lhb = new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
+        Bounds lhb = new Bounds(0,
+            StringUtils.findNextNonWhitespaceIndex(statement, operatorLoc.getStart() - 1, -1) + 1);
 
         if (!lhb.isValid()) {
             throw new BinarySyntaxException("Could not decode left hand value.");
@@ -453,7 +470,8 @@ public class BinaryOperation extends IValue {
 
             int offset = lhn.getLocationIn().getEnd() - location.getStart();
 
-            operatorLoc.setBounds(StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, offset));
+            operatorLoc
+                .setBounds(StringUtils.findStrings(statement, Operator.LOGICAL_OPERATORS, offset));
         } else {
             Location lhl = location.asNew();
             lhl.setBounds(lhb);
@@ -486,10 +504,9 @@ public class BinaryOperation extends IValue {
     /**
      * Decode the right operand of the operation.
      *
-     * @param statement   The statement to translate into a BinaryOperation
-     *                    if possible.
+     * @param statement The statement to translate into a BinaryOperation if possible.
      * @param operatorLoc The Location of the operator in the operation.
-     * @param require     Whether or not to throw an error if anything goes wrong.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return The right operand.
      */
     private Value decodeRightOperand(String statement, Location operatorLoc, boolean require) {
@@ -507,7 +524,8 @@ public class BinaryOperation extends IValue {
         Value rhn = SyntaxTree.decodeValue(getParent(), statement, location, require);
 
         if (rhn == null) {
-//			SyntaxMessage.error("Cannot decode binary operation '" + statement + "'", parent.getFileDeclaration(), location, parent.getController());
+            // SyntaxMessage.error("Cannot decode binary operation '" + statement + "'",
+            // parent.getFileDeclaration(), location, parent.getController());
 
             throw new BinarySyntaxException("Could not decode right hand value.");
         }
@@ -524,9 +542,9 @@ public class BinaryOperation extends IValue {
     /**
      * Get the node that represents value for the statement.
      *
-     * @param parent    The parent of the statement.
+     * @param parent The parent of the statement.
      * @param statement The statement containing the value.
-     * @param location  The location of the statement in the source code.
+     * @param location The location of the statement in the source code.
      * @return The generated Node instance.
      */
     private static Value createNode(Node parent, String statement, Location location) {
@@ -536,24 +554,23 @@ public class BinaryOperation extends IValue {
         Value node = SyntaxTree.decodeValue(parent, statement, loc, false);
 
         if (node instanceof Value == false) {
-            throw new BinarySyntaxException("Statement '" + statement + "' does not return a value.");
+            throw new BinarySyntaxException(
+                "Statement '" + statement + "' does not return a value.");
         }
 
         return node;
     }
 
     /**
-     * Try to decode a UnaryOperation from the given statement, if it
-     * is possible.
+     * Try to decode a UnaryOperation from the given statement, if it is possible.
      *
-     * @param parent    The parent of the given statement.
-     * @param statement The statement to decode the UnaryOperation
-     *                  from.
-     * @param location  The location of the statement in the source code.
-     * @return The UnaryOperation instance, if one exists. Null
-     * otherwise.
+     * @param parent The parent of the given statement.
+     * @param statement The statement to decode the UnaryOperation from.
+     * @param location The location of the statement in the source code.
+     * @return The UnaryOperation instance, if one exists. Null otherwise.
      */
-    private static UnaryOperation testUnaryOperator(Node parent, String statement, Location location) {
+    private static UnaryOperation testUnaryOperator(Node parent, String statement,
+        Location location) {
         Bounds unaryOperationBounds = findUnaryOperation(statement);
 
         if (!unaryOperationBounds.isValid()) {
@@ -562,20 +579,22 @@ public class BinaryOperation extends IValue {
 
         Location newLoc = location.asNew();
         newLoc.addOffset(unaryOperationBounds.getStart());
-        newLoc.setBounds(location.getStart() + unaryOperationBounds.getStart(), location.getStart() + unaryOperationBounds.getEnd());
+        newLoc.setBounds(location.getStart() + unaryOperationBounds.getStart(),
+            location.getStart() + unaryOperationBounds.getEnd());
 
-        String expression = statement.substring(unaryOperationBounds.getStart(), unaryOperationBounds.getEnd());
+        String expression =
+            statement.substring(unaryOperationBounds.getStart(), unaryOperationBounds.getEnd());
 
         return UnaryOperation.decodeStatement(parent, expression, newLoc, false);
     }
 
     /**
-     * Find the location of a unary operation in the given statement,
-     * if one exists. If one doesnt exist, then Bounds.EMPTY is returned.
+     * Find the location of a unary operation in the given statement, if one exists. If one doesnt
+     * exist, then Bounds.EMPTY is returned.
      *
      * @param statement The statement to search for the operation in.
-     * @return The Bounds of the unary operation, if one exists. If one
-     * doesnt exist, then Bounds.EMPTY is returned.
+     * @return The Bounds of the unary operation, if one exists. If one doesnt exist, then
+     *         Bounds.EMPTY is returned.
      */
     private static Bounds findUnaryOperation(String statement) {
         Bounds operatorLoc = findUnaryOperator(statement);
@@ -587,13 +606,15 @@ public class BinaryOperation extends IValue {
         Bounds operationLoc = operatorLoc.clone();
 
         if (operatorLoc.getStart() == 0) {
-            Bounds bounds = StringUtils.findStrings(statement, StringUtils.SYMBOLS, operatorLoc.getEnd() + 1);
+            Bounds bounds =
+                StringUtils.findStrings(statement, StringUtils.SYMBOLS, operatorLoc.getEnd() + 1);
 
             if (!bounds.isValid()) {
                 return Bounds.EMPTY;
             }
 
-            int end = StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1) + 1;
+            int end =
+                StringUtils.findNextNonWhitespaceIndex(statement, bounds.getStart() - 1, -1) + 1;
 
             if (end <= 0) {
                 return Bounds.EMPTY;
@@ -608,12 +629,12 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Try to find the location of a unary operator in the given statement,
-     * if one exists. If one doesnt exist, then Bounds.EMPTY is returned.
+     * Try to find the location of a unary operator in the given statement, if one exists. If one
+     * doesnt exist, then Bounds.EMPTY is returned.
      *
      * @param statement The statement to search through.
-     * @return The Bounds of the unary operator, if one exists. If one
-     * doesnt exist, then Bounds.EMPTY is returned.
+     * @return The Bounds of the unary operator, if one exists. If one doesnt exist, then
+     *         Bounds.EMPTY is returned.
      */
     private static Bounds findUnaryOperator(String statement) {
         Bounds bounds = Bounds.EMPTY;
@@ -653,28 +674,34 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Convert "<code>str + obj</code>" type String concatenations
-     * to "<code>str1.concat(obj.toString())</code>" type concatenations.
-     * This also works if the obj is primitive by autoboxing the data
-     * and then calling to toString() on the autoboxed object. If an
-     * optimization is made, the generated concatenation operation
-     * is then returned as a Node. If no optimizations can be made,
-     * then the calling Node is returned (The BinaryOperation).
+     * Convert "<code>str + obj</code>" type String concatenations to
+     * "<code>str1.concat(obj.toString())</code>" type concatenations. This also works if the obj is
+     * primitive by autoboxing the data and then calling to toString() on the autoboxed object. If
+     * an optimization is made, the generated concatenation operation is then returned as a Node. If
+     * no optimizations can be made, then the calling Node is returned (The BinaryOperation).
      *
-     * @return The generated concatenation operation if generated. If not,
-     * then the calling Node, BinaryOperation, is returned.
+     * @return The generated concatenation operation if generated. If not, then the calling Node,
+     *         BinaryOperation, is returned.
      */
     private Value optimizeOperation() {
         if (getOperator().isShorthand()) {
             if (getLeftOperand().getReturnedNode() instanceof Accessible) {
                 Accessible a = (Accessible) getLeftOperand().getReturnedNode();
 
-                if (a.isAccessed() && a.getReferenceNode().toValue().getTypeClass().containsArrayBracketOverload()) {
-                    Value value = (Value) getLeftOperand().clone(getLeftOperand().getParent(), getLeftOperand().getLocationIn());
+                if (a.isAccessed() && a.getReferenceNode().toValue().getTypeClass()
+                    .containsArrayBracketOverload()) {
+                    Value value = (Value) getLeftOperand().clone(getLeftOperand().getParent(),
+                        getLeftOperand().getLocationIn());
 
-                    Value output = BinaryOperation.decodeStatement(getParent(), value.generateFlatInput() + " " + getOperator().getNonShorthand() + " " + getRightOperand().generateFlatInput(), getLocationIn(), true);
+                    Value output =
+                        BinaryOperation
+                            .decodeStatement(getParent(),
+                                value.generateFlatInput() + " " + getOperator().getNonShorthand()
+                                    + " " + getRightOperand().generateFlatInput(),
+                                getLocationIn(), true);
 
-                    MethodCall call = SyntaxUtils.generateArraySetterCallFromAccess((Variable) a, output);
+                    MethodCall call =
+                        SyntaxUtils.generateArraySetterCallFromAccess((Variable) a, output);
 
                     ((Variable) a).replaceWith(call);
 
@@ -716,7 +743,8 @@ public class BinaryOperation extends IValue {
                         }
                     }
 
-                    MethodCall concat = MethodCall.decodeStatement(left.getReturnedNode(), "plus(null)", Location.INVALID, true);
+                    MethodCall concat = MethodCall.decodeStatement(left.getReturnedNode(),
+                        "plus(null)", Location.INVALID, true);
 
                     ((Accessible) left.getReturnedNode()).setAccessedNode(concat);
                     concat.getArgumentList().getVisibleChild(0).replaceWith(right);
@@ -732,8 +760,10 @@ public class BinaryOperation extends IValue {
                         right = generateStringOutput(right);
                     }
 
-                    String statement = left.generateFlatInput() + " = " + left.generateFlatInput() + ".concat(" + right.generateFlatInput() + ")";
-                    Assignment strConcat = Assignment.decodeStatement(getParent(), statement, left.getLocationIn(), false);
+                    String statement = left.generateFlatInput() + " = " + left.generateFlatInput()
+                        + ".concat(" + right.generateFlatInput() + ")";
+                    Assignment strConcat = Assignment.decodeStatement(getParent(), statement,
+                        left.getLocationIn(), false);
 
                     return strConcat;
                 }
@@ -779,7 +809,9 @@ public class BinaryOperation extends IValue {
                 Value returned = nonNull.getReturnedNode();
 
                 if (returned.isPrimitive()) {
-                    Literal bool = (Literal) Literal.decodeStatement(parent, getOperator().getOperator().equals(Operator.EQUALS) ? "false" : "true", getLocationIn(), true, true);
+                    Literal bool = (Literal) Literal.decodeStatement(parent,
+                        getOperator().getOperator().equals(Operator.EQUALS) ? "false" : "true",
+                        getLocationIn(), true, true);
 
                     if (nonNull instanceof BinaryOperation) {
                         BinaryOperation op = (BinaryOperation) nonNull;
@@ -808,20 +840,21 @@ public class BinaryOperation extends IValue {
             rightOperand = ((BinaryOperation) rightOperand).getLeftOperand();
         }
 
-        if (
-            !Literal.isNullLiteral(leftOperand) &&
-                !Literal.isNullLiteral(rightOperand) &&
-                !leftOperand.getReturnedNode().isExternalType() &&
-                !rightOperand.getReturnedNode().isExternalType() &&
-                leftOperand.getReturnedNode().getType() != null &&
-                rightOperand.getReturnedNode().getType() != null &&
-                leftOperand.getReturnedNode().isPrimitive() ^ rightOperand.getReturnedNode().isPrimitive()
-        ) {
+        if (!Literal.isNullLiteral(leftOperand) &&
+            !Literal.isNullLiteral(rightOperand) &&
+            !leftOperand.getReturnedNode().isExternalType() &&
+            !rightOperand.getReturnedNode().isExternalType() &&
+            leftOperand.getReturnedNode().getType() != null &&
+            rightOperand.getReturnedNode().getType() != null &&
+            leftOperand.getReturnedNode().isPrimitive()
+                ^ rightOperand.getReturnedNode().isPrimitive()) {
             if (leftOperand.getReturnedNode().isPrimitive()) {
-                rightOperand.replaceWithUnboxedValue(rightOperand.getReturnedNode().getFlatType(rightOperand));
+                rightOperand.replaceWithUnboxedValue(
+                    rightOperand.getReturnedNode().getFlatType(rightOperand));
                 right = getRightOperand();
             } else {
-                left.replaceWithUnboxedValue(leftOperand.getReturnedNode().getFlatType(leftOperand));
+                left.replaceWithUnboxedValue(
+                    leftOperand.getReturnedNode().getFlatType(leftOperand));
                 left = getLeftOperand();
             }
         }
@@ -837,7 +870,9 @@ public class BinaryOperation extends IValue {
         ClassDeclaration leftClass = leftReturned.getTypeClass();
         ClassDeclaration objectClass = getProgram().getClassDeclaration("flat/Object");
 
-        if (leftClass != null && !leftReturned.isPrimitive() && leftClass != objectClass && leftReturned.getArrayDimensions() == 0 && getRightOperandValue().getReturnedNode().getArrayDimensions() == 0) {
+        if (leftClass != null && !leftReturned.isPrimitive() && leftClass != objectClass
+            && leftReturned.getArrayDimensions() == 0
+            && getRightOperandValue().getReturnedNode().getArrayDimensions() == 0) {
             if (leftClass.isOfType(overload)) {
                 FlatMethodDeclaration method = overload.getMethods()[0];
 
@@ -845,29 +880,38 @@ public class BinaryOperation extends IValue {
                     MethodDeclaration[] methods = leftClass.getMethods(method.getName());
 
                     Stream<MethodDeclaration> validMethods = Arrays.stream(methods)
-                        .filter(x -> x != method && x.getDeclaringClass() != objectClass && x.getParameterList().getNumParameters() == 1);
+                        .filter(x -> x != method && x.getDeclaringClass() != objectClass
+                            && x.getParameterList().getNumParameters() == 1);
 
-                    validMethods = validMethods.sorted(Comparator.comparingInt(o -> o.getDeclaringClass().getDistanceFrom(overload)));
+                    validMethods = validMethods.sorted(Comparator
+                        .comparingInt(o -> o.getDeclaringClass().getDistanceFrom(overload)));
 
-                    ArrayList<MethodDeclaration> list = validMethods.collect(Collectors.toCollection(ArrayList::new));
+                    ArrayList<MethodDeclaration> list =
+                        validMethods.collect(Collectors.toCollection(ArrayList::new));
 
-                    FlatMethodDeclaration validMethod = list.size() > 0 ? (FlatMethodDeclaration) list.get(0) : method;
+                    FlatMethodDeclaration validMethod =
+                        list.size() > 0 ? (FlatMethodDeclaration) list.get(0) : method;
 
-//					if (list.size() > 0)
+                    // if (list.size() > 0)
                     {
-                        //GenericTypeArgument arg = validMethod.getParameter(0).getGenericTypeParameter().getCorrespondingArgument(leftReturned);
+                        // GenericTypeArgument arg =
+                        // validMethod.getParameter(0).getGenericTypeParameter().getCorrespondingArgument(leftReturned);
                         Value required = validMethod.getParameter(0);
                         Value rightNode = getRightOperandValue();
 
-                        if (Literal.isNullLiteral(leftReturned) || Literal.isNullLiteral(rightNode)) {
+                        if (Literal.isNullLiteral(leftReturned)
+                            || Literal.isNullLiteral(rightNode)) {
                             return null;
                         }
 
-                        if (required != null && SyntaxUtils.isTypeCompatible(this, required, rightNode.getReturnedNode())) {
+                        if (required != null && SyntaxUtils.isTypeCompatible(this, required,
+                            rightNode.getReturnedNode())) {
                             Value param = validMethod.getParameter(0);
                             String defaultValue = param.isPrimitive() ? "0" : "null";
 
-                            MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(), validMethod.getName() + "(" + defaultValue + ")", leftReturned.getLocationIn(), true, true, validMethod);
+                            MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(),
+                                validMethod.getName() + "(" + defaultValue + ")",
+                                leftReturned.getLocationIn(), true, true, validMethod);
 
                             ((Accessible) left.getReturnedNode()).setAccessedNode(call);
 
@@ -893,22 +937,23 @@ public class BinaryOperation extends IValue {
         Value rightOperandReturned = rightOperand.getReturnedNode();
 
         if (getOperator().getOperator().equals("==")) {
-            if (
-                !Literal.isNullLiteral(leftOperand) &&
-                    !Literal.isNullLiteral(rightOperand) &&
-                    !leftOperandReturned.isExternalType() &&
-                    !rightOperandReturned.isExternalType() &&
-                    leftOperandReturned.getType() != null &&
-                    rightOperandReturned.getType() != null &&
-                    (!leftOperandReturned.isPrimitive() &&
-                        !rightOperandReturned.isPrimitive() ||
-                        leftOperandReturned.isPrimitive() ^ rightOperandReturned.isPrimitive())
-            ) {
-                FlatMethodDeclaration validMethod = (FlatMethodDeclaration) getFileDeclaration().getImportedClass(this, "Object").getMethods("equals")[0];
+            if (!Literal.isNullLiteral(leftOperand) &&
+                !Literal.isNullLiteral(rightOperand) &&
+                !leftOperandReturned.isExternalType() &&
+                !rightOperandReturned.isExternalType() &&
+                leftOperandReturned.getType() != null &&
+                rightOperandReturned.getType() != null &&
+                (!leftOperandReturned.isPrimitive() &&
+                    !rightOperandReturned.isPrimitive() ||
+                    leftOperandReturned.isPrimitive() ^ rightOperandReturned.isPrimitive())) {
+                FlatMethodDeclaration validMethod = (FlatMethodDeclaration) getFileDeclaration()
+                    .getImportedClass(this, "Object").getMethods("equals")[0];
                 Value param = validMethod.getParameter(0);
                 String defaultValue = param.isPrimitive() ? "0" : "null";
 
-                MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(), validMethod.getName() + "(" + defaultValue + ")", leftReturned.getLocationIn(), true, true, validMethod);
+                MethodCall call = MethodCall.decodeStatement(left.getReturnedNode(),
+                    validMethod.getName() + "(" + defaultValue + ")", leftReturned.getLocationIn(),
+                    true, true, validMethod);
 
                 ((Accessible) left.getReturnedNode()).setAccessedNode(call);
 
@@ -926,8 +971,11 @@ public class BinaryOperation extends IValue {
                     return left;
                 }
             }
-            if ((leftClass != null && leftClass.isOfType("flat/String") || rightClass != null && rightClass.isOfType("flat/String"))) {
-                SyntaxMessage.warning("Object reference comparison done instead of String comparison for this operation", this);
+            if ((leftClass != null && leftClass.isOfType("flat/String")
+                || rightClass != null && rightClass.isOfType("flat/String"))) {
+                SyntaxMessage.warning(
+                    "Object reference comparison done instead of String comparison for this operation",
+                    this);
             }
         }
 
@@ -935,10 +983,9 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Generate a String return value for the given Value. If the
-     * given Value is already a String, this simply returns the
-     * given node. Else it a toString() method call on the given
-     * Object. (Autoboxes if needed)
+     * Generate a String return value for the given Value. If the given Value is already a String,
+     * this simply returns the given node. Else it a toString() method call on the given Object.
+     * (Autoboxes if needed)
      *
      * @param nonString The Value to convert to a String.
      * @return The generated String type Value.
@@ -947,16 +994,19 @@ public class BinaryOperation extends IValue {
         Value ret = nonString.getReturnedNode();
 
         if (ret.isPrimitiveType()) {
-            StaticClassReference ref = StaticClassReference.decodeStatement(nonString.getParent(), ret.getTypeClassName(), nonString.getLocationIn(), true);
+            StaticClassReference ref = StaticClassReference.decodeStatement(nonString.getParent(),
+                ret.getTypeClassName(), nonString.getLocationIn(), true);
 
-            MethodCall toString = MethodCall.decodeStatement(ref, "toString(" + nonString.generateFlatInput() + ")", nonString.getLocationIn(), true);
+            MethodCall toString = MethodCall.decodeStatement(ref,
+                "toString(" + nonString.generateFlatInput() + ")", nonString.getLocationIn(), true);
             ref.setAccessedNode(toString);
 
             toString.getArgumentList().getVisibleChild(0).replaceWith(nonString);
 
             return ref;
         } else {
-            MethodCall toString = MethodCall.decodeStatement(nonString, "toString()", nonString.getLocationIn(), true);
+            MethodCall toString = MethodCall.decodeStatement(nonString, "toString()",
+                nonString.getLocationIn(), true);
 
             ((Accessible) ret).setAccessedNode(toString);
 
@@ -965,8 +1015,8 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * If the given Node is a primitive, return the autoboxed form.
-     * Else, simply return the given Node.
+     * If the given Node is a primitive, return the autoboxed form. Else, simply return the given
+     * Node.
      *
      * @param value The value to autobox if needed.
      * @return The autoboxed primitive value.
@@ -974,12 +1024,10 @@ public class BinaryOperation extends IValue {
     private Value replaceWithObjectiveValue(Value value) {
         Value returned = value.getReturnedNode();
         Value newVal = null;
-		
-		/*if (returned.isPrimitiveType())
-		{
-			newVal = SyntaxUtils.autoboxPrimitive(value);
-		}
-		else */
+
+        /*
+         * if (returned.isPrimitiveType()) { newVal = SyntaxUtils.autoboxPrimitive(value); } else
+         */
         if (value instanceof Literal && Literal.isNullLiteral(value)) {
             newVal = Literal.decodeStatement(this, "\"null\"", value.getLocationIn(), true);
         }
@@ -994,12 +1042,16 @@ public class BinaryOperation extends IValue {
     }
 
     public Value getRightOperandValue() {
-        return getRightOperand() instanceof BinaryOperation ? ((BinaryOperation) getRightOperand()).getLeftOperand() : getRightOperand();
+        return getRightOperand() instanceof BinaryOperation
+            ? ((BinaryOperation) getRightOperand()).getLeftOperand()
+            : getRightOperand();
     }
 
     public boolean isZeroComparison() {
-        return getLeftOperand() instanceof Literal && ((Literal) getLeftOperand()).value.equals("0") ||
-            getRightOperandValue() instanceof Literal && ((Literal) getRightOperandValue()).value.equals("0");
+        return getLeftOperand() instanceof Literal && ((Literal) getLeftOperand()).value.equals("0")
+            ||
+            getRightOperandValue() instanceof Literal
+                && ((Literal) getRightOperandValue()).value.equals("0");
     }
 
     @Override
@@ -1014,7 +1066,8 @@ public class BinaryOperation extends IValue {
         Value right = getRightOperandValue().getReturnedNode();
 
         if (getOperator().isNumerical() ||
-            getOperator().isComparison() && left.isPrimitive() ^ right.isPrimitive() && !isZeroComparison()) {
+            getOperator().isComparison() && left.isPrimitive() ^ right.isPrimitive()
+                && !isZeroComparison()) {
             if (!left.isPrimitive() && !left.isExternal()) {
                 getLeftOperand().replaceWithUnboxedValue();
             }
@@ -1030,12 +1083,16 @@ public class BinaryOperation extends IValue {
             Operator operator = getOperator();
 
             if (operator.isConjunction()) {
-                if ((parent instanceof BinaryOperation == false || ((BinaryOperation) parent).getOperator().isConjunction()) &&
-                    !"Bool".equals(lhn.getReturnedNode().getType()) && !Literal.isNullLiteral(lhn)) {
+                if ((parent instanceof BinaryOperation == false
+                    || ((BinaryOperation) parent).getOperator().isConjunction()) &&
+                    !"Bool".equals(lhn.getReturnedNode().getType())
+                    && !Literal.isNullLiteral(lhn)) {
                     lhn.replaceWithNullCheck();
                 }
-                if ((rhn instanceof BinaryOperation == false || ((BinaryOperation) rhn).getOperator().isConjunction()) &&
-                    !"Bool".equals(rhn.getReturnedNode().getType()) && !Literal.isNullLiteral(rhn)) {
+                if ((rhn instanceof BinaryOperation == false
+                    || ((BinaryOperation) rhn).getOperator().isConjunction()) &&
+                    !"Bool".equals(rhn.getReturnedNode().getType())
+                    && !Literal.isNullLiteral(rhn)) {
                     rhn.replaceWithNullCheck();
                 }
             }
@@ -1048,7 +1105,8 @@ public class BinaryOperation extends IValue {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public BinaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public BinaryOperation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         BinaryOperation node = new BinaryOperation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -1062,21 +1120,20 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Fill the given {@link BinaryOperation} with the data that is in the
-     * specified node.
+     * Fill the given {@link BinaryOperation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public BinaryOperation cloneTo(BinaryOperation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public BinaryOperation cloneTo(BinaryOperation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Exception thrown when there is a problem decoding a binary
-     * operation's syntax.
+     * Exception thrown when there is a problem decoding a binary operation's syntax.
      *
      * @author Braden Steffaniak
      * @since v0.2.13 Jun 12, 2014 at 11:35:19 AM
@@ -1097,11 +1154,10 @@ public class BinaryOperation extends IValue {
     }
 
     /**
-     * Test the BinaryOperation class type to make sure everything
-     * is working properly.
+     * Test the BinaryOperation class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -1109,3 +1165,4 @@ public class BinaryOperation extends IValue {
         return null;
     }
 }
+

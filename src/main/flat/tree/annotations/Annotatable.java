@@ -29,7 +29,8 @@ public interface Annotatable {
         return containsAnnotationOfType(c, checkAncestors, false);
     }
 
-    default boolean containsAnnotationOfType(Class c, boolean checkAncestors, boolean checkPending) {
+    default boolean containsAnnotationOfType(Class c, boolean checkAncestors,
+        boolean checkPending) {
         return getAnnotationOfType(c, checkAncestors, checkPending) != null;
     }
 
@@ -42,7 +43,8 @@ public interface Annotatable {
     }
 
     default Annotation getAnnotationOfType(Class c, boolean checkAncestors, boolean checkPending) {
-        return getAnnotationsOfType(c, checkAncestors, checkPending).stream().findFirst().orElse(null);
+        return getAnnotationsOfType(c, checkAncestors, checkPending).stream().findFirst()
+            .orElse(null);
     }
 
     default ArrayList<Annotation> getAnnotationsOfType(Class c) {
@@ -53,7 +55,8 @@ public interface Annotatable {
         return getAnnotationsOfType(c, checkAncestors, false);
     }
 
-    default ArrayList<Annotation> getAnnotationsOfType(Class c, boolean checkAncestors, boolean checkPending) {
+    default ArrayList<Annotation> getAnnotationsOfType(Class c, boolean checkAncestors,
+        boolean checkPending) {
         ArrayList<Annotation> list = new ArrayList<>();
         ArrayList<Annotation> annotations = getAnnotations();
 
@@ -66,14 +69,17 @@ public interface Annotatable {
         }
 
         if (checkAncestors) {
-            if (((Node) this).getParent() != null && ((Node) this).getParent() instanceof FileDeclaration == false) {
-                for (Annotation a : ((Node) this).getParent().getAnnotationsOfType(c, true, checkPending)) {
+            if (((Node) this).getParent() != null
+                && ((Node) this).getParent() instanceof FileDeclaration == false) {
+                for (Annotation a : ((Node) this).getParent().getAnnotationsOfType(c, true,
+                    checkPending)) {
                     list.add(a);
                 }
             }
 
             if (checkPending && ((Node) this).getFileDeclaration() != null) {
-                for (Annotation a : ((Node) this).getFileDeclaration().getPendingAnnotationsOfType(c)) {
+                for (Annotation a : ((Node) this).getFileDeclaration()
+                    .getPendingAnnotationsOfType(c)) {
                     list.add(a);
                 }
             }
@@ -90,7 +96,8 @@ public interface Annotatable {
         return removeAnnotationOfType(c, checkAncestors, false);
     }
 
-    default Annotation removeAnnotationOfType(Class c, boolean checkAncestors, boolean checkPending) {
+    default Annotation removeAnnotationOfType(Class c, boolean checkAncestors,
+        boolean checkPending) {
         ArrayList<Annotation> annotations = getAnnotations();
 
         if (annotations != null) {
@@ -105,7 +112,8 @@ public interface Annotatable {
         }
 
         if (checkAncestors) {
-            if (((Node) this).getParent() != null && ((Node) this).getParent() instanceof FileDeclaration == false) {
+            if (((Node) this).getParent() != null
+                && ((Node) this).getParent() instanceof FileDeclaration == false) {
                 return ((Node) this).getParent().getAnnotationOfType(c, true, checkPending);
             }
 
@@ -133,3 +141,4 @@ public interface Annotatable {
         return builder;
     }
 }
+

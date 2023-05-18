@@ -48,25 +48,26 @@ public class RequireGenericTypeAnnotation extends Annotation {
     }
 
     /**
-     * Decode the given statement into a {@link RequireGenericTypeAnnotation} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link RequireGenericTypeAnnotation} instance, if possible.
+     * If it is not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent   The parent node of the statement.
-     * @param name     The statement to try to decode into a
-     *                 {@link RequireGenericTypeAnnotation} instance.
+     * @param parent The parent node of the statement.
+     * @param name The statement to try to decode into a {@link RequireGenericTypeAnnotation}
+     *        instance.
      * @param location The location of the statement in the source code.
-     * @param require  Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link RequireGenericTypeAnnotation}.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link RequireGenericTypeAnnotation}.
      */
-    public static RequireGenericTypeAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static RequireGenericTypeAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("RequireGenericType")) {
             RequireGenericTypeAnnotation n = new RequireGenericTypeAnnotation(parent, location);
 
@@ -105,7 +106,8 @@ public class RequireGenericTypeAnnotation extends Annotation {
                 Variable v = (Variable) reference.getReferenceNode();
 
                 for (GenericTypeParameter required : getGenericTypeParameterDeclaration()) {
-                    int index = decl.getParentClass().getRootOverloadedClass().getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
+                    int index = decl.getParentClass().getRootOverloadedClass()
+                        .getGenericTypeParameterDeclaration().getParameterIndex(required.getName());
 
                     ClassDeclaration type = v.getTypeClass();
 
@@ -126,9 +128,15 @@ public class RequireGenericTypeAnnotation extends Annotation {
                         given = v.getGenericTypeArgument(index);
                     }
 
-                    if (!SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass())) {
-                        SyntaxUtils.isTypeCompatible(v.getContext(), getFileDeclaration().getImportedClass(this, required.getDefaultType()), given.getTypeClass());
-                        SyntaxMessage.error("Method call on method '" + v.getName() + "' requires a generic type of '" + required.getDefaultType() + "'", v, false);
+                    if (!SyntaxUtils.isTypeCompatible(v.getContext(),
+                        getFileDeclaration().getImportedClass(this, required.getDefaultType()),
+                        given.getTypeClass())) {
+                        SyntaxUtils.isTypeCompatible(v.getContext(),
+                            getFileDeclaration().getImportedClass(this, required.getDefaultType()),
+                            given.getTypeClass());
+                        SyntaxMessage.error("Method call on method '" + v.getName()
+                            + "' requires a generic type of '" + required.getDefaultType() + "'", v,
+                            false);
                     }
                 }
             }
@@ -150,8 +158,10 @@ public class RequireGenericTypeAnnotation extends Annotation {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public RequireGenericTypeAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        RequireGenericTypeAnnotation node = new RequireGenericTypeAnnotation(temporaryParent, locationIn);
+    public RequireGenericTypeAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        RequireGenericTypeAnnotation node =
+            new RequireGenericTypeAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -164,24 +174,25 @@ public class RequireGenericTypeAnnotation extends Annotation {
     }
 
     /**
-     * Fill the given {@link RequireGenericTypeAnnotation} with the data that is in the
-     * specified node.
+     * Fill the given {@link RequireGenericTypeAnnotation} with the data that is in the specified
+     * node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public RequireGenericTypeAnnotation cloneTo(RequireGenericTypeAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public RequireGenericTypeAnnotation cloneTo(RequireGenericTypeAnnotation node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link RequireGenericTypeAnnotation} class type to make sure everything
-     * is working properly.
+     * Test the {@link RequireGenericTypeAnnotation} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -189,3 +200,4 @@ public class RequireGenericTypeAnnotation extends Annotation {
         return null;
     }
 }
+

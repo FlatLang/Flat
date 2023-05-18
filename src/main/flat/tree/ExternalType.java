@@ -7,8 +7,7 @@ import flat.util.Location;
 import flat.util.StringUtils;
 
 /**
- * Node extension that represents an external type of variable or
- * method call.
+ * Node extension that represents an external type of variable or method call.
  *
  * @author Braden Steffaniak
  * @since v0.2.4 May 8, 2014 at 6:55:51 PM
@@ -34,18 +33,17 @@ public class ExternalType extends IValue {
     }
 
     /**
-     * Decode the given statement into a ExternalType instance, if
-     * possible. If it is not possible, this method returns null.
+     * Decode the given statement into a ExternalType instance, if possible. If it is not possible,
+     * this method returns null.
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  ExternalType instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a ExternalType.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a ExternalType instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a ExternalType.
      */
-    public static ExternalType decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static ExternalType decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (StringUtils.startsWithWord(statement, PREFIX)) {
             Bounds bounds = StringUtils.findWordBounds(statement, IDENTIFIER);
 
@@ -82,7 +80,8 @@ public class ExternalType extends IValue {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ExternalType clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalType clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ExternalType node = new ExternalType(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -96,24 +95,23 @@ public class ExternalType extends IValue {
     }
 
     /**
-     * Fill the given {@link ExternalType} with the data that is in the
-     * specified node.
+     * Fill the given {@link ExternalType} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ExternalType cloneTo(ExternalType node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalType cloneTo(ExternalType node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the ExternalType class type to make sure everything
-     * is working properly.
+     * Test the ExternalType class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -121,3 +119,4 @@ public class ExternalType extends IValue {
         return null;
     }
 }
+

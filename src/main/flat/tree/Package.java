@@ -64,25 +64,24 @@ public class Package extends Node {
     }
 
     /**
-     * Decode the given statement into a {@link Package} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Package} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>package "some/package/name"</li>
-     * 	<li>package "flat/standard"</li>
-     * 	<li>package "com/example"</li>
+     * <li>package "some/package/name"</li>
+     * <li>package "flat/standard"</li>
+     * <li>package "com/example"</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Package} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Package}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Package} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Package}.
      */
-    public static Package decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Package decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.startsWith(PACKAGE_KEYWORD)) {
             Package n = generateDefaultPackage(parent, location);
 
@@ -133,7 +132,8 @@ public class Package extends Node {
         String directories[] = location.split("/");
 
         if (directories.length == 0 || directories.length == 1 && directories[0].length() <= 0) {
-            throwIncorrectPackageException("Package location cannot be empty. Perhaps try using the default package");
+            throwIncorrectPackageException(
+                "Package location cannot be empty. Perhaps try using the default package");
         }
 
         if (getParentFile() == null) {
@@ -162,7 +162,8 @@ public class Package extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Package clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Package clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Package node = new Package(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -176,8 +177,7 @@ public class Package extends Node {
     }
 
     /**
-     * Fill the given {@link Package} with the data that is in the
-     * specified node.
+     * Fill the given {@link Package} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -189,11 +189,10 @@ public class Package extends Node {
     }
 
     /**
-     * Test the {@link Package} class type to make sure everything
-     * is working properly.
+     * Test the {@link Package} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -201,3 +200,4 @@ public class Package extends Node {
         return null;
     }
 }
+

@@ -28,13 +28,15 @@ public class ExpectCompileErrorAnnotation extends Annotation {
         super(temporaryParent, locationIn);
     }
 
-    public static ExpectCompileErrorAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static ExpectCompileErrorAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("ExpectCompileError")) {
             ExpectCompileErrorAnnotation n = new ExpectCompileErrorAnnotation(parent, location);
 
             n.parseParameters(parameters);
 
-            SyntaxMessage.queryError("Must supply error type argument", n, n.parameters.get("type") == null);
+            SyntaxMessage.queryError("Must supply error type argument", n,
+                n.parameters.get("type") == null);
 
             n.types = new ArrayList<>();
             n.types.add(n.getErrorClass((String) n.parameters.get("type")));
@@ -54,19 +56,20 @@ public class ExpectCompileErrorAnnotation extends Annotation {
             }
         }).filter(Objects::nonNull).findFirst();
 
-        SyntaxMessage.queryError("Could not find error type of '" + name + "'", this, !c.isPresent());
+        SyntaxMessage.queryError("Could not find error type of '" + name + "'", this,
+            !c.isPresent());
 
         return c.get();
     }
 
     @Override
     public String[] defaultParameterNames() {
-        return new String[]{"type"};
+        return new String[] {"type"};
     }
 
     @Override
     public String[][] defaultParameterTypes() {
-        return new String[][]{{"Identifier"}};
+        return new String[][] {{"Identifier"}};
     }
 
     @Override
@@ -103,8 +106,10 @@ public class ExpectCompileErrorAnnotation extends Annotation {
     }
 
     @Override
-    public ExpectCompileErrorAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        ExpectCompileErrorAnnotation node = new ExpectCompileErrorAnnotation(temporaryParent, locationIn);
+    public ExpectCompileErrorAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        ExpectCompileErrorAnnotation node =
+            new ExpectCompileErrorAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -113,9 +118,11 @@ public class ExpectCompileErrorAnnotation extends Annotation {
         return cloneTo(node, true, true);
     }
 
-    public ExpectCompileErrorAnnotation cloneTo(ExpectCompileErrorAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExpectCompileErrorAnnotation cloneTo(ExpectCompileErrorAnnotation node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 }
+

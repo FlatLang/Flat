@@ -14,9 +14,9 @@ import flat.util.SyntaxUtils;
 import java.util.function.Consumer;
 
 /**
- * Node extension that represents the declaration of an "if statement"
- * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Node extension that represents the declaration of an "if statement" node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:57:13 PM
@@ -26,8 +26,7 @@ public class IfStatement extends ControlStatement {
     public static final String IDENTIFIER = "if";
 
     /**
-     * Instantiate a new IfStatement and initialize the default
-     * values.
+     * Instantiate a new IfStatement and initialize the default values.
      */
     public IfStatement(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
@@ -42,13 +41,14 @@ public class IfStatement extends ControlStatement {
     }
 
     /**
-     * Get the ArgumentList that contains the condition for the if
-     * statement.
+     * Get the ArgumentList that contains the condition for the if statement.
      *
      * @return The ArgumentList instance.
      */
     public Value getCondition() {
-        return getNumChildren() > super.getNumDefaultChildren() ? (Value) getChild(super.getNumDefaultChildren() + 0) : null;
+        return getNumChildren() > super.getNumDefaultChildren()
+            ? (Value) getChild(super.getNumDefaultChildren() + 0)
+            : null;
     }
 
     /**
@@ -74,27 +74,25 @@ public class IfStatement extends ControlStatement {
     }
 
     /**
-     * Decode the given statement into a IfStatement instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a IfStatement instance, if possible. If it is not possible,
+     * this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>if (index &gt;= array.size())</li>
-     * 	<li>if (getParent().isAlive())</li>
-     * 	<li>if (!person.canWalk() &amp;&amp; !person.isVegetable())</li>
-     * 	<li>if ((age + 2 &gt;= 21 &amp;&amp; gender == "male") || gender == "female")</li>
+     * <li>if (index &gt;= array.size())</li>
+     * <li>if (getParent().isAlive())</li>
+     * <li>if (!person.canWalk() &amp;&amp; !person.isVegetable())</li>
+     * <li>if ((age + 2 &gt;= 21 &amp;&amp; gender == "male") || gender == "female")</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  IfStatement instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a IfStatement.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a IfStatement instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a IfStatement.
      */
-    public static IfStatement decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static IfStatement decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (StringUtils.startsWithWord(statement, IDENTIFIER)) {
             IfStatement n = new IfStatement(parent, location);
 
@@ -103,7 +101,8 @@ public class IfStatement extends ControlStatement {
             if (bounds.getStart() >= 0) {
                 String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 
-                if (n.decodeCondition(contents, bounds, require) && n.decodeScopeFragment(statement, bounds)) {
+                if (n.decodeCondition(contents, bounds, require)
+                    && n.decodeScopeFragment(statement, bounds)) {
                     return n;
                 }
             } else {
@@ -118,9 +117,8 @@ public class IfStatement extends ControlStatement {
      * Decode the condition within the given contents argument.
      *
      * @param contents The condition to decode.
-     * @param bounds   The bounds of the condition.
-     * @param require  Whether or not to throw an error if anything goes
-     *                 wrong.
+     * @param bounds The bounds of the condition.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the condition decoded correctly.
      */
     private boolean decodeCondition(String contents, Bounds bounds, boolean require) {
@@ -148,7 +146,8 @@ public class IfStatement extends ControlStatement {
         Node lastChild = getScope().getLastVisibleChild();
 
         if (lastChild instanceof Value == false) {
-            SyntaxMessage.error("Invalid value '" + lastChild.generateFlatInput() + "' for expression", this);
+            SyntaxMessage.error(
+                "Invalid value '" + lastChild.generateFlatInput() + "' for expression", this);
             return;
         }
 
@@ -167,7 +166,8 @@ public class IfStatement extends ControlStatement {
                 Node value = child.getScope().getLastVisibleChild();
 
                 if (value instanceof Value == false) {
-                    SyntaxMessage.error("Invalid value '" + value.generateFlatInput() + "' for expression", this);
+                    SyntaxMessage.error(
+                        "Invalid value '" + value.generateFlatInput() + "' for expression", this);
                     return;
                 }
 
@@ -196,8 +196,11 @@ public class IfStatement extends ControlStatement {
                         return;
                     }
 
-                    Assignment replacement = Assignment.generateDefault(value.getScope() != null ? value.getScope() : value.getParent(), value.getLocationIn());
-                    Variable variable = declaration.generateUsableVariable(replacement, value.getLocationIn());
+                    Assignment replacement = Assignment.generateDefault(
+                        value.getScope() != null ? value.getScope() : value.getParent(),
+                        value.getLocationIn());
+                    Variable variable =
+                        declaration.generateUsableVariable(replacement, value.getLocationIn());
                     variable.setProperty("userMade", false);
                     replacement.getAssigneeNodes().addChild(variable);
                     value.replaceWith(replacement);
@@ -252,11 +255,13 @@ public class IfStatement extends ControlStatement {
             if (lastChild instanceof Throw) {
 
             } else if (lastChild instanceof Value == false) {
-                SyntaxMessage.error("Invalid value '" + lastChild.generateFlatInput() + "' for expression", this);
+                SyntaxMessage.error(
+                    "Invalid value '" + lastChild.generateFlatInput() + "' for expression", this);
             } else if (declaration.getType() == null) {
                 declaration.setType(((Value) lastChild).getReturnedNode());
             } else {
-                Value common = SyntaxUtils.getTypeInCommon(((Value) lastChild).getReturnedNode(), declaration);
+                Value common =
+                    SyntaxUtils.getTypeInCommon(((Value) lastChild).getReturnedNode(), declaration);
 
                 declaration.setType(common);
             }
@@ -269,7 +274,8 @@ public class IfStatement extends ControlStatement {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public IfStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public IfStatement clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         IfStatement node = new IfStatement(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -283,8 +289,7 @@ public class IfStatement extends ControlStatement {
     }
 
     /**
-     * Fill the given {@link IfStatement} with the data that is in the
-     * specified node.
+     * Fill the given {@link IfStatement} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -296,11 +301,10 @@ public class IfStatement extends ControlStatement {
     }
 
     /**
-     * Test the IfStatement class type to make sure everything
-     * is working properly.
+     * Test the IfStatement class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

@@ -14,16 +14,14 @@ public abstract class CompileEngine {
         this.tree = controller.getTree();
     }
 
-    public void init() {
-    }
+    public void init() {}
 
     /**
      * Compile the generated code into an executable file.
      */
     public abstract void compile();
 
-    public void addIncludeDirectories(HashSet<String> directories) {
-    }
+    public void addIncludeDirectories(HashSet<String> directories) {}
 
     public boolean checkArgument(String arg) {
         return false;
@@ -33,3 +31,4 @@ public abstract class CompileEngine {
         return checkArgument(arg);
     }
 }
+

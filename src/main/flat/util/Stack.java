@@ -42,8 +42,7 @@ public class Stack<E> {
     }
 
     /**
-     * Pop the last element added (that has yet to be removed)
-     * from the Stack and return it to you.
+     * Pop the last element added (that has yet to be removed) from the Stack and return it to you.
      *
      * @return The first element that has yet to be removed.
      */
@@ -52,8 +51,8 @@ public class Stack<E> {
     }
 
     /**
-     * Peek at the most recently added element in the Stack without
-     * removing it, if it exists. If it does not exist, .
+     * Peek at the most recently added element in the Stack without removing it, if it exists. If it
+     * does not exist, .
      *
      * @return The most recently added element added in the Stack.
      */
@@ -66,8 +65,7 @@ public class Stack<E> {
     }
 
     /**
-     * Peek at the most recently added element in the Stack without
-     * removing it.
+     * Peek at the most recently added element in the Stack without removing it.
      *
      * @return The most recently added element added in the Stack.
      */
@@ -76,11 +74,9 @@ public class Stack<E> {
     }
 
     /**
-     * Peek at the element in the Stack at the specified
-     * index without removing it.
+     * Peek at the element in the Stack at the specified index without removing it.
      *
-     * @param index The index of the Stack to peek at. 0 == newest,
-     *              size() - 1 == oldest.
+     * @param index The index of the Stack to peek at. 0 == newest, size() - 1 == oldest.
      * @return The element at the specified index in the Stack.
      */
     public E peek(int index) {
@@ -108,20 +104,17 @@ public class Stack<E> {
     /**
      * Set whether or not to allow duplicate entries to the Stack.
      *
-     * @param allow Whether or not to allow duplicate entries to the
-     *              Stack.
+     * @param allow Whether or not to allow duplicate entries to the Stack.
      */
     public void setAllowDuplicates(boolean allow) {
         allowDuplicates = allow;
     }
 
     /**
-     * Return whether or not the Stack contains the specific Element
-     * instance.
+     * Return whether or not the Stack contains the specific Element instance.
      *
      * @param element The Element to check if the Stack contains.
-     * @return Whether or not the Stack contains the specific Element
-     * instance.
+     * @return Whether or not the Stack contains the specific Element instance.
      */
     public boolean contains(E element) {
         return stack.contains(element);
@@ -141,8 +134,8 @@ public class Stack<E> {
     }
 
     /**
-     * Create a String representation of this Stack instance. Represents
-     * the elements from last added to first added.
+     * Create a String representation of this Stack instance. Represents the elements from last
+     * added to first added.
      *
      * @return A String representation of this Stack instance.
      */
@@ -167,3 +160,4 @@ public class Stack<E> {
         return builder.toString();
     }
 }
+

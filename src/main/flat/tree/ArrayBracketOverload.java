@@ -69,25 +69,25 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
     }
 
     /**
-     * Decode the given statement into a {@link ArrayBracketOverload} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link ArrayBracketOverload} instance, if possible. If it
+     * is not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link ArrayBracketOverload} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link ArrayBracketOverload}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link ArrayBracketOverload} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link ArrayBracketOverload}.
      */
-    public static ArrayBracketOverload decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static ArrayBracketOverload decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         ArrayBracketOverload n = new ArrayBracketOverload(parent, location);
 
         statement = n.parseModifiers(statement);
@@ -99,7 +99,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
                 String original = statement;
                 String contents = statement.substring("this[".length(), end).trim();
 
-                LocalDeclaration indexValue = LocalDeclaration.decodeStatement(n, contents, location.asNew(), require);
+                LocalDeclaration indexValue =
+                    LocalDeclaration.decodeStatement(n, contents, location.asNew(), require);
 
                 n.addChild(indexValue);
 
@@ -130,7 +131,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
 
     @Override
     public FlatMethodDeclaration addDefaultAccessor() {
-        ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
+        ArrayAccessorMethod method =
+            ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
 
         Return returned = Return.decodeStatement(method, "return null", getLocationIn(), true);
 
@@ -145,7 +147,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
 
     @Override
     public FlatMethodDeclaration addDefaultMutator() {
-        ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
+        ArrayMutatorMethod method =
+            ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
 
         addChild(method);
 
@@ -154,7 +157,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
 
     @Override
     public void addDisabledAccessor() {
-        ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "no get", getLocationIn(), true);
+        ArrayAccessorMethod method =
+            ArrayAccessorMethod.decodeStatement(this, "no get", getLocationIn(), true);
 
         Value type = getArrayAccessorMethod();
 
@@ -165,7 +169,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
 
     @Override
     public void addDisabledMutator() {
-        ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "no set", getLocationIn(), true);
+        ArrayMutatorMethod method =
+            ArrayMutatorMethod.decodeStatement(this, "no set", getLocationIn(), true);
 
         Value type = getArrayAccessorMethod();
 
@@ -196,9 +201,11 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
     @Override
     public synchronized BodyMethodDeclaration decodeShorthandAccessor() {
         decoded = true;
-        ArrayAccessorMethod method = ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
+        ArrayAccessorMethod method =
+            ArrayAccessorMethod.decodeStatement(this, "get", getLocationIn(), true);
 
-        Value type = SyntaxTree.decodeValue(method, accessorValue, getLocationIn(), true).getReturnedNode();
+        Value type =
+            SyntaxTree.decodeValue(method, accessorValue, getLocationIn(), true).getReturnedNode();
         type.onAfterDecoded();
         method.setType(type);
 
@@ -207,7 +214,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
 
     @Override
     public BodyMethodDeclaration decodeShorthandMutator(Value context) {
-        ArrayMutatorMethod method = ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
+        ArrayMutatorMethod method =
+            ArrayMutatorMethod.decodeStatement(this, "set", getLocationIn(), true);
 
         Value type = getArrayAccessorMethod();
 
@@ -244,7 +252,8 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ArrayBracketOverload clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArrayBracketOverload clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ArrayBracketOverload node = new ArrayBracketOverload(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -258,13 +267,13 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
     }
 
     /**
-     * Fill the given {@link ArrayBracketOverload} with the data that is in the
-     * specified node.
+     * Fill the given {@link ArrayBracketOverload} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ArrayBracketOverload cloneTo(ArrayBracketOverload node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArrayBracketOverload cloneTo(ArrayBracketOverload node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.twoWayBinding = twoWayBinding;
@@ -280,11 +289,10 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
     }
 
     /**
-     * Test the {@link ArrayBracketOverload} class type to make sure everything
-     * is working properly.
+     * Test the {@link ArrayBracketOverload} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -292,3 +300,4 @@ public class ArrayBracketOverload extends IValue implements ShorthandAccessible 
         return null;
     }
 }
+

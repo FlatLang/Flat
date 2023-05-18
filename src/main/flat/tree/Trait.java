@@ -53,29 +53,29 @@ public class Trait extends ClassDeclaration {
     }
 
     /**
-     * Decode the given statement into a {@link Trait} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Trait} instance, if possible. If it is not possible,
+     * this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>public interface TestInterface</li>
-     * 	<li>public interface Stream</li>
-     * 	<li>public interface InterfaceName</li>
+     * <li>public interface TestInterface</li>
+     * <li>public interface Stream</li>
+     * <li>public interface InterfaceName</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Trait} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Trait}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Trait} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Trait}.
      */
-    public static Trait decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Trait decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         int index = SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER);
 
         if (index >= 0) {
-            statement = statement.substring(0, index) + ClassDeclaration.IDENTIFIER + statement.substring(index + IDENTIFIER.length());
+            statement = statement.substring(0, index) + ClassDeclaration.IDENTIFIER
+                + statement.substring(index + IDENTIFIER.length());
 
             ClassData data = new ClassData(false, false, true);
 
@@ -85,7 +85,7 @@ public class Trait extends ClassDeclaration {
                 Trait n = new Trait(parent, location);
 
                 clazz.cloneTo(n);
-                //n.setExtendedClass(null);
+                // n.setExtendedClass(null);
 
                 return n;
             }
@@ -99,11 +99,12 @@ public class Trait extends ClassDeclaration {
         MethodDeclaration[] methods = super.getMethods(methodName, filter);
 
         if (filter.checkAncestor && (!Flat.objectClassType.equals("trait") || doesExtendClass())) {
-            ClassDeclaration obj = getExtendedClass().getTypeClass();//getProgram().getClassDeclaration("flat/Object");
+            ClassDeclaration obj = getExtendedClass().getTypeClass();// getProgram().getClassDeclaration("flat/Object");
 
             boolean before = filter.checkInterfaces;
 
-            if (obj.getClassLocation().equals("flat/Object") && obj.implementsInterface(this, false)) {
+            if (obj.getClassLocation().equals("flat/Object")
+                && obj.implementsInterface(this, false)) {
                 filter.checkInterfaces = false;
             } else {
                 for (Trait i : obj.getImplementedInterfaces()) {
@@ -115,7 +116,8 @@ public class Trait extends ClassDeclaration {
 
             MethodDeclaration[] extra = obj.getMethods(methodName, filter);
 
-            if (obj.getClassLocation().equals("flat/Object") && obj.implementsInterface(this, false)) {
+            if (obj.getClassLocation().equals("flat/Object")
+                && obj.implementsInterface(this, false)) {
                 filter.checkInterfaces = before;
             }
 
@@ -183,17 +185,18 @@ public class Trait extends ClassDeclaration {
                 if (n.isUserMade() || n.containsProperty("genericOverload")) {
                     FieldDeclaration field = (FieldDeclaration) n;
 
-                    if (field.getShorthandAccessor() == null && !field.containsAccessorMethod() && !field.containsMutatorMethod() && !isPrimitiveOverload()) {
+                    if (field.getShorthandAccessor() == null && !field.containsAccessorMethod()
+                        && !field.containsMutatorMethod() && !isPrimitiveOverload()) {
                         field.addDefaultAccessor();
 
-//						if (field.getVisibility() == PUBLIC)
-//						{
+                        // if (field.getVisibility() == PUBLIC)
+                        // {
                         field.addDefaultMutator();
-//						}
-//						else
-//						{
-//							field.addDisabledMutator();
-//						}
+                        // }
+                        // else
+                        // {
+                        // field.addDisabledMutator();
+                        // }
 
                         field.setProperty("addedDefaultInterfaceFunctions", true);
                     }
@@ -228,7 +231,8 @@ public class Trait extends ClassDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Trait clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Trait clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Trait node = new Trait(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -242,8 +246,7 @@ public class Trait extends ClassDeclaration {
     }
 
     /**
-     * Fill the given {@link Trait} with the data that is in the
-     * specified node.
+     * Fill the given {@link Trait} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -255,11 +258,10 @@ public class Trait extends ClassDeclaration {
     }
 
     /**
-     * Test the {@link Trait} class type to make sure everything
-     * is working properly.
+     * Test the {@link Trait} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -267,3 +269,4 @@ public class Trait extends ClassDeclaration {
         return null;
     }
 }
+

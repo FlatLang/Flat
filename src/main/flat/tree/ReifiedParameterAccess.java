@@ -25,16 +25,20 @@ public class ReifiedParameterAccess extends IIdentifier {
     }
 
     /**
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link ReifiedParameterAccess} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link ReifiedParameterAccess}.`
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link ReifiedParameterAccess}
+     *        instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link ReifiedParameterAccess}.`
      */
-    public static ReifiedParameterAccess decodeStatement(Node parent, String statement, Location location, boolean require) {
-        ClassDeclaration refClass = parent instanceof Accessible && ((Accessible) parent).canAccess() ? ((Accessible) parent).toValue().getTypeClass() : parent.getParentClass(true);
+    public static ReifiedParameterAccess decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
+        ClassDeclaration refClass =
+            parent instanceof Accessible && ((Accessible) parent).canAccess()
+                ? ((Accessible) parent).toValue().getTypeClass()
+                : parent.getParentClass(true);
 
         if (refClass != null) {
             GenericTypeParameter param = refClass.getGenericTypeParameter(statement);
@@ -58,9 +62,8 @@ public class ReifiedParameterAccess extends IIdentifier {
             ReifiedParameterAccess ref = (ReifiedParameterAccess) getParent();
             ClassDeclaration typeClass = ref.getTypeClass(checkCast, defaultGenericType);
             ClassDeclaration tc = Stream.concat(
-                    Arrays.stream(typeClass.getEncapsulatedClasses()),
-                    Arrays.stream(typeClass.getSiblingClasses())
-                )
+                Arrays.stream(typeClass.getEncapsulatedClasses()),
+                Arrays.stream(typeClass.getSiblingClasses()))
                 .filter(c -> c.getName().equals(getName()))
                 .findFirst()
                 .orElse(null);
@@ -77,9 +80,8 @@ public class ReifiedParameterAccess extends IIdentifier {
             ReifiedParameterAccess ref = (ReifiedParameterAccess) getParent();
             ClassDeclaration typeClass = ref.getTypeClass(checkCast, false);
             ClassDeclaration tc = Stream.concat(
-                    Arrays.stream(typeClass.getEncapsulatedClasses()),
-                    Arrays.stream(typeClass.getSiblingClasses())
-                )
+                Arrays.stream(typeClass.getEncapsulatedClasses()),
+                Arrays.stream(typeClass.getSiblingClasses()))
                 .filter(c -> c.getName().equals(getName()))
                 .findFirst()
                 .orElse(null);
@@ -110,10 +112,11 @@ public class ReifiedParameterAccess extends IIdentifier {
     @Override
     public boolean onAfterDecoded() {
         if (!doesAccess()) {
-            Variable var = (Variable) SyntaxTree.decodeIdentifier(this, "class", getLocationIn(), false);
+            Variable var =
+                (Variable) SyntaxTree.decodeIdentifier(this, "class", getLocationIn(), false);
 
             if (var != null) {
-//				setAccessedNode(var);
+                // setAccessedNode(var);
             }
         }
 
@@ -133,7 +136,8 @@ public class ReifiedParameterAccess extends IIdentifier {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ReifiedParameterAccess clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ReifiedParameterAccess clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ReifiedParameterAccess node = new ReifiedParameterAccess(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -147,24 +151,24 @@ public class ReifiedParameterAccess extends IIdentifier {
     }
 
     /**
-     * Fill the given {@link ReifiedParameterAccess} with the data that is in the
-     * specified node.
+     * Fill the given {@link ReifiedParameterAccess} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ReifiedParameterAccess cloneTo(ReifiedParameterAccess node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ReifiedParameterAccess cloneTo(ReifiedParameterAccess node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link ReifiedParameterAccess} class type to make sure everything
-     * is working properly.
+     * Test the {@link ReifiedParameterAccess} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

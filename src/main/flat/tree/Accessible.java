@@ -67,29 +67,29 @@ public interface Accessible {
     boolean isInstance();
 
     /**
-     * Get whether or not the specified Node is both used within a
-     * static context and not accessed by an instance.
+     * Get whether or not the specified Node is both used within a static context and not accessed
+     * by an instance.
      *
-     * @return Whether or not the specified Node is both used within a
-     * static context and not accessed by an instance.
+     * @return Whether or not the specified Node is both used within a static context and not
+     *         accessed by an instance.
      */
     default boolean isAccessedWithinStaticContext() {
-        return !isAccessed() && !isInstance() || isAccessed() && getAccessingNode() instanceof StaticClassReference;
+        return !isAccessed() && !isInstance()
+            || isAccessed() && getAccessingNode() instanceof StaticClassReference;
     }
 
     /**
-     * Get the ClassDeclaration instance that declares the method that
-     * this MethodCall is calling.
+     * Get the ClassDeclaration instance that declares the method that this MethodCall is calling.
      *
-     * @return The Class that this MethodCall's declaration is declared
-     * in.
+     * @return The Class that this MethodCall's declaration is declared in.
      */
     default ClassDeclaration getDeclaringClass() {
         return ((Value) getReferenceNode()).getTypeClass(false);
     }
 
     default MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] getDeclaringClasses() {
-        ArrayList<MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>> list = new ArrayList<>();
+        ArrayList<MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>> list =
+            new ArrayList<>();
 
         MethodList.SearchFilter filter = new MethodList.SearchFilter();
         filter.staticValue = isAccessedWithinStaticContext();
@@ -143,18 +143,22 @@ public interface Accessible {
             return null;
         }
 
-        int index = /*getDeclaration()*//*getReferenceNode().toValue().*/params.getParameterIndex(type.getType());
+        int index = /* getDeclaration() *//* getReferenceNode().toValue(). */params
+            .getParameterIndex(type.getType());
 
         if (typeClass == null) {
             return null;
         }
 
         if (index >= 0) {
-            if (value.getTypeClass() == type.getParentClass() && value.getGenericTypeArgumentList() != null && value.getGenericTypeArgumentList().getNumVisibleChildren() > index) {
+            if (value.getTypeClass() == type.getParentClass()
+                && value.getGenericTypeArgumentList() != null
+                && value.getGenericTypeArgumentList().getNumVisibleChildren() > index) {
                 GenericTypeArgument arg = value.getGenericTypeArgumentList().getVisibleChild(index);
 
                 if (arg.isGenericType() && ((Accessible) value).canAccess()) {
-                    GenericTypeArgument extracted = ((Accessible) value).getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
+                    GenericTypeArgument extracted = ((Accessible) value)
+                        .getGenericTypeArgumentFromParameter(arg.getGenericTypeParameter());
 
                     if (extracted != null) {
                         return extracted;
@@ -164,11 +168,14 @@ public interface Accessible {
                 return arg;
             }
 
-            if (typeClass != type.getParentClass() && !(refNode instanceof Variable && ((Variable) refNode).declaration instanceof ReferenceParameter)) {
+            if (typeClass != type.getParentClass() && !(refNode instanceof Variable
+                && ((Variable) refNode).declaration instanceof ReferenceParameter)) {
                 if (refNode != value) {
-                    return SyntaxUtils.performWalk(this.toValue(), this.toValue(), typeClass, type.getParentClass(), index);
+                    return SyntaxUtils.performWalk(this.toValue(), this.toValue(), typeClass,
+                        type.getParentClass(), index);
                 } else {
-                    return SyntaxUtils.performWalk(toValue(), value, typeClass, type.getParentClass(), index);
+                    return SyntaxUtils.performWalk(toValue(), value, typeClass,
+                        type.getParentClass(), index);
                 }
             }
 
@@ -189,19 +196,17 @@ public interface Accessible {
      * Get the next accessed node that is of the given class type.
      *
      * @param type The class type to search for.
-     * @return The next accessed node of the given type. If there are
-     * no matches, null is returned.
+     * @return The next accessed node of the given type. If there are no matches, null is returned.
      */
     default Accessible getNextAccessingOfType(Class<?> type) {
-        return getNextAccessingOfType(new Class<?>[]{type});
+        return getNextAccessingOfType(new Class<?>[] {type});
     }
 
     /**
      * Get the next accessed node that is of the given class types.
      *
      * @param types The class types to search for.
-     * @return The next accessed node of the given types. If there are
-     * no matches, null is returned.
+     * @return The next accessed node of the given types. If there are no matches, null is returned.
      */
     default Accessible getNextAccessingOfType(Class<?> types[]) {
         return getNextAccessingOfType(types, false);
@@ -210,11 +215,9 @@ public interface Accessible {
     /**
      * Get the next accessed node that is of the given class types.
      *
-     * @param types    The class types to search for.
-     * @param opposite Whether or not to search for or against the given
-     *                 data.
-     * @return The next accessed node of the given types. If there are
-     * no matches, null is returned.
+     * @param types The class types to search for.
+     * @param opposite Whether or not to search for or against the given data.
+     * @return The next accessed node of the given types. If there are no matches, null is returned.
      */
     default Accessible getNextAccessingOfType(Class<?> types[], boolean opposite) {
         Accessible current = getAccessingNode();
@@ -227,42 +230,37 @@ public interface Accessible {
     }
 
     /**
-     * Get the last accessed node of the given type that was in a series.
-     * In other words, if we are looking for the last method call and
-     * there are three consecutive method calls in a row, the third method
-     * call node would be returned.
+     * Get the last accessed node of the given type that was in a series. In other words, if we are
+     * looking for the last method call and there are three consecutive method calls in a row, the
+     * third method call node would be returned.
      *
-     * @param type     The class type to search for.
-     * @param opposite Whether or not to search for or against the given
-     *                 type.
-     * @return The last accessed node of the given type. If there is not a
-     * match, null is returned.
+     * @param type The class type to search for.
+     * @param opposite Whether or not to search for or against the given type.
+     * @return The last accessed node of the given type. If there is not a match, null is returned.
      */
     default Accessible getLastAccessingOfType(Class<?> type, boolean opposite) {
         return getLastAccessingOfType(type, opposite);
     }
 
     default Accessible getLastAccessingOfType(Class<?> type, boolean opposite, boolean inclusive) {
-        return getLastAccessingOfType(new Class<?>[]{type}, opposite, inclusive);
+        return getLastAccessingOfType(new Class<?>[] {type}, opposite, inclusive);
     }
 
     /**
-     * Get the last accessed node of the given types that was in a series.
-     * In other words, if we are looking for the last method call and
-     * there are three consecutive method calls in a row, the third method
-     * call node would be returned.
+     * Get the last accessed node of the given types that was in a series. In other words, if we are
+     * looking for the last method call and there are three consecutive method calls in a row, the
+     * third method call node would be returned.
      *
-     * @param types    An arrayAccess of accepted types.
-     * @param opposite Whether or not to search for or against the given
-     *                 data.
-     * @return The last accessed node of the given types. If there is not
-     * a match, null is returned.
+     * @param types An arrayAccess of accepted types.
+     * @param opposite Whether or not to search for or against the given data.
+     * @return The last accessed node of the given types. If there is not a match, null is returned.
      */
     default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite) {
         return getLastAccessingOfType(types, opposite, false);
     }
 
-    default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite, boolean inclusive) {
+    default Accessible getLastAccessingOfType(Class<?> types[], boolean opposite,
+        boolean inclusive) {
         Accessible previous = null;
         Accessible current = this;
 
@@ -279,7 +277,7 @@ public interface Accessible {
     }
 
     default Accessible getLastAccessedOfType(Class<?> type, boolean opposite) {
-        return getLastAccessedOfType(new Class<?>[]{type}, opposite);
+        return getLastAccessedOfType(new Class<?>[] {type}, opposite);
     }
 
     default Accessible getLastAccessedOfType(Class<?> types[], boolean opposite) {
@@ -310,24 +308,20 @@ public interface Accessible {
     }
 
     /**
-     * Get the next node that this node accesses that is of the given
-     * type.
+     * Get the next node that this node accesses that is of the given type.
      *
      * @param type The type to search for.
-     * @return The next accessed of the given type. If there is not a
-     * match, null is returned.
+     * @return The next accessed of the given type. If there is not a match, null is returned.
      */
     default Identifier getNextAccessedOfType(Class<?> type) {
-        return getNextAccessedOfType(new Class<?>[]{type});
+        return getNextAccessedOfType(new Class<?>[] {type});
     }
 
     /**
-     * Get the next node that this node accesses that is of the given
-     * types.
+     * Get the next node that this node accesses that is of the given types.
      *
      * @param types The types to search for.
-     * @return The next accessed of the given types. If there is not a
-     * match, null is returned.
+     * @return The next accessed of the given types. If there is not a match, null is returned.
      */
     default Identifier getNextAccessedOfType(Class<?> types[]) {
         Identifier current = getAccessedNode();
@@ -342,8 +336,7 @@ public interface Accessible {
     /**
      * Get the root variable that is accessing the specified Identifier.
      *
-     * @return The root variable that is accessing the specified
-     * Identifier.
+     * @return The root variable that is accessing the specified Identifier.
      */
     default Accessible getRootReferenceNode() {
         return getRootReferenceNode(false);
@@ -352,10 +345,9 @@ public interface Accessible {
     /**
      * Get the root variable that is accessing the specified Identifier.
      *
-     * @param inclusive Whether or not to return the specified Identifier
-     *                  if the Identifier is not accessed.
-     * @return The root variable that is accessing the specified
-     * Identifier.
+     * @param inclusive Whether or not to return the specified Identifier if the Identifier is not
+     *        accessed.
+     * @return The root variable that is accessing the specified Identifier.
      */
     default Accessible getRootReferenceNode(boolean inclusive) {
         if (!isAccessed()) {
@@ -368,7 +360,8 @@ public interface Accessible {
 
         Accessible reference = getReferenceNode(false, true);
 
-        Accessible node = reference.getLastAccessingOfType(new Class<?>[]{Closure.class, MethodCall.class}, true);
+        Accessible node = reference
+            .getLastAccessingOfType(new Class<?>[] {Closure.class, MethodCall.class}, true);
 
         if (node == null) {
             return reference;
@@ -381,7 +374,8 @@ public interface Accessible {
         Accessible current = this;
 
         while (current != null) {
-            if (current.getParent() instanceof Cast && current.getParent().getParent() instanceof Priority) {
+            if (current.getParent() instanceof Cast
+                && current.getParent().getParent() instanceof Priority) {
                 return (Priority) current.getParent().getParent();
             }
             if (current.getParent() instanceof Priority) {
@@ -397,30 +391,37 @@ public interface Accessible {
     /**
      * Get the Node that represents the value that contains the value.<br>
      * For example:<br>
-     * <blockquote><pre>
+     * <blockquote>
+     * 
+     * <pre>
      * ClassName obj = new ClassName();
      *
-     * obj.data.methodName();</pre></blockquote>
-     * In the previous statements, the method "<u><code>methodName()</code></u>"
-     * is being referenced through the "<u><code>data</code></u>"
-     * identifier.<br>
+     * obj.data.methodName();
+     * </pre>
+     * 
+     * </blockquote> In the previous statements, the method "<u><code>methodName()</code></u>" is
+     * being referenced through the "<u><code>data</code></u>" identifier.<br>
      * <br>
-     * If the identifier is not explicitly called through an object, it
-     * will return the instance type that the node was referenced
-     * within.<br>
-     * For example:
-     * <blockquote><pre>
-     * obj.calculateArea().width;</pre></blockquote>
-     * The Identifier for the method call "<u><code>calculateArea()</code></u>"
-     * is returned.<br>
+     * If the identifier is not explicitly called through an object, it will return the instance
+     * type that the node was referenced within.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * obj.calculateArea().width;
+     * </pre>
+     * 
+     * </blockquote> The Identifier for the method call "<u><code>calculateArea()</code></u>" is
+     * returned.<br>
      * <br>
-     * If the node is referenced within a static context, the containing
-     * ClassDeclaration is returned.<br>
-     * For example:
-     * <blockquote><pre>
-     * Time.currentTimeMillis();</pre></blockquote>
-     * The Identifier for the ClassDeclaration "<u><code>Time</code></u>" is
-     * returned.
+     * If the node is referenced within a static context, the containing ClassDeclaration is
+     * returned.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * Time.currentTimeMillis();
+     * </pre>
+     * 
+     * </blockquote> The Identifier for the ClassDeclaration "<u><code>Time</code></u>" is returned.
      *
      * @return The Node that represents the calling Identifier.
      */
@@ -469,16 +470,21 @@ public interface Accessible {
     /**
      * Get the farthest node that is accessing the specified identifier.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * tree.next.calculateSize()</pre></blockquote>
-     * In the previous statement, "<code>tree</code>" is the context. If
-     * the identifier is not accessed by any other identifiers, then
-     * null is returned.<br>
-     * For example:
-     * <blockquote><pre>
-     * calculateSize()</pre></blockquote>
-     * The above would return null.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * tree.next.calculateSize()
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, "<code>tree</code>" is the context. If the
+     * identifier is not accessed by any other identifiers, then null is returned.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * calculateSize()
+     * </pre>
+     * 
+     * </blockquote> The above would return null.
      *
      * @return The furthest node that accesses the specified identifier.
      */
@@ -489,19 +495,24 @@ public interface Accessible {
     /**
      * Get the furthest node that is accessing the specified identifier.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * tree.next.calculateSize()</pre></blockquote>
-     * In the previous statement, "<code>tree</code>" is the context. If
-     * the identifier is not accessed by any other identifiers, then
-     * null is returned.<br>
-     * For example:
-     * <blockquote><pre>
-     * calculateSize()</pre></blockquote>
-     * The above would return null.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * tree.next.calculateSize()
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, "<code>tree</code>" is the context. If the
+     * identifier is not accessed by any other identifiers, then null is returned.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * calculateSize()
+     * </pre>
+     * 
+     * </blockquote> The above would return null.
      *
-     * @param escape The Identifier if it the specified Identifier
-     *               is not accessed through any Identifiers.
+     * @param escape The Identifier if it the specified Identifier is not accessed through any
+     *        Identifiers.
      * @return The furthest node that accesses the specified identifier.
      */
     default Accessible getContextNode(Accessible escape) {
@@ -533,7 +544,8 @@ public interface Accessible {
             int baseIndex = base.getIndex();
             int index = 0;
 
-            boolean assignment = root != base && base instanceof Assignment && ((Assignment) base).getAssigneeNode() == root;
+            boolean assignment = root != base && base instanceof Assignment
+                && ((Assignment) base).getAssigneeNode() == root;
             boolean ternary = !assignment && root != base;
 
             String original = null;
@@ -545,7 +557,8 @@ public interface Accessible {
                     newParent = parent;
                 }
 
-                original = generateFlatInputUntil(this) + "?." + getAccessedNode().generateFlatInputUntil(null);
+                original = generateFlatInputUntil(this) + "?."
+                    + getAccessedNode().generateFlatInputUntil(null);
 
                 index = rootIndex;
             } else {
@@ -557,16 +570,19 @@ public interface Accessible {
 
             setAccessedNode(null);
 
-            BinaryOperation nullCheck = BinaryOperation.generateNullCheck(root.getParent(), toValue(), root.toValue());
+            BinaryOperation nullCheck =
+                BinaryOperation.generateNullCheck(root.getParent(), toValue(), root.toValue());
 
             Node n = null;
 
-            Variable local = TernaryOperation.getLocalVariableFromNullCheck(nullCheck).getDeclaration().generateUsableVariable(nullCheck, toValue().getLocationIn());
+            Variable local = TernaryOperation.getLocalVariableFromNullCheck(nullCheck)
+                .getDeclaration().generateUsableVariable(nullCheck, toValue().getLocationIn());
             local.setAccessedNode(accessed);
             local.declaration.setProperty("userMade", false);
 
             if (ternary) {
-                TernaryOperation t = TernaryOperation.generateDefault(old, toValue().getLocationIn());
+                TernaryOperation t =
+                    TernaryOperation.generateDefault(old, toValue().getLocationIn());
 
                 t.setProperty("safeNavigation", original);
 
@@ -574,7 +590,8 @@ public interface Accessible {
 
                 t.getCondition().replaceWith(nullCheck);
                 t.getTrueValue().replaceWith(p);
-                t.getFalseValue().replaceWith(Literal.generateDefaultValue(t, t.getLocationIn(), local.getReturnedNode()));
+                t.getFalseValue().replaceWith(
+                    Literal.generateDefaultValue(t, t.getLocationIn(), local.getReturnedNode()));
 
                 t.setType(local.getReturnedNode().getFlatTypeValue(local.getReturnedNode()));
 
@@ -603,7 +620,8 @@ public interface Accessible {
         return (Node) this;
     }
 
-    public default StringBuilder generateAccessedNode(StringBuilder builder, boolean safeNavigation) {
+    public default StringBuilder generateAccessedNode(StringBuilder builder,
+        boolean safeNavigation) {
         if (doesAccess()) {
             if (safeNavigation) {
                 builder.append('?');
@@ -624,16 +642,22 @@ public interface Accessible {
     /**
      * Get the furthest node that is accessing the specified identifier.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * tree.next.calculateSize()</pre></blockquote>
-     * In the previous statement, "<code>tree</code>" is the context. This
-     * differs from the getContextNode() call by returning the specified
-     * node if the identifier is not accessed by any other identifiers.<br>
-     * For example:
-     * <blockquote><pre>
-     * calculateSize()</pre></blockquote>
-     * The above would return the method call identifier for
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * tree.next.calculateSize()
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, "<code>tree</code>" is the context. This differs
+     * from the getContextNode() call by returning the specified node if the identifier is not
+     * accessed by any other identifiers.<br>
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * calculateSize()
+     * </pre>
+     * 
+     * </blockquote> The above would return the method call identifier for
      * "<code>calculateSize()</code>".
      *
      * @return The furthest node that accesses the specified identifier.
@@ -643,10 +667,9 @@ public interface Accessible {
     }
 
     /**
-     * Get the root Node that accesses the specified Identifier. This
-     * only differs from getRootAccessNode() in one aspect: If the
-     * root access Node's parent is an Instantiation, return the
-     * Instantiation and not the MethodCall instance.
+     * Get the root Node that accesses the specified Identifier. This only differs from
+     * getRootAccessNode() in one aspect: If the root access Node's parent is an Instantiation,
+     * return the Instantiation and not the MethodCall instance.
      *
      * @return The root Node that accesses the specified Identifier.
      */
@@ -664,11 +687,14 @@ public interface Accessible {
     /**
      * Get the last node that is accessed by the specified node.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * tree.next.calculateSize()</pre></blockquote>
-     * In the previous statement, "<code>calculateSize()</code>" is the
-     * last accessed node.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * tree.next.calculateSize()
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, "<code>calculateSize()</code>" is the last accessed
+     * node.
      *
      * @return The last node that is accessed by the specified node.
      */
@@ -690,16 +716,17 @@ public interface Accessible {
      * @return Whether or not the Value accesses a method call.
      */
     default boolean isSpecialFragment() {
-//		Identifier lastAccessed = getLastAccessedNode();
-//		
-//		if (lastAccessed == null)
-//		{
-//			return false;
-//		}
-//		
-//		Identifier next = (Identifier)lastAccessed.getNextAccessingOfType(new Class<?>[] { MethodCall.class, Closure.class });
-//		
-//		return next != null && next.isSpecial();
+        // Identifier lastAccessed = getLastAccessedNode();
+        //
+        // if (lastAccessed == null)
+        // {
+        // return false;
+        // }
+        //
+        // Identifier next = (Identifier)lastAccessed.getNextAccessingOfType(new Class<?>[] {
+        // MethodCall.class, Closure.class });
+        //
+        // return next != null && next.isSpecial();
 
         Accessible current = getLastAccessedNode();
 
@@ -715,23 +742,23 @@ public interface Accessible {
     }
 
     /**
-     * Get the Value that returns a value if it is used in an
-     * expression.<br>
+     * Get the Value that returns a value if it is used in an expression.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * // Scenario 1
      * tree.value.next;
      *
      * //Scenario 2
-     * tree;</pre></blockquote>
-     * In scenario 1, "<u><code>next</code></u>" is the returned node
-     * because it is the last accessed node. In scenario 2
-     * "<u><code>tree</code></u>" is the returned node because it does not
-     * access any nodes and is therefore the value that is returned.
+     * tree;
+     * </pre>
+     * 
+     * </blockquote> In scenario 1, "<u><code>next</code></u>" is the returned node because it is
+     * the last accessed node. In scenario 2 "<u><code>tree</code></u>" is the returned node because
+     * it does not access any nodes and is therefore the value that is returned.
      *
-     * @return The last accessed node, or if the node does not access any
-     * nodes, it returns itself.
+     * @return The last accessed node, or if the node does not access any nodes, it returns itself.
      */
     default Value getReturnedNode() {
         Identifier lastAccessed = getLastAccessedNode();
@@ -744,8 +771,8 @@ public interface Accessible {
     }
 
     /**
-     * Get whether or not the specified Identifier accesses another Node.
-     * For more information see {@link #getAccessedNode()}
+     * Get whether or not the specified Identifier accesses another Node. For more information see
+     * {@link #getAccessedNode()}
      *
      * @return The next node that is accessed by the specified node.
      */
@@ -756,13 +783,15 @@ public interface Accessible {
     /**
      * Get the next node that is accessed by the specified node.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * tree.next.calculateSize()</pre></blockquote>
-     * In the previous statement, "<code>calculateSize()</code>" is the
-     * accessed node of the "<code>next</code>" node, and
-     * "<code>next</code>" is the accessed node of the "<code>tree</code>"
-     * node.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * tree.next.calculateSize()
+     * </pre>
+     * 
+     * </blockquote> In the previous statement, "<code>calculateSize()</code>" is the accessed node
+     * of the "<code>next</code>" node, and "<code>next</code>" is the accessed node of the
+     * "<code>tree</code>" node.
      *
      * @return The next node that is accessed by the specified node.
      */
@@ -792,8 +821,8 @@ public interface Accessible {
     }
 
     /**
-     * Get whether this specified identifier node was accessed through
-     * the dot operator of another Identifier.
+     * Get whether this specified identifier node was accessed through the dot operator of another
+     * Identifier.
      *
      * @return Whether or not the identifier was accessed.
      */
@@ -808,12 +837,10 @@ public interface Accessible {
     }
 
     /**
-     * Get whether or not the specified identifier is still in the
-     * process of being decoded.
+     * Get whether or not the specified identifier is still in the process of being decoded.
      *
      * @param node The node that is thought to be accessed.
-     * @return Whether or not the specified identifier is still in the
-     * process of being decoded.
+     * @return Whether or not the specified identifier is still in the process of being decoded.
      */
     default boolean isDecodingAccessedNode(Node node) {
         return node.getParent() == this && !((Node) this).containsChild(node);
@@ -852,12 +879,10 @@ public interface Accessible {
     }
 
     /**
-     * Get the Identifier Node that accesses the specified Identifier
-     * Node. If the Identifier is not accessed through a Node, then
-     * null is returned.
+     * Get the Identifier Node that accesses the specified Identifier Node. If the Identifier is not
+     * accessed through a Node, then null is returned.
      *
-     * @return The Identifier Node that accesses the specified Identifier
-     * Node.
+     * @return The Identifier Node that accesses the specified Identifier Node.
      */
     default Accessible getAccessingNode() {
         return getAccessingNode(false);
@@ -883,18 +908,22 @@ public interface Accessible {
     default Accessible getAccessingNode(boolean skipPriority) {
         Node n = (Node) this;
 
-        if (canAccess() && n.getParent() instanceof Accessible && n.getParent() instanceof VariableDeclaration == false && !n.getParent().containsScope()) {
+        if (canAccess() && n.getParent() instanceof Accessible
+            && n.getParent() instanceof VariableDeclaration == false
+            && !n.getParent().containsScope()) {
             Accessible id = (Accessible) n.getParent();
 
             if (!skipPriority && id instanceof Priority) {
                 Priority priority = (Priority) id;
-                Node last = priority.getLastAncestorOfType(new Class[]{Priority.class}, false);
+                Node last = priority.getLastAncestorOfType(new Class[] {Priority.class}, false);
 
                 last = last == null ? priority : last;
 
-                if (this != priority.getContents() && priority.getReturnedContents() instanceof Accessible) {
+                if (this != priority.getContents()
+                    && priority.getReturnedContents() instanceof Accessible) {
                     return (Accessible) priority.getReturnedContents();
-                } else if (last.getParent() instanceof Accessible && ((Accessible) last.getParent()).doesAccess()) {
+                } else if (last.getParent() instanceof Accessible
+                    && ((Accessible) last.getParent()).doesAccess()) {
                     return (Accessible) id.getParent();
                 }
             }
@@ -914,8 +943,7 @@ public interface Accessible {
     }
 
     /**
-     * Generate the Flat input String until the given stopAt Identifier
-     * is found.
+     * Generate the Flat input String until the given stopAt Identifier is found.
      *
      * @param stopAt The Node to stop at.
      * @return The generated Flat input.
@@ -925,11 +953,10 @@ public interface Accessible {
     }
 
     /**
-     * Generate the Flat input String until the given stopAt Identifier
-     * is found.
+     * Generate the Flat input String until the given stopAt Identifier is found.
      *
      * @param builder The builder to append the data to.
-     * @param stopAt  The Node to stop at. (This Node will output)
+     * @param stopAt The Node to stop at. (This Node will output)
      * @return The generated Flat input.
      */
     default StringBuilder generateFlatInputUntil(StringBuilder builder, Accessible stopAt) {
@@ -958,3 +985,4 @@ public interface Accessible {
         return builder.deleteCharAt(builder.length() - 1);
     }
 }
+

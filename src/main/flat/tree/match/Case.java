@@ -30,8 +30,8 @@ public class Case extends MatchCase {
     }
 
     /**
-     * Get the {@link Fallthrough Fallthrough}
-     * instance that is paired with this switch case (if a fallthrough exists)
+     * Get the {@link Fallthrough Fallthrough} instance that is paired with this switch case (if a
+     * fallthrough exists)
      *
      * @return The Fallthrough instance.
      */
@@ -44,8 +44,8 @@ public class Case extends MatchCase {
     }
 
     /**
-     * Get the {@link Fallthrough Fallthrough}
-     * instance that is paired with this switch case (if a fallthrough exists)
+     * Get the {@link Fallthrough Fallthrough} instance that is paired with this switch case (if a
+     * fallthrough exists)
      *
      * @return The Fallthrough instance.
      */
@@ -110,24 +110,25 @@ public class Case extends MatchCase {
     }
 
     /**
-     * Get whether or not the specified switch case requires a break
-     * statement in order to function properly. The only cases when this
-     * method returns false is when the case contains a fallthrough or
-     * return statement.
+     * Get whether or not the specified switch case requires a break statement in order to function
+     * properly. The only cases when this method returns false is when the case contains a
+     * fallthrough or return statement.
      *
-     * @return Whether or not the case requires a break statement to
-     * function correctly.
+     * @return Whether or not the case requires a break statement to function correctly.
      */
     public boolean requiresBreak() {
-        return !containsFallthrough() && !containsContinue() && !containsBreak() && !(getScope().getLastChild() instanceof Return);
+        return !containsFallthrough() && !containsContinue() && !containsBreak()
+            && !(getScope().getLastChild() instanceof Return);
     }
 
     @Override
     public void addChild(Node node) {
         if (node instanceof Case) {
-//			getAncestorOfType(Match.class).addChild(node);
+            // getAncestorOfType(Match.class).addChild(node);
         } else if (containsFallthrough()) {
-            SyntaxMessage.error("Fallthrough statement must be the last statement within a case statement", getFallthrough());
+            SyntaxMessage.error(
+                "Fallthrough statement must be the last statement within a case statement",
+                getFallthrough());
         } else {
             super.addChild(node);
         }
@@ -137,14 +138,17 @@ public class Case extends MatchCase {
      * Get the value that the specified switch case occurs on.<br>
      * <br>
      * For example:<br>
-     * <blockquote><pre>
+     * <blockquote>
+     * 
+     * <pre>
      * switch (num)
      * 	case (value) ...
-     * 	default ...</pre></blockquote>
-     * On the line '<code>case (value)</code>' in the above switch statement, the
-     * '<code><i>value</i></code>' component of the case statement is the
-     * {@link Value Value} Node that is returned from
-     * this method.
+     * 	default ...
+     * </pre>
+     * 
+     * </blockquote> On the line '<code>case (value)</code>' in the above switch statement, the
+     * '<code><i>value</i></code>' component of the case statement is the {@link Value Value} Node
+     * that is returned from this method.
      *
      * @return The value that the specified case occurs on.
      */
@@ -168,31 +172,31 @@ public class Case extends MatchCase {
     }
 
     /**
-     * Decode the given statement into a {@link Case} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Case} instance, if possible. If it is not possible,
+     * this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>case 43</li>
-     * 	<li>case "56" num++</li>
-     * 	<li>case person.name</li>
+     * <li>case 43</li>
+     * <li>case "56" num++</li>
+     * <li>case person.name</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Case} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Case}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Case} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Case}.
      */
-    public static Case decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Case decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         int index = SyntaxUtils.findStringInBaseScope(statement, "=>");
 
         if (index > 0) {
             Case n = new Case(parent, location);
 
-            if (parent instanceof Case && parent.containsScope() && parent.getScope().getNumVisibleChildren() == 0) {
+            if (parent instanceof Case && parent.containsScope()
+                && parent.getScope().getNumVisibleChildren() == 0) {
                 parent.addChild(new Fallthrough(parent, parent.getLocationIn()));
                 ((Case) parent).returningCase = n;
 
@@ -201,7 +205,8 @@ public class Case extends MatchCase {
             if (parent instanceof Match) {
                 String contents = statement.substring(0, index).trim();
 
-                if (n.decodeContents(contents, require) && n.decodeScopeFragment(statement, index + 2)) {
+                if (n.decodeContents(contents, require)
+                    && n.decodeScopeFragment(statement, index + 2)) {
                     return n;
                 }
             }
@@ -212,18 +217,20 @@ public class Case extends MatchCase {
     }
 
     /**
-     * Decode the Value that the switch case occurs on. For more
-     * information on what the Value is, see {@link #getValue()}
+     * Decode the Value that the switch case occurs on. For more information on what the Value is,
+     * see {@link #getValue()}
      *
      * @param contents The String containing the value to decode.
-     * @param require  Whether or not to throw an error if anything goes wrong.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the contents were decoded successfully.
      */
     public boolean decodeContents(String contents, boolean require) {
-        Value value = SyntaxTree.decodeValue(getParent(), contents, getLocationIn().asNew(), require);
+        Value value =
+            SyntaxTree.decodeValue(getParent(), contents, getLocationIn().asNew(), require);
 
         if (value == null) {
-            return SyntaxMessage.queryError("Unable to decode match case statement value", this, require);
+            return SyntaxMessage.queryError("Unable to decode match case statement value", this,
+                require);
         }
 
         addChild(value, this);
@@ -234,13 +241,18 @@ public class Case extends MatchCase {
     public boolean decodeCondition(boolean require) {
         Value control = getParentMatch().getControlValue();
 
-        Value value = (Value) getParentMatch().getControlValue().clone(control.getParent(), control.getLocationIn(), true);
-        Value clone = (Value) getValue().clone(getValue().getParent(), getValue().getLocationIn(), true);
+        Value value = (Value) getParentMatch().getControlValue().clone(control.getParent(),
+            control.getLocationIn(), true);
+        Value clone =
+            (Value) getValue().clone(getValue().getParent(), getValue().getLocationIn(), true);
 
-        if (value.getReturnedNode().getTypeClass().isOfType("flat/String") && !Literal.isNullLiteral(clone)) {
-            CallableMethod stringEquals = getProgram().getClassDeclaration("flat/String").getMethodList().getMethods("equals", MethodList.SearchFilter.getDefault())[0];
+        if (value.getReturnedNode().getTypeClass().isOfType("flat/String")
+            && !Literal.isNullLiteral(clone)) {
+            CallableMethod stringEquals = getProgram().getClassDeclaration("flat/String")
+                .getMethodList().getMethods("equals", MethodList.SearchFilter.getDefault())[0];
 
-            MethodCall call = MethodCall.decodeStatement(value.getReturnedNode(), "equals(null)", value.getLocationIn(), require, false, stringEquals);
+            MethodCall call = MethodCall.decodeStatement(value.getReturnedNode(), "equals(null)",
+                value.getLocationIn(), require, false, stringEquals);
 
             call.getArgumentList().getVisibleChild(0).replaceWith(clone);
 
@@ -248,7 +260,8 @@ public class Case extends MatchCase {
 
             addChild(value, this);
         } else {
-            BinaryOperation operation = BinaryOperation.generateDefault(getValue().getParent(), getValue().getLocationIn());
+            BinaryOperation operation =
+                BinaryOperation.generateDefault(getValue().getParent(), getValue().getLocationIn());
 
             operation.getLeftOperand().replaceWith(value);
             operation.getOperator().setOperator("==");
@@ -281,7 +294,8 @@ public class Case extends MatchCase {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Case clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Case clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Case node = new Case(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -295,8 +309,7 @@ public class Case extends MatchCase {
     }
 
     /**
-     * Fill the given {@link Case} with the data that is in the
-     * specified node.
+     * Fill the given {@link Case} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -308,11 +321,10 @@ public class Case extends MatchCase {
     }
 
     /**
-     * Test the {@link Case} class type to make sure everything
-     * is working properly.
+     * Test the {@link Case} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -320,3 +332,4 @@ public class Case extends MatchCase {
         return null;
     }
 }
+

@@ -21,7 +21,8 @@ public class InlineAnnotation extends Annotation implements ModifierAnnotation {
         super(temporaryParent, locationIn);
     }
 
-    public static InlineAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static InlineAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Inline")) {
             InlineAnnotation n = new InlineAnnotation(parent, location);
 
@@ -53,11 +54,11 @@ public class InlineAnnotation extends Annotation implements ModifierAnnotation {
     @Override
     public boolean onApplied(Node next, boolean throwError) {
         if (!checkDuplicate(next, throwError)) {
-//			if (next instanceof FlatMethodDeclaration)
-//			{
-//				// valid
-//			}
-//			else
+            // if (next instanceof FlatMethodDeclaration)
+            // {
+            // // valid
+            // }
+            // else
             {
                 return invalidApplication(next, throwError);
             }
@@ -67,7 +68,8 @@ public class InlineAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public InlineAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public InlineAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         InlineAnnotation node = new InlineAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -77,7 +79,8 @@ public class InlineAnnotation extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public InlineAnnotation cloneTo(InlineAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public InlineAnnotation cloneTo(InlineAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -87,6 +90,7 @@ public class InlineAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"inline"};
+        return new String[] {"inline"};
     }
 }
+

@@ -16,20 +16,22 @@ public interface AbstractValue extends GenericCompatible {
     /**
      * Set the type that this statement returns.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * private static int index;</pre></blockquote>
-     * The type of the variable returns is "int"
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * private static int index;
+     * </pre>
+     * 
+     * </blockquote> The type of the variable returns is "int"
      *
-     * @param type          The type that this statement returns.
-     * @param require       Whether or not to throw an error if anything goes
-     *                      wrong.
-     * @param checkType     Whether or not to check if the type is valid.
-     * @param checkDataType Whether or not to check the data type of
-     *                      the given type.
+     * @param type The type that this statement returns.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @param checkType Whether or not to check if the type is valid.
+     * @param checkDataType Whether or not to check the data type of the given type.
      * @return Whether or not the type was set successfully.
      */
-    public default boolean setType(String type, boolean require, boolean checkType, boolean checkDataType) {
+    public default boolean setType(String type, boolean require, boolean checkType,
+        boolean checkDataType) {
         if (type == null) {
             setTypeValue(null);
 
@@ -78,12 +80,13 @@ public interface AbstractValue extends GenericCompatible {
     }
 
     public default Value[] getTypes() {
-        return new Value[]{((Value) this).getReturnedNode()};//((Value)this).getProgram().getClassDeclaration(getType()) };
+        return new Value[] {((Value) this).getReturnedNode()};// ((Value)this).getProgram().getClassDeclaration(getType())
+                                                              // };
     }
 
     /**
-     * Get the type that the statement returns. For an example of what a
-     * value type looks like, see {@link #setType(String)}
+     * Get the type that the statement returns. For an example of what a value type looks like, see
+     * {@link #setType(String)}
      *
      * @return The type that the statement returns.
      */
@@ -100,18 +103,16 @@ public interface AbstractValue extends GenericCompatible {
     public abstract Type getTypeObject();
 
     /**
-     * Set the value of the type variable without checking any
-     * precautions. Should not be used outside of the IValue and
-     * IIdentifier classes.
+     * Set the value of the type variable without checking any precautions. Should not be used
+     * outside of the IValue and IIdentifier classes.
      *
      * @param type The type that the statement returns.
      */
     public void setTypeValue(String type);
 
     /**
-     * Get the amount of dimensions that the arrayAccess has, if any. For an
-     * example of what a arrayAccess declarations and dimensions look like
-     * {@link #setArrayDimensions(int)}
+     * Get the amount of dimensions that the arrayAccess has, if any. For an example of what a
+     * arrayAccess declarations and dimensions look like {@link #setArrayDimensions(int)}
      *
      * @return The amount of dimensions that the arrayAccess has, if any.
      */
@@ -120,25 +121,26 @@ public interface AbstractValue extends GenericCompatible {
     /**
      * Set the amount of dimensions that the arrayAccess has, if any.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
-     * int arrayAccess[][][];</pre></blockquote>
-     * In the previous example, the variable "arrayAccess" has three dimensions.
+     * For example: <blockquote>
+     * 
+     * <pre>
+     * int arrayAccess[][][];
+     * </pre>
+     * 
+     * </blockquote> In the previous example, the variable "arrayAccess" has three dimensions.
      *
-     * @param arrayDimensions The amount of dimensions that the arrayAccess has,
-     *                        if any.
+     * @param arrayDimensions The amount of dimensions that the arrayAccess has, if any.
      */
     public void setArrayDimensions(int arrayDimensions);
 
     /**
-     * Get whether or not the identifier is a value, pointer, or
-     * reference.<br>
+     * Get whether or not the identifier is a value, pointer, or reference.<br>
      * <br>
      * Possible values include:
      * <ul>
-     * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
-     * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
-     * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
+     * <li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
+     * <li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
+     * <li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
      * </ul>
      *
      * @return The data type that the variable is.
@@ -152,17 +154,17 @@ public interface AbstractValue extends GenericCompatible {
     public byte getDataType(boolean checkGeneric, boolean checkCast);
 
     /**
-     * Set whether or not the identifier is a value, pointer, or
-     * reference.<br>
+     * Set whether or not the identifier is a value, pointer, or reference.<br>
      * <br>
      * Possible values include:
      * <ul>
-     * 	<li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
-     * 	<li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
-     * 	<li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
+     * <li><b>Variable.VALUE</b> - If the variable type simply refers to a value.</li>
+     * <li><b>Variable.POINTER</b> - If the variable type is a pointer.</li>
+     * <li><b>Variable.REFERENCE</b> - If the variable type is a reference.</li>
      * </ul>
      *
      * @param type The data type that the variable is.
      */
     public void setDataType(byte type);
 }
+

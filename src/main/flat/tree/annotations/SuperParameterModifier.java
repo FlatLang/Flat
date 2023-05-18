@@ -41,11 +41,15 @@ public class SuperParameterModifier extends Annotation implements ModifierAnnota
                 Parameter param = (Parameter) parent;
 
                 FlatMethodDeclaration method = parent.getParentMethod();
-                method = method instanceof InitializationMethod ? ((InitializationMethod) method).constructor : method;
+                method = method instanceof InitializationMethod
+                    ? ((InitializationMethod) method).constructor
+                    : method;
 
                 if (!method.doesOverride()) {
                     method.doesOverride();
-                    SyntaxMessage.error("Method '" + method.getName() + "' does not override a method, which is required for the super modifier", this);
+                    SyntaxMessage.error("Method '" + method.getName()
+                        + "' does not override a method, which is required for the super modifier",
+                        this);
                 } else {
                     FlatMethodDeclaration overridden = method.getOverriddenMethod();
 
@@ -58,8 +62,10 @@ public class SuperParameterModifier extends Annotation implements ModifierAnnota
 
                     if (corresponding.getAnnotations() != null) {
                         corresponding.getAnnotations().stream()
-                            .filter(a -> param.getAnnotations().stream().noneMatch(x -> x.getClass().isAssignableFrom(a.getClass())))
-                            .forEach(a -> param.addAnnotation((Annotation) a.clone(param, param.getLocationIn())));
+                            .filter(a -> param.getAnnotations().stream()
+                                .noneMatch(x -> x.getClass().isAssignableFrom(a.getClass())))
+                            .forEach(a -> param
+                                .addAnnotation((Annotation) a.clone(param, param.getLocationIn())));
                     }
                 }
             } else {
@@ -84,12 +90,14 @@ public class SuperParameterModifier extends Annotation implements ModifierAnnota
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append(aliasUsed);
     }
 
     @Override
-    public SuperParameterModifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public SuperParameterModifier clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         SuperParameterModifier node = new SuperParameterModifier(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -99,7 +107,8 @@ public class SuperParameterModifier extends Annotation implements ModifierAnnota
         return cloneTo(node, true, true);
     }
 
-    public SuperParameterModifier cloneTo(SuperParameterModifier node, boolean cloneChildren, boolean cloneAnnotations) {
+    public SuperParameterModifier cloneTo(SuperParameterModifier node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -109,6 +118,7 @@ public class SuperParameterModifier extends Annotation implements ModifierAnnota
 
     @Override
     public String[] getAliases() {
-        return new String[]{"super"};
+        return new String[] {"super"};
     }
 }
+

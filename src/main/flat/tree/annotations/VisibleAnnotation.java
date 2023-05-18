@@ -5,7 +5,8 @@ import flat.tree.*;
 import flat.tree.variables.FieldDeclaration;
 import flat.util.Location;
 
-public class VisibleAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier {
+public class VisibleAnnotation extends ApplicableAnnotationBase
+    implements ModifierAnnotation, VisibilityModifier {
     public String aliasUsed;
 
     @Override
@@ -22,7 +23,8 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
         super(temporaryParent, locationIn);
     }
 
-    public static VisibleAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static VisibleAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Visible") || name.equals("*")) {
             VisibleAnnotation n = new VisibleAnnotation(parent, location);
 
@@ -33,7 +35,8 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("visible");
     }
 
@@ -81,7 +84,8 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
     }
 
     @Override
-    public VisibleAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public VisibleAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         VisibleAnnotation node = new VisibleAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -91,7 +95,8 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
         return cloneTo(node, true, true);
     }
 
-    public VisibleAnnotation cloneTo(VisibleAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public VisibleAnnotation cloneTo(VisibleAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -101,6 +106,7 @@ public class VisibleAnnotation extends ApplicableAnnotationBase implements Modif
 
     @Override
     public String[] getAliases() {
-        return new String[]{"visible", "*"};
+        return new String[] {"visible", "*"};
     }
 }
+

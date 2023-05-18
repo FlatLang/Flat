@@ -7,7 +7,8 @@ import flat.tree.Parameter;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class DataEqualsIgnoreAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier {
+public class DataEqualsIgnoreAnnotation extends ApplicableAnnotationBase
+    implements ModifierAnnotation, VisibilityModifier {
     public String aliasUsed;
 
     @Override
@@ -24,7 +25,8 @@ public class DataEqualsIgnoreAnnotation extends ApplicableAnnotationBase impleme
         super(temporaryParent, locationIn);
     }
 
-    public static DataEqualsIgnoreAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static DataEqualsIgnoreAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("DataEqualsIgnore")) {
             DataEqualsIgnoreAnnotation n = new DataEqualsIgnoreAnnotation(parent, location);
 
@@ -35,7 +37,8 @@ public class DataEqualsIgnoreAnnotation extends ApplicableAnnotationBase impleme
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("data_equals_ignore");
     }
 
@@ -87,8 +90,10 @@ public class DataEqualsIgnoreAnnotation extends ApplicableAnnotationBase impleme
     }
 
     @Override
-    public DataEqualsIgnoreAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        DataEqualsIgnoreAnnotation node = new DataEqualsIgnoreAnnotation(temporaryParent, locationIn);
+    public DataEqualsIgnoreAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        DataEqualsIgnoreAnnotation node =
+            new DataEqualsIgnoreAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -97,7 +102,8 @@ public class DataEqualsIgnoreAnnotation extends ApplicableAnnotationBase impleme
         return cloneTo(node, true, true);
     }
 
-    public DataEqualsIgnoreAnnotation cloneTo(DataEqualsIgnoreAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public DataEqualsIgnoreAnnotation cloneTo(DataEqualsIgnoreAnnotation node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -107,6 +113,6 @@ public class DataEqualsIgnoreAnnotation extends ApplicableAnnotationBase impleme
 
     @Override
     public String[] getAliases() {
-        return new String[]{"data_equals_ignore"};
+        return new String[] {"data_equals_ignore"};
     }
 }

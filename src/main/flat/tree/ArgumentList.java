@@ -6,8 +6,7 @@ import flat.util.Location;
 import java.util.ArrayList;
 
 /**
- * Node extension that keeps track of a set of arguments that
- * are used in an abstract manner.
+ * Node extension that keeps track of a set of arguments that are used in an abstract manner.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 10, 2014 at 3:12:54 AM
@@ -38,11 +37,9 @@ public class ArgumentList extends TypeList<Value> {
     }
 
     /**
-     * Get the types that the Argument list is providing for the
-     * parameters.
+     * Get the types that the Argument list is providing for the parameters.
      *
-     * @return An array of Values that represent that types in the
-     * argument list.
+     * @return An array of Values that represent that types in the argument list.
      */
     public Value[] getTypes() {
         ArrayList<Value> types = new ArrayList<>();
@@ -60,7 +57,8 @@ public class ArgumentList extends TypeList<Value> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ArgumentList node = new ArgumentList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -74,24 +72,23 @@ public class ArgumentList extends TypeList<Value> {
     }
 
     /**
-     * Fill the given {@link ArgumentList} with the data that is in the
-     * specified node.
+     * Fill the given {@link ArgumentList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ArgumentList cloneTo(ArgumentList node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ArgumentList cloneTo(ArgumentList node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the ArgumentListNode class type to make sure everything
-     * is working properly.
+     * Test the ArgumentListNode class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -99,3 +96,4 @@ public class ArgumentList extends TypeList<Value> {
         return null;
     }
 }
+

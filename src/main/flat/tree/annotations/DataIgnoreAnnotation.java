@@ -7,7 +7,8 @@ import flat.tree.Parameter;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class DataIgnoreAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier {
+public class DataIgnoreAnnotation extends ApplicableAnnotationBase
+    implements ModifierAnnotation, VisibilityModifier {
     public String aliasUsed;
 
     @Override
@@ -24,7 +25,8 @@ public class DataIgnoreAnnotation extends ApplicableAnnotationBase implements Mo
         super(temporaryParent, locationIn);
     }
 
-    public static DataIgnoreAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static DataIgnoreAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("DataIgnore")) {
             DataIgnoreAnnotation n = new DataIgnoreAnnotation(parent, location);
 
@@ -35,7 +37,8 @@ public class DataIgnoreAnnotation extends ApplicableAnnotationBase implements Mo
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("data_ignore");
     }
 
@@ -87,7 +90,8 @@ public class DataIgnoreAnnotation extends ApplicableAnnotationBase implements Mo
     }
 
     @Override
-    public DataIgnoreAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public DataIgnoreAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         DataIgnoreAnnotation node = new DataIgnoreAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -97,7 +101,8 @@ public class DataIgnoreAnnotation extends ApplicableAnnotationBase implements Mo
         return cloneTo(node, true, true);
     }
 
-    public DataIgnoreAnnotation cloneTo(DataIgnoreAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public DataIgnoreAnnotation cloneTo(DataIgnoreAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -107,6 +112,7 @@ public class DataIgnoreAnnotation extends ApplicableAnnotationBase implements Mo
 
     @Override
     public String[] getAliases() {
-        return new String[]{"data_ignore"};
+        return new String[] {"data_ignore"};
     }
 }
+

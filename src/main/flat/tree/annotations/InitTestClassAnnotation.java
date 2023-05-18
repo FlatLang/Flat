@@ -6,7 +6,8 @@ import flat.tree.Node;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class InitTestClassAnnotation extends Annotation implements ModifierAnnotation, NestAnnotation {
+public class InitTestClassAnnotation extends Annotation
+    implements ModifierAnnotation, NestAnnotation {
     public String aliasUsed;
 
     @Override
@@ -23,7 +24,8 @@ public class InitTestClassAnnotation extends Annotation implements ModifierAnnot
         super(temporaryParent, locationIn);
     }
 
-    public static InitTestClassAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static InitTestClassAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("InitTestClass")) {
             InitTestClassAnnotation n = new InitTestClassAnnotation(parent, location);
 
@@ -68,7 +70,8 @@ public class InitTestClassAnnotation extends Annotation implements ModifierAnnot
     }
 
     @Override
-    public InitTestClassAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public InitTestClassAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         InitTestClassAnnotation node = new InitTestClassAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,7 +81,8 @@ public class InitTestClassAnnotation extends Annotation implements ModifierAnnot
         return cloneTo(node, true, true);
     }
 
-    public InitTestClassAnnotation cloneTo(InitTestClassAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public InitTestClassAnnotation cloneTo(InitTestClassAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -88,6 +92,7 @@ public class InitTestClassAnnotation extends Annotation implements ModifierAnnot
 
     @Override
     public String[] getAliases() {
-        return new String[]{"init_test_class"};
+        return new String[] {"init_test_class"};
     }
 }
+

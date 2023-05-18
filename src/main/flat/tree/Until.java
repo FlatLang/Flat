@@ -9,9 +9,9 @@ import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
 
 /**
- * IfStatement extension that represents the declaration of a "until"
- * statement type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * IfStatement extension that represents the declaration of a "until" statement type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.2.14 Jul 5, 2014 at 12:29:23 AM
@@ -34,25 +34,24 @@ public class Until extends IfStatement {
     }
 
     /**
-     * Decode the given statement into a Until instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a Until instance, if possible. If it is not possible, this
+     * method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>until (currentNode != null)</li>
-     * 	<li>until (ready)</li>
-     * 	<li>until (number.isEven())</li>
+     * <li>until (currentNode != null)</li>
+     * <li>until (ready)</li>
+     * <li>until (number.isEven())</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Until instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Until.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Until instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Until.
      */
-    public static Until decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Until decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (StringUtils.findNextWord(statement, 0).equals("until")) {
             Until n = new Until(parent, location);
 
@@ -85,7 +84,10 @@ public class Until extends IfStatement {
     private boolean decodeCondition(String contents, Location location) {
         contents = "!(" + contents + ")";
 
-        Value condition = UnaryOperation.decodeStatement(this, contents, location, true);//BinaryOperation.decodeStatement(getParent(), contents, location, true);
+        Value condition = UnaryOperation.decodeStatement(this, contents, location, true);// BinaryOperation.decodeStatement(getParent(),
+                                                                                         // contents,
+                                                                                         // location,
+                                                                                         // true);
 
         if (condition == null) {
             condition = SyntaxTree.getUsableExistingNode(this, contents, location);
@@ -124,7 +126,8 @@ public class Until extends IfStatement {
         if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
             String statement = "if (" + getCondition().generateFlatInput().toString() + ")";
 
-            IfStatement clonable = IfStatement.decodeStatement(getScope(), statement, getLocationIn(), true);
+            IfStatement clonable =
+                IfStatement.decodeStatement(getScope(), statement, getLocationIn(), true);
             IfStatement clone = null;
 
             Scope scope = getScope();
@@ -159,7 +162,8 @@ public class Until extends IfStatement {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Until clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Until clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Until node = new Until(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -173,8 +177,7 @@ public class Until extends IfStatement {
     }
 
     /**
-     * Fill the given {@link Until} with the data that is in the
-     * specified node.
+     * Fill the given {@link Until} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -186,11 +189,10 @@ public class Until extends IfStatement {
     }
 
     /**
-     * Test the Until class type to make sure everything
-     * is working properly.
+     * Test the Until class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -198,3 +200,4 @@ public class Until extends IfStatement {
         return null;
     }
 }
+

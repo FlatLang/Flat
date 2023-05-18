@@ -1,8 +1,7 @@
 package flat.error;
 
 /**
- * Runtime Exception that is thrown if there is an error that was decoded
- * in the syntax.
+ * Runtime Exception that is thrown if there is an error that was decoded in the syntax.
  *
  * @author Braden Steffaniak
  * @since v0.2.8 May 26, 2014 at 4:24:19 PM
@@ -29,9 +28,9 @@ public class SyntaxErrorException extends RuntimeException {
      * Get the type that the SyntaxErrorException is.<br>
      * Possible values include:
      * <ul>
-     * 	<li>{@link Message#ERROR}</li>
-     * 	<li>{@link Message#WARNING}</li>
-     * 	<li>{@link Message#MESSAGE}</li>
+     * <li>{@link Message#ERROR}</li>
+     * <li>{@link Message#WARNING}</li>
+     * <li>{@link Message#MESSAGE}</li>
      * </ul>
      *
      * @return The type that the SyntaxErrorException is.
@@ -49,3 +48,4 @@ public class SyntaxErrorException extends RuntimeException {
         return info;
     }
 }
+

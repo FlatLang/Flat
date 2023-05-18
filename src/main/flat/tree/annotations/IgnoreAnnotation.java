@@ -6,7 +6,8 @@ import flat.tree.FlatMethodDeclaration;
 import flat.tree.Node;
 import flat.util.Location;
 
-public class IgnoreAnnotation extends Annotation implements ModifierAnnotation, RunnableTests, NestAnnotation {
+public class IgnoreAnnotation extends Annotation
+    implements ModifierAnnotation, RunnableTests, NestAnnotation {
     public String aliasUsed;
 
     @Override
@@ -54,7 +55,8 @@ public class IgnoreAnnotation extends Annotation implements ModifierAnnotation, 
     }
 
     @Override
-    public IgnoreAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public IgnoreAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         IgnoreAnnotation node = new IgnoreAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -64,7 +66,8 @@ public class IgnoreAnnotation extends Annotation implements ModifierAnnotation, 
         return cloneTo(node, true, true);
     }
 
-    public IgnoreAnnotation cloneTo(IgnoreAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public IgnoreAnnotation cloneTo(IgnoreAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -74,6 +77,7 @@ public class IgnoreAnnotation extends Annotation implements ModifierAnnotation, 
 
     @Override
     public String[] getAliases() {
-        return new String[]{"ignore"};
+        return new String[] {"ignore"};
     }
 }
+

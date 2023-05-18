@@ -25,23 +25,22 @@ public class Super extends Priority {
     }
 
     /**
-     * Decode the given statement into a {@link Super} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Super} instance, if possible. If it is not possible,
+     * this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>super</li>
+     * <li>super</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Super} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Super}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Super} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Super}.
      */
-    public static Super decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Super decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.equals(IDENTIFIER)) {
             String type = null;
 
@@ -52,7 +51,9 @@ public class Super extends Priority {
             }
 
             Super n = new Super(parent, location);
-            Priority p = Priority.decodeStatement(parent, "((" + type + ")" + ParameterList.OBJECT_REFERENCE_IDENTIFIER + ")", location, require);
+            Priority p = Priority.decodeStatement(parent,
+                "((" + type + ")" + ParameterList.OBJECT_REFERENCE_IDENTIFIER + ")", location,
+                require);
 
             if (p == null) {
                 return null;
@@ -70,7 +71,8 @@ public class Super extends Priority {
      * @see flat.tree.Variable#clone(Node, Location, boolean)
      */
     @Override
-    public Super clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Super clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Super node = new Super(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -84,8 +86,7 @@ public class Super extends Priority {
     }
 
     /**
-     * Fill the given {@link Super} with the data that is in the
-     * specified node.
+     * Fill the given {@link Super} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -97,11 +98,10 @@ public class Super extends Priority {
     }
 
     /**
-     * Test the {@link Super} class type to make sure everything
-     * is working properly.
+     * Test the {@link Super} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -109,3 +109,4 @@ public class Super extends Priority {
         return null;
     }
 }
+

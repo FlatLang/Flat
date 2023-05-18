@@ -27,9 +27,9 @@ import java.util.stream.Stream;
 import static java.util.Arrays.stream;
 
 /**
- * Declaration extension that represents the declaration of a class
- * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Declaration extension that represents the declaration of a class node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:15:51 PM
@@ -76,7 +76,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         TypeList<StaticBlock> staticBlocks = new TypeList<StaticBlock>(this, Location.INVALID);
         VTableList vtables = new VTableList(this, Location.INVALID);
         GenericTypeParameterList declaration = new GenericTypeParameterList(this, Location.INVALID);
-        TypeList<TraitImplementation> interfaces = new TypeList<TraitImplementation>(this, locationIn);
+        TypeList<TraitImplementation> interfaces =
+            new TypeList<TraitImplementation>(this, locationIn);
         TypeList<ExternalCodeBlock> blocks = new TypeList<>(this, locationIn);
 
         addChild(fields, this);
@@ -121,7 +122,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return addInnerClasses(recursive, new TypeList<>(this, Location.INVALID));
     }
 
-    private TypeList<ClassDeclaration> addInnerClasses(boolean recursive, TypeList<ClassDeclaration> list) {
+    private TypeList<ClassDeclaration> addInnerClasses(boolean recursive,
+        TypeList<ClassDeclaration> list) {
         for (ClassDeclaration c : getFileDeclaration().getClassDeclarations()) {
             if (c.encapsulatingClass == this && c.isUserMade()) {
                 list.addChild(list.getNumChildren(), c, list, false);
@@ -140,7 +142,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     public boolean encapsulates(ClassDeclaration other, boolean inclusive) {
-        return (inclusive && this == other) || other.encapsulatingClass == this || other.encapsulatingClass != null && encapsulates(other.encapsulatingClass);
+        return (inclusive && this == other) || other.encapsulatingClass == this
+            || other.encapsulatingClass != null && encapsulates(other.encapsulatingClass);
     }
 
     public ClassDeclaration[] getEncapsulatedClasses() {
@@ -169,7 +172,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
     @Override
     public boolean isImmutable() {
-        return getImmutableAnnotation() != null && getImmutableAnnotation().appliedClassIsImmutable();
+        return getImmutableAnnotation() != null
+            && getImmutableAnnotation().appliedClassIsImmutable();
     }
 
     /**
@@ -181,8 +185,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the FieldList instance that contains the list of fields
-     * that this class node contains.
+     * Get the FieldList instance that contains the list of fields that this class node contains.
      *
      * @return The FieldList for this class node.
      */
@@ -191,8 +194,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the MethodList instance that contains the list of
-     * constructors that this class node contains.
+     * Get the MethodList instance that contains the list of constructors that this class node
+     * contains.
      *
      * @return The MethodList for constructors of this class node.
      */
@@ -201,8 +204,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the MethodList instance that contains the list of
-     * destructors that this class node contains.
+     * Get the MethodList instance that contains the list of destructors that this class node
+     * contains.
      *
      * @return The MethodList for destructors of this class node.
      */
@@ -211,12 +214,13 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     public Destructor getDestructor() {
-        return getDestructorList().getNumVisibleChildren() > 0 ? (Destructor) getDestructorList().getVisibleChild(0) : null;
+        return getDestructorList().getNumVisibleChildren() > 0
+            ? (Destructor) getDestructorList().getVisibleChild(0)
+            : null;
     }
 
     /**
-     * Get the MethodList instance that contains the list of methods
-     * that this class node contains.
+     * Get the MethodList instance that contains the list of methods that this class node contains.
      *
      * @return The MethodList for this class node.
      */
@@ -225,8 +229,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the MethodList instance that contains the list of methods
-     * that this class node contains.
+     * Get the MethodList instance that contains the list of methods that this class node contains.
      *
      * @return The MethodList for this class node.
      */
@@ -235,8 +238,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the MethodList instance that contains the list of methods
-     * that this class node contains.
+     * Get the MethodList instance that contains the list of methods that this class node contains.
      *
      * @return The MethodList for this class node.
      */
@@ -245,8 +247,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the MethodList instance that contains the list of methods
-     * that this class node contains.
+     * Get the MethodList instance that contains the list of methods that this class node contains.
      *
      * @return The MethodList for this class node.
      */
@@ -255,8 +256,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the ExternalTypeList instance that contains the list of
-     * external types that this class node contains.
+     * Get the ExternalTypeList instance that contains the list of external types that this class
+     * node contains.
      *
      * @return The ExternalTypeList for this class node.
      */
@@ -265,8 +266,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the FieldList instance that contains the list of external
-     * fields that this class node contains.
+     * Get the FieldList instance that contains the list of external fields that this class node
+     * contains.
      *
      * @return The external FieldList for this class node.
      */
@@ -275,8 +276,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the AssignmentMethod instance that contains the list of
-     * default field assignments and vtable assignment.
+     * Get the AssignmentMethod instance that contains the list of default field assignments and
+     * vtable assignment.
      *
      * @return The AssignmentMethod for this class node.
      */
@@ -295,8 +296,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the List that contains the StaticBlocks for the specified
-     * Class.
+     * Get the List that contains the StaticBlocks for the specified Class.
      *
      * @return The StaticBlock List.
      */
@@ -305,9 +305,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the VTableNode instance that contains the list of pointers
-     * to the virtual methods of a class, if any virtual methods, or
-     * any methods of the class are overridden..
+     * Get the VTableNode instance that contains the list of pointers to the virtual methods of a
+     * class, if any virtual methods, or any methods of the class are overridden..
      *
      * @return The VTableNode for this class node.
      */
@@ -332,8 +331,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the class contains any virtual methods. For
-     * more information on what virtual methods are, see {@link #getVirtualMethods()}
+     * Get whether or not the class contains any virtual methods. For more information on what
+     * virtual methods are, see {@link #getVirtualMethods()}
      *
      * @return Whether or not the class contains any virtual methods.
      */
@@ -342,14 +341,14 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get an array containing all of the virtual methods that this class
-     * and its ancestors contain.<br><br>
+     * Get an array containing all of the virtual methods that this class and its ancestors
+     * contain.<br>
+     * <br>
      * <b>What are virtual methods?</b><br>
-     * Virtual methods are methods that have been overridden, or override
-     * a method.
+     * Virtual methods are methods that have been overridden, or override a method.
      *
-     * @return An array containing all of the virtual methods that the
-     * class and its ancestors contain.
+     * @return An array containing all of the virtual methods that the class and its ancestors
+     *         contain.
      */
     public FlatMethodDeclaration[] getVirtualMethods() {
         ArrayList<FlatMethodDeclaration> methods = new ArrayList<>();
@@ -361,12 +360,11 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get an array containing all of the virtual methods that this class
-     * implements. For more information on what virtual methods are, see
-     * {@link #getVirtualMethods()}
+     * Get an array containing all of the virtual methods that this class implements. For more
+     * information on what virtual methods are, see {@link #getVirtualMethods()}
      *
-     * @return An array containing all of the virtual methods that the
-     * class and its ancestors contain.
+     * @return An array containing all of the virtual methods that the class and its ancestors
+     *         contain.
      */
     public FlatMethodDeclaration[] getInterfaceVirtualMethods() {
         return getInterfaceVirtualMethods(true);
@@ -381,12 +379,11 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get an array containing all of the virtual methods that this class
-     * and its extensions contain. For more information on what virtual
-     * methods are, see {@link #getVirtualMethods()}
+     * Get an array containing all of the virtual methods that this class and its extensions
+     * contain. For more information on what virtual methods are, see {@link #getVirtualMethods()}
      *
-     * @return An array containing all of the virtual methods that the
-     * class and its ancestors contain.
+     * @return An array containing all of the virtual methods that the class and its ancestors
+     *         contain.
      */
     public FlatMethodDeclaration[] getExtensionVirtualMethods() {
         return getExtensionVirtualMethods(true);
@@ -401,17 +398,17 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Add all of the virtual methods that the specified class implements
-     * to the given method list.
+     * Add all of the virtual methods that the specified class implements to the given method list.
      *
-     * @param methods The list of methods to add the found virtual method
-     *                data to.
+     * @param methods The list of methods to add the found virtual method data to.
      */
-    private void addInterfaceVirtualMethods(ArrayList<FlatMethodDeclaration> methods, ClassDeclaration context) {
+    private void addInterfaceVirtualMethods(ArrayList<FlatMethodDeclaration> methods,
+        ClassDeclaration context) {
         addInterfaceVirtualMethods(methods, context, true);
     }
 
-    private void addInterfaceVirtualMethods(ArrayList<FlatMethodDeclaration> methods, ClassDeclaration context, boolean checkAncestors) {
+    private void addInterfaceVirtualMethods(ArrayList<FlatMethodDeclaration> methods,
+        ClassDeclaration context, boolean checkAncestors) {
         if (checkAncestors && getExtendedClassDeclaration() != null) {
             getExtendedClassDeclaration().addInterfaceVirtualMethods(methods, this);
         }
@@ -427,25 +424,29 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Add all of the virtual methods that the specified class and its
-     * extensions contain to the given method list.
+     * Add all of the virtual methods that the specified class and its extensions contain to the
+     * given method list.
      *
-     * @param methods The list of methods to add the found virtual method
-     *                data to.
+     * @param methods The list of methods to add the found virtual method data to.
      */
-    private void addExtensionVirtualMethods(ArrayList<FlatMethodDeclaration> methods, ClassDeclaration context) {
+    private void addExtensionVirtualMethods(ArrayList<FlatMethodDeclaration> methods,
+        ClassDeclaration context) {
         addExtensionVirtualMethods(methods, context, true);
     }
 
-    private void addExtensionVirtualMethods(ArrayList<FlatMethodDeclaration> methods, ClassDeclaration context, boolean checkAncestors) {
+    private void addExtensionVirtualMethods(ArrayList<FlatMethodDeclaration> methods,
+        ClassDeclaration context, boolean checkAncestors) {
         if (checkAncestors && getExtendedClassDeclaration() != null) {
             getExtendedClassDeclaration().addExtensionVirtualMethods(methods, this);
         }
 
         for (Trait t : getImplementedInterfaces()) {
-            if (t.getExtendedClassDeclaration() != null && t.getExtendedClassDeclaration().isRelatedTo(getExtendedClassDeclaration())) {
-                ((ClassDeclaration) t).addVirtualMethods(methods, t.getMethodList(), false, false, true);
-                ((ClassDeclaration) t).addVirtualMethods(methods, t.getPropertyMethodList(), false, false, true);
+            if (t.getExtendedClassDeclaration() != null
+                && t.getExtendedClassDeclaration().isRelatedTo(getExtendedClassDeclaration())) {
+                ((ClassDeclaration) t).addVirtualMethods(methods, t.getMethodList(), false, false,
+                    true);
+                ((ClassDeclaration) t).addVirtualMethods(methods, t.getPropertyMethodList(), false,
+                    false, true);
             }
         }
 
@@ -453,7 +454,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         addVirtualMethods(methods, getPropertyMethodList(), false, false, true);
     }
 
-    private void addVirtualMethods(ArrayList<FlatMethodDeclaration> methods, MethodList list, boolean interfaceOnly, boolean implementation, boolean excludeInterfaces) {
+    private void addVirtualMethods(ArrayList<FlatMethodDeclaration> methods, MethodList list,
+        boolean interfaceOnly, boolean implementation, boolean excludeInterfaces) {
         SearchFilter filter = new SearchFilter();
         filter.allowMoreParameters = false;
         filter.requireExactMatch = true;
@@ -464,11 +466,11 @@ public class ClassDeclaration extends InstanceDeclaration {
             if (!m.isExternal()) {
                 FlatMethodDeclaration method = (FlatMethodDeclaration) m;
 
-                if (method.getParentClass() == this && method.isVirtual() && (!implementation || method instanceof BodyMethodDeclaration)) {
-					/*if (interfaceOnly)
-					{
-						method = method.getVirtualMethod();
-					}*/
+                if (method.getParentClass() == this && method.isVirtual()
+                    && (!implementation || method instanceof BodyMethodDeclaration)) {
+                    /*
+                     * if (interfaceOnly) { method = method.getVirtualMethod(); }
+                     */
 
                     boolean trait = method.getRootDeclaration().getParentClass() instanceof Trait;
 
@@ -491,26 +493,30 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Check to see whether or not the given methods list already contains
-     * a compatible method with the given 'method' method.
+     * Check to see whether or not the given methods list already contains a compatible method with
+     * the given 'method' method.
      *
-     * @param method  The method to see if the methods list contains.
+     * @param method The method to see if the methods list contains.
      * @param methods The list of methods to search through.
-     * @return Whether or not the given method is contained within the
-     * methods list.
+     * @return Whether or not the given method is contained within the methods list.
      */
-    private boolean containsMethod(FlatMethodDeclaration method, ArrayList<FlatMethodDeclaration> methods) {
+    private boolean containsMethod(FlatMethodDeclaration method,
+        ArrayList<FlatMethodDeclaration> methods) {
         return getMethod(method, methods) != null;
     }
 
-    private FlatMethodDeclaration getMethod(FlatMethodDeclaration method, ArrayList<FlatMethodDeclaration> methods) {
+    private FlatMethodDeclaration getMethod(FlatMethodDeclaration method,
+        ArrayList<FlatMethodDeclaration> methods) {
         return getMethod(method, methods, null);
     }
 
-    private FlatMethodDeclaration getMethod(FlatMethodDeclaration method, ArrayList<FlatMethodDeclaration> methods, SearchFilter filter) {
+    private FlatMethodDeclaration getMethod(FlatMethodDeclaration method,
+        ArrayList<FlatMethodDeclaration> methods, SearchFilter filter) {
         for (FlatMethodDeclaration m : methods) {
             // TODO: need to make this more strict.
-            if (m.getName().equals(method.getName()) && m.areCompatibleParameterTypes(new GenericCompatible[]{this}, false, filter, method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
+            if (m.getName().equals(method.getName())
+                && m.areCompatibleParameterTypes(new GenericCompatible[] {this}, false, filter,
+                    method.getParameterList().getTypes()))// method.areCompatibleParameterTypes(m.getParameterList().getTypes()))
             {
                 return m;
             }
@@ -550,7 +556,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     public ClassDeclaration getCommonAncestor(ClassDeclaration node) {
-        if (node == null) return null;
+        if (node == null)
+            return null;
 
         ClassDeclaration current = this;
 
@@ -568,9 +575,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get the Interfaces that this class node implements.<br>
      * <br>
-     * For instance: "public class ClassName implements Interface1, Interface2"
-     * The "Interface1" and "Interface2" are the names of the interfaces that the
-     * "ClassName" class implements.<br>
+     * For instance: "public class ClassName implements Interface1, Interface2" The "Interface1" and
+     * "Interface2" are the names of the interfaces that the "ClassName" class implements.<br>
      *
      * @return The Interfaces instances that the class implements.
      */
@@ -610,7 +616,8 @@ public class ClassDeclaration extends InstanceDeclaration {
                     }
                 }
             } else {
-                SyntaxMessage.error("Expected class '" + type + "' to be a trait, but it was not", this);
+                SyntaxMessage.error("Expected class '" + type + "' to be a trait, but it was not",
+                    this);
             }
         }
 
@@ -749,13 +756,10 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Check whether or not the specified ClassDeclaration extends the given
-     * ClassDeclaration.
+     * Check whether or not the specified ClassDeclaration extends the given ClassDeclaration.
      *
-     * @param node The ClassDeclaration to check if the specified Class
-     *             extends.
-     * @return Whether or not the specified ClassDeclaration extends the given
-     * ClassDeclaration.
+     * @param node The ClassDeclaration to check if the specified Class extends.
+     * @return Whether or not the specified ClassDeclaration extends the given ClassDeclaration.
      */
     public boolean isOfType(ClassDeclaration node) {
         if (getDistanceFrom(node) >= 0) {
@@ -779,7 +783,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return getOverridingMethod(method, true);
     }
 
-    public FlatMethodDeclaration getOverridingMethod(FlatMethodDeclaration method, boolean checkAncestor) {
+    public FlatMethodDeclaration getOverridingMethod(FlatMethodDeclaration method,
+        boolean checkAncestor) {
         for (FlatMethodDeclaration m : getMethods()) {
             if (m.getOverriddenMethod() == method) {
                 return m;
@@ -797,7 +802,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return getAbstractMethods(true, true);
     }
 
-    public AbstractMethodDeclaration[] getAbstractMethods(boolean checkInterfaces, boolean checkAncestor) {
+    public AbstractMethodDeclaration[] getAbstractMethods(boolean checkInterfaces,
+        boolean checkAncestor) {
         ArrayList<AbstractMethodDeclaration> methods = new ArrayList<AbstractMethodDeclaration>();
 
         addAbstractMethods(methods, checkInterfaces, checkAncestor);
@@ -805,7 +811,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return methods.toArray(new AbstractMethodDeclaration[0]);
     }
 
-    private void addAbstractMethods(ArrayList<AbstractMethodDeclaration> methods, boolean checkInterfaces, boolean checkAncestor) {
+    private void addAbstractMethods(ArrayList<AbstractMethodDeclaration> methods,
+        boolean checkInterfaces, boolean checkAncestor) {
         MethodList list = getMethodList();
 
         for (int i = 0; i < list.getNumVisibleChildren(); i++) {
@@ -818,12 +825,15 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         if (checkInterfaces) {
             for (ClassDeclaration i : getImplementedInterfaces()) {
-                i.addAbstractMethods(methods, !Flat.objectClassType.equals("trait") || !getName().equals("Object"), checkAncestor);
+                i.addAbstractMethods(methods,
+                    !Flat.objectClassType.equals("trait") || !getName().equals("Object"),
+                    checkAncestor);
             }
         }
         if (checkAncestor) {
             if (doesExtendClass()) {
-                getExtendedClassDeclaration().addAbstractMethods(methods, checkInterfaces, checkAncestor);
+                getExtendedClassDeclaration().addAbstractMethods(methods, checkInterfaces,
+                    checkAncestor);
             }
         }
     }
@@ -840,7 +850,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return methods.toArray(new BodyMethodDeclaration[0]);
     }
 
-    private void addBodyMethods(ArrayList<BodyMethodDeclaration> methods, boolean checkInterfaces, boolean checkAncestor) {
+    private void addBodyMethods(ArrayList<BodyMethodDeclaration> methods, boolean checkInterfaces,
+        boolean checkAncestor) {
         MethodList list = getMethodList();
 
         for (int i = 0; i < list.getNumVisibleChildren(); i++) {
@@ -853,12 +864,15 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         if (checkInterfaces) {
             for (ClassDeclaration i : getImplementedInterfaces()) {
-                i.addBodyMethods(methods, !Flat.objectClassType.equals("trait") || !getName().equals("Object"), checkAncestor);
+                i.addBodyMethods(methods,
+                    !Flat.objectClassType.equals("trait") || !getName().equals("Object"),
+                    checkAncestor);
             }
         }
         if (checkAncestor) {
             if (doesExtendClass()) {
-                getExtendedClassDeclaration().addBodyMethods(methods, checkInterfaces, checkAncestor);
+                getExtendedClassDeclaration().addBodyMethods(methods, checkInterfaces,
+                    checkAncestor);
             }
         }
     }
@@ -875,7 +889,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return methods.toArray(new FlatMethodDeclaration[0]);
     }
 
-    private void addMethods(ArrayList<FlatMethodDeclaration> methods, boolean checkInterfaces, boolean checkAncestor) {
+    private void addMethods(ArrayList<FlatMethodDeclaration> methods, boolean checkInterfaces,
+        boolean checkAncestor) {
         MethodList list = getMethodList();
 
         for (int i = 0; i < list.getNumVisibleChildren(); i++) {
@@ -888,7 +903,9 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         if (checkInterfaces) {
             for (ClassDeclaration i : getImplementedInterfaces()) {
-                i.addMethods(methods, !Flat.objectClassType.equals("trait") || !getName().equals("Object"), checkAncestor);
+                i.addMethods(methods,
+                    !Flat.objectClassType.equals("trait") || !getName().equals("Object"),
+                    checkAncestor);
             }
         }
         if (checkAncestor) {
@@ -905,9 +922,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get the class that this class node extends.<br>
      * <br>
-     * For instance: "public class ClassName extends SuperClass"
-     * The "SuperClass" is a name of the class that the "ClassName" class
-     * extends.<br>
+     * For instance: "public class ClassName extends SuperClass" The "SuperClass" is a name of the
+     * class that the "ClassName" class extends.<br>
      * <br>
      * A class node can only extend one class.
      *
@@ -941,14 +957,12 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Set the class that this class node will extend.<br>
      * <br>
-     * For instance: "public class ClassName extends SuperClass"
-     * The "SuperClass" is a class that is extended by the "ClassName"
-     * class.<br>
+     * For instance: "public class ClassName extends SuperClass" The "SuperClass" is a class that is
+     * extended by the "ClassName" class.<br>
      * <br>
      * A class node can only extend one class.
      *
-     * @param extendedClass The name of the class that is to be
-     *                      extended.
+     * @param extendedClass The name of the class that is to be extended.
      */
     public void setExtendedClass(ExtendedClass extendedClass) {
         this.extendedClass = extendedClass;
@@ -968,14 +982,16 @@ public class ClassDeclaration extends InstanceDeclaration {
         ClassDeclaration current = inclusive ? this : getExtendedClassDeclaration();
 
         if (!inclusive && interfaces) {
-            getInterfacesImplementationList().forEachVisibleListChild(i -> list.add(i.getTypeClass()));
+            getInterfacesImplementationList()
+                .forEachVisibleListChild(i -> list.add(i.getTypeClass()));
         }
 
         while (current != null) {
             list.add(current);
 
             if (interfaces) {
-                current.getInterfacesImplementationList().forEachVisibleListChild(i -> list.add(i.getTypeClass()));
+                current.getInterfacesImplementationList()
+                    .forEachVisibleListChild(i -> list.add(i.getTypeClass()));
             }
 
             current = current.getExtendedClassDeclaration();
@@ -985,8 +1001,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get an ArrayList instance that contains all of the interfaces
-     * that are implemented by this class node.
+     * Get an ArrayList instance that contains all of the interfaces that are implemented by this
+     * class node.
      *
      * @return An ArrayList instance that contains the interface names.
      */
@@ -1003,41 +1019,45 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the ClassDeclaration contains an ExternalType with
-     * the specified type name.<br>
+     * Get whether or not the ClassDeclaration contains an ExternalType with the specified type
+     * name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class ClassName
      * {
      * 	external type FILE;
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getType("FILE")</code>" would
-     * return the ExternalType for the "<code>FILE</code>" external
-     * type.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getType("FILE")</code>" would return the ExternalType for the
+     * "<code>FILE</code>" external type.
      *
      * @param typeName The name of the external type to search for.
-     * @return Whether or not the ClassDeclaration contains the Method with
-     * the specified name.
+     * @return Whether or not the ClassDeclaration contains the Method with the specified name.
      */
     public boolean containsExternalType(String typeName) {
-        return getExternalTypeListNode().containsType(typeName) || encapsulatingClass != null && encapsulatingClass.containsExternalType(typeName);
+        return getExternalTypeListNode().containsType(typeName)
+            || encapsulatingClass != null && encapsulatingClass.containsExternalType(typeName);
     }
 
     /**
      * Get the ClassDeclaration's ExternalType with the specified type.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class ClassName
      * {
      * 	external type FILE;
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getType("FILE")</code>" would
-     * return the ExternalType for the "<code>FILE</code>" external
-     * type.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getType("FILE")</code>" would return the ExternalType for the
+     * "<code>FILE</code>" external type.
      *
      * @param typeName The name of the external type to search for.
      * @return The ExternalType for the external type, if it exists.
@@ -1047,11 +1067,11 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the ClassDeclaration contains the Field with the
-     * specified name.<br>
+     * Get whether or not the ClassDeclaration contains the Field with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class Person
      * {
      * 	private int age;
@@ -1059,13 +1079,14 @@ public class ClassDeclaration extends InstanceDeclaration {
      *
      * 	...
      *
-     * }</pre></blockquote>
-     * <br>
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
      * A call like: "<code>containsField("age")</code>" would return true.
      *
      * @param fieldName The name of the field to search for.
-     * @return Whether or not the ClassDeclaration contains the Field with
-     * the specified name.
+     * @return Whether or not the ClassDeclaration contains the Field with the specified name.
      */
     public boolean containsField(String fieldName) {
         return getField(fieldName) != null;
@@ -1088,8 +1109,9 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get the ClassDeclaration's Field with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class Person
      * {
      * 	private int age;
@@ -1097,10 +1119,12 @@ public class ClassDeclaration extends InstanceDeclaration {
      *
      * 	...
      *
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getField("age")</code>" would return the
-     * Field for the "<code>age</code>" int field.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getField("age")</code>" would return the Field for the "<code>age</code>"
+     * int field.
      *
      * @param fieldName The name of the field to search for.
      * @return The Field for the field, if it exists.
@@ -1112,9 +1136,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get the ClassDeclaration's Field with the specified name.
      *
-     * @param fieldName     The name of the field to search for.
-     * @param checkAncestor Whether or not to check the ancestor class
-     *                      if the field is not found.
+     * @param fieldName The name of the field to search for.
+     * @param checkAncestor Whether or not to check the ancestor class if the field is not found.
      * @return
      */
     public FieldDeclaration getField(String fieldName, boolean checkAncestor) {
@@ -1151,7 +1174,11 @@ public class ClassDeclaration extends InstanceDeclaration {
 
     public void removeNonConcreteProperties() {
         Consumer<Node> remove = x -> {
-            if (x instanceof VariableDeclaration && !((VariableDeclaration) x).isTangible())// && x instanceof ClassInstanceDeclaration == false)
+            if (x instanceof VariableDeclaration && !((VariableDeclaration) x).isTangible())// && x
+                                                                                            // instanceof
+                                                                                            // ClassInstanceDeclaration
+                                                                                            // ==
+                                                                                            // false)
             {
                 x.detach(x.parent, false, true);
             }
@@ -1164,24 +1191,26 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the method with the given methodName and parameterTypes. If a
-     * method with the specified name and parameter types does not exist,
-     * null is returned.
+     * Get the method with the given methodName and parameterTypes. If a method with the specified
+     * name and parameter types does not exist, null is returned.
      *
-     * @param methodName     The name of the method to search for.
-     * @param parameterTypes An array of types that the parameters of the
-     *                       searching method must be compatible with.
+     * @param methodName The name of the method to search for.
+     * @param parameterTypes An array of types that the parameters of the searching method must be
+     *        compatible with.
      * @return The compatible method with the given method name.
      */
-    public MethodDeclaration getMethod(GenericCompatible context, String methodName, Value... parameterTypes) {
-        return getMethod(new GenericCompatible[]{context}, methodName, parameterTypes);
+    public MethodDeclaration getMethod(GenericCompatible context, String methodName,
+        Value... parameterTypes) {
+        return getMethod(new GenericCompatible[] {context}, methodName, parameterTypes);
     }
 
-    public MethodDeclaration getMethod(GenericCompatible context, String methodName, MethodCallArgumentList arguments) {
+    public MethodDeclaration getMethod(GenericCompatible context, String methodName,
+        MethodCallArgumentList arguments) {
         return getMethod(context, methodName, SearchFilter.getDefault(), arguments);
     }
 
-    public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, MethodCallArgumentList arguments) {
+    public MethodDeclaration getMethod(GenericCompatible context, String methodName,
+        SearchFilter filter, MethodCallArgumentList arguments) {
         if (!arguments.containsNamedArguments()) {
             return getMethod(context, methodName, filter, arguments.getTypes());
         }
@@ -1194,7 +1223,9 @@ public class ClassDeclaration extends InstanceDeclaration {
             for (int i = compatible.size() - 1; i >= 0; i--) {
                 final int index = i;
 
-                if (compatible.stream().anyMatch(x -> x instanceof FlatMethodDeclaration && ((FlatMethodDeclaration) x).getOverriddenMethod() == compatible.get(index))) {
+                if (compatible.stream()
+                    .anyMatch(x -> x instanceof FlatMethodDeclaration && ((FlatMethodDeclaration) x)
+                        .getOverriddenMethod() == compatible.get(index))) {
                     compatible.remove(index);
                 }
             }
@@ -1205,14 +1236,14 @@ public class ClassDeclaration extends InstanceDeclaration {
                 while (searching) {
                     searching = false;
 
-                    outer:
-                    for (int i = compatible.size() - 1; i >= 0; i--) {
+                    outer: for (int i = compatible.size() - 1; i >= 0; i--) {
                         for (int j = compatible.size() - 1; j >= 0; j--) {
                             MethodDeclaration method1 = compatible.get(i);
                             MethodDeclaration method2 = compatible.get(j);
 
                             if (method1.getDeclaringClass() != method2.getDeclaringClass()) {
-                                if (method1.getDeclaringClass().isOfType(method2.getDeclaringClass())) {
+                                if (method1.getDeclaringClass()
+                                    .isOfType(method2.getDeclaringClass())) {
                                     compatible.remove(j);
                                 } else {
                                     compatible.remove(i);
@@ -1244,7 +1275,7 @@ public class ClassDeclaration extends InstanceDeclaration {
 
                 if (compatible.size() > 1) {
                     checkCompatible(methods, arguments);
-                    SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", this);//(Node)context);
+                    SyntaxMessage.error("Ambiguous method call to '" + methodName + "'", this);// (Node)context);
 
                     return null;
                 }
@@ -1258,7 +1289,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         }
     }
 
-    public ArrayList<MethodDeclaration> checkCompatible(MethodDeclaration[] methods, MethodCallArgumentList arguments) {
+    public ArrayList<MethodDeclaration> checkCompatible(MethodDeclaration[] methods,
+        MethodCallArgumentList arguments) {
         ArrayList<MethodDeclaration> compatible = new ArrayList<>();
 
         for (MethodDeclaration method : methods) {
@@ -1267,7 +1299,8 @@ public class ClassDeclaration extends InstanceDeclaration {
             boolean valid = true;
 
             for (int i = 0; i < arguments.getNumVisibleChildren(); i++) {
-                if (arguments.getArgumentName(i) != null && flatMethod.getParameter(arguments.getArgumentName(i)) == null) {
+                if (arguments.getArgumentName(i) != null
+                    && flatMethod.getParameter(arguments.getArgumentName(i)) == null) {
                     valid = false;
 
                     break;
@@ -1280,7 +1313,8 @@ public class ClassDeclaration extends InstanceDeclaration {
                 if (values.length > flatMethod.getParameterList().getNumParameters()) {
                     valid = false;
                 } else {
-                    int count = Math.max(values.length, flatMethod.getParameterList().getNumParameters());
+                    int count =
+                        Math.max(values.length, flatMethod.getParameterList().getNumParameters());
 
                     for (int i = 0; i < count; i++) {
                         if (i >= values.length) {
@@ -1289,7 +1323,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
                                 break;
                             }
-                        } else if (!SyntaxUtils.isTypeCompatible(null, flatMethod.getParameter(i), values[i].getReturnedNode())) {
+                        } else if (!SyntaxUtils.isTypeCompatible(null, flatMethod.getParameter(i),
+                            values[i].getReturnedNode())) {
                             valid = false;
 
                             break;
@@ -1307,13 +1342,15 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     public ArrayAccessorMethod getArrayAccessorMethod() {
-        ArrayList<MethodDeclaration> methods = getArrayBracketOverload().getParentClass().getMethodList().filterVisibleListChildren(x -> x instanceof ArrayAccessorMethod);
+        ArrayList<MethodDeclaration> methods = getArrayBracketOverload().getParentClass()
+            .getMethodList().filterVisibleListChildren(x -> x instanceof ArrayAccessorMethod);
 
         return methods.size() > 0 ? (ArrayAccessorMethod) methods.get(0) : null;
     }
 
     public ArrayMutatorMethod getArrayMutatorMethod() {
-        ArrayList<MethodDeclaration> methods = getArrayBracketOverload().getParentClass().getMethodList().filterVisibleListChildren(x -> x instanceof ArrayMutatorMethod);
+        ArrayList<MethodDeclaration> methods = getArrayBracketOverload().getParentClass()
+            .getMethodList().filterVisibleListChildren(x -> x instanceof ArrayMutatorMethod);
 
         return methods.size() > 0 ? (ArrayMutatorMethod) methods.get(0) : null;
     }
@@ -1344,7 +1381,9 @@ public class ClassDeclaration extends InstanceDeclaration {
                 return primitiveOverloadTypes[position];
             }
 
-            if (getGenericTypeParameterDeclaration().getNumParameters() >= aligned && getGenericTypeParameter(aligned).getName().equals(params.getParameter(current).getName())) {
+            if (getGenericTypeParameterDeclaration().getNumParameters() >= aligned
+                && getGenericTypeParameter(aligned).getName()
+                    .equals(params.getParameter(current).getName())) {
                 aligned++;
             } else {
                 position++;
@@ -1354,42 +1393,53 @@ public class ClassDeclaration extends InstanceDeclaration {
         return null;
     }
 
-    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, Value... parameterTypes) {
+    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName,
+        Value... parameterTypes) {
         return getMethod(contexts, methodName, SearchFilter.getDefault(), parameterTypes);
     }
 
     /**
-     * Get the method with the given methodName and parameterTypes. If a
-     * method with the specified name and parameter types does not exist,
-     * null is returned.
+     * Get the method with the given methodName and parameterTypes. If a method with the specified
+     * name and parameter types does not exist, null is returned.
      *
-     * @param methodName     The name of the method to search for.
-     * @param parameterTypes An array of types that the parameters of the
-     *                       searching method must be compatible with.
+     * @param methodName The name of the method to search for.
+     * @param parameterTypes An array of types that the parameters of the searching method must be
+     *        compatible with.
      * @return The compatible method with the given method name.
      */
-    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes) {
+    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName,
+        SearchFilter filter, Value[] parameterTypes) {
         return getMethod(contexts, methodName, filter, parameterTypes, false);
     }
 
-    public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse) {
-        return getMethod(new GenericCompatible[]{context}, methodName, filter, parameterTypes, reverse);
+    public MethodDeclaration getMethod(GenericCompatible context, String methodName,
+        SearchFilter filter, Value[] parameterTypes, boolean reverse) {
+        return getMethod(new GenericCompatible[] {context}, methodName, filter, parameterTypes,
+            reverse);
     }
 
-    public MethodDeclaration getMethod(GenericCompatible context, String methodName, SearchFilter filter, Value[] parameterTypes) {
-        return getMethod(new GenericCompatible[]{context}, methodName, filter, parameterTypes, false);
+    public MethodDeclaration getMethod(GenericCompatible context, String methodName,
+        SearchFilter filter, Value[] parameterTypes) {
+        return getMethod(new GenericCompatible[] {context}, methodName, filter, parameterTypes,
+            false);
     }
 
-    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse) {
+    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName,
+        SearchFilter filter, Value[] parameterTypes, boolean reverse) {
         return getMethod(contexts, methodName, filter, parameterTypes, reverse, true);
     }
 
-    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides) {
-        return getMethod(contexts, methodName, filter, parameterTypes, reverse, filterOverrides, false);
+    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName,
+        SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides) {
+        return getMethod(contexts, methodName, filter, parameterTypes, reverse, filterOverrides,
+            false);
     }
 
-    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides, boolean searchingClosure) {
-        ArrayList<MethodDeclaration> methods = new ArrayList<>(Arrays.asList(getMethods(contexts, methodName, filter, parameterTypes, reverse, searchingClosure)));
+    public MethodDeclaration getMethod(GenericCompatible[] contexts, String methodName,
+        SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean filterOverrides,
+        boolean searchingClosure) {
+        ArrayList<MethodDeclaration> methods = new ArrayList<>(Arrays.asList(
+            getMethods(contexts, methodName, filter, parameterTypes, reverse, searchingClosure)));
 
         if (filterOverrides) {
             methods = ClassDeclaration.filterOverrides(methods);
@@ -1402,7 +1452,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return null;
     }
 
-    public static ArrayList<MethodDeclaration> filterOverrides(ArrayList<MethodDeclaration> methods) {
+    public static ArrayList<MethodDeclaration> filterOverrides(
+        ArrayList<MethodDeclaration> methods) {
         methods = filterPrimitiveOverloads(methods);
 
         ArrayList<MethodDeclaration> nonOverride = new ArrayList<>();
@@ -1428,7 +1479,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return nonOverride;
     }
 
-    public static ArrayList<MethodDeclaration> filterPrimitiveOverloads(ArrayList<MethodDeclaration> methods) {
+    public static ArrayList<MethodDeclaration> filterPrimitiveOverloads(
+        ArrayList<MethodDeclaration> methods) {
         ArrayList<MethodDeclaration> nonOverload = new ArrayList<>();
 
         for (MethodDeclaration m : methods) {
@@ -1450,19 +1502,27 @@ public class ClassDeclaration extends InstanceDeclaration {
         return methods;
     }
 
-    public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse) {
+    public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName,
+        SearchFilter filter, Value[] parameterTypes, boolean reverse) {
         return getMethods(contexts, methodName, filter, parameterTypes, reverse, false);
     }
 
-    public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName, SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean searchingClosure) {
+    public MethodDeclaration[] getMethods(GenericCompatible[] contexts, String methodName,
+        SearchFilter filter, Value[] parameterTypes, boolean reverse, boolean searchingClosure) {
         MethodDeclaration methods[] = getMethods(methodName, parameterTypes.length, filter);
 
         ArrayList<MethodDeclaration> compatible = new ArrayList<>();
 
         for (MethodDeclaration method : methods) {
-            if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes, reverse))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(), returnType))
+            if (method.areCompatibleParameterTypes(contexts, false, filter, parameterTypes,
+                reverse))// && SyntaxUtils.isTypeCompatible(getProgram(), method.getType(),
+                         // returnType))
             {
-                if (method.isStatic() || searchingClosure || contexts == null || contexts.length == 0 || contexts[0] instanceof Accessible == false || !((Accessible) contexts[0]).canAccess() || SyntaxUtils.isTypeCompatible(contexts[0], method.getParameterList().getObjectReference(), (Value) contexts[0])) {
+                if (method.isStatic() || searchingClosure || contexts == null
+                    || contexts.length == 0 || contexts[0] instanceof Accessible == false
+                    || !((Accessible) contexts[0]).canAccess()
+                    || SyntaxUtils.isTypeCompatible(contexts[0],
+                        method.getParameterList().getObjectReference(), (Value) contexts[0])) {
                     compatible.add(method);
                 }
             }
@@ -1472,7 +1532,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         int max = -1;
         int maxI = -1;
-        SyntaxUtils.ValueDistance distance = new SyntaxUtils.ValueDistance(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        SyntaxUtils.ValueDistance distance =
+            new SyntaxUtils.ValueDistance(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
         ArrayList<MethodDeclaration> list = new ArrayList<>();
 
@@ -1484,26 +1545,35 @@ public class ClassDeclaration extends InstanceDeclaration {
             if (count > max) {
                 max = method.getParameterList().getNumRequiredParameters();
                 maxI = i;
-                distance = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+                distance = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(),
+                    parameterTypes);
 
                 list = new ArrayList<>();
                 list.add(method);
             } else if (count == max) {
-                SyntaxUtils.ValueDistance dist = SyntaxUtils.getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
+                SyntaxUtils.ValueDistance dist = SyntaxUtils
+                    .getParametersDistance(method.getParameterList().getTypes(), parameterTypes);
 
-                if (((dist.a < distance.a || dist.a == distance.a && dist.b < distance.b) && dist.genericDistance == distance.genericDistance || dist.genericDistance < distance.genericDistance) ||
-                    (dist.a == distance.a && dist.b == distance.b && dist.genericDistance == distance.genericDistance && dist.exactTypeDistance < distance.exactTypeDistance)) {
+                if (((dist.a < distance.a || dist.a == distance.a && dist.b < distance.b)
+                    && dist.genericDistance == distance.genericDistance
+                    || dist.genericDistance < distance.genericDistance) ||
+                    (dist.a == distance.a && dist.b == distance.b
+                        && dist.genericDistance == distance.genericDistance
+                        && dist.exactTypeDistance < distance.exactTypeDistance)) {
                     maxI = i;
                     distance = dist;
 
                     list = new ArrayList<>();
                     list.add(method);
-                } else if (dist.a == distance.a && dist.b == distance.b && dist.genericDistance == distance.genericDistance) {
+                } else if (dist.a == distance.a && dist.b == distance.b
+                    && dist.genericDistance == distance.genericDistance) {
                     boolean valid = true;
 
                     for (MethodDeclaration m : list) {
-                        if (!(m instanceof FlatMethodDeclaration && method instanceof FlatMethodDeclaration &&
-                            ((FlatMethodDeclaration) m).containsOverridingMethod((FlatMethodDeclaration) method))) {
+                        if (!(m instanceof FlatMethodDeclaration
+                            && method instanceof FlatMethodDeclaration &&
+                            ((FlatMethodDeclaration) m)
+                                .containsOverridingMethod((FlatMethodDeclaration) method))) {
                             valid = false;
                         }
                     }
@@ -1523,61 +1593,56 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get all of the methods that have the given methodName and the given
-     * number of parameters.
+     * Get all of the methods that have the given methodName and the given number of parameters.
      *
      * @param methodName The name of the methods to search for.
-     * @param numParams  The number of parameters that the methods can
-     *                   have.
-     * @return An array of methods that are compatible with the given
-     * data.
+     * @param numParams The number of parameters that the methods can have.
+     * @return An array of methods that are compatible with the given data.
      */
     public MethodDeclaration[] getMethods(String methodName, int numParams) {
         return getMethods(methodName, numParams, SearchFilter.getDefault());
     }
 
     /**
-     * Get all of the methods that have the given methodName and the given
-     * number of parameters.
+     * Get all of the methods that have the given methodName and the given number of parameters.
      *
      * @param methodName The name of the methods to search for.
-     * @param numParams  The number of parameters that the methods can
-     *                   have.
-     * @return An array of methods that are compatible with the given
-     * data.
+     * @param numParams The number of parameters that the methods can have.
+     * @return An array of methods that are compatible with the given data.
      */
     public MethodDeclaration[] getMethods(String methodName, int numParams, SearchFilter filter) {
         MethodDeclaration[] methods = getMethods(methodName, filter);
 
         return Arrays.stream(methods)
-            .filter(method -> !filter.requireEqualParameterCount || numParams == method.getParameterList().getNumParameters())
-            .filter(method ->
-                (numParams >= method.getParameterList().getNumRequiredParameters() && numParams <= method.getParameterList().getNumVisibleChildren()) ||
-                    (filter.allowMoreParameters && numParams > method.getParameterList().getNumRequiredParameters())
-            )
+            .filter(method -> !filter.requireEqualParameterCount
+                || numParams == method.getParameterList().getNumParameters())
+            .filter(method -> (numParams >= method.getParameterList().getNumRequiredParameters()
+                && numParams <= method.getParameterList().getNumVisibleChildren()) ||
+                (filter.allowMoreParameters
+                    && numParams > method.getParameterList().getNumRequiredParameters()))
             .toArray(MethodDeclaration[]::new);
     }
 
     /**
-     * Get whether or not the ClassDeclaration contains the Method with the
-     * specified name.<br>
+     * Get whether or not the ClassDeclaration contains the Method with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class ClassName
      * {
      * 	public void doSomething()
      *    {
      * 		...
      *    }
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>containsMethod("doSomething")</code>" would
-     * return true.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>containsMethod("doSomething")</code>" would return true.
      *
      * @param methodName The name of the method to search for.
-     * @return Whether or not the ClassDeclaration contains the Method with
-     * the specified name.
+     * @return Whether or not the ClassDeclaration contains the Method with the specified name.
      */
     public boolean containsMethod(String methodName) {
         return getMethods(methodName).length > 0;
@@ -1586,18 +1651,21 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get the ClassDeclaration's Method with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class ClassName
      * {
      * 	public void doSomething()
      *    {
      * 		...
      *    }
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getMethod("doSomething")</code>" would
-     * return the Method for the "<code>doSomething</code>" method.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getMethod("doSomething")</code>" would return the Method for the
+     * "<code>doSomething</code>" method.
      *
      * @param methodName The name of the method to search for.
      * @return The Method for the method, if it exists.
@@ -1609,18 +1677,21 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get the ClassDeclaration's Method with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class ClassName
      * {
      * 	public void doSomething()
      *    {
      * 		...
      *    }
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getMethod("doSomething")</code>" would
-     * return the Method for the "<code>doSomething</code>" method.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getMethod("doSomething")</code>" would return the Method for the
+     * "<code>doSomething</code>" method.
      *
      * @param methodName The name of the method to search for.
      * @return The Method for the method, if it exists.
@@ -1630,13 +1701,15 @@ public class ClassDeclaration extends InstanceDeclaration {
             return new MethodDeclaration[0];
         }
 
-        if (filter.className == null) filter.className = getName();
+        if (filter.className == null)
+            filter.className = getName();
 
         ArrayList<MethodDeclaration> output = new ArrayList<>();
 
         if (methodName.equals(InitializationMethod.SUPER_IDENTIFIER)) {
             if (filter.checkAncestor && getExtendedClassDeclaration() != null) {
-                addMethods(output, getExtendedClassDeclaration().getMethods(InitializationMethod.IDENTIFIER));
+                addMethods(output,
+                    getExtendedClassDeclaration().getMethods(InitializationMethod.IDENTIFIER));
             }
 
             return output.toArray(new MethodDeclaration[0]);
@@ -1650,16 +1723,17 @@ public class ClassDeclaration extends InstanceDeclaration {
         }
 
         if (filter.checkConstructors && methodName.equals(filter.className)) {
-            addMethods(output, getConstructorList().getMethods(/*Constructor.IDENTIFIER*/methodName, filter));
+            addMethods(output,
+                getConstructorList().getMethods(/* Constructor.IDENTIFIER */methodName, filter));
         } else {
             addMethods(output, getConstructorList().getMethods(methodName, filter));
         }
 
         if (filter.checkAncestor && getExtendedClassDeclaration() != null) {
-			/*if (methodName.equals(getName()) && getConstructorList().getNumVisibleChildren() == 0)
-			{
-				methodName = getExtendedClassName();
-			}*/
+            /*
+             * if (methodName.equals(getName()) && getConstructorList().getNumVisibleChildren() ==
+             * 0) { methodName = getExtendedClassName(); }
+             */
 
             addMethods(output, getExtendedClassDeclaration().getMethods(methodName, filter));
         }
@@ -1667,7 +1741,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         if (filter.checkInterfaces) {
             boolean before = filter.checkAncestor;
             filter.checkAncestor = false;
-            filter.checkInterfaces = !Flat.objectClassType.equals("trait") || !getName().equals("Object");
+            filter.checkInterfaces =
+                !Flat.objectClassType.equals("trait") || !getName().equals("Object");
 
             for (Trait inter : getImplementedInterfaces(false)) {
                 addMethods(output, inter.getMethods(methodName, filter));
@@ -1692,9 +1767,8 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get the Declaration child of the specified ClassDeclaration that has
-     * the given name. The Declaration can either be a field or
-     * method.
+     * Get the Declaration child of the specified ClassDeclaration that has the given name. The
+     * Declaration can either be a field or method.
      *
      * @param name The name of the declaration node to search for.
      * @return The Declaration instance that was found, if any.
@@ -1791,7 +1865,7 @@ public class ClassDeclaration extends InstanceDeclaration {
             return false;
         }
 
-//		return true;
+        // return true;
     }
 
     /**
@@ -1812,15 +1886,16 @@ public class ClassDeclaration extends InstanceDeclaration {
                 PropertyMethod propertyMethod = (PropertyMethod) child;
 
                 for (ClassDeclaration c : primitiveOverloads) {
-                    propertyMethod.convertToClass(c, c.primitiveOverloadTypes, propertyMethod.getMethodGenericTypeParameterDeclaration().getTypes());
+                    propertyMethod.convertToClass(c, c.primitiveOverloadTypes,
+                        propertyMethod.getMethodGenericTypeParameterDeclaration().getTypes());
                 }
 
                 getPropertyMethodList().addChild(child);
             }
-//			else if (child instanceof ClosureVariable)
-//			{
-//				getFieldList().addChild(child);
-//			}
+            // else if (child instanceof ClosureVariable)
+            // {
+            // getFieldList().addChild(child);
+            // }
             else {
                 getMethodList().addChild(child);
             }
@@ -1850,25 +1925,29 @@ public class ClassDeclaration extends InstanceDeclaration {
 
             getFileDeclaration().addChild(child);
 
-            if (getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION) // if added as inner class, re-run class declaration validation
+            if (getProgram().getPhase() > SyntaxTree.PHASE_CLASS_DECLARATION) // if added as inner
+                                                                              // class, re-run class
+                                                                              // declaration
+                                                                              // validation
             {
                 child.validate(SyntaxTree.PHASE_CLASS_DECLARATION);
             }
         } else {
-            SyntaxMessage.error("Unexpected node type of '" + child.getClass().getSimpleName() + "' within class " + getName(), child);
+            SyntaxMessage.error("Unexpected node type of '" + child.getClass().getSimpleName()
+                + "' within class " + getName(), child);
         }
     }
 
     public ClosureVariable[] getPublicClosureVariables() {
         ArrayList<ClosureVariable> vars = new ArrayList<>();
 
-//		for (MethodDeclaration m : getMethodList())
-//		{
-//			if (m instanceof ClosureVariable && m.getVisibility() != InstanceDeclaration.PRIVATE)
-//			{
-//				vars.add((ClosureVariable)m);
-//			}
-//		}
+        // for (MethodDeclaration m : getMethodList())
+        // {
+        // if (m instanceof ClosureVariable && m.getVisibility() != InstanceDeclaration.PRIVATE)
+        // {
+        // vars.add((ClosureVariable)m);
+        // }
+        // }
 
         return vars.toArray(new ClosureVariable[0]);
     }
@@ -1876,25 +1955,25 @@ public class ClassDeclaration extends InstanceDeclaration {
     public ClosureVariable[] getPrivateClosureVariables() {
         ArrayList<ClosureVariable> vars = new ArrayList<>();
 
-//		for (MethodDeclaration m : getMethodList())
-//		{
-//			if (m instanceof ClosureVariable && m.getVisibility() == InstanceDeclaration.PRIVATE)
-//			{
-//				vars.add((ClosureVariable)m);
-//			}
-//		}
+        // for (MethodDeclaration m : getMethodList())
+        // {
+        // if (m instanceof ClosureVariable && m.getVisibility() == InstanceDeclaration.PRIVATE)
+        // {
+        // vars.add((ClosureVariable)m);
+        // }
+        // }
 
         return vars.toArray(new ClosureVariable[0]);
     }
 
     public ClosureVariable getClosureVariable(String name) {
-//		for (MethodDeclaration m : getMethodList())
-//		{
-//			if (m instanceof ClosureVariable && m.getName().equals(name))
-//			{
-//				return (ClosureVariable)m;
-//			}
-//		}
+        // for (MethodDeclaration m : getMethodList())
+        // {
+        // if (m instanceof ClosureVariable && m.getName().equals(name))
+        // {
+        // return (ClosureVariable)m;
+        // }
+        // }
 
         return null;
     }
@@ -1913,7 +1992,8 @@ public class ClassDeclaration extends InstanceDeclaration {
      * @return Whether or not the class contains private data.
      */
     public boolean containsPrivateData(boolean checkAncestor) {
-        return containsStaticPrivateData(checkAncestor) || containsNonStaticPrivateData(checkAncestor);
+        return containsStaticPrivateData(checkAncestor)
+            || containsNonStaticPrivateData(checkAncestor);
     }
 
     /**
@@ -1937,8 +2017,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get whether or not the class contains any private static fields.
      *
-     * @param checkAncestor Whether or not to check the ancestor class
-     *                      if the data is not found.
+     * @param checkAncestor Whether or not to check the ancestor class if the data is not found.
      * @return Whether or not the class contains private static data.
      */
     public boolean containsStaticPrivateData(boolean checkAncestor) {
@@ -1955,17 +2034,17 @@ public class ClassDeclaration extends InstanceDeclaration {
         return false;
     }
 
-//	/**
-//	 * Get whether or not the class contains any fields.
-//	 *
-//	 * @return Whether or not the class contains data.
-//	 */
-//	public boolean containsStaticData()
-//	{
-//		PublicFieldList staticFields = getFieldList().getPublicStaticFieldList();
-//
-//		return staticFields.getNumChildren() > 0 || containsStaticPrivateData();
-//	}
+    // /**
+    // * Get whether or not the class contains any fields.
+    // *
+    // * @return Whether or not the class contains data.
+    // */
+    // public boolean containsStaticData()
+    // {
+    // PublicFieldList staticFields = getFieldList().getPublicStaticFieldList();
+    //
+    // return staticFields.getNumChildren() > 0 || containsStaticPrivateData();
+    // }
 
     @Override
     public boolean isUserMade(boolean checkAncestor) {
@@ -1973,8 +2052,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the class contains any private non-static
-     * fields.
+     * Get whether or not the class contains any private non-static fields.
      *
      * @return Whether or not the class contains private non-static data.
      */
@@ -1983,11 +2061,9 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the class contains any private non-static
-     * fields.
+     * Get whether or not the class contains any private non-static fields.
      *
-     * @param checkAncestor Whether or not to check the ancestor class
-     *                      if the data is not found.
+     * @param checkAncestor Whether or not to check the ancestor class if the data is not found.
      * @return Whether or not the class contains private non-static data.
      */
     public boolean containsNonStaticPrivateData(boolean checkAncestor) {
@@ -2016,8 +2092,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     /**
      * Get whether or not the class contains any non-static fields.
      *
-     * @param checkAncestor Whether or not to check the ancestor class
-     *                      if the data is not found.
+     * @param checkAncestor Whether or not to check the ancestor class if the data is not found.
      * @return Whether or not the class contains non-static data.
      */
     public boolean containsNonStaticData(boolean checkAncestor) {
@@ -2037,7 +2112,7 @@ public class ClassDeclaration extends InstanceDeclaration {
     public MethodDeclaration[] getVisibleNativeMethods() {
         ArrayList<MethodDeclaration> methods = new ArrayList<>();
 
-        MethodList lists[] = new MethodList[]{getMethodList(), getConstructorList()};
+        MethodList lists[] = new MethodList[] {getMethodList(), getConstructorList()};
 
         for (MethodList list : lists) {
             for (int i = 0; i < list.getNumVisibleChildren(); i++) {
@@ -2045,7 +2120,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
                 if (!method.isExternal() && !(method instanceof AssignmentMethod) &&
                     !(method instanceof InitializationMethod) &&
-                    method.getVisibility() == PUBLIC && method.getRootDeclaration().getParentClass() == this) {
+                    method.getVisibility() == PUBLIC
+                    && method.getRootDeclaration().getParentClass() == this) {
                     methods.add(method);
                 }
             }
@@ -2091,29 +2167,29 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Decode the given statement into a ClassDeclaration, if possible. If it is
-     * not possible, this method returns null.<br>
+     * Decode the given statement into a ClassDeclaration, if possible. If it is not possible, this
+     * method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>public class ClassName</li>
-     * 	<li>private static class ClassName</li>
-     * 	<li>public abstract class ClassName</li>
+     * <li>public class ClassName</li>
+     * <li>private static class ClassName</li>
+     * <li>public abstract class ClassName</li>
      * </ul>
      *
-     * @param parent    The parent of the current statement.
-     * @param statement The statement to translate into a ClassDeclaration
-     *                  if possible.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a ClassDeclaration.
+     * @param parent The parent of the current statement.
+     * @param statement The statement to translate into a ClassDeclaration if possible.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a ClassDeclaration.
      */
-    public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static ClassDeclaration decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, new ClassData());
     }
 
-    public static ClassDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, ClassData data) {
+    public static ClassDeclaration decodeStatement(Node parent, String statement, Location location,
+        boolean require, ClassData data) {
         int index = SyntaxUtils.findStringInBaseScope(statement, IDENTIFIER);
 
         // If contains 'class' in the statement.
@@ -2131,7 +2207,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
             if (data.getGenericsRemaining() > 0) {
                 Location newLoc = n.getLocationIn().asNew();
-                Bounds b = data.getSkipBounds(data.getNumSkipBounds() - data.getGenericsRemaining());
+                Bounds b =
+                    data.getSkipBounds(data.getNumSkipBounds() - data.getGenericsRemaining());
 
                 newLoc.addBounds(b.getStart(), b.getEnd());
 
@@ -2141,14 +2218,18 @@ public class ClassDeclaration extends InstanceDeclaration {
             switch (Flat.objectClassType) {
                 case "class":
                     // TODO: Check for the standard library version of Object.
-                    if (n.extendedClass == null && !n.getClassLocation(false).equals("flat/Object")) {
-                        ExtendedClass extended = ExtendedClass.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
+                    if (n.extendedClass == null
+                        && !n.getClassLocation(false).equals("flat/Object")) {
+                        ExtendedClass extended = ExtendedClass.decodeStatement(n, "Object",
+                            n.getLocationIn().asNew(), require);
 
                         n.setExtendedClass(extended);
                     }
                     break;
                 case "trait":
-                    if (n.getName().equals("Object")) {// && parent.getFileDeclaration().getPackage().getLocation().equals("flat")) {
+                    if (n.getName().equals("Object")) {// &&
+                                                       // parent.getFileDeclaration().getPackage().getLocation().equals("flat"))
+                                                       // {
                         Trait t = new Trait(parent, location);
 
                         n.cloneTo(t);
@@ -2157,8 +2238,10 @@ public class ClassDeclaration extends InstanceDeclaration {
                     }
 
                     // TODO: Check for the standard library version of Object.
-                    if (!n.implementsInterface("flat/Object") && !n.getClassLocation(false).equals("flat/Object")) {
-                        TraitImplementation implementation = TraitImplementation.decodeStatement(n, "Object", n.getLocationIn().asNew(), require);
+                    if (!n.implementsInterface("flat/Object")
+                        && !n.getClassLocation(false).equals("flat/Object")) {
+                        TraitImplementation implementation = TraitImplementation.decodeStatement(n,
+                            "Object", n.getLocationIn().asNew(), require);
 
                         n.getInterfacesImplementationList().addChild(implementation);
                     }
@@ -2172,18 +2255,22 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String, Node.ExtraData)
+     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String,
+     *      Node.ExtraData)
      */
     @Override
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData extra) {
         ClassData data = (ClassData) extra;
 
         if (data.extending || data.implementing) {
             if (data.extending) {
-                ExtendedClass extended = ExtendedClass.decodeStatement(this, word, getLocationIn().asNew(), extra.require);
+                ExtendedClass extended = ExtendedClass.decodeStatement(this, word,
+                    getLocationIn().asNew(), extra.require);
 
                 if (extended == null) {
-                    SyntaxMessage.queryError("Could not decode class extension '" + word + "'", this, extra.require);
+                    SyntaxMessage.queryError("Could not decode class extension '" + word + "'",
+                        this, extra.require);
 
                     return false;
                 }
@@ -2193,7 +2280,8 @@ public class ClassDeclaration extends InstanceDeclaration {
                 data.extending = false;
 
                 if (data.getRightAdjacentSkipBounds() != null) {
-                    extended.decodeGenericTypeArguments(data.statement, data.getRightAdjacentSkipBounds());
+                    extended.decodeGenericTypeArguments(data.statement,
+                        data.getRightAdjacentSkipBounds());
 
                     data.decrementGenericsRemaining();
                 }
@@ -2201,12 +2289,14 @@ public class ClassDeclaration extends InstanceDeclaration {
                 if (word.length() > 0) {
                     Location loc = new Location(0, 0, bounds.getStart(), bounds.getEnd());
 
-                    TraitImplementation i = TraitImplementation.decodeStatement(this, word, loc, extra.require);
+                    TraitImplementation i =
+                        TraitImplementation.decodeStatement(this, word, loc, extra.require);
 
                     getInterfacesImplementationList().addChild(i);
 
                     if (data.getRightAdjacentSkipBounds() != null) {
-                        i.decodeGenericTypeArguments(data.statement, data.getRightAdjacentSkipBounds());
+                        i.decodeGenericTypeArguments(data.statement,
+                            data.getRightAdjacentSkipBounds());
 
                         data.decrementGenericsRemaining();
                     }
@@ -2228,7 +2318,10 @@ public class ClassDeclaration extends InstanceDeclaration {
                     setType(word);
                     checkGenerics = true;
                 } else if (word.equals(IDENTIFIER)) {
-                    if (parent instanceof FileDeclaration && (data.isLastWord() || data.getRightAdjacentSkipBounds() != null || Stream.of("extends", "implements").anyMatch(w -> w.equals(data.getNextWord())))) {
+                    if (parent instanceof FileDeclaration
+                        && (data.isLastWord() || data.getRightAdjacentSkipBounds() != null
+                            || Stream.of("extends", "implements")
+                                .anyMatch(w -> w.equals(data.getNextWord())))) {
                         String className = parent.getFileDeclaration(true).getName();
 
                         setName(className);
@@ -2238,7 +2331,8 @@ public class ClassDeclaration extends InstanceDeclaration {
                 }
 
                 if (checkGenerics && data.getRightAdjacentSkipBounds() != null) {
-                    getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement, data.getRightAdjacentSkipBounds());
+                    getGenericTypeParameterDeclaration().decodeGenericTypeParameters(data.statement,
+                        data.getRightAdjacentSkipBounds());
 
                     for (GenericTypeParameter param : getGenericTypeParameterDeclaration()) {
                         decodeGenericTypeArguments(param.getName());
@@ -2280,29 +2374,26 @@ public class ClassDeclaration extends InstanceDeclaration {
         return null;
     }
 
-    public GenericTypeParameter getGenericTypeParameter(String parameterName, GenericCompatible value) {
-		/*Node context = (Node)((Value)value).getContext();
-
-		if (context != null)
-		{
-			if (context.getParentMethod() != null)
-			{
-				FlatMethodDeclaration method = context.getParentMethod();
-
-				GenericTypeParameter param = method.getGenericTypeParameter(parameterName);
-
-				if (param != null)
-				{
-					return param;
-				}
-			}
-
-			//clazz = context.getAncestorOfType(VariableDeclaration.class, true).getParentClass(true);
-		}*/
+    public GenericTypeParameter getGenericTypeParameter(String parameterName,
+        GenericCompatible value) {
+        /*
+         * Node context = (Node)((Value)value).getContext();
+         * 
+         * if (context != null) { if (context.getParentMethod() != null) { FlatMethodDeclaration
+         * method = context.getParentMethod();
+         * 
+         * GenericTypeParameter param = method.getGenericTypeParameter(parameterName);
+         * 
+         * if (param != null) { return param; } }
+         * 
+         * //clazz = context.getAncestorOfType(VariableDeclaration.class,
+         * true).getParentClass(true); }
+         */
 
         GenericTypeParameter param = getGenericTypeParameter(parameterName);
 
-        if (param == null && encapsulatingClass != null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap") && !isPrimitiveOverload()) {
+        if (param == null && encapsulatingClass != null && !isPropertyTrue("functionMap")
+            && !isPropertyTrue("propertyMap") && !isPrimitiveOverload()) {
             param = encapsulatingClass.getGenericTypeParameter(parameterName, value);
         }
 
@@ -2327,7 +2418,8 @@ public class ClassDeclaration extends InstanceDeclaration {
                 }
             } else {
                 if (value instanceof Variable) {
-                    ClassDeclaration declClass = ((Variable) value).getDeclaration().getParentClass();
+                    ClassDeclaration declClass =
+                        ((Variable) value).getDeclaration().getParentClass();
 
                     if (declClass != this) {
                         return declClass.getGenericTypeParameter(parameterName);
@@ -2442,7 +2534,9 @@ public class ClassDeclaration extends InstanceDeclaration {
 
             GenericTypeParameter param = params.getParameter(i);
 
-            if (i < args.length && !param.isPrimitiveType() && args[i].isPrimitiveType())//param.getDataType() > args.getVisibleChild(i).getDataType())
+            if (i < args.length && !param.isPrimitiveType() && args[i].isPrimitiveType())// param.getDataType()
+                                                                                         // >
+                                                                                         // args.getVisibleChild(i).getDataType())
             {
                 types[i] = args[i];
 
@@ -2472,7 +2566,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
                 for (int i = 0; i < originalArgs.length; i++) {
                     if (originalPrimitiveOverloadTypes[i] instanceof GenericTypeParameter == false) {
-                        originalArgs[i] = (Value) originalPrimitiveOverloadTypes[i].clone(this, originalPrimitiveOverloadTypes[i].getLocationIn(), true, true);
+                        originalArgs[i] = (Value) originalPrimitiveOverloadTypes[i].clone(this,
+                            originalPrimitiveOverloadTypes[i].getLocationIn(), true, true);
                     } else {
                         originalArgs[i] = args[position++];
                     }
@@ -2507,7 +2602,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return replacePrimitiveGenerics(types, value, value, true);
     }
 
-    public boolean replacePrimitiveGenerics(GenericTypeParameterList params, final Value[] types, Value value) {
+    public boolean replacePrimitiveGenerics(GenericTypeParameterList params, final Value[] types,
+        Value value) {
         return replacePrimitiveGenerics(params, types, value, value, true);
     }
 
@@ -2515,11 +2611,14 @@ public class ClassDeclaration extends InstanceDeclaration {
         return replacePrimitiveGenerics(types, original, value, false);
     }
 
-    public boolean replacePrimitiveGenerics(final Value[] types, Value original, Value value, boolean allowSame) {
-        return replacePrimitiveGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
+    public boolean replacePrimitiveGenerics(final Value[] types, Value original, Value value,
+        boolean allowSame) {
+        return replacePrimitiveGenerics(getGenericTypeParameterDeclaration(), types, original,
+            value, allowSame);
     }
 
-    public static boolean shallowReplaceGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame) {
+    public static boolean shallowReplaceGenerics(GenericTypeParameterList params,
+        final Value[] types, Value original, Value value, boolean allowSame) {
         GenericTypeParameter genParam = original.getGenericTypeParameter();
         GenericTypeParameter valParam = value.getGenericTypeParameter();
 
@@ -2545,7 +2644,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         return false;
     }
 
-    public static boolean replacePrimitiveGenerics(GenericTypeParameterList params, final Value[] types, Value original, Value value, boolean allowSame) {
+    public static boolean replacePrimitiveGenerics(GenericTypeParameterList params,
+        final Value[] types, Value original, Value value, boolean allowSame) {
         if (!Flat.PRIMITIVE_OVERLOADS) {
             return false;
         }
@@ -2559,13 +2659,16 @@ public class ClassDeclaration extends InstanceDeclaration {
             GenericTypeArgumentList args = value.getGenericTypeArgumentList();
 
             if (args != null) {
-                for (int i = 0; i < Math.min(args.getNumVisibleChildren(), originalArgs.getNumVisibleChildren()); i++) {
-                    changed |= replacePrimitiveGenerics(params, types, originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
+                for (int i = 0; i < Math.min(args.getNumVisibleChildren(),
+                    originalArgs.getNumVisibleChildren()); i++) {
+                    changed |= replacePrimitiveGenerics(params, types,
+                        originalArgs.getVisibleChild(i), args.getVisibleChild(i), allowSame);
                 }
 
-//				if (changed)
+                // if (changed)
                 if (value.getTypeClass() != null) {
-                    ClassDeclaration converted = value.getTypeClass().getConvertedPrimitiveClass(args.getTypes());
+                    ClassDeclaration converted =
+                        value.getTypeClass().getConvertedPrimitiveClass(args.getTypes());
 
                     if (converted != null) {
                         value.getFileDeclaration().addImport(converted.getClassLocation());
@@ -2579,21 +2682,26 @@ public class ClassDeclaration extends InstanceDeclaration {
         }
 
         if (value instanceof ClosureDeclaration) {
-            changed |= replacePrimitiveGenerics(params, types, (ClosureDeclaration) original, (ClosureDeclaration) value, allowSame);
+            changed |= replacePrimitiveGenerics(params, types, (ClosureDeclaration) original,
+                (ClosureDeclaration) value, allowSame);
         }
 
         return changed;
     }
 
-    public boolean replacePrimitiveGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value) {
+    public boolean replacePrimitiveGenerics(Value[] types, ClosureDeclaration original,
+        ClosureDeclaration value) {
         return replacePrimitiveGenerics(types, original, value, false);
     }
 
-    public boolean replacePrimitiveGenerics(Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame) {
-        return replacePrimitiveGenerics(getGenericTypeParameterDeclaration(), types, original, value, allowSame);
+    public boolean replacePrimitiveGenerics(Value[] types, ClosureDeclaration original,
+        ClosureDeclaration value, boolean allowSame) {
+        return replacePrimitiveGenerics(getGenericTypeParameterDeclaration(), types, original,
+            value, allowSame);
     }
 
-    public static boolean replacePrimitiveGenerics(GenericTypeParameterList params, Value[] types, ClosureDeclaration original, ClosureDeclaration value, boolean allowSame) {
+    public static boolean replacePrimitiveGenerics(GenericTypeParameterList params, Value[] types,
+        ClosureDeclaration original, ClosureDeclaration value, boolean allowSame) {
         if (!Flat.PRIMITIVE_OVERLOADS) {
             return false;
         }
@@ -2606,7 +2714,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         boolean changed = false;
 
         for (int n = 0; n < originalClosureParams.getNumParameters(); n++) {
-            changed |= replacePrimitiveGenerics(params, types, originalClosureParams.getParameter(n), closureParams.getParameter(n), allowSame);
+            changed |= replacePrimitiveGenerics(params, types,
+                originalClosureParams.getParameter(n), closureParams.getParameter(n), allowSame);
         }
 
         return changed;
@@ -2615,20 +2724,25 @@ public class ClassDeclaration extends InstanceDeclaration {
     private void cloneMethods(final Value[] types, MethodList methods, ClassDeclaration addTo) {
         methods.forEachVisibleListChild(method -> {
             if (method instanceof ExternalMethodDeclaration) {
-                ExternalMethodDeclaration clone = (ExternalMethodDeclaration) method.clone(addTo, method.getLocationIn(), true, true);
+                ExternalMethodDeclaration clone = (ExternalMethodDeclaration) method.clone(addTo,
+                    method.getLocationIn(), true, true);
 
                 ParameterList original = method.getParameterList();
 
                 for (int i = 0; i < clone.getParameterList().getNumVisibleChildren(); i++) {
-                    replacePrimitiveGenerics(types, original.getParameter(i), clone.getParameter(i));
+                    replacePrimitiveGenerics(types, original.getParameter(i),
+                        clone.getParameter(i));
                 }
 
                 addTo.addChild(clone);
-            } else if (method instanceof InitializationMethod == false && method instanceof Destructor == false && method instanceof AssignmentMethod == false) {
+            } else if (method instanceof InitializationMethod == false
+                && method instanceof Destructor == false
+                && method instanceof AssignmentMethod == false) {
                 FlatMethodDeclaration flatMethod = (FlatMethodDeclaration) method;
 
                 if (!flatMethod.isPrimitiveOverload()) {
-                    flatMethod.convertToClass(addTo, types, flatMethod.getMethodGenericTypeParameterDeclaration().getTypes());
+                    flatMethod.convertToClass(addTo, types,
+                        flatMethod.getMethodGenericTypeParameterDeclaration().getTypes());
                 }
             }
         });
@@ -2673,7 +2787,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
     public String formatGenericArguments(Value[] args) {
         if (args.length > 0) {
-            return String.join(", ", Arrays.stream(args).map(x -> x.getFlatType(this)).collect(Collectors.toList()));
+            return String.join(", ",
+                Arrays.stream(args).map(x -> x.getFlatType(this)).collect(Collectors.toList()));
         }
 
         return "";
@@ -2682,9 +2797,11 @@ public class ClassDeclaration extends InstanceDeclaration {
     public void addConvertedImplementations(ClassDeclaration c, final Value[] types) {
         ExtendedClass extended = getExtendedClass();
 
-        Value[] extendedValues = convertImplementationTypes(types, extended.getGenericTypeArgumentList());
+        Value[] extendedValues =
+            convertImplementationTypes(types, extended.getGenericTypeArgumentList());
 
-        c.setExtendedClass(ExtendedClass.decodeStatement(c, extended.getType(), extended.getLocationIn(), true));
+        c.setExtendedClass(
+            ExtendedClass.decodeStatement(c, extended.getType(), extended.getLocationIn(), true));
         c.getExtendedClass().decodeGenericTypeArguments(formatGenericArguments(extendedValues));
 
         replacePrimitiveGenerics(types, c.getExtendedClass());
@@ -2694,9 +2811,11 @@ public class ClassDeclaration extends InstanceDeclaration {
         for (int i = 0; i < traits.getNumVisibleChildren(); i++) {
             TraitImplementation trait = traits.getVisibleChild(i);
 
-            Value[] traitValues = convertImplementationTypes(types, trait.getGenericTypeArgumentList());
+            Value[] traitValues =
+                convertImplementationTypes(types, trait.getGenericTypeArgumentList());
 
-            TraitImplementation t = TraitImplementation.decodeStatement(this, trait.getType(), c.getLocationIn(), true);
+            TraitImplementation t =
+                TraitImplementation.decodeStatement(this, trait.getType(), c.getLocationIn(), true);
             t.decodeGenericTypeArguments(formatGenericArguments(traitValues));
 
             replacePrimitiveGenerics(types, t);
@@ -2717,9 +2836,12 @@ public class ClassDeclaration extends InstanceDeclaration {
         c.primitiveOverloadTypes = new Value[types.length];
 
         for (int i = 0; i < types.length; i++) {
-            //IValue value = new IValue(types[i].getParent(), types[i].getLocationIn());
-            c.primitiveOverloadTypes[i] = (Value) types[i].clone(this, types[i].getLocationIn(), true, true);//types[i].cloneTo(value, true, true);
-            c.originalPrimitiveOverloadTypes[i] = (Value) types[i].clone(this, types[i].getLocationIn(), true, true);
+            // IValue value = new IValue(types[i].getParent(), types[i].getLocationIn());
+            c.primitiveOverloadTypes[i] =
+                (Value) types[i].clone(this, types[i].getLocationIn(), true, true);// types[i].cloneTo(value,
+                                                                                   // true, true);
+            c.originalPrimitiveOverloadTypes[i] =
+                (Value) types[i].clone(this, types[i].getLocationIn(), true, true);
         }
 
         String name = c.getName();
@@ -2728,8 +2850,11 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         for (int i = 0; i < types.length; i++) {
             if (types[i] instanceof GenericTypeParameter) {
-                GenericTypeParameter param = (GenericTypeParameter) types[i].clone(params, getLocationIn(), true, true);//new GenericTypeParameter(params, getLocationIn());
-//				param.setType(types[i]);
+                GenericTypeParameter param =
+                    (GenericTypeParameter) types[i].clone(params, getLocationIn(), true, true);// new
+                                                                                               // GenericTypeParameter(params,
+                                                                                               // getLocationIn());
+                // param.setType(types[i]);
 
                 params.addChild(param);
             } else {
@@ -2743,7 +2868,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         addConvertedImplementations(c, types);
 
-        if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS || getProgram().getTree().finishedPhase) {
+        if (getProgram().getPhase() > SyntaxTree.PHASE_INSTANCE_DECLARATIONS
+            || getProgram().getTree().finishedPhase) {
             c.convertProperties();
         }
 
@@ -2756,30 +2882,32 @@ public class ClassDeclaration extends InstanceDeclaration {
         }
         if (isPrimitiveOverload()) {
             if (genericOverload.arrayBracketOverload != null) {
-                arrayBracketOverload = genericOverload.arrayBracketOverload.clone(this, genericOverload.arrayBracketOverload.getLocationIn(), true, true);
+                arrayBracketOverload = genericOverload.arrayBracketOverload.clone(this,
+                    genericOverload.arrayBracketOverload.getLocationIn(), true, true);
             }
 
             final int phase = getProgram().getPhase();
             final boolean finished = getProgram().getTree().finishedPhase;
 
-            genericOverload.getFieldList().forEachChild(list ->
-            {
-                list.forEachChild(node ->
-                {
+            genericOverload.getFieldList().forEachChild(list -> {
+                list.forEachChild(node -> {
                     FieldDeclaration field = (FieldDeclaration) node;
 
                     if (field.isUserMade()) {
-                        FieldDeclaration clone = field.clone(this, field.getLocationIn(), true, true);
+                        FieldDeclaration clone =
+                            field.clone(this, field.getLocationIn(), true, true);
                         clone.setProperty("userMade", false);
                         clone.removeAnnotationOfType(OverrideAnnotation.class, false, false);
-                        clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false, false);
+                        clone.removeAnnotationOfType(RequireGenericTypeAnnotation.class, false,
+                            false);
                         clone.accessorValue = null;
                         clone.initializationValue = null;
                         clone.genericOverload = field;
                         field.correspondingPrimitiveOverloads.add(clone);
                         clone.setProperty("genericOverload", field);
 
-                        genericOverload.replacePrimitiveGenerics(originalPrimitiveOverloadTypes, field, clone);
+                        genericOverload.replacePrimitiveGenerics(originalPrimitiveOverloadTypes,
+                            field, clone);
 
                         clone.onAfterDecoded();
                         addChild(clone);
@@ -2790,10 +2918,14 @@ public class ClassDeclaration extends InstanceDeclaration {
             getHiddenMethodList().slaughterEveryLastVisibleChild();
             getDestructorList().slaughterEveryLastVisibleChild();
 
-            genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getConstructorList(), this);
-            genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getMethodList(), this);
-            genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getPropertyMethodList(), this);
-            genericOverload.cloneMethods(originalPrimitiveOverloadTypes, genericOverload.getHiddenMethodList(), this);
+            genericOverload.cloneMethods(originalPrimitiveOverloadTypes,
+                genericOverload.getConstructorList(), this);
+            genericOverload.cloneMethods(originalPrimitiveOverloadTypes,
+                genericOverload.getMethodList(), this);
+            genericOverload.cloneMethods(originalPrimitiveOverloadTypes,
+                genericOverload.getPropertyMethodList(), this);
+            genericOverload.cloneMethods(originalPrimitiveOverloadTypes,
+                genericOverload.getHiddenMethodList(), this);
 
             validate(SyntaxTree.PHASE_CLASS_DECLARATION);
 
@@ -2806,7 +2938,16 @@ public class ClassDeclaration extends InstanceDeclaration {
                     getPropertyMethodList().forEachFlatMethod(x -> x.checkOverrides());
                 }
 
-                for (int i = SyntaxTree.PHASE_INSTANCE_DECLARATIONS; i <= SyntaxTree.PHASE_INSTANCE_DECLARATIONS/* phase || i == phase && finished*/; i++) {
+                for (int i =
+                    SyntaxTree.PHASE_INSTANCE_DECLARATIONS; i <= SyntaxTree.PHASE_INSTANCE_DECLARATIONS/*
+                                                                                                        * phase
+                                                                                                        * ||
+                                                                                                        * i
+                                                                                                        * ==
+                                                                                                        * phase
+                                                                                                        * &&
+                                                                                                        * finished
+                                                                                                        */; i++) {
                     SyntaxTree.validateNodes(this, i);
                 }
             }
@@ -2838,21 +2979,25 @@ public class ClassDeclaration extends InstanceDeclaration {
                 addChild(constructor);
             }
 
-            getStaticBlockList().addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
+            getStaticBlockList()
+                .addChild(StaticBlock.generateEmptyBlock(getStaticBlockList(), Location.INVALID));
 
             if (!isPropertyTrue("functionMap")) {
                 validateDeclaration(phase);
             }
 
-            if (extendedClass != null && getFileDeclaration().containsImport(getExtendedClassLocation())) {
+            if (extendedClass != null
+                && getFileDeclaration().containsImport(getExtendedClassLocation())) {
                 getFileDeclaration().getImport(getExtendedClassLocation()).markUsed();
             }
 
             for (GenericTypeParameter param : getGenericTypeParameterDeclaration()) {
-                ClassDeclaration typeClass = SyntaxUtils.getImportedClass(getFileDeclaration(), param.getDefaultType());
+                ClassDeclaration typeClass =
+                    SyntaxUtils.getImportedClass(getFileDeclaration(), param.getDefaultType());
 
                 if (typeClass == null) {
-                    SyntaxMessage.error("Invalid generic type parameter default type '" + param.getDefaultType() + "'", param);
+                    SyntaxMessage.error("Invalid generic type parameter default type '"
+                        + param.getDefaultType() + "'", param);
                     result.errorOccurred = true;
                     return result;
                 }
@@ -2865,8 +3010,8 @@ public class ClassDeclaration extends InstanceDeclaration {
             addAssignmentMethods();
 
             if (!isPrimitiveOverload()) {
-//				generateFunctionMap();
-//				generatePropertyMap();
+                // generateFunctionMap();
+                // generatePropertyMap();
             }
         } else if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
             validateFields(phase);
@@ -2941,15 +3086,19 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         ClassDeclaration funMap = getProgram().getClassDeclaration("flat/meta/" + type);
 
-        if (this instanceof Trait || getExtendedClassDeclaration() != null && !getExtendedClassDeclaration().isOfType(funMap)) {
+        if (this instanceof Trait || getExtendedClassDeclaration() != null
+            && !getExtendedClassDeclaration().isOfType(funMap)) {
             addMapImport(getExtendedClassDeclaration(), type);
 
             // FIXME: Flat.objectClassType
-            String extensionName = !getExtendedClassName().equals("Object") ? getExtendedClassName() : "";
+            String extensionName =
+                !getExtendedClassName().equals("Object") ? getExtendedClassName() : "";
 
             String classType = this instanceof Trait ? "trait" : "class";
 
-            String declaration = classType + " " + /*getClassLocation().replace('/', '_').replace('.', '_')*/ getName() + type + " extends " + extensionName + type;
+            String declaration = classType + " "
+                + /* getClassLocation().replace('/', '_').replace('.', '_') */ getName() + type
+                + " extends " + extensionName + type;
 
             if (getImplementedInterfaces().length > 0) {
                 declaration += " implements ";
@@ -2967,13 +3116,15 @@ public class ClassDeclaration extends InstanceDeclaration {
                 }
             }
 
-            ClassDeclaration c = (ClassDeclaration) SyntaxTree.decodeStatement(this, declaration, Location.INVALID, true, new Class[]{
-                ClassDeclaration.class,
-                Trait.class,
-            });
+            ClassDeclaration c = (ClassDeclaration) SyntaxTree.decodeStatement(this, declaration,
+                Location.INVALID, true, new Class[] {
+                    ClassDeclaration.class,
+                    Trait.class,
+                });
 
             if (c == null) {
-                SyntaxMessage.error("Could not generate " + type + " for class '" + getName() + "'", this);
+                SyntaxMessage.error("Could not generate " + type + " for class '" + getName() + "'",
+                    this);
             }
 
             c.setProperty("userMade", false);
@@ -2989,13 +3140,15 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     private void generateFunctionMap() {
-        if (functionMap == null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap") && !getFileDeclaration().isExternalFile()) {
+        if (functionMap == null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap")
+            && !getFileDeclaration().isExternalFile()) {
             functionMap = generateMap("FunctionMap");
         }
     }
 
     public void generatePropertyMap() {
-        if (propertyMap == null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap") && !getFileDeclaration().isExternalFile()) {
+        if (propertyMap == null && !isPropertyTrue("functionMap") && !isPropertyTrue("propertyMap")
+            && !getFileDeclaration().isExternalFile()) {
             propertyMap = generateMap("PropertyMap");
 
             if (propertyMap != null) {
@@ -3006,7 +3159,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
     private void addFunctionMapFunctions(ClassDeclaration reference) {
         Consumer<MethodDeclaration> addFunction = m -> {
-            if (m instanceof FlatMethodDeclaration && m.isUserMade() && m instanceof Destructor == false && !m.isExternalType()) {
+            if (m instanceof FlatMethodDeclaration && m.isUserMade()
+                && m instanceof Destructor == false && !m.isExternalType()) {
                 addFunctionMapFunction(reference, (FlatMethodDeclaration) m);
             }
         };
@@ -3023,7 +3177,8 @@ public class ClassDeclaration extends InstanceDeclaration {
             }
         };
         Consumer<Node> addField = m -> {
-            if (m instanceof FieldDeclaration && m.isUserMade() && !((FieldDeclaration) m).isExternalType()) {
+            if (m instanceof FieldDeclaration && m.isUserMade()
+                && !((FieldDeclaration) m).isExternalType()) {
                 addPropertyMapProperty(reference, (FieldDeclaration) m);
             }
         };
@@ -3034,29 +3189,38 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     private void addPropertyMapProperty(ClassDeclaration reference, FieldDeclaration field) {
-        addMapFunction(reference, field, field.getName(), new TypeList<Parameter>(field, field.getLocationIn()), ClassDeclaration::decodeMapPropertyAccess);
+        addMapFunction(reference, field, field.getName(),
+            new TypeList<Parameter>(field, field.getLocationIn()),
+            ClassDeclaration::decodeMapPropertyAccess);
     }
 
     private void addPropertyMapProperty(ClassDeclaration reference, PropertyMethod property) {
 
     }
 
-    private void addFunctionMapFunction(ClassDeclaration reference, FlatMethodDeclaration function) {
+    private void addFunctionMapFunction(ClassDeclaration reference,
+        FlatMethodDeclaration function) {
         if (function instanceof AbstractMethodDeclaration) {
             return;
         }
 
-        String functionName = function instanceof Constructor ? "construct" : (function instanceof Destructor ? "destroy" : function.getName());
+        String functionName = function instanceof Constructor ? "construct"
+            : (function instanceof Destructor ? "destroy" : function.getName());
 
-        addMapFunction(reference, function, functionName, function.getParameterList(), ClassDeclaration::decodeMapFunctionAccess);
+        addMapFunction(reference, function, functionName, function.getParameterList(),
+            ClassDeclaration::decodeMapFunctionAccess);
     }
 
-    private static Identifier decodeMapFunctionAccess(InstanceDeclaration function, Identifier accessing, String arguments) {
-        return MethodCall.decodeStatement(accessing, function.getName() + arguments, function.getLocationIn(), true, false, (FlatMethodDeclaration) function);
+    private static Identifier decodeMapFunctionAccess(InstanceDeclaration function,
+        Identifier accessing, String arguments) {
+        return MethodCall.decodeStatement(accessing, function.getName() + arguments,
+            function.getLocationIn(), true, false, (FlatMethodDeclaration) function);
     }
 
-    private static Identifier decodeMapPropertyAccess(InstanceDeclaration field, Identifier accessing, String arguments) {
-        return (Identifier) SyntaxTree.decodeAccessible(accessing, field.getName(), field.getLocationIn(), true, false);
+    private static Identifier decodeMapPropertyAccess(InstanceDeclaration field,
+        Identifier accessing, String arguments) {
+        return (Identifier) SyntaxTree.decodeAccessible(accessing, field.getName(),
+            field.getLocationIn(), true, false);
     }
 
     @FunctionalInterface
@@ -3064,15 +3228,18 @@ public class ClassDeclaration extends InstanceDeclaration {
         D call(A a, B b, C c);
     }
 
-    private void addMapFunction(ClassDeclaration reference, InstanceDeclaration instance, String functionName, TypeList<Parameter> parameterList, QuadFunction<InstanceDeclaration, Identifier, String, Identifier> generator) {
-//		ArrayList<String> genericParameters = new ArrayList<>();
+    private void addMapFunction(ClassDeclaration reference, InstanceDeclaration instance,
+        String functionName, TypeList<Parameter> parameterList,
+        QuadFunction<InstanceDeclaration, Identifier, String, Identifier> generator) {
+        // ArrayList<String> genericParameters = new ArrayList<>();
         String parameters = "(";
 
         if (!instance.isStatic()) {
             String paramName = "reference";
 
-            while (paramName.equals(instance.getName()) || (instance instanceof FlatMethodDeclaration &&
-                ((FlatMethodDeclaration) instance).getParameter(paramName) != null)) {
+            while (paramName.equals(instance.getName())
+                || (instance instanceof FlatMethodDeclaration &&
+                    ((FlatMethodDeclaration) instance).getParameter(paramName) != null)) {
                 paramName += "_";
             }
 
@@ -3084,11 +3251,10 @@ public class ClassDeclaration extends InstanceDeclaration {
                 parameters += ", ";
             }
 
-			/*if (p.isGenericType() && !genericParameters.contains(p.getType()))
-			{
-				genericParameters.add(p.getType());
-			}
-			else */
+            /*
+             * if (p.isGenericType() && !genericParameters.contains(p.getType())) {
+             * genericParameters.add(p.getType()); } else
+             */
             if (p.isExternalType()) {
                 return;
             }
@@ -3108,19 +3274,22 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         String returnType = instance.getType() != null ? " -> " + instance.getFlatType() : "";
 
-//		if (instance.isGenericType() && !genericParameters.contains(instance.getType()))
-//		{
-//			genericParameters.add(instance.getType());
-//		}
+        // if (instance.isGenericType() && !genericParameters.contains(instance.getType()))
+        // {
+        // genericParameters.add(instance.getType());
+        // }
 
-        GenericTypeParameterList referenceParameters = reference.getGenericTypeParameterDeclaration();
+        GenericTypeParameterList referenceParameters =
+            reference.getGenericTypeParameterDeclaration();
 
         String genericParams = "";
 
         if (instance instanceof FlatMethodDeclaration) {
-            GenericTypeParameterList instanceParameters = ((FlatMethodDeclaration) instance).getMethodGenericTypeParameterDeclaration();
+            GenericTypeParameterList instanceParameters =
+                ((FlatMethodDeclaration) instance).getMethodGenericTypeParameterDeclaration();
 
-            if (instanceParameters.getNumParameters() > 0 || referenceParameters.getNumParameters() > 0) {
+            if (instanceParameters.getNumParameters() > 0
+                || referenceParameters.getNumParameters() > 0) {
                 for (int i = 0; i < instanceParameters.getNumParameters(); i++) {
                     if (i > 0) {
                         genericParams += ", ";
@@ -3149,11 +3318,16 @@ public class ClassDeclaration extends InstanceDeclaration {
         String visibility = instance.getVisibilityText();
         visibility = visibility.endsWith("visible") ? "public" : visibility;
 
-        BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(this, visibility + " " + staticValue + functionName + genericParams + parameters + returnType, instance.getLocationIn(), true);
+        BodyMethodDeclaration method = BodyMethodDeclaration.decodeStatement(this,
+            visibility + " " + staticValue + functionName + genericParams + parameters + returnType,
+            instance.getLocationIn(), true);
 
         if (method == null) {
-            BodyMethodDeclaration.decodeStatement(this, visibility + " " + staticValue + functionName + genericParams + parameters + returnType, instance.getLocationIn(), true);
-            SyntaxMessage.error("Could not generate function map handle for function '" + reference.getClassLocation() + "." + instance.getName() + "'", instance);
+            BodyMethodDeclaration.decodeStatement(this, visibility + " " + staticValue
+                + functionName + genericParams + parameters + returnType, instance.getLocationIn(),
+                true);
+            SyntaxMessage.error("Could not generate function map handle for function '"
+                + reference.getClassLocation() + "." + instance.getName() + "'", instance);
         }
 
         method.onAfterDecoded();
@@ -3175,13 +3349,14 @@ public class ClassDeclaration extends InstanceDeclaration {
 
             arguments += p.getName();
 
-//			if (p instanceof ClosureDeclaration)
-//			{
-//				ClosureDeclaration closure = (ClosureDeclaration)p;
-//
-//				((ClosureDeclaration)method.getParameterList().getParameter(i)).id = closure.id;
-////				method.getParameterList().getParameter(i).replaceWith(closure.clone(method.getParameterList(), function.getLocationIn(), true, true));
-//			}
+            // if (p instanceof ClosureDeclaration)
+            // {
+            // ClosureDeclaration closure = (ClosureDeclaration)p;
+            //
+            // ((ClosureDeclaration)method.getParameterList().getParameter(i)).id = closure.id;
+            //// method.getParameterList().getParameter(i).replaceWith(closure.clone(method.getParameterList(),
+            // function.getLocationIn(), true, true));
+            // }
 
             i++;
         }
@@ -3195,22 +3370,28 @@ public class ClassDeclaration extends InstanceDeclaration {
         if (instance instanceof Constructor) {
             method.setDataType(Value.POINTER);
 
-            call = Instantiation.decodeStatement(method, instance.getName() + genericParams + arguments, instance.getLocationIn(), true, false, (Constructor) instance);
+            call = Instantiation.decodeStatement(method,
+                instance.getName() + genericParams + arguments, instance.getLocationIn(), true,
+                false, (Constructor) instance);
             node = call;
         } else {
             if (!instance.isStatic()) {
                 referenceParameter.setDataType(Value.POINTER);
 
-                accessing = method.getParameter("reference").generateUsableVariable(method, instance.getLocationIn());
+                accessing = method.getParameter("reference").generateUsableVariable(method,
+                    instance.getLocationIn());
             } else {
-                accessing = StaticClassReference.decodeStatement(method, instance.getDeclaringClass().getName(), instance.getLocationIn(), true);
+                accessing = StaticClassReference.decodeStatement(method,
+                    instance.getDeclaringClass().getName(), instance.getLocationIn(), true);
             }
 
             call = generator.call(instance, accessing, genericParams + arguments);
         }
 
         if (call == null) {
-            SyntaxMessage.error("Could not generate function map handle delegate call for function '" + reference.getClassLocation() + "." + instance.getName() + "'", instance);
+            SyntaxMessage
+                .error("Could not generate function map handle delegate call for function '"
+                    + reference.getClassLocation() + "." + instance.getName() + "'", instance);
         }
 
         if (instance instanceof Constructor == false) {
@@ -3271,46 +3452,34 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     private void validateConstructors(int phase) {
-		/*if (doesExtendClass() && getExtendedClassDeclaration().containsComplexConstructors())
-		{
-			Constructor[] cs = getExtendedClassDeclaration().getComplexConstructors();
-
-			for (Constructor c : cs)
-			{
-				if (!containsSimilarConstructor(c, false))
-				{
-					Value[] types = c.getParameterList().getTypes();
-
-					for (Value type : types)
-					{
-						if (!getFileDeclaration().containsImport(type.getTypeClassLocation()))
-						{
-							getFileDeclaration().addImport(type.getTypeClassLocation());
-						}
-					}
-
-					Constructor con = Constructor.decodeStatement(this, c.generateFlatInput(false).toString(), Location.INVALID, true);
-					//con.setVisibility(PRIVATE);
-
-					for (int i = 0; i < c.getParameterList().getNumParameters(); i++)
-					{
-						Parameter param = c.getParameter(i);
-
-						if (param.isGenericType())
-						{
-							con.getParameter(i).setType(param.getGenericReturnType());
-						}
-					}
-
-					addChild(con);
-				}
-			}
-
-//			if (!containsConstructor())
-//			{
-//				SyntaxMessage.error("Must define a constructor for class '" + getName() + "' because it's super class '" + getExtendedClassName() + "' contains a complex constructor.", this);
-//			}
-		}*/
+        /*
+         * if (doesExtendClass() && getExtendedClassDeclaration().containsComplexConstructors()) {
+         * Constructor[] cs = getExtendedClassDeclaration().getComplexConstructors();
+         * 
+         * for (Constructor c : cs) { if (!containsSimilarConstructor(c, false)) { Value[] types =
+         * c.getParameterList().getTypes();
+         * 
+         * for (Value type : types) { if
+         * (!getFileDeclaration().containsImport(type.getTypeClassLocation())) {
+         * getFileDeclaration().addImport(type.getTypeClassLocation()); } }
+         * 
+         * Constructor con = Constructor.decodeStatement(this,
+         * c.generateFlatInput(false).toString(), Location.INVALID, true);
+         * //con.setVisibility(PRIVATE);
+         * 
+         * for (int i = 0; i < c.getParameterList().getNumParameters(); i++) { Parameter param =
+         * c.getParameter(i);
+         * 
+         * if (param.isGenericType()) { con.getParameter(i).setType(param.getGenericReturnType()); }
+         * }
+         * 
+         * addChild(con); } }
+         * 
+         * // if (!containsConstructor()) // { //
+         * SyntaxMessage.error("Must define a constructor for class '" + getName() +
+         * "' because it's super class '" + getExtendedClassName() +
+         * "' contains a complex constructor.", this); // } }
+         */
 
         if (!containsConstructor()) {
             addDefaultConstructor();
@@ -3352,31 +3521,45 @@ public class ClassDeclaration extends InstanceDeclaration {
         Consumer<Node> convertField = n -> {
             FieldDeclaration field = (FieldDeclaration) n;
 
-            if (field.isPropertyTrue("addedDefaultInterfaceFunctions") || (field.isUserMade() || field.containsProperty("genericOverload")) && !field.containsAccessorMethod() && !field.containsMutatorMethod() && field.getShorthandAccessor() == null) {
+            if (field.isPropertyTrue("addedDefaultInterfaceFunctions")
+                || (field.isUserMade() || field.containsProperty("genericOverload"))
+                    && !field.containsAccessorMethod() && !field.containsMutatorMethod()
+                    && field.getShorthandAccessor() == null) {
                 FieldDeclaration current = getField(field.getName(), false);
 
                 if (current != null) {
-                    if (current.getVisibility() != field.getVisibility() && !(current.getVisibility() == PUBLIC && field.getVisibility() == FieldDeclaration.VISIBLE)) {
-                        SyntaxMessage.error("Trait field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' has to be " + field.getVisibilityText(), this, false);
-                    } else if (field.getVisibility() == PUBLIC && (current.getMutatorMethod() == null || current.getMutatorMethod().isDisabled())) {
-                        SyntaxMessage.error("Trait field '" + field.getName() + "' implementation in class '" + getClassLocation() + "' cannot hide mutator function", this, false);
+                    if (current.getVisibility() != field.getVisibility()
+                        && !(current.getVisibility() == PUBLIC
+                            && field.getVisibility() == FieldDeclaration.VISIBLE)) {
+                        SyntaxMessage.error(
+                            "Trait field '" + field.getName() + "' implementation in class '"
+                                + getClassLocation() + "' has to be " + field.getVisibilityText(),
+                            this, false);
+                    } else if (field.getVisibility() == PUBLIC
+                        && (current.getMutatorMethod() == null
+                            || current.getMutatorMethod().isDisabled())) {
+                        SyntaxMessage.error(
+                            "Trait field '" + field.getName() + "' implementation in class '"
+                                + getClassLocation() + "' cannot hide mutator function",
+                            this, false);
                     }
                 } else {
                     FieldDeclaration clone = field.clone(this, Location.INVALID, true, true);
 
-                    clone.setTwoWayBinding(true);//field.getVisibility() == PUBLIC);
+                    clone.setTwoWayBinding(true);// field.getVisibility() == PUBLIC);
                     clone.setShorthandAccessor(field.getName());
                     clone.setProperty("inheritedFromTrait", true);
 
                     if (field.isGenericType()) {
                         clone.setType(clone.searchGenericTypeArgument(clone), clone);
                     } else {
-//						Stack<IValue> path = SyntaxUtils.performWalk(this, field.getParentClass(), new Stack<>());
-//
-//						while (!path.isEmpty())
-//						{
-//
-//						}
+                        // Stack<IValue> path = SyntaxUtils.performWalk(this,
+                        // field.getParentClass(), new Stack<>());
+                        //
+                        // while (!path.isEmpty())
+                        // {
+                        //
+                        // }
 
                         clone.replaceGenericArguments(field);
                     }
@@ -3391,40 +3574,45 @@ public class ClassDeclaration extends InstanceDeclaration {
 
                     field.importGenericArgumentTypesTo(getFileDeclaration());
 
-//					if (field.getVisibility() == FieldDeclaration.VISIBLE && !field.isGenericType())
-//					{
-//						type = field.getClonedFlatTypeValue(clone);
-//
-//						if (type.getGenericTypeArgumentList() != null)
-//						{
-//							for (GenericTypeArgument arg : type.getGenericTypeArgumentList())
-//							{
-//								if (!arg.isGenericType())
-//								{
-//									if (!getFileDeclaration().containsImport(arg.getTypeClassLocation()))
-//									{
-//										getFileDeclaration().addImport(arg.getTypeClassLocation());
-//									}
-//								}
-//							}
-//						}
-//					}
+                    // if (field.getVisibility() == FieldDeclaration.VISIBLE &&
+                    // !field.isGenericType())
+                    // {
+                    // type = field.getClonedFlatTypeValue(clone);
+                    //
+                    // if (type.getGenericTypeArgumentList() != null)
+                    // {
+                    // for (GenericTypeArgument arg : type.getGenericTypeArgumentList())
+                    // {
+                    // if (!arg.isGenericType())
+                    // {
+                    // if (!getFileDeclaration().containsImport(arg.getTypeClassLocation()))
+                    // {
+                    // getFileDeclaration().addImport(arg.getTypeClassLocation());
+                    // }
+                    // }
+                    // }
+                    // }
+                    // }
 
                     if (!isPrimitiveOverload()) {
                         clone.decodeArrowBinding(type);
                     }
 
-//					if (!clone.isTwoWayBinding())
-//					{
-//						MutatorMethod method = (MutatorMethod)clone.addDefaultMutator(field.getClonedFlatTypeValue(clone));
-//
-//						Assignment assignment = Assignment.generateDefault(method, method.getLocationIn());
-//
-//						assignment.getAssigneeNodes().addChild(field.generateUsableVariable(assignment, assignment.getLocationIn()));
-//						assignment.addChild(SyntaxTree.decodeIdentifier(assignment, "value", assignment.getLocationIn(), true));
-//
-//						method.addChild(assignment);
-//					}
+                    // if (!clone.isTwoWayBinding())
+                    // {
+                    // MutatorMethod method =
+                    // (MutatorMethod)clone.addDefaultMutator(field.getClonedFlatTypeValue(clone));
+                    //
+                    // Assignment assignment = Assignment.generateDefault(method,
+                    // method.getLocationIn());
+                    //
+                    // assignment.getAssigneeNodes().addChild(field.generateUsableVariable(assignment,
+                    // assignment.getLocationIn()));
+                    // assignment.addChild(SyntaxTree.decodeIdentifier(assignment, "value",
+                    // assignment.getLocationIn(), true));
+                    //
+                    // method.addChild(assignment);
+                    // }
                 }
             }
         };
@@ -3433,7 +3621,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         i.getFieldList().getPrivateFieldList().forEachVisibleChild(convertField);
 
         for (Trait extended : i.getImplementedInterfaces(false)) {
-            if (Flat.objectClassType.equals("trait") && extended.getName().equals("Object")) continue;
+            if (Flat.objectClassType.equals("trait") && extended.getName().equals("Object"))
+                continue;
 
             addFieldsFromInterface(extended);
         }
@@ -3491,7 +3680,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
     private void updateFunctionMapGenericParameters() {
         Consumer<FlatMethodDeclaration> func = method -> {
-            FlatMethodDeclaration corresponding = (FlatMethodDeclaration) method.getProperty("correspondingFunction");
+            FlatMethodDeclaration corresponding =
+                (FlatMethodDeclaration) method.getProperty("correspondingFunction");
 
             if (corresponding != null) {
                 ParameterList params = corresponding.getParameterList();
@@ -3510,20 +3700,20 @@ public class ClassDeclaration extends InstanceDeclaration {
                     method.setDataType(corresponding.getDataType());
                 }
 
-//				if (getScope().getNumVisibleChildren() > 0)
-//				{
-//					Node n = getScope().getVisibleChild(0);
-//
-//					if (n instanceof Return)
-//					{
-//						Return r = (Return)n;
-//
-//						if (r.getValueNode().getReturnedNode().isPrimitive() && !isPrimitive())
-//						{
-//							r.getValueNode().replaceWithAutoboxedValue();
-//						}
-//					}
-//				}
+                // if (getScope().getNumVisibleChildren() > 0)
+                // {
+                // Node n = getScope().getVisibleChild(0);
+                //
+                // if (n instanceof Return)
+                // {
+                // Return r = (Return)n;
+                //
+                // if (r.getValueNode().getReturnedNode().isPrimitive() && !isPrimitive())
+                // {
+                // r.getValueNode().replaceWithAutoboxedValue();
+                // }
+                // }
+                // }
             }
         };
 
@@ -3577,7 +3767,8 @@ public class ClassDeclaration extends InstanceDeclaration {
         getInnerClasses(false).getVisibleListChildren().forEach(innerClass -> {
             innerClass.setOriginalFile(fileDeclaration);
 
-            ClassDeclaration otherInnerClass = otherClass.getInnerClasses().firstWhere(c -> c.getName().equals(innerClass.getName()));
+            ClassDeclaration otherInnerClass = otherClass.getInnerClasses()
+                .firstWhere(c -> c.getName().equals(innerClass.getName()));
 
             if (otherInnerClass != null) {
                 innerClass.mergeClasses(otherInnerClass, phase);
@@ -3591,7 +3782,7 @@ public class ClassDeclaration extends InstanceDeclaration {
             otherClass.getExternalTypeListNode().addChild(external);
         });
 
-        flat.tree.List[] fieldLists = new flat.tree.List[]{
+        flat.tree.List[] fieldLists = new flat.tree.List[] {
             getFieldList().getPublicFieldList(),
             getFieldList().getPublicStaticFieldList(),
             getFieldList().getPrivateFieldList(),
@@ -3618,7 +3809,7 @@ public class ClassDeclaration extends InstanceDeclaration {
             }
         }
 
-        MethodList[] methodLists = new MethodList[]{
+        MethodList[] methodLists = new MethodList[] {
             getConstructorList(),
             getMethodList(),
             getPropertyMethodList()
@@ -3632,7 +3823,9 @@ public class ClassDeclaration extends InstanceDeclaration {
                     MethodList.SearchFilter filter = new MethodList.SearchFilter();
                     filter.checkAncestor = false;
                     filter.checkInterfaces = false;
-                    MethodDeclaration otherMethod = otherClass.getMethod(new GenericCompatible[]{null}, method.getName(), filter, method.getParameterList().getTypes());
+                    MethodDeclaration otherMethod =
+                        otherClass.getMethod(new GenericCompatible[] {null}, method.getName(),
+                            filter, method.getParameterList().getTypes());
 
                     if (otherMethod != null) {
                         otherMethod.replaceWith(method);
@@ -3670,7 +3863,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
             if (!isAbstract()) {
                 if (doesExtendClass() && getExtendedClassDeclaration() != null) {
-                    for (AbstractMethodDeclaration method : getExtendedClassDeclaration().getAbstractMethods()) {
+                    for (AbstractMethodDeclaration method : getExtendedClassDeclaration()
+                        .getAbstractMethods()) {
                         if (!doesOverrideMethod(method) && method.isUserMade()) {
                             doesOverrideMethod(method);
                             errors.add(method);
@@ -3681,12 +3875,14 @@ public class ClassDeclaration extends InstanceDeclaration {
                 ClassDeclaration clazz = this;
 
                 while (clazz != null) {
-                    TypeList<TraitImplementation> interfaces = clazz.getInterfacesImplementationList();
+                    TypeList<TraitImplementation> interfaces =
+                        clazz.getInterfacesImplementationList();
 
                     if (interfaces.getNumVisibleChildren() > 0) {
                         for (TraitImplementation inter : interfaces) {
                             for (FlatMethodDeclaration method : inter.getTypeClass().getMethods()) {
-                                if (method instanceof BodyMethodDeclaration == false && method.isUserMade() && !doesOverrideMethod(method)) {
+                                if (method instanceof BodyMethodDeclaration == false
+                                    && method.isUserMade() && !doesOverrideMethod(method)) {
                                     doesOverrideMethod(method);
                                     errors.add(method);
                                 }
@@ -3710,7 +3906,8 @@ public class ClassDeclaration extends InstanceDeclaration {
                         type = "interface";
                     }
 
-                    SyntaxMessage.error("Class " + getName() + " must implement " + type + " method " + method.getName(), this, i == errors.size() - 1);
+                    SyntaxMessage.error("Class " + getName() + " must implement " + type
+                        + " method " + method.getName(), this, i == errors.size() - 1);
                 }
             }
         }
@@ -3721,7 +3918,8 @@ public class ClassDeclaration extends InstanceDeclaration {
 
         if (extended != null) {
             if (encapsulatingClass == null || phase >= SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
-                ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
+                ClassDeclaration clazz =
+                    SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
 
                 if (clazz == null) {
                     SyntaxUtils.getImportedClass(getFileDeclaration(), extended.getType());
@@ -3731,9 +3929,11 @@ public class ClassDeclaration extends InstanceDeclaration {
                 }
 
                 GenericTypeArgumentList existing = extended.getGenericTypeArgumentList();
-                GenericTypeParameterList required = extended.getTypeClass().getGenericTypeParameterDeclaration();
+                GenericTypeParameterList required =
+                    extended.getTypeClass().getGenericTypeParameterDeclaration();
 
-                for (int i = existing.getNumVisibleChildren(); i < required.getNumParameters(); i++) {
+                for (int i = existing.getNumVisibleChildren(); i < required
+                    .getNumParameters(); i++) {
                     GenericTypeArgument arg = new GenericTypeArgument(existing, Location.INVALID);
 
                     arg.setType(required.getParameter(i).getDefaultType());
@@ -3747,19 +3947,21 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Validate that all of the implemented classes have been declared
-     * and that they are valid interfaces.
+     * Validate that all of the implemented classes have been declared and that they are valid
+     * interfaces.
      *
      * @param phase The phase that the node is being validated in.
      */
     private void validateImplementations(int phase) {
         for (String implementedClass : getImplementedClassNames()) {
-            ClassDeclaration clazz = SyntaxUtils.getImportedClass(getFileDeclaration(), implementedClass);
+            ClassDeclaration clazz =
+                SyntaxUtils.getImportedClass(getFileDeclaration(), implementedClass);
 
             if (clazz == null) {
                 SyntaxMessage.error("Class '" + implementedClass + "' not declared", this);
             } else if (clazz instanceof Trait == false) {
-                SyntaxMessage.error("Class '" + implementedClass + "' is not an interface and therefore cannot be implemented", this);
+                SyntaxMessage.error("Class '" + implementedClass
+                    + "' is not an interface and therefore cannot be implemented", this);
             }
 
             Trait i = (Trait) clazz;
@@ -3769,22 +3971,18 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the class contains a constructor implementation
-     * or not.
+     * Get whether or not the class contains a constructor implementation or not.
      *
-     * @return Whether or not the class contains a constructor
-     * implementation or not.
+     * @return Whether or not the class contains a constructor implementation or not.
      */
     public boolean containsConstructor() {
         return containsMethod(getName(), true, getName());
     }
 
     /**
-     * Get whether or not the class contains a default constructor
-     * implementation or not.
+     * Get whether or not the class contains a default constructor implementation or not.
      *
-     * @return Whether or not the class contains a default constructor
-     * implementation or not.
+     * @return Whether or not the class contains a default constructor implementation or not.
      */
     public boolean containsDefaultConstructor() {
         MethodList constructors = getConstructorList();
@@ -3802,23 +4000,20 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the class contains a destructor implementation
-     * or not.
+     * Get whether or not the class contains a destructor implementation or not.
      *
-     * @return Whether or not the class contains a destructor
-     * implementation or not.
+     * @return Whether or not the class contains a destructor implementation or not.
      */
     public boolean containsDestructor() {
         return containsMethod(Destructor.IDENTIFIER, false, null);
     }
 
     /**
-     * Get whether or not the Flat class contains a method with the
-     * given specifications.
+     * Get whether or not the Flat class contains a method with the given specifications.
      *
      * @param methodName The name of the method to search for.
-     * @param staticVal  Whether or not the method is static.
-     * @param type       The return type of the method.
+     * @param staticVal Whether or not the method is static.
+     * @param type The return type of the method.
      * @return Whether or not the class contains the method.
      */
     public boolean containsMethod(String methodName, boolean staticVal, String type) {
@@ -3828,20 +4023,22 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Get whether or not the Flat class contains a method with the
-     * given specifications.
+     * Get whether or not the Flat class contains a method with the given specifications.
      *
-     * @param root       The root Node to search for the method from.
+     * @param root The root Node to search for the method from.
      * @param methodName The name of the method to search for.
-     * @param staticVal  Whether or not the method is static.
-     * @param type       The return type of the method.
+     * @param staticVal Whether or not the method is static.
+     * @param type The return type of the method.
      * @return Whether or not the class contains the method.
      */
     public boolean containsMethod(Node root, String methodName, boolean staticVal, String type) {
         for (int i = 0; i < root.getNumChildren(); i++) {
             MethodDeclaration methodDeclaration = (MethodDeclaration) root.getChild(i);
 
-            if (methodDeclaration.isStatic() == staticVal && methodDeclaration.getName() != null && methodDeclaration.getName().equals(methodName) && (methodDeclaration.getType() == null && type == null || methodDeclaration.getType().equals(type))) {
+            if (methodDeclaration.isStatic() == staticVal && methodDeclaration.getName() != null
+                && methodDeclaration.getName().equals(methodName)
+                && (methodDeclaration.getType() == null && type == null
+                    || methodDeclaration.getType().equals(type))) {
                 return true;
             }
         }
@@ -3850,15 +4047,15 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Generate a ClassDeclaration with the given parent and location for
-     * temporary use.
+     * Generate a ClassDeclaration with the given parent and location for temporary use.
      *
-     * @param parent     The node to set as the ClassDeclaration parent.
+     * @param parent The node to set as the ClassDeclaration parent.
      * @param locationIn The location to set as the ClassDeclaration location.
      * @return The generated temporary ClassDeclaration.
      */
     public static ClassDeclaration generateTemporaryClass(Node parent, Location locationIn) {
-        ClassDeclaration methodDeclaration = decodeStatement(parent, "public class Temp", locationIn, true);
+        ClassDeclaration methodDeclaration =
+            decodeStatement(parent, "public class Temp", locationIn, true);
 
         return methodDeclaration;
     }
@@ -3876,7 +4073,8 @@ public class ClassDeclaration extends InstanceDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ClassDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ClassDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ClassDeclaration node = new ClassDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -3890,13 +4088,13 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Fill the given {@link ClassDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link ClassDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ClassDeclaration cloneTo(ClassDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ClassDeclaration cloneTo(ClassDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.extendedClass = extendedClass;
@@ -3904,11 +4102,13 @@ public class ClassDeclaration extends InstanceDeclaration {
         node.genericOverload = genericOverload;
 
         if (classInstanceDeclaration != null) {
-            node.classInstanceDeclaration = classInstanceDeclaration.clone(node, Location.INVALID, true, true);
+            node.classInstanceDeclaration =
+                classInstanceDeclaration.clone(node, Location.INVALID, true, true);
         }
 
         if (arrayBracketOverload != null) {
-            node.arrayBracketOverload = arrayBracketOverload.clone(node, arrayBracketOverload.getLocationIn(), true, true);
+            node.arrayBracketOverload =
+                arrayBracketOverload.clone(node, arrayBracketOverload.getLocationIn(), true, true);
         }
 
         return node;
@@ -3936,11 +4136,10 @@ public class ClassDeclaration extends InstanceDeclaration {
     }
 
     /**
-     * Test the ClassDeclaration class type to make sure everything
-     * is working properly.
+     * Test the ClassDeclaration class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

@@ -12,8 +12,7 @@ import flat.tree.variables.VariableDeclaration;
 import flat.util.*;
 
 /**
- * LocalVariable extension that represents the declaration of local
- * variable.
+ * LocalVariable extension that represents the declaration of local variable.
  *
  * @author Braden Steffaniak
  * @since v0.2.4 Jan 5, 2014 at 9:10:49 PM
@@ -57,8 +56,7 @@ public class LocalDeclaration extends VariableDeclaration {
     /**
      * Set the ID of the scope that the variable was declared in.
      *
-     * @param scopeID The ID of the scope that the variable was declared
-     *                in.
+     * @param scopeID The ID of the scope that the variable was declared in.
      */
     public void setScopeID(int scopeID) {
         this.scopeID = scopeID;
@@ -83,7 +81,8 @@ public class LocalDeclaration extends VariableDeclaration {
                 type = previous.generateFlatType() + "";
             }
 
-            LocalDeclaration local = LocalDeclaration.decodeStatement(getParent(), type + " " + name, getLocationIn(), true);
+            LocalDeclaration local = LocalDeclaration.decodeStatement(getParent(),
+                type + " " + name, getLocationIn(), true);
             cloneAnnotationsTo(local);
 
             local.setVolatile(isVolatile());
@@ -103,49 +102,45 @@ public class LocalDeclaration extends VariableDeclaration {
     }
 
     /**
-     * Decode the given statement into a LocalDeclaration instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a LocalDeclaration instance, if possible. If it is not
+     * possible, this method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>int index</li>
-     * 	<li>constant char c</li>
-     * 	<li>String name</li>
+     * <li>int index</li>
+     * <li>constant char c</li>
+     * <li>String name</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  LocalDeclaration instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a LocalDeclaration.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a LocalDeclaration instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a LocalDeclaration.
      */
-    public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static LocalDeclaration decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, true, true);
     }
 
     /**
-     * Decode the given statement into a LocalDeclaration instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a LocalDeclaration instance, if possible. If it is not
+     * possible, this method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>int index</li>
-     * 	<li>constant char c</li>
-     * 	<li>String name</li>
+     * <li>int index</li>
+     * <li>constant char c</li>
+     * <li>String name</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  LocalDeclaration instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a LocalDeclaration instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @param checkName Whether or not to check for naming conflicts.
-     * @return The generated node, if it was possible to translated it
-     * into a LocalDeclaration.
+     * @return The generated node, if it was possible to translated it into a LocalDeclaration.
      */
-    public static LocalDeclaration decodeStatement(Node parent, String statement, Location location, boolean require, boolean checkName, boolean checkType) {
+    public static LocalDeclaration decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean checkName, boolean checkType) {
         LocalDeclaration n = new LocalDeclaration(parent, location);
 
         Bounds extraDeclarations = n.findExtraDeclarations(statement);
@@ -154,7 +149,9 @@ public class LocalDeclaration extends VariableDeclaration {
             statement = extraDeclarations.extractPreString(statement);
         }
 
-        if (!SyntaxUtils.isLiteral(n, statement) && StringUtils.containsMultipleWords(statement) && !containsParenthesis(statement))// || !Regex.matches(statement, Patterns.IDENTIFIER_DECLARATION))
+        if (!SyntaxUtils.isLiteral(n, statement) && StringUtils.containsMultipleWords(statement)
+            && !containsParenthesis(statement))// || !Regex.matches(statement,
+                                               // Patterns.IDENTIFIER_DECLARATION))
         {
             DeclarationData data = new DeclarationData();
 
@@ -176,10 +173,12 @@ public class LocalDeclaration extends VariableDeclaration {
                 for (int i = 0; i < n.getNumGenericTypeArguments(); i++) {
                     GenericTypeArgument type = n.getGenericTypeArgument(i);
 
-                    if (!type.isFunctionType() && !type.isGenericType() && !SyntaxUtils.validateImported(n, type.getTypeClassLocation())) {
+                    if (!type.isFunctionType() && !type.isGenericType()
+                        && !SyntaxUtils.validateImported(n, type.getTypeClassLocation())) {
                         type.isGenericType();
                         SyntaxUtils.validateImported(n, type.getTypeClassLocation());
-                        SyntaxMessage.queryError("Invalid type '" + type.getType() + "'", n, require);
+                        SyntaxMessage.queryError("Invalid type '" + type.getType() + "'", n,
+                            require);
 
                         return null;
                     }
@@ -197,12 +196,13 @@ public class LocalDeclaration extends VariableDeclaration {
     }
 
     public boolean containsImplicitCompatibleAnnotation() {
-        return containsAnnotationOfType(VarAnnotation.class, false, true) || containsAnnotationOfType(FinalAnnotation.class, false, true);
+        return containsAnnotationOfType(VarAnnotation.class, false, true)
+            || containsAnnotationOfType(FinalAnnotation.class, false, true);
     }
 
     /**
-     * Make sure that the declaration is valid and that a declaration of
-     * another variable does not have the same name.
+     * Make sure that the declaration is valid and that a declaration of another variable does not
+     * have the same name.
      *
      * @return Whether or not the specified declaration is valid.
      */
@@ -216,7 +216,8 @@ public class LocalDeclaration extends VariableDeclaration {
         // If a local variable with the same name has already been declared.
         if (node instanceof LocalDeclaration) {
             SyntaxTree.findDeclaration(getParent(), getName());
-            SyntaxMessage.queryError("Local variable '" + getName() + "' has already been declared", this, require);
+            SyntaxMessage.queryError("Local variable '" + getName() + "' has already been declared",
+                this, require);
             return false;
         }
 
@@ -240,14 +241,17 @@ public class LocalDeclaration extends VariableDeclaration {
                 params = "(";
 
                 for (int i = 0; i < type.parameterNames.length; i++) {
-                    params += type.closure.getParameterList().getParameter(i).generateFlatType() + " " + type.parameterNames[i];
+                    params += type.closure.getParameterList().getParameter(i).generateFlatType()
+                        + " " + type.parameterNames[i];
                 }
 
                 params += ")";
             }
 
-            replacement.getAssigneeNodes().addChild(generateUsableVariable(parent, getLocationIn()));
-            replacement.addChild(LambdaExpression.decodeStatement(parent, params + " => {", getLocationIn(), true));
+            replacement.getAssigneeNodes()
+                .addChild(generateUsableVariable(parent, getLocationIn()));
+            replacement.addChild(
+                LambdaExpression.decodeStatement(parent, params + " => {", getLocationIn(), true));
 
             return replacement;
         }
@@ -268,7 +272,8 @@ public class LocalDeclaration extends VariableDeclaration {
      * @see Node#interactWord(String, Bounds, String, String, ExtraData)
      */
     @Override
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData data) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData data) {
         DeclarationData extra = (DeclarationData) data;
 
         boolean nullable = rightDelimiter.startsWith("?");
@@ -287,14 +292,11 @@ public class LocalDeclaration extends VariableDeclaration {
             extra.error = "Invalid syntax '" + leftDelimiter + word + "'";
         } else if (rightDelimiter.equals(".")) {
 
-        } else if (rightDelimiter.length() == 0 || nullable || rightDelimiter.equals("*") || (rightDelimiter.startsWith("[") && rightDelimiter.length() > 1)) {
+        } else if (rightDelimiter.length() == 0 || nullable || rightDelimiter.equals("*")
+            || (rightDelimiter.startsWith("[") && rightDelimiter.length() > 1)) {
             String type = word;
 
-            for (
-                int i = extra.getWordNumber();
-                i > 0 && extra.delims.get(i).equals(".");
-                i--
-            ) {
+            for (int i = extra.getWordNumber(); i > 0 && extra.delims.get(i).equals("."); i--) {
                 type = extra.words.get(i - 1) + extra.delims.get(i) + type;
 
                 String left = extra.delims.get(i - 1);
@@ -305,9 +307,11 @@ public class LocalDeclaration extends VariableDeclaration {
                 }
             }
 
-            setType(type, true, false, true || extra.checkType || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
+            setType(type, true, false, true || extra.checkType
+                || getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS);
 
-            if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS && (!setType(getType(), false, extra.checkType) || getType() == null)) {
+            if (getProgram().getPhase() == SyntaxTree.PHASE_METHOD_CONTENTS
+                && (!setType(getType(), false, extra.checkType) || getType() == null)) {
                 extra.error = "Type '" + type + "' does not exist";
             }
 
@@ -327,7 +331,8 @@ public class LocalDeclaration extends VariableDeclaration {
             rightDelimiter = rightDelimiter.substring(1);
         }
 
-        if (!checkArray(extra.statement, bounds.getEnd() + (nullable ? 1 : 0), rightDelimiter, extra.require)) {
+        if (!checkArray(extra.statement, bounds.getEnd() + (nullable ? 1 : 0), rightDelimiter,
+            extra.require)) {
             extra.error = "Could not parse array brackets";
         }
 
@@ -337,13 +342,19 @@ public class LocalDeclaration extends VariableDeclaration {
     /**
      * Decode the given word as the name of the declaration.
      *
-     * @param word           The name of the declared variable.
-     * @param leftDelimiter  The left delimiter of the name.
+     * @param word The name of the declared variable.
+     * @param leftDelimiter The left delimiter of the name.
      * @param rightDelimiter The right delimiter of the name.
-     * @param extra          The ExtraData for the word iteration.
+     * @param extra The ExtraData for the word iteration.
      */
-    private void interactName(String word, String leftDelimiter, String rightDelimiter, DeclarationData extra) {
-        if (!containsImplicitCompatibleAnnotation() && getType() == null)// || (leftDelimiter.length() != 0 && !StringUtils.containsOnly(leftDelimiter, new char[] { '*', '&' })))
+    private void interactName(String word, String leftDelimiter, String rightDelimiter,
+        DeclarationData extra) {
+        if (!containsImplicitCompatibleAnnotation() && getType() == null)// ||
+                                                                         // (leftDelimiter.length()
+                                                                         // != 0 &&
+                                                                         // !StringUtils.containsOnly(leftDelimiter,
+                                                                         // new char[] { '*', '&'
+                                                                         // })))
         {
             return;
         }
@@ -374,7 +385,8 @@ public class LocalDeclaration extends VariableDeclaration {
         }
 
         if (isImplicit()) {
-            if (implicitType != null && (getType() == null || !getType().equals(implicitType.getType()))) {
+            if (implicitType != null
+                && (getType() == null || !getType().equals(implicitType.getType()))) {
                 setType(implicitType);
             }
         }
@@ -382,7 +394,7 @@ public class LocalDeclaration extends VariableDeclaration {
         if (phase == SyntaxTree.PHASE_PRE_GENERATION) {
             if (!isUsed()) {
                 isUsed();
-                //SyntaxMessage.warning("Variable '" + getName() + "' is never used", this, false);
+                // SyntaxMessage.warning("Variable '" + getName() + "' is never used", this, false);
             }
         }
 
@@ -393,7 +405,8 @@ public class LocalDeclaration extends VariableDeclaration {
      * @see VariableDeclaration#clone(Node, Location)
      */
     @Override
-    public LocalDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public LocalDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         LocalDeclaration node = new LocalDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -407,13 +420,13 @@ public class LocalDeclaration extends VariableDeclaration {
     }
 
     /**
-     * Fill the given {@link LocalDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link LocalDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public LocalDeclaration cloneTo(LocalDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public LocalDeclaration cloneTo(LocalDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.allocatedOnHeap = allocatedOnHeap;
@@ -422,11 +435,10 @@ public class LocalDeclaration extends VariableDeclaration {
     }
 
     /**
-     * Test the LocalDeclaration class type to make sure everything
-     * is working properly.
+     * Test the LocalDeclaration class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -438,3 +450,4 @@ public class LocalDeclaration extends VariableDeclaration {
         return generateFlatInput().toString();
     }
 }
+

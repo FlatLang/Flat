@@ -9,18 +9,22 @@ import flat.util.Location;
 import java.util.ArrayList;
 
 /**
- * Node extension that represents a scope of code. In essence, a
- * collection of statements within a pair of curly braces.<br>
+ * Node extension that represents a scope of code. In essence, a collection of statements within a
+ * pair of curly braces.<br>
  * <br>
- * For example:
- * <blockquote><pre>
+ * For example: <blockquote>
+ * 
+ * <pre>
  * {
  * 	...
  *
  * 	// Statements within here...
  *
  * 	...
- * }</pre></blockquote>
+ * }
+ * </pre>
+ * 
+ * </blockquote>
  *
  * @author Braden Steffaniak
  * @since v0.1 Apr 5, 2014 at 10:54:20 PM
@@ -59,7 +63,8 @@ public class Scope extends Node {
     public String getUniqueName(String value, boolean localOnly) {
         VariableDeclaration var = null;
 
-        while ((var = searchVariable(this, this, value, true)) != null && (!localOnly || var instanceof LocalDeclaration)) {
+        while ((var = searchVariable(this, this, value, true)) != null
+            && (!localOnly || var instanceof LocalDeclaration)) {
             value += "_";
         }
 
@@ -105,7 +110,8 @@ public class Scope extends Node {
             DefaultParameterInitialization init = (DefaultParameterInitialization) n;
 
             if (init.parameter.defaultValue != null) {
-                addVariableDependencies(list, init.parameter.defaultValue.getChildrenOfType(Variable.class, true));
+                addVariableDependencies(list,
+                    init.parameter.defaultValue.getChildrenOfType(Variable.class, true));
             }
         }
 
@@ -173,8 +179,7 @@ public class Scope extends Node {
     @Override
     public void onStackPopped(Node parent) {
         if (assignedImplicitVariables != null) {
-            assignedImplicitVariables.stream().forEach(x ->
-            {
+            assignedImplicitVariables.stream().forEach(x -> {
                 byte prev = x.a.getDataType();
 
                 x.a.setType(x.b);
@@ -226,8 +231,8 @@ public class Scope extends Node {
     }
 
     /**
-     * Get the VariableList that contains all of the variables
-     * that have been declared within this Scope.
+     * Get the VariableList that contains all of the variables that have been declared within this
+     * Scope.
      *
      * @return The VariableDeclarationList instance.
      */
@@ -236,26 +241,23 @@ public class Scope extends Node {
     }
 
     /**
-     * Register a local variable to take the place of the virtual method
-     * call so that the method call is not called twice.
+     * Register a local variable to take the place of the virtual method call so that the method
+     * call is not called twice.
      *
      * @param virtual The method call to convert into a local variable.
-     * @return The newly generated local variable representing the old
-     * virtual method call.
+     * @return The newly generated local variable representing the old virtual method call.
      */
     public Variable registerLocalVariable(Value virtual) {
         return registerLocalVariable(virtual, true);
     }
 
     /**
-     * Register a local variable to take the place of the virtual method
-     * call so that the method call is not called twice.
+     * Register a local variable to take the place of the virtual method call so that the method
+     * call is not called twice.
      *
      * @param virtual The method call to convert into a local variable.
-     * @param require Whether or not to throw an error if anything goes
-     *                wrong.
-     * @return The newly generated local variable representing the old
-     * virtual method call.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The newly generated local variable representing the old virtual method call.
      */
     public Variable registerLocalVariable(Value virtual, boolean require) {
         return registerLocalVariable(virtual, virtual.getBaseNode(), require);
@@ -270,8 +272,8 @@ public class Scope extends Node {
 
             Value clone = (Value) virtual.clone(virtual.getParent(), virtual.getLocationIn());
 
-            Value current = (virtual);//.getAccessedNode();
-            Value cloneC = (clone);//.getAccessedNode();
+            Value current = (virtual);// .getAccessedNode();
+            Value cloneC = (clone);// .getAccessedNode();
 
             while (current != accessible && current != null) {
                 current = ((Accessible) current).getAccessedNode();
@@ -301,14 +303,16 @@ public class Scope extends Node {
 
         String localName = "flat_local_" + scope.localVariableID++;
 
-        //Flat.debuggingBreakpoint(addBefore.getParentClass().getName().equals("Node") && getParentMethod().getName().equals("inorder"));
+        // Flat.debuggingBreakpoint(addBefore.getParentClass().getName().equals("Node") &&
+        // getParentMethod().getName().equals("inorder"));
         String decl = "var " + type + " " + localName + " = " + virtual.getDefaultLiteralValue();
 
         if (type.contains("(")) {
             decl = "var " + localName + type.substring(type.indexOf('(')) + " = null";
         }
 
-        Assignment assign = Assignment.decodeStatement(addBefore.getParent(), decl, getLocationIn(), require, true, null, virtual, false);
+        Assignment assign = Assignment.decodeStatement(addBefore.getParent(), decl, getLocationIn(),
+            require, true, null, virtual, false);
 
         if (assign == null) {
             return null;
@@ -319,19 +323,23 @@ public class Scope extends Node {
 
         assigneeDecl.addDefaultGenericTypeArguments();
 
-        VirtualLocalDeclaration localDecl = new VirtualLocalDeclaration(assigneeDecl.getParent(), assigneeDecl.getLocationIn());
+        VirtualLocalDeclaration localDecl =
+            new VirtualLocalDeclaration(assigneeDecl.getParent(), assigneeDecl.getLocationIn());
         assigneeDecl.cloneTo(localDecl);
-        localDecl.setReference(returned instanceof Accessible ? (Value) ((Accessible) returned).getReferenceNode() : returned);
+        localDecl.setReference(
+            returned instanceof Accessible ? (Value) ((Accessible) returned).getReferenceNode()
+                : returned);
         localDecl.setType(assigneeDecl);
 
-        assign.setAssigneeNode(localDecl.generateUsableVariable(assignee.getParent(), assignee.getLocationIn()));
+        assign.setAssigneeNode(
+            localDecl.generateUsableVariable(assignee.getParent(), assignee.getLocationIn()));
 
         assigneeDecl.getParent().replace(assigneeDecl, localDecl);
 
         Variable var = (Variable) assign.getAssigneeNode();
 
         var.setForceOriginalName(true);
-        //var.getDeclaration().validateType();
+        // var.getDeclaration().validateType();
 
         addBefore.getParent().addChildBefore(addBefore, assign);
         assigneeDecl.setProperty("requiresPrecedingDeclaration", true);
@@ -344,7 +352,7 @@ public class Scope extends Node {
         LocalDeclaration decl = new LocalDeclaration(type.getParent(), type.getLocationIn());
 
         decl.setName("flat_local_" + getRootScopeAncestor().getScope().localVariableID++);
-//		decl.setProperty("userMade", false);
+        // decl.setProperty("userMade", false);
         decl.setForceOriginalName(true);
         decl.setType(type.getReturnedNode().getFlatTypeValue(type.getReturnedNode()));
 
@@ -379,8 +387,8 @@ public class Scope extends Node {
     }
 
     /**
-     * Set the scope ID of the given variable if it is a valid
-     * LocalDeclaration and its scope ID has not already been set.
+     * Set the scope ID of the given variable if it is a valid LocalDeclaration and its scope ID has
+     * not already been set.
      *
      * @param declaration The LocalDeclaration to set the scope ID of.
      */
@@ -432,7 +440,8 @@ public class Scope extends Node {
                     params += lambda.getParameterList().getParameter(i).getName();
                 }
 
-                replacement.setValue("(" + params + ") => " + c.getDeclaration().getScope().generateFlatInput().toString());
+                replacement.setValue("(" + params + ") => "
+                    + c.getDeclaration().getScope().generateFlatInput().toString());
 
                 c.replaceWith(replacement);
             }
@@ -472,7 +481,8 @@ public class Scope extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Scope clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Scope clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Scope node = new Scope(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -486,8 +496,7 @@ public class Scope extends Node {
     }
 
     /**
-     * Fill the given {@link Scope} with the data that is in the
-     * specified node.
+     * Fill the given {@link Scope} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -501,11 +510,10 @@ public class Scope extends Node {
     }
 
     /**
-     * Test the Scope class type to make sure everything
-     * is working properly.
+     * Test the Scope class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
         Scope s = new Scope(context.method, Location.INVALID);
@@ -517,3 +525,4 @@ public class Scope extends Node {
         return null;
     }
 }
+

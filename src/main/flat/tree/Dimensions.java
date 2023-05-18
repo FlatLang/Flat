@@ -4,8 +4,7 @@ import flat.TestContext;
 import flat.util.Location;
 
 /**
- * Node extension that contains all of the dimension attributes
- * for an array declaration.
+ * Node extension that contains all of the dimension attributes for an array declaration.
  *
  * @author Braden Steffaniak
  * @since v0.2.5 May 19, 2014 at 12:09:41 AM
@@ -35,7 +34,8 @@ public class Dimensions extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Dimensions clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Dimensions clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Dimensions node = new Dimensions(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -49,8 +49,7 @@ public class Dimensions extends Node {
     }
 
     /**
-     * Fill the given {@link Dimensions} with the data that is in the
-     * specified node.
+     * Fill the given {@link Dimensions} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -62,11 +61,10 @@ public class Dimensions extends Node {
     }
 
     /**
-     * Test the Dimensions class type to make sure everything
-     * is working properly.
+     * Test the Dimensions class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -74,3 +72,4 @@ public class Dimensions extends Node {
         return null;
     }
 }
+

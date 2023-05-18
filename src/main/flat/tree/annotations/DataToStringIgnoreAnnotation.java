@@ -7,7 +7,8 @@ import flat.tree.Parameter;
 import flat.tree.SyntaxTree;
 import flat.util.Location;
 
-public class DataToStringIgnoreAnnotation extends ApplicableAnnotationBase implements ModifierAnnotation, VisibilityModifier {
+public class DataToStringIgnoreAnnotation extends ApplicableAnnotationBase
+    implements ModifierAnnotation, VisibilityModifier {
     public String aliasUsed;
 
     @Override
@@ -24,7 +25,8 @@ public class DataToStringIgnoreAnnotation extends ApplicableAnnotationBase imple
         super(temporaryParent, locationIn);
     }
 
-    public static DataToStringIgnoreAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static DataToStringIgnoreAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("DataToStringIgnore")) {
             DataToStringIgnoreAnnotation n = new DataToStringIgnoreAnnotation(parent, location);
 
@@ -35,7 +37,8 @@ public class DataToStringIgnoreAnnotation extends ApplicableAnnotationBase imple
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("data_tostring_ignore");
     }
 
@@ -87,8 +90,10 @@ public class DataToStringIgnoreAnnotation extends ApplicableAnnotationBase imple
     }
 
     @Override
-    public DataToStringIgnoreAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        DataToStringIgnoreAnnotation node = new DataToStringIgnoreAnnotation(temporaryParent, locationIn);
+    public DataToStringIgnoreAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        DataToStringIgnoreAnnotation node =
+            new DataToStringIgnoreAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -97,7 +102,8 @@ public class DataToStringIgnoreAnnotation extends ApplicableAnnotationBase imple
         return cloneTo(node, true, true);
     }
 
-    public DataToStringIgnoreAnnotation cloneTo(DataToStringIgnoreAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public DataToStringIgnoreAnnotation cloneTo(DataToStringIgnoreAnnotation node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -107,6 +113,6 @@ public class DataToStringIgnoreAnnotation extends ApplicableAnnotationBase imple
 
     @Override
     public String[] getAliases() {
-        return new String[]{"data_tostring_ignore"};
+        return new String[] {"data_tostring_ignore"};
     }
 }

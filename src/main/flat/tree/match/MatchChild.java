@@ -19,3 +19,4 @@ public interface MatchChild {
         return (Match) ((Node) this).getAncestorOfType(Match.class);
     }
 }
+

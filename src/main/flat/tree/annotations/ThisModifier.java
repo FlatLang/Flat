@@ -47,15 +47,21 @@ public class ThisModifier extends Annotation implements ModifierAnnotation {
 
                         Constructor constructor = (Constructor) param.getParentMethod();
 
-                        Node preAssignment = SyntaxTree.decodeScopeContents(param.getParentMethod(), "this." + param.getName() + " = " + param.getName(), param.getLocationIn(), true);
-                        Node postAssignment = SyntaxTree.decodeScopeContents(param.getParentMethod(), "this." + param.getName() + " = " + param.getName(), param.getLocationIn(), true);
+                        Node preAssignment = SyntaxTree.decodeScopeContents(param.getParentMethod(),
+                            "this." + param.getName() + " = " + param.getName(),
+                            param.getLocationIn(), true);
+                        Node postAssignment =
+                            SyntaxTree.decodeScopeContents(param.getParentMethod(),
+                                "this." + param.getName() + " = " + param.getName(),
+                                param.getLocationIn(), true);
 
                         if (preAssignment != null) {
                             Scope s = constructor.initMethod.getScope();
 
                             s.addChildBefore(s.getFirstStatement(), preAssignment);
                         } else {
-                            SyntaxMessage.error("Unable to assign '" + param.getName() + "' field's value from parameter", param);
+                            SyntaxMessage.error("Unable to assign '" + param.getName()
+                                + "' field's value from parameter", param);
                         }
 
                         constructor.initMethod.getScope().addChild(postAssignment);
@@ -83,12 +89,14 @@ public class ThisModifier extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append(aliasUsed);
     }
 
     @Override
-    public ThisModifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ThisModifier clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ThisModifier node = new ThisModifier(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -98,7 +106,8 @@ public class ThisModifier extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public ThisModifier cloneTo(ThisModifier node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ThisModifier cloneTo(ThisModifier node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -108,6 +117,7 @@ public class ThisModifier extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"this"};
+        return new String[] {"this"};
     }
 }
+

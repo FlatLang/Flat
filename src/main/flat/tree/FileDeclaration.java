@@ -15,9 +15,8 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- * Class used to organize the Files that are fed to the compiler.
- * Each file has a file name that is stored in the name field variable
- * of this class.
+ * Class used to organize the Files that are fed to the compiler. Each file has a file name that is
+ * stored in the name field variable of this class.
  *
  * @author Braden Steffaniak
  * @since v0.1 Feb 18, 2014 at 8:57:00 PM
@@ -43,31 +42,30 @@ public class FileDeclaration extends Node {
      * Initialize the defaultImports constant.
      */
     static {
-        DEFAULT_IMPORTS = new String[]
-            {
-                "flat/exception/ExceptionData",
-                "flat/exception/Exception",
-                "flat/exception/DivideByZeroException",
-                "flat/primitive/number/Number",
-                "flat/primitive/number/Byte",
-                "flat/primitive/number/Short",
-                "flat/primitive/number/Int",
-                "flat/primitive/number/Long",
-                "flat/primitive/number/Float",
-                "flat/primitive/number/Double",
-                "flat/primitive/Null",
-                "flat/primitive/number/Char",
-                "flat/primitive/Bool",
-                "flat/datastruct/list/List",
-                "flat/datastruct/list/Array",
-                "flat/datastruct/list/IntRange",
-                "flat/Math",
-                "flat/Object",
-                "flat/String",
-                "flat/meta/Class",
-                "flat/meta/Field",
-                "flat/meta/Function",
-            };
+        DEFAULT_IMPORTS = new String[] {
+            "flat/exception/ExceptionData",
+            "flat/exception/Exception",
+            "flat/exception/DivideByZeroException",
+            "flat/primitive/number/Number",
+            "flat/primitive/number/Byte",
+            "flat/primitive/number/Short",
+            "flat/primitive/number/Int",
+            "flat/primitive/number/Long",
+            "flat/primitive/number/Float",
+            "flat/primitive/number/Double",
+            "flat/primitive/Null",
+            "flat/primitive/number/Char",
+            "flat/primitive/Bool",
+            "flat/datastruct/list/List",
+            "flat/datastruct/list/Array",
+            "flat/datastruct/list/IntRange",
+            "flat/Math",
+            "flat/Object",
+            "flat/String",
+            "flat/meta/Class",
+            "flat/meta/Field",
+            "flat/meta/Function",
+        };
     }
 
     private final ArrayList<Annotation> pendingAnnotations = new ArrayList<>();
@@ -155,8 +153,8 @@ public class FileDeclaration extends Node {
     }
 
     /**
-     * Add all of the imports of the classes that are within the same
-     * directory of the specified file.
+     * Add all of the imports of the classes that are within the same directory of the specified
+     * file.
      */
     public void addAutoImports() {
         getProgram().addAutoImports(this);
@@ -191,11 +189,14 @@ public class FileDeclaration extends Node {
     }
 
     public Import addImport(String loc, boolean staticImport, String alias, boolean force) {
-        if (!force && (loc == null || containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc) && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc))) {
+        if (!force
+            && (loc == null || containsImport(loc) || !SyntaxUtils.isAbsoluteClassLocation(loc)
+                && getClassDeclaration() != null && getClassDeclaration().getName().equals(loc))) {
             return null;
         }
 
-        Import importNode = Import.decodeStatement(this, "import " + (staticImport ? "static " : "") + "\"" + loc + "\"" + (alias != null ? " as " + alias : ""), getLocationIn(), true);
+        Import importNode = Import.decodeStatement(this, "import " + (staticImport ? "static " : "")
+            + "\"" + loc + "\"" + (alias != null ? " as " + alias : ""), getLocationIn(), true);
 
         addChild(importNode);
 
@@ -217,8 +218,8 @@ public class FileDeclaration extends Node {
     }
 
     /**
-     * Register the ClosureDeclaration so that the FileDeclaration
-     * can define the closure type during generation.
+     * Register the ClosureDeclaration so that the FileDeclaration can define the closure type
+     * during generation.
      *
      * @param closure The ClosureDeclaration to register.
      * @return The id of the registered ClosureDeclaration.
@@ -256,16 +257,17 @@ public class FileDeclaration extends Node {
     /**
      * Get whether or not the given location has been imported.
      *
-     * @param importLocation   The location of the import.
-     * @param absoluteLocation Whether or not the importLocation is an
-     *                         package relative path (true), or just a class name (false).
+     * @param importLocation The location of the import.
+     * @param absoluteLocation Whether or not the importLocation is an package relative path (true),
+     *        or just a class name (false).
      * @return Whether or not the given location has been imported.
      */
     public boolean containsImport(String importLocation, boolean absoluteLocation) {
         return containsImport(importLocation, absoluteLocation, false);
     }
 
-    public boolean containsImport(String importLocation, boolean absoluteLocation, boolean aliased) {
+    public boolean containsImport(String importLocation, boolean absoluteLocation,
+        boolean aliased) {
         return getImport(importLocation, absoluteLocation, aliased) != null;
     }
 
@@ -273,8 +275,7 @@ public class FileDeclaration extends Node {
      * Get the Import node with the given import location, if it exists.
      *
      * @param importLocation The location of the import.
-     * @return The Import with the specified import location, if it
-     * exists.
+     * @return The Import with the specified import location, if it exists.
      */
     public Import getImport(String importLocation) {
         return getImport(importLocation, true);
@@ -284,8 +285,7 @@ public class FileDeclaration extends Node {
      * Get the Import node with the given import location, if it exists.
      *
      * @param importLocation The location of the import.
-     * @return The Import with the specified import location, if it
-     * exists.
+     * @return The Import with the specified import location, if it exists.
      */
     public Import getImport(String importLocation, boolean absoluteLocation) {
         return getImport(importLocation, absoluteLocation, true);
@@ -294,11 +294,10 @@ public class FileDeclaration extends Node {
     /**
      * Get the Import node with the given import location, if it exists.
      *
-     * @param importLocation   The location of the import.
-     * @param absoluteLocation Whether or not the importLocation is an
-     *                         package relative path (true), or just a class name (false).
-     * @return The Import with the specified import location, if it
-     * exists.
+     * @param importLocation The location of the import.
+     * @param absoluteLocation Whether or not the importLocation is an package relative path (true),
+     *        or just a class name (false).
+     * @return The Import with the specified import location, if it exists.
      */
     public Import getImport(String importLocation, boolean absoluteLocation, boolean aliased) {
         Import node = getImportList().getImport(importLocation, absoluteLocation, aliased);
@@ -347,24 +346,26 @@ public class FileDeclaration extends Node {
     }
 
     /**
-     * Get whether or not the FileDeclaration contains the ClassDeclaration with
-     * the specified name.<br>
+     * Get whether or not the FileDeclaration contains the ClassDeclaration with the specified
+     * name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class Person
      * {
      *
      * 	...
      *
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>containsClass("Person")</code>" would return
-     * true.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>containsClass("Person")</code>" would return true.
      *
      * @param className The name of the class to search for.
-     * @return Whether or not the FileDeclaration contains the ClassDeclaration
-     * with the specified name.
+     * @return Whether or not the FileDeclaration contains the ClassDeclaration with the specified
+     *         name.
      */
     public boolean containsClass(String className) {
         return getClassDeclaration(className) != null;
@@ -373,31 +374,38 @@ public class FileDeclaration extends Node {
     /**
      * Get the FileDeclaration's ClassDeclaration with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class Person
      * {
      *
      * 	...
      *
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getClass("Person")</code>" would return the
-     * ClassDeclaration for the "<code>age</code>" int field.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getClass("Person")</code>" would return the ClassDeclaration for the
+     * "<code>age</code>" int field.
      *
      * @param className The name of the class to search for.
      * @return The ClassDeclaration for the class, if it exists.
      */
     public ClassDeclaration getClassDeclaration(String className) {
-        for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset() + i; i++) {
-            ClassDeclaration c = (ClassDeclaration) getChild(super.getNumDefaultChildren() + getClassOffset() + i);
+        for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset()
+            + i; i++) {
+            ClassDeclaration c =
+                (ClassDeclaration) getChild(super.getNumDefaultChildren() + getClassOffset() + i);
 
             if (c.getClassLocation(false, false).equals(className)) {
                 return c;
             }
         }
-        for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset() + i; i++) {
-            ClassDeclaration c = (ClassDeclaration) getChild(super.getNumDefaultChildren() + getClassOffset() + i);
+        for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset()
+            + i; i++) {
+            ClassDeclaration c =
+                (ClassDeclaration) getChild(super.getNumDefaultChildren() + getClassOffset() + i);
 
             if (c.getName().equals(className)) {
                 return c;
@@ -410,8 +418,10 @@ public class FileDeclaration extends Node {
     public ClassDeclaration[] getClassDeclarations() {
         ArrayList<ClassDeclaration> classes = new ArrayList<>();
 
-        for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset() + i; i++) {
-            classes.add((ClassDeclaration) getChild(super.getNumDefaultChildren() + getClassOffset() + i));
+        for (int i = 0; getNumChildren() > super.getNumDefaultChildren() + getClassOffset()
+            + i; i++) {
+            classes.add(
+                (ClassDeclaration) getChild(super.getNumDefaultChildren() + getClassOffset() + i));
         }
 
         return classes.toArray(new ClassDeclaration[0]);
@@ -430,7 +440,7 @@ public class FileDeclaration extends Node {
 
         if (getPackage() != null) {
             if (getNumChildren() < getNumDecodedChildren() + 1) {
-//				SyntaxMessage.error("Missing class declaration", this);
+                // SyntaxMessage.error("Missing class declaration", this);
             }
 
             offset++;
@@ -468,8 +478,7 @@ public class FileDeclaration extends Node {
     /**
      * Get the name of the file without the extension.<br>
      * <br>
-     * For example: A getName() call for a FileDeclaration of Test.flat would
-     * return "Test"
+     * For example: A getName() call for a FileDeclaration of Test.flat would return "Test"
      *
      * @return The name of the file without the extension.
      */
@@ -499,7 +508,8 @@ public class FileDeclaration extends Node {
             getController().processStep(10);
         }
 
-        if (result.skipValidation() || isExcludedExternalFile(getController().targetFileExtensions)) {
+        if (result.skipValidation()
+            || isExcludedExternalFile(getController().targetFileExtensions)) {
             return result;
         }
 
@@ -535,10 +545,14 @@ public class FileDeclaration extends Node {
         }
 
         if (phase == SyntaxTree.PHASE_CLASS_DECLARATION) {
-            if (Arrays.stream(getClassDeclarations()).noneMatch(clazz ->
-            {
-                if (!getName().substring(0, getName().indexOf('.') > 0 ? getName().indexOf('.') : getName().length()).equals(clazz.getName())) {
-                    SyntaxMessage.error("The name of the class '" + clazz.getName() + "' must be the same as the file '" + getName() + "' that it is contained within", this, false);
+            if (Arrays.stream(getClassDeclarations()).noneMatch(clazz -> {
+                if (!getName()
+                    .substring(0,
+                        getName().indexOf('.') > 0 ? getName().indexOf('.') : getName().length())
+                    .equals(clazz.getName())) {
+                    SyntaxMessage.error("The name of the class '" + clazz.getName()
+                        + "' must be the same as the file '" + getName()
+                        + "' that it is contained within", this, false);
 
                     return false;
                 }
@@ -580,15 +594,15 @@ public class FileDeclaration extends Node {
 
         thisClass.mergeClasses(otherClass, phase);
 
-//		Arrays.stream(getClassDeclarations()).forEach(c -> {
-//			ClassDeclaration otherClass = other.getClassDeclaration(c.getName());
-//
-//			if (otherClass == null) {
-//				other.addChild(c.clone(other, c.getLocationIn()));
-//			} else {
-//				c.mergeClasses(otherClass, phase);
-//			}
-//		});
+        // Arrays.stream(getClassDeclarations()).forEach(c -> {
+        // ClassDeclaration otherClass = other.getClassDeclaration(c.getName());
+        //
+        // if (otherClass == null) {
+        // other.addChild(c.clone(other, c.getLocationIn()));
+        // } else {
+        // c.mergeClasses(otherClass, phase);
+        // }
+        // });
     }
 
     public boolean isExternalFile() {
@@ -610,16 +624,15 @@ public class FileDeclaration extends Node {
         for (int i = getImportList().getNumChildren() - 1; i >= 0; i--) {
             Import node = getImportList().getChild(i);
 
-//			if (!node.isUsed())
-//			{
-//				getImportList().removeChild(i);
-//			}
+            // if (!node.isUsed())
+            // {
+            // getImportList().removeChild(i);
+            // }
         }
     }
 
     /**
-     * Get the ImportList that contains all of the imports used within
-     * the file.
+     * Get the ImportList that contains all of the imports used within the file.
      *
      * @return The ImportList instance.
      */
@@ -634,7 +647,8 @@ public class FileDeclaration extends Node {
     public void addChild(Node child) {
         if (child instanceof Package) {
             if (!getPackage().isDefaultPackage()) {
-                SyntaxMessage.error("Package statement must be the first statement in the file", child);
+                SyntaxMessage.error("Package statement must be the first statement in the file",
+                    child);
             }
 
             setPackage((Package) child);
@@ -658,8 +672,10 @@ public class FileDeclaration extends Node {
                     .filter(c2 -> c2.getClassLocation().equals(location))
                     .filter(c2 -> c2.genericOverload == c.genericOverload)
                     .collect(Collectors.toList());
-                String classes = dupes.stream().map(ClassDeclaration::getClassLocation).collect(Collectors.joining(", "));
-                SyntaxMessage.error("Duplicate class declaration for class '" + c.getClassLocation() + "' (" + classes + ")", child);
+                String classes = dupes.stream().map(ClassDeclaration::getClassLocation)
+                    .collect(Collectors.joining(", "));
+                SyntaxMessage.error("Duplicate class declaration for class '" + c.getClassLocation()
+                    + "' (" + classes + ")", child);
             }
 
             super.addChild(child);
@@ -687,9 +703,8 @@ public class FileDeclaration extends Node {
     }
 
     /**
-     * Add all of the default imports that each file must include. The
-     * default imports are included within the {@link #DEFAULT_IMPORTS}
-     * array.
+     * Add all of the default imports that each file must include. The default imports are included
+     * within the {@link #DEFAULT_IMPORTS} array.
      */
     private void addDefaultImports() {
         if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/IO"))) {
@@ -698,10 +713,12 @@ public class FileDeclaration extends Node {
         if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/System"))) {
             addImport("flat/system/System");
         }
-        if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/Test") || l.endsWith("/Test/src"))) {
+        if (getProgram().getController().libraries.stream()
+            .anyMatch(l -> l.endsWith("/Test") || l.endsWith("/Test/src"))) {
             addStaticImport("flat/test/Test");
         }
-        if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/Stream") || l.endsWith("/Stream/src"))) {
+        if (getProgram().getController().libraries.stream()
+            .anyMatch(l -> l.endsWith("/Stream") || l.endsWith("/Stream/src"))) {
             addStaticImport("flat/stream/StreamListExtensions");
         }
 
@@ -734,7 +751,8 @@ public class FileDeclaration extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public FileDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public FileDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         FileDeclaration node = new FileDeclaration(temporaryParent, locationIn, null);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -748,13 +766,13 @@ public class FileDeclaration extends Node {
     }
 
     /**
-     * Fill the given {@link FileDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link FileDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public FileDeclaration cloneTo(FileDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public FileDeclaration cloneTo(FileDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.file = new File(file.getAbsolutePath());
@@ -777,11 +795,10 @@ public class FileDeclaration extends Node {
     }
 
     /**
-     * Test the FileDeclaration class type to make sure everything
-     * is working properly.
+     * Test the FileDeclaration class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 

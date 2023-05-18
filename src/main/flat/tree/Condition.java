@@ -4,8 +4,8 @@ import flat.TestContext;
 import flat.util.Location;
 
 /**
- * Node extension that represents a condition. Conditions can be
- * found in if/else if statements, for/while loops, etc.
+ * Node extension that represents a condition. Conditions can be found in if/else if statements,
+ * for/while loops, etc.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:57:40 PM
@@ -23,7 +23,8 @@ public class Condition extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Condition clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Condition clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Condition node = new Condition(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -37,8 +38,7 @@ public class Condition extends Node {
     }
 
     /**
-     * Fill the given {@link Condition} with the data that is in the
-     * specified node.
+     * Fill the given {@link Condition} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -50,11 +50,10 @@ public class Condition extends Node {
     }
 
     /**
-     * Test the Condition class type to make sure everything
-     * is working properly.
+     * Test the Condition class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -62,3 +61,4 @@ public class Condition extends Node {
         return null;
     }
 }
+

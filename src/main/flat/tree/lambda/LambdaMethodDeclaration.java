@@ -40,7 +40,8 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
     }
 
     public ClassDeclaration getContextDeclaringClass() {
-        return methodCall != null && methodCall.isInTree() ? methodCall.getDeclaringClass() : getParentClass();
+        return methodCall != null && methodCall.isInTree() ? methodCall.getDeclaringClass()
+            : getParentClass();
     }
 
     public ClosureDeclaration getCorrespondingClosureDeclaration() {
@@ -48,7 +49,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
             return (ClosureDeclaration) methodCall.getFlatMethod().getParameter(index);
         }
 
-        return closure.closureDeclaration;//(ClosureDeclaration)methodCall.getFlatMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
+        return closure.closureDeclaration;// (ClosureDeclaration)methodCall.getFlatMethod().getParameter(methodCall.getArgumentList().getVisibleIndex(closure));
     }
 
     @Override
@@ -90,7 +91,8 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
     }
 
     @Override
-    public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors) {
+    public VariableDeclaration searchVariable(Node parent, Scope scope, String name,
+        boolean checkAncestors) {
         VariableDeclaration var = super.searchVariable(parent, scope, name, checkAncestors);
 
         if (var != null) {
@@ -119,7 +121,7 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
         }
 
         if (methodCall == null) {
-//			detach();
+            // detach();
 
             result.skipCycle = true;
         }
@@ -131,8 +133,10 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public LambdaMethodDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        LambdaMethodDeclaration node = new LambdaMethodDeclaration(temporaryParent, locationIn, scope);
+    public LambdaMethodDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        LambdaMethodDeclaration node =
+            new LambdaMethodDeclaration(temporaryParent, locationIn, scope);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -145,13 +149,13 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link LambdaMethodDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link LambdaMethodDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public LambdaMethodDeclaration cloneTo(LambdaMethodDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public LambdaMethodDeclaration cloneTo(LambdaMethodDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.methodCall = methodCall;
@@ -166,11 +170,11 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
     }
 
     /**
-     * Test the {@link LambdaMethodDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link LambdaMethodDeclaration} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -178,3 +182,4 @@ public class LambdaMethodDeclaration extends BodyMethodDeclaration {
         return null;
     }
 }
+

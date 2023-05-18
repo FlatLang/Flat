@@ -19,7 +19,8 @@ public class AssignmentMethod extends BodyMethodDeclaration {
     public AssignmentMethod(Node temporaryParent, Location locationIn) {
         super(temporaryParent, locationIn);
 
-        FlatMethodDeclaration method = decodeStatement(temporaryParent, "public " + IDENTIFIER + "()", Location.INVALID, true);
+        FlatMethodDeclaration method =
+            decodeStatement(temporaryParent, "public " + IDENTIFIER + "()", Location.INVALID, true);
 
         method.cloneTo(this);
     }
@@ -30,11 +31,9 @@ public class AssignmentMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Get whether or not the specified Method has overridden a method
-     * from a super class
+     * Get whether or not the specified Method has overridden a method from a super class
      *
-     * @return Whether or not the specified Method has overridden a
-     * method from a super class.
+     * @return Whether or not the specified Method has overridden a method from a super class.
      */
     public boolean doesOverride() {
         return false;
@@ -52,7 +51,8 @@ public class AssignmentMethod extends BodyMethodDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public AssignmentMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AssignmentMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         AssignmentMethod node = new AssignmentMethod(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -66,24 +66,23 @@ public class AssignmentMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link AssignmentMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link AssignmentMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public AssignmentMethod cloneTo(AssignmentMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AssignmentMethod cloneTo(AssignmentMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link AssignmentMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link AssignmentMethod} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -91,3 +90,4 @@ public class AssignmentMethod extends BodyMethodDeclaration {
         return null;
     }
 }
+

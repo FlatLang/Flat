@@ -23,7 +23,8 @@ public class CleanTestAnnotation extends Annotation implements ModifierAnnotatio
         super(temporaryParent, locationIn);
     }
 
-    public static CleanTestAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static CleanTestAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("CleanTest")) {
             CleanTestAnnotation n = new CleanTestAnnotation(parent, location);
 
@@ -68,7 +69,8 @@ public class CleanTestAnnotation extends Annotation implements ModifierAnnotatio
     }
 
     @Override
-    public CleanTestAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public CleanTestAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         CleanTestAnnotation node = new CleanTestAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,7 +80,8 @@ public class CleanTestAnnotation extends Annotation implements ModifierAnnotatio
         return cloneTo(node, true, true);
     }
 
-    public CleanTestAnnotation cloneTo(CleanTestAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public CleanTestAnnotation cloneTo(CleanTestAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -88,6 +91,7 @@ public class CleanTestAnnotation extends Annotation implements ModifierAnnotatio
 
     @Override
     public String[] getAliases() {
-        return new String[]{"clean_test"};
+        return new String[] {"clean_test"};
     }
 }
+

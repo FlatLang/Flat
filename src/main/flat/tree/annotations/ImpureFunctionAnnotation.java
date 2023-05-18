@@ -26,7 +26,8 @@ public class ImpureFunctionAnnotation extends Annotation implements ModifierAnno
         super(temporaryParent, locationIn);
     }
 
-    public static ImpureFunctionAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static ImpureFunctionAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("Impure")) {
             ImpureFunctionAnnotation n = new ImpureFunctionAnnotation(parent, location);
 
@@ -55,7 +56,10 @@ public class ImpureFunctionAnnotation extends Annotation implements ModifierAnno
                 FieldDeclaration field = (FieldDeclaration) getParent();
 
                 if (field.getAccessorMethod() == null && field.getMutatorMethod() == null) {
-                    SyntaxMessage.error("Field '" + field.getDeclaringClass().getName() + "." + field.getName() + "' which does not contain an accessor or mutator function cannot contain impure annotation", field, false);
+                    SyntaxMessage.error("Field '" + field.getDeclaringClass().getName() + "."
+                        + field.getName()
+                        + "' which does not contain an accessor or mutator function cannot contain impure annotation",
+                        field, false);
 
                     result.errorOccurred = true;
 
@@ -81,7 +85,8 @@ public class ImpureFunctionAnnotation extends Annotation implements ModifierAnno
     }
 
     @Override
-    public ImpureFunctionAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ImpureFunctionAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ImpureFunctionAnnotation node = new ImpureFunctionAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -91,7 +96,8 @@ public class ImpureFunctionAnnotation extends Annotation implements ModifierAnno
         return cloneTo(node, true, true);
     }
 
-    public ImpureFunctionAnnotation cloneTo(ImpureFunctionAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ImpureFunctionAnnotation cloneTo(ImpureFunctionAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -101,6 +107,7 @@ public class ImpureFunctionAnnotation extends Annotation implements ModifierAnno
 
     @Override
     public String[] getAliases() {
-        return new String[]{"impure"};
+        return new String[] {"impure"};
     }
 }
+

@@ -18,7 +18,8 @@ public class ClosureVariableDeclaration extends VariableDeclaration {
     /**
      * @see Node#Node(Node, Location)
      */
-    public ClosureVariableDeclaration(Node temporaryParent, Location locationIn, VariableDeclaration originalDeclaration) {
+    public ClosureVariableDeclaration(Node temporaryParent, Location locationIn,
+        VariableDeclaration originalDeclaration) {
         super(temporaryParent, locationIn);
 
         this.originalDeclaration = originalDeclaration;
@@ -34,7 +35,8 @@ public class ClosureVariableDeclaration extends VariableDeclaration {
     public void onReplaced(Node parent, Node replacement) {
         super.onReplaced(parent, replacement);
 
-        getRootDeclaration().closureVariableDeclarations.add((ClosureVariableDeclaration) replacement);
+        getRootDeclaration().closureVariableDeclarations
+            .add((ClosureVariableDeclaration) replacement);
     }
 
     @Override
@@ -82,8 +84,10 @@ public class ClosureVariableDeclaration extends VariableDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ClosureVariableDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        ClosureVariableDeclaration node = new ClosureVariableDeclaration(temporaryParent, locationIn, originalDeclaration);
+    public ClosureVariableDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        ClosureVariableDeclaration node =
+            new ClosureVariableDeclaration(temporaryParent, locationIn, originalDeclaration);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -96,13 +100,14 @@ public class ClosureVariableDeclaration extends VariableDeclaration {
     }
 
     /**
-     * Fill the given {@link ClosureVariableDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link ClosureVariableDeclaration} with the data that is in the specified
+     * node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ClosureVariableDeclaration cloneTo(ClosureVariableDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ClosureVariableDeclaration cloneTo(ClosureVariableDeclaration node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.originalDeclaration = originalDeclaration;
@@ -112,11 +117,11 @@ public class ClosureVariableDeclaration extends VariableDeclaration {
     }
 
     /**
-     * Test the {@link ClosureVariableDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link ClosureVariableDeclaration} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -124,3 +129,4 @@ public class ClosureVariableDeclaration extends VariableDeclaration {
         return null;
     }
 }
+

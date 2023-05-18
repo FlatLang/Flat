@@ -14,7 +14,8 @@ public interface ModifierAnnotation {
     }
 
     default boolean apply(Node to, String alias) {
-        if (to != ((Annotation) this).getParent() && !to.containsAnnotationOfType(this.getClass(), false, false)) {
+        if (to != ((Annotation) this).getParent()
+            && !to.containsAnnotationOfType(this.getClass(), false, false)) {
             if (onAppliedAsModifier(to, false)) {
                 to.addAnnotation((Annotation) this);
 
@@ -33,3 +34,4 @@ public interface ModifierAnnotation {
         return ((Annotation) this).onApplied(toNode, throwError);
     }
 }
+

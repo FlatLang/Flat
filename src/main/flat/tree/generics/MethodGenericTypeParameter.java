@@ -56,8 +56,10 @@ public class MethodGenericTypeParameter extends GenericTypeParameter {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public MethodGenericTypeParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        MethodGenericTypeParameter node = new MethodGenericTypeParameter(temporaryParent, locationIn);
+    public MethodGenericTypeParameter clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        MethodGenericTypeParameter node =
+            new MethodGenericTypeParameter(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -70,24 +72,25 @@ public class MethodGenericTypeParameter extends GenericTypeParameter {
     }
 
     /**
-     * Fill the given {@link MethodGenericTypeParameter} with the data that is in the
-     * specified node.
+     * Fill the given {@link MethodGenericTypeParameter} with the data that is in the specified
+     * node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public MethodGenericTypeParameter cloneTo(MethodGenericTypeParameter node, boolean cloneChildren, boolean cloneAnnotations) {
+    public MethodGenericTypeParameter cloneTo(MethodGenericTypeParameter node,
+        boolean cloneChildren, boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link MethodGenericTypeParameter} class type to make sure everything
-     * is working properly.
+     * Test the {@link MethodGenericTypeParameter} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -95,3 +98,4 @@ public class MethodGenericTypeParameter extends GenericTypeParameter {
         return null;
     }
 }
+

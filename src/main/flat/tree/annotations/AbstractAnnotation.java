@@ -23,7 +23,8 @@ public class AbstractAnnotation extends ApplicableAnnotationBase implements Modi
         super(temporaryParent, locationIn);
     }
 
-    public static AbstractAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static AbstractAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Abstract")) {
             AbstractAnnotation n = new AbstractAnnotation(parent, location);
 
@@ -66,7 +67,8 @@ public class AbstractAnnotation extends ApplicableAnnotationBase implements Modi
     }
 
     @Override
-    public AbstractAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public AbstractAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         AbstractAnnotation node = new AbstractAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -76,7 +78,8 @@ public class AbstractAnnotation extends ApplicableAnnotationBase implements Modi
         return cloneTo(node, true, true);
     }
 
-    public AbstractAnnotation cloneTo(AbstractAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public AbstractAnnotation cloneTo(AbstractAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
@@ -84,6 +87,7 @@ public class AbstractAnnotation extends ApplicableAnnotationBase implements Modi
 
     @Override
     public String[] getAliases() {
-        return new String[]{"abstract"};
+        return new String[] {"abstract"};
     }
 }
+

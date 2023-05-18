@@ -8,9 +8,9 @@ import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
 
 /**
- * Loop extension that represents the declaration of a "while loop"
- * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Loop extension that represents the declaration of a "while loop" node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:55:59 PM
@@ -35,43 +35,42 @@ public class WhileLoop extends Loop {
     }
 
     /**
-     * Get the Node that describes the condition section of the while
-     * loop. For instance: "while (i &lt; 10)" the contents between the
-     * parenthesis is the condition.
+     * Get the Node that describes the condition section of the while loop. For instance: "while (i
+     * &lt; 10)" the contents between the parenthesis is the condition.
      *
-     * @return The Node instance that describes the condition section
-     * of the while loop.
+     * @return The Node instance that describes the condition section of the while loop.
      */
     public Node getCondition() {
         return getChild(1);
     }
 
     /**
-     * Decode the given statement into a WhileLoop instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a WhileLoop instance, if possible. If it is not possible,
+     * this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>while (currentNode != null)</li>
-     * 	<li>while (true)</li>
-     * 	<li>while (number.isEven())</li>
+     * <li>while (currentNode != null)</li>
+     * <li>while (true)</li>
+     * <li>while (number.isEven())</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  WhileLoop instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a WhileLoop.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a WhileLoop instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a WhileLoop.
      */
-    public static WhileLoop decodeStatement(Node parent, String statement, Location location, boolean require) {
-        if (statement.startsWith(IDENTIFIER) && StringUtils.findNextWord(statement).equals(IDENTIFIER)) {
+    public static WhileLoop decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
+        if (statement.startsWith(IDENTIFIER)
+            && StringUtils.findNextWord(statement).equals(IDENTIFIER)) {
             WhileLoop n = new WhileLoop(parent, location);
             Bounds bounds = SyntaxUtils.findParenthesesBounds(n, statement);
 
             if (!bounds.extractPreString(statement).trim().equals(IDENTIFIER)) {
-                SyntaxMessage.queryError("Incorrect " + IDENTIFIER + " loop definition", n, require);
+                SyntaxMessage.queryError("Incorrect " + IDENTIFIER + " loop definition", n,
+                    require);
 
                 return null;
             }
@@ -84,7 +83,8 @@ public class WhileLoop extends Loop {
 
                 String contents = statement.substring(bounds.getStart(), bounds.getEnd());
 
-                if (n.decodeCondition(contents, newLoc) && n.decodeScopeFragment(statement, bounds)) {
+                if (n.decodeCondition(contents, newLoc)
+                    && n.decodeScopeFragment(statement, bounds)) {
                     return n;
                 }
 
@@ -117,8 +117,8 @@ public class WhileLoop extends Loop {
     }
 
     /**
-     * Check to see if the while loop's condition is a method call.
-     * Also validate that the return type of the method is a bool.
+     * Check to see if the while loop's condition is a method call. Also validate that the return
+     * type of the method is a bool.
      *
      * @param contents The contents of the while loop's condition.
      * @param location The location of the while loop's condition.
@@ -136,7 +136,8 @@ public class WhileLoop extends Loop {
 
     @Override
     public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren) {
-        builder.append(IDENTIFIER).append(" (").append(getCondition().generateFlatInput()).append(") ");
+        builder.append(IDENTIFIER).append(" (").append(getCondition().generateFlatInput())
+            .append(") ");
 
         if (outputChildren) {
             getScope().generateFlatInput(builder);
@@ -149,7 +150,8 @@ public class WhileLoop extends Loop {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public WhileLoop clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public WhileLoop clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         WhileLoop node = new WhileLoop(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -163,8 +165,7 @@ public class WhileLoop extends Loop {
     }
 
     /**
-     * Fill the given {@link WhileLoop} with the data that is in the
-     * specified node.
+     * Fill the given {@link WhileLoop} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -176,11 +177,10 @@ public class WhileLoop extends Loop {
     }
 
     /**
-     * Test the WhileLoop class type to make sure everything
-     * is working properly.
+     * Test the WhileLoop class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -188,3 +188,4 @@ public class WhileLoop extends Loop {
         return null;
     }
 }
+

@@ -10,9 +10,9 @@ import flat.util.SyntaxUtils;
 import java.util.Arrays;
 
 /**
- * Node extension that represents the declaration of an
- * "import statement" node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Node extension that represents the declaration of an "import statement" node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 13, 2014 at 7:56:24 PM
@@ -39,8 +39,7 @@ public class Import extends Node {
     }
 
     /**
-     * Get whether or not the specified Import is actually used within
-     * the File it was imported in.
+     * Get whether or not the specified Import is actually used within the File it was imported in.
      *
      * @return Whether or not the Import was used.
      */
@@ -56,8 +55,7 @@ public class Import extends Node {
     }
 
     /**
-     * Get whether or not the imported file is a C Source file, or a
-     * Flat file.
+     * Get whether or not the imported file is a C Source file, or a Flat file.
      *
      * @return Whether or not the imported file is a C Source file.
      */
@@ -66,8 +64,7 @@ public class Import extends Node {
     }
 
     /**
-     * Set whether or not the imported file is a C Source file, or a
-     * Flat file.
+     * Set whether or not the imported file is a C Source file, or a Flat file.
      *
      * @param external Whether or not the imported file is a C Source file.
      */
@@ -104,27 +101,24 @@ public class Import extends Node {
     }
 
     /**
-     * Decode the given statement into an Import instance, if
-     * possible. If it is not possible, this method returns null.<br>
-     * Imports can either contain periods or slashes (backslashes or
-     * forward slashes) however, cannot contain both in the same import
-     * statement.
-     * <br>
+     * Decode the given statement into an Import instance, if possible. If it is not possible, this
+     * method returns null.<br>
+     * Imports can either contain periods or slashes (backslashes or forward slashes) however,
+     * cannot contain both in the same import statement. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>import "flat/String"</li>
-     * 	<li>import "armadillo"<i>(If armadillo is a class within the current package)</i></li>
+     * <li>import "flat/String"</li>
+     * <li>import "armadillo"<i>(If armadillo is a class within the current package)</i></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Import instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Import.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Import instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Import.
      */
-    public static Import decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Import decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (StringUtils.findNextWord(statement).equals(IDENTIFIER)) {
             Import n = new Import(parent, location);
 
@@ -180,13 +174,15 @@ public class Import extends Node {
     private boolean validateAlias(String alias, boolean require) {
         if (alias.length() > 0) {
             if (!StringUtils.findNextWord(alias).equals(AS_IDENTIFIER)) {
-                return SyntaxMessage.queryError("Unable to decode import statement '" + alias + "'", this, require);
+                return SyntaxMessage.queryError("Unable to decode import statement '" + alias + "'",
+                    this, require);
             }
 
             alias = alias.substring(AS_IDENTIFIER.length() + 1).trim();
 
             if (!SyntaxUtils.isValidIdentifier(alias)) {
-                return SyntaxMessage.queryError("Invalid import alias identifier '" + alias + "'", this, require);
+                return SyntaxMessage.queryError("Invalid import alias identifier '" + alias + "'",
+                    this, require);
             }
 
             this.alias = alias;
@@ -196,8 +192,8 @@ public class Import extends Node {
     }
 
     /**
-     * Validate that the given importLocation either does not have an
-     * extension, or has a .h extension.
+     * Validate that the given importLocation either does not have an extension, or has a .h
+     * extension.
      *
      * @param importLocation The location of the import statement.
      * @return The location to set as the import location.
@@ -215,7 +211,7 @@ public class Import extends Node {
 
                 return importLocation.substring(0, extensionIndex);
             } else {
-//				SyntaxMessage.error("Import location ends with unknown extension", this);
+                // SyntaxMessage.error("Import location ends with unknown extension", this);
             }
         }
 
@@ -285,7 +281,8 @@ public class Import extends Node {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Import clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Import clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Import node = new Import(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -299,8 +296,7 @@ public class Import extends Node {
     }
 
     /**
-     * Fill the given {@link Import} with the data that is in the
-     * specified node.
+     * Fill the given {@link Import} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -319,11 +315,10 @@ public class Import extends Node {
     }
 
     /**
-     * Test the Import class type to make sure everything
-     * is working properly.
+     * Test the Import class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -331,3 +326,4 @@ public class Import extends Node {
         return null;
     }
 }
+

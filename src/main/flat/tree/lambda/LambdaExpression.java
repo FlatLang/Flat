@@ -46,8 +46,7 @@ public class LambdaExpression extends IIdentifier {
      * @see Node#Node(Node, Location)
      */
     public LambdaExpression(Node temporaryParent, Location locationIn) {
-        super(temporaryParent, locationIn);
-        ;
+        super(temporaryParent, locationIn);;
 
         Scope scope = new Scope(this, locationIn.asNew());
         setScope(scope);
@@ -69,31 +68,33 @@ public class LambdaExpression extends IIdentifier {
     }
 
     /**
-     * Decode the given statement into a {@link LambdaExpression} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link LambdaExpression} instance, if possible. If it is
+     * not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>x -> x + 1</li>
-     * 	<li>(x, i) -> Console.writeLine(x * i)</li>
-     * 	<li>asdf -> asdf.doSomething()</li>
-     * 	<li>{ Console.writeLine("In parameterless lambda") }</li>
+     * <li>x -> x + 1</li>
+     * <li>(x, i) -> Console.writeLine(x * i)</li>
+     * <li>asdf -> asdf.doSomething()</li>
+     * <li>{ Console.writeLine("In parameterless lambda") }</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link LambdaExpression} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link LambdaExpression}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link LambdaExpression} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link LambdaExpression}.
      */
-    public static LambdaExpression decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static LambdaExpression decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, null, null);
     }
 
-    public static LambdaExpression decodeStatement(Node parent, String statement, Location location, boolean require, ClosureDeclaration closure, Value context) {
-        String[][] modifierData = SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 0);
+    public static LambdaExpression decodeStatement(Node parent, String statement, Location location,
+        boolean require, ClosureDeclaration closure, Value context) {
+        String[][] modifierData =
+            SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 0);
 
         if (modifierData != null) {
             statement = modifierData[0][0];
@@ -106,7 +107,8 @@ public class LambdaExpression extends IIdentifier {
         if (statement.startsWith("(")) {
             endingIndex = StringUtils.findEndingMatch(statement, 0, '(', ')') + 1;
 
-            if (endingIndex <= 1) return null;
+            if (endingIndex <= 1)
+                return null;
 
             variables = StringUtils.splitCommas(statement.substring(1, endingIndex - 1), 1);
 
@@ -124,7 +126,7 @@ public class LambdaExpression extends IIdentifier {
 
             block = true;
         } else if (statement.trim().length() > 0) {
-            variables = new String[]{StringUtils.findNextWord(statement)};
+            variables = new String[] {StringUtils.findNextWord(statement)};
 
             endingIndex = variables[0].length();
         } else {
@@ -164,10 +166,14 @@ public class LambdaExpression extends IIdentifier {
                 }
 
                 if (endingIndex > 0) {
-                    if (closure != null || (context = findContext(parent)) != null && (closure = n.findDeclaration(context, variables)) != null) {
-                        Accessible refNode = context != null ? ((Accessible) context).getReferenceNode() : null;
-                        ClassDeclaration refClass = refNode != null ? refNode.toValue().getTypeClass() : null;
-                        final FileDeclaration refFile = refClass != null ? refClass.getFileDeclaration() : null;
+                    if (closure != null || (context = findContext(parent)) != null
+                        && (closure = n.findDeclaration(context, variables)) != null) {
+                        Accessible refNode =
+                            context != null ? ((Accessible) context).getReferenceNode() : null;
+                        ClassDeclaration refClass =
+                            refNode != null ? refNode.toValue().getTypeClass() : null;
+                        final FileDeclaration refFile =
+                            refClass != null ? refClass.getFileDeclaration() : null;
 
                         n.closure = closure;
                         n.context = context;
@@ -220,17 +226,21 @@ public class LambdaExpression extends IIdentifier {
                             ParameterList ps = func.closure.getParameterList();
 
                             for (int j = 0; j < ps.getNumParameters(); j++) {
-                                variables[j] = ps.getParameter(j).generateFlatType() + " " + variables[j];
+                                variables[j] =
+                                    ps.getParameter(j).generateFlatType() + " " + variables[j];
                             }
                         } else {
-                            SyntaxMessage.error("Function '" + r.getParentMethod().getName() + "' does not return a function type", r);
+                            SyntaxMessage.error("Function '" + r.getParentMethod().getName()
+                                + "' does not return a function type", r);
                         }
                     } else {
-                        SyntaxMessage.error("Types must be specified for local lambda expression parameters", this);
+                        SyntaxMessage.error(
+                            "Types must be specified for local lambda expression parameters", this);
                     }
                 }
 
-                parameters[i] = Parameter.decodeStatement(this, variables[i], getLocationIn(), true);
+                parameters[i] =
+                    Parameter.decodeStatement(this, variables[i], getLocationIn(), true);
 
                 if (i > 0) {
                     params += ", ";
@@ -244,9 +254,11 @@ public class LambdaExpression extends IIdentifier {
     }
 
     @Override
-    public VariableDeclaration searchVariable(Node parent, Scope scope, String name, boolean checkAncestors) {
+    public VariableDeclaration searchVariable(Node parent, Scope scope, String name,
+        boolean checkAncestors) {
         if (parameters != null) {
-            Optional<Parameter> param = Arrays.stream(parameters).filter(x -> x != null && x.getName().equals(name)).findFirst();
+            Optional<Parameter> param = Arrays.stream(parameters)
+                .filter(x -> x != null && x.getName().equals(name)).findFirst();
 
             if (param.isPresent()) {
                 return param.get();
@@ -262,7 +274,8 @@ public class LambdaExpression extends IIdentifier {
         for (Node n : vars) {
             Variable v = (Variable) n;
 
-            if (v.declaration.getParentMethod() == scopeAncestor || v.declaration.getAncestorOfType(StaticBlock.class) == scopeAncestor) {
+            if (v.declaration.getParentMethod() == scopeAncestor
+                || v.declaration.getAncestorOfType(StaticBlock.class) == scopeAncestor) {
                 v.declaration = method.context.addDeclaration(v.declaration);
             }
         }
@@ -291,7 +304,8 @@ public class LambdaExpression extends IIdentifier {
 
             if (child instanceof Value && child instanceof Return == false) {
                 if (child instanceof Value && ((Value) child).getType() == null) {
-                    Return r = Return.decodeStatement(this, "return null", getLocationIn(), true, false);
+                    Return r =
+                        Return.decodeStatement(this, "return null", getLocationIn(), true, false);
 
                     method.getScope().addChild(r);
                 } else {
@@ -304,7 +318,8 @@ public class LambdaExpression extends IIdentifier {
                     if (method.getType() == null) {
                         method.setType(r.getReturnedNode());
                     } else if (!SyntaxUtils.isTypeCompatible(this, method, r)) {
-                        SyntaxMessage.error("Lambda expression must return type '" + method.generateFlatType() + "'", r);
+                        SyntaxMessage.error("Lambda expression must return type '"
+                            + method.generateFlatType() + "'", r);
                     }
                 }
             }
@@ -313,7 +328,8 @@ public class LambdaExpression extends IIdentifier {
         addClosureContext(method);
 
         Node scopeAncestor = getParentMethod();
-        scopeAncestor = scopeAncestor == null ? getAncestorOfType(StaticBlock.class) : scopeAncestor;
+        scopeAncestor =
+            scopeAncestor == null ? getAncestorOfType(StaticBlock.class) : scopeAncestor;
 
         replaceAccessedLocals(scopeAncestor, method);
 
@@ -334,7 +350,8 @@ public class LambdaExpression extends IIdentifier {
     }
 
     public LambdaMethodDeclaration generateLambdaMethod(Node p, BodyMethodDeclaration bodyMethod) {
-        LambdaMethodDeclaration method = new LambdaMethodDeclaration(p.getParent(), p.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
+        LambdaMethodDeclaration method = new LambdaMethodDeclaration(p.getParent(),
+            p.getLocationIn(), parent.getAncestorWithScopeOrClass().getScope());
 
         FlatMethodDeclaration parentMethod = parent.getParentMethod();
 
@@ -349,9 +366,9 @@ public class LambdaExpression extends IIdentifier {
         method.getScope().slaughterEveryLastVisibleChild();
         method.getScope().id = scopeId;
         method.uniqueID = scopeId;
-        method.isInstance = parentMethod != null && parentMethod.isInstance();//parentMethod.isStatic();
+        method.isInstance = parentMethod != null && parentMethod.isInstance();// parentMethod.isStatic();
         method.objectReference = parentMethod != null ? parentMethod.objectReference : null;
-        method.index = getIndex();//methodCall.getArgumentList().getNumVisibleChildren()
+        method.index = getIndex();// methodCall.getArgumentList().getNumVisibleChildren()
         cloneAnnotationsTo(method);
 
         if (context instanceof MethodCall) {
@@ -361,10 +378,12 @@ public class LambdaExpression extends IIdentifier {
         FlatParameterList params = method.getParameterList();
 
         if (parentMethod != null) {
-            params.getReferenceParameter().setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
+            params.getReferenceParameter()
+                .setType(parent.getParentMethod(true).getParameterList().getReferenceParameter());
         }
 
-        method.contextDeclaration = new ClosureContextDeclaration(parent, getLocationIn(), method.context);
+        method.contextDeclaration =
+            new ClosureContextDeclaration(parent, getLocationIn(), method.context);
 
         return method;
     }
@@ -374,10 +393,9 @@ public class LambdaExpression extends IIdentifier {
         final HashSet<String> genericParameters = new HashSet<>();
 
         if (parameters == null) {
-            final int[] i = new int[]{0};
+            final int[] i = new int[] {0};
 
-            closure.getParameterList().forEach(x ->
-            {
+            closure.getParameterList().forEach(x -> {
                 int id = i[0]++;
 
                 Value param = closure.getParameterList().getParameter(id);
@@ -398,7 +416,8 @@ public class LambdaExpression extends IIdentifier {
                     name = "_" + (id + 1);
                 }
 
-                boolean isClosure = type.indexOf('(') != -1 && (type.indexOf('<') == -1 || type.indexOf('(') < type.indexOf('<'));
+                boolean isClosure = type.indexOf('(') != -1
+                    && (type.indexOf('<') == -1 || type.indexOf('(') < type.indexOf('<'));
 
                 if (isClosure) {
                     type = name + type.substring(type.indexOf('('));
@@ -418,7 +437,8 @@ public class LambdaExpression extends IIdentifier {
                     if (value.getGenericTypeParameter() instanceof MethodGenericTypeParameter) {
                         genericParameters.add(type);
                     } else {
-                        GenericTypeArgument arg = value.getGenericTypeParameter().getCorrespondingArgument(context);
+                        GenericTypeArgument arg =
+                            value.getGenericTypeParameter().getCorrespondingArgument(context);
 
                         if (arg != null) {
                             getFileDeclaration().addImport(arg.getTypeClassLocation());
@@ -433,19 +453,20 @@ public class LambdaExpression extends IIdentifier {
                     closureDeclaration.getParameterList().getChildTypeStream()
                         .filter(Value::isGenericType)
                         .map(Value::getGenericTypeParameter)
-                        .filter(p -> p instanceof MethodGenericTypeParameter || !p.getParentClass().isAncestorOf(getParentClass(), true))
+                        .filter(p -> p instanceof MethodGenericTypeParameter
+                            || !p.getParentClass().isAncestorOf(getParentClass(), true))
                         .forEach(p -> genericParameters.add(p.getType()));
                 }
 
-                //			if (refFile != null)
-                //			{
-                //				Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
+                // if (refFile != null)
+                // {
+                // Import imp = refFile.getImport(SyntaxUtils.stripGenerics(type), false);
                 //
-                //				if (imp != null)
-                //				{
-                //					parent.getFileDeclaration().addImport(imp.getClassLocation());
-                //				}
-                //			}
+                // if (imp != null)
+                // {
+                // parent.getFileDeclaration().addImport(imp.getClassLocation());
+                // }
+                // }
             });
         }
 
@@ -457,13 +478,15 @@ public class LambdaExpression extends IIdentifier {
                 ">";
         }
 
-        String methodDeclaration = "static lambda" + id++ + genericParametersString + "(" + builder.toString() + ")";
+        String methodDeclaration =
+            "static lambda" + id++ + genericParametersString + "(" + builder.toString() + ")";
 
         if (closure.getType() != null) {
             methodDeclaration += " -> " + closure.getFlatTypeValue(context).getFlatType(context);
         }
 
-        BodyMethodDeclaration bodyMethod = BodyMethodDeclaration.decodeStatement(parent.getParentClass(true), methodDeclaration, getLocationIn().asNew(), true);
+        BodyMethodDeclaration bodyMethod = BodyMethodDeclaration.decodeStatement(
+            parent.getParentClass(true), methodDeclaration, getLocationIn().asNew(), true);
 
         if (bodyMethod != null) {
             if (parameters != null) {
@@ -473,8 +496,10 @@ public class LambdaExpression extends IIdentifier {
             }
 
             for (int i = 0; i < bodyMethod.getParameterList().getNumParameters(); i++) {
-                if (bodyMethod.getParameterList().getParameter(i) instanceof ClosureDeclaration == false) {
-                    bodyMethod.getParameterList().getParameter(i).setDataType(closure.getParameterList().getParameter(i).getDataType());
+                if (bodyMethod.getParameterList()
+                    .getParameter(i) instanceof ClosureDeclaration == false) {
+                    bodyMethod.getParameterList().getParameter(i)
+                        .setDataType(closure.getParameterList().getParameter(i).getDataType());
                 }
             }
             if (bodyMethod.getTypeObject() != null) {
@@ -483,28 +508,32 @@ public class LambdaExpression extends IIdentifier {
 
             LambdaMethodDeclaration method = generateLambdaMethod(bodyMethod, bodyMethod);
 
-//			for (int n = 0; n < params.getNumVisibleChildren(); n++)
-//			{
-//				params.getParameter(n).setDataType(closure.getParameterList().getParameter(n).getDataType());
-//			}
+            // for (int n = 0; n < params.getNumVisibleChildren(); n++)
+            // {
+            // params.getParameter(n).setDataType(closure.getParameterList().getParameter(n).getDataType());
+            // }
 
             method.getParentClass().addChild(method);
 
             if (block) {
-                TreeGenerator generator = new TreeGenerator(null, operation, parent.getProgram().getTree());
+                TreeGenerator generator =
+                    new TreeGenerator(null, operation, parent.getProgram().getTree());
 
                 generator.traverseCode(method, 0, null, false);
             } else {
-                Node node = SyntaxTree.decodeScopeContents(method, operation, getLocationIn().asNew());
+                Node node =
+                    SyntaxTree.decodeScopeContents(method, operation, getLocationIn().asNew());
                 method.addChild(node);
             }
 
-            if ((pending || method.getType() != null) && method.getScope().getNumVisibleChildren() == 1) {
+            if ((pending || method.getType() != null)
+                && method.getScope().getNumVisibleChildren() == 1) {
                 Node returned = method.getScope().getLastChild();
 
                 if (returned instanceof Return == false) {
                     if (returned instanceof Value && ((Value) returned).getType() == null) {
-                        Return r = Return.decodeStatement(this, "return null", getLocationIn(), true, false);
+                        Return r = Return.decodeStatement(this, "return null", getLocationIn(),
+                            true, false);
 
                         method.getScope().addChild(r);
                     } else {
@@ -517,15 +546,17 @@ public class LambdaExpression extends IIdentifier {
                         if (pending) {
                             FunctionType type = (FunctionType) getTypeObject();
 
-                            type.type = Type.parse(this, r.getReturnedNode().generateFlatType().toString());
+                            type.type =
+                                Type.parse(this, r.getReturnedNode().generateFlatType().toString());
                             type.closure.setType(r.getReturnedNode());
                         }
                     }
                 }
             }
 
-            if (method.getScope().getLastChild() instanceof Return && ((Return) method.getScope().getLastChild()).getValueNode() != null) {
-                //if (call.isGenericType())
+            if (method.getScope().getLastChild() instanceof Return
+                && ((Return) method.getScope().getLastChild()).getValueNode() != null) {
+                // if (call.isGenericType())
                 {
                     method.setType(((Return) method.getScope().getLastChild()).getReturnedNode());
                 }
@@ -554,7 +585,9 @@ public class LambdaExpression extends IIdentifier {
     }
 
     public Closure generateMethodReference(LambdaMethodDeclaration method) {
-        Closure methodReference = Closure.decodeStatement(parent, method.generateFlatClosureReference(method.getParentClass()), getLocationIn().asNew(), true, method.getParentClass());
+        Closure methodReference = Closure.decodeStatement(parent,
+            method.generateFlatClosureReference(method.getParentClass()), getLocationIn().asNew(),
+            true, method.getParentClass());
 
         if (methodReference != null) {
             if (closure != null) {
@@ -563,7 +596,9 @@ public class LambdaExpression extends IIdentifier {
             } else {
                 if (getAncestorOfType(Return.class) != null) {
                     if (!getParentMethod().isFunctionType()) {
-                        SyntaxMessage.error("Function '" + getParentMethod().getName() + "' must declare a first-class function return type to return a lambda expression", this);
+                        SyntaxMessage.error("Function '" + getParentMethod().getName()
+                            + "' must declare a first-class function return type to return a lambda expression",
+                            this);
                     }
 
                     FunctionType func = (FunctionType) getParentMethod().getTypeObject();
@@ -599,7 +634,8 @@ public class LambdaExpression extends IIdentifier {
     private void updatePassedFunctionReferences(LambdaMethodDeclaration method) {
         method.getParameterList().forEachVisibleListChild(param -> {
             if (param instanceof ClosureDeclaration && method.methodCall != null) {
-                Value value = method.methodCall.getCallableMethodBase().getParameterList().getParameter(method.index);
+                Value value = method.methodCall.getCallableMethodBase().getParameterList()
+                    .getParameter(method.index);
 
                 if (value instanceof ClosureDeclaration) {
                     ClosureDeclaration closure = (ClosureDeclaration) value;
@@ -649,32 +685,37 @@ public class LambdaExpression extends IIdentifier {
         if (context instanceof MethodCall) {
             return findDeclarationFromFunctionCall((MethodCall) context, variables);
         } else if (context instanceof FlatMethodDeclaration) {
-            return findDeclarationFromFunctionDeclaration((FlatMethodDeclaration) context, variables);
+            return findDeclarationFromFunctionDeclaration((FlatMethodDeclaration) context,
+                variables);
         }
 
         return null;
     }
 
-    private ClosureDeclaration findDeclarationFromFunctionDeclaration(FlatMethodDeclaration context, final String[] variables) {
+    private ClosureDeclaration findDeclarationFromFunctionDeclaration(FlatMethodDeclaration context,
+        final String[] variables) {
         setToInferredType();
 
         if (context.getType() != null) {
             if (context.isFunctionType()) {
                 return ((FunctionType) context.getTypeObject()).closure;
             } else {
-                SyntaxMessage.error("Function with return type '" + context.generateFlatType() + "' cannot return a lambda expression", this);
+                SyntaxMessage.error("Function with return type '" + context.generateFlatType()
+                    + "' cannot return a lambda expression", this);
             }
         }
 
         FunctionType type = ((FunctionType) getTypeObject());
 
-//		context.setType(type.closure.generateFlatInput().toString());
+        // context.setType(type.closure.generateFlatInput().toString());
 
-        return type.closure;//((FunctionType)context.getTypeObject()).closure;
+        return type.closure;// ((FunctionType)context.getTypeObject()).closure;
     }
 
-    private ClosureDeclaration findDeclarationFromFunctionCall(MethodCall context, final String[] variables) {
-        MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] classes = context.getDeclaringClasses();//.getReferenceNode().toValue().getTypeClass(false);
+    private ClosureDeclaration findDeclarationFromFunctionCall(MethodCall context,
+        final String[] variables) {
+        MethodCall.Pair<ClassDeclaration, MethodList.SearchFilter>[] classes =
+            context.getDeclaringClasses();// .getReferenceNode().toValue().getTypeClass(false);
 
         if (classes == null || classes.length == 0) {
             return null;
@@ -695,7 +736,8 @@ public class LambdaExpression extends IIdentifier {
 
                     for (MethodDeclaration m : methods) {
                         if (type.isPrimitiveOverload() && m instanceof FlatMethodDeclaration) {
-                            FlatMethodDeclaration converted = ((FlatMethodDeclaration) m).checkConvertToClass(type);
+                            FlatMethodDeclaration converted =
+                                ((FlatMethodDeclaration) m).checkConvertToClass(type);
 
                             if (converted != null) {
                                 m = converted;
@@ -715,14 +757,14 @@ public class LambdaExpression extends IIdentifier {
                 ArrayList<FlatMethodDeclaration> tempMethods = new ArrayList<>();
 
                 Arrays.stream(methods)
-                    .filter(x ->
-                    {
+                    .filter(x -> {
                         if (x instanceof FlatMethodDeclaration &&
                             x.getParameterList().getNumVisibleChildren() > index &&
                             x.getParameter(index) instanceof ClosureDeclaration) {
                             ClosureDeclaration closure = (ClosureDeclaration) x.getParameter(index);
 
-                            if (closure.getParameterList().getNumVisibleChildren() >= variables.length) {
+                            if (closure.getParameterList()
+                                .getNumVisibleChildren() >= variables.length) {
                                 return true;
                             }
                         }
@@ -742,7 +784,8 @@ public class LambdaExpression extends IIdentifier {
                     }
                 }
 
-                FlatMethodDeclaration[] validMethods = tempMethods.toArray(new FlatMethodDeclaration[0]);
+                FlatMethodDeclaration[] validMethods =
+                    tempMethods.toArray(new FlatMethodDeclaration[0]);
 
                 int maxD = 0;
                 int maxI = 0;
@@ -750,7 +793,8 @@ public class LambdaExpression extends IIdentifier {
                 for (int i = 0; i < validMethods.length; i++) {
                     for (int j = 0; j < validMethods.length; j++) {
                         if (i != j) {
-                            int[] distances = validMethods[i].getDistancesFrom(validMethods[j].getParameterList());
+                            int[] distances = validMethods[i]
+                                .getDistancesFrom(validMethods[j].getParameterList());
 
                             int distance = Arrays.stream(distances).sum();
 
@@ -765,7 +809,8 @@ public class LambdaExpression extends IIdentifier {
                 if (validMethods.length > maxI) {
                     context.setDeclaration(validMethods[maxI]);
 
-                    return (ClosureDeclaration) ((FlatMethodDeclaration) context.getDeclaration()).getParameter(index);
+                    return (ClosureDeclaration) ((FlatMethodDeclaration) context.getDeclaration())
+                        .getParameter(index);
                 }
             }
         }
@@ -782,7 +827,8 @@ public class LambdaExpression extends IIdentifier {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public LambdaExpression clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public LambdaExpression clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         LambdaExpression node = new LambdaExpression(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -796,13 +842,13 @@ public class LambdaExpression extends IIdentifier {
     }
 
     /**
-     * Fill the given {@link LambdaExpression} with the data that is in the
-     * specified node.
+     * Fill the given {@link LambdaExpression} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public LambdaExpression cloneTo(LambdaExpression node, boolean cloneChildren, boolean cloneAnnotations) {
+    public LambdaExpression cloneTo(LambdaExpression node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.id = id;
@@ -811,11 +857,10 @@ public class LambdaExpression extends IIdentifier {
     }
 
     /**
-     * Test the {@link LambdaExpression} class type to make sure everything
-     * is working properly.
+     * Test the {@link LambdaExpression} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -823,107 +868,108 @@ public class LambdaExpression extends IIdentifier {
         return null;
     }
 
-//	@Override
-//	public String getType(boolean checkCast)
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return null;
-//		}
-//		
-//		return getReturnedNode().getType(checkCast);
-//	}
-//	
-//	@Override
-//	public Type getTypeObject()
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return null;
-//		}
-//		
-//		return returned.getTypeObject();
-//	}
-//	
-//	@Override
-//	public String getTypeStringValue()
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return null;
-//		}
-//		
-//		return getReturnedNode().getTypeStringValue();
-//	}
-//	
-//	@Override
-//	public void setTypeValue(String type)
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return;
-//		}
-//		
-//		getReturnedNode().setTypeValue(type);
-//	}
-//
-//	@Override
-//	public int getArrayDimensions()
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return 0;
-//		}
-//		
-//		return getReturnedNode().getArrayDimensions() - getReturnedNode().getArrayAccessDimensions();
-//	}
-//
-//	@Override
-//	public void setArrayDimensions(int arrayDimensions)
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return;
-//		}
-//		
-//		returned.setArrayDimensions(returned.getArrayDimensions());
-//	}
-//
-//	@Override
-//	public byte getDataType(boolean checkGeneric)
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return 0;
-//		}
-//		
-//		return getReturnedNode().getDataType();
-//	}
-//
-//	@Override
-//	public void setDataType(byte type)
-//	{
-//		Value returned = getReturnedNode();
-//		
-//		if (returned == null)
-//		{
-//			return;
-//		}
-//		
-//		getReturnedNode().setDataType(type);
-//	}
+    // @Override
+    // public String getType(boolean checkCast)
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return null;
+    // }
+    //
+    // return getReturnedNode().getType(checkCast);
+    // }
+    //
+    // @Override
+    // public Type getTypeObject()
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return null;
+    // }
+    //
+    // return returned.getTypeObject();
+    // }
+    //
+    // @Override
+    // public String getTypeStringValue()
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return null;
+    // }
+    //
+    // return getReturnedNode().getTypeStringValue();
+    // }
+    //
+    // @Override
+    // public void setTypeValue(String type)
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return;
+    // }
+    //
+    // getReturnedNode().setTypeValue(type);
+    // }
+    //
+    // @Override
+    // public int getArrayDimensions()
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return 0;
+    // }
+    //
+    // return getReturnedNode().getArrayDimensions() - getReturnedNode().getArrayAccessDimensions();
+    // }
+    //
+    // @Override
+    // public void setArrayDimensions(int arrayDimensions)
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return;
+    // }
+    //
+    // returned.setArrayDimensions(returned.getArrayDimensions());
+    // }
+    //
+    // @Override
+    // public byte getDataType(boolean checkGeneric)
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return 0;
+    // }
+    //
+    // return getReturnedNode().getDataType();
+    // }
+    //
+    // @Override
+    // public void setDataType(byte type)
+    // {
+    // Value returned = getReturnedNode();
+    //
+    // if (returned == null)
+    // {
+    // return;
+    // }
+    //
+    // getReturnedNode().setDataType(type);
+    // }
 }
+

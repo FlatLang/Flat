@@ -51,7 +51,8 @@ public class VTableList extends TypeList<VTable> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public VTableList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public VTableList clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         VTableList node = new VTableList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -65,8 +66,7 @@ public class VTableList extends TypeList<VTable> {
     }
 
     /**
-     * Fill the given {@link VTableList} with the data that is in the
-     * specified node.
+     * Fill the given {@link VTableList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -78,11 +78,10 @@ public class VTableList extends TypeList<VTable> {
     }
 
     /**
-     * Test the {@link VTableList} class type to make sure everything
-     * is working properly.
+     * Test the {@link VTableList} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -90,3 +89,4 @@ public class VTableList extends TypeList<VTable> {
         return null;
     }
 }
+

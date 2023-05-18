@@ -10,9 +10,9 @@ import flat.util.*;
 import java.util.ArrayList;
 
 /**
- * Declaration extension that represents the declaration of a field
- * node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * Declaration extension that represents the declaration of a field node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:12:04 PM
@@ -28,8 +28,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     public ArrayList<FieldDeclaration> correspondingPrimitiveOverloads;
 
     /**
-     * Declares that a variable can be viewed from anywhere, but not
-     * modified.
+     * Declares that a variable can be viewed from anywhere, but not modified.
      */
     public static final int VISIBLE = 4;
 
@@ -113,7 +112,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     @Override
     public void addChild(Node node) {
         if (node instanceof AccessorMethod || node instanceof MutatorMethod) {
-            ((PropertyMethod)node).originalField = this;
+            ((PropertyMethod) node).originalField = this;
             getParentClass(true).addChild(node);
         } else {
             super.addChild(node);
@@ -135,7 +134,9 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
 
     @Override
     public boolean isTangible() {
-        return isPrimitiveOverload() ? genericOverload.isTangible() : parent != null && (!containsAccessorMethod() || containsInstance(getAccessorMethod())) && super.isTangible();
+        return isPrimitiveOverload() ? genericOverload.isTangible()
+            : parent != null && (!containsAccessorMethod() || containsInstance(getAccessorMethod()))
+                && super.isTangible();
     }
 
     public boolean allowsPropertyMethods() {
@@ -210,29 +211,29 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     }
 
     /**
-     * Decode the given statement into a Field instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a Field instance, if possible. If it is not possible, this
+     * method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>public static constant int uuid</li>
-     * 	<li>private Person p</li>
-     * 	<li>private String name</li>
+     * <li>public static constant int uuid</li>
+     * <li>private Person p</li>
+     * <li>private String name</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Field instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Field.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Field instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Field.
      */
-    public static FieldDeclaration decodeStatement(Node parent, String statement, Location location, boolean require) {
-        SyntaxUtils.LiteralNameData literalNameData = SyntaxUtils.getFirstLiteralNameData(statement);
+    public static FieldDeclaration decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
+        SyntaxUtils.LiteralNameData literalNameData =
+            SyntaxUtils.getFirstLiteralNameData(statement);
 
         if (literalNameData != null) {
-            statement = statement.replace('`' + literalNameData.literalName + '`', literalNameData.validName);
+            statement = statement.replace('`' + literalNameData.literalName + '`',
+                literalNameData.validName);
         }
 
         FieldDeclaration n = new FieldDeclaration(parent, location);
@@ -272,9 +273,11 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
         }
 
         String preStatement = statement.substring(0, data.localDeclaration.getStart());
-        String localStatement = statement.substring(data.localDeclaration.getStart(), data.localDeclaration.getEnd());
+        String localStatement =
+            statement.substring(data.localDeclaration.getStart(), data.localDeclaration.getEnd());
 
-        LocalDeclaration var = LocalDeclaration.decodeStatement(n, localStatement, location.asNew(), require);
+        LocalDeclaration var =
+            LocalDeclaration.decodeStatement(n, localStatement, location.asNew(), require);
 
         if (var == null) {
             return null;
@@ -290,10 +293,12 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     }
 
     /**
-     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String, Node.ExtraData)
+     * @see Node#interactWord(java.lang.String, Bounds, java.lang.String, java.lang.String,
+     *      Node.ExtraData)
      */
     @Override
-    public boolean interactWord(String word, Bounds bounds, String leftDelimiter, String rightDelimiter, ExtraData extra) {
+    public boolean interactWord(String word, Bounds bounds, String leftDelimiter,
+        String rightDelimiter, ExtraData extra) {
         FieldData data = (FieldData) extra;
 
         if (!setAttribute(word, extra.getWordNumber())) {
@@ -309,17 +314,20 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
         int index = SyntaxUtils.findCharInBaseScope(statement, '=');
 
         if (index >= 0) {
-            initializationValue = statement.substring(StringUtils.findNextNonWhitespaceIndex(statement, index + 1));
+            initializationValue =
+                statement.substring(StringUtils.findNextNonWhitespaceIndex(statement, index + 1));
 
-//			Bounds bounds     = StringUtils.findNextWordBounds(statement, index - 1, -1);
-//			String assignment = statement.substring(bounds.getStart());
-//			
-//			if (Assignment.decodeStatement(getParent(), assignment, Location.INVALID, false, false) == null)
-//			{
-//				SyntaxMessage.error("Incorrect field definition", this);
-//			}
+            // Bounds bounds = StringUtils.findNextWordBounds(statement, index - 1, -1);
+            // String assignment = statement.substring(bounds.getStart());
+            //
+            // if (Assignment.decodeStatement(getParent(), assignment, Location.INVALID, false,
+            // false) == null)
+            // {
+            // SyntaxMessage.error("Incorrect field definition", this);
+            // }
 
-            return new Bounds(0, StringUtils.findNextNonWhitespaceIndex(statement, index - 1, -1) + 1);
+            return new Bounds(0,
+                StringUtils.findNextNonWhitespaceIndex(statement, index - 1, -1) + 1);
         }
 
         return new Bounds(0, statement.length());
@@ -335,7 +343,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
         for (int i = 0; i < extraDeclarations.length; i++) {
             String name = extraDeclarations[i];
 
-            FieldDeclaration field = FieldDeclaration.decodeStatement(getParent(), generateFlatType() + " " + name, getLocationIn(), true);
+            FieldDeclaration field = FieldDeclaration.decodeStatement(getParent(),
+                generateFlatType() + " " + name, getLocationIn(), true);
             cloneAnnotationsTo(field);
 
             field.setVisibility(getVisibility());
@@ -363,7 +372,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
             }
         }
 
-        MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.getDefault());
+        MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(),
+            SearchFilter.getDefault());
 
         if (methods.length > 0) {
             for (MethodDeclaration method : methods) {
@@ -387,7 +397,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
             }
         }
 
-        MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(), SearchFilter.getDefault());
+        MethodDeclaration methods[] = getParentClass().getPropertyMethodList().getMethods(getName(),
+            SearchFilter.getDefault());
 
         if (methods.length > 0) {
             for (MethodDeclaration method : methods) {
@@ -412,7 +423,7 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
         }
 
         if (phase == SyntaxTree.PHASE_INSTANCE_DECLARATIONS) {
-            //decodeArrowBinding();
+            // decodeArrowBinding();
         } else if (phase == SyntaxTree.PHASE_METHOD_CONTENTS) {
             MutatorMethod mutatorMethod = getMutatorMethod();
 
@@ -421,7 +432,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
                 mutatorMethod.setStatic(isStatic());
 
                 getAnnotations().forEach(a -> {
-                    mutatorMethod.addAnnotation((Annotation) a.clone(mutatorMethod, a.getLocationIn()));
+                    mutatorMethod
+                        .addAnnotation((Annotation) a.clone(mutatorMethod, a.getLocationIn()));
                 });
 
                 mutatorMethod.setType(this);
@@ -435,7 +447,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
                 setVisibility(PUBLIC);
             }
 
-            if (genericOverload != null && genericOverload.initializationValue instanceof Value && initializationValue == null) {
+            if (genericOverload != null && genericOverload.initializationValue instanceof Value
+                && initializationValue == null) {
                 genericOverload.addInitializationToCorrespondingPrimitiveOverload(this);
             }
         }
@@ -454,9 +467,9 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     }
 
     public InitializationContext getInitializationContext() {
-        Node[] parents = new Node[]{null};
+        Node[] parents = new Node[] {null};
 
-        ClassDeclaration[] classes = new ClassDeclaration[]{getParentClass()};
+        ClassDeclaration[] classes = new ClassDeclaration[] {getParentClass()};
 
         if (isStatic()) {
             parents[0] = getParentClass().getStaticAssignmentBlock();
@@ -496,14 +509,18 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
                     setDataType(POINTER);
                 }
 
-                Assignment assignment = Assignment.decodeStatement(parents[0], getName() + " = " + initializationValue, getLocationIn(), true);
+                Assignment assignment = Assignment.decodeStatement(parents[0],
+                    getName() + " = " + initializationValue, getLocationIn(), true);
 
                 if (assignment != null) {
-                    if (getTypeClass().isPrimitiveOverload() && assignment.getAssignmentNode().getReturnedNode() instanceof Instantiation) {
-                        Instantiation instantiation = (Instantiation) assignment.getAssignmentNode().getReturnedNode();
+                    if (getTypeClass().isPrimitiveOverload() && assignment.getAssignmentNode()
+                        .getReturnedNode() instanceof Instantiation) {
+                        Instantiation instantiation =
+                            (Instantiation) assignment.getAssignmentNode().getReturnedNode();
 
                         instantiation.setTypeValue(getTypeClass().getName());
-                        instantiation.getGenericTypeArgumentList().replaceWith(getGenericTypeArgumentList().clone(parent, getLocationIn()));
+                        instantiation.getGenericTypeArgumentList().replaceWith(
+                            getGenericTypeArgumentList().clone(parent, getLocationIn()));
                     }
 
                     assignment.onAfterDecoded();
@@ -529,19 +546,22 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     public void addInitializationToCorrespondingPrimitiveOverload(FieldDeclaration corresponding) {
         AssignmentMethod method = corresponding.getParentClass().getAssignmentMethodNode();
 
-        Assignment value = (Assignment) ((Node) initializationValue).getAncestorOfType(Assignment.class).clone(method, corresponding.getLocationIn(), true, true);
+        Assignment value =
+            (Assignment) ((Node) initializationValue).getAncestorOfType(Assignment.class)
+                .clone(method, corresponding.getLocationIn(), true, true);
         value.getAssignedNode().declaration = corresponding;
-        getParentClass().replacePrimitiveGenerics(method.getParentClass().primitiveOverloadTypes, this, value.getAssignmentNode().getReturnedNode());
+        getParentClass().replacePrimitiveGenerics(method.getParentClass().primitiveOverloadTypes,
+            this, value.getAssignmentNode().getReturnedNode());
         method.addChild(value);
         value.onAfterDecoded();
     }
 
     @Override
     public Node getParseContext() {
-//		if (getParentClass().isPrimitiveOverload())
-//		{
-//			return (Node)getProperty("genericOverload");
-//		}
+        // if (getParentClass().isPrimitiveOverload())
+        // {
+        // return (Node)getProperty("genericOverload");
+        // }
 
         return this;
     }
@@ -550,9 +570,11 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     public Value decodeAccessorValue() {
         if (getParentClass().isPrimitiveOverload()) {
             BodyMethodDeclaration accessor = decodeShorthandAccessor();
-            BodyMethodDeclaration reference = ((FieldDeclaration) getProperty("genericOverload")).getAccessorMethod();
+            BodyMethodDeclaration reference =
+                ((FieldDeclaration) getProperty("genericOverload")).getAccessorMethod();
 
-            SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, accessor, accessor);
+            SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, accessor,
+                accessor);
 
             addChild(accessor);
 
@@ -566,7 +588,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     public void decodeMutatorValue(Value value, Value context) {
         if (getParentClass().isPrimitiveOverload()) {
             BodyMethodDeclaration mutator = decodeShorthandMutator();
-            BodyMethodDeclaration reference = ((FieldDeclaration) getProperty("genericOverload")).getMutatorMethod();
+            BodyMethodDeclaration reference =
+                ((FieldDeclaration) getProperty("genericOverload")).getMutatorMethod();
 
             SyntaxUtils.parseConvertedContentsTo(reference.getScope(), reference, mutator, mutator);
 
@@ -585,7 +608,8 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public FieldDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public FieldDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         FieldDeclaration node = new FieldDeclaration(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -599,13 +623,13 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     }
 
     /**
-     * Fill the given {@link FieldDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link FieldDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public FieldDeclaration cloneTo(FieldDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public FieldDeclaration cloneTo(FieldDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.initializationValue = initializationValue;
@@ -635,11 +659,10 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
     }
 
     /**
-     * Test the FieldDeclaration class type to make sure everything
-     * is working properly.
+     * Test the FieldDeclaration class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -652,3 +675,4 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
         return generateFlatInput().toString();
     }
 }
+

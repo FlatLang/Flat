@@ -60,23 +60,22 @@ public class StaticBlock extends Node implements ScopeAncestor {
     }
 
     /**
-     * Decode the given statement into a {@link StaticBlock} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link StaticBlock} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>static</li>
+     * <li>static</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link StaticBlock} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link StaticBlock}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link StaticBlock} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link StaticBlock}.
      */
-    public static StaticBlock decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static StaticBlock decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.equals(IDENTIFIER)) {
             StaticBlock b = generateEmptyBlock(parent, location);
 
@@ -94,7 +93,8 @@ public class StaticBlock extends Node implements ScopeAncestor {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public StaticBlock clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public StaticBlock clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         StaticBlock node = new StaticBlock(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -108,8 +108,7 @@ public class StaticBlock extends Node implements ScopeAncestor {
     }
 
     /**
-     * Fill the given {@link StaticBlock} with the data that is in the
-     * specified node.
+     * Fill the given {@link StaticBlock} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -121,11 +120,10 @@ public class StaticBlock extends Node implements ScopeAncestor {
     }
 
     /**
-     * Test the {@link StaticBlock} class type to make sure everything
-     * is working properly.
+     * Test the {@link StaticBlock} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -133,3 +131,4 @@ public class StaticBlock extends Node implements ScopeAncestor {
         return null;
     }
 }
+

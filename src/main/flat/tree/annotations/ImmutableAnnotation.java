@@ -34,7 +34,8 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
         super(temporaryParent, locationIn);
     }
 
-    public static ImmutableAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static ImmutableAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Immutable")) {
             ImmutableAnnotation n = new ImmutableAnnotation(parent, location);
 
@@ -59,7 +60,8 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         return builder.append("immutable");
     }
 
@@ -75,12 +77,12 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 
     @Override
     public String[] defaultParameterNames() {
-        return new String[]{"className", "deep"};
+        return new String[] {"className", "deep"};
     }
 
     @Override
     public String[][] defaultParameterTypes() {
-        return new String[][]{{"String", "Bool"}};
+        return new String[][] {{"String", "Bool"}};
     }
 
     @Override
@@ -95,7 +97,8 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
     }
 
     private void searchProperties(Node next) {
-        if (searched) return;
+        if (searched)
+            return;
 
         searched = true;
 
@@ -124,14 +127,18 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
                 if (method.isPresent()) {
                     toImmutable = (FlatMethodDeclaration) method.get();
                 } else if (parameters.containsKey("className")) {
-                    SyntaxMessage.error("Immutable class '" + immutableClass.getClassLocation() + "' must contain a toImmutable function with 0 required arguments", this);
+                    SyntaxMessage.error(
+                        "Immutable class '" + immutableClass.getClassLocation()
+                            + "' must contain a toImmutable function with 0 required arguments",
+                        this);
                 }
 
                 if (!parameters.containsKey("className")) {
                     if (immutableClass != null) {
                         declaration.setType(immutableClass.getName());
                     } else {
-                        SyntaxMessage.error("No immutable type is specified for type '" + declaration.getType() + "'", this);
+                        SyntaxMessage.error("No immutable type is specified for type '"
+                            + declaration.getType() + "'", this);
                     }
                 }
             }
@@ -144,10 +151,12 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 
             ClassDeclaration mutableClass = declaration.getTypeClass();
 
-            ImmutableAnnotation reference = (ImmutableAnnotation) mutableClass.getAnnotationOfType(ImmutableAnnotation.class, false);
+            ImmutableAnnotation reference = (ImmutableAnnotation) mutableClass
+                .getAnnotationOfType(ImmutableAnnotation.class, false);
 
             if (reference != null) {
-                return mutableClass.getFileDeclaration().getImportedClass(mutableClass, (String) reference.parameters.get("className"));
+                return mutableClass.getFileDeclaration().getImportedClass(mutableClass,
+                    (String) reference.parameters.get("className"));
             }
         }
 
@@ -156,8 +165,10 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 
     public void convertAssignment(Value assignment) {
         if (toImmutable != null) {
-            if (!SyntaxUtils.isTypeCompatible(assignment, toImmutable, assignment.getReturnedNode())) {
-                MethodCall call = MethodCall.decodeStatement(assignment.getReturnedNode(), "toImmutable()", assignment.getLocationIn(), true, true, toImmutable);
+            if (!SyntaxUtils.isTypeCompatible(assignment, toImmutable,
+                assignment.getReturnedNode())) {
+                MethodCall call = MethodCall.decodeStatement(assignment.getReturnedNode(),
+                    "toImmutable()", assignment.getLocationIn(), true, true, toImmutable);
 
                 if (call != null) {
                     ((Accessible) assignment.getReturnedNode()).setAccessedNode(call);
@@ -205,17 +216,24 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
                     clazz.getFieldList().getPublicFieldList().forEachVisibleChild(f -> {
                         FieldDeclaration field = (FieldDeclaration) f;
 
-                        if (field.isTangible() && field.getVisibility() == InstanceDeclaration.PUBLIC) {
-                            SyntaxMessage.error("Immutable class '" + clazz.getClassLocation() + "' cannot have public fields", field, false);
+                        if (field.isTangible()
+                            && field.getVisibility() == InstanceDeclaration.PUBLIC) {
+                            SyntaxMessage.error("Immutable class '" + clazz.getClassLocation()
+                                + "' cannot have public fields", field, false);
 
                             result.errorOccurred = true;
                         } else if (!field.isStatic()) {
                             field.references.forEach(variable -> {
                                 if (variable.getParentMethod() instanceof Constructor == false &&
-                                    variable.getParentMethod() instanceof AssignmentMethod == false &&
+                                    variable.getParentMethod() instanceof AssignmentMethod == false
+                                    &&
                                     variable.getParentMethod() instanceof MutatorMethod == false) {
                                     if (variable.isInTree() && variable.isBeingModified()) {
-                                        SyntaxMessage.error("Field '" + field.getName() + "' of immutable class '" + clazz.getClassLocation() + "' cannot be modified outside of a constructor", variable, false);
+                                        SyntaxMessage.error(
+                                            "Field '" + field.getName() + "' of immutable class '"
+                                                + clazz.getClassLocation()
+                                                + "' cannot be modified outside of a constructor",
+                                            variable, false);
 
                                         result.errorOccurred = true;
                                     }
@@ -231,7 +249,8 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
     }
 
     @Override
-    public ImmutableAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ImmutableAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ImmutableAnnotation node = new ImmutableAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -241,7 +260,8 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
         return cloneTo(node, true, true);
     }
 
-    public ImmutableAnnotation cloneTo(ImmutableAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ImmutableAnnotation cloneTo(ImmutableAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.searched = searched;
@@ -254,6 +274,7 @@ public class ImmutableAnnotation extends Annotation implements ModifierAnnotatio
 
     @Override
     public String[] getAliases() {
-        return new String[]{"immutable"};
+        return new String[] {"immutable"};
     }
 }
+

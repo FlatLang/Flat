@@ -41,8 +41,8 @@ public class FieldList extends List {
     }
 
     /**
-     * Get the PrivateFieldList that contains all of the private
-     * Fields for its parent ClassDeclaration.
+     * Get the PrivateFieldList that contains all of the private Fields for its parent
+     * ClassDeclaration.
      *
      * @return The PrivateFieldList instance.
      */
@@ -51,8 +51,8 @@ public class FieldList extends List {
     }
 
     /**
-     * Get the PublicFieldList that contains all of the public
-     * Fields for its parent ClassDeclaration.
+     * Get the PublicFieldList that contains all of the public Fields for its parent
+     * ClassDeclaration.
      *
      * @return The PublicFieldList instance.
      */
@@ -61,8 +61,8 @@ public class FieldList extends List {
     }
 
     /**
-     * Get the PublicFieldList that contains all of the public
-     * Fields for its parent ClassDeclaration.
+     * Get the PublicFieldList that contains all of the public Fields for its parent
+     * ClassDeclaration.
      *
      * @return The PublicFieldList instance.
      */
@@ -71,8 +71,8 @@ public class FieldList extends List {
     }
 
     /**
-     * Get the PrivateFieldList that contains all of the private
-     * Fields for its parent ClassDeclaration.
+     * Get the PrivateFieldList that contains all of the private Fields for its parent
+     * ClassDeclaration.
      *
      * @return The PrivateFieldList instance.
      */
@@ -94,7 +94,8 @@ public class FieldList extends List {
                 } else {
                     getPrivateFieldList().addChild(field);
                 }
-            } else if (field.getVisibility() == InstanceDeclaration.PUBLIC || field.getVisibility() == FieldDeclaration.VISIBLE) {
+            } else if (field.getVisibility() == InstanceDeclaration.PUBLIC
+                || field.getVisibility() == FieldDeclaration.VISIBLE) {
                 if (field.isStatic()) {
                     getPublicStaticFieldList().addChild(field);
                 } else {
@@ -109,11 +110,11 @@ public class FieldList extends List {
     }
 
     /**
-     * Get whether or not the FieldList contains the Field with
-     * the specified name.<br>
+     * Get whether or not the FieldList contains the Field with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class Person
      * {
      * 	private int age;
@@ -121,13 +122,14 @@ public class FieldList extends List {
      *
      * 	...
      *
-     * }</pre></blockquote>
-     * <br>
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
      * A call like: "<code>containsField("age")</code>" would return true.
      *
      * @param fieldName The name of the field to search for.
-     * @return Whether or not the FieldList contains the Field
-     * with the specified name.
+     * @return Whether or not the FieldList contains the Field with the specified name.
      */
     public boolean containsField(String fieldName) {
         return getField(fieldName) != null;
@@ -136,8 +138,9 @@ public class FieldList extends List {
     /**
      * Get the FieldList's Field with the specified name.<br>
      * <br>
-     * For example:
-     * <blockquote><pre>
+     * For example: <blockquote>
+     * 
+     * <pre>
      * public class Person
      * {
      * 	private int age;
@@ -145,16 +148,19 @@ public class FieldList extends List {
      *
      * 	...
      *
-     * }</pre></blockquote>
-     * <br>
-     * A call like: "<code>getField("age")</code>" would return the
-     * Field for the "<code>age</code>" int field.
+     * }
+     * </pre>
+     * 
+     * </blockquote> <br>
+     * A call like: "<code>getField("age")</code>" would return the Field for the "<code>age</code>"
+     * int field.
      *
      * @param fieldName The name of the field to search for.
      * @return The Field for the field, if it exists.
      */
     public FieldDeclaration getField(String fieldName) {
-        Node nodes[] = new Node[]{getPrivateFieldList(), getPrivateStaticFieldList(), getPublicFieldList(), getPublicStaticFieldList()};
+        Node nodes[] = new Node[] {getPrivateFieldList(), getPrivateStaticFieldList(),
+            getPublicFieldList(), getPublicStaticFieldList()};
 
         for (Node node : nodes) {
             FieldDeclaration field = searchFieldList(node, fieldName);
@@ -168,8 +174,8 @@ public class FieldList extends List {
     }
 
     /**
-     * Search the given Node (which should only contain Field
-     * children) for a Field with the given name.
+     * Search the given Node (which should only contain Field children) for a Field with the given
+     * name.
      *
      * @param fieldList The list of fields to search through.
      * @param fieldName The name of the field to search for.
@@ -191,7 +197,8 @@ public class FieldList extends List {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public FieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public FieldList clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         FieldList node = new FieldList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -205,8 +212,7 @@ public class FieldList extends List {
     }
 
     /**
-     * Fill the given {@link FieldList} with the data that is in the
-     * specified node.
+     * Fill the given {@link FieldList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -218,11 +224,10 @@ public class FieldList extends List {
     }
 
     /**
-     * Test the FieldList class type to make sure everything
-     * is working properly.
+     * Test the FieldList class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -250,3 +255,4 @@ public class FieldList extends List {
         return str;
     }
 }
+

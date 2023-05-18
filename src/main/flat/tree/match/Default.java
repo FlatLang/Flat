@@ -25,24 +25,23 @@ public class Default extends MatchCase {
     }
 
     /**
-     * Decode the given statement into a {@link Default} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link Default} instance, if possible. If it is not
+     * possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>default</li>
-     * 	<li>default Console.writeLine("Not found")</li>
+     * <li>default</li>
+     * <li>default Console.writeLine("Not found")</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link Default} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link Default}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link Default} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a {@link Default}.
      */
-    public static Default decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Default decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (parent instanceof Match && StringUtils.findNextWord(statement).equals(IDENTIFIER)) {
             Default n = new Default(parent, location);
 
@@ -64,7 +63,8 @@ public class Default extends MatchCase {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Default clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Default clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Default node = new Default(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,8 +78,7 @@ public class Default extends MatchCase {
     }
 
     /**
-     * Fill the given {@link Default} with the data that is in the
-     * specified node.
+     * Fill the given {@link Default} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -91,11 +90,10 @@ public class Default extends MatchCase {
     }
 
     /**
-     * Test the {@link Default} class type to make sure everything
-     * is working properly.
+     * Test the {@link Default} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -103,3 +101,4 @@ public class Default extends MatchCase {
         return null;
     }
 }
+

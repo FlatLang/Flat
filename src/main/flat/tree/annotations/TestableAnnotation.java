@@ -32,15 +32,16 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 
     @Override
     public String[] defaultParameterNames() {
-        return new String[]{"message"};
+        return new String[] {"message"};
     }
 
     @Override
     public String[][] defaultParameterTypes() {
-        return new String[][]{{"Literal"}};
+        return new String[][] {{"Literal"}};
     }
 
-    public static TestableAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static TestableAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Testable")) {
             TestableAnnotation n = new TestableAnnotation(parent, location);
 
@@ -89,7 +90,9 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
             getFileDeclaration().addImport("flat/test/TestResult");
             getFileDeclaration().addImport("flat/io/OutputStream");
 
-            method = BodyMethodDeclaration.decodeStatement(parent, "public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out)", Location.INVALID, true);
+            method = BodyMethodDeclaration.decodeStatement(parent,
+                "public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out)",
+                Location.INVALID, true);
 
             parent.addChild(method);
 
@@ -106,9 +109,14 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
             FlatMethodDeclaration method = searchRunTestsMethod();
 
             String name = method.getScope().getUniqueName("_" + method.getName() + "TestRunner");
-            String description = parameters.containsKey("message") && ((Literal) parameters.get("message")).isStringInstantiation() ? ", " + ((Literal) parameters.get("message")).generateFlatInput() : "";
+            String description = parameters.containsKey("message")
+                && ((Literal) parameters.get("message")).isStringInstantiation()
+                    ? ", " + ((Literal) parameters.get("message")).generateFlatInput()
+                    : "";
 
-            MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields = generateTestRunnerFields("TestRunnerModel", name, "TestRunnerModel(" + getTestCaseInitializer() + description + ")");
+            MethodCall.Pair<FieldDeclaration, FieldDeclaration> fields =
+                generateTestRunnerFields("TestRunnerModel", name,
+                    "TestRunnerModel(" + getTestCaseInitializer() + description + ")");
 
             runner = fields.a;
         }
@@ -117,10 +125,12 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
     }
 
     public String getTestCaseInitializer() {
-        String initializerValues = "[" + String.join(", ", getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
-            .map(x -> (TestAnnotation) x.getAnnotationOfType(TestAnnotation.class))
-            .map(x -> x.generateTestCase().getName())
-            .collect(Collectors.toList())) + "]";
+        String initializerValues = "[" + String.join(", ",
+            getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
+                .map(x -> (TestAnnotation) x.getAnnotationOfType(TestAnnotation.class))
+                .map(x -> x.generateTestCase().getName())
+                .collect(Collectors.toList()))
+            + "]";
 
         if (initializerValues.length() == 2) {
             initializerValues = "Array<TestCase>()";
@@ -133,8 +143,10 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
         if (parameters.containsKey("message")) {
             Literal message = (Literal) parameters.get("message");
 
-            if (!message.isNullLiteral() && !message.value.equals("false") && message.value.length() > 2) {
-                message.value = "\"" + message.value.substring(1, message.value.length() - 1) + "\"";
+            if (!message.isNullLiteral() && !message.value.equals("false")
+                && message.value.length() > 2) {
+                message.value =
+                    "\"" + message.value.substring(1, message.value.length() - 1) + "\"";
 
                 writeMessage(message, getRunTestsMethod(), false, "Test.out", "writeHeader");
             }
@@ -142,7 +154,10 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
             ClassDeclaration clazz = (ClassDeclaration) parent;
             getFileDeclaration().addImport("flat/test/Test");
 
-            writeMessage((Literal) Literal.decodeStatement(parent, "\"Testing " + clazz.getName() + "\"", Location.INVALID, true, true), getRunTestsMethod(), false, "Test.out", "writeHeader");
+            writeMessage(
+                (Literal) Literal.decodeStatement(parent, "\"Testing " + clazz.getName() + "\"",
+                    Location.INVALID, true, true),
+                getRunTestsMethod(), false, "Test.out", "writeHeader");
         }
     }
 
@@ -157,9 +172,10 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 
         callMethodsWithAnnotationOfType(InitTestClassAnnotation.class);
 
-        java.util.List<FlatMethodDeclaration> testMethods = getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
-            .filter(m -> !m.containsAnnotationOfType(IgnoreAnnotation.class))
-            .collect(Collectors.toList());
+        java.util.List<FlatMethodDeclaration> testMethods =
+            getMethodsWithTypeAnnotation(TestAnnotation.class).stream()
+                .filter(m -> !m.containsAnnotationOfType(IgnoreAnnotation.class))
+                .collect(Collectors.toList());
         java.util.List<FlatMethodDeclaration> onlyMethods = testMethods.stream()
             .filter(m -> m.containsAnnotationOfType(OnlyAnnotation.class))
             .collect(Collectors.toList());
@@ -174,7 +190,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
             TestAnnotation test = (TestAnnotation) method.getAnnotationOfType(TestAnnotation.class);
 
             if (method.getParameterList().any(Node::isUserMade)) {
-                SyntaxMessage.error("Test method '" + method.getName() + "' cannot contain parameters", method);
+                SyntaxMessage.error(
+                    "Test method '" + method.getName() + "' cannot contain parameters", method);
             }
 
             callMethodsWithAnnotationOfType(InitTestAnnotation.class);
@@ -188,7 +205,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
                 return;
             }
 
-            MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "(out)", Location.INVALID, true, false, method);
+            MethodCall call = MethodCall.decodeStatement(tryBlock, method.getName() + "(out)",
+                Location.INVALID, true, false, method);
 
             if (call == null) {
                 SyntaxMessage.error("Could not create test suite class", runMethod);
@@ -200,7 +218,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
             runMethod.addChild(tryBlock);
             stopTimer(tryBlock, timer);
 
-            Catch catchBlock = Catch.decodeStatement(runMethod, "catch (TestException e)", Location.INVALID, true);
+            Catch catchBlock =
+                Catch.decodeStatement(runMethod, "catch (TestException e)", Location.INVALID, true);
 
             if (catchBlock == null) {
                 SyntaxMessage.error("Could not create test suite class", runMethod);
@@ -211,10 +230,14 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
             stopTimer(catchBlock, timer);
 
             if (test.writeMessage) {
-                Variable success = (Variable) SyntaxTree.decodeIdentifierAccess(tryBlock, "out:write(\"- Success #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
+                Variable success = (Variable) SyntaxTree.decodeIdentifierAccess(tryBlock,
+                    "out:write(\"- Success #{" + timer.getName() + ".duration}ms\\n\")",
+                    Location.INVALID, true);
                 tryBlock.addChild(success);
 
-                Variable failure = (Variable) SyntaxTree.decodeIdentifierAccess(catchBlock, "out.write(\"- Failure: #e.message #{" + timer.getName() + ".duration}ms\\n\")", Location.INVALID, true);
+                Variable failure = (Variable) SyntaxTree.decodeIdentifierAccess(catchBlock,
+                    "out.write(\"- Failure: #e.message #{" + timer.getName() + ".duration}ms\\n\")",
+                    Location.INVALID, true);
                 catchBlock.addChild(failure);
             }
 
@@ -226,7 +249,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 
         callMethodsWithAnnotationOfType(CleanTestClassAnnotation.class);
 
-        Variable write = (Variable) SyntaxTree.decodeIdentifierAccess(runMethod, "out.write(\"\\n\")", Location.INVALID, true);
+        Variable write = (Variable) SyntaxTree.decodeIdentifierAccess(runMethod,
+            "out.write(\"\\n\")", Location.INVALID, true);
 
         runMethod.addChild(write);
     }
@@ -245,7 +269,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
     }
 
     @Override
-    public TestableAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestableAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         TestableAnnotation node = new TestableAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -255,7 +280,8 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
         return cloneTo(node, true, true);
     }
 
-    public TestableAnnotation cloneTo(TestableAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public TestableAnnotation cloneTo(TestableAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -265,6 +291,7 @@ public class TestableAnnotation extends Annotation implements ModifierAnnotation
 
     @Override
     public String[] getAliases() {
-        return new String[]{"testable"};
+        return new String[] {"testable"};
     }
 }
+

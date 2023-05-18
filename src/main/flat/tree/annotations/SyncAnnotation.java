@@ -21,7 +21,8 @@ public class SyncAnnotation extends Annotation implements ModifierAnnotation {
         super(temporaryParent, locationIn);
     }
 
-    public static SyncAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static SyncAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Sync")) {
             SyncAnnotation n = new SyncAnnotation(parent, location);
 
@@ -50,8 +51,12 @@ public class SyncAnnotation extends Annotation implements ModifierAnnotation {
 
             Scope scope = method.getScope();
 
-            StaticClassReference lock = (StaticClassReference) SyntaxTree.decodeIdentifierAccess(method, "Thread.lock()", Location.INVALID, true, false, true);
-            StaticClassReference unlock = (StaticClassReference) SyntaxTree.decodeIdentifierAccess(method, "Thread.unlock()", Location.INVALID, true, false, true);
+            StaticClassReference lock =
+                (StaticClassReference) SyntaxTree.decodeIdentifierAccess(method, "Thread.lock()",
+                    Location.INVALID, true, false, true);
+            StaticClassReference unlock =
+                (StaticClassReference) SyntaxTree.decodeIdentifierAccess(method, "Thread.unlock()",
+                    Location.INVALID, true, false, true);
 
             scope.addChildBefore(scope.getFirstStatement(), lock);
             scope.addChildAfter(scope.getLastChild(), unlock);
@@ -74,7 +79,8 @@ public class SyncAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public SyncAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public SyncAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         SyncAnnotation node = new SyncAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -84,7 +90,8 @@ public class SyncAnnotation extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public SyncAnnotation cloneTo(SyncAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public SyncAnnotation cloneTo(SyncAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -94,6 +101,7 @@ public class SyncAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"sync"};
+        return new String[] {"sync"};
     }
 }
+

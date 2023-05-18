@@ -7,9 +7,8 @@ import flat.util.Location;
 import flat.util.StringUtils;
 
 /**
- * {@link TypeList} extension that represents a generic type declaration.
- * Contains the information of a generic type declaration.
- * Contains all of the generic type parameter names.
+ * {@link TypeList} extension that represents a generic type declaration. Contains the information
+ * of a generic type declaration. Contains all of the generic type parameter names.
  *
  * @author Braden Steffaniak
  * @since v0.2.40 Dec 7, 2014 at 4:05:23 PM
@@ -65,15 +64,15 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter> {
         Bounds bounds = null;
 
         do {
-            bounds = StringUtils.findContentBoundsWithin(statement, GenericCompatible.GENERIC_START, GenericCompatible.GENERIC_END, index, true, '-');
+            bounds = StringUtils.findContentBoundsWithin(statement, GenericCompatible.GENERIC_START,
+                GenericCompatible.GENERIC_END, index, true, '-');
 
             if (bounds.isValid()) {
                 index = bounds.getEnd();
 
                 data.addSkipBounds(bounds);
             }
-        }
-        while (bounds.isValid());
+        } while (bounds.isValid());
 
         data.setGenericsRemaining(data.getNumSkipBounds());
     }
@@ -82,7 +81,8 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter> {
         decodeGenericTypeParameters(statement, genericBounds, true);
     }
 
-    public void decodeGenericTypeParameters(String statement, Bounds genericBounds, boolean endingsIncluded) {
+    public void decodeGenericTypeParameters(String statement, Bounds genericBounds,
+        boolean endingsIncluded) {
         Bounds clone = genericBounds.clone();
 
         if (endingsIncluded) {
@@ -96,11 +96,13 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter> {
     }
 
     private void addGenericParameterName(String parameterName) {
-        addGenericParameterName(new GenericTypeParameter((Node) this, Location.INVALID), parameterName);
+        addGenericParameterName(new GenericTypeParameter((Node) this, Location.INVALID),
+            parameterName);
     }
 
     private boolean addMethodGenericParameterName(String parameterName) {
-        return addGenericParameterName(new MethodGenericTypeParameter((Node) this, Location.INVALID), parameterName);
+        return addGenericParameterName(
+            new MethodGenericTypeParameter((Node) this, Location.INVALID), parameterName);
     }
 
     private boolean addGenericParameterName(GenericTypeParameter type, String parameterName) {
@@ -122,9 +124,11 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter> {
 
             Bounds nextBounds = StringUtils.findNextWordBounds(parameterName, bounds.getEnd());
 
-            if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER) || nextBounds.extractString(parameterName).equals(IMPLEMENTS_IDENTIFIER)) {
+            if (nextBounds.extractString(parameterName).equals(EXTENDS_IDENTIFIER)
+                || nextBounds.extractString(parameterName).equals(IMPLEMENTS_IDENTIFIER)) {
                 if (numWords == 3) {
-                    String defaultType = StringUtils.findNextWord(parameterName, nextBounds.getEnd());
+                    String defaultType =
+                        StringUtils.findNextWord(parameterName, nextBounds.getEnd());
 
                     type.setDefaultType(defaultType);
 
@@ -135,7 +139,8 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter> {
             }
 
             if (failed) {
-                return false;//SyntaxMessage.error("Could not decode Generic Parameter Declaration '" + parameterName + "'", this);
+                return false;// SyntaxMessage.error("Could not decode Generic Parameter Declaration
+                             // '" + parameterName + "'", this);
             }
         }
 
@@ -215,7 +220,8 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter> {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public GenericTypeParameterList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeParameterList clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         GenericTypeParameterList node = new GenericTypeParameterList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -229,13 +235,13 @@ public class GenericTypeParameterList extends TypeList<GenericTypeParameter> {
     }
 
     /**
-     * Fill the given {@link GenericTypeParameterList} with the data that is in the
-     * specified node.
+     * Fill the given {@link GenericTypeParameterList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public GenericTypeParameterList cloneTo(GenericTypeParameterList node, boolean cloneChildren, boolean cloneAnnotations) {
+    public GenericTypeParameterList cloneTo(GenericTypeParameterList node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;

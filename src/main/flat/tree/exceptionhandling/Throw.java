@@ -9,9 +9,9 @@ import flat.util.Location;
 import flat.util.StringUtils;
 
 /**
- * ExceptionHandler extension that represents the declaration of a
- * throw node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * ExceptionHandler extension that represents the declaration of a throw node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Mar 22, 2014 at 11:02:52 PM
@@ -39,19 +39,16 @@ public class Throw extends Value {
     }
 
     /**
-     * Get the Exception that contains the information about the type
-     * of exception that was thrown.
+     * Get the Exception that contains the information about the type of exception that was thrown.
      *
-     * @return The Exception instance that contains the information
-     * about the exception type.
+     * @return The Exception instance that contains the information about the exception type.
      */
     public Exception getException() {
         return (Exception) getChild(super.getNumDefaultChildren() + 0);
     }
 
     /**
-     * Get the Exception Object Instance that is being thrown by the
-     * specified Throw instance.
+     * Get the Exception Object Instance that is being thrown by the specified Throw instance.
      *
      * @return The Exception Object Instance that is being thrown.
      */
@@ -64,29 +61,28 @@ public class Throw extends Value {
      */
     @Override
     public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren) {
-        return builder.append(IDENTIFIER).append(" ").append(getExceptionInstance().generateFlatInput());
+        return builder.append(IDENTIFIER).append(" ")
+            .append(getExceptionInstance().generateFlatInput());
     }
 
     /**
-     * Decode the given statement into a Throw instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a Throw instance, if possible. If it is not possible, this
+     * method returns null. <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>throw new IOException()</li>
-     * 	<li>throw exceptionInstance;</li>
-     * 	<li>throw new IllegalArgumentException()</li>
+     * <li>throw new IOException()</li>
+     * <li>throw exceptionInstance;</li>
+     * <li>throw new IllegalArgumentException()</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Throw instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Throw.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Throw instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Throw.
      */
-    public static Throw decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Throw decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         boolean soft = StringUtils.startsWithWord(statement, SOFT_IDENTIFIER);
         boolean hard = !soft && StringUtils.startsWithWord(statement, IDENTIFIER);
 
@@ -110,14 +106,14 @@ public class Throw extends Value {
     }
 
     /**
-     * Calculate the Bounds that contain the contents that the Throw is
-     * throwing.
+     * Calculate the Bounds that contain the contents that the Throw is throwing.
      *
      * @param statement The statement containing the data.
      * @return The Bounds of the contents of the Throw.
      */
     private Bounds calculateThrowContents(String statement) {
-        Bounds bounds = new Bounds(StringUtils.findNextNonWhitespaceIndex(statement, (soft ? SOFT_IDENTIFIER.length() : IDENTIFIER.length()) + 1), statement.length());
+        Bounds bounds = new Bounds(StringUtils.findNextNonWhitespaceIndex(statement,
+            (soft ? SOFT_IDENTIFIER.length() : IDENTIFIER.length()) + 1), statement.length());
 
         if (!bounds.isValid()) {
             SyntaxMessage.error("Throw statement missing exception type", this);
@@ -129,11 +125,9 @@ public class Throw extends Value {
     /**
      * Decode the identifier that is being thrown by the Throw statement.
      *
-     * @param thrown   The data representing what is being thrown.
-     * @param location The location that the data is within the source
-     *                 code.
-     * @param require  Whether or not to throw an error if anything goes
-     *                 wrong.
+     * @param thrown The data representing what is being thrown.
+     * @param location The location that the data is within the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the data was decoded successfully.
      */
     private boolean decodeThrownNode(String thrown, Location location, boolean require) {
@@ -158,7 +152,8 @@ public class Throw extends Value {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Throw clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Throw clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Throw node = new Throw(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -172,8 +167,7 @@ public class Throw extends Value {
     }
 
     /**
-     * Fill the given {@link Throw} with the data that is in the
-     * specified node.
+     * Fill the given {@link Throw} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -190,11 +184,10 @@ public class Throw extends Value {
     }
 
     /**
-     * Test the Throw class type to make sure everything
-     * is working properly.
+     * Test the Throw class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -251,3 +244,4 @@ public class Throw extends Value {
 
     }
 }
+

@@ -26,7 +26,8 @@ public interface ShorthandAccessible {
 
         if (accessorIndex > 0) {
             setShorthandAccessor(statement.substring(accessorIndex + 2).trim());
-            setTwoWayBinding(statement.substring(accessorIndex - 1, accessorIndex + 2).trim().equals("<=>"));
+            setTwoWayBinding(
+                statement.substring(accessorIndex - 1, accessorIndex + 2).trim().equals("<=>"));
         }
 
         return accessorIndex;
@@ -61,7 +62,8 @@ public interface ShorthandAccessible {
     }
 
     default MutatorMethod decodeMutator(Value context) {
-        return MutatorMethod.decodeStatement(getParseContext(), "set", getLocationIn(), true, context);
+        return MutatorMethod.decodeStatement(getParseContext(), "set", getLocationIn(), true,
+            context);
     }
 
     default BodyMethodDeclaration decodeShorthandMutator() {
@@ -69,7 +71,8 @@ public interface ShorthandAccessible {
     }
 
     default BodyMethodDeclaration decodeShorthandMutator(Value context) {
-        return decodeMutator(context).cloneTo(new ShorthandMutator(getParseContext(), getLocationIn()));
+        return decodeMutator(context)
+            .cloneTo(new ShorthandMutator(getParseContext(), getLocationIn()));
     }
 
     void setType(Value value);
@@ -84,10 +87,12 @@ public interface ShorthandAccessible {
 
         addChild(a);
 
-        Return returnValue = Return.decodeStatement(a, "return " + getShorthandAccessor(), getLocationIn(), true, false);
+        Return returnValue = Return.decodeStatement(a, "return " + getShorthandAccessor(),
+            getLocationIn(), true, false);
 
         if (returnValue == null) {
-            SyntaxMessage.error("Failed to parse accessor value '" + getShorthandAccessor() + "'", (Node) this);
+            SyntaxMessage.error("Failed to parse accessor value '" + getShorthandAccessor() + "'",
+                (Node) this);
             return null;
         }
 
@@ -118,13 +123,15 @@ public interface ShorthandAccessible {
         String cast = "";
 
         if (value instanceof Cast) {
-            accessorValue = accessorValue.substring(StringUtils.findEndingMatch(accessorValue, 0, '(', ')') + 1);
+            accessorValue = accessorValue
+                .substring(StringUtils.findEndingMatch(accessorValue, 0, '(', ')') + 1);
             cast = "(" + value.generateFlatType().toString() + ")";
         }
 
         accessorValue = StringUtils.removeSurroundingParenthesis(accessorValue);
 
-        Assignment assignment = Assignment.decodeStatement(m, accessorValue + " = " + cast + "value", getLocationIn(), true);
+        Assignment assignment = Assignment.decodeStatement(m,
+            accessorValue + " = " + cast + "value", getLocationIn(), true);
 
         m.addChild(assignment);
     }
@@ -136,7 +143,9 @@ public interface ShorthandAccessible {
         if (accessorValue != null && !alreadyDecoded()) {
             if (containsAccessorMethod()) {
                 containsAccessorMethod();
-                SyntaxMessage.error("Cannot have both an accessor method and shorthand value assignment to a field declaration", (Node) this);
+                SyntaxMessage.error(
+                    "Cannot have both an accessor method and shorthand value assignment to a field declaration",
+                    (Node) this);
             }
 
             Value value = decodeAccessorValue();
@@ -147,7 +156,9 @@ public interface ShorthandAccessible {
 
             if (twoWayBinding) {
                 if (containsMutatorMethod()) {
-                    SyntaxMessage.error("Cannot have both a mutator method and two-way shorthand value assignment to a field declaration", (Node) this);
+                    SyntaxMessage.error(
+                        "Cannot have both a mutator method and two-way shorthand value assignment to a field declaration",
+                        (Node) this);
                 }
 
                 decodeMutatorValue(value, context);
@@ -159,3 +170,4 @@ public interface ShorthandAccessible {
         }
     }
 }
+

@@ -23,7 +23,8 @@ public class InitTestAnnotation extends Annotation implements ModifierAnnotation
         super(temporaryParent, locationIn);
     }
 
-    public static InitTestAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static InitTestAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("InitTest")) {
             InitTestAnnotation n = new InitTestAnnotation(parent, location);
 
@@ -68,7 +69,8 @@ public class InitTestAnnotation extends Annotation implements ModifierAnnotation
     }
 
     @Override
-    public InitTestAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public InitTestAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         InitTestAnnotation node = new InitTestAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -78,7 +80,8 @@ public class InitTestAnnotation extends Annotation implements ModifierAnnotation
         return cloneTo(node, true, true);
     }
 
-    public InitTestAnnotation cloneTo(InitTestAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public InitTestAnnotation cloneTo(InitTestAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -88,6 +91,7 @@ public class InitTestAnnotation extends Annotation implements ModifierAnnotation
 
     @Override
     public String[] getAliases() {
-        return new String[]{"init_test"};
+        return new String[] {"init_test"};
     }
 }
+

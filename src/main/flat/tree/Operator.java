@@ -58,38 +58,44 @@ public class Operator extends IValue {
     public static final String SHORTHAND_R_SHIFT = ">>=", SHORTHAND_R_SHIFT_C = ">>=";
     public static final String SHORTHAND_UR_SHIFT = ">>>=", SHORTHAND_UR_SHIFT_C = ">>=";
 
-    public static final String OPERATORS[] = new String[]{SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
-        SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
-        SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
-        AND, OR, DIVIDE, MULTIPLY, MODULO, INCREMENT, DECREMENT,
-        EQUALS, BANG, ASSIGN, NOT_EQUAL, ADD, SUBTRACT,
-        L_SHIFT, UR_SHIFT, R_SHIFT, GREATER_EQ, LESS_EQ, GREATER, LESS,
-        BITWISE_AND, BITWISE_OR, BITWISE_XOR, BITWISE_COMPLEMENT};
+    public static final String OPERATORS[] =
+        new String[] {SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+            SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+            SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+            AND, OR, DIVIDE, MULTIPLY, MODULO, INCREMENT, DECREMENT,
+            EQUALS, BANG, ASSIGN, NOT_EQUAL, ADD, SUBTRACT,
+            L_SHIFT, UR_SHIFT, R_SHIFT, GREATER_EQ, LESS_EQ, GREATER, LESS,
+            BITWISE_AND, BITWISE_OR, BITWISE_XOR, BITWISE_COMPLEMENT};
 
-    public static final String UNARY_OPERATORS[] = new String[]{BANG, INCREMENT, DECREMENT, SUBTRACT, BITWISE_COMPLEMENT};
-    public static final String UNARY_OPERATORS_NO_MINUS[] = new String[]{BANG, INCREMENT, DECREMENT, BITWISE_COMPLEMENT};
-    public static final String MINUS[] = new String[]{SUBTRACT};
+    public static final String UNARY_OPERATORS[] =
+        new String[] {BANG, INCREMENT, DECREMENT, SUBTRACT, BITWISE_COMPLEMENT};
+    public static final String UNARY_OPERATORS_NO_MINUS[] =
+        new String[] {BANG, INCREMENT, DECREMENT, BITWISE_COMPLEMENT};
+    public static final String MINUS[] = new String[] {SUBTRACT};
 
-    public static final String BINARY_OPERATORS[] = new String[]{SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
-        SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
-        SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
-        AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
-        EQUALS, NOT_EQUAL, ASSIGN, GREATER_EQ, LESS_EQ, L_SHIFT,
-        UR_SHIFT, R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR,
-        BITWISE_XOR};
+    public static final String BINARY_OPERATORS[] =
+        new String[] {SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+            SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+            SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+            AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
+            EQUALS, NOT_EQUAL, ASSIGN, GREATER_EQ, LESS_EQ, L_SHIFT,
+            UR_SHIFT, R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR,
+            BITWISE_XOR};
 
-    public static final String LOGICAL_OPERATORS[] = new String[]{SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
-        SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
-        SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
-        AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
-        EQUALS, NOT_EQUAL, GREATER_EQ, LESS_EQ, L_SHIFT,
-        UR_SHIFT, R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR,
-        BITWISE_XOR, BITWISE_COMPLEMENT};
+    public static final String LOGICAL_OPERATORS[] =
+        new String[] {SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+            SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+            SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+            AND, OR, DIVIDE, MULTIPLY, MODULO, ADD, SUBTRACT,
+            EQUALS, NOT_EQUAL, GREATER_EQ, LESS_EQ, L_SHIFT,
+            UR_SHIFT, R_SHIFT, GREATER, LESS, BITWISE_AND, BITWISE_OR,
+            BITWISE_XOR, BITWISE_COMPLEMENT};
 
-    public static final String SHORTHAND_OPERATORS[] = new String[]{SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
-        SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
-        SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
-        SHORTHAND_UR_SHIFT, SHORTHAND_BITWISE_XOR};
+    public static final String SHORTHAND_OPERATORS[] =
+        new String[] {SHORTHAND_ADD, SHORTHAND_SUBTRACT, SHORTHAND_MULTIPLY,
+            SHORTHAND_DIVIDE, SHORTHAND_MODULO, SHORTHAND_L_SHIFT,
+            SHORTHAND_R_SHIFT, SHORTHAND_BITWISE_AND, SHORTHAND_BITWISE_OR,
+            SHORTHAND_UR_SHIFT, SHORTHAND_BITWISE_XOR};
 
     /**
      * @see Node#Node(Node, Location)
@@ -149,7 +155,8 @@ public class Operator extends IValue {
             case ">":
                 return getProgram().getClassDeclaration("flat/operators/GreaterThanOperator");
             case ">=":
-                return getProgram().getClassDeclaration("flat/operators/GreaterThanOrEqualToOperator");
+                return getProgram()
+                    .getClassDeclaration("flat/operators/GreaterThanOrEqualToOperator");
             default:
                 return null;
         }
@@ -312,13 +319,15 @@ public class Operator extends IValue {
                 String left = SyntaxUtils.getPrimitiveFlatType(l.getType());
                 String right = SyntaxUtils.getPrimitiveFlatType(r.getType());
 
-                if (left == null || right == null || !SyntaxUtils.arePrimitiveTypesCompatibleGeneral(left, right)) {
+                if (left == null || right == null
+                    || !SyntaxUtils.arePrimitiveTypesCompatibleGeneral(left, right)) {
                     left = SyntaxUtils.getPrimitiveFlatType(l.getType());
                     right = SyntaxUtils.getPrimitiveFlatType(r.getType());
 
                     SyntaxUtils.arePrimitiveTypesCompatibleGeneral(left, right);
 
-                    SyntaxMessage.error("Type '" + left + "' is not compatible with type '" + right + "'", this);
+                    SyntaxMessage.error(
+                        "Type '" + left + "' is not compatible with type '" + right + "'", this);
                 }
 
                 setType(SyntaxUtils.getHighestPrimitiveType(left, right));
@@ -337,14 +346,18 @@ public class Operator extends IValue {
 
                     SyntaxUtils.getTypeInCommon(l, r);
 
-                    SyntaxMessage.error("Type '" + left + "' is not compatible with type '" + right + "'", this);
+                    SyntaxMessage.error(
+                        "Type '" + left + "' is not compatible with type '" + right + "'", this);
                     return;
                 }
 
                 String type = common.getType();
 
-                if (getLeftOperand().getReturnedNode().isPrimitive() && getRightOperand().getReturnedNode().isPrimitive()) {
-                    type = SyntaxUtils.getHighestPrimitiveType(getLeftOperand().getReturnedNode().getType(), getRightOperand().getReturnedNode().getType());
+                if (getLeftOperand().getReturnedNode().isPrimitive()
+                    && getRightOperand().getReturnedNode().isPrimitive()) {
+                    type = SyntaxUtils.getHighestPrimitiveType(
+                        getLeftOperand().getReturnedNode().getType(),
+                        getRightOperand().getReturnedNode().getType());
                 }
 
                 setType(type);
@@ -353,8 +366,10 @@ public class Operator extends IValue {
     }
 
     public boolean isBooleanOperator() {
-        return operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG) || operator.equals(AND) ||
-            operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER) || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ);
+        return operator.equals(EQUALS) || operator.equals(NOT_EQUAL) || operator.equals(BANG)
+            || operator.equals(AND) ||
+            operator.equals(OR) || operator.equals(LESS) || operator.equals(GREATER)
+            || operator.equals(LESS_EQ) || operator.equals(GREATER_EQ);
     }
 
     public boolean isEquivalenceOperator() {
@@ -372,7 +387,8 @@ public class Operator extends IValue {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Operator clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Operator clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Operator node = new Operator(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -386,8 +402,7 @@ public class Operator extends IValue {
     }
 
     /**
-     * Fill the given {@link Operator} with the data that is in the
-     * specified node.
+     * Fill the given {@link Operator} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -401,11 +416,10 @@ public class Operator extends IValue {
     }
 
     /**
-     * Test the Operator class type to make sure everything
-     * is working properly.
+     * Test the Operator class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -413,3 +427,4 @@ public class Operator extends IValue {
         return null;
     }
 }
+

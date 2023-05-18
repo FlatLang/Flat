@@ -18,7 +18,8 @@ public class ClosureContextDeclaration extends LocalDeclaration {
     /**
      * @see Node#Node(Node, Location)
      */
-    public ClosureContextDeclaration(Node temporaryParent, Location locationIn, ClosureContext context) {
+    public ClosureContextDeclaration(Node temporaryParent, Location locationIn,
+        ClosureContext context) {
         super(temporaryParent, locationIn);
 
         this.context = context;
@@ -39,8 +40,10 @@ public class ClosureContextDeclaration extends LocalDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ClosureContextDeclaration clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
-        ClosureContextDeclaration node = new ClosureContextDeclaration(temporaryParent, locationIn, context);
+    public ClosureContextDeclaration clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
+        ClosureContextDeclaration node =
+            new ClosureContextDeclaration(temporaryParent, locationIn, context);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
     }
@@ -53,24 +56,24 @@ public class ClosureContextDeclaration extends LocalDeclaration {
     }
 
     /**
-     * Fill the given {@link ClosureContextDeclaration} with the data that is in the
-     * specified node.
+     * Fill the given {@link ClosureContextDeclaration} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ClosureContextDeclaration cloneTo(ClosureContextDeclaration node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ClosureContextDeclaration cloneTo(ClosureContextDeclaration node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link ClosureContextDeclaration} class type to make sure everything
-     * is working properly.
+     * Test the {@link ClosureContextDeclaration} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -78,3 +81,4 @@ public class ClosureContextDeclaration extends LocalDeclaration {
         return null;
     }
 }
+

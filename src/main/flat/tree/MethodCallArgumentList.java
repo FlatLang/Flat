@@ -9,10 +9,9 @@ import flat.util.Location;
 import java.util.ArrayList;
 
 /**
- * Node extension that keeps track of all of the arguments that
- * are passed during a method call. The children of this node are
- * all Argument instances. They are stored in the order that
- * they will be passed to the method call.
+ * Node extension that keeps track of all of the arguments that are passed during a method call. The
+ * children of this node are all Argument instances. They are stored in the order that they will be
+ * passed to the method call.
  *
  * @author Braden Steffaniak
  * @since v0.2.14 Jun 19, 2014 at 12:14:53 PM
@@ -71,11 +70,13 @@ public class MethodCallArgumentList extends ArgumentList {
     }
 
     public String getArgumentName(int index) {
-        return argumentNames == null || argumentNames.size() <= index ? null : argumentNames.get(index);
+        return argumentNames == null || argumentNames.size() <= index ? null
+            : argumentNames.get(index);
     }
 
     public void setArgumentName(int index, String name) {
-        argumentNames = argumentNames == null ? new ArrayList<>(getNumVisibleChildren()) : argumentNames;
+        argumentNames =
+            argumentNames == null ? new ArrayList<>(getNumVisibleChildren()) : argumentNames;
 
         while (argumentNames.size() <= index) {
             argumentNames.add(null);
@@ -94,11 +95,9 @@ public class MethodCallArgumentList extends ArgumentList {
     }
 
     /**
-     * Get the types that the Argument list is providing for the
-     * parameters.
+     * Get the types that the Argument list is providing for the parameters.
      *
-     * @return An array of Values that represent that types in the
-     * argument list.
+     * @return An array of Values that represent that types in the argument list.
      */
     public Value[] getTypes() {
         ArrayList<Value> types = new ArrayList<>();
@@ -161,7 +160,8 @@ public class MethodCallArgumentList extends ArgumentList {
                     Value value = ((Value) getVisibleChild(getNamedArgumentIndex(param.getName())));
 
                     types.add(value);
-                } else if (getLastArgumentNameIndex() == getNumVisibleChildren() - 1 && param.isOptional()) {
+                } else if (getLastArgumentNameIndex() == getNumVisibleChildren() - 1
+                    && param.isOptional()) {
                     types.add(new DefaultArgument(this, Location.INVALID));
 
                     offset++;
@@ -179,8 +179,7 @@ public class MethodCallArgumentList extends ArgumentList {
     }
 
     /**
-     * Get the reference variable/value that is being used to call
-     * the method.
+     * Get the reference variable/value that is being used to call the method.
      *
      * @return The Identifier that is calling the method.
      */
@@ -229,8 +228,10 @@ public class MethodCallArgumentList extends ArgumentList {
                     if (context instanceof Closure) {
                         Closure c = (Closure) context;
 
-                        if (c.declaration instanceof LambdaMethodDeclaration && c.getType() != null && param.getType() != null) {
-                            LambdaMethodDeclaration lambda = (LambdaMethodDeclaration) c.declaration;
+                        if (c.declaration instanceof LambdaMethodDeclaration && c.getType() != null
+                            && param.getType() != null) {
+                            LambdaMethodDeclaration lambda =
+                                (LambdaMethodDeclaration) c.declaration;
 
                             if (c.isPrimitive()) {
                                 if (!param.isPrimitive()) {
@@ -242,7 +243,8 @@ public class MethodCallArgumentList extends ArgumentList {
                         }
                     } else if (context.getType() != null) {
                         if (declaration instanceof InitializationMethod == false) {
-                            context.replaceWithBoxedValue(param, context.getReturnedNode().getType());
+                            context.replaceWithBoxedValue(param,
+                                context.getReturnedNode().getType());
                         }
                     }
                 }
@@ -335,7 +337,8 @@ public class MethodCallArgumentList extends ArgumentList {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public MethodCallArgumentList clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public MethodCallArgumentList clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         MethodCallArgumentList node = new MethodCallArgumentList(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -349,13 +352,13 @@ public class MethodCallArgumentList extends ArgumentList {
     }
 
     /**
-     * Fill the given {@link ArgumentList} with the data that is in the
-     * specified node.
+     * Fill the given {@link ArgumentList} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public MethodCallArgumentList cloneTo(MethodCallArgumentList node, boolean cloneChildren, boolean cloneAnnotations) {
+    public MethodCallArgumentList cloneTo(MethodCallArgumentList node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         node.argumentNames = argumentNames;
 
         super.cloneTo(node, cloneChildren, cloneAnnotations);
@@ -364,11 +367,10 @@ public class MethodCallArgumentList extends ArgumentList {
     }
 
     /**
-     * Test the MethodCallArgumentList class type to make sure everything
-     * is working properly.
+     * Test the MethodCallArgumentList class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -376,3 +378,4 @@ public class MethodCallArgumentList extends ArgumentList {
         return null;
     }
 }
+

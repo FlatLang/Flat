@@ -40,25 +40,25 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
     }
 
     /**
-     * Decode the given statement into a {@link ObsoleteAnnotation} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link ObsoleteAnnotation} instance, if possible. If it is
+     * not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent   The parent node of the statement.
-     * @param name     The statement to try to decode into a
-     *                 {@link ObsoleteAnnotation} instance.
+     * @param parent The parent node of the statement.
+     * @param name The statement to try to decode into a {@link ObsoleteAnnotation} instance.
      * @param location The location of the statement in the source code.
-     * @param require  Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link ObsoleteAnnotation}.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link ObsoleteAnnotation}.
      */
-    public static ObsoleteAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static ObsoleteAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Obsolete")) {
             ObsoleteAnnotation n = new ObsoleteAnnotation(parent, location);
 
@@ -66,7 +66,8 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
                 String[] args = StringUtils.splitCommas(parameters);
 
                 if (args.length >= 1 && args.length < 3) {
-                    Value messageNode = Literal.decodeStatement(n, args[0], location, require, true);
+                    Value messageNode =
+                        Literal.decodeStatement(n, args[0], location, require, true);
 
                     if (messageNode instanceof Literal) {
                         Literal message = (Literal) messageNode;
@@ -74,14 +75,17 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
                         if (message.getType().equals("String")) {
                             n.message = message.getValue();
                         } else if (args.length > 1) {
-                            SyntaxMessage.queryError("Obsolete requires that if a message is given, for it to be the first argument", n, require);
+                            SyntaxMessage.queryError(
+                                "Obsolete requires that if a message is given, for it to be the first argument",
+                                n, require);
 
                             return null;
                         }
                     }
 
                     if (args.length >= 2) {
-                        Literal fail = (Literal) Literal.decodeStatement(n, args[1], location, require, true);
+                        Literal fail =
+                            (Literal) Literal.decodeStatement(n, args[1], location, require, true);
 
                         if (fail.getType().equals("Bool")) {
                             n.fail = Boolean.parseBoolean(fail.getValue());
@@ -124,7 +128,7 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
             VariableDeclaration decl = (VariableDeclaration) node;
 
             for (Variable reference : decl.references) {
-                Variable v = reference;//(Variable)reference.getReferenceNode();
+                Variable v = reference;// (Variable)reference.getReferenceNode();
 
                 if (fail) {
                     SyntaxMessage.error(message, v);
@@ -157,7 +161,8 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
                 type = "Method";
             }
 
-            message = type + " '" + output + "' is obsolete" + (message.length() > 0 ? ": " : "") + message;
+            message = type + " '" + output + "' is obsolete" + (message.length() > 0 ? ": " : "")
+                + message;
         }
 
         return super.onNextStatementDecoded(next);
@@ -167,7 +172,8 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ObsoleteAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ObsoleteAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ObsoleteAnnotation node = new ObsoleteAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -181,13 +187,13 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
     }
 
     /**
-     * Fill the given {@link ObsoleteAnnotation} with the data that is in the
-     * specified node.
+     * Fill the given {@link ObsoleteAnnotation} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ObsoleteAnnotation cloneTo(ObsoleteAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ObsoleteAnnotation cloneTo(ObsoleteAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -196,11 +202,10 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
     }
 
     /**
-     * Test the {@link ObsoleteAnnotation} class type to make sure everything
-     * is working properly.
+     * Test the {@link ObsoleteAnnotation} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -210,6 +215,7 @@ public class ObsoleteAnnotation extends Annotation implements ModifierAnnotation
 
     @Override
     public String[] getAliases() {
-        return new String[]{"obsolete"};
+        return new String[] {"obsolete"};
     }
 }
+

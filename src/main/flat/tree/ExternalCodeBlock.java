@@ -46,32 +46,29 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
     public HashMap<Integer, Scope> getScopes() {
         return scopes;
     }
-	
-	/*private String replaceExternalInterpolations(String contents)
-	{
-		StringBuilder builder = new StringBuilder();
-		
-		int index = SyntaxUtils.findStringOutsideOfQuotes(contents, "${", 0);
-		int end = 0;
-		
-		while (index >= 0)
-		{
-			builder.append(contents.substring(end, index));
-			
-			end = SyntaxUtils.findEndingBrace(contents, index + 2) + 1;
-			
-			String value = contents.substring(index + 2, end - 1).trim();
-			
-			builder.append(value);
-			
-			index = SyntaxUtils.findStringOutsideOfQuotes(contents, "${", end);
-		}
-		
-		return builder.append(contents.substring(end)).toString();
-	}*/
+
+    /*
+     * private String replaceExternalInterpolations(String contents) { StringBuilder builder = new
+     * StringBuilder();
+     * 
+     * int index = SyntaxUtils.findStringOutsideOfQuotes(contents, "${", 0); int end = 0;
+     * 
+     * while (index >= 0) { builder.append(contents.substring(end, index));
+     * 
+     * end = SyntaxUtils.findEndingBrace(contents, index + 2) + 1;
+     * 
+     * String value = contents.substring(index + 2, end - 1).trim();
+     * 
+     * builder.append(value);
+     * 
+     * index = SyntaxUtils.findStringOutsideOfQuotes(contents, "${", end); }
+     * 
+     * return builder.append(contents.substring(end)).toString(); }
+     */
 
     public void setContents(String contents) {
-        if (target != null && !TargetAnnotation.targetMatches(getProgram().getController().target, target)) {
+        if (target != null
+            && !TargetAnnotation.targetMatches(getProgram().getController().target, target)) {
             return;
         }
 
@@ -90,9 +87,10 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
 
             expressions.add(!value.contains("\n"));
 
-            //value = replaceExternalInterpolations(value);
+            // value = replaceExternalInterpolations(value);
 
-            Node content = SyntaxTree.decodeScopeContents(getParent(), value.trim(), getLocationIn());
+            Node content =
+                SyntaxTree.decodeScopeContents(getParent(), value.trim(), getLocationIn());
 
             addChild(content, this);
 
@@ -117,25 +115,25 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
     }
 
     /**
-     * Decode the given statement into a {@link ExternalCodeBlock} instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a {@link ExternalCodeBlock} instance, if possible. If it is
+     * not possible, this method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li></li>
-     * 	<li></li>
-     * 	<li></li>
+     * <li></li>
+     * <li></li>
+     * <li></li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  {@link ExternalCodeBlock} instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a {@link ExternalCodeBlock}.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a {@link ExternalCodeBlock} instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a
+     *         {@link ExternalCodeBlock}.
      */
-    public static ExternalCodeBlock decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static ExternalCodeBlock decodeStatement(Node parent, String statement,
+        Location location, boolean require) {
         String word = StringUtils.findNextWord(statement);
 
         if (word != null && word.equals(IDENTIFIER)) {
@@ -162,7 +160,8 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
         }
 
         if (phase == SyntaxTree.PHASE_PRE_GENERATION) {
-            if (target != null && !TargetAnnotation.targetMatches(getProgram().getController().target, target)) {
+            if (target != null
+                && !TargetAnnotation.targetMatches(getProgram().getController().target, target)) {
                 detach();
 
                 result.skipCycle = true;
@@ -177,7 +176,9 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
         builder.append("external ").append(target);
 
         if (outputChildren) {
-            builder.append(" {\n").append(joinContents((x, e) -> "#{" + (e ? "" : "\n") + x.generateFlatInput() + (e ? "" : "\n") + "}")).append("\n}");
+            builder.append(" {\n").append(joinContents(
+                (x, e) -> "#{" + (e ? "" : "\n") + x.generateFlatInput() + (e ? "" : "\n") + "}"))
+                .append("\n}");
         }
 
         return builder;
@@ -187,7 +188,8 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ExternalCodeBlock clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalCodeBlock clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         ExternalCodeBlock node = new ExternalCodeBlock(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -201,13 +203,13 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
     }
 
     /**
-     * Fill the given {@link ExternalCodeBlock} with the data that is in the
-     * specified node.
+     * Fill the given {@link ExternalCodeBlock} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ExternalCodeBlock cloneTo(ExternalCodeBlock node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExternalCodeBlock cloneTo(ExternalCodeBlock node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.ending = ending;
@@ -220,11 +222,10 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
     }
 
     /**
-     * Test the {@link ExternalCodeBlock} class type to make sure everything
-     * is working properly.
+     * Test the {@link ExternalCodeBlock} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -232,3 +233,4 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
         return null;
     }
 }
+

@@ -10,9 +10,9 @@ import flat.util.Location;
 import java.util.ArrayList;
 
 /**
- * ExceptionHandler extension that represents the declaration of a
- * try node type. See {@link #decodeStatement(Node, String, Location, boolean)}
- * for more details on what correct inputs look like.
+ * ExceptionHandler extension that represents the declaration of a try node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Mar 22, 2014 at 4:01:38 PM
@@ -35,8 +35,8 @@ public class Try extends ExceptionHandler {
     }
 
     /**
-     * Add the specified exception code to the list of exceptions that
-     * this try exception handling block catches.
+     * Add the specified exception code to the list of exceptions that this try exception handling
+     * block catches.
      *
      * @param caught The type of exception code that is caught.
      */
@@ -44,25 +44,24 @@ public class Try extends ExceptionHandler {
         if (!exceptions.contains(caught)) {
             exceptions.add(caught);
         } else {
-            SyntaxMessage.error("Exception of type '" + caught.type.getName() + "' already caught", this);
+            SyntaxMessage.error("Exception of type '" + caught.type.getName() + "' already caught",
+                this);
         }
     }
 
     /**
-     * Decode the given statement into a Try instance, if
-     * possible. If it is not possible, this method returns null.
-     * <br>
+     * Decode the given statement into a Try instance, if possible. If it is not possible, this
+     * method returns null. <br>
      * The only correct input is "try"
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Try instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Try.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Try instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Try.
      */
-    public static Try decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Try decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         if (statement.equals(IDENTIFIER)) {
             Try n = new Try(parent, location);
 
@@ -73,7 +72,8 @@ public class Try extends ExceptionHandler {
     }
 
     @Override
-    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren, boolean generateArray) {
+    public StringBuilder generateFlatInput(StringBuilder builder, boolean outputChildren,
+        boolean generateArray) {
         builder.append("try");
 
         if (outputChildren) {
@@ -85,8 +85,8 @@ public class Try extends ExceptionHandler {
     }
 
     /**
-     * Check for a finally node following the try statement. If one does
-     * not exist, add a default one.
+     * Check for a finally node following the try statement. If one does not exist, add a default
+     * one.
      *
      * @param phase The phase that the node is being validated in.
      * @see Node#validate(int)
@@ -136,7 +136,8 @@ public class Try extends ExceptionHandler {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Try clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Try clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Try node = new Try(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -150,8 +151,7 @@ public class Try extends ExceptionHandler {
     }
 
     /**
-     * Fill the given {@link Try} with the data that is in the
-     * specified node.
+     * Fill the given {@link Try} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -169,11 +169,10 @@ public class Try extends ExceptionHandler {
     }
 
     /**
-     * Test the Try class type to make sure everything
-     * is working properly.
+     * Test the Try class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -181,3 +180,4 @@ public class Try extends ExceptionHandler {
         return null;
     }
 }
+

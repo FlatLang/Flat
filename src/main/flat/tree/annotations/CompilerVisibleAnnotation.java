@@ -8,7 +8,8 @@ import flat.tree.variables.FieldDeclaration;
 import flat.tree.variables.FieldList;
 import flat.util.Location;
 
-public class CompilerVisibleAnnotation extends Annotation implements ModifierAnnotation, VisibilityModifier {
+public class CompilerVisibleAnnotation extends Annotation
+    implements ModifierAnnotation, VisibilityModifier {
     public String aliasUsed;
 
     @Override
@@ -25,7 +26,8 @@ public class CompilerVisibleAnnotation extends Annotation implements ModifierAnn
         super(temporaryParent, locationIn);
     }
 
-    public static CompilerVisibleAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static CompilerVisibleAnnotation decodeStatement(Node parent, String name,
+        String parameters, Location location, boolean require) {
         if (name.equals("CompilerVisible")) {
             CompilerVisibleAnnotation n = new CompilerVisibleAnnotation(parent, location);
 
@@ -84,7 +86,8 @@ public class CompilerVisibleAnnotation extends Annotation implements ModifierAnn
     }
 
     @Override
-    public CompilerVisibleAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public CompilerVisibleAnnotation clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         CompilerVisibleAnnotation node = new CompilerVisibleAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -94,7 +97,8 @@ public class CompilerVisibleAnnotation extends Annotation implements ModifierAnn
         return cloneTo(node, true, true);
     }
 
-    public CompilerVisibleAnnotation cloneTo(CompilerVisibleAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public CompilerVisibleAnnotation cloneTo(CompilerVisibleAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -104,6 +108,7 @@ public class CompilerVisibleAnnotation extends Annotation implements ModifierAnn
 
     @Override
     public String[] getAliases() {
-        return new String[]{"compiler_visible"};
+        return new String[] {"compiler_visible"};
     }
 }
+

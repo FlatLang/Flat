@@ -9,12 +9,14 @@ public class FunctionType extends Type {
 
     public static FunctionType parse(Node parent, String value) {
         if (value != null && value.indexOf('(') > 0) {
-            ClosureDeclaration c = ClosureDeclaration.decodeStatement(parent, value, parent.getLocationIn(), false);
+            ClosureDeclaration c =
+                ClosureDeclaration.decodeStatement(parent, value, parent.getLocationIn(), false);
 
             if (c != null) {
                 FunctionType type = new FunctionType();
 
-                FirstClassClosureDeclaration firstClass = new FirstClassClosureDeclaration(parent, c.getLocationIn());
+                FirstClassClosureDeclaration firstClass =
+                    new FirstClassClosureDeclaration(parent, c.getLocationIn());
 
                 type.value = c.getName();
                 type.type = c.getTypeObject();
@@ -50,3 +52,4 @@ public class FunctionType extends Type {
         return cloneTo(new FunctionType());
     }
 }
+

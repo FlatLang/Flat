@@ -10,9 +10,9 @@ import flat.util.StringUtils;
 import flat.util.SyntaxUtils;
 
 /**
- * Value extension that represents a return statement node type.
- * See {@link #decodeStatement(Node, String, Location, boolean)} for more
- * details on what correct inputs look like.
+ * Value extension that represents a return statement node type. See
+ * {@link #decodeStatement(Node, String, Location, boolean)} for more details on what correct inputs
+ * look like.
  *
  * @author Braden Steffaniak
  * @since v0.1 Jan 5, 2014 at 9:58:29 PM
@@ -97,32 +97,31 @@ public class Return extends IValue {
     }
 
     /**
-     * Decode the given statement into a Return instance, if
-     * possible. If it is not possible, this method returns null.<br>
+     * Decode the given statement into a Return instance, if possible. If it is not possible, this
+     * method returns null.<br>
      * <br>
      * Example inputs include:<br>
      * <ul>
-     * 	<li>return</li>
-     * 	<li>return node</li>
-     * 	<li>return 0</li>
-     * 	<li>return getAge()</li>
-     * 	<li>return age + 32</li>
+     * <li>return</li>
+     * <li>return node</li>
+     * <li>return 0</li>
+     * <li>return getAge()</li>
+     * <li>return age + 32</li>
      * </ul>
      *
-     * @param parent    The parent node of the statement.
-     * @param statement The statement to try to decode into a
-     *                  Return instance.
-     * @param location  The location of the statement in the source code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
-     * @return The generated node, if it was possible to translated it
-     * into a Return.
+     * @param parent The parent node of the statement.
+     * @param statement The statement to try to decode into a Return instance.
+     * @param location The location of the statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
+     * @return The generated node, if it was possible to translated it into a Return.
      */
-    public static Return decodeStatement(Node parent, String statement, Location location, boolean require) {
+    public static Return decodeStatement(Node parent, String statement, Location location,
+        boolean require) {
         return decodeStatement(parent, statement, location, require, true);
     }
 
-    public static Return decodeStatement(Node parent, String statement, Location location, boolean require, boolean validateType) {
+    public static Return decodeStatement(Node parent, String statement, Location location,
+        boolean require, boolean validateType) {
         if (StringUtils.startsWithWord(statement, IDENTIFIER)) {
             Return n = new Return(parent, location);
 
@@ -135,27 +134,27 @@ public class Return extends IValue {
     }
 
     /**
-     * Decode the return value of a return statement, if the return
-     * statement returns a value.<br>
+     * Decode the return value of a return statement, if the return statement returns a value.<br>
      * <br>
-     * The value of a return statement looks like the following:
-     * <blockquote><pre>
-     * return node</pre></blockquote>
-     * "<u><code>node</code></u>" is the value in the above return
-     * statement.
+     * The value of a return statement looks like the following: <blockquote>
+     * 
+     * <pre>
+     * return node
+     * </pre>
+     * 
+     * </blockquote> "<u><code>node</code></u>" is the value in the above return statement.
      *
      * @param statement The statement to decode the return value from.
-     * @param location  The location of the return statement in the source
-     *                  code.
-     * @param require   Whether or not to throw an error if anything goes
-     *                  wrong.
+     * @param location The location of the return statement in the source code.
+     * @param require Whether or not to throw an error if anything goes wrong.
      * @return Whether or not the return value decoded correctly.
      */
     private boolean decodeReturnValue(String statement, Location location, boolean require) {
         return decodeReturnValue(statement, location, require, true);
     }
 
-    private boolean decodeReturnValue(String statement, Location location, boolean require, boolean validateType) {
+    private boolean decodeReturnValue(String statement, Location location, boolean require,
+        boolean validateType) {
         String postReturn = generatePostReturn(statement);
 
         if (postReturn != null) {
@@ -167,19 +166,21 @@ public class Return extends IValue {
             for (String v : values) {
                 Value value = decodeReturnValue(v, getParentMethod(), newLoc, validateType);
 
-                if (value instanceof Accessible && ((Accessible) value).canAccess() && getParentMethod().getImmutableAnnotation() != null) {
+                if (value instanceof Accessible && ((Accessible) value).canAccess()
+                    && getParentMethod().getImmutableAnnotation() != null) {
                     getParentMethod().getImmutableAnnotation().convertAssignment(value);
                 }
 
                 getReturnValues().addChild(value);
             }
         } else if (getParentMethod().isFunctionType()) {
-            getReturnValues().addChild(LambdaExpression.decodeStatement(this, "{", location, require));
+            getReturnValues()
+                .addChild(LambdaExpression.decodeStatement(this, "{", location, require));
         } else if (getParentMethod().getType() != null) {
             return queryReturnError(getParentMethod(), require);
         }
 
-        //setType(getParentMethod().getType());
+        // setType(getParentMethod().getType());
 
         return true;
     }
@@ -187,29 +188,31 @@ public class Return extends IValue {
     /**
      * Decode the return value of a return statement.<br>
      * <br>
-     * The value of a return statement looks like the following:
-     * <blockquote><pre>
-     * return node</pre></blockquote>
-     * "<u><code>node</code></u>" is the value in the above return
-     * statement.
+     * The value of a return statement looks like the following: <blockquote>
+     * 
+     * <pre>
+     * return node
+     * </pre>
+     * 
+     * </blockquote> "<u><code>node</code></u>" is the value in the above return statement.
      *
      * @param statement The statement containing the return value.
-     * @param method    The method that the return statement is returning
-     *                  from.
-     * @param location  The location of the return statement value in the
-     *                  source code.
+     * @param method The method that the return statement is returning from.
+     * @param location The location of the return statement value in the source code.
      * @return The Value representing the return value.
      */
     private Value decodeReturnValue(String statement, MethodDeclaration method, Location location) {
         return decodeReturnValue(statement, method, location, true);
     }
 
-    private Value decodeReturnValue(String statement, MethodDeclaration method, Location location, boolean validateType) {
+    private Value decodeReturnValue(String statement, MethodDeclaration method, Location location,
+        boolean validateType) {
         Value value = SyntaxTree.decodeValue(this, statement, location, false);
 
         if (value == null) {
             SyntaxTree.decodeValue(this, statement, location, false);
-            SyntaxMessage.error("Could not decode return statement '" + statement + "'", this, location);
+            SyntaxMessage.error("Could not decode return statement '" + statement + "'", this,
+                location);
         } else {
             boolean skipCompatible = false;
 
@@ -229,7 +232,8 @@ public class Return extends IValue {
                 skipCompatible = true;
             }
 
-            if (!skipCompatible && validateType && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode())) {
+            if (!skipCompatible && validateType
+                && !SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode())) {
                 SyntaxUtils.validateCompatibleTypes(method, value.getReturnedNode());
                 queryReturnError(method, true);
             }
@@ -240,10 +244,12 @@ public class Return extends IValue {
 
     private Value checkPrimitiveType(Value node) {
         if (!getParentMethod().isFunctionType()) {
-            if (!node.getReturnedNode().isPrimitive() && getParentMethod().isPrimitive() && !Literal.isNullLiteral(node)) {
+            if (!node.getReturnedNode().isPrimitive() && getParentMethod().isPrimitive()
+                && !Literal.isNullLiteral(node)) {
                 return SyntaxUtils.unboxPrimitive(node);
             }
-            if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive() && !Literal.isNullLiteral(node)) {
+            if (node.getReturnedNode().isPrimitive() && !getParentMethod().isPrimitive()
+                && !Literal.isNullLiteral(node)) {
                 return SyntaxUtils.autoboxPrimitive(node, node.getReturnedNode().getType());
             }
         }
@@ -269,25 +275,31 @@ public class Return extends IValue {
         String name = method.getName();
 
         if (expected == null) {
-            return SyntaxMessage.queryError("Method '" + name + "' does not have a return type, and therefore cannot return a value", this, require);
+            return SyntaxMessage.queryError(
+                "Method '" + name
+                    + "' does not have a return type, and therefore cannot return a value",
+                this, require);
         } else {
-            return SyntaxMessage.queryError("Method '" + name + "' must return a type of '" + expected + "'", this, require);
+            return SyntaxMessage.queryError(
+                "Method '" + name + "' must return a type of '" + expected + "'", this, require);
         }
     }
 
     /**
-     * Get a String representing the return value, if the return
-     * statement returns a value. If it does not, it returns null.<br>
+     * Get a String representing the return value, if the return statement returns a value. If it
+     * does not, it returns null.<br>
      * <br>
-     * The value of a return statement looks like the following:
-     * <blockquote><pre>
-     * return node</pre></blockquote>
-     * "<u><code>node</code></u>" is the value in the above return
-     * statement.
+     * The value of a return statement looks like the following: <blockquote>
+     * 
+     * <pre>
+     * return node
+     * </pre>
+     * 
+     * </blockquote> "<u><code>node</code></u>" is the value in the above return statement.
      *
      * @param statement The statement to generate the String from.
-     * @return The String representing the return value. If the return
-     * statement does not return a value, then null.
+     * @return The String representing the return value. If the return statement does not return a
+     *         value, then null.
      */
     private static String generatePostReturn(String statement) {
         int index = StringUtils.findNextNonWhitespaceIndex(statement, 7);
@@ -317,24 +329,31 @@ public class Return extends IValue {
                     contexts[i] = getParentMethod();
                 }
 
-                if (!SyntaxUtils.areTypesCompatible(contexts, getParentMethod().getTypes(), getTypes())) {
+                if (!SyntaxUtils.areTypesCompatible(contexts, getParentMethod().getTypes(),
+                    getTypes())) {
                     SyntaxMessage.error("Invalid return values", this, false);
 
                     return result.errorOccurred(this);
                 }
 
-                Variable temp = getAncestorWithScope().getScope().registerLocalVariable(getValueNode());
+                Variable temp =
+                    getAncestorWithScope().getScope().registerLocalVariable(getValueNode());
                 getReturnValues().replace(getValueNode(), temp);
 
                 for (int i = 1; i < getNumReturnValues(); i++) {
-                    Parameter param = (Parameter) getParentMethod().getParameterList().getReturnTypes()[i - 1];
+                    Parameter param =
+                        (Parameter) getParentMethod().getParameterList().getReturnTypes()[i - 1];
                     Node retVal = getReturnValues().getVisibleChild(i);
 
-                    String statement = param.generateFlatType() + " " + getParentMethod().generateTemporaryVariableName() + " = " + retVal.generateFlatInput();
+                    String statement = param.generateFlatType() + " "
+                        + getParentMethod().generateTemporaryVariableName() + " = "
+                        + retVal.generateFlatInput();
 
-                    Assignment assignment = Assignment.decodeStatement(getAncestorWithScope(), statement, getLocationIn().asNew(), true, false);
+                    Assignment assignment = Assignment.decodeStatement(getAncestorWithScope(),
+                        statement, getLocationIn().asNew(), true, false);
 
-                    assignment.setAssigneeNode(param.generateUsableVariable(this, getLocationIn().asNew()));
+                    assignment.setAssigneeNode(
+                        param.generateUsableVariable(this, getLocationIn().asNew()));
 
                     getParent().addChildBefore(this, assignment);
                 }
@@ -355,7 +374,8 @@ public class Return extends IValue {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public Return clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public Return clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         Return node = new Return(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -369,8 +389,7 @@ public class Return extends IValue {
     }
 
     /**
-     * Fill the given {@link Return} with the data that is in the
-     * specified node.
+     * Fill the given {@link Return} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
@@ -382,11 +401,10 @@ public class Return extends IValue {
     }
 
     /**
-     * Test the Return class type to make sure everything
-     * is working properly.
+     * Test the Return class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -394,3 +412,4 @@ public class Return extends IValue {
         return null;
     }
 }
+

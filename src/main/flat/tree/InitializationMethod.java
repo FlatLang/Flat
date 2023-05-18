@@ -25,11 +25,9 @@ public class InitializationMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Get whether or not the specified Method has overridden a method
-     * from a super class
+     * Get whether or not the specified Method has overridden a method from a super class
      *
-     * @return Whether or not the specified Method has overridden a
-     * method from a super class.
+     * @return Whether or not the specified Method has overridden a method from a super class.
      */
     public boolean doesOverride() {
         return false;
@@ -60,14 +58,16 @@ public class InitializationMethod extends BodyMethodDeclaration {
         String name = getParentClass(true).generateTemporaryMethodName();
         String params = constructor.getParameterList().generateFlatInput().toString();
 
-        FlatMethodDeclaration method = decodeStatement(getParentClass(true), "public " + name + '(' + params + ')', getLocationIn(), true);
+        FlatMethodDeclaration method = decodeStatement(getParentClass(true),
+            "public " + name + '(' + params + ')', getLocationIn(), true);
 
         if (method != null) {
             method.setName(ParameterList.OBJECT_REFERENCE_IDENTIFIER);
             method.cloneTo(this);
             setType(constructor);
         } else {
-            decodeStatement(getParentClass(true), "public " + name + '(' + params + ')', getLocationIn(), true);
+            decodeStatement(getParentClass(true), "public " + name + '(' + params + ')',
+                getLocationIn(), true);
         }
     }
 
@@ -100,7 +100,8 @@ public class InitializationMethod extends BodyMethodDeclaration {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public InitializationMethod clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public InitializationMethod clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         InitializationMethod node = new InitializationMethod(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -114,13 +115,13 @@ public class InitializationMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Fill the given {@link InitializationMethod} with the data that is in the
-     * specified node.
+     * Fill the given {@link InitializationMethod} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public InitializationMethod cloneTo(InitializationMethod node, boolean cloneChildren, boolean cloneAnnotations) {
+    public InitializationMethod cloneTo(InitializationMethod node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.constructor = constructor;
@@ -129,11 +130,10 @@ public class InitializationMethod extends BodyMethodDeclaration {
     }
 
     /**
-     * Test the {@link InitializationMethod} class type to make sure everything
-     * is working properly.
+     * Test the {@link InitializationMethod} class type to make sure everything is working properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -141,3 +141,4 @@ public class InitializationMethod extends BodyMethodDeclaration {
         return null;
     }
 }
+

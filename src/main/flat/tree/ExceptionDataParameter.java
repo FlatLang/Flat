@@ -25,7 +25,8 @@ public class ExceptionDataParameter extends Parameter {
      * @see Node#clone(Node, Location, boolean)
      */
     @Override
-    public ExceptionDataParameter clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExceptionDataParameter clone(Node temporaryParent, Location locationIn,
+        boolean cloneChildren, boolean cloneAnnotations) {
         ExceptionDataParameter node = new ExceptionDataParameter(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -39,24 +40,24 @@ public class ExceptionDataParameter extends Parameter {
     }
 
     /**
-     * Fill the given {@link ExceptionDataParameter} with the data that is in the
-     * specified node.
+     * Fill the given {@link ExceptionDataParameter} with the data that is in the specified node.
      *
      * @param node The node to copy the data into.
      * @return The cloned node.
      */
-    public ExceptionDataParameter cloneTo(ExceptionDataParameter node, boolean cloneChildren, boolean cloneAnnotations) {
+    public ExceptionDataParameter cloneTo(ExceptionDataParameter node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         return node;
     }
 
     /**
-     * Test the {@link ExceptionDataParameter} class type to make sure everything
-     * is working properly.
+     * Test the {@link ExceptionDataParameter} class type to make sure everything is working
+     * properly.
      *
-     * @return The error output, if there was an error. If the test was
-     * successful, null is returned.
+     * @return The error output, if there was an error. If the test was successful, null is
+     *         returned.
      */
     public static String test(TestContext context) {
 
@@ -64,3 +65,4 @@ public class ExceptionDataParameter extends Parameter {
         return null;
     }
 }
+

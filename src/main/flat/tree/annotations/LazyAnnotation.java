@@ -24,7 +24,8 @@ public class LazyAnnotation extends Annotation implements ModifierAnnotation {
         super(temporaryParent, locationIn);
     }
 
-    public static LazyAnnotation decodeStatement(Node parent, String name, String parameters, Location location, boolean require) {
+    public static LazyAnnotation decodeStatement(Node parent, String name, String parameters,
+        Location location, boolean require) {
         if (name.equals("Lazy")) {
             LazyAnnotation n = new LazyAnnotation(parent, location);
 
@@ -71,7 +72,8 @@ public class LazyAnnotation extends Annotation implements ModifierAnnotation {
     }
 
     @Override
-    public LazyAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren, boolean cloneAnnotations) {
+    public LazyAnnotation clone(Node temporaryParent, Location locationIn, boolean cloneChildren,
+        boolean cloneAnnotations) {
         LazyAnnotation node = new LazyAnnotation(temporaryParent, locationIn);
 
         return cloneTo(node, cloneChildren, cloneAnnotations);
@@ -81,7 +83,8 @@ public class LazyAnnotation extends Annotation implements ModifierAnnotation {
         return cloneTo(node, true, true);
     }
 
-    public LazyAnnotation cloneTo(LazyAnnotation node, boolean cloneChildren, boolean cloneAnnotations) {
+    public LazyAnnotation cloneTo(LazyAnnotation node, boolean cloneChildren,
+        boolean cloneAnnotations) {
         super.cloneTo(node, cloneChildren, cloneAnnotations);
 
         node.aliasUsed = aliasUsed;
@@ -91,6 +94,6 @@ public class LazyAnnotation extends Annotation implements ModifierAnnotation {
 
     @Override
     public String[] getAliases() {
-        return new String[]{"lazy"};
+        return new String[] {"lazy"};
     }
 }

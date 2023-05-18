@@ -3,8 +3,7 @@ package flat;
 import flat.tree.Node;
 
 /**
- * Class used to hold information on how a validation method
- * has resulted.
+ * Class used to hold information on how a validation method has resulted.
  *
  * @author Braden Steffaniak
  * @since v0.2.35 Oct 4, 2014 at 12:37:45 AM
@@ -20,11 +19,9 @@ public class ValidationResult {
     public int nextIncrement;
 
     /**
-     * Create a new ValidationResult that has the expectation to return
-     * the given Node.
+     * Create a new ValidationResult that has the expectation to return the given Node.
      *
-     * @param returnedNode The Node that the validation method can expect
-     *                     to return.
+     * @param returnedNode The Node that the validation method can expect to return.
      */
     public ValidationResult(Node returnedNode) {
         this.returnedNode = returnedNode;
@@ -48,7 +45,7 @@ public class ValidationResult {
      * @return The ValidationResult that the error occurred on.
      */
     public ValidationResult errorOccurred(Node remove) {
-//		remove.detach();
+        // remove.detach();
 
         return errorOccurred();
     }
@@ -80,3 +77,4 @@ public class ValidationResult {
         return temp;
     }
 }
+
