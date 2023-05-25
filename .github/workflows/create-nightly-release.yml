@@ -32,7 +32,7 @@ jobs:
         if: ${{ needs.check_exists.outputs.exists != 'true' }}
         id: tag_name
         run: |
-          echo "::set-output name=TAG_NAME::${GITHUB_REF##*/}-nightly-$(date +%Y-%m-%d)"
+          echo "TAG_NAME=${GITHUB_REF##*/}-nightly-$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
       - name: Create and push tag
         if: ${{ needs.check_exists.outputs.exists != 'true' }}
