@@ -2929,6 +2929,10 @@ public class SyntaxUtils {
 
         int lastIndex = classLocation.lastIndexOf('/');
 
+        if (lastIndex == -1) {
+            return "";
+        }
+
         return classLocation.substring(0, lastIndex);
     }
 

@@ -82,7 +82,15 @@ public class Import extends Node {
 
     public String getClassLocation(boolean aliased) {
         if (aliased && alias != null) {
-            return SyntaxUtils.getClassParentLocation(location) + "/" + alias;
+            String parentLocation = SyntaxUtils.getClassParentLocation(location);
+
+            if (parentLocation != null && parentLocation.length() > 0) {
+                parentLocation += "/";
+            } else {
+                parentLocation = "";
+            }
+
+            return parentLocation + alias;
         }
 
         return location;
