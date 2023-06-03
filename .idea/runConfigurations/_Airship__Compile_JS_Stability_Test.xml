@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="[Airship] Compile JS Stability-Test" type="Application" factoryName="Application">
     <option name="MAIN_CLASS_NAME" value="flat.Flat" />
-    <module name="Flat" />
+    <module name="flat-cli" />
     <option name="PROGRAM_PARAMETERS" value="airship ../Stability-Test test" />
     <method v="2">
       <option name="Make" enabled="true" />
