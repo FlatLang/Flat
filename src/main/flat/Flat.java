@@ -293,7 +293,7 @@ public class Flat {
         } else if (OS == WINDOWS) {
             if (System.getenv("FLAT_HOME") == null) {
                 System.err.println(
-                    "FLAT_HOME environment variable is not set. Learn how to set them at http://flat-lang.org/docs/getting-started/configure-environment");
+                    "FLAT_HOME environment variable is not set. Learn how to set them at https://flat-lang.org/docs/getting-started/configure-environment");
 
                 System.exit(1);
             }
