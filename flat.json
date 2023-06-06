@@ -10,15 +10,15 @@
       "mainClass": "flat/website/functions/StatusBadge",
       "source": "src",
       "dependencies": {
-        "github:FlatLang/System": "master",
-        "github:FlatLang/IO": "master",
-        "github:FlatLang/Json": "master",
-        "github:FlatLang/Http": "master",
-        "github:FlatLang/Time": "master",
-        "github:FlatLang/FuCli": "master",
-        "github:FlatLang/Logger": "master",
-        "github:FlatLang/Cache": "master",
-        "github:FlatLang/GitHubClient": "master"
+        "https://github.com/FlatLang/System": "master",
+        "https://github.com/FlatLang/IO": "master",
+        "https://github.com/FlatLang/Json": "master",
+        "https://github.com/FlatLang/Http": "master",
+        "https://github.com/FlatLang/Time": "master",
+        "https://github.com/FlatLang/FuCli": "master",
+        "https://github.com/FlatLang/Logger": "master",
+        "https://github.com/FlatLang/Cache": "master",
+        "https://github.com/FlatLang/GitHubClient": "master"
       }
     },
     "cmd": {
@@ -36,7 +36,7 @@
       "mainClass": "flat/website/functions/StatusBadge_TestSuite",
       "source": "src/**/*_Test*.flat",
       "dependencies": {
-        "github:FlatLang/Test": "master"
+        "https://github.com/FlatLang/Test": "master"
       }
     }
   }
