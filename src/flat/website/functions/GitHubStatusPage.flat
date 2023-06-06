@@ -8,40 +8,40 @@ import flat/http/Http
 import flat/time/Timer
 
 class {
-  let lazy String pageHtml => FileReader(File("res/github-status.html")).readAllContents()
-  let lazy Array<HashMap<String, String>> badges => JsonDeserializer().parseArray(File("res/badges.json"))
+    let lazy String pageHtml => FileReader(File("res/github-status.html")).readAllContents()
+    let lazy Array<HashMap<String, String>> badges => JsonDeserializer().parseArray(File("res/badges.json"))
 
-  public construct() {}
+    public construct() {}
 
-  public async run() -> String {
-    let timer = Timer():start()
+    public async run() -> String {
+        let timer = Timer():start()
 
-    let svgs = badges.mapParallel({
-      let svgData = Http.get(_x["svg"]).data
+        let svgs = badges.mapParallel({
+            let svgData = Http.get(_x["svg"]).data
 
-      let namespacedSvg = svgData
-        .replace("workflow-fill", "workflow-fill-#{_i}")
-        .replace("state-fill", "state-fill-#{_i}")
+            let namespacedSvg = svgData
+                .replace("workflow-fill", "workflow-fill-#{_i}")
+                .replace("state-fill", "state-fill-#{_i}")
 
-      return HashMap()
-        :add("svg", namespacedSvg)
-        :add("url", _x["url"])
-        :add("label", _x["label"])
-    })
+            return HashMap()
+                :add("svg", namespacedSvg)
+                :add("url", _x["url"])
+                :add("label", _x["label"])
+        })
 
-    Console.writeLine("GitHubStatusPage: #{timer.stop()}")
+        Console.writeLine("GitHubStatusPage: #{timer.stop()}")
 
-    let svgContents = svgs.map({
-      let url = _x["url"]
-      let svgContent = _x["svg"]
+        let svgContents = svgs.map({
+            let url = _x["url"]
+            let svgContent = _x["svg"]
 
-      return "|
-        <a target=\"_blank\" href=\"#{url}\">
-          #{svgContent}
-        </a>
-        |"
-    })
+            return "|
+                <a target=\"_blank\" href=\"#{url}\">
+                    #{svgContent}
+                </a>
+                |"
+        })
 
-    return pageHtml.replace("{{badges}}", svgContents.join(""))
-  }
+        return pageHtml.replace("{{badges}}", svgContents.join(""))
+    }
 }

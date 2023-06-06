@@ -5,55 +5,55 @@ import flat/fucli/FuCli
 import flat/fucli/CliArg
 
 class {
-  static Int DEFAULT_PORT = 3005
+    static Int DEFAULT_PORT = 3005
 
-  static CliArg portArg = CliArg("--port", count: 1)
+    static CliArg portArg = CliArg("--port", count: 1)
 
-  public static async main(String[] args) {
-    let cli = FuCli("server", [portArg]):parse(args.skip(1))
+    public static async main(String[] args) {
+        let cli = FuCli("server", [portArg]):parse(args.skip(1))
 
-    let port = portArg.enabled ? Int.parseInt(portArg.value) : DEFAULT_PORT
+        let port = portArg.enabled ? Int.parseInt(portArg.value) : DEFAULT_PORT
 
-    let server = Server()
+        let server = Server()
 
-    let statusBadge = StatusBadge()
-    let statusPills = StatusPills()
-    let githubStatusPage = GitHubStatusPage()
-    let airshipController = AirshipController()
+        let statusBadge = StatusBadge()
+        let statusPills = StatusPills()
+        let githubStatusPage = GitHubStatusPage()
+        let airshipController = AirshipController()
 
-    server.get("/badges.svg", {
-      _res.setHeader("Content-Type", "image/svg+xml")
-      _res.setHeader("Cache-Control", "max-age=300, private")
-      _res.setHeader("x-content-type-options", "nosniff")
-      _res.setHeader("x-frame-options", "deny")
-      _res.setHeader("x-xss-protection", "0")
-      _res.send(statusBadge.run())
-    })
+        server.get("/badges.svg", {
+            _res.setHeader("Content-Type", "image/svg+xml")
+            _res.setHeader("Cache-Control", "max-age=300, private")
+            _res.setHeader("x-content-type-options", "nosniff")
+            _res.setHeader("x-frame-options", "deny")
+            _res.setHeader("x-xss-protection", "0")
+            _res.send(statusBadge.run())
+        })
 
-    server.get("/pills.svg", {
-      _res.setHeader("Content-Type", "image/svg+xml")
-      _res.setHeader("Cache-Control", "max-age=300, private")
-      _res.setHeader("x-content-type-options", "nosniff")
-      _res.setHeader("x-frame-options", "deny")
-      _res.setHeader("x-xss-protection", "0")
-      _res.send(statusPills.run(_req))
-    })
+        server.get("/pills.svg", {
+            _res.setHeader("Content-Type", "image/svg+xml")
+            _res.setHeader("Cache-Control", "max-age=300, private")
+            _res.setHeader("x-content-type-options", "nosniff")
+            _res.setHeader("x-frame-options", "deny")
+            _res.setHeader("x-xss-protection", "0")
+            _res.send(statusPills.run(_req))
+        })
 
-    server.get("/github-status", {
-      _res.setHeader("Content-Type", "text/html")
-      _res.setHeader("x-content-type-options", "nosniff")
-      _res.setHeader("x-frame-options", "deny")
-      _res.setHeader("x-xss-protection", "0")
-      _res.send(githubStatusPage.run())
-    })
+        server.get("/github-status", {
+            _res.setHeader("Content-Type", "text/html")
+            _res.setHeader("x-content-type-options", "nosniff")
+            _res.setHeader("x-frame-options", "deny")
+            _res.setHeader("x-xss-protection", "0")
+            _res.send(githubStatusPage.run())
+        })
 
-    server.get("/airship/latest/:assetName", {
-      airshipController.getLatestAsset(_req, _res)
-    })
+        server.get("/airship/latest/:assetName", {
+            airshipController.getLatestAsset(_req, _res)
+        })
 
-    let serverStarted = server.listen(port)$
+        let serverStarted = server.listen(port)$
 
-    await serverStarted
-    Console.log("Started server on port #{port}")
-  }
+        await serverStarted
+        Console.log("Started server on port #{port}")
+    }
 }
