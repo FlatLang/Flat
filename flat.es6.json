@@ -3,7 +3,7 @@
   "sources": {
     "main": {
       "dependencies": {
-        "github:FlatLang/Flat-ES6": "master"
+        "https://github.com/FlatLang/Flat-ES6": "master"
       }
     }
   }
