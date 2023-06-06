@@ -31,7 +31,7 @@ jobs:
         if: ${{ steps.check_exists.outputs.exists != 'true' }}
         with:
           keep_latest: 2
-          delete_tag_pattern: ^master-[0-9a-f]{7,7}$
+          delete_tag_pattern: ^master-[0-9a-f]{10,10}$
           regex: true
         env:
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_MANAGEMENT_TOKEN }}
@@ -39,5 +39,5 @@ jobs:
       - name: Create and push tag
         if: ${{ steps.check_exists.outputs.exists != 'true' }}
         run: |
-          git tag master-$(git rev-parse --short HEAD)
-          git push origin master-$(git rev-parse --short HEAD)
+          git tag master-$(git rev-parse --short=10 HEAD)
+          git push origin master-$(git rev-parse --short=10 HEAD)
