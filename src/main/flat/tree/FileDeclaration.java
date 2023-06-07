@@ -707,18 +707,18 @@ public class FileDeclaration extends Node {
      * within the {@link #DEFAULT_IMPORTS} array.
      */
     private void addDefaultImports() {
-        if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/IO"))) {
+        if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/IO") || l.contains("/github.com/FlatLang/IO/"))) {
             addImport("flat/io/Console");
         }
-        if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/System"))) {
+        if (getProgram().getController().libraries.stream().anyMatch(l -> l.endsWith("/System") || l.contains("/github.com/FlatLang/System/"))) {
             addImport("flat/system/System");
         }
         if (getProgram().getController().libraries.stream()
-            .anyMatch(l -> l.endsWith("/Test") || l.endsWith("/Test/src"))) {
+            .anyMatch(l -> l.endsWith("/Test") || l.endsWith("/Test/src") || l.contains("/github.com/FlatLang/Test/"))) {
             addStaticImport("flat/test/Test");
         }
         if (getProgram().getController().libraries.stream()
-            .anyMatch(l -> l.endsWith("/Stream") || l.endsWith("/Stream/src"))) {
+            .anyMatch(l -> l.endsWith("/Stream") || l.endsWith("/Stream/src") || l.contains("/github.com/FlatLang/Stream/"))) {
             addStaticImport("flat/stream/StreamListExtensions");
         }
 
