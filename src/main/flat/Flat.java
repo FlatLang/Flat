@@ -46,6 +46,7 @@ public class Flat {
 
     public File workingDir, targetEngineWorkingDir;
 
+    public File engineJar;
     public String target, targetRuntime, formattedTarget;
     public ArrayList<String> targetFileExtensions = new ArrayList<>();
 
@@ -326,44 +327,52 @@ public class Flat {
 
     private void startEngines() {
         try {
-            String enginePath = null;
+            if (engineJar == null) {
+                String enginePath = null;
 
-            if (!USE_INSTALLED_TARGET) {
-                enginePath = "..";
-            } else if (OS == WINDOWS) {
-                enginePath = installDirectory.getAbsolutePath();// System.getenv("APPDATA") +
-                                                                // "/Flat";
-            } else if (OS == MACOSX) {
-                enginePath = installDirectory.getAbsolutePath();
-            } else if (OS == LINUX) {
-                enginePath = installDirectory.getAbsolutePath();
+                if (!USE_INSTALLED_TARGET) {
+                    enginePath = "..";
+                } else if (OS == WINDOWS) {
+                    enginePath = installDirectory.getAbsolutePath();// System.getenv("APPDATA") +
+                                                                    // "/Flat";
+                } else if (OS == MACOSX) {
+                    enginePath = installDirectory.getAbsolutePath();
+                } else if (OS == LINUX) {
+                    enginePath = installDirectory.getAbsolutePath();
+                } else {
+                    unsupportedOs();
+                }
+
+                String folderName = "Flat-" + target;
+
+                File engineDir = new File(enginePath);
+
+                Optional<File> existingFile = Arrays.stream(engineDir.listFiles())
+                    .filter(x -> x.isDirectory() && x.getName().equalsIgnoreCase(folderName))
+                    .findFirst();
+
+                if (!existingFile.isPresent()) {
+                    System.err.println(
+                        "Could not find target directory for " + target + " compilation target in '"
+                            + new File(enginePath + "/" + folderName).getCanonicalPath() + "'");
+
+                    System.exit(1);
+                }
+
+                targetEngineWorkingDir = existingFile.get().getCanonicalFile();
+
+                formattedTarget = targetEngineWorkingDir.getName()
+                    .substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
+
+                if (engineJar == null) {
+                    engineJar = new File(enginePath + "/Flat-" + formattedTarget + "/target/flat-"
+                        + formattedTarget.toLowerCase() + ".jar");
+                }
             } else {
-                unsupportedOs();
+                targetEngineWorkingDir = engineJar.getParentFile().getParentFile().getParentFile();
+                formattedTarget = targetEngineWorkingDir.getName()
+                    .substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
             }
-
-            String folderName = "Flat-" + target;
-
-            File engineDir = new File(enginePath);
-
-            Optional<File> existingFile = Arrays.stream(engineDir.listFiles())
-                .filter(x -> x.isDirectory() && x.getName().equalsIgnoreCase(folderName))
-                .findFirst();
-
-            if (!existingFile.isPresent()) {
-                System.err.println(
-                    "Could not find target directory for " + target + " compilation target in '"
-                        + new File(enginePath + "/" + folderName).getCanonicalPath() + "'");
-
-                System.exit(1);
-            }
-
-            targetEngineWorkingDir = existingFile.get().getCanonicalFile();
-
-            formattedTarget = targetEngineWorkingDir.getName()
-                .substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
-
-            File engineJar = new File(enginePath + "/Flat-" + formattedTarget + "/target/flat-"
-                + formattedTarget.toLowerCase() + ".jar");
 
             if (!engineJar.isFile()) {
                 System.err.println("Could not find built target jar for " + target
@@ -947,6 +956,22 @@ public class Flat {
         int lastInput = -1;
         int skip = 0;
 
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i].toLowerCase();
+
+            if (arg.equals("-engine-jar")) {
+                validateArgumentSize(args, i + 1, arg);
+
+                try {
+                    engineJar = new File(args[i + 1]).getCanonicalFile();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                break;
+            }
+        }
+
         startEngines();
 
         // Iterate through all of the arguments.
@@ -1106,6 +1131,10 @@ public class Flat {
                     throw new RuntimeException(e);
                 }
 
+                skip = 1;
+            }
+            // Specify a custom engine jar.
+            else if (arg.equals("-engine-jar")) {
                 skip = 1;
             }
             // Specify a custom output directory.
