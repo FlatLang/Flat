@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import static java.util.Arrays.stream;
 
 /**
@@ -47,6 +49,7 @@ public class Flat {
     public File workingDir, targetEngineWorkingDir;
 
     public File engineJar;
+    public HashMap<String, Object> appProps = new HashMap<>();
     public String target, targetRuntime, formattedTarget;
     public ArrayList<String> targetFileExtensions = new ArrayList<>();
 
@@ -1129,6 +1132,17 @@ public class Flat {
                     addIfNotExists(excludeFiles, getFiles(args[i + 1]));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
+                }
+
+                skip = 1;
+            } else if (arg.equals("-app-props")) {
+                validateArgumentSize(args, i + 1, arg);
+
+                ObjectMapper mapper = new ObjectMapper();
+                try {
+                    appProps = mapper.readValue(args[i + 1], new TypeReference<HashMap<String, Object>>() {});
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
                 }
 
                 skip = 1;

@@ -289,7 +289,23 @@ public class FieldDeclaration extends InstanceDeclaration implements ShorthandAc
         n.iterateWords(preStatement, data, require);
         n.setLocationIn(location);
 
+        if (parent.getParentClass(true).getClassLocation().equals("flat/App")) {
+            Object value = parent.getController().appProps.get(n.getName());
+
+            if (value != null) {
+                n.initializationValue = getFlatValueFromObject(value);
+            }
+        }
+
         return n;
+    }
+
+    private static String getFlatValueFromObject(Object value) {
+        if (value instanceof String) {
+            return '"' + value.toString().replace("\"", "\\\"") + '"';
+        }
+
+        return value.toString();
     }
 
     /**
