@@ -9,7 +9,7 @@
       "mainClass": "flat/website/functions/StatusBadge",
       "source": "src",
       "dependencies": {
-        "https://github.com/FlatLang/Server": "master"
+        "https://github.com/FlatLang/Server.git": "master"
       }
     }
   }
