@@ -372,7 +372,11 @@ public class Flat {
                         + formattedTarget.toLowerCase() + ".jar");
                 }
             } else {
-                targetEngineWorkingDir = engineJar.getParentFile().getParentFile().getParentFile();
+                if (engineJar.getCanonicalPath().contains(".flat/packages/")) {
+                  targetEngineWorkingDir = engineJar.getParentFile().getParentFile().getParentFile();
+                } else {
+                  targetEngineWorkingDir = engineJar.getParentFile().getParentFile();
+                }
                 formattedTarget = targetEngineWorkingDir.getName()
                     .substring(targetEngineWorkingDir.getName().lastIndexOf('-') + 1);
             }
@@ -384,6 +388,7 @@ public class Flat {
                 System.exit(1);
             }
 
+            engineJar = engineJar.getCanonicalFile();
 
             targetFileExtensions.add(target);
 
@@ -425,6 +430,7 @@ public class Flat {
             } catch (NoSuchMethodException e) {
                 System.exit(4);
             } catch (ClassNotFoundException e) {
+                e.printStackTrace();
                 System.exit(5);
             } catch (MalformedURLException e) {
                 System.exit(6);
