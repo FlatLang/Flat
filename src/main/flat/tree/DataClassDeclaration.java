@@ -312,24 +312,26 @@ public class DataClassDeclaration extends ClassDeclaration {
 
     private void addToJsonFunction() {
         BodyMethodDeclaration func = BodyMethodDeclaration.decodeStatement(this,
-            "override public toJson() -> String", Location.INVALID, true);
+            "override public toJson(Bool: format = false, String: tab = \"\\t\") -> String", Location.INVALID, true);
 
         if (func == null) {
             SyntaxMessage.error("Failed to create toJson function override for data class", this);
             return;
         }
 
-        List<FieldDeclaration> fields = getFields();
+        List<FieldDeclaration> fields = getFields().stream()
+            .filter(f -> !f.containsAnnotationOfType(DataToStringIgnoreAnnotation.class))
+            .collect(Collectors.toList());
 
         String values = fields.stream()
-            .map(f -> "\\\"" + f.getName() + "\\\":#{" + f.getName() + ".toJson()}")
-            .collect(Collectors.joining(","))
+            .map(f -> "\\\"" + f.getName() + "\\\":#{format ? \" \" : \"\"}#{" + f.getName() + ".toJson(format, tab)}")
+            .collect(Collectors.joining(",#{format ? \"\\n#{tab}\" : \"\"}"))
             .trim();
 
         if (values.length() == 0) {
             func.shorthandAction = "\"{}\"";
         } else {
-            func.shorthandAction = "\"{" + values.trim() + "}\"";
+            func.shorthandAction = "format ? \"{\\n#{tab}" + values.trim() + "\\n}\" : \"{" + values.trim() + "}\"";
         }
 
         addChild(func);
