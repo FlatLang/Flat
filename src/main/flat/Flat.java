@@ -372,7 +372,7 @@ public class Flat {
                         + formattedTarget.toLowerCase() + ".jar");
                 }
             } else {
-                if (engineJar.getCanonicalPath().contains(".flat/packages/")) {
+                if (engineJar.getCanonicalPath().replace("\\", "/").contains(".flat/packages/")) {
                   targetEngineWorkingDir = engineJar.getParentFile().getParentFile().getParentFile();
                 } else {
                   targetEngineWorkingDir = engineJar.getParentFile().getParentFile();
