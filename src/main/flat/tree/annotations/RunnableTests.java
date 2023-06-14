@@ -208,7 +208,7 @@ interface RunnableTests {
                 : "";
 
         String name = parent.getAncestorWithScope().getScope().getUniqueName("testResult", true);
-        String failureMessage = success ? "" : ", e.message";
+        String failureMessage = success ? "" : ", e.message, e";
         Assignment a = Assignment.decodeStatement(parent,
             "let " + name + " = TestResult(" + (success ? "true" : "false") + ", " + timer.getName()
                 + ", " + test.generateTestCase().getName() + failureMessage + ")",
