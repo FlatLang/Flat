@@ -186,6 +186,12 @@ jobs:
           repository: FlatLang/Future
           path: Future
 
+      - name: Checkout NodeImport library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/NodeImport
+          path: NodeImport
+
       - name: Build Stability Test
         working-directory: Stability-Test
         run: |
@@ -215,6 +221,7 @@ jobs:
             -l ../Thread \
             -l ../Future \
             -x ../Future/src/**/*_Test*.flat \
+            -l ../NodeImport \
             -install-dir .. \
             -main stabilitytest/StabilityTest \
             -o dist/js/test.js \
@@ -261,6 +268,7 @@ jobs:
             -l ./Console-Escape-Codes \
             -l ./Future \
             -x ./Future/src/**/*_Test*.flat \
+            -l ./NodeImport \
             -install-dir . \
             -main simplegaprule/AllTestsRunner \
             -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
