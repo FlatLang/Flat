@@ -599,6 +599,16 @@ public class Annotation extends Node {
                                                                                                                                                                                             arguments,
                                                                                                                                                                                             location,
                                                                                                                                                                                             require);
+
+                                                                                                                                                                                    if (n == null) {
+                                                                                                                                                                                        n = CommentAnnotation
+                                                                                                                                                                                            .decodeStatement(
+                                                                                                                                                                                                parent,
+                                                                                                                                                                                                name,
+                                                                                                                                                                                                arguments,
+                                                                                                                                                                                                location,
+                                                                                                                                                                                                require);
+                                                                                                                                                                                    }
                                                                                                                                                                                 }
                                                                                                                                                                             }
                                                                                                                                                                         }
