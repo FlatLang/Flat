@@ -2,7 +2,7 @@ Flat Programming Language
 ===========================
 
 ### Flat Organization Build Status:
-[![Status Badges](https://flatlang.org/api/pills.svg?nocache=true)](https://flatlang.org/api/github-status)
+[![Status Badges](https://flatlang.org/api/pills.svg?nocache=true)](https://flatlang.org/api/pills.svg)
 
 A high-level multi-paradigm programming language used as an intermediary between transpilation.
 
