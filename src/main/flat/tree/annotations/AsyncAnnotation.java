@@ -4,6 +4,7 @@ import flat.ValidationResult;
 import flat.tree.FlatMethodDeclaration;
 import flat.tree.Node;
 import flat.tree.Parameter;
+import flat.tree.StaticBlock;
 import flat.tree.SyntaxTree;
 import flat.tree.lambda.LambdaExpression;
 import flat.util.Location;
@@ -63,7 +64,7 @@ public class AsyncAnnotation extends Annotation implements ModifierAnnotation {
     public boolean onApplied(Node next, boolean throwError) {
         if (!checkDuplicate(next, throwError)) {
             if (next instanceof FlatMethodDeclaration || next instanceof LambdaExpression
-                || next instanceof Parameter) {
+                || next instanceof Parameter || next instanceof StaticBlock) {
                 // valid
             } else {
                 return invalidApplication(next, throwError);

@@ -3,7 +3,7 @@ package flat.tree;
 import flat.Flat;
 import flat.TestContext;
 import flat.util.Location;
-
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -76,8 +76,21 @@ public class StaticBlock extends Node implements ScopeAncestor {
      */
     public static StaticBlock decodeStatement(Node parent, String statement, Location location,
         boolean require) {
+        String[][] modifierData =
+            SyntaxTree.getPrecedingModifiers(statement, parent, location, 0, 1);
+
+        if (modifierData != null) {
+            statement = modifierData[0][0];
+        }
+
         if (statement.equals(IDENTIFIER)) {
             StaticBlock b = generateEmptyBlock(parent, location);
+
+            if (modifierData != null) {
+                if (!Arrays.stream(modifierData[1]).allMatch(b::parseModifier)) {
+                    return null;
+                }
+            }
 
             return b;
         }
