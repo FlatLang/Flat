@@ -2,6 +2,7 @@ package flat.tree;
 
 import flat.TestContext;
 import flat.ValidationResult;
+import flat.tree.annotations.Annotation;
 import flat.tree.annotations.TargetAnnotation;
 import flat.util.Location;
 import flat.util.StringUtils;
@@ -92,7 +93,11 @@ public class ExternalCodeBlock extends Node implements ScopeAncestor {
             Node content =
                 SyntaxTree.decodeScopeContents(getParent(), value.trim(), getLocationIn());
 
-            addChild(content, this);
+            if (content instanceof Annotation) {
+                this.addChildAnnotation((Annotation)content);
+            } else {
+                addChild(content, this);
+            }
 
             content.onAfterDecoded();
 

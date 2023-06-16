@@ -751,6 +751,10 @@ public abstract class Node implements Listenable, Annotatable {
         }
     }
 
+    public void addChildAnnotation(Annotation node) {
+        children.add(node);
+    }
+
     /**
      * Add the specific Node under the current Node as a child.
      *
