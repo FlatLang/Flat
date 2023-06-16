@@ -1505,6 +1505,19 @@ public class SyntaxTree {
 
         String current = statement.substring(offset, index).trim();
 
+        ArrayList<Annotation> annotations = new ArrayList<>();
+
+        Annotation a =
+            Annotation.decodeStatement(parent, statement, location, require);
+
+        while (a != null) {
+            statement = Annotation.getFragment(statement);
+
+            annotations.add(a);
+
+            a = Annotation.decodeStatement(parent, statement, location, require);
+        }
+
         String[][] modifierData = getPrecedingModifiers(current, parent, location, 0, 1);
 
         if (modifierData != null) {
@@ -1584,6 +1597,10 @@ public class SyntaxTree {
                         if (!Arrays.stream(modifierData[1]).allMatch(v::parseModifier)) {
                             return null;
                         }
+                    }
+
+                    for (Annotation ann : annotations) {
+                        node.toValue().addAnnotation(ann);
                     }
 
                     return root;
