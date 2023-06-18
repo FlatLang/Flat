@@ -379,12 +379,23 @@ public class Array extends VariableDeclaration implements ArrayCompatible {
             func.setStatic(getParentMethod() == null || getParentMethod().isStatic());
             func.setProperty("array", this);
 
-            String type = generateFlatType(new StringBuilder(), null, false).toString();
+            if (func.getGenericTypeArgumentList().getChildStream().filter(c -> c instanceof Value)
+                .map(c -> (Value) c).anyMatch(c -> c.isGenericType())) {
+                func.getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
+            }
+
+            String type = func.generateFlatType(new StringBuilder(), null, false).toString();
 
             LocalDeclaration declaration = new LocalDeclaration(func, func.getLocationIn());
             declaration.setProperty("userMade", false);
             declaration.setName("temp");
             declaration.setType(this);
+
+            if (declaration.getGenericTypeArgumentList().getChildStream().filter(c -> c instanceof Value)
+                .map(c -> (Value) c).anyMatch(c -> c.isGenericType())) {
+                declaration.getGenericTypeArgumentList().slaughterEveryLastVisibleChild();
+            }
+
             declaration.setDataType(POINTER);
             declaration
                 .addAnnotation(new NativeArrayAnnotation(declaration, declaration.getLocationIn()));
