@@ -7,6 +7,7 @@ import flat.tree.variables.*;
 import flat.util.Location;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Node extension that represents a scope of code. In essence, a collection of statements within a
@@ -72,8 +73,20 @@ public class Scope extends Node {
     }
 
     public ClassDeclaration[] getDependencies() {
-        ArrayList<ClassDeclaration> list = new ArrayList<>();
+        ArrayList<ClassDeclaration> dependencies = new ArrayList<>();
 
+        addDependencies(dependencies, new ArrayList<>());
+
+        return dependencies.stream()
+          .filter(c -> c != getParentClass())
+          .toArray(ClassDeclaration[]::new);
+    }
+
+    private void addDependencies(ArrayList<ClassDeclaration> list, ArrayList<Scope> checked) {
+        if (checked.contains(this)) return;
+
+        checked.add(this);
+        
         addVariableDependencies(list, getChildrenOfType(Variable.class));
 
         Node[] calls = getChildrenOfType(MethodCall.class);
@@ -84,22 +97,10 @@ public class Scope extends Node {
             FlatMethodDeclaration method = call.getFlatMethod();
 
             if (method != null && method.containsScope()) {
-                ClassDeclaration[] cs = method.getScope().getDependencies();
-
-                for (ClassDeclaration c : cs) {
-                    if (!list.contains(c) && c != getParentClass()) {
-                        list.add(c);
-                    }
-                }
+                method.getScope().addDependencies(list, checked);
 
                 if (method instanceof Constructor && ((Constructor) method).initMethod != null) {
-                    cs = ((Constructor) method).initMethod.getScope().getDependencies();
-
-                    for (ClassDeclaration c : cs) {
-                        if (!list.contains(c) && c != getParentClass()) {
-                            list.add(c);
-                        }
-                    }
+                    ((Constructor) method).initMethod.getScope().addDependencies(list, checked);
                 }
             }
         }
@@ -114,8 +115,6 @@ public class Scope extends Node {
                     init.parameter.defaultValue.getChildrenOfType(Variable.class, true));
             }
         }
-
-        return list.toArray(new ClassDeclaration[0]);
     }
 
     private void addVariableDependencies(ArrayList<ClassDeclaration> list, Node[] vars) {
