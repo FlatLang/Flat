@@ -85,7 +85,6 @@ public class Flat {
 
     private boolean expectingCompileError = false;
 
-    public static final boolean ANDROID_DEBUG = false;
     public static final boolean PRIMITIVE_OVERLOADS = false;
 
     public static final boolean DEBUG = false;
@@ -520,8 +519,6 @@ public class Flat {
             // "-o",
             // "C:/Users/Braden/test"
             // };
-        } else if (ANDROID_DEBUG) {
-            enableFlag(DRY_RUN);
         } else {
             if (args.length == 0 || args[0].equals("-version")) {
                 System.out.println("Flat " + VERSION);
@@ -1375,10 +1372,6 @@ public class Flat {
      * @return The working directory of the compiler.
      */
     private static String getWorkingDirectoryPath() {
-        if (ANDROID_DEBUG) {
-            return "/mnt/sdcard/AppProjects/Flat/";
-        }
-
         return System.getProperty("user.dir").replace('\\', '/') + "/";
     }
 
@@ -1535,10 +1528,6 @@ public class Flat {
             // {
             // e.printStackTrace();
             // }
-        }
-
-        if (!ANDROID_DEBUG) {
-            System.exit(success ? 0 : 1);
         }
     }
 
