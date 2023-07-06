@@ -35,6 +35,7 @@ public class Flat {
     public static String objectClassType = "class";
     public static boolean keepSuperCallInConstructor = false;
     private boolean testClasses;
+    private boolean containsErrors;
 
     public boolean deleteOutputDirectory;
 
@@ -234,6 +235,10 @@ public class Flat {
         try {
             flat.compile(args, true);
             flat.compileEngine.compile();
+
+            if (returnCode == 0 && flat.containsErrors) {
+                returnCode = 1;
+            }
         } catch (Exception e) {
             e.printStackTrace();
             returnCode = 1;
@@ -637,6 +642,7 @@ public class Flat {
                     compileEngine.tree = tree;
 
                     if (containsErrors()) {
+                        containsErrors = true;
                         enableFlag(DRY_RUN);
                         completed(false);
                     }
@@ -649,7 +655,7 @@ public class Flat {
 
                     log("Number of lines parsed: " + lineCount, true);
 
-                    if (generateCode) {
+                    if (generateCode && !isFlagEnabled(DRY_RUN)) {
                         long time = System.currentTimeMillis();
                         long newTime = time;
 
