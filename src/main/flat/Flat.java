@@ -95,7 +95,7 @@ public class Flat {
     public static final boolean USE_INSTALLED_STDLIB = true;
 
     // Set to 0 to not benchmark.
-    public static final int BENCHMARK = 0;
+    public static final int BENCHMARK = System.getenv("BENCHMARK") == null ? 0 : Integer.parseInt(System.getenv("BENCHMARK"));
 
     public static final long SINGLE_THREAD = 0x1000000000000000l;
     public static final long SMALL_BIN = 0x0100000000000000l;
