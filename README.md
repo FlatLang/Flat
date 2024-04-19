@@ -20,4 +20,4 @@ This is a very old and ugly repository that should long be dead.
 - [Flat-Writer](https://github.com/FlatLang/Flat-Writer) - The new generic code generator/writer engine
 - [Flat-Compiler-Models](https://github.com/FlatLang/Flat-Compiler-Models) - Common models used throughout the compiler modules
 
-© 2014-2023 Flat
+© 2014-2024 Flat
