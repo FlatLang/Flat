@@ -226,7 +226,7 @@ jobs:
             -o dist/js/test.js \
             -target js
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test.js
@@ -241,7 +241,7 @@ jobs:
         run: |
           node dist/js/test.js
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test.js
@@ -273,7 +273,7 @@ jobs:
             -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
             -target js
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: SimpleGapRuleTests.js
