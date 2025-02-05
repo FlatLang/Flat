@@ -50,7 +50,7 @@ jobs:
         run: |
           node airship.js install test -t es6
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test.js
