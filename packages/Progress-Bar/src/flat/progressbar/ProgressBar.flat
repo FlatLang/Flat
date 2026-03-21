@@ -1,0 +1,73 @@
+package flat/progressbar
+
+import flat/time
+
+class {
+    public var Int processedSteps = 0
+    public var Int stepsToProcess = 0
+    public var Int lastProgress = 0
+    public var Long startTime = Time.currentTimeMillis
+
+    public etaTime(String defaultText = "...") -> String {
+        if (lastProgress <= 1) {
+            return defaultText
+        }
+
+        let currentTime = Time.currentTimeMillis
+        let elapsedMs = currentTime - startTime
+
+        let remainingMs = Math.round(elapsedMs * (100.0 / lastProgress)) - elapsedMs
+
+        return remainingMs.millisToTime(millis: false)
+    }
+
+    public getProgressLog(Int lineLength = 80) -> String {
+        if (stepsToProcess == 0) {
+            return ""
+        }
+
+        lastProgress = Math.max(lastProgress, (processedSteps * 100) / stepsToProcess)
+
+        let etaValue = etaTime()
+
+        let prefix = "["
+        let percentage = ((processedSteps * 100) / stepsToProcess) + "%"
+        let suffix = "] " +
+            " ".repeat(Math.max(0, stepsToProcess.toString().count - processedSteps.toString().count)) +
+            processedSteps + "/" + stepsToProcess + " " +
+            "eta " + " ".repeat(Math.max(0, 3 - etaValue.count)) + etaValue
+        let progressLength = lineLength - prefix.count - suffix.count
+
+        var percentagePosition = 0
+        var printedTip = false
+        var progress = ""
+
+        for (i in 0..progressLength) {
+            let progressPosition = (lastProgress * progressLength) / 100
+
+            if (percentagePosition < percentage.count && i >= (progressLength / 2) - (percentage.count / 2)) {
+                progress += percentage[percentagePosition]
+                percentagePosition++
+                if (i >= progressPosition) {
+                    printedTip = true
+                }
+            } else if (i < progressPosition) {
+                progress += "="
+            } else if (!printedTip) {
+                progress += ">"
+                printedTip = true
+            } else {
+                progress += " "
+            }
+        }
+
+        if (processedSteps == stepsToProcess) {
+            processedSteps = 0
+            stepsToProcess = 0
+            lastProgress = 0
+            startTime = Time.currentTimeMillis
+        }
+
+        return prefix + progress + suffix
+    }
+}
