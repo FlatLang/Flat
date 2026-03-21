@@ -1,0 +1,17 @@
+package flat/glob
+
+import flat/io/File
+
+import flat/glob/Glob
+
+testable class {
+    static let File workingDirectory = File.EXECUTED_DIRECTORY.getParent().getParent()
+
+    async test `can do basic glob search`() {
+        let value = Glob.glob("**/*_Test*.flat", workingDirectory, includeHidden: false)
+
+        expect(value.contains(File("#{workingDirectory.normalizedLocation}/src/flat/glob/Glob_Test.flat"))).toBe(true)
+        expect(value.contains(File("#{workingDirectory.normalizedLocation}/src/flat/glob/Glob_TestSuite.flat"))).toBe(true)
+        expect(value.contains(File("#{workingDirectory.normalizedLocation}/src/flat/glob/Glob.flat"))).toBe(false)
+    }
+}

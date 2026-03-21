@@ -1,0 +1,104 @@
+package flat/glob
+
+import flat/log/Logger
+import flat/datastruct/HashMap
+import flat/io/File
+import flat/regex/Regex
+import flat/regex/Pattern
+import flat/regex/RegexStringExtensions
+
+class {
+    static Logger log = Logger(Glob.class)
+
+    public static glob(
+        String pattern,
+        File workingDirectory = File(System.workingDirectory),
+        Bool: includeHidden = true
+    ) => glob(
+        patternize(pattern, false),
+        patternize(pattern, true),
+        workingDirectory,
+        workingDirectory,
+        includeHidden
+    )
+
+    static glob(
+        Pattern filePattern,
+        Pattern directoryPattern,
+        File workingDirectory,
+        File currentDirectory,
+        Bool includeHidden
+    ) -> File[] {
+        if (workingDirectory == currentDirectory) {
+            log.debug("Searching for files matching glob pattern #filePattern with working directory: \"#{workingDirectory.normalizedLocation}\"")
+        } else {
+            log.debug("Searching for files matching glob pattern #filePattern in \"#{currentDirectory.normalizedLocation}\" with working directory: \"#{workingDirectory.normalizedLocation}\"")
+        }
+
+        let results = currentDirectory
+            .getChildFiles(includeHidden, includeDirectories: true)
+            .filter({ matchesGlobPattern(_x.isFile ? filePattern : directoryPattern, workingDirectory, _x) })
+            .flatMap({
+                let matches = Array<File>()
+
+                if (!_x.isDirectory || matchesGlobPattern(filePattern, workingDirectory, _x)) {
+                    matches.add(_x)
+                }
+
+                if (_x.isDirectory) {
+                    matches.addAll(glob(filePattern, directoryPattern, workingDirectory, _x, includeHidden))
+                }
+
+                return matches
+            })
+
+        if (workingDirectory == currentDirectory) {
+            log.debug("Searching for files matching glob pattern #filePattern with working directory: \"#{workingDirectory.normalizedLocation}\", found #{results.count} result#{results.count == 1 ? "" : "s"}")
+        } else {
+            log.debug("Searching for files matching glob pattern #filePattern in \"#{currentDirectory.normalizedLocation}\" with working directory: \"#{workingDirectory.normalizedLocation}\", found #{results.count} result#{results.count == 1 ? "" : "s"}")
+        }
+
+        return results
+    }
+
+    static sanitizeRegex(String value) =>
+            value.replace(/[.+?^${}()|[\]\\]/, "\\$&")
+
+    static patternize(String value, Bool directory) -> Pattern {
+        let pattern = directory ?
+            sanitizeRegex(value)
+                .replace(/\*\*.+/, "(.+?|$)") :
+            sanitizeRegex(value)
+                .replace(/\*\*/, "(.+?|$)")
+                .replace(/\*/, "([^/]*?|$)")
+
+        return Pattern(pattern)
+    }
+
+    public static matchesGlobPattern(
+        Pattern pattern,
+        File workingDirectory,
+        File target
+    ) => false {
+        let location = target.normalizedLocation.substring(workingDirectory.normalizedLocation.count + 1)
+        let matches = Regex.getMatches(pattern, location).count > 0
+
+        log.trace("Checked \"#{location}\" against pattern #pattern: #matches")
+
+        return matches
+    }
+
+    public static matchesGlobPattern(
+        String pattern,
+        File workingDirectory,
+        File target
+    ) => false {
+        let location = target.normalizedLocation.substring(workingDirectory.normalizedLocation.count + 1)
+        let regexPattern = patternize(pattern, target.isDirectory)
+        let matches = matchesGlobPattern(regexPattern, workingDirectory, target)
+
+        log.trace("Checked \"#{location}\" against pattern \"#pattern\": #matches")
+
+        return matches
+    }
+}
