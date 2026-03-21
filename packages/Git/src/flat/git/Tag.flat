@@ -1,0 +1,7 @@
+package flat/git
+
+data class Tag {
+    visible String sha
+    visible String value
+    lazy visible String name => value.substring("refs/tags/".count)
+}

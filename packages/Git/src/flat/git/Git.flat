@@ -1,0 +1,756 @@
+package flat/git
+
+import flat/io/File
+import flat/system/ExecutionResponse
+
+class {
+    public construct(
+        String workingDirectory = System.workingDirectory
+    ) {
+        this(File(workingDirectory))
+    }
+
+    public construct(
+        visible File workingDirectory
+    ) {}
+
+    public async lsRemote(
+        String url,
+        Bool: silent = false
+    ) => Git.lsRemote(
+        url,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async lsRemote(
+        String url,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "ls-remote",
+            url
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async add(
+        String file,
+        Bool: silent = false
+    ) => Git.add(
+        file,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async add(
+        String file,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "add",
+            file
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async tag(
+        String tagName,
+        Bool: silent = false
+    ) => Git.tag(
+        tagName,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async tag(
+        String tagName,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "tag",
+            tagName
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async getCurrentBranch(
+        Bool: silent = true
+    ) => Git.getCurrentBranch(
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async getCurrentBranch(
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = true
+    ) -> String {
+        let args = [
+            "git",
+            "branch",
+            "--show-current",
+        ]
+
+        return System.execute(args, workingDirectory, silent).stdout.last.trimEnd()
+    }
+
+    public async revParse(
+        String ref,
+        Bool: verify = false,
+        Bool: silent = true
+    ) => Git.revParse(
+        ref,
+        verify,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async revParse(
+        String ref,
+        Bool: verify = false,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = true
+    ) -> String {
+        let args = [
+            "git",
+            "rev-parse",
+        ]
+
+        if (verify) args.add("--verify")
+
+        args.add(ref)
+
+        return System.execute(args, workingDirectory, silent).stdout.last.trimEnd()
+    }
+
+    public async cherry(
+        Bool v = false,
+        Bool: silent = false
+    ) => Git.cherry(
+        v,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async cherry(
+        Bool v = false,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "cherry",
+        ]
+
+        if (v) args.add("-v")
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async show(
+        String format = null,
+        Bool noPatch = false,
+        Bool: silent = false
+    ) => Git.show(
+        format,
+        noPatch,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async show(
+        String format = null,
+        Bool noPatch = false,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "show",
+        ]
+
+        if (format != null) args.add("--format=#{format}")
+        if (noPatch) args.add("-s")
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async log(
+        Int count = 0,
+        String pretty = null,
+        Bool oneline = false,
+        Bool: silent = false
+    ) => Git.log(
+        count,
+        pretty,
+        oneline,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async log(
+        Int count = 0,
+        String pretty = null,
+        Bool oneline = false,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "log",
+        ]
+
+        if (count > 0) args.add("-#{count}")
+        if (pretty != null) args.add("--pretty=#{pretty}")
+        if (oneline) args.add("--oneline")
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async deleteTag(
+        String tagName,
+        Bool: silent = false
+    ) => Git.deleteTag(
+        tagName,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async deleteTag(
+        String tagName,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "tag",
+            "-d",
+            tagName
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async commit(
+        String message,
+        Bool: amend = false,
+        Bool: silent = false
+    ) => Git.commit(
+        message,
+        amend,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async commit(
+        String message,
+        Bool: amend = false,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "commit",
+            "-m",
+            message
+        ]
+
+        if (amend) {
+            args.add("--amend")
+        }
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async pushTag(
+        String tagName,
+        String: remote = "origin",
+        Bool: silent = false
+    ) => Git.pushTag(
+        tagName,
+        remote,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async pushTag(
+        String tagName,
+        String: remote = "origin",
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "push",
+            remote,
+            tagName,
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async pushTags(
+        String: remote = null,
+        Bool: silent = false
+    ) => Git.pushTags(
+        remote,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async pushTags(
+        String: remote = null,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "push",
+        ]
+
+        if (remote) {
+                args.add(remote)
+        }
+
+        args.add("--tags")
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async push(
+        String: branch = null,
+        String: remote = "origin",
+        Bool: silent = false
+    ) => Git.push(
+        branch,
+        remote,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async push(
+        String: branch = null,
+        String: remote = "origin",
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "push",
+        ]
+
+        if (branch) {
+                args.addAll([remote, branch])
+        }
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async clone(
+        String url,
+        Int: depth = 0,
+        String: outputDirectory = null,
+        String: branch = null,
+        Bool: silent = false
+    ) => Git.clone(
+        url,
+        depth,
+        outputDirectory,
+        branch,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async clone(
+        String url,
+        Int: depth = 0,
+        String: outputDirectory = null,
+        String: branch = null,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "clone",
+            url
+        ]
+
+        if (depth > 0) {
+            args.addAll(["--depth", "#depth"])
+        }
+
+        if (branch) {
+            args.addAll(["--branch", branch])
+        }
+
+        if (outputDirectory) {
+            args.add(outputDirectory)
+        }
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async fetch(
+        String: origin = "origin",
+        String: ref = null,
+        Int: depth = 0,
+        Bool: silent = false
+    ) => Git.fetch(
+        origin,
+        ref,
+        depth,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async fetch(
+        String: origin = "origin",
+        String: ref = null,
+        Int: depth = 0,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "fetch",
+            origin,
+        ]
+
+        if (ref) args.add(ref)
+
+        args.addAll(["--depth", depth.toString()])
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async checkout(
+        String ref,
+        Bool: createBranch = false,
+        Bool: silent = false
+    ) => Git.checkout(
+        ref,
+        workingDirectory: workingDirectory.location,
+        createBranch,
+        silent
+    )
+
+    public static async checkout(
+        String ref,
+        String: workingDirectory = System.workingDirectory,
+        Bool: createBranch = false,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "checkout"
+        ]
+
+        if (createBranch) {
+            args.add("-b")
+        }
+
+        args.add(ref)
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    class PullResponse {
+        construct(
+            visible Bool: upToDate,
+            visible Bool: success,
+            visible ExecutionResponse: executionResponse
+        ) {}
+
+        override public toString() => "|
+            {
+                upToDate: #{upToDate},
+                success: #{success},
+                executionResponse: #{executionResponse}
+            }
+            |"
+    }
+
+    public async pull(
+        Bool: silent = false
+    ) => Git.pull(
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async pull(
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> PullResponse {
+        let args = [
+            "git",
+            "pull"
+        ]
+
+        try {
+            let executionResponse = System.execute(args, workingDirectory, silent)
+            let success = executionResponse.exitCode == 0
+            let upToDate = success && (
+                executionResponse.stdout.first?.trim() == "Already up to date." ||
+                executionResponse.stdout.first?.trim().endsWith("is up to date.")
+            )
+
+            return PullResponse(
+                upToDate,
+                success,
+                executionResponse
+            )
+        } catch (Exception e) {
+            return PullResponse(
+                upToDate: false,
+                success: false,
+                executionResponse: null
+            )
+        }
+    }
+
+    class StatusResponse {
+        construct(
+            visible Bool: nothingToCommit,
+            visible Bool: clean,
+            visible String: value,
+            visible Bool: success,
+            visible ExecutionResponse: executionResponse
+        ) {}
+    }
+
+    public async status(
+        Bool: silent = false
+    ) => Git.status(
+        workingDirectory: workingDirectory.location,
+        silent: silent
+    )
+
+    public static async status(
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> StatusResponse => null {
+        let response = System.execute(
+            ["git", "status"],
+            workingDirectory,
+            silent: silent
+        )
+
+        let success = response.exitCode == 0
+        let nothingToCommit = success && response.stdout.last?.trim()?.contains("nothing to commit")
+        let clean = nothingToCommit && response.stdout.last?.trim()?.endsWith("nothing to commit, working tree clean")
+        return StatusResponse(
+            nothingToCommit: nothingToCommit,
+            clean: clean,
+            value: response.stdout.join("\n"),
+            success: success,
+            executionResponse: response
+        )
+    }
+
+    data class RemoteInfoResponse {
+        visible String remote
+        visible String fetchUrl
+        visible String pushUrl
+        visible String headBranch
+        visible Bool success
+        visible ExecutionResponse executionResponse
+    }
+
+    public async remoteInfo(
+        String remoteUrl,
+        Bool: silent = false
+    ) => Git.remoteInfo(
+        remoteUrl,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async remoteInfo(
+        String remoteUrl,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> RemoteInfoResponse => null {
+        let response = System.execute(
+            ["git", "remote", "show", remoteUrl],
+            workingDirectory,
+            silent: silent
+        )
+
+        let success = response.exitCode == 0
+
+        let allInfo = response.stdout.firstWhere({ _x.startsWith("* remote") }).split("\n  ")
+        let remote = allInfo[0].substring("* remote ".count)
+        let fetchUrl = allInfo[1].substring("Fetch Url: ".count)
+        let pushUrl = allInfo[2].substring("Push  Url: ".count)
+        let headBranch = allInfo[3].substring("HEAD branch: ".count)
+
+        return RemoteInfoResponse(
+            remote: remote,
+            fetchUrl: fetchUrl,
+            pushUrl: pushUrl,
+            headBranch: headBranch,
+            success: success,
+            executionResponse: response
+        )
+    }
+
+    data class LsTagsResponse {
+        visible Tag[] tags
+        visible Bool success
+        visible ExecutionResponse executionResponse
+    }
+
+    static parseTags(String[] output) =>
+        output.join()
+            .split("\n")
+            .stream()
+            .filter({ _.count > 45 })
+            .filter({ _x.startsWith("refs/tags/", start: _x.indexOf([' ', '\t'], start: 41, invert: true)) })
+            .map({ Tag(_x.substring(end: 40), _x.substring(_x.indexOf([' ', '\t'], start: 41, invert: true))) })
+
+    public async lsRemoteTags(
+        String remote = "origin",
+        Bool: silent = false
+    ) => Git.lsRemoteTags(
+        remote,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async lsRemoteTags(
+        String remote = "origin",
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> LsTagsResponse => null {
+        let response = System.execute(
+            ["git", "ls-remote", "--tags", remote],
+            workingDirectory,
+            silent: silent
+        )
+
+        let success = response.exitCode == 0
+
+        return LsTagsResponse(
+            tags: parseTags(response.stdout).toArray(),
+            success: success,
+            executionResponse: response
+        )
+    }
+
+    public async showRef(
+        Bool tags = false,
+        Bool: silent = false
+    ) => Git.showRef(
+        tags,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async showRef(
+        Bool tags = false,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> LsTagsResponse {
+        let args = [
+            "git",
+            "show-ref",
+        ]
+
+        if (tags) args.add("--tags")
+
+        let response = System.execute(args, workingDirectory, silent)
+
+        let success = response.exitCode == 0
+
+        return LsTagsResponse(
+            tags: parseTags(response.stdout).toArray(),
+            success: success,
+            executionResponse: response
+        )
+    }
+
+    class GetConfigValueResponse {
+        construct(
+            visible String: value,
+            visible Bool: success,
+            visible ExecutionResponse: executionResponse
+        ) {}
+    }
+
+    public async getConfigValue(
+        String configValue,
+        Bool: silent = false
+    ) => Git.getConfigValue(
+        configValue,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async getConfigValue(
+        String configValue,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> GetConfigValueResponse => null {
+        let response = System.execute(
+            ["git", "config", "--get", configValue],
+            workingDirectory,
+            silent: silent
+        )
+
+        if (response.exitCode == 0) {
+            return GetConfigValueResponse(
+                value: response.stdout.first?.trim(),
+                success: response.exitCode == 0,
+                executionResponse: response
+            )
+        } else {
+            throw GitCommandException("git config failed", response)
+        }
+    }
+
+    class GetOriginUrlResponse extends GetConfigValueResponse {
+        construct(GetConfigValueResponse response) {
+            this(
+                value: response.value,
+                success: response.success,
+                executionResponse: response.executionResponse
+            )
+        }
+
+        construct(
+            String: value,
+            Bool: success,
+            ExecutionResponse: executionResponse
+        ) {
+            super(value, success, executionResponse)
+        }
+    }
+
+    public async getOriginUrl(
+        Bool: silent = false
+    ) => Git.getOriginUrl(
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async getOriginUrl(
+        String workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) =>
+        GetOriginUrlResponse(
+            getConfigValue(
+                "remote.origin.url",
+                workingDirectory: workingDirectory,
+                silent
+            )
+        )
+}
