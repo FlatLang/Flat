@@ -1,0 +1,41 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/annotations
+import flat/compiler/models/Token
+import flat/ast/AnnotationNode
+import flat/ast/Node
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    override lazy TokenMatcher matcher => pattern.getMatcher()
+
+    override lazy TokenPattern pattern => GroupTokenPattern<TestSuiteAnnotation>([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: TestSuiteAnnotation.identifier),
+        GroupTokenPattern([
+            testClassesPattern,
+             GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                testClassesPattern,
+            ], repeat: true, optional: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], repeat: true, optional: true, greedy: false),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+    ])
+
+    GroupTokenPattern testClassesPattern => GroupTokenPattern([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+            ], repeat: true, optional: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "]"),
+    ], repeat: true, optional: true, greedy: false)
+}

@@ -1,0 +1,16 @@
+package flat/parser/flat
+
+import flat/ast
+import flat/parser
+import flat/parser/matchers
+import flat/annotations
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => GroupTokenPattern<StaticBlockNode>([
+        PreconditionTokenPattern(annotations: [StaticModifier.class]),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+        NodeGroupTokenPattern(LocalScopeParser().valueParsers, optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+    ])
+}

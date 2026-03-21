@@ -1,0 +1,149 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/datastruct/HashMap
+import flat/datastruct/list/Stack
+import flat/ast
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can parse declaration`() {
+        let parser = ClassParser()
+        parser.context = ParseContext()
+
+        parser.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "Bob", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ])
+
+        expect(parser.generateNodes()).toBe([
+            ClassNode(type: Token(value: "class", type: Token.Type.IDENTIFIER)),
+            IdentifierNode(name: Token(value: "Bob", type: Token.Type.IDENTIFIER)),
+        ])
+    }
+
+    test `can parse with implicit name`() {
+        let parser = ClassParser()
+
+        let file = File("test.flat")
+        parser.context = ParseContext(
+            file: file
+        )
+
+        parser.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ])
+
+        expect(parser.generateNodes()).toBe([
+            ClassNode(type: Token(value: "class", type: Token.Type.IDENTIFIER))
+        ])
+    }
+
+    test `can match implicit name with extension`() {
+        let matcher = ClassParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "extends", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "extends", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match implicit name with implements`() {
+        let matcher = ClassParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "implements", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "implements", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match with many implementations`() {
+        let matcher = ClassParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "implements", type: Token.Type.IDENTIFIER),
+            Token(value: "Comparable", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "PlusOperator", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "EqualsOperator", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "MultiplyOperator", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "Int", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "implements", type: Token.Type.IDENTIFIER),
+            Token(value: "Comparable", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "PlusOperator", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "EqualsOperator", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "MultiplyOperator", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "Int", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+}

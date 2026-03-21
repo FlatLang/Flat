@@ -1,0 +1,10 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/CommentNode
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => SingleTokenPattern<CommentNode>(type: Token.Type.COMMENT, metadata: true, field: "value")
+}

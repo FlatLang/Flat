@@ -1,0 +1,13 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/ContinueNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(ContinueParser.class)
+
+    override lazy TokenPattern pattern => SingleTokenPattern<ContinueNode>(type: Token.Type.IDENTIFIER, value: "continue", exact: true)
+}

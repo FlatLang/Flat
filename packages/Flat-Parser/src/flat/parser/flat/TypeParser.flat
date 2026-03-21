@@ -1,0 +1,13 @@
+package flat/parser/flat
+
+import flat/ast
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => NodeTokenPattern<TypeNode>([
+        ValueTypeParser(),
+        FunctionTypeParser()
+    ])
+}

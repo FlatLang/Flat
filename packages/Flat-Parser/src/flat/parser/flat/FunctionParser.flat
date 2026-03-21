@@ -1,0 +1,74 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/compiler/models/SyntaxTokenFunctions
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(FunctionParser.class)
+
+    override lazy TokenPattern pattern => GroupTokenPattern<FunctionNode>([
+        SingleTokenPattern<IdentifierNode>(type: Token.Type.IDENTIFIER, field: "name"),
+        NodeTokenPattern([GenericParametersParser()], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+        GroupTokenPattern<ParametersNode>([
+            NodeTokenPattern(parameterParsers, baseParser: true),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                NodeTokenPattern(parameterParsers, baseParser: true)
+            ], optional: true, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ")"),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "->"),
+            NodeTokenPattern([TypeParser()]),
+        ], optional: true),
+        NodeTokenPattern([ArrowExpressionParser()], baseParser: true, optional: true),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+            NodeGroupTokenPattern(LocalScopeParser().valueParsers, optional: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+        ], optional: true)
+    ])
+
+    let ParserBase[] parameterParsers => [
+        ThisModifierParser(),
+        AnnotationParser(),
+        ParameterParser(),
+        FunctionParameterParser()
+    ]
+
+    visible ParserBase[] arrowExpressionValues => [
+        AnnotationParser(),
+        ThrowParser(),
+        IfParser(),
+        TryParser(),
+        CatchParser(),
+        ElseParser(),
+        ExternalParser(),
+        ReturnParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        MatchParser(),
+        SwitchParser(),
+        WhileLoopParser(),
+        ForLoopParser(),
+        ForEachLoopParser(),
+        FallthroughParser(),
+        ContinueParser(),
+        BreakParser(),
+        LocalDeclarationParser(),
+        FunctionCallParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+        LambdaParser()
+    ]
+}

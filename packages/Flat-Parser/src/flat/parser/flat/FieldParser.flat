@@ -1,0 +1,32 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+
+import flat/extensions/SyntaxStringFunctions
+
+import flat/ast/Node
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => [
+        AssignmentParser(),
+    ]
+
+    override lazy TokenPattern pattern => GroupTokenPattern<FieldNode>([
+        NodeTokenPattern([ValueTypeParser()]),
+        SingleTokenPattern<IdentifierNode>(type: Token.Type.IDENTIFIER, field: "name"),
+        NodeTokenPattern([ArrowExpressionParser(), DoubleArrowExpressionParser()], baseParser: true, optional: true),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+            NodeGroupTokenPattern(fieldScopeParsers),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+        ], optional: true)
+    ])
+
+    ParserBase[] fieldScopeParsers => [
+        FieldAccessorFunctionParser(),
+        FieldMutatorFunctionParser()
+    ]
+}

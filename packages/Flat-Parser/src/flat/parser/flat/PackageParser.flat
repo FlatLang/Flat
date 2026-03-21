@@ -1,0 +1,37 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/PackageNode
+import flat/compiler/models/Token
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    override lazy TokenMatcher matcher => pattern.getMatcher()
+
+    override lazy TokenPattern pattern => GroupTokenPattern<PackageNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package"),
+        SingleTokenPattern(type: Token.Type.IDENTIFIER),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "/"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER)
+        ], repeat: true, optional: true)
+    ])
+
+    override public traverseNodes(func(Node, ParseContext, TokenPattern)) -> PackageNode {
+        let packageNode = PackageNode()
+
+        lastMatch.inflateNode(packageNode)
+
+        let components = lastMatch.tokens
+            .skip(1)
+            .map({ _.value })
+
+        func(
+            packageNode.copy(location: components.join()),
+            lastMatch.context,
+            lastMatch.pattern
+        )
+    }
+}

@@ -1,0 +1,204 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match basic function call without arguments`() {
+        let matcher = FunctionCallParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match function call within a function call`() {
+        let matcher = FunctionCallParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "test2", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "test2", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `does not completely match partial function call`() {
+        let matcher = FunctionCallParser().matcher
+        let match = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "value", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(match).toBe(null)
+    }
+
+    test `can match function call with multiple arguments`() {
+        let matcher = FunctionCallParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "arg1", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "arg2", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "arg1", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "arg2", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match function call with empty lambda argument`() {
+        let matcher = FunctionCallParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can generate node for function call with empty lambda argument`() {
+        let parser = FunctionCallParser()
+        parser.context = ParseContext()
+        let result = parser.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]).last
+
+        expect(result).toNotBe(null)
+
+        let node = parser.generateNodes()
+
+        expect(node).toBe([
+            FunctionCallNode(),
+            IdentifierNode(name: Token(value: "test", type: Token.Type.IDENTIFIER)),
+            LambdaNode(),
+            LocalScopeNode(),
+        ])
+    }
+
+    test `can generate child matches for function call with empty lambda argument`() {
+        let parser = FunctionCallParser()
+        parser.context = ParseContext()
+        let result = parser.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]).last
+
+        expect(result).toNotBe(null)
+
+        let nodes = parser.generateNodes()
+
+        expect(nodes).toBe([
+            FunctionCallNode(),
+            IdentifierNode(name: Token(value: "test", type: Token.Type.IDENTIFIER)),
+            LambdaNode(),
+            LocalScopeNode(),
+        ])
+    }
+
+    test `can match function call with simple lambda argument`() {
+        let matcher = FunctionCallParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: "}", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: "}", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can generate nodes for function call with simple lambda argument`() {
+        let parser = FunctionCallParser()
+        parser.context = ParseContext()
+        let result = parser.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: "}", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]).last
+
+        expect(result).toNotBe(null)
+
+        let nodes = parser.generateNodes()
+
+        expect(nodes).toBe([
+            FunctionCallNode(),
+            IdentifierNode(name: Token(value: "test", type: Token.Type.IDENTIFIER)),
+            LambdaNode(),
+            LocalScopeNode(),
+            IdentifierNode(name: Token(value: "x", type: Token.Type.IDENTIFIER))
+        ])
+    }
+}

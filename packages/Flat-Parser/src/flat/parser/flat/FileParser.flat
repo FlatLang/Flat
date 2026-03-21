@@ -1,0 +1,16 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models/Token
+import flat/ast/FileNode
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => NodeGroupTokenPattern<FileNode>([
+            AnnotationParser(),
+            ImportParser(),
+            PackageParser(),
+            ClassParser()
+        ]
+    )
+}

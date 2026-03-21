@@ -1,0 +1,25 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/CastNode
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => Array():addAll([
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        FunctionCallParser(),
+        UnaryOperationParser(),
+        PriorityParser(),
+    ])
+
+    override lazy TokenPattern pattern => GroupTokenPattern<CastNode>([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+        NodeTokenPattern([ValueTypeParser()]),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+    ])
+}

@@ -1,0 +1,16 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/ElseNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(ElseParser.class)
+
+    override lazy TokenPattern pattern => GroupTokenPattern<ElseNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "else"),
+        NodeTokenPattern(LocalScopeParser().valueParsers),
+    ])
+}

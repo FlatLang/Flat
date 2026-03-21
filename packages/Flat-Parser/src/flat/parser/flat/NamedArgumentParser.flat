@@ -1,0 +1,26 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/NamedArgumentNode
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => Array():addAll([
+        AnnotationParser(),
+        FunctionCallParser(),
+        IdentifierParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        LambdaParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ])
+
+    override lazy TokenPattern pattern => GroupTokenPattern<NamedArgumentNode>([
+        IdentifierParser().pattern,
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ":"),
+    ])
+}

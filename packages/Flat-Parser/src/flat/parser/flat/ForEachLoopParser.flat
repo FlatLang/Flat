@@ -1,0 +1,28 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/ForEachLoopNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(ForEachLoopParser.class)
+
+    override lazy TokenPattern pattern => GroupTokenPattern<ForEachLoopNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "for"),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+        SingleTokenPattern(type: Token.Type.IDENTIFIER),
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "in"),
+        NodeTokenPattern(iteratorParsers, greedy: false),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ")"),
+        NodeTokenPattern(LocalScopeParser().valueParsers, baseParser: true),
+    ])
+
+    let ParserBase[] iteratorParsers => [
+        IdentifierParser(),
+        LiteralParser(),
+        PriorityParser(),
+        FunctionCallParser()
+    ]
+}

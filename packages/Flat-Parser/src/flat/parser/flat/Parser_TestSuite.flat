@@ -1,0 +1,82 @@
+package flat/parser/flat
+
+import flat/test/TestResult
+
+import flat/time/Timer
+import flat/io/FancyOutputStream
+import flat/parser/matchers
+
+[TestSuite [
+    Parser_Test,
+    PackageParser_Test,
+    ImportParser_Test,
+    VariableDeclarationParser_Test,
+    FieldParser_Test,
+    ClassParser_Test,
+    ModifierParser_Test,
+    AnnotationParser_Test,
+    FunctionParser_Test,
+    FunctionTypeParser_Test,
+    GenericArgumentsParser_Test,
+    GenericParameterParser_Test,
+    GenericParametersParser_Test,
+    TypeParser_Test,
+    CommentParser_Test,
+    ParameterParser_Test,
+    FunctionCallParser_Test,
+    ArrayAccessParser_Test,
+    ArrayInstantiationParser_Test,
+    LocalDeclarationParser_Test,
+    MatchParser_Test,
+    MatchCaseParser_Test,
+    IfParser_Test,
+    LambdaParser_Test,
+    ForLoopParser_Test,
+    TestSuiteAnnotationParser_Test
+]]
+class {
+    public static async main(String[] args) {
+        let test = Parser_TestSuite()
+
+        let results = TestResult[]
+
+        Timer timer = Timer().start()
+
+        test.runTests({
+            results.add(_)
+        })
+
+        timer.stop()
+
+        let fancy = FancyOutputStream(headerPattern: "/\\")
+
+        let unsuccessful = results.filter({ !_.success })
+
+        if (unsuccessful.count > 0) {
+            fancy.writeHeader(
+                "#unsuccessful.count Failure#{unsuccessful.count == 1 ? "" : "s"} out of #results.count test#{results.count == 1 ? "" : "s"}",
+                pattern: ":'( ",
+                symmetrical: true
+            )
+
+            if (unsuccessful.count > 1 || results.last.success) {
+                unsuccessful.forEach({
+                    Console.log("#_")
+                })
+            }
+        } else {
+            fancy.writeHeader(
+                "All #results.count Successful",
+                pattern: ":) ",
+                symmetrical: true
+            )
+        }
+
+
+        Console.writeLine("Took #{timer.duration}ms")
+
+        if (unsuccessful.count > 0) {
+                System.exit(1)
+        }
+    }
+}

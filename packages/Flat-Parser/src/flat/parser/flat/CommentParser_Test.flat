@@ -1,0 +1,20 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/FileNode
+import flat/ast/AnnotationNode
+import flat/annotations/PublicModifier
+import flat/annotations/LetModifier
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match a basic single line comment`() {
+        let matcher = CommentParser().matcher
+        let result = matcher.match(Token(value: "// 9/11 was an inside job", type: Token.Type.COMMENT))
+
+        expect(result?.tokens).toBe([Token(value: "// 9/11 was an inside job", type: Token.Type.COMMENT)])
+        expect(matcher.partial).toBe(false)
+    }
+}

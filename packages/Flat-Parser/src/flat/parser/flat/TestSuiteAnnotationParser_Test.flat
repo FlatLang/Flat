@@ -1,0 +1,134 @@
+package flat/parser/flat
+
+import flat/ast
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models
+import flat/datastruct/HashMap
+import flat/io/File
+
+testable class {
+    test `can match empty test suite`() {
+        let matcher = TestSuiteAnnotationParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match test suite with empty klass list`() {
+        let matcher = TestSuiteAnnotationParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match test suite with single klass in single klass list`() {
+        let matcher = TestSuiteAnnotationParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match test suite with two klasses in single klass list`() {
+        let matcher = TestSuiteAnnotationParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "Bob2", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "Bob2", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match test suite with two klasses in two klass lists`() {
+        let matcher = TestSuiteAnnotationParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob2", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "TestSuite", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Bob2", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+}

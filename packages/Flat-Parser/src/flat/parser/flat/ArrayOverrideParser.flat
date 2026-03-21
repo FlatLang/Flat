@@ -1,0 +1,30 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/ArrayOverrideNode
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => GroupTokenPattern<ArrayOverrideNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "this"),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+        ParameterParser().pattern,
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "]"),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "->"),
+            NodeTokenPattern([ValueTypeParser()]),
+        ], optional: true),
+        NodeTokenPattern([ArrowExpressionParser(), DoubleArrowExpressionParser()], baseParser: true, optional: true),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+            NodeGroupTokenPattern(arrayOverrideScopeParsers),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+        ], optional: true),
+    ])
+
+    ParserBase[] arrayOverrideScopeParsers => [
+        FieldAccessorFunctionParser(),
+        FieldMutatorFunctionParser()
+    ]
+}

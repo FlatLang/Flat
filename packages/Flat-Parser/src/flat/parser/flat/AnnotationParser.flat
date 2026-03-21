@@ -1,0 +1,20 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/AnnotationNode
+import flat/compiler/models/Token
+import flat/log
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    static Logger log = Logger(AnnotationParser.class)
+
+    override lazy TokenPattern pattern => NodeTokenPattern<AnnotationNode>([
+        ModifierParser(),
+        TargetAnnotationParser(),
+        TargetRuntimeAnnotationParser(),
+        TestSuiteAnnotationParser(),
+    ], exact: true, metadata: true)
+}

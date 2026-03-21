@@ -1,0 +1,65 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/datastruct/HashMap
+import flat/parser/Parser
+import flat/ast/FileNode
+import flat/ast/FunctionNode
+import flat/ast/ParameterNode
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match array with object type`() {
+        let matcher = TypeParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "Array", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "Object", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "Array", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "Object", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match array with function type with parameter with generic parameter`() {
+        let matcher = TypeParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "Array", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "resolver", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "Class", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "Node", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: ">", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "Array", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "resolver", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "Class", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "Node", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: ">", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+}

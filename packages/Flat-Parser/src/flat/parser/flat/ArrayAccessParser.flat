@@ -1,0 +1,43 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/ArrayAccessNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(ArrayAccessParser.class)
+
+    override ParserBase[] childParsers => Array():addAll([
+        DotAccessParser(),
+        SafeAccessParser(),
+        IntRangeParser(),
+        TernaryParser(),
+        ColonAccessParser(),
+        AssignmentParser(),
+        ArrayAccessParser(),
+        BinaryOperationParser(),
+        UnaryOperationParser(),
+        MatchCaseParser()
+    ])
+
+    override lazy TokenPattern pattern => GroupTokenPattern<ArrayAccessNode>([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+        NodeTokenPattern(indexParsers),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+    ])
+
+    ParserBase[] indexParsers => [
+        AnnotationParser(),
+        FunctionCallParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ]
+}

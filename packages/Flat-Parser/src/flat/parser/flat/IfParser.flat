@@ -1,0 +1,33 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/IfNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(IfParser.class)
+
+    override lazy TokenPattern pattern => GroupTokenPattern<IfNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "if"),
+        NodeTokenPattern(conditionParsers),
+        NodeTokenPattern(LocalScopeParser().valueParsers, baseParser: true),
+    ])
+
+    ParserBase[] conditionParsers => [
+        AnnotationParser(),
+        NamedArgumentParser(),
+        FunctionCallParser(),
+        IdentifierParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        LambdaParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        PriorityParser(),
+        CastParser(),
+        LocalDeclarationParser(),
+        TernaryParser()
+    ]
+}

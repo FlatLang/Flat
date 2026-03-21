@@ -1,0 +1,13 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/BreakNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(BreakParser.class)
+
+    override lazy TokenPattern pattern => SingleTokenPattern<BreakNode>(type: Token.Type.IDENTIFIER, value: "break", exact: true)
+}

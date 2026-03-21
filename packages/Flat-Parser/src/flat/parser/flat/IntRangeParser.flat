@@ -1,0 +1,25 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/IntRangeNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(IntRangeParser.class)
+
+    override ParserBase[] childParsers => Array():addAll([
+        AnnotationParser(),
+        FunctionCallParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        CastParser(),
+        PriorityParser(),
+        LiteralParser(),
+        RegexPatternParser()
+    ])
+
+    override lazy TokenPattern pattern => SingleTokenPattern<IntRangeNode>(type: Token.Type.SYMBOL, value: "..")
+}

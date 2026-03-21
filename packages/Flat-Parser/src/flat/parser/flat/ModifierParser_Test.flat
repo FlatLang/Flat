@@ -1,0 +1,31 @@
+package flat/parser/flat
+
+import flat/ast
+import flat/parser
+import flat/parser/matchers
+import flat/datastruct
+import flat/datastruct/list
+import flat/annotations
+import flat/compiler/models
+
+testable class {
+    test `can parse visible modifier`() {
+        let parser = ModifierParser()
+        parser.context = ParseContext(
+            parserStack: Stack():push(FileParser()):push(ClassParser()),
+            currentBaseParser: ClassParser()
+        )
+
+        parser.matchAll([
+            Token(value: "visible", type: Token.Type.IDENTIFIER),
+        ])
+
+        expect(parser.lastMatch).toNotBe(null)
+
+        expect(parser.generateNode()).toBe(
+            VisibleModifier(
+                aliasUsed: Token(value: "visible", type: Token.Type.IDENTIFIER)
+            )
+        )
+    }
+}

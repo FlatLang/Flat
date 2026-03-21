@@ -1,0 +1,22 @@
+package flat/parser/flat
+
+import flat/ast
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => GroupTokenPattern<GenericParameterNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "reified", optional: true, field: "reified"),
+        XorTokenPattern([
+            GroupTokenPattern([
+                NodeTokenPattern([ValueTypeParser()]),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+                    NodeTokenPattern([ValueTypeParser()]),
+                ], optional: true),
+            ]),
+            NodeTokenPattern([FunctionTypeParser()]),
+        ]),
+    ])
+}

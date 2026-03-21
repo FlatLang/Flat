@@ -1,0 +1,97 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/annotations
+import flat/ast
+import flat/compiler/models/Token
+import flat/log
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    static Logger log = Logger(ModifierParser.class)
+
+    override lazy TokenPattern pattern => XorTokenPattern([
+        GroupTokenPattern<VisibleModifier>([
+            PreconditionTokenPattern(baseParentTypes: VisibleModifier.allowedBaseParents, parentTypes: VisibleModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: VisibleModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<PublicModifier>([
+            PreconditionTokenPattern(baseParentTypes: PublicModifier.allowedBaseParents, parentTypes: PublicModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: PublicModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<PrivateModifier>([
+            PreconditionTokenPattern(baseParentTypes: PrivateModifier.allowedBaseParents, parentTypes: PrivateModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: PrivateModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<LetModifier>([
+            PreconditionTokenPattern(baseParentTypes: LetModifier.allowedBaseParents, parentTypes: LetModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: LetModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<VarModifier>([
+            PreconditionTokenPattern(baseParentTypes: VarModifier.allowedBaseParents, parentTypes: VarModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: VarModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<StaticModifier>([
+            PreconditionTokenPattern(baseParentTypes: StaticModifier.allowedBaseParents, parentTypes: StaticModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: StaticModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<AsyncModifier>([
+            PreconditionTokenPattern(baseParentTypes: AsyncModifier.allowedBaseParents, parentTypes: AsyncModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: AsyncModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<AwaitModifier>([
+            PreconditionTokenPattern(baseParentTypes: AwaitModifier.allowedBaseParents, parentTypes: AwaitModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: AwaitModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<DataModifier>([
+            PreconditionTokenPattern(baseParentTypes: DataModifier.allowedBaseParents, parentTypes: DataModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: DataModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<ExtensionModifier>([
+            PreconditionTokenPattern(baseParentTypes: ExtensionModifier.allowedBaseParents, parentTypes: ExtensionModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: ExtensionModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<LazyModifier>([
+            PreconditionTokenPattern(baseParentTypes: LazyModifier.allowedBaseParents, parentTypes: LazyModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: LazyModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<NativeModifier>([
+            PreconditionTokenPattern(baseParentTypes: NativeModifier.allowedBaseParents, parentTypes: NativeModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: NativeModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<NativeArrayModifier>([
+            PreconditionTokenPattern(baseParentTypes: NativeArrayModifier.allowedBaseParents, parentTypes: NativeArrayModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: NativeArrayModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<TestableModifier>([
+            PreconditionTokenPattern(baseParentTypes: TestableModifier.allowedBaseParents, parentTypes: TestableModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: TestableModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<TestModifier>([
+            PreconditionTokenPattern(baseParentTypes: TestModifier.allowedBaseParents, parentTypes: TestModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: TestModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<InitTestModifier>([
+            PreconditionTokenPattern(baseParentTypes: InitTestModifier.allowedBaseParents, parentTypes: InitTestModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: InitTestModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<CleanTestModifier>([
+            PreconditionTokenPattern(baseParentTypes: CleanTestModifier.allowedBaseParents, parentTypes: CleanTestModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: CleanTestModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<OverrideModifier>([
+            PreconditionTokenPattern(baseParentTypes: OverrideModifier.allowedBaseParents, parentTypes: OverrideModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: OverrideModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<AbstractModifier>([
+            PreconditionTokenPattern(baseParentTypes: AbstractModifier.allowedBaseParents, parentTypes: AbstractModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: AbstractModifier.aliases, field: "aliasUsed"),
+        ]),
+        GroupTokenPattern<ExternalNameModifier>([
+            PreconditionTokenPattern(baseParentTypes: ExternalNameModifier.allowedBaseParents, parentTypes: ExternalNameModifier.allowedParents),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: ExternalNameModifier.aliases, field: "aliasUsed"),
+        ]),
+    ], exact: true, metadata: true)
+}

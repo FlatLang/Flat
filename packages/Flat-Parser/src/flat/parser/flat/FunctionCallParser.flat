@@ -1,0 +1,53 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/compiler/models/SyntaxTokenFunctions
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => Array():addAll([
+        DotAccessParser(),
+        SafeAccessParser(),
+        IntRangeParser(),
+        TernaryParser(),
+        ColonAccessParser(),
+        AssignmentParser(),
+        ArrayAccessParser(),
+        BinaryOperationParser(),
+        UnaryOperationParser(),
+        MatchCaseParser()
+    ])
+
+    override lazy TokenPattern pattern => GroupTokenPattern<FunctionCallNode>([
+        SingleTokenPattern<IdentifierNode>(type: Token.Type.IDENTIFIER, field: "name"),
+        NodeTokenPattern([GenericArgumentsParser()], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+        GroupTokenPattern([
+            NodeTokenPattern(argumentParsers),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                NodeTokenPattern(argumentParsers)
+            ], optional: true, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+    ])
+
+    ParserBase[] argumentParsers => [
+        AnnotationParser(),
+        NamedArgumentParser(),
+        FunctionCallParser(),
+        LocalDeclarationParser(),
+        IdentifierParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        LambdaParser(),
+        ArrayInitializerParser(),
+        ArrayInstantiationParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ]
+}

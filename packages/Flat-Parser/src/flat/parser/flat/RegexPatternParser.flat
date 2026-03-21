@@ -1,0 +1,21 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/RegexPatternNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(RegexPatternParser.class)
+
+    override ParserBase[] childParsers => Array()
+        :addAll(LiteralParser().childParsers)
+
+    override lazy TokenPattern pattern => CaptureTokenPattern<RegexPatternNode>(
+
+        start: Token(value: "/"),
+        end: Token(value: "/"),
+        exact: true
+    )
+}

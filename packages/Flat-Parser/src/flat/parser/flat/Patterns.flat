@@ -1,0 +1,68 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models/Token
+
+class {
+    visible static ParserBase[] switchConditionParsers => [
+        AnnotationParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        FunctionCallParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ]
+
+    visible static ParserBase[] switchChildParsers => [
+        AnnotationParser(),
+        ThrowParser(),
+        IfParser(),
+        TryParser(),
+        CatchParser(),
+        ElseParser(),
+        ExternalParser(),
+        ReturnParser(),
+        LiteralParser(),
+        RegexPatternParser(),
+        MatchParser(),
+        SwitchParser(),
+        WhileLoopParser(),
+        ForLoopParser(),
+        ForEachLoopParser(),
+        FallthroughParser(),
+        ContinueParser(),
+        BreakParser(),
+        LocalDeclarationParser(),
+        FunctionCallParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+        LocalScopeParser(),
+    ]
+
+    visible static lazy TokenPattern switchBody => GroupTokenPattern([
+        NodeTokenPattern(LocalScopeParser().valueParsers),
+        XorTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+                GroupTokenPattern([
+                    NodeTokenPattern(switchConditionParsers, baseParser: true, greedy: false),
+                    NodeTokenPattern([MatchCaseParser()], baseParser: true),
+                ], repeat: true, greedy: false),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "}"),
+            ]),
+            GroupTokenPattern([
+                NodeTokenPattern(switchConditionParsers, baseParser: true, greedy: false),
+                NodeTokenPattern([MatchCaseParser()], baseParser: true),
+            ], repeat: true),
+        ]),
+    ])
+}

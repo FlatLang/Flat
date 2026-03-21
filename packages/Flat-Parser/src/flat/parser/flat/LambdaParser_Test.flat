@@ -1,0 +1,159 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/datastruct/HashMap
+import flat/parser/Parser
+import flat/ast/FileNode
+import flat/ast/FunctionNode
+import flat/ast/ParameterNode
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match basic parameterless lambda`() {
+        let matcher = LambdaParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match basic lambda with single parameter without parentheses with brace`() {
+        let matcher = LambdaParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match basic lambda with single parameter with parentheses with brace`() {
+        let matcher = LambdaParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match basic lambda with single typed parameter with parentheses with brace`() {
+        let matcher = LambdaParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match basic lambda with two parameters with brace`() {
+        let matcher = LambdaParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match basic lambda with three parameters with brace`() {
+        let matcher = LambdaParser().matcher
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "z", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL),
+            Token(value: "z", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "=>", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+}

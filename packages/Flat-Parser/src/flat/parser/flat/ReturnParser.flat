@@ -1,0 +1,17 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast/ReturnNode
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(ReturnParser.class)
+
+    override ParserBase[] childParsers => Array()
+        :addAll(LocalScopeParser().valueParsers)
+        :add(LambdaParser())
+
+    override lazy TokenPattern pattern => SingleTokenPattern<ReturnNode>(type: Token.Type.IDENTIFIER, value: "return", exact: true)
+}

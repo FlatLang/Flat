@@ -1,0 +1,34 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/annotations/LetModifier
+import flat/annotations/VarModifier
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => [
+        AssignmentParser()
+    ]
+
+    override lazy TokenPattern pattern => XorTokenPattern<LocalDeclarationNode>([
+        GroupTokenPattern([
+            XorTokenPattern([
+                PreconditionTokenPattern(annotations: [LetModifier.class]),
+                PreconditionTokenPattern(annotations: [VarModifier.class])
+            ]),
+            IdentifierParser().pattern,
+        ]),
+        GroupTokenPattern([
+            XorTokenPattern([
+                PreconditionTokenPattern(annotations: [LetModifier.class]),
+                PreconditionTokenPattern(annotations: [VarModifier.class])
+            ], optional: true),
+            NodeTokenPattern([ValueTypeParser()]),
+            IdentifierParser().pattern,
+        ])
+    ])
+}
