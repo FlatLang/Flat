@@ -1,0 +1,22 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/annotations
+import flat/annotations/java
+import flat/compiler/models/Token
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => XorTokenPattern<AnnotationNode>([
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "@"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: [
+                OverrideAnnotation.identifier
+            ]),
+        ]),
+        NodeTokenPattern([ModifierParser()]),
+    ], exact: true, metadata: true)
+}

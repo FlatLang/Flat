@@ -1,0 +1,47 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/annotations/java
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => [
+        AssignmentParser()
+    ]
+
+    override lazy TokenPattern pattern => XorTokenPattern<LocalDeclarationNode>([
+        GroupTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                Patterns.genericParameters,
+            ]),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+            ], repeat: true),
+            IdentifierParser().pattern,
+        ]),
+        GroupTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                Patterns.genericParameters,
+            ]),
+            IdentifierParser().pattern,
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+            ], repeat: true),
+        ]),
+        GroupTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                Patterns.genericParameters,
+            ]),
+            IdentifierParser().pattern,
+        ]),
+    ])
+}

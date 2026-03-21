@@ -1,0 +1,42 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+
+import flat/extensions/SyntaxStringFunctions
+
+data class extends ParserBase {
+    override lazy TokenMatcher matcher => pattern.getMatcher()
+
+    override lazy TokenPattern pattern => GroupTokenPattern<ImportNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "import"),
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "static", optional: true, field: "type"),
+        SingleTokenPattern(type: Token.Type.IDENTIFIER),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "."),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER)
+        ], repeat: true, optional: true),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "."),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "*")
+        ], optional: true),
+    ])
+
+    override public traverseNodes(func(Node, ParseContext, TokenPattern)) {
+        let importNode = ImportNode()
+
+        lastMatch.inflateNode(importNode)
+
+        let components = lastMatch.tokens
+            .skip(importNode.type?.value == "static" ? 2 : 1)
+            .map({ _.value })
+
+        func(
+            importNode.copy(location: components.join()),
+            lastMatch.context,
+            lastMatch.pattern
+        )
+    }
+}

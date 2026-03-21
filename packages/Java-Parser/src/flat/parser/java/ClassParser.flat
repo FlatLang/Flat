@@ -1,0 +1,50 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => GroupTokenPattern<ClassNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, values: ["class", "interface"], field: "type"),
+        GroupTokenPattern([
+            SingleTokenPattern<IdentifierNode>(type: Token.Type.IDENTIFIER, field: "name"),
+            Patterns.genericParameters
+        ]),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+            SingleTokenPattern<IdentifierNode>(type: Token.Type.IDENTIFIER, field: "name"),
+            Patterns.genericArguments
+        ], optional: true),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "implements"),
+            SingleTokenPattern<IdentifierNode>(type: Token.Type.IDENTIFIER, field: "name"),
+            Patterns.genericArguments,
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                SingleTokenPattern<IdentifierNode>(type: Token.Type.IDENTIFIER, field: "name"),
+                Patterns.genericArguments
+            ], repeat: true, optional: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], optional: true),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+            NodeGroupTokenPattern(
+                classBodyParsers,
+                optional: true,
+                statementEndToken: Token(type: Token.Type.SYMBOL, value: ";")
+            ),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+        ])
+    ])
+
+    ParserBase[] classBodyParsers => [
+        AnnotationParser(),
+        ClassParser(),
+        StaticBlockParser(),
+        FieldParser(),
+        ConstructorParser(),
+        FunctionParser(),
+    ]
+}

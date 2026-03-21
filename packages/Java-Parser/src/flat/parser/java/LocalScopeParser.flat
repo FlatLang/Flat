@@ -1,0 +1,46 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    visible ParserBase[] valueParsers => [
+        AnnotationParser(),
+        ThrowParser(),
+        IfParser(),
+        TryParser(),
+        CatchParser(),
+        ElseParser(),
+        ReturnParser(),
+        LiteralParser(),
+        SwitchParser(),
+        WhileLoopParser(),
+        ForLoopParser(),
+        ForEachLoopParser(),
+        ContinueParser(),
+        BreakParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        IdentifierParser(),
+        ArrayReferenceParser(),
+        ArrayInstantiationParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+        LocalScopeParser(),
+        LocalDeclarationParser(),
+    ]
+
+    override lazy TokenPattern pattern => GroupTokenPattern<LocalScopeNode>([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+        NodeGroupTokenPattern(
+            valueParsers,
+            optional: true,
+
+            statementEndToken: Token(type: Token.Type.SYMBOL, value: ";")
+        ),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+    ])
+}

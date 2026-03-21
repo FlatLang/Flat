@@ -1,0 +1,26 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/ast/java
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(ArrayReferenceParser.class)
+
+    override ParserBase[] childParsers => Array():addAll([
+        DotAccessParser(),
+        FunctionReferenceAccessParser(),
+    ])
+
+    override lazy TokenPattern pattern => GroupTokenPattern<ArrayReferenceNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER),
+        Patterns.genericParameters,
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "]"),
+        ], repeat: true),
+    ])
+}

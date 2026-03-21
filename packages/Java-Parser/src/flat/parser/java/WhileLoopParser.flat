@@ -1,0 +1,32 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(WhileLoopParser.class)
+
+    override lazy TokenPattern pattern => GroupTokenPattern<WhileLoopNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "while"),
+        NodeTokenPattern(conditionParsers),
+        NodeTokenPattern(LocalScopeParser().valueParsers, baseParser: true),
+    ])
+
+    ParserBase[] conditionParsers => [
+        AnnotationParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        LocalDeclarationParser(),
+        IdentifierParser(),
+        ArrayReferenceParser(),
+        LiteralParser(),
+        LambdaParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ]
+}

@@ -1,0 +1,12 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/datastruct
+import flat/datastruct/list
+import flat/annotations/java
+import flat/ast
+import flat/compiler/models
+
+testable class {
+}

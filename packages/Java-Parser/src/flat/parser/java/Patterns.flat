@@ -1,0 +1,126 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models/Token
+
+class {
+    visible static lazy TokenPattern genericParameter => GroupTokenPattern([
+        type,
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+            type
+        ], optional: true)
+    ])
+
+    visible static lazy TokenPattern genericParameters => GroupTokenPattern([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "<"),
+        genericParameter,
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+            genericParameter,
+        ], repeat: true, optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ">"),
+    ], optional: true)
+
+    visible static lazy TokenPattern genericArguments => GroupTokenPattern([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "<"),
+        GroupTokenPattern([
+            type,
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                type,
+            ], repeat: true, optional: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ">"),
+    ], optional: true)
+
+    visible static ParserBase[] switchConditionParsers => [
+        AnnotationParser(),
+        LiteralParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        ArrayReferenceParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ]
+
+    visible static ParserBase[] switchChildParsers => [
+        AnnotationParser(),
+        ThrowParser(),
+        IfParser(),
+        TryParser(),
+        CatchParser(),
+        ElseParser(),
+        ReturnParser(),
+        LiteralParser(),
+        SwitchParser(),
+        WhileLoopParser(),
+        ForLoopParser(),
+        ForEachLoopParser(),
+        ContinueParser(),
+        BreakParser(),
+        LocalDeclarationParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        ArrayReferenceParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+        LocalScopeParser(),
+    ]
+
+    visible static lazy TokenPattern switchBody => GroupTokenPattern([
+        NodeTokenPattern(LocalScopeParser().valueParsers),
+        XorTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+                GroupTokenPattern([
+                    NodeTokenPattern(switchConditionParsers, baseParser: true, greedy: false),
+                    NodeTokenPattern([SwitchCaseParser()], baseParser: true),
+                ], repeat: true, greedy: false),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "}"),
+            ]),
+            GroupTokenPattern([
+                NodeTokenPattern(switchConditionParsers, baseParser: true, greedy: false),
+                NodeTokenPattern([SwitchCaseParser()], baseParser: true),
+            ], repeat: true),
+        ]),
+    ])
+
+    visible static lazy XorTokenPattern type => XorTokenPattern(Array())
+
+    visible static lazy GroupTokenPattern typeName => GroupTokenPattern([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER),
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "."),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER),
+        ], repeat: true, optional: true),
+    ])
+
+    visible static lazy GroupTokenPattern valueType => GroupTokenPattern([
+        typeName,
+        genericParameters,
+        GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+        ], repeat: true, optional: true),
+    ])
+
+    static lazy TokenPattern[] typeContents => [
+        valueType,
+    ]
+
+    static {
+        type.patterns.addAll(typeContents)
+    }
+}

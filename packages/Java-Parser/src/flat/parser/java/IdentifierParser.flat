@@ -1,0 +1,35 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => [
+        DotAccessParser(),
+        FunctionReferenceAccessParser(),
+        BinaryOperationParser(),
+        TernaryParser(),
+        AssignmentParser(),
+        ArrayAccessParser(),
+        UnaryOperationParser(),
+    ]
+
+    static String[] KEYWORDS = [
+        "continue", "for", "switch", "assert", "if",
+        "goto", "package", "synchronized", "do",
+        "break", "implements", "throw", "else",
+        "import", "public", "throws", "case", "enum",
+        "instanceof", "return", "transient", "catch",
+        "extends", "short", "try", "interface",
+        "finally", "strictfp", "while",
+    ]
+
+    override lazy TokenPattern pattern => SingleTokenPattern<IdentifierNode>(
+        type: Token.Type.IDENTIFIER,
+
+        notValues: KEYWORDS,
+        field: "name"
+    )
+}

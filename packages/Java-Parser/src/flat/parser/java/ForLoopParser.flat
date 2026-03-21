@@ -1,0 +1,54 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(ForLoopParser.class)
+
+    override lazy TokenPattern pattern => GroupTokenPattern<ForLoopNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "for"),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+        NodeTokenPattern(initializerParsers, optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ";"),
+        NodeTokenPattern(conditionParsers, optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ";"),
+        NodeTokenPattern(incrementorParsers, optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ")"),
+        NodeTokenPattern(LocalScopeParser().valueParsers, baseParser: true),
+    ])
+
+    let ParserBase[] initializerParsers => [
+        AnnotationParser(),
+        LocalDeclarationParser(),
+        ArrayReferenceParser(),
+        IdentifierParser(),
+    ]
+
+    let ParserBase[] conditionParsers => [
+        AnnotationParser(),
+        ArrayReferenceParser(),
+        IdentifierParser(),
+        LiteralParser(),
+        CastParser(),
+        PriorityParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        UnaryOperationParser(),
+    ]
+
+    let ParserBase[] incrementorParsers => [
+        AnnotationParser(),
+        ArrayReferenceParser(),
+        IdentifierParser(),
+        LiteralParser(),
+        CastParser(),
+        PriorityParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        UnaryOperationParser(),
+    ]
+}

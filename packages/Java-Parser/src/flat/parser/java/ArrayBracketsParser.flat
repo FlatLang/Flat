@@ -1,0 +1,13 @@
+package flat/parser/java
+
+import flat/ast
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override lazy TokenPattern pattern => GroupTokenPattern<ArrayBracketsNode>([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+    ])
+}

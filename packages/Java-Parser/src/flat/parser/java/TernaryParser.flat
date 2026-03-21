@@ -1,0 +1,33 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(TernaryParser.class)
+
+    override lazy TokenPattern pattern => GroupTokenPattern<TernaryNode>([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "?"),
+        NodeTokenPattern(conditionParsers, greedy: false),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ":"),
+        NodeTokenPattern(conditionParsers),
+    ])
+
+    visible ParserBase[] conditionParsers => [
+        AnnotationParser(),
+        LiteralParser(),
+        LocalDeclarationParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        IdentifierParser(),
+        ArrayReferenceParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ]
+}

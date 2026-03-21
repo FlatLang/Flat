@@ -1,0 +1,4 @@
+package flat/parser/java
+
+trait {
+}

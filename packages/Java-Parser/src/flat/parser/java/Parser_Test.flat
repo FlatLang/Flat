@@ -1,0 +1,119 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/annotations/java
+import flat/compiler/models/Token
+import flat/lexer/Lexer
+import flat/io/File
+
+testable class {
+    async test `can parse function call with complex lambda`() {
+        let source = "|
+            class Test {
+                func() {
+                    source.forEach((Pair<String, Object> pair) -> {
+                        if (!dest.containsKey(pair.key)) {
+                            dest[pair.key] = pair.value
+                        }
+
+                        if (pair.value.class.isOfType(HashMap.class)) {
+                            HashMap<String, Object> hashmap = (HashMap)pair.value
+                            HashMap<String, Object> existingHashmap = (HashMap)dest[pair.key]
+                            merge(hashmap, existingHashmap)
+                        } else {
+                            dest[pair.key] = pair.value
+                        }
+                    })
+                }
+            }
+            |"
+
+        let file = File("Test.flat")
+        let stream = Parser().parse(FileParser(), ParseContext(file: file), Lexer().lex(source):emit("start"))
+
+        let nodes = Node[]
+
+        stream.on<NodeResult>("data", { nodes.add(_.node) })
+        stream.emit("start")
+        stream.waitFor("close")
+
+        expect(nodes).toBe([
+            ClassNode(type: Token(value: "class", type: Token.Type.IDENTIFIER)), IdentifierNode(name: ident("Test")),
+            FunctionNode(), IdentifierNode(name: ident("func")),
+            IdentifierNode(name: ident("source")), DotAccessNode(), FunctionCallNode(), IdentifierNode(name: ident("forEach")), LambdaNode(), LocalScopeNode(),
+                IfNode(), PriorityNode(),
+                    UnaryOperationNode(operator: sym("!")), IdentifierNode(name: ident("dest")), DotAccessNode(), FunctionCallNode(), IdentifierNode(name: ident("containsKey")),
+                        IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("key")),
+                LocalScopeNode(),
+                    IdentifierNode(name: ident("dest")), ArrayAccessNode(), IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("key")),
+                        AssignmentNode(),
+                        IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("value")),
+                IfNode(), PriorityNode(),
+                    IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("value")), DotAccessNode(), IdentifierNode(name: ident("class")), DotAccessNode(), FunctionCallNode(), IdentifierNode(name: ident("isOfType")),
+                        IdentifierNode(name: ident("HashMap")), DotAccessNode(), IdentifierNode(name: ident("class")),
+                LocalScopeNode(),
+                    LocalDeclarationNode(), IdentifierNode(name: ident("hashmap")),
+                        AssignmentNode(),
+                        CastNode(), TypeNode(name: ident("HashMap")), IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("value")),
+                    LocalDeclarationNode(), IdentifierNode(name: ident("existingHashmap")),
+                        AssignmentNode(),
+                        CastNode(), TypeNode(name: ident("HashMap")), IdentifierNode(name: ident("dest")), ArrayAccessNode(), IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("key")),
+                    FunctionCallNode(), IdentifierNode(name: ident("merge")), IdentifierNode(name: ident("hashmap")), IdentifierNode(name: ident("existingHashmap")),
+                ElseNode(),
+                    LocalScopeNode(), IdentifierNode(name: ident("dest")), ArrayAccessNode(), IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("key")),
+                    AssignmentNode(),
+                    IdentifierNode(name: ident("pair")), DotAccessNode(), IdentifierNode(name: ident("value"))
+        ])
+    }
+
+    async test `can parse function call with if-else-if lambda`() {
+        let source = "|
+            class Test {
+                func() {
+                    context.currentParsers.forEach((parser) -> {
+                        TokenMatch match = parser.match(token, context)
+                        if (match != null) {
+                            log.debug(() -> \"Matched: \#{parser.class.name}\")
+                        } else if (parser.matcher.partial) {
+                            log.debug(() -> \"Partial match: \#{parser.class.name}\")
+                        }
+                    })
+                }
+            }
+            |"
+
+        let file = File("Test.flat")
+        let stream = Parser().parse(FileParser(), ParseContext(file: file), Lexer().lex(source):emit("start"))
+
+        let nodes = Node[]
+
+        stream.on<NodeResult>("data", { nodes.add(_.node) })
+        stream.emit("start")
+        stream.waitFor("close")
+
+        expect(nodes).toBe([
+            ClassNode(type: Token(value: "class", type: Token.Type.IDENTIFIER)), IdentifierNode(name: ident("Test")),
+            FunctionNode(), IdentifierNode(name: ident("func")),
+                IdentifierNode(name: ident("context")), DotAccessNode(), IdentifierNode(name: ident("currentParsers")), DotAccessNode(), FunctionCallNode(), IdentifierNode(name: ident("forEach")), LambdaNode(), LocalScopeNode(),
+                    LocalDeclarationNode(), IdentifierNode(name: ident("match")),
+                        AssignmentNode(),
+                        IdentifierNode(name: ident("parser")), DotAccessNode(), FunctionCallNode(), IdentifierNode(name: ident("match")), IdentifierNode(name: ident("token")), IdentifierNode(name: ident("context")),
+                    IfNode(), PriorityNode(),
+                        IdentifierNode(name: ident("match")), BinaryOperationNode(operator: sym("!=")), NullLiteralNode(),
+                    LocalScopeNode(),
+                        IdentifierNode(name: ident("log")), DotAccessNode(), FunctionCallNode(), IdentifierNode(name: ident("debug")),
+                            LambdaNode(), StringLiteralNode(value: str("\"Matched: \#{parser.class.name}\"")),
+                    ElseNode(), IfNode(), PriorityNode(),
+                        IdentifierNode(name: ident("parser")), DotAccessNode(), IdentifierNode(name: ident("matcher")), DotAccessNode(), IdentifierNode(name: ident("partial")),
+                    LocalScopeNode(),
+                        IdentifierNode(name: ident("log")), DotAccessNode(), FunctionCallNode(), IdentifierNode(name: ident("debug")),
+                            LambdaNode(), StringLiteralNode(value: str("\"Partial match: \#{parser.class.name}\""))
+        ])
+    }
+
+    ident(String value) => Token(value: value, type: Token.Type.IDENTIFIER)
+    sym(String value) => Token(value: value, type: Token.Type.SYMBOL)
+    str(String value) => Token(value: value, type: Token.Type.STRING)
+}

@@ -1,0 +1,16 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class extends ParserBase {
+    static Logger log = Logger(TryParser.class)
+
+    override ParserBase[] childParsers => Array()
+        :addAll(LocalScopeParser().valueParsers)
+
+    override lazy TokenPattern pattern => SingleTokenPattern<TryParser>(type: Token.Type.IDENTIFIER, value: "try", exact: true)
+}

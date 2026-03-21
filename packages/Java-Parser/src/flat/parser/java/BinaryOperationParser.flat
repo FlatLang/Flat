@@ -1,0 +1,36 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => Array():addAll([
+        ArrayReferenceParser(),
+        IdentifierParser(),
+        ArrayInstantiationParser(),
+        ArrayInitializerParser(),
+        LiteralParser(),
+        CastParser(),
+        PriorityParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        UnaryOperationParser(),
+    ])
+
+    override lazy TokenPattern pattern => XorTokenPattern<BinaryOperationNode>([
+        SingleTokenPattern(
+            type: Token.Type.SYMBOL,
+            values: [
+                "+", "-", "*", "/", "%",
+                "+=", "-=", "*=", "/=", "%=",
+                "&=", "|=",
+                "!=", "==", "&&", "&", "||", "|",
+                "<", ">", "<=", ">=",
+            ],
+            field: "operator"
+        ),
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "instanceof", field: "operator"),
+    ])
+}

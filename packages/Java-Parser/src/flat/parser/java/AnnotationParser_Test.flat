@@ -1,0 +1,18 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/annotations/java
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `does not parse invalid annotation`() {
+        let matcher = AnnotationParser().matcher
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER))
+
+        expect(result).toBe(null)
+        expect(matcher.partial).toBe(false)
+    }
+}

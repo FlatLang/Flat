@@ -1,0 +1,51 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/compiler/models/SyntaxTokenFunctions
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => Array():addAll([
+        DotAccessParser(),
+        FunctionReferenceAccessParser(),
+        TernaryParser(),
+        AssignmentParser(),
+        ArrayAccessParser(),
+        BinaryOperationParser(),
+        UnaryOperationParser(),
+    ])
+
+    override lazy TokenPattern pattern => GroupTokenPattern<FunctionNode>([
+        SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "new"),
+        Patterns.typeName,
+        Patterns.genericArguments,
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+        GroupTokenPattern([
+            NodeTokenPattern(argumentParsers),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                NodeTokenPattern(argumentParsers)
+            ], optional: true, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+    ])
+
+    ParserBase[] argumentParsers => [
+        AnnotationParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        LocalDeclarationParser(),
+        IdentifierParser(),
+        ArrayReferenceParser(),
+        LiteralParser(),
+        LambdaParser(),
+        ArrayInitializerParser(),
+        ArrayInstantiationParser(),
+        UnaryOperationParser(),
+        CastParser(),
+        PriorityParser(),
+    ]
+}

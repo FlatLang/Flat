@@ -1,0 +1,34 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/annotations/java
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match a basic array initializer`() {
+        let pattern = NodeTokenPattern([ArrayInstantiationParser()])
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "new", type: Token.Type.IDENTIFIER),
+            Token(value: "URL", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "url", type: Token.Type.IDENTIFIER),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "new", type: Token.Type.IDENTIFIER),
+            Token(value: "URL", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "url", type: Token.Type.IDENTIFIER),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ])
+    }
+}

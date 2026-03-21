@@ -1,0 +1,39 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+import flat/compiler/models/SyntaxTokenFunctions
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => Array():addAll([
+        DotAccessParser(),
+        AssignmentParser(),
+        ArrayAccessParser()
+    ])
+
+    override lazy TokenPattern pattern => GroupTokenPattern<ArrayInitializerNode>([
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+        GroupTokenPattern([
+            NodeTokenPattern(valueParsers),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                NodeTokenPattern(valueParsers)
+            ], optional: true, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+        ], optional: true),
+        SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+    ])
+
+    let ParserBase[] valueParsers => [
+        AnnotationParser(),
+        FunctionCallParser(),
+        InstantiationParser(),
+        ArrayReferenceParser(),
+        IdentifierParser(),
+        LiteralParser(),
+        LambdaParser(),
+        ArrayInitializerParser()
+    ]
+}

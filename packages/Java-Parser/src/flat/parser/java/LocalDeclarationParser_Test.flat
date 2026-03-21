@@ -1,0 +1,54 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/annotations/java
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match a basic local declaration without let modifier and an explicit type`() {
+        let parser = LocalDeclarationParser()
+
+        let context = ParseContext()
+
+        let matcher = parser.matcher
+        let result = matcher.matchAll([
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ], context).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ])
+
+        expect(result).toNotBe(null)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match a basic local declaration without let modifier and an explicit type with array brackets`() {
+        let parser = LocalDeclarationParser()
+
+        let context = ParseContext()
+
+        let matcher = parser.matcher
+        let result = matcher.matchAll([
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ], context).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ])
+
+        expect(result).toNotBe(null)
+        expect(matcher.partial).toBe(false)
+    }
+}

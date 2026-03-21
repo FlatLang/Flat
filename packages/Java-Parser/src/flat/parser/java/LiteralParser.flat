@@ -1,0 +1,62 @@
+package flat/parser/java
+
+import flat/parser
+import flat/parser/matchers
+import flat/ast
+import flat/compiler/models/Token
+
+data class extends ParserBase {
+    override ParserBase[] childParsers => Patterns.childParsers
+
+    override lazy TokenPattern pattern => NodeTokenPattern<LiteralNode>([
+        StringLiteralParser(),
+        CharLiteralParser(),
+        IntegerLiteralParser(),
+        BoolLiteralParser(),
+        NullLiteralParser(),
+    ])
+}
+
+class Patterns {
+    static visible ParserBase[] childParsers => [
+        DotAccessParser(),
+        FunctionReferenceAccessParser(),
+        TernaryParser(),
+        BinaryOperationParser(),
+    ]
+}
+
+data class StringLiteralParser extends ParserBase {
+    override ParserBase[] childParsers => Patterns.childParsers
+
+    override lazy TokenPattern pattern =>
+        SingleTokenPattern<StringLiteralNode>(type: Token.Type.STRING, field: "value")
+}
+
+data class CharLiteralParser extends ParserBase {
+    override ParserBase[] childParsers => Patterns.childParsers
+
+    override lazy TokenPattern pattern =>
+        SingleTokenPattern<CharLiteralNode>(type: Token.Type.CHAR, field: "value")
+}
+
+data class IntegerLiteralParser extends ParserBase {
+    override ParserBase[] childParsers => Patterns.childParsers
+
+    override lazy TokenPattern pattern =>
+        SingleTokenPattern<IntegerLiteralNode>(type: Token.Type.INTEGER, field: "value")
+}
+
+data class BoolLiteralParser extends ParserBase {
+    override ParserBase[] childParsers => Patterns.childParsers
+
+    override lazy TokenPattern pattern =>
+        SingleTokenPattern<BoolLiteralNode>(type: Token.Type.BOOL, field: "value")
+}
+
+data class NullLiteralParser extends ParserBase {
+    override ParserBase[] childParsers => Patterns.childParsers
+
+    override lazy TokenPattern pattern =>
+        SingleTokenPattern<NullLiteralNode>(type: Token.Type.NULL, value: "null")
+}
