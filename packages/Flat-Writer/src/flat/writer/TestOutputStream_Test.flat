@@ -1,0 +1,44 @@
+package flat/writer
+
+import flat/compiler/models
+import flat/log
+
+class TestOutputStream_Test {
+}
+
+class TestOutputStream extends WriterOutputStream {
+    static Logger log = Logger(TestOutputStream.class)
+
+    visible var Object[] buffer = Object[]
+    visible String output => buffer.map({
+        match _x.class {
+            String.class => "<#{_x.toString()}>"
+            Token.class => "<#{((Token)_x).value}>"
+            default => throw Exception("Invalid object type '#{_x.class.name}'")
+        }
+    }).join()
+
+    override public writeString(String value = "") {
+        buffer.add(value)
+        log.info("|
+            Writing String: #{value}
+                output: #{output}
+            |")
+    }
+
+    override public writeToken(Token token) {
+        buffer.add(token)
+        log.info("|
+            Writing Token: #{token}
+                output: #{output}
+            |")
+    }
+
+    override public writeTokens(Token[] tokens) {
+        buffer.addAll(tokens)
+        log.info("|
+            Writing Tokens: #{tokens}
+                output: #{output}
+            |")
+    }
+}

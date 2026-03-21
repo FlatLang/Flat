@@ -1,0 +1,167 @@
+package flat/writer
+
+import flat/ast
+import flat/parser/matchers
+import flat/log
+
+import flat/writer/WriterPatternExtensions
+import flat/stream/StreamListExtensions
+
+import static flat/colorizer/Colorizer
+
+data class extends TokenWriter {
+    static Logger log = Logger(XorTokenWriter.class)
+
+    XorTokenPattern pattern
+
+    lazy TokenWriter[] writers => pattern.patterns.stream()
+        .filter({ !_.class.isOfType(PreconditionTokenPattern.class) })
+        .map({ _.getWriter() })
+        .toArray()
+
+    var TokenWriter writer
+
+    var Node[] nodeBuffer
+
+    override public validNode(Node node) -> Bool {
+        if (node == null) return false
+        if (nodeBuffer) return true
+        if (writers.isEmpty) return true
+        if (writer) return writer.validNode(node)
+
+        return super.validNode(node)
+    }
+
+    override public consumesNode() -> Bool {
+        if (writer == null) return super.consumesNode()
+
+        return writer.consumesNode()
+    }
+
+    override public exhaust(WriterOutputStream output) => true {
+        log.info("Ending current writer")
+
+        if (!writer) {
+            log.info("Doesnt have writer. Searching for one")
+            Logger.increaseTab()
+            writer = writers.firstWhere({ _.validNodes(nodeBuffer) })
+            Logger.decreaseTab()
+
+            if (!writer) {
+                log.warn("Didnt find writer")
+                return true
+            }
+
+            if (nodeBuffer?.isNotEmpty) {
+                writeBufferedNodes(output)
+            }
+        }
+
+        if (writer) {
+            Logger.increaseTab()
+            if (!writer.exhaust(output)) {
+                Logger.decreaseTab()
+                return false
+            }
+            Logger.decreaseTab()
+        }
+
+        exhausted = true
+    }
+
+    searchWriter(Node node) => writer {
+        if (!nodeBuffer && consumesNode()) {
+            nodeBuffer = Node[]
+            return null
+        }
+
+        if (writers.isEmpty) {
+            exhausted = true
+            return null
+        }
+
+        if (!nodeBuffer || nodeBuffer.isEmpty) {
+            writer = writers.firstWhere({
+                return _x.pattern.getNodeType() != Node.class &&
+                    node.class.isOfType(_x.pattern.getNodeType())
+            })
+            if (writer) {
+                log.info("Found match for child with valid node #{green(node.class.name)}: #{writer.class.name}")
+                return writer
+            }
+        }
+
+        if (!nodeBuffer) {
+            nodeBuffer = [node]
+        } else {
+            nodeBuffer.add(node)
+        }
+
+        if (nodeBuffer) {
+            writer = searchWriterForNodeBuffer()
+        } else if (!writer) {
+            writer = writers.firstWhere({ _.pattern.getNodeType() == node.class })
+
+            if (!writer) {
+                writer = writers.stream()
+                    .filter({ _.pattern.getNodeType() != Node.class })
+                    .firstWhere({ node.class.isOfType(_.pattern.getNodeType()) })
+            }
+        }
+    }
+
+    searchWriterForNodeBuffer() => writer {
+        log.info("Searching for match for buffer [#{nodeBuffer.map({ green(_x.class.name) }).join(", ", 25)}]")
+
+        Logger.increaseTab()
+        if (nodeBuffer.isEmpty) {
+            Logger.decreaseTab()
+            log.info("Did not find a match")
+        } else if (writer = writers.findOne({ _.validNodes(nodeBuffer, true) })) {
+            Logger.decreaseTab()
+            log.info("Found match: #{writer.class.name} #{magenta(writer.pattern.toPatternString())}")
+        } else {
+            Logger.decreaseTab()
+            log.info("Did not find a match")
+        }
+    }
+
+    override public write(WriterOutputStream output, Node node) {
+        dirty = true
+
+        if (exhausted) return
+        if (writer == null && !searchWriter(node)) return
+
+        innerWrite(output, node)
+    }
+
+    writeBufferedNodes(WriterOutputStream output) {
+        log.info("Writing buffered nodes: [#{nodeBuffer.map({ green(_x.class.name) }).join(", ", 25)}]")
+        nodeBuffer.forEach({ writer.write(output, _) })
+        nodeBuffer = null
+    }
+
+    innerWrite(WriterOutputStream output, Node node) {
+        if (nodeBuffer?.isNotEmpty) {
+            nodeBuffer.removeLast()
+            writeBufferedNodes(output)
+        }
+
+        log.info("|
+            Writing node #{green(node.class.name)} to writer #{green(writer.class.name)}
+                pattern: #{magenta(writer.pattern.toPatternString())}
+            |")
+        Logger.increaseTab()
+        writer.write(output, node)
+        Logger.decreaseTab()
+
+        exhausted = writer.exhausted
+    }
+
+    override public reset() {
+        super.reset()
+
+        writer = null
+        nodeBuffer = null
+    }
+}

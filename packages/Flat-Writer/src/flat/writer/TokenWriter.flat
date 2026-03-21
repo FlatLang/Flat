@@ -1,0 +1,121 @@
+package flat/writer
+
+import flat/ast
+import flat/parser/matchers
+import flat/log
+
+import static flat/colorizer/Colorizer
+
+abstract data class {
+    static Logger log = Logger(Writer.class)
+
+    visible TokenPattern pattern
+    visible WriterOutputStream output
+
+    var Bool _exhausted = false
+    visible var Bool exhausted <=> _exhausted
+
+    var Bool _dirty = false
+    visible var Bool dirty <=> _dirty
+
+    var Bool wasRepeat = false
+
+    lazy Bool bareNodePattern => pattern.getNodeType() == Node.class
+
+    lazy BufferWriterOutputStream buffer => BufferWriterOutputStream()
+
+    public write(Node node) => write(output, node)
+    public writeAll(Node[] nodes) => writeAll(output, nodes)
+    public writeAll(Node[] nodes, func()) => writeAll(output, nodes, func)
+    public writeStatement(Node node) => writeStatement(output, node)
+    public writeStatement(Node[] nodes) => writeStatement(output, nodes)
+    public writeStatement(Node node, func()) => writeStatement(output, node, func)
+    public writeStatement(Node[] nodes, func()) => writeStatement(output, nodes, func)
+    public writeStatementBlock() => writeStatementBlock(output)
+    public writeStatementBlock(func()) => writeStatementBlock(output, func)
+    public writeStatementBlock(Node node, func()) => writeStatementBlock(output, node, func)
+    public writeStatementBlock(Node[] nodes, func()) => writeStatementBlock(output, nodes, func)
+    public exhaust() => exhaust(output)
+
+    abstract public write(WriterOutputStream output, Node node)
+
+    public writeAll(WriterOutputStream output, Node[] nodes) {
+        nodes.forEach({
+            write(output, _)
+        })
+    }
+
+    public writeAll(WriterOutputStream output, Node[] nodes, func()) {
+        nodes.forEach({
+            write(output, _)
+        })
+        func()
+    }
+
+    public writeStatement(WriterOutputStream output, Node node) {
+        write(output, node)
+        exhaust(output)
+    }
+
+    public writeStatement(WriterOutputStream output, Node[] nodes) {
+        writeAll(output, nodes)
+        exhaust(output)
+    }
+
+    public writeStatement(WriterOutputStream output, Node node, func()) {
+        write(output, node)
+        func()
+        exhaust(output)
+    }
+
+    public writeStatement(WriterOutputStream output, Node[] nodes, func()) {
+        writeAll(output, nodes)
+        func()
+        exhaust(output)
+    }
+
+    public writeStatementBlock(WriterOutputStream output) {
+        exhaust(output)
+    }
+
+    public writeStatementBlock(WriterOutputStream output, func()) {
+        func()
+        exhaust(output)
+    }
+
+    public writeStatementBlock(WriterOutputStream output, Node node, func()) {
+        write(output, node)
+        exhaust(output)
+        func()
+        exhaust(output)
+    }
+
+    public writeStatementBlock(WriterOutputStream output, Node[] nodes, func()) {
+        writeAll(output, nodes)
+        exhaust(output)
+        func()
+        exhaust(output)
+    }
+
+    public exhaust(WriterOutputStream output) => true {
+        log.info("Ending current writer")
+    }
+
+    public validNode(Node node) => !bareNodePattern && node.class.isOfType(pattern.getNodeType())
+    public validNodes(Node[] nodes, Bool allowPartial = false) => nodes.all({ validNode(_) })
+
+    public consumesNode() => !bareNodePattern
+    public requiresNode() => !pattern.optional && consumesNode()
+    public writePrimitiveTokens(WriterOutputStream output, Node node) => true {
+        log.info("Writing primitive Tokens #{magenta(pattern.toPatternString())}")
+        write(output, node)
+    }
+
+    public reset() {
+        _exhausted = false
+        _dirty = false
+        wasRepeat = false
+
+        buffer.clear()
+    }
+}

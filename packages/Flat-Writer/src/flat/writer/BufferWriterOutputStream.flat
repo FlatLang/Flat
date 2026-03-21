@@ -1,0 +1,29 @@
+package flat/writer
+
+import flat/compiler/models
+import flat/log
+
+class extends WriterOutputStream {
+    static Logger log = Logger(BufferWriterOutputStream.class)
+
+    visible var Object[] buffer = Object[]
+
+    override public writeString(String value = "") {
+        log.info("Writing String to buffer: #{value}")
+        buffer.add(value)
+    }
+
+    override public writeToken(Token token) {
+        log.info("Writing Token to buffer: #{token}")
+        buffer.add(token)
+    }
+
+    override public writeTokens(Token[] tokens) {
+        log.info("Writing Tokens to buffer: #{tokens}")
+        buffer.add(tokens)
+    }
+
+    public clear() {
+        buffer = Object[]
+    }
+}

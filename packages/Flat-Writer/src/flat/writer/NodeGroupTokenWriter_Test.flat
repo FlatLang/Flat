@@ -1,0 +1,651 @@
+package flat/writer
+
+import flat/ast
+import flat/parser
+import flat/parser/flat
+import flat/parser/matchers
+import flat/annotations
+import flat/compiler/models
+import flat/writer/TestOutputStream_Test.TestOutputStream
+
+testable class {
+    test `can write node group containing single node type`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            IdentifierParser()
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.write(IdentifierNode(name: ident("test")))
+
+        expect(outputStream.buffer).toBe([
+            ident("test"),
+        ])
+        expect(writer.exhausted).toBe(false)
+    }
+
+    test `can write node group containing single node type twice`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            IdentifierParser()
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement(IdentifierNode(name: ident("test")))
+        writer.write(IdentifierNode(name: ident("test2")))
+
+        expect(outputStream.buffer).toBe([
+            ident("test"),
+            ident("test2"),
+        ])
+        expect(writer.exhausted).toBe(false)
+    }
+
+    test `can write node group containing two node types`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            IdentifierParser(),
+            AssignmentParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeAll([
+            AssignmentNode(), IdentifierNode(name: ident("test2")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            sym("="), ident("test2"),
+        ])
+        expect(writer.exhausted).toBe(false)
+    }
+
+    test `can write klass with name`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([ClassParser()])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeAll([
+            ClassNode(type: ident("class")),
+            IdentifierNode(name: ident("Bob")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), ident("Bob"),
+        ])
+        expect(writer.exhausted).toBe(false)
+    }
+
+    test `can write klass with name then field`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+            FieldParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeAll([
+            ClassNode(type: ident("class")),
+            IdentifierNode(name: ident("Bob")),
+        ])
+        writer.exhaust()
+        writer.writeAll([
+            FieldNode(),
+            TypeNode(name: ident("String")),
+            IdentifierNode(name: ident("test")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), ident("Bob"), sym("{"),
+                ident("String"), ident("test"),
+        ])
+        expect(writer.exhausted).toBe(false)
+    }
+
+    test `can write klass with implicit name then field`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+            FieldParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeAll([
+            ClassNode(type: ident("class")),
+            FieldNode(),
+            TypeNode(name: ident("String")),
+            IdentifierNode(name: ident("test")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+                ident("String"), ident("test"),
+        ])
+        expect(writer.exhausted).toBe(false)
+    }
+
+    test `can write complete klass with field`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock(ClassNode(type: ident("class")), {
+            writer.writeStatement([
+                FieldNode(),
+                TypeNode(name: ident("String")),
+                IdentifierNode(name: ident("test")),
+            ])
+            writer.exhaust()
+        })
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+                ident("String"), ident("test"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete empty klass`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock(ClassNode(type: ident("class")), {
+            writer.exhaust()
+        })
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete klass with empty function`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock(ClassNode(type: ident("class")), {
+            writer.writeStatement([
+                FunctionNode(),
+                IdentifierNode(name: ident("test")),
+            ])
+            writer.writeStatementBlock()
+        })
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+                ident("test"), sym("("), sym(")"), sym("{"),
+                sym("}"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete klass with empty function with a modifier`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock(ClassNode(type: ident("class")), {
+            writer.writeStatement([
+                PublicModifier(aliasUsed: ident("public")),
+                FunctionNode(),
+                IdentifierNode(name: ident("test")),
+            ])
+            writer.writeStatementBlock()
+        })
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+                ident("public"), ident("test"), sym("("), sym(")"), sym("{"),
+                sym("}"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete klass with empty function with modifiers`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock(ClassNode(type: ident("class")), {
+            writer.writeStatement([
+                PublicModifier(aliasUsed: ident("public")),
+                StaticModifier(aliasUsed: ident("static")),
+                FunctionNode(),
+                IdentifierNode(name: ident("test")),
+            ])
+            writer.exhaust()
+        })
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+                ident("public"), ident("static"), ident("test"), sym("("), sym(")"), sym("{"),
+                sym("}"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete function with no parameters and empty body`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            FunctionParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock([
+            FunctionNode(),
+            IdentifierNode(name: ident("test")),
+        ], {
+            writer.writeStatementBlock()
+        })
+
+        expect(outputStream.buffer).toBe([
+            ident("test"), sym("("), sym(")"), sym("{"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete local declaration`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            AnnotationParser(),
+            LocalDeclarationParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            LetModifier(aliasUsed: ident("let")),
+            LocalDeclarationNode(),
+            IdentifierNode(name: ident("local")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            ident("let"), ident("local"),
+        ])
+        expect(writer.exhausted).toBe(false)
+        writer.exhaust()
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete local declaration with assignment`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            AnnotationParser(),
+            LocalDeclarationParser(),
+            AssignmentParser(),
+            LiteralParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            LetModifier(aliasUsed: ident("let")),
+            LocalDeclarationNode(),
+            IdentifierNode(name: ident("local")),
+            AssignmentNode(),
+            StringLiteralNode(value: str("\"hello, world!\"")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            ident("let"), ident("local"), sym("="), str("\"hello, world!\""),
+        ])
+        expect(writer.exhausted).toBe(false)
+        writer.exhaust()
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete function with no parameters and identifier`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            FunctionParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock([
+            FunctionNode(),
+            IdentifierNode(name: ident("test"))
+        ], {
+            writer.writeStatement(IdentifierNode(name: ident("hey")))
+        })
+        writer.writeStatementBlock()
+
+        expect(outputStream.buffer).toBe([
+            ident("test"), sym("("), sym(")"), sym("{"),
+                ident("hey"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write assignment to variable`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            IdentifierParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            IdentifierNode(name: ident("local")), AssignmentNode(), StringLiteralNode(value: str("\"hello, world!\"")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            ident("local"), sym("="), str("\"hello, world!\""),
+        ])
+        expect(writer.exhausted).toBe(false)
+        writer.exhaust()
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete function with no parameters with local declaration`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            FunctionParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock([
+            FunctionNode(),
+            IdentifierNode(name: ident("test"))
+        ], {
+            writer.writeStatementBlock({
+                writer.writeStatement([
+                    LetModifier(aliasUsed: ident("let")),
+                    LocalDeclarationNode(),
+                    IdentifierNode(name: ident("local")),
+                    AssignmentNode(),
+                    StringLiteralNode(value: str("\"hello, world!\"")),
+                ])
+            })
+        })
+        writer.writeStatementBlock()
+
+        expect(outputStream.buffer).toBe([
+            ident("test"), sym("("), sym(")"), sym("{"),
+                ident("let"), ident("local"), sym("="), str("\"hello, world!\""),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete klass with function with local declaration`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock(ClassNode(type: ident("class")), {
+            writer.writeStatementBlock([
+                PublicModifier(aliasUsed: ident("public")),
+                StaticModifier(aliasUsed: ident("static")),
+                FunctionNode(),
+                IdentifierNode(name: ident("test")),
+            ], {
+                writer.writeStatementBlock({
+                    writer.writeStatement([
+                        LetModifier(aliasUsed: ident("let")),
+                        LocalDeclarationNode(),
+                        IdentifierNode(name: ident("local")),
+                        AssignmentNode(),
+                        StringLiteralNode(value: str("\"hello, world!\"")),
+                    ])
+                })
+            })
+        })
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+                ident("public"), ident("static"), ident("test"), sym("("), sym(")"), sym("{"),
+                    ident("let"), ident("local"), sym("="), str("\"hello, world!\""),
+                sym("}"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write complete klass with function with multiple statements`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([
+            ClassParser(),
+        ])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatementBlock(ClassNode(type: ident("class")), {
+            writer.writeStatementBlock([
+                PublicModifier(aliasUsed: ident("public")),
+                StaticModifier(aliasUsed: ident("static")),
+                FunctionNode(),
+                IdentifierNode(name: ident("test")),
+            ], {
+                writer.writeStatementBlock({
+                    writer.writeStatement([
+                        LetModifier(aliasUsed: ident("let")),
+                        LocalDeclarationNode(),
+                        IdentifierNode(name: ident("local")),
+                        AssignmentNode(),
+                        StringLiteralNode(value: str("\"hello, world!\"")),
+                    ])
+                    writer.writeStatement([
+                        LetModifier(aliasUsed: ident("let")),
+                        LocalDeclarationNode(),
+                        IdentifierNode(name: ident("local2")),
+                        AssignmentNode(),
+                        StringLiteralNode(value: str("\"hello, world2!\"")),
+                    ])
+                    writer.writeStatement([
+                        LetModifier(aliasUsed: ident("let")),
+                        LocalDeclarationNode(),
+                        IdentifierNode(name: ident("local3")),
+                        AssignmentNode(),
+                        StringLiteralNode(value: str("\"hello, world3!\"")),
+                    ])
+                })
+            })
+        })
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            ident("class"), sym("{"),
+                ident("public"), ident("static"), ident("test"), sym("("), sym(")"), sym("{"),
+                    ident("let"), ident("local"), sym("="), str("\"hello, world!\""),
+                    ident("let"), ident("local2"), sym("="), str("\"hello, world2!\""),
+                    ident("let"), ident("local3"), sym("="), str("\"hello, world3!\""),
+                sym("}"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write function with parameter`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([FunctionParser()])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            FunctionNode(),
+            IdentifierNode(name: ident("test")),
+        ], {
+            writer.writeStatement([
+                ParametersNode(),
+            ], {
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type")),
+                    IdentifierNode(name: ident("param")),
+                ])
+            })
+        })
+        writer.writeStatementBlock()
+
+        expect(outputStream.buffer).toBe([
+            ident("test"), sym("("), ident("Type"), ident("param"), sym(")"), sym("{"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write function with two parameters`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([FunctionParser()])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            FunctionNode(),
+            IdentifierNode(name: ident("test")),
+        ], {
+            writer.writeStatement([
+                ParametersNode(),
+            ], {
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type")),
+                    IdentifierNode(name: ident("param")),
+                ])
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type2")),
+                    IdentifierNode(name: ident("param2")),
+                ])
+            })
+        })
+        writer.writeStatementBlock()
+
+        expect(outputStream.buffer).toBe([
+            ident("test"), sym("("),
+                ident("Type"), ident("param"), sym(","),
+                ident("Type2"), ident("param2"),
+            sym(")"), sym("{"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write function with three parameters`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([FunctionParser()])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            FunctionNode(),
+            IdentifierNode(name: ident("test")),
+        ], {
+            writer.writeStatement([
+                ParametersNode(),
+            ], {
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type")),
+                    IdentifierNode(name: ident("param")),
+                ])
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type2")),
+                    IdentifierNode(name: ident("param2")),
+                ])
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type3")),
+                    IdentifierNode(name: ident("param3")),
+                ])
+            })
+        })
+        writer.writeStatementBlock()
+
+        expect(outputStream.buffer).toBe([
+            ident("test"), sym("("),
+                ident("Type"), ident("param"), sym(","),
+                ident("Type2"), ident("param2"), sym(","),
+                ident("Type3"), ident("param3"),
+            sym(")"), sym("{"),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write function with two parameters and an assignment in the body`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([FunctionParser()])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            FunctionNode(),
+            IdentifierNode(name: ident("test")),
+        ], {
+            writer.writeStatement([
+                ParametersNode(),
+            ], {
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type")),
+                    IdentifierNode(name: ident("param")),
+                ])
+                writer.writeAll([
+                    ParameterNode(),
+                    TypeNode(name: ident("Type2")),
+                    IdentifierNode(name: ident("param2")),
+                ])
+            })
+            writer.writeStatementBlock({
+                writer.writeStatement([
+                    LetModifier(aliasUsed: ident("let")),
+                    LocalDeclarationNode(),
+                    IdentifierNode(name: ident("local")),
+                    AssignmentNode(),
+                    StringLiteralNode(value: str("\"hello, world!\"")),
+                ])
+            })
+        })
+
+        expect(outputStream.buffer).toBe([
+            ident("test"), sym("("),
+                ident("Type"), ident("param"), sym(","),
+                ident("Type2"), ident("param2"),
+            sym(")"), sym("{"),
+                ident("let"), ident("local"), sym("="), str("\"hello, world!\""),
+            sym("}"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write assignment to an array initializer`() {
+        let outputStream = TestOutputStream()
+        let pattern = NodeGroupTokenPattern([IdentifierParser()])
+        let writer = NodeGroupTokenWriter(pattern, outputStream)
+
+        writer.writeStatement([
+            IdentifierNode(name: ident("local")),
+            AssignmentNode(),
+            ArrayInitializerNode(),
+            IdentifierNode(name: ident("bob")),
+        ])
+
+        expect(outputStream.buffer).toBe([
+            ident("local"), sym("="), sym("["), ident("bob"), sym("]"),
+        ])
+        expect(writer.exhausted).toBe(false)
+    }
+
+    ident(String value) => Token(value: value, type: Token.Type.IDENTIFIER)
+    sym(String value) => Token(value: value, type: Token.Type.SYMBOL)
+    str(String value) => Token(value: value, type: Token.Type.STRING)
+}

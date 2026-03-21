@@ -1,0 +1,374 @@
+package flat/writer
+
+import flat/ast
+import flat/parser/matchers
+import flat/compiler/models
+import flat/log
+
+import flat/writer/WriterPatternExtensions
+import flat/stream/StreamListExtensions
+
+import static flat/colorizer/Colorizer
+
+data class extends TokenWriter {
+    static Logger log = Logger(GroupTokenWriter.class)
+
+    GroupTokenPattern pattern
+
+    var TokenWriter currentWriter
+    var Node parentNode
+
+    lazy TokenWriter[] writers => pattern.patterns.stream()
+        .filter({ !_.class.isOfType(PreconditionTokenPattern.class) })
+        .map({ _.getWriter() })
+        .toArray()
+
+    lazy ArrayIterator<TokenWriter> iterator => writers.iterator
+
+    override public validNodes(Node[] nodes, Bool allowPartial = false) => true {
+        log.trace("Checking if nodes are valid [#{nodes.map({ green(_x.class.name) }).join(", ")}] for pattern #{magenta(pattern.toPatternString())}")
+        let it = writers.filter({ _.consumesNode() }).iterator
+
+        for (node in nodes) {
+            if (!it.hasNext) {
+                log.trace("No more writers. Returning false")
+                return false
+            }
+            it.stepNext
+
+            log.trace("Checking node #{green(node.class.name)} against pattern #{magenta(it.current.pattern.toPatternString())}")
+            Logger.increaseTab()
+            if (!it.current.validNode(node)) {
+                Logger.decreaseTab()
+                log.trace("Node #{green(node.class.name)} is not valid")
+                if (!it.hasNext || !it.current.pattern.optional) return false
+
+                it.stepNext
+                log.trace("Checking node #{green(node.class.name)} against pattern #{magenta(it.current.pattern.toPatternString())}")
+                Logger.increaseTab()
+            }
+            Logger.decreaseTab()
+        }
+
+        if (allowPartial) {
+            log.trace("Allows partial match. Returning true")
+            return true
+        }
+
+        while (it.hasNext) {
+            it.stepNext
+
+            if (!it.current.pattern.optional && it.current.requiresNode()) {
+                log.trace("Missing required nodes for pattern #{magenta(pattern.toPatternString())}")
+                return false
+            }
+        }
+
+        log.trace("Nodes are valid for pattern #{magenta(pattern.toPatternString())}")
+    }
+
+    override public consumesNode() -> Bool {
+        return iterator.allNextInclusive.any({ _.consumesNode() })
+    }
+
+    override public requiresNode() -> Bool {
+        return iterator.allNextInclusive.any({ _.requiresNode() })
+    }
+
+    override public exhaust(WriterOutputStream output) => true {
+        log.info("Ending current writer #{magenta(pattern.toPatternString())}")
+
+        if (!currentWriter) {
+            log.info("|
+                No current writer
+                    wasRepeat: #{wasRepeat}
+                |")
+        } else if (currentWriter.requiresNode()) {
+            log.info("|
+                Current writer requires node
+                    pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                    wasRepeat: #{wasRepeat}
+                |")
+        } else {
+            Logger.increaseTab()
+            if (!currentWriter.exhaust(output)) {
+                Logger.decreaseTab()
+                log.info("|
+                    Current writer is not exhausted. Returning false
+                        pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                        wasRepeat: #{wasRepeat}
+                    |")
+                return false
+            }
+            Logger.decreaseTab()
+        }
+
+        let prefix = Logger.defaultLinePrefix
+        while (hasNextWriter()) {
+            Logger.defaultLinePrefix = prefix
+            Logger.increaseTab()
+            nextWriter()
+
+            if (currentWriter.wasRepeat) continue
+            if (currentWriter.requiresNode()) {
+                if (currentWriter.pattern.optional) continue
+                if (currentWriter.exhaust(output)) continue
+                Logger.defaultLinePrefix = prefix
+                log.info("|
+                    Current required writer requires node. Returning false
+                        pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                        wasRepeat: #{wasRepeat}
+                    |")
+                return false
+            }
+
+            currentWriter.writePrimitiveTokens(output, null)
+            let successfulEnd = currentWriter.exhaust(output)
+
+            if (!successfulEnd) {
+                Logger.defaultLinePrefix = prefix
+                log.info("|
+                    Current writer is not exhausted. Returning false
+                        pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                        wasRepeat: #{wasRepeat}
+                    |")
+                return false
+            }
+        }
+        Logger.defaultLinePrefix = prefix
+
+        log.info("|
+            Successfully exhausted writer
+                pattern: #{magenta(pattern.toPatternString())}
+            |")
+        exhausted = true
+    }
+
+    hasNextWriter() -> Bool {
+        return iterator.hasNext
+    }
+
+    nextWriter() => currentWriter {
+        currentWriter = iterator.stepNext
+        wasRepeat = false
+        log.info("|
+            Switched to next writer pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                pattern: #{magenta(pattern.toPatternString())}
+                wasRepeat: #{wasRepeat}
+            |")
+    }
+
+    repeatWriter() {
+        log.trace("Repeating currentWriter: " + magenta(currentWriter.pattern.toPatternString()))
+        currentWriter = currentWriter.pattern.getWriter()
+        wasRepeat = true
+    }
+
+    override public validNode(Node node) -> Bool {
+        return validNode(node, true)
+    }
+
+    validNode(Node node, Bool topLevel) -> Bool {
+        if (node == null) return false
+        if (currentWriter == null && super.validNode(node)) {
+            log.info("Valid node for writer #{magenta(pattern.toPatternString())}")
+            return true
+        }
+        if (currentWriter == null && !bareNodePattern) return false
+        if (currentWriter == null && !hasNextWriter()) return false
+        if (currentWriter == null) {
+            log.info("Current writer is null in validNode, getting next writer")
+            nextWriter()
+        }
+
+        log.info("|
+            Checking node type #{green(node.class.name)} against writer #{green(currentWriter.class.name)} #{magenta(currentWriter.pattern.toPatternString())}
+                consumesNode: #{currentWriter.consumesNode()}
+            |")
+
+        if (validCurrentWriter(node)) {
+            log.info("Valid node [#{iterator.position}] for writer #{magenta(currentWriter.pattern.toPatternString())}")
+            return true
+        } else {
+            if (currentWriter.bareNodePattern && !currentWriter.consumesNode()) {
+                currentWriter.reset()
+                log.info("Bare node does not consume any nodes. Writing primitive tokens #{magenta(currentWriter.pattern.toPatternString())}")
+                currentWriter.writePrimitiveTokens(buffer, node)
+            } else if (!currentWriter.dirty && !currentWriter.pattern.optional) {
+                log.info("Current writer is not optional. Returning false #{magenta(currentWriter.pattern.toPatternString())}")
+                return false
+            } else {
+                currentWriter.reset()
+            }
+        }
+        if (!hasNextWriter()) {
+            log.info("No more writers. Not valid #{magenta(currentWriter.pattern.toPatternString())}")
+            log.info("Clearing buffered data: #{buffer.buffer}")
+            buffer.clear()
+            return false
+        }
+
+        let writer = currentWriter
+
+        log.info("Node #{green(node.class.name)} is not valid for current writer. Checking nextWriter")
+        nextWriter()
+
+        if (validNode(node, false)) {
+            if (topLevel) {
+                log.info("Top level validation. Resetting current writer")
+                currentWriter.reset()
+            }
+            log.info("|
+                Found valid writer [#{iterator.position}] for node #{magenta(currentWriter.pattern.toPatternString())}
+                    buffer: #{buffer.buffer}
+                |")
+
+            return true
+        } else {
+            log.info("|
+                Node #{green(node.class.name)} is not valid for writer.
+                    pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                    wasRepeat: #{currentWriter.wasRepeat}
+                |")
+            currentWriter = writer
+            log.info("Clearing buffered data: #{buffer.buffer}")
+            buffer.clear()
+            return false
+        }
+    }
+
+    initCurrentWriter() => true {
+        if (currentWriter) return true
+
+        log.info("Initializing current writer")
+        if (hasNextWriter()) {
+            nextWriter()
+        } else {
+            log.trace("No more writers. Exhausted")
+            exhausted = true
+            return false
+        }
+    }
+
+    validCurrentWriter(Node node) -> Bool {
+        Logger.increaseTab()
+        let currentValid = currentWriter.validNode(node)
+        log.info("|
+            validCurrentWriter:
+                valid: #{currentValid}
+                pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                wasRepeat: #{currentWriter.wasRepeat}
+            |")
+        Logger.decreaseTab()
+
+        return currentValid
+    }
+
+    override public write(WriterOutputStream output, Node node) {
+        log.info("Attempting to write node #{green(node?.class.name)}")
+
+        dirty = true
+
+        if (exhausted) return
+        if (!initCurrentWriter()) return
+
+        innerWrite(output, node)
+
+        if (!currentWriter.exhausted) return
+
+        if (currentWriter.pattern.repeat) {
+            currentWriter.reset()
+            wasRepeat = true
+            log.info("|
+                Repeating current writer
+                    pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                    wasRepeat: #{currentWriter.wasRepeat}
+                |")
+        } else if (hasNextWriter()) {
+            log.info("Current writer is exhausted, getting next writer")
+            nextWriter()
+        } else {
+            exhausted = true
+        }
+    }
+
+    innerWrite(WriterOutputStream output, Node node) {
+        if (buffer.buffer.isNotEmpty) {
+            log.info("Writing buffered data: #{buffer.buffer}")
+            buffer.buffer.forEach({ output.writeObject(_) })
+            buffer.clear()
+        }
+
+        if (iterator.position == 1 &&
+            !bareNodePattern &&
+            currentWriter.consumesNode() &&
+            super.validNode(node)) {
+            log.info("Matched parent node. Skipping write")
+            return
+        }
+
+        if (!writePrimitiveTokens(output, node)) {
+            return
+        }
+
+        if (!validCurrentWriter(node)) {
+            if (!hasNextWriter() || !iterator.next.validNode(node)) {
+                buffer.clear()
+                parentNode = node
+                log.info("|
+                    Node #{green(node?.class.name)} is not valid for current writer #{green(currentWriter.class.name)}. Awaiting child node
+                        pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                        wasRepeat: #{currentWriter.wasRepeat}
+                    |")
+                return
+            }
+            log.info("Current writer is not valid for node, getting next writer")
+            nextWriter()
+        }
+
+        log.info("|
+            Writing node #{green(node?.class.name)} to currentWriter #{green(currentWriter.class.name)}
+                pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                wasRepeat: #{currentWriter.wasRepeat}
+            |")
+        Logger.increaseTab()
+        currentWriter.write(output, node)
+        Logger.decreaseTab()
+    }
+
+    override public writePrimitiveTokens(WriterOutputStream output, Node node) => true {
+        initCurrentWriter()
+
+        while (!currentWriter.consumesNode()) {
+            log.info("|
+                Writing primitive Token to currentWriter #{green(currentWriter.class.name)}
+                    pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                    wasRepeat: #{currentWriter.wasRepeat}
+                |")
+            Logger.increaseTab()
+            currentWriter.writePrimitiveTokens(output, node)
+            Logger.decreaseTab()
+
+            if (!currentWriter.exhausted || !hasNextWriter()) {
+                log.info("No more writers. Returning false")
+                return false
+            }
+
+            if (iterator.position == 1 && !bareNodePattern && super.validNode(node)) {
+                log.info("Consumed node as parent node. Returning false")
+                return false
+            }
+
+            log.info("Wrote primitive tokens for current writer, getting next writer")
+            nextWriter()
+        }
+    }
+
+    override public reset() {
+        super.reset()
+
+        currentWriter = null
+        iterator.reset()
+        writers.forEach({ _.reset() })
+    }
+}

@@ -1,0 +1,207 @@
+package flat/writer
+
+import flat/ast
+import flat/datastruct
+import flat/datastruct/list
+import flat/parser
+import flat/parser/matchers
+import flat/log
+
+import flat/writer/WriterPatternExtensions
+
+import static flat/colorizer/Colorizer
+
+data class extends TokenWriter {
+    static Logger log = Logger(NodeGroupTokenWriter.class)
+
+    NodeGroupTokenPattern pattern
+
+    Stack<HashMap<Class<Node>, TokenWriter>> writerMaps = Stack([HashMap()])
+    Stack<HashMap<Class<Node>, ParserBase>> parserMaps = Stack([HashMap()])
+
+    HashMap<Class<Node>, TokenWriter> writerMap => writerMaps.peek()
+    HashMap<Class<Node>, ParserBase> parserMap => parserMaps.peek()
+
+    var TokenWriter currentWriter
+    var ParserBase currentParser
+    var Bool awaitingChild = true
+
+    override public validNode(Node node) -> Bool {
+        if (node == null) return false
+        if (currentWriter == null) {
+            log.info("Current writer is null. Searching current writer")
+            searchCurrentWriter(node)
+
+            if (currentWriter) {
+                log.info("Current writer found. Valid")
+                return true
+            } else {
+                log.info("Current writer not found. Invalid")
+                return false
+            }
+        }
+        if (super.validNode(node)) return true
+
+        log.info("Checking node type #{green(node.class.name)} against writer #{magenta(currentWriter?.pattern.toPatternString())}")
+
+        Logger.increaseTab()
+        let valid = currentWriter?.validNode(node)
+        Logger.decreaseTab()
+
+        return valid
+    }
+
+    override public consumesNode() => true
+
+    override public exhaust(WriterOutputStream output) => false {
+        log.info("Ending current writer")
+
+        if (awaitingChild) {
+            log.info("Was awaiting child. Returning false")
+            awaitingChild = false
+            return false
+        }
+
+        if (!currentParser) {
+            exhausted = true
+            log.info("Ended whole node group")
+            return true
+        } else if (!currentWriter) {
+            currentParser = null
+            log.info("Ended statement")
+            return false
+        }
+
+        Logger.increaseTab()
+        if (!currentWriter.exhaust(output)) {
+            Logger.decreaseTab()
+            log.info("Current writer is not exhausted. Returning false")
+            return false
+        }
+        Logger.decreaseTab()
+        currentWriter = null
+        currentParser = null
+        log.info("Current writer is exhausted. Returning false")
+    }
+
+    initMaps() {
+        pattern.parsers.forEach({
+            let pattern = _x.pattern
+            let writer = pattern.getWriter()
+
+            if (pattern.getNodeType() == Node.class) {
+                if (writer.class.isOfType(NodeTokenWriter.class)) {
+                    let nodeWriter = (NodeTokenWriter)writer
+
+                    nodeWriter.getNodeTypes().forEach({ writerMap[_] = writer })
+                } else {
+                    log.warn("Could not get node type for pattern #{magenta(pattern.toPatternString())}")
+                }
+                return
+            }
+
+            writerMap[pattern.getNodeType()] = writer
+            parserMap[pattern.getNodeType()] = _x
+        })
+    }
+
+    searchCurrentWriter(Node node) {
+        awaitingChild = false
+
+        if (writerMap.isEmpty) {
+            initMaps()
+        }
+
+        if (currentParser?.childParsers) {
+            log.info("currentParser.childParsers: #{currentParser.childParsers.map({ _x.class.name }).join(", ")}")
+            var newParser = currentParser.childParsers.firstWhere({ node.class == _.pattern.getNodeType() })
+
+            if (!newParser) {
+                newParser = currentParser.childParsers.firstWhere({ node.class.isOfType(_.pattern.getNodeType()) })
+
+                if (!newParser) {
+                    log.error("Invalid node type: '#{node.class.name}'")
+                    exhausted = true
+                    return
+                }
+            }
+
+            currentParser = newParser
+            currentWriter = currentParser.pattern.getWriter()
+            return
+        }
+
+        log.info("Searching for writer for node type #{green(node.class.name)} against writers: #{writerMap.keys.map({ green(_x.name) }).join(", ")}")
+        currentWriter = writerMap[node.class]
+        currentParser = parserMap[node.class]
+
+        if (!currentWriter) {
+            log.info("Did not find exact writer. Searching for isOfType")
+            currentWriter = writerMap.firstWhere({ node.class.isOfType(_.key) })?.value
+            currentParser = parserMap.firstWhere({ node.class.isOfType(_.key) })?.value
+
+            if (!currentWriter) {
+                log.info("Could not get writer for node type #{green(node.class.name)}")
+            } else {
+                log.info("Got writer from isOfType #{green(writerMap.firstWhere({ node.class.isOfType(_x.key) }).key.name)}")
+            }
+        }
+    }
+
+    override public write(WriterOutputStream output, Node node) {
+        dirty = true
+
+        if (currentWriter) {
+            log.info("|
+                Checking node type #{green(node.class.name)} validity for currentWriter
+                    currentWriter.pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                |")
+            Logger.increaseTab()
+            if (!currentWriter.validNode(node)) {
+                Logger.decreaseTab()
+                log.info("|
+                    Node #{green(node.class.name)} is not valid for currentWriter. Resetting current currentWriter
+                        currentWriter.pattern: #{magenta(currentWriter.pattern.toPatternString())}
+                    |")
+                currentWriter = null
+                currentParser = null
+            } else {
+                Logger.decreaseTab()
+            }
+        }
+        if (!currentWriter) {
+            searchCurrentWriter(node)
+
+            if (!currentWriter) {
+                return
+            }
+        }
+
+        innerWrite(output, node)
+    }
+
+    innerWrite(WriterOutputStream output, Node node) {
+        log.info("|
+            Writing node #{green(node.class.name)} to writer #{green(currentWriter.class.name)}
+                pattern: #{magenta(currentWriter.pattern.toPatternString())}
+            |")
+        Logger.increaseTab()
+        currentWriter.write(output, node)
+        Logger.decreaseTab()
+
+        if (currentWriter.exhausted) {
+            currentWriter = null
+            log.info("Writer is exhausted")
+        } else {
+            log.info("Writer is not exhausted")
+        }
+    }
+
+    override public reset() {
+        super.reset()
+
+        awaitingChild = true
+        currentWriter = null
+        currentParser = null
+    }
+}

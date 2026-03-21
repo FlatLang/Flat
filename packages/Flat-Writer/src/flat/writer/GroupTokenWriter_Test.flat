@@ -1,0 +1,97 @@
+package flat/writer
+
+import flat/ast
+import flat/annotations
+import flat/parser
+import flat/parser/flat
+import flat/parser/matchers
+import flat/compiler/models
+import flat/writer/TestOutputStream_Test.TestOutputStream
+
+testable class {
+    test `can write group containing single explicit value token`() {
+        let outputStream = TestOutputStream()
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "test")
+        ])
+        let writer = GroupTokenWriter(pattern, outputStream)
+
+        writer.write(Node())
+
+        expect(outputStream.buffer).toBe([
+            Token(type: Token.Type.IDENTIFIER, value: "test"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write group containing single identifier field token`() {
+        let outputStream = TestOutputStream()
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, field: "name")
+        ])
+        let writer = GroupTokenWriter(pattern, outputStream)
+
+        writer.write(IdentifierNode(name: Token(type: Token.Type.IDENTIFIER, value: "bob")))
+
+        expect(outputStream.buffer).toBe([
+            Token(type: Token.Type.IDENTIFIER, value: "bob"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write group containing repetitive inner group`() {
+        let outputStream = TestOutputStream()
+        let pattern = GroupTokenPattern<ArrayInitializerNode>([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+            GroupTokenPattern([
+                NodeTokenPattern([IdentifierParser()]),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                    NodeTokenPattern([IdentifierParser()])
+                ], optional: true, repeat: true),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+            ], optional: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+        ])
+        let writer = GroupTokenWriter(pattern, outputStream)
+
+        writer.write(ArrayInitializerNode())
+        writer.write(IdentifierNode(name: Token(type: Token.Type.IDENTIFIER, value: "bob")))
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            Token(type: Token.Type.SYMBOL, value: "["),
+            Token(type: Token.Type.IDENTIFIER, value: "bob"),
+            Token(type: Token.Type.SYMBOL, value: "]"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write group containing recursive inner group`() {
+        let outputStream = TestOutputStream()
+        let pattern = GroupTokenPattern<ArrayInitializerNode>([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+            GroupTokenPattern([
+                NodeTokenPattern([IdentifierParser(), ArrayInitializerParser()]),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                    NodeTokenPattern([IdentifierParser(), ArrayInitializerParser()])
+                ], optional: true, repeat: true),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ",", optional: true),
+            ], optional: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+        ])
+        let writer = GroupTokenWriter(pattern, outputStream)
+
+        writer.write(ArrayInitializerNode())
+        writer.write(IdentifierNode(name: Token(type: Token.Type.IDENTIFIER, value: "bob")))
+        writer.exhaust()
+
+        expect(outputStream.buffer).toBe([
+            Token(type: Token.Type.SYMBOL, value: "["),
+            Token(type: Token.Type.IDENTIFIER, value: "bob"),
+            Token(type: Token.Type.SYMBOL, value: "]"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+}

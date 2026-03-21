@@ -1,0 +1,17 @@
+package flat/writer
+
+import flat/ast
+import flat/parser/matchers
+
+data class extends TokenWriter {
+    CaptureTokenPattern pattern
+
+    override public write(WriterOutputStream output, Node node) {
+        dirty = true
+
+        innerWrite(output, node)
+    }
+
+    innerWrite(WriterOutputStream output, Node node) {
+    }
+}

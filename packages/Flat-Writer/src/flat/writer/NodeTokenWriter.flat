@@ -1,0 +1,109 @@
+package flat/writer
+
+import flat/ast
+import flat/parser/matchers
+import flat/log
+
+import flat/writer/WriterPatternExtensions
+import flat/stream/StreamListExtensions
+
+import static flat/colorizer/Colorizer
+
+data class extends TokenWriter {
+    static Logger log = Logger(NodeTokenWriter.class)
+
+    NodeTokenPattern pattern
+
+    var TokenWriter writer
+
+    override public validNode(Node node) -> Bool {
+        if (node == null) return false
+        if (super.validNode(node)) return true
+        if (writer == null) searchWriter(node)
+        if (writer == null) return false
+
+        log.info("Checking node type #{green(node.class.name)} against writer #{magenta(writer.pattern.toPatternString())}")
+
+        Logger.increaseTab()
+        let valid = writer.validNode(node)
+        Logger.decreaseTab()
+
+        log.info("|
+            Checked node type #{green(node.class.name)} against writer #{magenta(writer.pattern.toPatternString())}
+                valid: #{valid}
+            |")
+
+        return valid
+    }
+
+    public getNodeTypes() -> Class<Node>[] {
+        return pattern.parsers.stream()
+            .map({ _.pattern.getNodeType() })
+            .filter({ _ != Node.class })
+            .toArray()
+    }
+
+    override public consumesNode() => true
+
+    override public exhaust(WriterOutputStream output) => true {
+        log.info("Ending current writer")
+
+        if (writer) {
+            Logger.increaseTab()
+            if (!writer.exhaust(output)) {
+                Logger.decreaseTab()
+                log.info("|
+                    Writer not exhausted. Returning false
+                        pattern: #{magenta(writer.pattern.toPatternString())}
+                        wasRepeat: #{wasRepeat}
+                    |")
+                return false
+            }
+            Logger.decreaseTab()
+        }
+
+        exhausted = true
+    }
+
+    searchWriter(Node node) {
+        writer = pattern.parsers.firstWhere({ _.pattern.getNodeType() == node.class })?.pattern.getWriter()
+
+        if (!writer) {
+            writer = pattern.parsers.firstWhere({ node.class.isOfType(_.pattern.getNodeType()) })?.pattern.getWriter()
+        }
+    }
+
+    override public write(WriterOutputStream output, Node node) {
+        dirty = true
+
+        if (!writer) {
+            searchWriter(node)
+
+            if (!writer) {
+                log.info("Unable to determine writer for Node pattern for node type #{green(node.class.name)}. Exhausted")
+                exhausted = true
+                return
+            }
+        }
+
+        innerWrite(output, node)
+    }
+
+    innerWrite(WriterOutputStream output, Node node) {
+        log.info("|
+            Writing node #{green(node.class.name)} to writer #{green(writer.class.name)}
+                pattern: #{magenta(writer.pattern.toPatternString())}
+            |")
+        Logger.increaseTab()
+        writer.write(output, node)
+        Logger.decreaseTab()
+
+        exhausted = writer.exhausted
+    }
+
+    override public reset() {
+        super.reset()
+
+        writer = null
+    }
+}

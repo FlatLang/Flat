@@ -1,0 +1,9 @@
+package flat/writer
+
+import flat/writer/Writer
+
+testable class {
+    test `can create`() {
+        expect("test").toNotBe(null)
+    }
+}

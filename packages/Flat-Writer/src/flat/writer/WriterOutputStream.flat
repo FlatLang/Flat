@@ -1,0 +1,44 @@
+package flat/writer
+
+import flat/compiler/models
+import flat/io
+import flat/log
+
+class {
+    static Logger log = Logger(WriterOutputStream.class)
+
+    visible var String output = ""
+
+    public writeString(String value = "") {
+        log.info("|
+            Writing String: #{value}
+                output: #{output}
+            |")
+        output += value + " "
+    }
+
+    public writeToken(Token token) {
+        log.info("|
+            Writing Token: #{token}
+                output: #{output}
+            |")
+        output += token.value + " "
+    }
+
+    public writeTokens(Token[] tokens) {
+        log.info("|
+            Writing Tokens: #{tokens}
+                output: #{output}
+            |")
+        output += tokens.map({ _.value }).stitchFront(" ")
+    }
+
+    public writeObject(Object value) {
+        match value.class {
+            String.class => writeString((String)value)
+            Token.class => writeToken((Token)value)
+            Array.class => writeTokens((Array)value)
+            default => throw Exception("Invalid object type '#{value.class.name}'")
+        }
+    }
+}

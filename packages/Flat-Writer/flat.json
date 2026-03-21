@@ -1,0 +1,37 @@
+{
+  "name": "Flat-Writer",
+  "version": "0.1.0",
+  "description": "Flat Compiler Writer",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Flat-AST.git": "master",
+        "https://github.com/FlatLang/Flat-AST-Visitor.git": "master",
+        "https://github.com/FlatLang/Compiler-String-Extensions.git": "master",
+        "https://github.com/FlatLang/Time.git": "master",
+        "https://github.com/FlatLang/Flat-Annotations.git": "master",
+        "https://github.com/FlatLang/Flat-Compiler-Models.git": "master",
+        "https://github.com/FlatLang/Logger.git": "master",
+        "https://github.com/FlatLang/Stream.git": "master",
+        "https://github.com/FlatLang/Event-Stream.git": "master",
+        "https://github.com/FlatLang/Parser-Core.git": "master"
+      }
+    },
+    "test": {
+      "mainClass": "flat/writer/Writer_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}

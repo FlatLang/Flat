@@ -1,0 +1,35 @@
+package flat/writer
+
+import flat/ast
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models
+import flat/writer/TestOutputStream_Test.TestOutputStream
+
+testable class {
+    test `can write explicit value token`() {
+        let outputStream = TestOutputStream()
+        let pattern = SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "test")
+        let writer = SingleTokenWriter(pattern, outputStream)
+
+        writer.write(Node())
+
+        expect(outputStream.buffer).toBe([
+            Token(type: Token.Type.IDENTIFIER, value: "test"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+
+    test `can write identifier field token`() {
+        let outputStream = TestOutputStream()
+        let pattern = SingleTokenPattern(type: Token.Type.IDENTIFIER, field: "name")
+        let writer = SingleTokenWriter(pattern, outputStream)
+
+        writer.write(IdentifierNode(name: Token(type: Token.Type.IDENTIFIER, value: "bob")))
+
+        expect(outputStream.buffer).toBe([
+            Token(type: Token.Type.IDENTIFIER, value: "bob"),
+        ])
+        expect(writer.exhausted).toBe(true)
+    }
+}
