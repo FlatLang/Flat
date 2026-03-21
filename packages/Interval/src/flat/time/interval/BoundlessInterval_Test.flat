@@ -1,0 +1,30 @@
+package flat/time/interval
+
+import flat/time/Timer
+import flat/time/DateTime
+import flat/time/DateTime.InvalidDateException
+import flat/time/interval/Interval.InvalidIntervalException
+import flat/time/interval/BoundlessInterval.InfiniteIntervalException
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test invalidBoundlessIntervalBounds() {
+        expect({ BoundlessInterval(DateTime(year: 4), DateTime(year: 5)) }).toThrow(InvalidIntervalException.class)
+    }
+
+    test validIntervalBounds() {
+        expect({ BoundlessInterval() }).toNotThrow(InvalidIntervalException.class)
+        expect({ BoundlessInterval(DateTime(year: 5)) }).toNotThrow(InvalidIntervalException.class)
+        expect({ BoundlessInterval(end: DateTime(year: 5)) }).toNotThrow(InvalidIntervalException.class)
+        expect({ BoundlessInterval(null, DateTime(year: 5)) }).toNotThrow(InvalidIntervalException.class)
+        expect({ BoundlessInterval(DateTime(year: 4), null) }).toNotThrow(InvalidIntervalException.class)
+    }
+
+    test infiniteIntervalValues() {
+        let interval = Interval.create(null, DateTime(year: 5))
+
+        expect({ interval.years }).toThrow(InfiniteIntervalException.class)
+    }
+}

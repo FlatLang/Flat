@@ -1,0 +1,173 @@
+package flat/time/interval
+
+import flat/time/Timer
+import flat/time/DateTime
+import flat/time/DateTime.InvalidDateException
+import flat/time/interval/Interval
+import flat/time/interval/Interval.NoGapException
+import flat/thread/Thread
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test threeHourInterval() {
+        let interval = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 5), DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 8))
+
+        expect(interval.days).toBe(0, "Invalid days: #interval.days != 0")
+        expect(interval.hours).toBe(3, "Invalid hours: #interval.hours != 3")
+        expect(interval.remainingHours).toBe(3, "Invalid remainingHours: #interval.remainingHours != 3")
+        expect(interval.seconds).toBe(3600 * 3, "Invalid seconds: #interval.seconds != #{3600 * 3}")
+        expect(interval.remainingSeconds).toBe(0, "Invalid remaining seconds: #interval.remainingSeconds != 0")
+        expect(interval.milliseconds).toBe(3600 * 3 * 1000, "Invalid milliseconds: #interval.milliseconds != #{3600 * 3 * 1000}")
+        expect(interval.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 0")
+        expect(interval.months).toBe(0, "Invalid months: #interval.months != 0")
+        expect(interval.remainingMonths).toBe(0, "Invalid remainingMonths: #interval.remainingMonths != 0")
+        expect(interval.years).toBe(0, "Invalid years: #interval.years != 0")
+    }
+
+    test threeHourTwentyMinuteInterval() {
+        let interval = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 5, minute: 10), DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 8, minute: 30))
+
+        expect(interval.days).toBe(0, "Invalid days: #interval.days != 0")
+        expect(interval.hours).toBe(3, "Invalid hours: #interval.hours != 3")
+        expect(interval.remainingHours).toBe(3, "Invalid remainingHours: #interval.remainingHours != 3")
+        expect(interval.minutes).toBe(20 + 60 * 3, "Invalid minutes: #interval.minutes != #{20 + 60 * 3}")
+        expect(interval.remainingMinutes).toBe(20, "Invalid remainingMinutes: #interval.remainingMinutes != 20")
+        expect(interval.seconds).toBe(3600 * 3 + 20 * 60, "Invalid seconds: #interval.seconds != #{3600 * 3 + 20 * 60}")
+        expect(interval.remainingSeconds).toBe(0, "Invalid remaining seconds: #interval.remainingSeconds != 0")
+        expect(interval.milliseconds).toBe((3600 * 3 + 20 * 60) * 1000, "Invalid milliseconds: #interval.milliseconds != #{(3600 * 3 + 20 * 60) * 1000}")
+        expect(interval.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 0")
+        expect(interval.months).toBe(0, "Invalid months: #interval.months != 0")
+        expect(interval.remainingMonths).toBe(0, "Invalid remainingMonths: #interval.remainingMonths != 0")
+        expect(interval.years).toBe(0, "Invalid years: #interval.years != 0")
+    }
+
+    test threeHourTwentyMinuteFifteenSecondInterval() {
+        let interval = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 5, minute: 10, second: 5), DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 8, minute: 30, second: 20))
+
+        expect(interval.days).toBe(0, "Invalid days: #interval.days != 0")
+        expect(interval.hours).toBe(3, "Invalid hours: #interval.hours != 3")
+        expect(interval.remainingHours).toBe(3, "Invalid remainingHours: #interval.remainingHours != 3")
+        expect(interval.minutes).toBe(20 + 60 * 3, "Invalid minutes: #interval.minutes != #{20 + 60 * 3}")
+        expect(interval.remainingMinutes).toBe(20, "Invalid remainingMinutes: #interval.remainingMinutes != 20")
+        expect(interval.seconds).toBe(3600 * 3 + 20 * 60 + 15, "Invalid seconds: #interval.seconds != #{3600 * 3 + 20 * 60 + 15}")
+        expect(interval.remainingSeconds).toBe(15, "Invalid remaining seconds: #interval.remainingSeconds != 15")
+        expect(interval.milliseconds).toBe((3600 * 3 + 20 * 60 + 15) * 1000, "Invalid milliseconds: #interval.milliseconds != #{(3600 * 3 + 20 * 60 + 15) * 1000}")
+        expect(interval.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 0")
+        expect(interval.months).toBe(0, "Invalid months: #interval.months != 0")
+        expect(interval.remainingMonths).toBe(0, "Invalid remainingMonths: #interval.remainingMonths != 0")
+        expect(interval.years).toBe(0, "Invalid years: #interval.years != 0")
+    }
+
+    test threeHourTwentyMinuteFifteenSecondOneHundredTwentyOneMillisecondInterval() {
+        let interval = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 5, minute: 10, second: 5, millisecond: 79), DateTime(year: 2017, month: 3, dayOfMonth: 27, hour: 8, minute: 30, second: 20, millisecond: 200))
+
+        expect(interval.days).toBe(0, "Invalid days: #interval.days != 0")
+        expect(interval.hours).toBe(3, "Invalid hours: #interval.hours != 3")
+        expect(interval.remainingHours).toBe(3, "Invalid remainingHours: #interval.remainingHours != 3")
+        expect(interval.minutes).toBe(20 + 60 * 3, "Invalid minutes: #interval.minutes != #{20 + 60 * 3}")
+        expect(interval.remainingMinutes).toBe(20, "Invalid remainingMinutes: #interval.remainingMinutes != 20")
+        expect(interval.seconds).toBe(3600 * 3 + 20 * 60 + 15, "Invalid seconds: #interval.seconds != #{3600 * 3 + 20 * 60 + 15}")
+        expect(interval.remainingSeconds).toBe(15, "Invalid remaining seconds: #interval.remainingSeconds != 15")
+        expect(interval.milliseconds).toBe((3600 * 3 + 20 * 60 + 15) * 1000 + 121, "Invalid milliseconds: #interval.milliseconds != #{(3600 * 3 + 20 * 60 + 15) * 1000 + 121}")
+        expect(interval.remainingMilliseconds).toBe(121, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 121")
+        expect(interval.months).toBe(0, "Invalid months: #interval.months != 0")
+        expect(interval.remainingMonths).toBe(0, "Invalid remainingMonths: #interval.remainingMonths != 0")
+        expect(interval.years).toBe(0, "Invalid years: #interval.years != 0")
+    }
+
+    test oneDayInterval() {
+        let oneDay = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 26), DateTime(year: 2017, month: 3, dayOfMonth: 27))
+
+        expect(oneDay.days).toBe(1, "Invalid days: #oneDay.days != 1")
+        expect(oneDay.seconds).toBe(86400, "Invalid seconds: #oneDay.seconds != 86400")
+        expect(oneDay.remainingSeconds).toBe(0, "Invalid remaining seconds: #oneDay.remainingSeconds != 0")
+        expect(oneDay.milliseconds).toBe(86400 * 1000, "Invalid milliseconds: #oneDay.milliseconds != #{86400 * 1000}")
+        expect(oneDay.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #oneDay.remainingMilliseconds != 0")
+        expect(oneDay.months).toBe(0, "Invalid months: #oneDay.months != 0")
+        expect(oneDay.remainingMonths).toBe(0, "Invalid remainingMonths: #oneDay.remainingMonths != 0")
+        expect(oneDay.years).toBe(0, "Invalid years: #oneDay.years != 0")
+    }
+
+    test twoDayInterval() {
+        let twoDays = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 26), DateTime(year: 2017, month: 3, dayOfMonth: 28))
+
+        expect(twoDays.days).toBe(2, "Invalid days: #twoDays.days != 2")
+        expect(twoDays.seconds).toBe(86400 * 2, "Invalid seconds: #twoDays.seconds != #{86400 * 2}")
+        expect(twoDays.remainingSeconds).toBe(0, "Invalid remaining seconds: #twoDays.remainingSeconds != 0")
+        expect(twoDays.milliseconds).toBe(86400 * 2 * 1000, "Invalid milliseconds: #twoDays.milliseconds != #{86400 * 2 * 1000}")
+        expect(twoDays.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #twoDays.remainingMilliseconds != 0")
+        expect(twoDays.months).toBe(0, "Invalid months: #twoDays.months != 0")
+        expect(twoDays.remainingMonths).toBe(0, "Invalid remainingMonths: #twoDays.remainingMonths != 0")
+        expect(twoDays.years).toBe(0, "Invalid years: #twoDays.years != 0")
+    }
+
+    test twoAndAHalfDayInterval() {
+        let interval = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 26), DateTime(year: 2017, month: 3, dayOfMonth: 28, hour: 12))
+
+        expect(interval.days).toBe(2, "Invalid days: #interval.days != 2")
+        expect(interval.seconds).toBe((Int)(86400 * 2.5), "Invalid seconds: #interval.seconds != #{(Int)(86400 * 2.5)}")
+        expect(interval.remainingSeconds).toBe(0, "Invalid remaining seconds: #interval.remainingSeconds != 0")
+        expect(interval.milliseconds).toBe((Int)(86400 * 2.5 * 1000), "Invalid milliseconds: #interval.milliseconds != #{(Int)(86400 * 2.5 * 1000)}")
+        expect(interval.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 0")
+        expect(interval.months).toBe(0, "Invalid months: #interval.months != 0")
+        expect(interval.remainingMonths).toBe(0, "Invalid remainingMonths: #interval.remainingMonths != 0")
+        expect(interval.years).toBe(0, "Invalid years: #interval.years != 0")
+    }
+
+    test twoMonthInterval() {
+        let interval = Interval.create(DateTime(year: 2017, month: 3, dayOfMonth: 26), DateTime(year: 2017, month: 5, dayOfMonth: 28))
+
+        expect(interval.days).toBe(63, "Invalid days: #interval.days != 63")
+        expect(interval.seconds).toBe(86400 * 63, "Invalid seconds: #interval.seconds != #{86400 * 63}")
+        expect(interval.remainingSeconds).toBe(0, "Invalid remaining seconds: #interval.remainingSeconds != 0")
+        expect(interval.milliseconds).toBe((Long)86400 * 63 * 1000, "Invalid milliseconds: #interval.milliseconds != #{(Long)86400 * 63 * 1000}")
+        expect(interval.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 0")
+        expect(interval.months).toBe(2, "Invalid months: #interval.months != 2")
+        expect(interval.remainingMonths).toBe(2, "Invalid remainingMonths: #interval.remainingMonths != 2")
+        expect(interval.years).toBe(0, "Invalid years: #interval.years != 0")
+    }
+
+    test oneYearInterval() {
+        let interval = Interval.create(DateTime(year: 2016, month: 3, dayOfMonth: 26), DateTime(year: 2017, month: 3, dayOfMonth: 26))
+
+        expect(interval.days).toBe(365, "Invalid days: #interval.days != 365")
+        expect(interval.seconds).toBe(86400 * 365, "Invalid seconds: #interval.seconds != #{86400 * 365}")
+        expect(interval.remainingSeconds).toBe(0, "Invalid remaining seconds: #interval.remainingSeconds != 0")
+        expect(interval.milliseconds).toBe((Long)86400 * 365 * 1000, "Invalid milliseconds: #interval.milliseconds != #{(Long)86400 * 365 * 1000}")
+        expect(interval.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 0")
+        expect(interval.months).toBe(12, "Invalid months: #interval.months != 12")
+        expect(interval.remainingMonths).toBe(0, "Invalid remainingMonths: #interval.remainingMonths != 0")
+        expect(interval.years).toBe(1, "Invalid years: #interval.years != 1")
+    }
+
+    test twoAndAHalfYearInterval() {
+        let interval = Interval.create(DateTime(year: 2015, month: 3, dayOfMonth: 26), DateTime(year: 2017, month: 9, dayOfMonth: 26))
+
+        let Int days = 6 + 275 + 366 + 273 - 5
+
+        expect(interval.days).toBe(days, "Invalid days: #interval.days != #days")
+        expect(interval.seconds).toBe(86400 * days, "Invalid seconds: #interval.seconds != #{86400 * days}")
+        expect(interval.remainingSeconds).toBe(0, "Invalid remaining seconds: #interval.remainingSeconds != 0")
+        expect(interval.milliseconds).toBe((Long)86400 * days * 1000, "Invalid milliseconds: #interval.milliseconds != #{(Long)86400 * days * 1000}")
+        expect(interval.remainingMilliseconds).toBe(0, "Invalid remainingMilliseconds: #interval.remainingMilliseconds != 0")
+        expect(interval.months).toBe(30, "Invalid months: #interval.months != 30")
+        expect(interval.remainingMonths).toBe(6, "Invalid remainingMonths: #interval.remainingMonths != 6")
+        expect(interval.years).toBe(2, "Invalid years: #interval.years != 2")
+    }
+
+    test invalidIntervalGap() {
+        let interval1 = Interval.create(DateTime(year: 2017, month: 4, dayOfMonth: 10), DateTime(year: 2018, month: 4, dayOfMonth: 10))
+        let interval2 = Interval.create(DateTime(year: 2015, month: 4, dayOfMonth: 10), DateTime(year: 2019, month: 4, dayOfMonth: 10))
+
+        expect({ interval1.getGap(interval2) }).toThrow(NoGapException.class)
+    }
+
+    test validIntervalGap() {
+        let interval1 = Interval.create(DateTime(year: 2017, month: 4, dayOfMonth: 10), DateTime(year: 2018, month: 4, dayOfMonth: 10))
+        let interval2 = Interval.create(DateTime(year: 2015, month: 4, dayOfMonth: 10), DateTime(year: 2016, month: 4, dayOfMonth: 10))
+
+        expect({ interval1.getGap(interval2) }).toNotThrow(NoGapException.class)
+    }
+}

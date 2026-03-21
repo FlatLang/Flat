@@ -1,0 +1,16 @@
+package flat/time/interval
+
+import flat/time
+import flat/time/interval/Interval.InvalidIntervalException
+
+class extends Interval {
+    public construct(this DateTime start, this DateTime end) {
+        if (start == null || end == null) {
+            throw InvalidIntervalException("Bounded interval cannot have open-ended bounds: #this")
+        } else {
+            if (start > end) {
+                throw InvalidIntervalException("Interval from #start to #end is invalid")
+            }
+        }
+    }
+}

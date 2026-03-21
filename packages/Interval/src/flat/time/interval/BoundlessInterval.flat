@@ -1,0 +1,30 @@
+package flat/time/interval
+
+import flat/time
+import flat/time/interval/Interval.InvalidIntervalException
+import flat/time/interval/Interval.IntervalException
+
+class extends Interval {
+    visible Int days => throw InfiniteIntervalException("days")
+
+    visible Long seconds => throw InfiniteIntervalException("seconds")
+    visible Int remainingSeconds => throw InfiniteIntervalException("remainingSeconds")
+
+    visible Long milliseconds => throw InfiniteIntervalException("milliseconds")
+    visible Int remainingMilliseconds => throw InfiniteIntervalException("remainingMilliseconds")
+
+    visible Int months => throw InfiniteIntervalException("months")
+    visible Int remainingMonths => throw InfiniteIntervalException("remainingMonths")
+
+    visible Int years => throw InfiniteIntervalException("years")
+
+    public construct(this DateTime start = null, this DateTime end = null) {
+        if (start != null && end != null) {
+            throw InvalidIntervalException("BoundlessInterval requires a null start or end DateTime: #this")
+        }
+    }
+
+    class InfiniteIntervalException extends IntervalException {
+        public construct(String property = null) => super("Cannot get property '#property' from boundless interval (cannot return infinite integer)")
+    }
+}
