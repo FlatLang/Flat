@@ -1,0 +1,18 @@
+package flat/cache
+
+import flat/io
+import flat/json
+
+class<TKey, TValue> extends FileCacheStore<TKey, TValue> {
+    static JsonDeserializer deserializer = JsonDeserializer()
+
+    public construct(
+        keyToFileMapper(TKey) -> File
+    ) {
+        super(
+            { _.toJson() },
+            { deserializer.parse(_) },
+            keyToFileMapper
+        )
+    }
+}

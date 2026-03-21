@@ -1,0 +1,167 @@
+package flat/cache
+
+import flat/time
+import flat/future
+import flat/log
+
+class<TValue> {
+    static Logger log = Logger(ItemCache.class)
+
+    var Future<TValue> pendingGet
+    Array<action(Exception)> exceptionListeners = Array()
+
+    private construct(
+        private CacheStore<Object, TValue> cacheStore,
+        visible Long? lifetime = null,
+        visible String key = "",
+        visible Bool invalidateOnExpired = true
+    ) {}
+
+    public async checkExpired(Bool invalidateItem = invalidateOnExpired) -> Bool {
+        if (lifetime == null) return false
+        if (!cacheStore.checkExpired(key, lifetime)) return false
+
+        if (invalidateItem) {
+            invalidate()
+        }
+
+        return true
+    }
+
+    public async checkItemExpired(CacheItem<String, TValue> item, Bool invalidateItem = invalidateOnExpired) -> Bool {
+        if (lifetime == null) return false
+        if (!cacheStore.checkItemExpired(item, lifetime)) return false
+
+        if (invalidateItem) {
+            invalidate()
+        }
+
+        return true
+    }
+
+    public onException(func(Exception)) {
+        exceptionListeners.add(func)
+    }
+
+    public async hasValue() -> Bool {
+        if (checkExpired()) return false
+
+        return cacheStore.contains(key)
+    }
+
+    public async get() -> TValue {
+        if (pendingGet) return pendingGet.get()
+
+        if (checkExpired()) return null
+
+        return cacheStore.get(key)
+    }
+
+    public async store(TValue value) -> TValue {
+        let stored = cacheStore.store(key, value)
+
+        return stored
+    }
+
+    public async invalidate() {
+        cacheStore.invalidate(key)
+    }
+
+    public async getOrStore(async storeFunc() -> TValue) -> TValue {
+        let value = get()
+
+        if (value) return value
+
+        return store(storeFunc())
+    }
+
+    public async getThenStoreIfInvalid(async storeFunc() -> TValue) -> TValue {
+        let item = cacheStore.getItem(key)
+
+        if (!item) {
+            if (pendingGet) {
+                log.debug("Returning existing pendingGet")
+                return pendingGet.get()
+            }
+
+            log.debug("Value does not exist. Calculating immediately")
+            try {
+                log.debug("Calculating new stored value (no existing item)...")
+                let stored = store(storeFunc())
+                log.debug("Calculated new stored value (no existing item)")
+
+                return stored
+            } catch (Exception e) {
+                log.debug("Failed to calculate new stored value: #{e}, propagating error")
+                throw e
+            }
+        }
+
+        if (!checkItemExpired(item)) {
+            log.debug("Value exists and is not expired. Returning existing value")
+
+            return item.value
+        }
+
+        log.debug("Value exists but is expired. Returning existing value and creating pendingGet future to calculate the new value")
+
+        if (!pendingGet) {
+            log.debug("Attempting to refresh the cache by calculating a new value")
+
+            pendingGet = Future.from({
+                try {
+                    log.debug("Calculating new stored value...")
+                    let stored = store(storeFunc())
+                    log.debug("Calculated new stored value")
+
+                    pendingGet = null
+
+                    return stored
+                } catch (Exception e) {
+                    log.debug("Failed to calculate new stored value: #{e}, propagating error")
+                    throw e
+                }
+            }):onException((e) => {
+                exceptionListeners.forEach({ _(e) })
+            })
+        } else {
+            log.debug("Cache refresh already in progress, not calculating a new value until the next call")
+        }
+
+        log.debug("Returning the stale cache item")
+
+        return item.value
+    }
+
+    public static class Builder<TValue> {
+        var Long? lifetime
+        var CacheStore<Object, TValue> cacheStore
+        var String? key
+        var Bool invalidateOnExpired = true
+
+        public withLifetime(Long ms) => this {
+            lifetime = ms
+        }
+
+        public withStore<TValue>(CacheStore<Object, TValue> value) -> Builder<TValue> => this {
+            cacheStore = value
+        }
+
+        public withKey(String key) => this {
+            this.key = key
+        }
+
+        public withInvalidateOnExpired(Bool invalidateOnExpired) => this {
+            this.invalidateOnExpired = invalidateOnExpired
+        }
+
+        public build() -> ItemCache<TValue> {
+            return ItemCache(
+                cacheStore: cacheStore == null ? MapCacheStore() : cacheStore,
+                lifetime: lifetime,
+                key: key ?: "",
+                invalidateOnExpired: invalidateOnExpired
+            )
+        }
+    }
+}

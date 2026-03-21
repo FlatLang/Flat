@@ -1,0 +1,79 @@
+package flat/cache
+
+import flat/io
+import flat/datastruct
+import flat/time
+import flat/log
+import flat/aws/dynamodb
+
+class<TKey, TValue> implements CacheStore<TKey, TValue> {
+    static Logger log = Logger(DynamoDBCacheStore.class)
+
+    Array<func(TValue value) -> String> serializer = Array()
+    Array<func(String str) -> TValue> deserializer = Array()
+
+    public construct(
+        serializer(TValue) -> String,
+        deserializer(String) -> TValue,
+        private String tableName,
+        private DynamoDBClient client = DynamoDBClient()
+    ) {
+        this.serializer.add(serializer)
+        this.deserializer.add(deserializer)
+    }
+
+    override public async invalidate(TKey key) {
+        log.debug("Invalidating item in table #{tableName} with key #{key}...")
+        client.delete(tableName, HashMap():add("key", key.toString()))
+        log.debug("Finished invalidating item in table #{tableName} with key #{key}.")
+    }
+
+    override public async contains(TKey key) -> Bool {
+        log.debug("Checking for item in table #{tableName} with key #{key}...")
+        let exists = client.get(tableName, HashMap():add("key", key.toString())) != null
+        log.debug("Item in table #{tableName} with key #{key} exists? #{exists}")
+        return exists
+    }
+
+    async getRawItem(TKey key) -> HashMap<String, Object> {
+        log.debug("Fetching item in table #{tableName} with key #{key}...")
+        let item = client.get(tableName, HashMap():add("key", key.toString()))
+        log.debug("Got item in table #{tableName} with key #{key}")
+        log.trace("Got item in table #{tableName} with key #{key}: #{item}")
+        return item
+    }
+
+    public async getItem(TKey key) -> CacheItem<TKey, TValue> {
+        let item = getRawItem(key)
+
+        if (!item) return null
+
+        String stringValue = (String)item["value"]
+        Long timestamp = item.containsKey("timestamp") ? ((Long)item["timestamp"]).value : 0
+
+        let value = deserializer.map({ _(stringValue) }).first
+
+        log.debug("Got deserialized value from table #{tableName} cache with key #{key}")
+        log.trace("Got deserialized value from table #{tableName} cache with key #{key}: #{value}")
+
+        return CacheItem(key, value, timestamp)
+    }
+
+    override public async store(CacheItem<TKey, TValue> item) => item {
+        let map = HashMap()
+            :add("key", item.key.toString())
+            :add("timestamp", Time.currentTimeMillis)
+            :add("value", serializer.map({ _(item.value) }).first)
+
+        log.debug("Storing key #{item.key} to table #{tableName}")
+        log.trace("Storing key #{item.key} to table #{tableName} with values #{map}")
+
+        client.put(tableName, map)
+    }
+
+    override public async checkExpired(TKey key, Long lifetime) => true {
+        if (let item = getItem(key)) {
+            return checkItemExpired(item, lifetime)
+        }
+    }
+}

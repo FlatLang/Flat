@@ -1,0 +1,71 @@
+package flat/cache
+
+import flat/io
+import flat/datastruct
+import flat/time
+
+class<TKey, TValue> implements CacheStore<TKey, TValue> {
+    HashMap<TKey, File> files = HashMap()
+
+    Array<func(TValue value) -> String> serializer = Array()
+    Array<func(String str) -> TValue> deserializer = Array()
+    Array<func(TKey key) -> String> keyToFileMapper = Array()
+
+    public construct(
+        serializer(TValue) -> String,
+        deserializer(String) -> TValue,
+        keyToFileMapper(TKey) -> String
+    ) {
+        this.serializer.add(serializer)
+        this.deserializer.add(deserializer)
+        this.keyToFileMapper.add(keyToFileMapper)
+    }
+
+    override public async invalidate(TKey key) {
+        if (File file = files[key]) {
+            if (!file.exists) return
+
+            file.delete()
+        }
+    }
+
+    override public async contains(TKey key) -> Bool {
+        return files.containsKey(key)
+    }
+
+    override public async getItem(TKey key) -> CacheItem<TKey, TValue> => null {
+        if (File file = files[key]) {
+            let contents = FileReader(file).readAllContents()
+            let timestampString = contents.substring(end: contents.indexOf(':'))
+            let timestamp = Long.parseLong(timestampString)
+            let valueString = contents.substring(contents.indexOf(':') + 1)
+            let value = deserializer.map({ _(valueString) }).first
+
+            return CacheItem(key, value, timestamp)
+        }
+    }
+
+    override public async store(CacheItem<TKey, TValue> item) => item {
+        File file = files.getOrDefault(item.key, { keyToFileMapper.map({ _(item.key) }).first })
+
+        if (!file.getParent().exists) {
+            file.getParent().mkdirs()
+        }
+
+        let data = serializer.map({ _(item.value) }).first
+        let timestamp = Time.currentTimeMillis
+
+        FileWriter(file)
+            .write("#{timestamp}:#{data}")
+            .close()
+    }
+
+    override public async checkExpired(TKey key, Long lifetime) => true {
+        if (File file = files[key]) {
+            let contents = FileReader(file).readAllContents()
+            let data = contents.substring(end: contents.indexOf(':'))
+            let timestamp = Long.parseLong(data)
+            return checkItemExpired(CacheItem(key, null, timestamp), lifetime)
+        }
+    }
+}

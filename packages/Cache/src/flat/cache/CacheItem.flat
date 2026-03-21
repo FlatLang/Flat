@@ -1,0 +1,7 @@
+package flat/cache
+
+data class<TKey, TValue> {
+    visible TKey key
+    visible TValue value
+    visible Long timestamp
+}

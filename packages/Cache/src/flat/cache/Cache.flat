@@ -1,0 +1,23 @@
+package flat/cache
+
+class<TKey, TValue> {
+    private construct(private CacheStore<TKey, TValue> cacheStore) {}
+
+    public async contains(TKey key) => cacheStore.contains(key)
+    public async get(TKey key) => cacheStore.get(key)
+    public async store(TKey key, TValue value) => cacheStore.store(key, value)
+    public async invalidate(TKey key) => cacheStore.invalidate(key)
+    public async getOrStore(TKey key, storeFunc() -> TValue) => get(key) ?: store(key, storeFunc())
+
+    public static class Builder<TKey, TValue> {
+        var CacheStore<TKey, TValue> cacheStore
+
+        public withStore(CacheStore<TKey, TValue> value) => this {
+            cacheStore = value
+        }
+
+        public build() -> Cache<TKey, TValue> {
+            return Cache(cacheStore == null ? MapCacheStore() : cacheStore)
+        }
+    }
+}

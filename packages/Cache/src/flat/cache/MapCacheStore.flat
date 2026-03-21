@@ -1,0 +1,22 @@
+package flat/cache
+
+import flat/datastruct
+import flat/time
+
+class<TKey, TValue> implements CacheStore<TKey, TValue> {
+    HashMap<TKey, CacheItem<TKey, TValue>> cache = HashMap()
+
+    override public async invalidate(TKey key) {
+        cache.remove(key)
+    }
+
+    override public async contains(TKey key) -> Bool {
+        return cache.containsKey(key)
+    }
+
+    override public async getItem(TKey key) => cache[key]
+
+    override public async store(CacheItem<TKey, TValue> item) => item {
+        cache[item.key] = item
+    }
+}

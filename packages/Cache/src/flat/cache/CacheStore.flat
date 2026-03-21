@@ -1,0 +1,39 @@
+package flat/cache
+
+import flat/time
+import flat/log
+
+trait CacheStore<TKey, TValue> {
+    static Logger log = Logger(CacheStore.class)
+
+    public async getItem(TKey key) -> CacheItem<TKey, TValue>
+    public async store(CacheItem<TKey, TValue> item) -> CacheItem<TKey, TValue>
+    public async invalidate(TKey key)
+
+    public async get(TKey key) => getItem(key)?.value
+
+    public async store(TKey key, TValue value) => store(CacheItem(key, value, timestamp: Time.currentTimeMillis)).value
+
+    public async contains(TKey key) => getItem(key) != null
+
+    public async checkExpired(TKey key, Long lifetime) -> Bool {
+        log.debug("Checking expiration of key #{key} with lifetime of #{lifetime}ms.")
+        let item = getItem(key)
+
+        if (!item) return true
+
+        return checkItemExpired(item, lifetime)
+    }
+
+    public async checkItemExpired(CacheItem<TKey, TValue> item, Long lifetime) -> Bool {
+        log.debug("Checking expiration of key #{item.key} with lifetime of #{lifetime}ms.")
+        log.trace("Checking expiration of item #{item} with lifetime of #{lifetime}ms.")
+
+        let currentTime = Time.currentTimeMillis
+        let expired = currentTime - item.timestamp >= lifetime
+
+        log.debug("Cache item has timestamp property value #{item.timestamp}. Returning #{expired} for expired. #{currentTime} - #{item.timestamp} >= #{lifetime}")
+
+        return expired
+    }
+}

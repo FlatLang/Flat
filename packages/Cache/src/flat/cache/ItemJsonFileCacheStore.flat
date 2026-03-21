@@ -1,0 +1,14 @@
+package flat/cache
+
+import flat/io
+import flat/json
+
+class<TValue> extends JsonFileCacheStore<Object, TValue> {
+    public construct(String filename) {
+        this(File(filename))
+    }
+
+    public construct(File file) {
+        super({ file })
+    }
+}

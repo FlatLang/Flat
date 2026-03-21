@@ -1,0 +1,19 @@
+package flat/cache
+
+import flat/aws/dynamodb
+
+class<TValue> extends DynamoDBCacheStore<Object, TValue> {
+    public construct(
+        serializer(TValue) -> String,
+        deserializer(String) -> TValue,
+        String tableName,
+        DynamoDBClient client = DynamoDBClient()
+    ) {
+        super(
+            serializer,
+            deserializer,
+            tableName,
+            client
+        )
+    }
+}

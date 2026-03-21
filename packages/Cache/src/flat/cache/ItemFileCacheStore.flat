@@ -1,0 +1,17 @@
+package flat/cache
+
+import flat/io
+
+class<TValue> extends FileCacheStore<Object, TValue> {
+    public construct(
+        serializer(TValue) -> String,
+        deserializer(String) -> TValue,
+        File file
+    ) {
+        super(
+            serializer,
+            deserializer,
+            { file }
+        )
+    }
+}
