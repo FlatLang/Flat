@@ -1,0 +1,38 @@
+package flat/stream
+
+import flat/stream
+import flat/future
+import flat/async/Async
+import flat/datastruct
+import flat/datastruct/list
+import flat/log
+
+class<Type> {
+    static Logger log = Logger(ParallelStream.class)
+
+    public construct(
+        visible Iterator<Future<Type>> iterator,
+        visible Int maxParallel
+    ) {}
+
+    public map<Out>(mapFunc(Type x) -> Future<Out>) =>
+        ParallelStream<Out>(MapIterator<Type, Future<Out>>(iterator, mapFunc), maxParallel)
+
+    getFutures() -> Future<Type>[] {
+        let array = Future<Type>[]
+
+        for (value in iterator) {
+            array.add(value$)
+        }
+
+        return array
+    }
+
+    public async toSet() -> HashSet<Type> {
+        return HashSet<Type>(Async.all(getFutures(), { _.get() }, maxParallel))
+    }
+
+    public async toArray() -> Type[] {
+        return Async.all(getFutures(), { _.get() }, maxParallel)
+    }
+}

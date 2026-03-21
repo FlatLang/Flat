@@ -1,0 +1,49 @@
+package flat/stream
+
+import flat/future
+import flat/thread
+import flat/time
+import flat/datastruct
+import flat/datastruct/list
+
+import flat/stream/ParallelStreamExtensions
+
+testable class {
+    async test `can map in parallel to set`() {
+        let array = ["one", "two", "two", "three", "one"]
+        let stream = array.stream().parallel()
+
+        let timer = Timer():start()
+
+        let set = stream.map((value) => {
+            return Future.from({
+                Thread.sleep(100)
+                return "#{value}!"
+            })
+        }).toSet()
+
+        timer.stop()
+
+        expect(set).toBe(HashSet(["one!", "three!", "two!"]))
+        expect(timer.duration < 150).toBe(true)
+    }
+
+    async test `can map in parallel to array`() {
+        let array = ["one", "two", "two", "three", "one"]
+        let stream = array.stream().parallel()
+
+        let timer = Timer():start()
+
+        let result = stream.map((value) => {
+            return Future.from({
+                Thread.sleep(100)
+                return "#{value}!"
+            })
+        }).toArray()
+
+        timer.stop()
+
+        expect(result).toBe(["one!", "two!", "two!", "three!", "one!"])
+        expect(timer.duration < 150).toBe(true)
+    }
+}
