@@ -1,0 +1,11 @@
+package flat/uuid
+
+import flat/uuid/Uuid
+
+testable class {
+    test `can create`() {
+        let value = Uuid.uuidv4()
+
+        expect(value.count).toBe(36)
+    }
+}

@@ -1,0 +1,7 @@
+package flat/uuid
+
+class {
+    public static uuidv4() -> String {
+        throw Exception("Not implemented for language or target")
+    }
+}

@@ -1,0 +1,29 @@
+{
+    "name": "Uuid",
+    "version": "0.1.0",
+    "description": "UUID generator package",
+    "author": "Braden Steffaniak",
+    "license": "ISC",
+    "defaultTarget": "es6",
+    "scripts": {
+        "test": "node dist/es6/test.js"
+    },
+    "sources": {
+        "main": {
+            "mainClass": "flat/uuid/Uuid",
+            "source": "src",
+            "dependencies": {
+                "git@github.com:FlatLang/System": "master",
+                "git@github.com:FlatLang/IO": "master",
+                "git@github.com:FlatLang/Stream": "master"
+            }
+        },
+        "test": {
+            "mainClass": "flat/uuid/Uuid_TestSuite",
+            "source": "src/**/*_Test*.flat",
+            "dependencies": {
+                "git@github.com:FlatLang/Test": "master"
+            }
+        }
+    }
+}

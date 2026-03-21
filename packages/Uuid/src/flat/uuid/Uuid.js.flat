@@ -1,0 +1,24 @@
+package flat/uuid
+
+class {
+    public static uuidv4() -> String {
+        var native native_array Char[] uuid
+
+        external {
+            #{uuid} = #{UuidGlobal.crypto}.randomUUID();
+        }
+
+        return String(uuid)
+    }
+
+    public static class UuidGlobal {
+        external type CryptoType
+        visible static lazy CryptoType crypto {
+            get {
+                external {
+                    return require('crypto');
+                }
+            }
+        }
+    }
+}
