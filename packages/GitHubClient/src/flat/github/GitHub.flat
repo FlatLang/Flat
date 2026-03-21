@@ -1,0 +1,186 @@
+package flat/github
+
+import flat/github/models
+
+import flat/http
+import flat/json
+import flat/datastruct
+
+class {
+    static String API_ROOT = "https://api.github.com"
+
+    static async githubRequest<TType>(
+        String url,
+        String method,
+        mapper(HashMap<String, Object> map) -> TType,
+        String token = null,
+        String dataKey = null,
+        Bool ignoreResponseBody = false
+    ) -> TType[] {
+        let headers = HashMap()
+            :add("Accept", "application/json")
+            :add("Content-Type", "text/plain")
+            :add("User-Agent", "flat-github-client")
+
+        if (token) {
+            headers.add("Authorization", "Bearer #{token}")
+        }
+
+        let response = Http.request(url, method, headers)
+
+        if (ignoreResponseBody) return null
+
+        Object parsed = JsonDeserializer().parse(response.data)
+        var Array<HashMap<String, Object>> data
+
+        if (dataKey) {
+            let HashMap<String, Object> map = (HashMap)parsed
+            data = (Array)map[dataKey]
+        } else {
+            data = (Array)parsed
+        }
+
+        if (!data || !data.class.isOfType(Array.class)) {
+            throw Exception("|
+                Invalid data for request:
+                    url: #{url}
+                    method: #{method}
+                    data: #{data}
+                |")
+        }
+
+        return data.map(mapper)
+    }
+
+    static async pagingRequest<TType>(
+        String url,
+        mapper(HashMap<String, Object> map) -> TType,
+        String token = null,
+        String dataKey = null
+    ) -> TType[] {
+        var Int page = 1
+        let perPage = 100
+
+        let values = TType[]
+
+        while (true) {
+            let pagingUrl = "#{url}?page=#{page++}&per_page=#{perPage}"
+            let data = githubRequest(pagingUrl, "GET", mapper, token, dataKey)
+
+            values.addAll(data)
+
+            if (data.count < perPage) break
+        }
+
+        return values
+    }
+
+    public static async getOrganizationRepos(String owner, String token = null) -> Repo[] {
+        return pagingRequest(
+            "#{API_ROOT}/orgs/#{owner}/repos",
+            { Repo(_) },
+            token
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows
+    public static async getRepositoryWorkflows(String owner, String repository, String token = null) -> Workflow[] {
+        return pagingRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/workflows",
+            { Workflow(_) },
+            token,
+            "workflows"
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#enable-a-workflow
+    public static async enableWorkflow(String owner, String repository, Long workflowId, String token = null) {
+        githubRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/workflows/#{workflowId}/enable",
+            "PUT",
+            { _ },
+            token,
+            ignoreResponseBody: true
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#re-run-a-job-from-a-workflow-run
+    public static async rerunRepositoryWorkflowJob(String owner, String repository, Long jobId, String token = null) {
+        githubRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/jobs/#{jobId}/rerun",
+            "POST",
+            { _ },
+            token,
+            ignoreResponseBody: true
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#re-run-failed-jobs-from-a-workflow-run
+    public static async rerunFailedRepositoryWorkflowRunJobs(String owner, String repository, Long runId, String token = null) {
+        githubRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/runs/#{runId}/rerun-failed-jobs",
+            "POST",
+            { _ },
+            token,
+            ignoreResponseBody: true
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
+    public static async listWorkflowRunsForRepository(String owner, String repository, String status = null, String token = null) -> WorkflowRun[] {
+        var params = ""
+
+        if (status) params += "&status=#{status}"
+
+        return pagingRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/runs",
+            { WorkflowRun(_) },
+            token,
+            "workflow_runs"
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
+    public static async listWorkflowRunsForRepository(String owner, String repository, Int page, Int perPage, String status = null, String token = null) -> WorkflowRun[] {
+        var params = ""
+
+        if (status) params += "&status=#{status}"
+
+        return githubRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/runs?page=#{page}&per_page=#{perPage}#{params}",
+            "GET",
+            { WorkflowRun(_) },
+            token,
+            "workflow_runs"
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-workflow
+    public static async listWorkflowRunsForWorkflow(String owner, String repository, Long workflowId, String status = null, String token = null) -> WorkflowRun[] {
+        var params = ""
+
+        if (status) params += "&status=#{status}"
+
+        return pagingRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/workflows/#{workflowId}/runs",
+            { WorkflowRun(_) },
+            token,
+            "workflow_runs"
+        )
+    }
+
+    // https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-workflow
+    public static async listWorkflowRunsForWorkflow(String owner, String repository, Long workflowId, Int page, Int perPage, String status = null, String token = null) -> WorkflowRun[] {
+        var params = ""
+
+        if (status) params += "&status=#{status}"
+
+        return githubRequest(
+            "#{API_ROOT}/repos/#{owner}/#{repository}/actions/workflows/#{workflowId}/runs?page=#{page}&per_page=#{perPage}#{params}",
+            "GET",
+            { WorkflowRun(_) },
+            token,
+            "workflow_runs"
+        )
+    }
+}

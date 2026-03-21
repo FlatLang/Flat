@@ -1,0 +1,55 @@
+package flat/github/models
+
+import flat/datastruct/HashMap
+
+class {
+    public construct(
+        HashMap<String, Object> map
+    ) {
+        this(
+            login: (String)map["login"],
+            id: ((Long)map["id"]).value,
+            nodeId: (String)map["node_id"],
+            avatarUrl: (String)map["avatar_url"],
+            gravatarId: (String)map["gravatar_id"],
+            url: (String)map["url"],
+            htmlUrl: (String)map["html_url"],
+            followersUrl: (String)map["followers_url"],
+            followingUrl: (String)map["following_url"],
+            gistsUrl: (String)map["gists_url"],
+            starredUrl: (String)map["starred_url"],
+            subscriptionsUrl: (String)map["subscriptions_url"],
+            organizationsUrl: (String)map["organizations_url"],
+            reposUrl: (String)map["repos_url"],
+            eventsUrl: (String)map["events_url"],
+            receivedEventsUrl: (String)map["received_events_url"],
+            type: (String)map["type"],
+            siteAdmin: ((Bool)map["site_admin"]).value
+        )
+    }
+
+    public construct(
+        visible String login,
+        visible Long id,
+        visible String nodeId,
+        visible String avatarUrl,
+        visible String gravatarId,
+        visible String url,
+        visible String htmlUrl,
+        visible String followersUrl,
+        visible String followingUrl,
+        visible String gistsUrl,
+        visible String starredUrl,
+        visible String subscriptionsUrl,
+        visible String organizationsUrl,
+        visible String reposUrl,
+        visible String eventsUrl,
+        visible String receivedEventsUrl,
+        visible String type,
+        visible Bool siteAdmin
+    ) {}
+
+    override public toJson(Bool: format = false, String: tab = "\t") -> String {
+        return "{\"login\":#{login.toJson()},\"id\":#{id.toJson()},\"node_id\":#{nodeId.toJson()},\"avatar_url\":#{avatarUrl.toJson()},\"gravatar_id\":#{gravatarId.toJson()},\"url\":#{url.toJson()},\"html_url\":#{htmlUrl.toJson()},\"followers_url\":#{followersUrl.toJson()},\"following_url\":#{followingUrl.toJson()},\"gists_url\":#{gistsUrl.toJson()},\"starred_url\":#{starredUrl.toJson()},\"subscriptions_url\":#{subscriptionsUrl.toJson()},\"organizations_url\":#{organizationsUrl.toJson()},\"repos_url\":#{reposUrl.toJson()},\"events_url\":#{eventsUrl.toJson()},\"received_events_url\":#{receivedEventsUrl.toJson()},\"type\":#{type.toJson()},\"site_admin\":#{siteAdmin.toJson()}}"
+    }
+}

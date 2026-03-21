@@ -1,0 +1,53 @@
+package flat/github/models
+
+import flat/datastruct
+
+class {
+    public construct(
+        HashMap<String, Object> map
+    ) {
+        this(
+            id: ((Long)map["id"]).value,
+            nodeId: (String)map["node_id"],
+            name: (String)map["name"],
+            checkSuiteId: ((Long)map["check_suite_id"]).value,
+            checkSuiteNodeId: (String)map["check_suite_node_id"],
+            headBranch: (String)map["head_branch"],
+            headSha: (String)map["head_sha"],
+            path: (String)map["path"],
+            runNumber: ((Long)map["run_number"]).value,
+            runAttempt: ((Long)map["run_attempt"]).value,
+            event: (String)map["event"],
+            status: (String)map["status"],
+            conclusion: (String)map["conclusion"],
+            workflowId: ((Long)map["workflow_id"]).value,
+            url: (String)map["url"],
+            htmlUrl: (String)map["html_url"],
+            repository: Repo((HashMap)map["repository"])
+        )
+    }
+
+    public construct(
+        visible Long id,
+        visible String nodeId,
+        visible String name,
+        visible Long checkSuiteId,
+        visible String checkSuiteNodeId,
+        visible String headBranch,
+        visible String headSha,
+        visible String path,
+        visible Long runNumber,
+        visible Long runAttempt,
+        visible String event,
+        visible String status,
+        visible String conclusion,
+        visible Long workflowId,
+        visible String url,
+        visible String htmlUrl,
+        visible Repo repository
+    ) {}
+
+    override public toJson(Bool: format = false, String: tab = "\t") -> String {
+        return "{\"id\":#{id},\"nodeId\":#{nodeId},\"name\":#{name},\"checkSuiteId\":#{checkSuiteId},\"checkSuiteNodeId\":#{checkSuiteNodeId},\"headBranch\":#{headBranch},\"headSha\":#{headSha},\"path\":#{path},\"runNumber\":#{runNumber},\"runAttempt\":#{runAttempt},\"event\":#{event},\"status\":#{status},\"conclusion\":#{conclusion},\"workflowId\":#{workflowId},\"url\":#{url},\"htmlUrl\":#{htmlUrl},\"repository\":#{repository}}"
+    }
+}

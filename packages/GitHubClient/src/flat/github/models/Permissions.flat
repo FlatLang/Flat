@@ -1,0 +1,29 @@
+package flat/github/models
+
+import flat/datastruct/HashMap
+
+class {
+    public construct(
+        HashMap<String, Object> map
+    ) {
+        this(
+            admin: ((Bool)map["admin"]).value,
+            maintain: ((Bool)map["maintain"]).value,
+            push: ((Bool)map["push"]).value,
+            triage: ((Bool)map["triage"]).value,
+            pull: ((Bool)map["pull"]).value
+        )
+    }
+
+    public construct(
+        visible Bool admin,
+        visible Bool maintain,
+        visible Bool push,
+        visible Bool triage,
+        visible Bool pull
+    ) {}
+
+    override public toJson(Bool: format = false, String: tab = "\t") -> String {
+        return "{\"admin\":#{admin.toJson()},\"maintain\":#{maintain.toJson()},\"push\":#{push.toJson()},\"triage\":#{triage.toJson()},\"pull\":#{pull.toJson()}}"
+    }
+}
