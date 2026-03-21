@@ -1,0 +1,40 @@
+package flat/lexer
+
+import flat/compiler/models/Lexeme
+import flat/compiler/models/Token
+import flat/io/File
+import flat/log/Logger
+import flat/eventstream/EventStream
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(Lexer.class)
+
+    public lex(File file) => lexemesToTokens(Tokenizer().tokenize(file):emit("start"))
+    public lex(EventStream dataStream) => lexemesToTokens(Tokenizer().tokenize(dataStream):emit("start"))
+    public lex(String contents) => lexemesToTokens(Tokenizer().tokenize(contents):emit("start"))
+
+    public lexemesToTokens(EventStream lexemeStream) =>
+        EventStream(true).on("start", (_, stream) => {
+            let engine = LexerEngine()
+
+            lexemeStream.on<Lexeme>("data", (lexeme) => {
+                log.trace("Received data from Lexeme EventStream: #{lexeme}")
+                let token = engine.createToken(lexeme)
+                log.trace("Created Token from Lexeme: #{token}")
+
+                stream.emit("data", token)
+            })
+
+            lexemeStream.on<String>("error", (error) => {
+                log.trace("Received error from Lexeme EventStream: #{error}")
+                stream.emit("error", error)
+            })
+
+            lexemeStream.on("close", {
+                log.trace("EventStream closed")
+                stream.emit("close")
+            })
+        })
+}

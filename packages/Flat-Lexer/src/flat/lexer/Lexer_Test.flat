@@ -1,0 +1,116 @@
+package flat/lexer
+
+import flat/lexer/Lexer
+import flat/compiler/models/Token
+
+import static flat/lexer/TestUtils_Test.TestUtils
+
+testable class {
+    async test `can lex a single-line comment`() {
+        let stream = Lexer().lex("|
+            // this is a test
+            |")
+
+        stream.emit("start")
+        let value = stream.consumeAll<Token>("data")
+
+        let Token[] expected = [
+            Token(value: "// this is a test", type: Token.Type.COMMENT)
+        ]
+
+        expectTokens(value, expected, checkType: true)
+    }
+
+    async test `can lex a multi-line comment`() {
+        let stream = Lexer().lex("|
+            /* this is a test
+
+                 hey
+            */
+            |")
+
+        stream.emit("start")
+        let value = stream.consumeAll<Token>("data")
+
+        let Token[] expected = [
+            Token(
+                value: "|
+                    /* this is a test
+
+                         hey
+                    */
+                    |",
+                type: Token.Type.COMMENT
+            )
+        ]
+
+        expectTokens(value, expected, checkType: true)
+    }
+
+    async test `can lex basic package statement with type info`() {
+        let stream = Lexer().lex("|
+            package flat \"test\"
+            |")
+
+        stream.emit("start")
+        let value = stream.consumeAll<Token>("data")
+
+        let expected = [
+            Token(
+                value: "package",
+                type: Token.Type.IDENTIFIER
+            ),
+            Token(
+                value: " ",
+                type: Token.Type.WHITESPACE
+            ),
+            Token(
+                value: "flat",
+                type: Token.Type.IDENTIFIER
+            ),
+            Token(
+                value: " ",
+                type: Token.Type.WHITESPACE
+            ),
+            Token(
+                value: "\"test\"",
+                type: Token.Type.STRING
+            )
+        ]
+
+        expectTokens(value, expected, checkType: true)
+    }
+
+    async test `can lex an exxternal block`() {
+        let stream = Lexer().lex("|
+            external {
+                aoeuaoeu
+                aae {
+                    testing
+                    \#{valueHere}
+                    ahhh
+                }
+            }
+            |")
+
+        stream.emit("start")
+        let value = stream.consumeAll<Token>("data")
+
+        let Token[] expected = [
+            Token(value: "external", type: Token.Type.IDENTIFIER),
+            Token(value: " ", type: Token.Type.WHITESPACE),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "
+    aoeuaoeu
+    aae {
+        testing
+        \#{valueHere}
+        ahhh
+    }
+", type: Token.Type.CODE),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ]
+
+        expectTokens(value, expected, checkType: true)
+    }
+}

@@ -1,0 +1,62 @@
+package flat/lexer
+
+import flat/compiler/models/Lexeme
+import flat/compiler/models/Token
+
+class {
+
+}
+
+class TestUtils {
+    public static expectLexemes(
+        Lexeme[] actual,
+        Lexeme[] expected,
+        Bool: checkLocation = false
+    ) {
+        actual.zip(expected, (a, e, i) => {
+            expect(a.value).toBe(e.value, "Expected lexeme value \"#{e.value}\" at index #{i}, but received \"#{a.value}\" instead\n\n(actual lexeme: #{a})")
+
+            if (checkLocation) {
+                expect<Object>(a.location).toBe(e.location, "Expected lexeme location \"#{e.location}\" at index #{i}, but received \"#{a.location}\" instead\n\n(actual lexeme: #{a})")
+            }
+        })
+
+        if (actual.count != expected.count) {
+            let extra = if (actual.count > expected.count) {
+                "Missing: " + actual.skip(expected.count).join(", ")
+            } else {
+                "Extra: " + expected.skip(actual.count).join(", ")
+            }
+
+            expect(actual.count).toBe(expected.count, "Expected #{expected.count} lexemes, but received #{actual.count} instead. #{extra}")
+        }
+    }
+
+    public static expectTokens(
+        Token[] actual,
+        Token[] expected,
+        Bool: checkType = false,
+        Bool: checkLocation = false
+    ) {
+        actual.zip(expected, (a, e, i) => {
+            expect(a.value).toBe(e.value, "Expected token value \"#{e.value}\" at index #{i}, but received \"#{a.value}\" instead\n\n(actual token: #{a})")
+
+            if (checkType) {
+                expect(a.type).toBe(e.type, "Expected token type \"#{e.type}\" at index #{i}, but received \"#{a.type}\" instead\n\n(actual token: #{a})")
+            }
+            if (checkLocation) {
+                expect<Object>(a.location).toBe(e.location, "Expected token location \"#{e.location}\" at index #{i}, but received \"#{a.location}\" instead\n\n(actual token: #{a})")
+            }
+        })
+
+        if (actual.count != expected.count) {
+            let extra = if (actual.count > expected.count) {
+                "Missing: " + actual.skip(expected.count).join(", ")
+            } else {
+                "Extra: " + expected.skip(actual.count).join(", ")
+            }
+
+            expect(actual.count).toBe(expected.count, "Expected #{expected.count} tokens, but received #{actual.count} instead. #{extra}")
+        }
+    }
+}

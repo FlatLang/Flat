@@ -1,0 +1,837 @@
+package flat/lexer
+
+import flat/lexer/Lexer
+import flat/compiler/models/Lexeme
+import flat/compiler/models/Location
+
+import static flat/lexer/TestUtils_Test.TestUtils
+
+testable class {
+    async test `can tokenize basic package statement with location info`() {
+        let stream = Tokenizer().tokenize("|
+            package flat/lexer
+            |")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(
+                value: "package",
+                location: Location(lineNumber: 1, column: 1)
+            ),
+            Lexeme(
+                value: " ",
+                location: Location(lineNumber: 1, column: 8)
+            ),
+            Lexeme(
+                value: "flat",
+                location: Location(lineNumber: 1, column: 9)
+            ),
+            Lexeme(
+                value: "/",
+                location: Location(lineNumber: 1, column: 13)
+            ),
+            Lexeme(
+                value: "lexer",
+                location: Location(lineNumber: 1, column: 14)
+            )
+        ]
+
+        expectLexemes(value, expected, checkLocation: true)
+    }
+
+    async test `can tokenize float`() {
+        let stream = Tokenizer().tokenize("234.141")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "234.141")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize integer`() {
+        let stream = Tokenizer().tokenize("234")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "234")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize String`() {
+        let stream = Tokenizer().tokenize("\"this is a string\"")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "\"this is a string\"")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize greater-than-or-equal-to symbol when its not the last lexeme`() {
+        let stream = Tokenizer().tokenize(">= hey")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: ">="),
+            Lexeme(value: " "),
+            Lexeme(value: "hey")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize greater-than-or-equal-to symbol`() {
+        let stream = Tokenizer().tokenize(">=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: ">=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize less-than-or-equal-to symbol`() {
+        let stream = Tokenizer().tokenize("<=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "<=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize equivalence symbol`() {
+        let stream = Tokenizer().tokenize("==")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "==")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize non-equivalence symbol`() {
+        let stream = Tokenizer().tokenize("!=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "!=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize modulo-equals symbol`() {
+        let stream = Tokenizer().tokenize("%=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "%=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize divide-equals symbol`() {
+        let stream = Tokenizer().tokenize("/=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "/=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize multiply-equals symbol`() {
+        let stream = Tokenizer().tokenize("*=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "*=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize plus-equals symbol`() {
+        let stream = Tokenizer().tokenize("+=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "+=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize minus-equals symbol`() {
+        let stream = Tokenizer().tokenize("-=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "-=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize plus-plus symbol`() {
+        let stream = Tokenizer().tokenize("++")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "++")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and plus-plus symbol`() {
+        let stream = Tokenizer().tokenize("test++")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "++")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize minus-minus symbol`() {
+        let stream = Tokenizer().tokenize("--")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "--")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and minus-minus symbol`() {
+        let stream = Tokenizer().tokenize("test--")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "--")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and elvis symbol`() {
+        let stream = Tokenizer().tokenize("test?:")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "?:")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and .. symbol`() {
+        let stream = Tokenizer().tokenize("test..")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "..")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and tick symbol`() {
+        let stream = Tokenizer().tokenize("test`")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test`")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize tick and identifier`() {
+        let stream = Tokenizer().tokenize("`test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "`test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize completed tick`() {
+        let stream = Tokenizer().tokenize("`test`")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "`test`")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize completed tick and identifier`() {
+        let stream = Tokenizer().tokenize("`test` hey")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "`test`"),
+            Lexeme(value: " "),
+            Lexeme(value: "hey"),
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and safe access symbol`() {
+        let stream = Tokenizer().tokenize("test?.")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "?.")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize safe access and identifier`() {
+        let stream = Tokenizer().tokenize("?.test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "?."),
+            Lexeme(value: "test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and at symbol`() {
+        let stream = Tokenizer().tokenize("test@")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "@")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize at and identifier`() {
+        let stream = Tokenizer().tokenize("@test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "@"),
+            Lexeme(value: "test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and dot dot dot symbol`() {
+        let stream = Tokenizer().tokenize("test...")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "...")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize dot dot dot and identifier`() {
+        let stream = Tokenizer().tokenize("...test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "..."),
+            Lexeme(value: "test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and bitwise or-equals symbol`() {
+        let stream = Tokenizer().tokenize("test|=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "|=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize bitwise or-equals and identifier`() {
+        let stream = Tokenizer().tokenize("|=test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "|="),
+            Lexeme(value: "test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and plus-equals symbol`() {
+        let stream = Tokenizer().tokenize("test+=")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "+=")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize plus-equals and identifier`() {
+        let stream = Tokenizer().tokenize("+=test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "+="),
+            Lexeme(value: "test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and amp-amp symbol`() {
+        let stream = Tokenizer().tokenize("test&&")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "&&")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize amp-amp and identifier`() {
+        let stream = Tokenizer().tokenize("&&test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "&&"),
+            Lexeme(value: "test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and pipe-pipe symbol`() {
+        let stream = Tokenizer().tokenize("test||")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "||")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize pipe-pipe and identifier`() {
+        let stream = Tokenizer().tokenize("||test")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "||"),
+            Lexeme(value: "test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize integer and dot-dot symbol`() {
+        let stream = Tokenizer().tokenize("0..")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "0"),
+            Lexeme(value: "..")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize identifier and colon-colon symbol`() {
+        let stream = Tokenizer().tokenize("test::")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "test"),
+            Lexeme(value: "::")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize double-sided arrow symbol`() {
+        let stream = Tokenizer().tokenize("<=>")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "<=>")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `handles no whitespace between lexemes`() {
+        let stream = Tokenizer().tokenize("this+that")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "this"),
+            Lexeme(value: "+"),
+            Lexeme(value: "that")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `handles first lexeme as a symbol`() {
+        let stream = Tokenizer().tokenize("+that")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "+"),
+            Lexeme(value: "that")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `handles preceding newlines`() {
+        let stream = Tokenizer().tokenize("\n\nthis+that")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let expected = [
+            Lexeme(value: "\n\n"),
+            Lexeme(value: "this"),
+            Lexeme(value: "+"),
+            Lexeme(value: "that")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize basic package statement and import statement with location info`() {
+        let stream = Tokenizer().tokenize("|
+            package flat/lexer
+
+            import flat/lexer/Lexer
+            |")
+        stream.emit("start")
+
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(
+                value: "package",
+                location: Location(lineNumber: 1, column: 1)
+            ),
+            Lexeme(
+                value: " ",
+                location: Location(lineNumber: 1, column: 8)
+            ),
+            Lexeme(
+                value: "flat",
+                location: Location(lineNumber: 1, column: 9)
+            ),
+            Lexeme(
+                value: "/",
+                location: Location(lineNumber: 1, column: 13)
+            ),
+            Lexeme(
+                value: "lexer",
+                location: Location(lineNumber: 1, column: 14)
+            ),
+            Lexeme(
+                value: "\n\n",
+                location: Location(lineNumber: 1, column: 19)
+            ),
+            Lexeme(
+                value: "import",
+                location: Location(lineNumber: 3, column: 1)
+            ),
+            Lexeme(
+                value: " ",
+                location: Location(lineNumber: 3, column: 7)
+            ),
+            Lexeme(
+                value: "flat",
+                location: Location(lineNumber: 3, column: 8)
+            ),
+            Lexeme(
+                value: "/",
+                location: Location(lineNumber: 3, column: 12)
+            ),
+            Lexeme(
+                value: "lexer",
+                location: Location(lineNumber: 3, column: 13)
+            ),
+            Lexeme(
+                value: "/",
+                location: Location(lineNumber: 3, column: 18)
+            ),
+            Lexeme(
+                value: "Lexer",
+                location: Location(lineNumber: 3, column: 19)
+            )
+        ]
+
+        expectLexemes(value, expected, checkLocation: true)
+    }
+
+    async test `can tokenize function call`() {
+        let stream = Tokenizer().tokenize("|
+            parse(ParseRequest(sourceCode: test), value)
+            |")
+        stream.emit("start")
+
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "parse"),
+            Lexeme(value: "("),
+            Lexeme(value: "ParseRequest"),
+            Lexeme(value: "("),
+            Lexeme(value: "sourceCode"),
+            Lexeme(value: ":"),
+            Lexeme(value: " "),
+            Lexeme(value: "test"),
+            Lexeme(value: ")"),
+            Lexeme(value: ","),
+            Lexeme(value: " "),
+            Lexeme(value: "value"),
+            Lexeme(value: ")")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize single single-line comment`() {
+        let stream = Tokenizer().tokenize("|
+            // this is a test
+            |")
+        stream.emit("start")
+
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "// this is a test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize two single-line comments`() {
+        let stream = Tokenizer().tokenize("|
+            // this is a test
+            // this is another test
+            |")
+        stream.emit("start")
+
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "// this is a test"),
+            Lexeme(value: "\n"),
+            Lexeme(value: "// this is another test")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize single multi-line comment`() {
+        let stream = Tokenizer().tokenize("|
+            /* this is a test */
+            |")
+        stream.emit("start")
+
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "/* this is a test */")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize two multi-line comments`() {
+        let stream = Tokenizer().tokenize("|
+            /* this is a test
+
+            */
+            /* this is another test
+
+                aoeu
+            /**/
+            |")
+        stream.emit("start")
+
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "|
+                /* this is a test
+
+                */
+                |"),
+            Lexeme(value: "\n"),
+            Lexeme(value: "|
+                /* this is another test
+
+                    aoeu
+                /**/
+                |"),
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize basic field access from a function call`() {
+        let stream = Tokenizer().tokenize("Lexer().lex")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "Lexer"),
+            Lexeme(value: "("),
+            Lexeme(value: ")"),
+            Lexeme(value: "."),
+            Lexeme(value: "lex")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize slim arrow symbol`() {
+        let stream = Tokenizer().tokenize("->")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "->")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize fat arrow symbol`() {
+        let stream = Tokenizer().tokenize("=>")
+        stream.emit("start")
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "=>")
+        ]
+
+        expectLexemes(value, expected)
+    }
+
+    async test `can tokenize exxternal block`() {
+        let stream = Tokenizer().tokenize("|
+            external {
+                aoeuaoeu
+                aae {
+                    testing
+                    \#{valueHere}
+                    ahhh
+                }
+            }
+            |")
+
+        stream.emit("start")
+
+        let value = stream.consumeAll<Lexeme>("data")
+
+        let Lexeme[] expected = [
+            Lexeme(value: "external"),
+            Lexeme(value: " "),
+            Lexeme(value: "{"),
+            Lexeme(value: "
+    aoeuaoeu
+    aae {
+        testing
+        \#{valueHere}
+        ahhh
+    }
+"),
+            Lexeme(value: "}"),
+        ]
+
+        expectLexemes(value, expected)
+    }
+}

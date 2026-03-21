@@ -1,0 +1,25 @@
+package flat/lexer
+
+class {
+    static String EXTERNAL_BLOCK_VALUE = "external"
+
+    var Int externalBlock = 0
+
+    public isExternalCode() => externalBlock == 2
+
+    public checkExternalBlock(String value) {
+        if (value == EXTERNAL_BLOCK_VALUE) {
+            externalBlock = 1
+        } else if (externalBlock == 1 && value == "{") {
+            externalBlock = 2
+        } else if (externalBlock == 1) {
+            return
+        } else {
+            externalBlock = 0
+        }
+    }
+
+    public reset() {
+        externalBlock = 0
+    }
+}

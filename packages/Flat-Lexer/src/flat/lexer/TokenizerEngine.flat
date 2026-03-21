@@ -1,0 +1,283 @@
+package flat/lexer
+
+import flat/compiler/models/Lexeme
+import flat/compiler/models/Location
+import flat/compiler/models/Token
+import flat/io/File
+import flat/log/Logger
+import flat/eventstream/EventStream
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(TokenizerEngine.class)
+
+    ExternalHandler externalHandler = ExternalHandler()
+
+    public tokenize(String contents) =>
+        EventStream(true).on("start", { tokenize(contents, _stream) })
+
+    tokenize(String contents, EventStream stream) {
+        var Int prevIndex = -1
+        var Int index = findDelimiterOnTopLevel(contents)
+
+        var Int lineNumber = 1
+        var Int column = 1
+
+        while (index != -1) {
+            let char = contents[index]
+
+            if ((let prevSkipTo = checkPrevLexemeContinuation(contents, char, prevIndex, index)) != -2) {
+                index = prevSkipTo
+                continue
+            }
+
+            if (let prevLexeme = createLexeme(contents, prevIndex, index, lineNumber, column)) {
+                stream.emit("data", prevLexeme)
+
+                column += prevLexeme.value.count
+                lineNumber += prevLexeme.value.howMany('\n')
+            }
+
+            var Int endIndex = index + 1
+
+            if ((let currentSkipTo = checkCurrentLexemeContinuation(contents, char, prevIndex, index)) != -2) {
+                endIndex = currentSkipTo
+            }
+
+            if (let currentLexeme = createLexeme(contents, index - 1, endIndex, lineNumber, column)) {
+                stream.emit("data", currentLexeme)
+
+                if ((let lines = currentLexeme.value.howMany('\n')) > 0) {
+                    lineNumber += lines
+
+                    var Int offset = 0
+
+                    while (offset < currentLexeme.value.count - 1) {
+                        let val = currentLexeme.value[currentLexeme.value.count - 1 - offset]
+
+                        if (val != ' ' && val != '\t') {
+                            break
+                        }
+
+                        offset++
+                    }
+
+                    column = offset + 1
+                } else {
+                    column += currentLexeme.value.count
+                }
+            }
+
+            prevIndex = endIndex - 1
+            index = findDelimiterOnTopLevel(contents, start: endIndex)
+        }
+
+        if (prevIndex != -2 && prevIndex < contents.count - 1) {
+            if (let remainder = createLexeme(contents, prevIndex, index, lineNumber, column)) {
+                stream.emit("data", remainder)
+            }
+        }
+
+        log.debug("Finished tokenizing contents of size #{contents.count}")
+
+        stream.emit("close")
+    }
+
+    findDelimiterOnTopLevel(String contents, Int start = 0) -> Int => -1 {
+        if (externalHandler.isExternalCode()) {
+            externalHandler.reset()
+            return contents.findEndingMatch(start - 1, '{', '}')
+        }
+
+        var Int index = start
+
+        while (index < contents.count && index >= 0) {
+            let c = contents[index]
+
+            switch c {
+                '.' =>
+                ',' =>
+                ';' =>
+                '{' =>
+                '}' =>
+                '[' =>
+                ']' =>
+                '(' =>
+                ')' =>
+                '/' =>
+                '*' =>
+                '%' =>
+                '<' =>
+                '>' =>
+                '=' =>
+                ' ' =>
+                '\t' =>
+                '\n' =>
+                '\r' =>
+                ':' =>
+                '?' =>
+                '!' =>
+                '+' =>
+                '-' =>
+                '@' =>
+                '&' =>
+                '|' =>
+                '\\' => return index
+            }
+
+            switch c {
+                '"' => index = contents.findEndingQuote(index)
+                '\'' => index = contents.findEndingSingleQuote(index)
+                '`' => index = contents.findEndingChar('`', index)
+                '(' => index = contents.findEndingMatch(index, '(', ')')
+                '{' => index = contents.findEndingMatch(index, '{', '}')
+                '[' => index = contents.findEndingMatch(index, '[', ']')
+                '<' => index = contents.findEndingMatch(index, '<', '>')
+            }
+
+            if (index == -1) break
+
+            index++
+        }
+    }
+
+    checkPrevLexemeContinuation(String contents, Char char, Int prevIndex, Int index) -> Int => -2 {
+        if (index == contents.count - 1) {
+            return -2
+        }
+
+        switch char {
+            '<' => {
+                if (contents[index + 1] == '=' && contents[index + 2] == '>') {
+                    return index == contents.count - 3 ? -1 : index + 3
+                }
+            }
+            '/' => {
+                if (contents[index + 1] == '/') {
+                    // Handle single-line comment
+                    return contents.indexOf('\n', start: index + 2)
+                } else if (contents[index + 1] == '*') {
+                    // Handle multi-line comment
+                    return contents.indexOf("*/", start: index + 2) + 2
+                }
+            }
+            '.' => {
+                if (index > 0 && contents[index - 1].isNumber && contents[index + 1].isNumber) {
+                    var Int offset = 0
+
+                    while ((index + offset + 1) < contents.count && contents[index + offset + 1].isNumber) {
+                        offset++
+                    }
+
+                    if ((index + offset) == (contents.count - 1)) {
+                        return -1
+                    } else {
+                        return index + offset + 1
+                    }
+                }
+            }
+            '-' => '=' => {
+                if (contents[index + 1] == '>') {
+                    return index == contents.count - 2 ? -1 : index + 2
+                }
+            }
+        }
+    }
+
+    checkCurrentLexemeContinuation(String contents, Char char, Int prevIndex, Int index) -> Int => -2 {
+        if (index == contents.count - 1) {
+            return -2
+        }
+
+        switch char {
+            '+' => '-' => '*' => '/' => '&' => '|' => '%' => '^' => '<' => '>' => '!' => '=' => {
+                if (contents[index + 1] == '=') {
+                    return index == contents.count - 2 ? -1 : index + 2
+                }
+            }
+        }
+
+        switch char {
+            '+' => {
+                if (contents[index + 1] == '+') {
+                    return index == contents.count - 2 ? -1 : index + 2
+                }
+            }
+            '-' => {
+                if (contents[index + 1] == '-') {
+                    return index == contents.count - 2 ? -1 : index + 2
+                }
+            }
+            '?' => {
+                match (contents[index + 1]) {
+                    ':' => '.' => {
+                        return index == contents.count - 2 ? -1 : index + 2
+                    }
+                }
+            }
+            '.' => {
+                if (contents[index + 1] == '.') {
+                    if (contents.count > index + 2 && contents[index + 2] == '.') {
+                        return index == contents.count - 3 ? -1 : index + 3
+                    } else {
+                        return index == contents.count - 2 ? -1 : index + 2
+                    }
+                }
+            }
+            ':' => {
+                if (contents[index + 1] == ':') {
+                    return index == contents.count - 2 ? -1 : index + 2
+                }
+            }
+            '&' => {
+                if (contents[index + 1] == '&') {
+                    return index == contents.count - 2 ? -1 : index + 2
+                }
+            }
+            '|' => {
+                if (contents[index + 1] == '|') {
+                    return index == contents.count - 2 ? -1 : index + 2
+                }
+            }
+        }
+
+        switch char {
+            ' ' => '\t' => '\r' => '\n' => {
+                var Int offset = 0
+
+                while ((index + offset + 1 < contents.count) && (contents[index + offset + 1].isWhitespace)) {
+                    offset++
+                }
+
+                if ((index + offset) == (contents.count - 1)) {
+                    return -1
+                } else {
+                    return index + offset + 1
+                }
+            }
+        }
+    }
+
+    createLexeme(
+        String contents,
+        Int prevIndex,
+        Int index,
+        Int lineNumber,
+        Int column
+    ) -> Lexeme => null {
+        let value = contents.substring(prevIndex + 1, index == -1 ? contents.count : index)
+
+        if (value.count > 0) {
+            externalHandler.checkExternalBlock(value)
+
+            return Lexeme(
+                value: value,
+                location: Location(
+                    lineNumber: lineNumber,
+                    column: column
+                )
+            )
+        }
+    }
+}

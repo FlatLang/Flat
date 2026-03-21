@@ -1,0 +1,67 @@
+package flat/lexer
+
+import flat/compiler/models/Lexeme
+import flat/compiler/models/Token
+import flat/io/File
+import flat/log/Logger
+import flat/eventstream/EventStream
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(Tokenizer.class)
+
+    public tokenize(File file) => tokenize(file.createReadStream())
+
+    public tokenize(EventStream dataStream) =>
+        EventStream(true).on("start", (_, stream) => {
+            let engine = TokenizerEngine()
+            var processingData = false
+            var datastreamClosed = false
+
+            dataStream.on<String>("data", (data) => {
+                processingData = true
+                log.trace("Received data from EventStream with count: #{data.count}")
+                let chunkStream = engine.tokenize(data)
+
+                chunkStream.on<Lexeme>("data", (lexeme) => {
+                    log.trace("Received lexeme from Lexeme EventStream: #{lexeme}")
+                    stream.emit("data", lexeme)
+                })
+
+                chunkStream.on<String>("error", (error) => {
+                    log.trace("Received error from Lexeme EventStream: #{error}")
+                    stream.emit("error", error)
+                })
+
+                chunkStream.on("close", {
+                    log.trace("Lexeme EventStream closed. datastreamClosed: #{datastreamClosed}")
+                    processingData = false
+                    if (datastreamClosed) {
+                        stream.emit("close")
+                    }
+                })
+
+                chunkStream.emit("start")
+            })
+
+            dataStream.on<String>("error", (error) => {
+                log.trace("Received error from EventStream: #{error}")
+                stream.emit("error", error)
+            })
+
+            dataStream.on("close", {
+                datastreamClosed = true
+                log.trace("EventStream closed. processingData: #{processingData}")
+                if (!processingData) {
+                    stream.emit("close")
+                }
+            })
+        })
+
+    public tokenize(String contents) -> EventStream {
+        let engine = TokenizerEngine()
+
+        return engine.tokenize(contents)
+    }
+}

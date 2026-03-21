@@ -1,0 +1,7 @@
+package flat/lexer
+
+import flat/compiler/models/Lexeme
+
+data class {
+    visible Lexeme[] lexemes
+}

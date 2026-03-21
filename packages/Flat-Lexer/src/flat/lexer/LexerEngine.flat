@@ -1,0 +1,56 @@
+package flat/lexer
+
+import flat/compiler/models/Lexeme
+import flat/compiler/models/Token
+import flat/io/File
+import flat/log/Logger
+import flat/eventstream/EventStream
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(LexerEngine.class)
+
+    ExternalHandler externalHandler = ExternalHandler()
+
+    public createToken(Lexeme lexeme) -> Token {
+        let type = getTypeForLexeme(lexeme)
+
+        externalHandler.checkExternalBlock(lexeme.value)
+
+        return Token(
+            value: lexeme.value,
+            location: lexeme.location,
+            type: type
+        )
+    }
+
+    getTypeForLexeme(Lexeme lexeme) -> Int {
+        if (externalHandler.isExternalCode()) {
+            externalHandler.reset()
+            return Token.Type.CODE
+        } if (lexeme.value == "null") {
+            return Token.Type.NULL
+        } else if (lexeme.value == "true" || lexeme.value == "false") {
+            return Token.Type.BOOL
+        } else if (lexeme.value.startsWith("//")) {
+            return Token.Type.COMMENT
+        } else if (lexeme.value.startsWith("/*")) {
+            return Token.Type.COMMENT
+        } else if (lexeme.value.isWhitespace()) {
+            return Token.Type.WS
+        } else if (lexeme.value.isSurroundedByQuotes()) {
+            return Token.Type.STRING
+        } else if (lexeme.value.isCharLiteral()) {
+            return Token.Type.CHAR
+        } else if (lexeme.value.isUnsignedInteger()) {
+            return Token.Type.INTEGER
+        } else if (lexeme.value.isUnsignedFloat()) {
+            return Token.Type.FLOAT
+        } else if (lexeme.value.isSymbol()) {
+            return Token.Type.SYMBOL
+        } else {
+            return Token.Type.IDENTIFIER
+        }
+    }
+}
