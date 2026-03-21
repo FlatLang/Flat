@@ -1,0 +1,367 @@
+package flat/compiler
+
+import flat/io
+import flat/ast
+import flat/compiler/models
+import flat/lexer
+import flat/parser
+import flat/parser/flat/FileParser as FlatFileParser
+import flat/parser/java/FileParser as JavaFileParser
+import flat/writer/es6/Es6Writer
+import flat/writer/flat/FlatWriter
+import flat/log
+import flat/time
+import flat/eventstream
+import flat/fucli
+import flat/regex
+import flat/progressbar
+import flat/terminalsize
+
+import flat/regex/RegexStringExtensions
+import flat/writer/WriterPatternExtensions
+
+import static flat/console/EscapeCode
+import static flat/Math
+
+class {
+    static Logger log = Logger(Compiler.class)
+
+    static CliArg sourceArg = CliArg(
+        name: "source",
+        description: "The file or directory to include in the compilation",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg excludeSourceArg = CliArg(
+        name: "source",
+        description: "Exclude files or directories from compilation",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg excludeArg = CliArg(
+        name: "--exclude",
+        aliases: ["-x"],
+        description: "Exclude specified file or directory from compilation",
+        args: [excludeSourceArg]
+    )
+
+    static CliArg threadCountArg = CliArg(
+        name: "count",
+        description: "The max amount of threads to use",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg threadsArg = CliArg(
+        name: "--threads",
+        aliases: ["-t"],
+        description: "Specify the max amount of threads to use during compilation if parallel",
+        args: [threadCountArg]
+    )
+
+    static CliArg languageNameArg = CliArg(
+        name: "name",
+        description: "The name of the source language",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg languageArg = CliArg(
+        name: "--language",
+        aliases: ["--lang"],
+        description: "Specify the source language to compile",
+        args: [languageNameArg]
+    )
+
+    static CliArg targetNameArg = CliArg(
+        name: "languageName",
+        description: "The target language to compile to",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg targetArg = CliArg(
+        name: "--target",
+        aliases: ["-t"],
+        description: "Specify the target language to compile to",
+        args: [targetNameArg]
+    )
+
+    static CliArg syncArg = CliArg(
+        name: "--sync",
+        description: "Run the compilation synchronously"
+    )
+
+    static CliArg dryArg = CliArg(
+        name: "--dry",
+        description: "Skip the code generation phase of compilation"
+    )
+
+    static CliArg quietArg = CliArg(
+        name: "--quiet",
+        aliases: ["-q"],
+        description: "Suppress compiler logging output"
+    )
+
+    static CliArg noLogProgressArg = CliArg(
+        name: "--no-log-progress",
+        description: "Do not log progress bar output"
+    )
+
+    static CliArg helpCommandArg = CliArg(
+        name: "name",
+        description: "The name of the argument, command, or option to get help on",
+        minCount: 0,
+        wildcard: true
+    )
+
+    static CliArg allHelpArg = CliArg(
+        name: "--all",
+        description: "Print all the help information recursively for an argument, command, or option"
+    )
+
+    static CliArg helpCommand = CliArg(
+        name: "help",
+        aliases: ["?"],
+        description: "Print help information",
+        args: [
+            helpCommandArg,
+            allHelpArg,
+        ]
+    )
+
+    static var Long totalLineCount = 0
+    static var Long totalBytes = 0
+    static var Bool loggedProgress = false
+    static var ProgressBar progressBar = ProgressBar()
+
+    public static async main(String[] args) {
+        if (let dimensions = TerminalSize.getTerminalSize()) {
+            log.lineLength = dimensions.columns
+        }
+
+        let fucli = FuCli(
+            "flatc",
+            [
+                sourceArg,
+                excludeArg,
+                threadsArg,
+                languageArg,
+                targetArg,
+                syncArg,
+                dryArg,
+                quietArg,
+                noLogProgressArg,
+                helpCommand,
+            ],
+            description: "Flat Compiler CLI"
+        ):parse(args.skip(1))
+
+        if (helpCommand.enabled) {
+            if (allHelpArg.enabled) {
+                fucli.usedArgs.removeFirstWhere({ _ == allHelpArg })
+                let separator = "-".repeat(80)
+                Console.log(
+                    fucli.getAllHelp()
+                        .map((help) => {
+                            let header = help.breadcrumbs.count > 1 ? "`#{help.breadcrumbs.join(" ")}`\n\n" : ""
+                            return "#{header}```\n#{help.help}\n```"
+                        })
+                        .join("\n\n#{separator}\n\n")
+                )
+            } else {
+                Console.log(fucli.getHelp().help)
+            }
+
+            System.exit(0)
+        }
+
+        let originalLoggingLevel = log.loggingLevel
+
+        if (quietArg.enabled) {
+            log.loggingLevel = Logger.OFF
+        }
+
+        let completeTimer = Timer():start()
+
+        let inputFiles = sourceArg.values.map({ File(_) })
+
+        let excludes = excludeArg["source"].values.map({ Pattern(_) })
+        let extension = languageArg["name"].value ?: "flat"
+
+        let files = inputFiles.flatMapAsync((inputFile) => {
+            inputFile.isDirectory
+                ? inputFile.getChildFiles(true)
+                    .filter({ _.extensionName == extension })
+                    .filterParallel(file => excludes.noneParallel({ file.getCanonicalPath().matches(_) }))
+                : Array():add(inputFile)
+        })
+
+        let failures = syncArg.enabled
+            ? files.filterAsync({ !compileFile(_) })
+            : files.filterParallel({ !compileFile(_) }, maxParallel: threadsArg.enabled ? Int.parseInt(threadsArg["count"].value) : 10)
+
+        completeTimer.stop()
+
+        Double fileCount = files.count
+        Double lineCount = totalLineCount
+        Double byteCount = totalBytes
+
+        let filesPerSecond = Double.toFixed((fileCount / completeTimer.duration) * 1000, 2)
+        let linesPerSecond = Double.toFixed((lineCount / completeTimer.duration) * 1000, 2)
+        let bytesPerSecond = Math.round((byteCount / completeTimer.duration) * 1000)
+
+        let perSecondStats = "#{filesPerSecond} files/sec, #{linesPerSecond} lines/sec, #{Long.toFileSize(bytesPerSecond)}/sec"
+
+        if (quietArg.enabled) {
+            log.loggingLevel = originalLoggingLevel
+        }
+
+        if (failures.count > 0) {
+            let successCount = files.count - failures.count
+            log.info("Compiled #{successCount.toEnglish()}/#{files.count.toEnglish()} file#{files.count == 1 ? "" : "s"}, #{totalLineCount.toEnglish()} line#{totalLineCount == 1 ? "" : "s"}, #{Long.toFileSize(totalBytes)} with #{failures.count.toEnglish()} failure#{failures.count == 1 ? "" : "s"} in #{completeTimer.duration.millisToTime()} (#{perSecondStats})")
+            System.exit(1)
+        } else {
+            log.info("Successfully compiled #{files.count.toEnglish()} file#{files.count == 1 ? "" : "s"}, #{totalLineCount.toEnglish()} line#{totalLineCount == 1 ? "" : "s"}, #{Long.toFileSize(totalBytes)} in #{completeTimer.duration.millisToTime()} (#{perSecondStats})")
+        }
+    }
+
+    static async compileFile(File sourceFile) -> Bool {
+        var successful = true
+
+        let tokenizerTimer = Timer()
+        let lexTimer = Timer()
+        let parseTimer = Timer()
+        let fileTimer = Timer()
+        let writeTimer = Timer()
+        let completeTimer = Timer()
+
+        let streams = EventStream[]
+
+        log.info("Compiling file #{sourceFile.nativeLocation}...")
+
+        completeTimer.start()
+
+        fileTimer.start()
+        let fileStream = streams.add(sourceFile.createReadStream())
+        fileStream.on("close", { fileTimer.stop() })
+
+        if (syncArg.enabled) fileStream.waitFor("close")
+
+        let bytes = sourceFile.bytes
+        totalBytes += bytes
+        totalLineCount++
+        var Int bytesParsed = 0
+
+        if (syncArg.enabled) {
+            progressBar.startTime = Time.currentTimeMillis
+            progressBar.processedSteps = 0
+            progressBar.lastProgress = 0
+            progressBar.stepsToProcess = bytes
+        } else {
+            progressBar.stepsToProcess += bytes
+        }
+
+        tokenizerTimer.start()
+        var Int tokenCount = 0
+        let lexemeStream = streams.add(Tokenizer().tokenize(fileStream))
+        lexemeStream.on<Lexeme>("data", lexeme => log.debug("Lexeme: '#{lexeme.value}'"))
+        lexemeStream.on<Lexeme>("data", { tokenCount++ })
+        lexemeStream.on("close", { tokenizerTimer.stop() })
+        lexemeStream.emit("start")
+
+        if (syncArg.enabled) lexemeStream.waitFor("close")
+
+        lexTimer.start()
+        let tokenStream = streams.add(Lexer().lexemesToTokens(lexemeStream))
+        tokenStream.on<Token>("data", token => log.debug("Token: '#{token.value}'"))
+        tokenStream.on<Token>("data", token => {
+            if (token.type == Token.Type.WHITESPACE) {
+                totalLineCount += token.value.howMany('\n')
+            }
+        })
+        tokenStream.on("close", { lexTimer.stop() })
+        tokenStream.emit("start")
+
+        if (syncArg.enabled) tokenStream.waitFor("close")
+
+        let rootParser = match languageArg["name"].value {
+            "java" => JavaFileParser()
+            default => FlatFileParser()
+        }
+
+        parseTimer.start()
+        let nodeStream = streams.add(Parser().parse(rootParser, ParseContext(file: sourceFile), tokenStream))
+        nodeStream.on("quit", {
+            successful = false
+
+            log.info("Closing streams for file #{sourceFile.nativeLocation}")
+            streams.forEach({ _:emit("close").close() })
+
+            progressBar.processedSteps += bytes - bytesParsed
+            progressBar.startTime = Time.currentTimeMillis
+        })
+        nodeStream.on<NodeResult>("data", result => log.debug("Node: #{result.node}"))
+        nodeStream.on<Token>("parsed_token", token => {
+            progressBar.processedSteps += token.value.count
+            bytesParsed += token.value.count
+            logProgress()
+        })
+        nodeStream.on("close", { parseTimer.stop() })
+        nodeStream.emit("start")
+
+        if (syncArg.enabled) nodeStream.waitFor("close")
+
+        if (!dryArg.enabled && successful) {
+            let writer = match targetArg["languageName"].value {
+                "es6" => Es6Writer()
+                default => FlatWriter()
+            }
+            let rootWriter = match targetArg["languageName"].value {
+                "es6" => FlatFileParser().pattern.getWriter()
+                default => FlatFileParser().pattern.getWriter()
+            }
+
+            writeTimer.start()
+            let writeStream = streams.add(writer.write(nodeStream, rootWriter))
+            writeStream.on("close", { writeTimer.stop() })
+            writeStream.emit("start")
+
+            if (syncArg.enabled) writeStream.waitFor("close")
+        }
+
+        if (!syncArg.enabled) {
+            streams.forEachAsync({ _.waitFor("close") })
+        }
+
+        completeTimer.stop()
+
+        loggedProgress = false
+
+        log.info("Finished compiling file #{sourceFile.nativeLocation}! Took #{completeTimer.duration.millisToTime()} (reading file: #{fileTimer.duration.millisToTime()}, tokenizing #{tokenizerTimer.duration.millisToTime()}, lexing #{lexTimer.duration.millisToTime()}, parsing #{parseTimer.duration.millisToTime()}, writing #{writeTimer.duration.millisToTime()} (#{tokenCount} tokens))")
+
+        return successful
+    }
+
+    static logProgress() {
+        if (quietArg.enabled || noLogProgressArg.enabled) return
+
+        let prefix = loggedProgress
+            ? cursorMoveUp(1) + eraseFromCursorToEndOfLine()
+            : ""
+
+        let lineLength = min(80, max(40, log.lineLength))
+        let progress = progressBar.getProgressLog(lineLength)
+
+        Console.log(prefix + progress)
+
+        loggedProgress = true
+    }
+}

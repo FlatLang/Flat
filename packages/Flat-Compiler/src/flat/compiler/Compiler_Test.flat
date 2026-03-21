@@ -1,0 +1,11 @@
+package flat/compiler
+
+import flat/compiler/Compiler
+
+testable class {
+    test `can create`() {
+        let value = Compiler()
+
+        expect(value).toNotBe(null)
+    }
+}
