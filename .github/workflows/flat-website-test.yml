@@ -1,4 +1,4 @@
-name: Test Flat-Website Server
+name: Flat-Website / Test Flat-Website Server
 
 on:
   push:
