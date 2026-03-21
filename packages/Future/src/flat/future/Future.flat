@@ -1,0 +1,45 @@
+package flat/future
+
+class<TType> {
+    Array<action(Exception)> exceptionListeners = Array()
+
+    visible var Bool completed
+    visible var Bool cancelled
+    visible var Exception exception
+
+    construct() {}
+
+    public async get() -> TType {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    public cancel() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    public onException(func(Exception)) {
+        exceptionListeners.add(func)
+    }
+
+    public static from<TType>(async func() -> TType) -> Future<TType> {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    public static fromResolve<TType>(async func(resolve(TType value), reject(Exception exception))) -> Future<TType> {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    public static create<TType>() => CompletableFuture<TType>()
+
+    public static class CompletableFuture<TType> extends Future<TType> {
+        construct() => super()
+
+        public complete(TType value) => value {
+            throw Exception("Not implemented for target language or runtime")
+        }
+
+        public error(Exception value) => value {
+            throw Exception("Not implemented for target language or runtime")
+        }
+    }
+}

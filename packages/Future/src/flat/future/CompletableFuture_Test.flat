@@ -1,0 +1,44 @@
+package flat/future
+
+import flat/thread
+import flat/time
+
+testable class {
+    async test `can delay the execution of the future`() {
+        let start = Time.currentTimeMillis
+
+        let future = Future.create<String>()
+
+        doStuff({
+            Thread.sleep(100)
+            future.complete("hey")
+        })$
+
+        let end = Time.currentTimeMillis
+        let response = await future.get()
+
+        expect(end - start < 90).toBe(true)
+        expect(response).toBe("hey")
+    }
+
+    async test `can wait for the execution of the future`() {
+        let start = Time.currentTimeMillis
+
+        let future = Future.create<String>()
+
+        doStuff({
+            Thread.sleep(100)
+            future.complete("hey")
+        })$
+
+        let response = await future.get()
+        let end = Time.currentTimeMillis
+
+        expect(end - start >= 90).toBe(true)
+        expect(response).toBe("hey")
+    }
+
+    async doStuff(async func()) {
+        func()
+    }
+}

@@ -1,0 +1,7 @@
+package flat/future
+
+class extends Exception {
+    public construct(String message = null) {
+        super(message)
+    }
+}

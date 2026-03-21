@@ -1,0 +1,104 @@
+package flat/future
+
+import flat/thread
+import flat/time
+
+testable class {
+    async test `Future.from: can delay the execution of the future`() {
+        let start = Time.currentTimeMillis
+
+        let future = Future.from(async {
+            Thread.sleep(100)
+            return "hey"
+        })
+
+        let end = Time.currentTimeMillis
+        let response = await future.get()
+
+        expect(end - start < 90).toBe(true)
+        expect(response).toBe("hey")
+    }
+
+    async test `Future.from: can wait for the execution of the future`() {
+        let start = Time.currentTimeMillis
+
+        let future = Future.from(async {
+            Thread.sleep(100)
+            return "hey"
+        })
+
+        let response = await future.get()
+        let end = Time.currentTimeMillis
+
+        expect(end - start >= 90).toBe(true)
+        expect(response).toBe("hey")
+    }
+
+    async test `Future.fromResolve: can delay the execution of the future`() {
+        let start = Time.currentTimeMillis
+
+        let future = Future.fromResolve(async {
+            Thread.sleep(100)
+            _resolve("hey")
+        })
+
+        let end = Time.currentTimeMillis
+        let response = await future.get()
+
+        expect(end - start < 90).toBe(true)
+        expect(response).toBe("hey")
+    }
+
+    async test `Future.fromResolve: can wait for the execution of the future`() {
+        let start = Time.currentTimeMillis
+
+        let future = Future.fromResolve(async {
+            Thread.sleep(100)
+            _resolve("hey")
+        })
+
+        let response = await future.get()
+        let end = Time.currentTimeMillis
+
+        expect(end - start >= 90).toBe(true)
+        expect(response).toBe("hey")
+    }
+
+    async test `Future.cancel: does not throw CancellationException when get is not called`() {
+        let future = Future.fromResolve(async {
+            Thread.sleep(100)
+            _resolve("hey")
+        })
+
+        expect({ future.cancel() }).toNotThrow(CancellationException.class)
+    }
+
+    async test `Future.cancel: does throw CancellationException when get is called after a future is cancelled`() {
+        let future = Future.fromResolve(async {
+            Thread.sleep(100)
+            _resolve("hey")
+        })
+
+        future.cancel()
+
+        expectAsync(async { future.get() }).toThrow(CancellationException.class)
+    }
+
+    async test `Future.cancel: does not throw CancellationException when get is not called when future is already completed`() {
+        let future = Future.create()
+        future.complete("hey")
+
+        expect({ future.cancel() }).toNotThrow(CancellationException.class)
+    }
+
+    async test `can automatically unwrap the response`() {
+        expect(futureThing()).toBe("hey")
+        expect(futureThing().count).toBe(3)
+    }
+
+    futureThing() -> Future<String> {
+        return Future.from({
+            return "hey"
+        })
+    }
+}
