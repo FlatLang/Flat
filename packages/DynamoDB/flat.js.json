@@ -1,0 +1,10 @@
+{
+    "sources": {
+        "main": {
+            "dependencies": {
+                "npm:@aws-sdk/client-dynamodb": "latest",
+                "npm:@aws-sdk/lib-dynamodb": "latest"
+            }
+        }
+    }
+}

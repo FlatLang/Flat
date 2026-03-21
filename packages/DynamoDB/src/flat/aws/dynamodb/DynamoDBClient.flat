@@ -1,0 +1,9 @@
+package flat/aws/dynamodb
+
+import flat/log
+
+class {
+    static Logger log = Logger(DynamoDBClient.class)
+
+    public async get() => null
+}

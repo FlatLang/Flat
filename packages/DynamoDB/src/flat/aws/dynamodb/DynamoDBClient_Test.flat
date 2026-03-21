@@ -1,0 +1,11 @@
+package flat/aws/dynamodb
+
+import flat/datastruct
+
+testable class {
+    test async `can create`() {
+        let value = DynamoDBClient()
+
+        expect(value).toNotBe(null)
+    }
+}

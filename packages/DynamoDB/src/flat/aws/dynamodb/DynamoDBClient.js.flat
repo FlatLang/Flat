@@ -1,0 +1,105 @@
+package flat/aws/dynamodb
+
+import flat/datastruct
+import flat/time
+
+import static flat/node/import/Import
+
+class {
+    native Object client
+    native Object docClient
+
+    public construct(HashMap<String, Object> config = null) {
+        log.debug("Constructing DynamoDBClient with config: #{config}")
+        external {
+            const clientConfig = #{config == null} ? {} : #{HashMap.jsObjectToFlatHashMap(config)};
+            #{client} = new #{Global.clientDynamoDB}.DynamoDBClient(clientConfig);
+            #{docClient} = #{Global.libDynamoDB}.DynamoDBDocumentClient.from(#{client});
+        }
+    }
+
+    public async get(String tableName, HashMap<String, String> key) -> HashMap<String, Object> {
+        log.debug("Fetching item from table #{tableName} with key #{key}")
+        native var Object item
+        let start = Time.currentTimeMillis
+
+        external {
+            const command = new #{Global.libDynamoDB}.GetCommand({
+                TableName: #{tableName.chars.data},
+                Key: #{key.toJsObject()},
+            });
+
+            const response = await #{docClient}.send(command);
+            #{let duration = Time.currentTimeMillis - start};
+
+            item = response.Item;
+
+            if (!item) {
+                #{log.debug("No item from table #{tableName} with key #{key} (took #{duration}ms)")};
+
+                return #{null};
+            }
+        }
+
+        log.debug("Fetched item from table #{tableName} with key #{key} (took #{duration}ms)")
+
+        return HashMap.jsObjectToFlatHashMap(item)
+    }
+
+    public async delete(String tableName, HashMap<String, String> key) -> Int {
+        log.debug("Deleting item from table #{tableName} with key #{key}")
+        native var Object item
+        var Int responseCode
+        let start = Time.currentTimeMillis
+
+        external {
+            const command = new #{Global.libDynamoDB}.DeleteCommand({
+                TableName: #{tableName.chars.data},
+                Key: #{key.toJsObject()},
+            });
+
+            const response = await #{docClient}.send(command);
+            #{let duration = Time.currentTimeMillis - start};
+            #{responseCode} = response.$metadata.httpStatusCode;
+
+            #{log.debug("Deleted item from table #{tableName} with key #{key} with response code #{responseCode} (took #{duration}ms)")};
+
+            return responseCode;
+        }
+
+        return -1
+    }
+
+    public async put(String tableName, HashMap<String, String> item) -> Int {
+        log.debug("Putting item into table #{tableName}")
+        var Int responseCode
+        let start = Time.currentTimeMillis
+
+        external {
+            const command = new #{Global.libDynamoDB}.PutCommand({
+                TableName: #{tableName.chars.data},
+                Item: #{item.toJsObject()},
+            });
+
+            const response = await #{docClient}.send(command);
+            #{let duration = Time.currentTimeMillis - start};
+            #{responseCode} = response.$metadata.httpStatusCode;
+
+            #{log.debug("Put item into table #{tableName} with response code #{responseCode} (took #{duration}ms)")};
+
+            return responseCode;
+        }
+
+        return -1
+    }
+
+    public static class Global {
+        public static native Object clientDynamoDB
+        public static native Object libDynamoDB
+
+        async static {
+            clientDynamoDB = import("@aws-sdk/client-dynamodb")
+            libDynamoDB = import("@aws-sdk/lib-dynamodb")
+        }
+    }
+}
