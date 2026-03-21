@@ -1,0 +1,8 @@
+package flat/airship
+
+data class {
+    public construct(
+        visible String name,
+        visible String value = null
+    ) {}
+}

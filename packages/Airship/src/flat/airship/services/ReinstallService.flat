@@ -1,0 +1,38 @@
+package flat/airship/services
+
+import flat/airship
+import flat/log
+import flat/io
+
+class {
+    static Logger log = Logger(ReinstallService.class)
+
+    public construct(
+        private Airship airship,
+        private AirshipCli cliArgs,
+        private DependencyService dependencyService
+    ) {}
+
+    public async reinstall() {
+        if (cliArgs.reinstallTargetArg.values.isEmpty) {
+            cliArgs.uninstallLinkArg.enabled = cliArgs.reinstallLinkArg.enabled
+            cliArgs.installLinkArg.enabled = cliArgs.reinstallLinkArg.enabled
+            airship.uninstallService.uninstall()
+            airship.installService.install()
+            return
+        }
+
+        for (package in cliArgs.reinstallTargetArg.values) {
+            reinstall(package)
+        }
+    }
+
+    async reinstall(String package) {
+        reinstallGitPackage(dependencyService.getDependencyFromUrl(package))
+    }
+
+    async reinstallGitPackage(GitDependency dependency) {
+        airship.uninstallService.uninstallDependency(dependency)
+        airship.installService.installDependency(dependency)
+    }
+}

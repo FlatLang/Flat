@@ -1,0 +1,179 @@
+package flat/airship
+
+import flat/airship
+import flat/airship/services
+import flat/fucli/FuCli.InvalidCliArgumentException
+import flat/fucli/FuCli.RequiredCliArgumentException
+import flat/io
+import flat/datastruct
+import flat/regex
+
+import flat/extensions/SyntaxStringFunctions
+import flat/regex/RegexStringExtensions
+
+testable class {
+    test `can create`() {
+        let airship = Airship(Array<String>())
+
+        expect(airship).toNotBe(null)
+    }
+
+    test async `can debug basic install`() {
+        let airship = Airship(["install", "--debug", "-q", "-t", "js"])
+
+        expect(airship.debug).toBe(true, "Expected debug flag to be true")
+
+        let allOutput = Console.out.captureOutput({ airship.installService.install() })
+
+        expect(allOutput.count).toBe(1, "Extraneous output: #allOutput")
+
+        let output = allOutput[0]
+        let cmdOutput = output.splitOnTopLevel(' ')
+        let flatHome = Airship.flatHome
+
+        let package = "main"
+        let source = airship.getSourceForPackage(package)
+
+        let currentDependency = airship.dependencyService.getDependencyFromPackage("local:#{airship.packageLocation.normalizedLocation}")
+        let flatjsDependency = airship.dependencyService.getDependencyFromPackage("git@github.com:FlatLang/Flat-JS")
+        let excludeSources = airship.dependencyService.getDependencyExclusions(currentDependency, package)
+        let excludeSource = package == "test" ? null : airship.dependencyService.getDependencySourceGlobLocation(currentDependency, "test")
+
+        let response = airship.dependencyService.getDependenciesForSource(package, source)
+        let topLevelDependencies = airship.dependencyService.getDependenciesForSource(package, source, recursive: false)
+
+        let flat = response.dependencies.firstWhere({ _.name == "Flat" })
+
+        let cmd = [
+            "java", "-jar", "#{flat.getLocation()}/target/flatc.jar",
+            InstallService.sanitizeFileLocation("#{airship.packageLocation.normalizedLocation}/src"),
+            "-install-dir", "#{flatHome}/packages",
+            "-o", "#{airship.packageLocation.normalizedLocation}/dist/airship.js",
+            "-d", "#{airship.packageLocation.normalizedLocation}/dist",
+            "-target", "js",
+            "-engine-jar", "#{flatjsDependency.getLocation()}/target/flat-js.jar",
+            "-parallel",
+        ]
+
+        excludeSources.forEach({ cmd.addAll(["-x", InstallService.sanitizeFileLocation(_)]) })
+
+        if (excludeSource) {
+            cmd.addAll(["-x", InstallService.sanitizeFileLocation(excludeSource)])
+        }
+
+        response.dependencies.forEach((dependency) => {
+            airship.dependencyService.getDependencySourceLocations(dependency).forEach({
+                cmd.addAll(["-l", InstallService.sanitizeFileLocation(_)])
+            })
+            airship.dependencyService.getDependencyExclusions(dependency, package).forEach({
+                cmd.addAll(["-x", InstallService.sanitizeFileLocation(_)])
+            })
+
+            let dependencyExcludeSource = airship.dependencyService.getDependencySourceGlobLocation(dependency, "test")
+
+            if (dependencyExcludeSource) {
+                cmd.addAll(["-x", InstallService.sanitizeFileLocation(dependencyExcludeSource)])
+            }
+        })
+
+        topLevelDependencies.dependencies.forEach({
+            let childShip = _.airship
+            let dependencySource = childShip.getSourceForPackage(package) ?: childShip.package.mainSource
+
+            dependencySource?.defaultExports
+                .filter({ !_.staticImport })
+                .forEach({ cmd.addAll(["-default-import", _.location]) })
+
+            dependencySource?.defaultExports
+                .filter({ _.staticImport })
+                .forEach({ cmd.addAll(["-default-static-import", _.location]) })
+        })
+
+        cmd.addAll([
+            "-main", "flat/airship/Airship"
+        ])
+
+        let appProps = HashMap()
+            :add("name", airship.package.name)
+            :add("version", airship.package.version)
+            :add("description", airship.package.description)
+            :add("author", airship.package.author)
+            :add("license", airship.package.license)
+            :add("defaultTarget", airship.package.defaultTarget)
+
+        cmd.addAll(["-app-props", appProps.toJson()])
+
+        let sanitizedCmd = cmd.map({ System.sanitizeCliArgument(_) })
+
+        expect(cmdOutput).toBe(sanitizedCmd)
+    }
+
+    test `fails on invalid -f arg (only arg given, with no value)`() {
+        expect({ Airship(["-f"]) }).toThrow(RequiredCliArgumentException.class)
+    }
+
+    test `fails on invalid -f arg (last arg given, with no value)`() {
+        expect({ Airship(["--debug", "-f"]) }).toThrow(RequiredCliArgumentException.class)
+    }
+
+    test `fails on absolute backslash outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-absolute-backslash-outDirectory-path.json"]) })
+            .toThrowWithMessage(InvalidOutDirException.class, "outDirectory cannot be absolute")
+    }
+
+    test `fails on absolute double forward-slash outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-absolute-double-forward-slash-outDirectory-path.json"]) })
+            .toThrowWithMessage(InvalidOutDirException.class, "outDirectory cannot be absolute")
+    }
+
+    test `fails on backslash start outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-backslash-start-outDirectory-path.json"]) })
+            .toThrowWithMessage(InvalidOutDirException.class, "outDirectory cannot start with \\")
+    }
+
+    test `allows dot backslash start outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-dot-backslash-start-outDirectory-path.json"]) })
+            .toNotThrow(InvalidOutDirException.class)
+    }
+
+    test `allows dot forward slash start outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-dot-forward-slash-start-outDirectory-path.json"]) })
+            .toNotThrow(InvalidOutDirException.class)
+    }
+
+    test `allows double dot start outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-double-dot-start-outDirectory-path.json"]) })
+            .toNotThrow(InvalidOutDirException.class)
+    }
+
+    test `fails on empty outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-empty-outDirectory-path.json"]) })
+            .toThrowWithMessage(InvalidOutDirException.class, "outDirectory cannot be empty")
+    }
+
+    test `fails on forward slash start outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-forward-slash-start-outDirectory-path.json"]) })
+            .toThrowWithMessage(InvalidOutDirException.class, "outDirectory cannot start with /")
+    }
+
+    test `allows single dot start outDirectory path`() {
+        expect({ Airship(["-f", "res/test/flat-single-dot-start-outDirectory-path.json"]) })
+            .toNotThrow(InvalidOutDirException.class)
+    }
+
+    test async `can set target compile language`() {
+        var airship = Airship(["--target", "js"])
+
+        expect(airship.target).toBe("js")
+
+        airship = Airship(["-t", "js"])
+
+        expect(airship.target).toBe("js")
+    }
+
+    test async `can override flat.json location`() {
+        let airship = Airship(["--file", "res/test/valid-flat.json"])
+
+        expect(airship.flatJsonLocation).toBe("res/test/valid-flat.json")
+    }
+}

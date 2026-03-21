@@ -1,0 +1,555 @@
+package flat/airship
+
+import flat/log
+import flat/datastruct
+import flat/regex
+import flat/json
+import flat/io
+import flat/fucli
+import flat/git
+import flat/time
+import flat/terminalsize
+
+import flat/airship/services
+
+import flat/regex/RegexStringExtensions
+
+class {
+    visible static String flatHome = getFlatHome()
+    visible static Bool useLinks = false
+
+    visible Package package
+    visible String outFile
+    visible Bool debug
+    visible String flatJsonLocation
+    visible File flatJsonFile
+    visible File flatLockJsonFile
+    visible File packageLocation
+    visible String target
+    visible String targetRuntime
+
+    visible AirshipCli cliArgs = AirshipCli()
+
+    visible DependencyService dependencyService = DependencyService(this, cliArgs)
+    visible LockService lockService = LockService(this, dependencyService)
+    visible AssetService assetService = AssetService(this, dependencyService)
+    visible PublishService publishService = PublishService(this)
+    visible BinaryService binaryService = BinaryService(this, assetService)
+    visible InstallService installService = InstallService(this, cliArgs, dependencyService, binaryService, assetService, lockService)
+    visible UninstallService uninstallService = UninstallService(this, cliArgs, dependencyService)
+    visible ReinstallService reinstallService = ReinstallService(this, cliArgs, dependencyService)
+    visible UpdateService updateService = UpdateService(this, cliArgs, dependencyService, installService)
+    visible CleanService cleanService = CleanService(this)
+    visible RunScriptService runScriptService = RunScriptService(this, cliArgs)
+    visible SetupService setupService = SetupService(this, cliArgs, dependencyService, updateService)
+    visible InitService initService = InitService(this)
+    visible CreateService createService = CreateService(this)
+    visible VersionService versionService = VersionService(this)
+    visible GetPackageService getPackageService = GetPackageService(this, installService, dependencyService)
+    visible AddDependencyService addDependencyService = AddDependencyService(this, getPackageService, installService, dependencyService, lockService)
+    visible RemoveDependencyService removeDependencyService = RemoveDependencyService(this, uninstallService, dependencyService, lockService)
+
+    static HashMap<String, Airship> packageCache = HashMap()
+
+    static Logger log = Logger(Airship.class)
+
+    public static async main(String[] args) {
+        try {
+            if (args.count < 2) {
+                throw Exception("Missing command")
+            }
+
+            Airship(args.skip(1)):run()
+        } catch (Exception e) {
+            log.error(e.message)
+            if (
+                !e.class.isOfType(FlatInstallationFailureException.class) &&
+                !e.class.isOfType(InvalidCommandException.class)) {
+                external {
+                    console.error(#{e}.error);
+                }
+            }
+            System.exit(1)
+        }
+    }
+
+    public construct(
+        File packageLocationFile,
+        Airship parent = null
+    ) {
+        this(packageLocationFile.normalizedLocation, parent)
+    }
+
+    public construct(
+        String packageLocation,
+        Airship parent = null
+    ) {
+        this(["-f", packageLocation], parent)
+    }
+
+    public construct(
+        String[] args,
+        Airship parent = null
+    ) {
+        this(
+            FuCli(
+                "airship",
+                [
+                    cliArgs.setupCommand,
+                    cliArgs.installCommand,
+                    cliArgs.getCommand,
+                    cliArgs.uninstallCommand,
+                    cliArgs.reinstallCommand,
+                    cliArgs.updateCommand,
+                    cliArgs.cleanCommand,
+                    cliArgs.runCommand,
+                    cliArgs.initCommand,
+                    cliArgs.createCommand,
+                    cliArgs.binCommand,
+                    cliArgs.addDependencyCommand,
+                    cliArgs.removeDependencyCommand,
+                    cliArgs.helpCommand,
+                    cliArgs.readmeCommand,
+                    cliArgs.versionArg,
+                    cliArgs.targetArg,
+                    cliArgs.targetRuntimeArg,
+                    cliArgs.fileArg,
+                    cliArgs.sourceArg,
+                    cliArgs.debugArg,
+                    cliArgs.syncArg,
+                    cliArgs.noReplaceLogLineArg,
+                    cliArgs.quietArg,
+                    cliArgs.flatcRuntimeArg,
+                    cliArgs.publishCommand,
+                    cliArgs.useLinksArg,
+                    cliArgs.purgeArg,
+                    cliArgs.propagateArg,
+                ],
+                description: "Flat's package manager"
+            ):parse(args),
+            parent
+        )
+    }
+
+    public construct(
+        visible FuCli cli,
+        visible Airship parent = null
+    ) {
+        checkHelpCommand()
+
+        useLinks = useLinks || cliArgs.useLinksArg.enabled
+
+        if (cliArgs.debugArg.enabled) {
+            cliArgs.quietArg.enabled = true
+        }
+
+        if (cliArgs.quietArg.enabled) {
+            Logger.defaultLoggingLevel = Logger.OFF
+        }
+
+        log.trace("Creating Airship with CLI args: #{cli}")
+
+        flatJsonLocation = getFlatJsonLocation(cliArgs.fileArg["file"].value)
+        debug = cliArgs.debugArg.enabled
+        target = cliArgs.targetArg["target"].value
+
+        flatJsonFile = File(flatJsonLocation).getCanonicalFileSync()
+        flatLockJsonFile = flatJsonFile.getParent().getChild("flat-lock.json")
+        packageLocation = flatJsonFile.getParent()
+
+        if (packageCache.containsKey(flatJsonFile.normalizedLocation)) {
+            log.trace("Airship has already been created for #{flatJsonFile.normalizedLocation}. Using sources from existing package")
+
+            let airship = packageCache[flatJsonFile.normalizedLocation]
+
+            target = target ?: airship.target
+            package = airship.package
+        } else {
+            if (flatJsonFile.isFile) {
+                log.trace("Parsing \"#{flatJsonFile.normalizedLocation}\" ...")
+                let timer = Timer():start()
+                let map = JsonDeserializer().parseObject(flatJsonFile)
+                timer.stop()
+                log.trace("Parsing \"#{flatJsonFile.normalizedLocation}\" took #{timer.duration}ms")
+
+                let String defaultTarget = (String)map["defaultTarget"]
+                target = target ?: defaultTarget
+                targetRuntime = cliArgs.targetRuntimeArg["runtime"].value ?: getDefaultTargetRuntime((String)map["defaultTargetRuntime"])
+
+                let overrideFlatJsonFiles = getFlatJsonOverrides(packageLocation)
+
+                log.debug("Found overrideFlatJsonFiles: #{overrideFlatJsonFiles}")
+
+                for (overrideFlatJsonFile in overrideFlatJsonFiles) {
+                    let overrideMap = JsonDeserializer().parseObject(overrideFlatJsonFile)
+
+                    merge(overrideMap, map)
+                }
+
+                package = Package(dependencyService, map)
+
+                loadSources()
+            } else {
+                log.debug("No flat.json file at location \"#{flatJsonFile.nativeLocation}\"")
+            }
+
+            packageCache[flatJsonFile.normalizedLocation] = this
+        }
+    }
+
+    visible PackageSource[] sources {
+        get {
+            let value = Array<PackageSource>()
+
+            if (package.mainSource) {
+                value.add(package.mainSource)
+            }
+            if (package.testSource) {
+                value.add(package.testSource)
+            }
+
+            return value
+        }
+    }
+
+    public static clearCache(String flatJsonLocation) {
+        packageCache.remove(flatJsonLocation)
+    }
+
+    public static clearCache(Airship airship) {
+        packageCache.removeWhere({ _.key == airship.flatJsonLocation })
+    }
+
+    checkHelpCommand() {
+        if (cliArgs.helpCommand.enabled || cliArgs.readmeCommand.enabled) {
+            let readmeColumnCount = 95
+            let columns = cliArgs.readmeCommand.enabled
+                ? readmeColumnCount
+                : TerminalSize.getTerminalSize(80, 0).columns
+
+            if (cliArgs.allHelpArg.enabled || cliArgs.readmeCommand.enabled) {
+                cli.usedArgs.removeFirstWhere({ _ == cliArgs.allHelpArg })
+                cli.usedArgs.removeWhere({ _ == cliArgs.readmeCommand })
+
+                let separator = "-".repeat(Math.min(readmeColumnCount, columns))
+
+                Console.log(
+                    cli.getAllHelp(lineLength: columns)
+                        .filter({ _.arg.args?.isNotEmpty })
+                        .map((help) => {
+                            var sanitizedHelp = help.help
+
+                            if (cliArgs.readmeCommand.enabled) {
+                                sanitizedHelp = sanitizedHelp.replace(flatHome, "$FLAT_HOME")
+                            }
+
+                            let header = help.breadcrumbs.count > 1 ? "`#{help.breadcrumbs.join(" ")}`\n\n" : ""
+                            return "#{header}```\n#{sanitizedHelp}\n```"
+                        })
+                        .join("\n\n#{separator}\n\n")
+                )
+            } else {
+                Console.log(cli.getHelp(lineLength: columns).help)
+            }
+
+            System.exit(0)
+        }
+    }
+
+    getDefaultTargetRuntime(String configDefaultRuntime) -> String => null {
+        if (configDefaultRuntime) return configDefaultRuntime
+
+        match target {
+            "js" => "es6" => return "node"
+        }
+    }
+
+    getFlatJsonLocation(String location) -> String {
+        if (!location) {
+            return File("#{System.workingDirectory}/flat.json").normalizedLocation
+        }
+
+        let file = File(location)
+
+        return if (file.isDirectory || file.isSymbolicLink) {
+            file.normalizedLocation + "/flat.json"
+        } else if (file.isFile) {
+            file.normalizedLocation
+        } else {
+            throw InvalidFlatJsonException("Invalid flat.json location '#{file.location}'")
+        }
+    }
+
+    public static getFlatHome() -> String {
+        return if (System.getEnv("FLAT_HOME")) {
+            File(System.getEnv("FLAT_HOME")).normalizedLocation
+        } else {
+            File("#{System.homeDirectory}/.flat").normalizedLocation
+        }
+    }
+
+    getFlatJsonOverrides(File packageLocation) -> File[] => Array<File>() {
+        let os = System.OS.toLowerCase()
+        let extensions = String[]
+
+        if (target) {
+            extensions.add(target)
+
+            if (target == "es6") {
+                extensions.add("js")
+            }
+        }
+
+        extensions.add(os)
+
+        if (targetRuntime) {
+            extensions.add(targetRuntime)
+        }
+
+        return searchFlatJsonOverrides(packageLocation, extensions)
+    }
+
+    searchFlatJsonOverrides(File packageLocation, String[] extensions) =>
+        packageLocation.getChildFiles()
+            .filter({ _.name.startsWith("flat.") })
+            .filter({ _.extension.equals(".json") })
+            .filter({ _.extensionNames.skipLast(1).all({ extensions.contains(_) }) })
+            .sort({
+                let extensions1 = _a.extensionNames.map({ _.toLowerCase() })
+                let extensions2 = _b.extensionNames.map({ _.toLowerCase() })
+
+                let extension1Index = extensions.findIndex({ extensions1.contains(_) }, defaultReturnValue: extensions.count)
+                let extension2Index = extensions.findIndex({ extensions2.contains(_) }, defaultReturnValue: extensions.count)
+
+                var Int extension1Score = extension1Index
+                var Int extension2Score = extension2Index
+
+                log.trace("|
+                    Sorting flat json overrides by extension:
+                        _a.name: #{_a.name}
+                        _b.name: #{_b.name}
+                        extensions1: #{extensions1}
+                        extension1Index: #{extension1Index}
+                        extension1Score: #{extension1Score}
+                        extensions2: #{extensions2}
+                        extension2Index: #{extension2Index}
+                        extension2Score: #{extension2Score}
+                        extensions: #{extensions}
+                    |")
+
+                if (extension1Score == extension2Score) {
+                    let howManyExtension1 = extensions.howMany({ extensions1.contains(_) })
+                    let howManyExtension2 = extensions.howMany({ extensions2.contains(_) })
+
+                    extension1Score = howManyExtension1
+                    extension2Score = howManyExtension2
+
+                    log.trace("|
+                            Same score, checking howMany matches:
+                                extension1Score: #{extension1Score}
+                                extension2Score: #{extension2Score}
+                        |")
+                }
+
+                if (extension2Score > extension1Score) {
+                    log.trace("Sorted values to [#{_b.name}, #{_a.name}]")
+                } else {
+                    log.trace("Sorted values to [#{_a.name}, #{_b.name}]")
+                }
+
+                return extension2Score - extension1Score
+            })
+
+    merge(
+        HashMap<String, Object> source,
+        HashMap<String, Object> dest
+    ) {
+        source.forEach((Pair<String, Object> pair) => {
+            if (!dest.containsKey(pair.key)) {
+                dest[pair.key] = pair.value
+            }
+
+            if (pair.value.class.isOfType(HashMap.class)) {
+                let HashMap<String, Object> hashmap = (HashMap)pair.value
+                let HashMap<String, Object> existingHashmap = (HashMap)dest[pair.key]
+                merge(hashmap, existingHashmap)
+            } else {
+                dest[pair.key] = pair.value
+            }
+        })
+    }
+
+    merge(
+        Object[] source,
+        Object[] dest
+    ) {
+        if (!source || !dest) return
+
+        source.stream()
+            .filter({ !dest.contains(_) })
+            .forEach({ dest.add(_) })
+    }
+
+    getDefaultOutDirectory(String packageTarget) -> String {
+        match target {
+            default => return "dist/#{target}"
+        }
+    }
+
+    getDefaultOutFile(String packageTarget) -> String {
+        match target {
+            "js" => fallthrough
+            "es6" => {
+                match packageTarget {
+                    "test" => return "test.js"
+                    default => return "index.js"
+                }
+            }
+            default => return null
+        }
+    }
+
+    loadSources() {
+        package.sources
+            .mapValues({
+                let source = _x.value
+                let outDirectory = validateOutDirectory(source.outDirectory ?: getDefaultOutDirectory(_x.key))
+                let outFile = source.outFile ?: getDefaultOutFile(_x.key)
+                let updatedSource = source.copy(
+                    outDirectory: outDirectory,
+                    outFile: outFile,
+                    source: source.source ?: "src",
+                    binaries: source.binaries.map({
+                        return _x.value
+                            ? _x
+                            : _x.copy(value: outDirectory + (outFile ? "/" + outFile : ""))
+                    })
+                )
+
+                log.trace("
+                        Updating #{_x.key} source from #{source.toString().indent(tab: "    ", firstLine: false)}
+                        to #{updatedSource.toString().indent(tab: "    ", firstLine: false)}
+                    |")
+
+                return updatedSource
+            })
+            .forEach({
+                package.sources[_x.key] = _x.value
+            })
+
+        if (package.mainSource) {
+            package.sources
+                .filter({ _.key != "main" })
+                .forEach({
+                    log.trace("Propagating main source dependencies to #{_x.key} source dependencies")
+                    merge(package.mainSource.dependencies, _x.value.dependencies)
+                    log.trace("Propagating main source defaultExports to #{_x.key} source defaultExports")
+                    merge(package.mainSource.defaultExports, _x.value.defaultExports)
+                })
+        }
+
+        if (!isCoreLibrary()) {
+            log.trace("Adding Flat-Core implicit dependency")
+
+            package.sources.forEach({ _.value.dependencies.unshift(GitDependency("git@github.com:FlatLang/Flat-Core", "master")) })
+        } else {
+            log.trace("Skipping Flat-Core implicit dependency")
+        }
+    }
+
+    validateOutDirectory(String location) => location {
+        if (location.trim().count == 0) {
+            throw InvalidOutDirException("outDirectory cannot be empty")
+        } else if (location.trim().startsWith(/[/\\]/)) {
+            throw InvalidOutDirException("outDirectory cannot start with #{location.first}")
+        } else if (location.contains(":/") || location.contains(":\\")) {
+            throw InvalidOutDirException("outDirectory cannot be absolute")
+        }
+    }
+
+    public async run() {
+        if (!checkFlatHome()) {
+            return
+        }
+
+        let commands = cli.usedArgs.stream()
+            .filter({ !_.wildcard })
+            .toArray()
+
+        for (command in commands) {
+            log.debug("Running command \"#{command}\"")
+
+            match (command) {
+                cliArgs.setupCommand => setupService.setup()
+                cliArgs.installCommand => installService.install()
+                cliArgs.getCommand => getPackageService.getPackages(cliArgs.getDependencyArg.values)
+                cliArgs.uninstallCommand => uninstallService.uninstall()
+                cliArgs.reinstallCommand => reinstallService.reinstall()
+                cliArgs.updateCommand => updateService.update()
+                cliArgs.cleanCommand => cleanService.clean()
+                cliArgs.runCommand => runScriptService.runScripts(cliArgs.runScriptArg.values)
+                cliArgs.initCommand => initService.init(cliArgs.initPackageNameArg.value)
+                cliArgs.createCommand => createService.create(cliArgs.createPipelineArg.value, cliArgs.createPipelineArgArg.values)
+                cliArgs.binCommand => binaryService.create(cliArgs.binaryArg.values)
+                cliArgs.versionArg => versionService.getVersion()
+                cliArgs.addDependencyCommand => addDependencyService.addDependencies(cliArgs.addDependencyArg.values)
+                cliArgs.removeDependencyCommand => removeDependencyService.removeDependencies(cliArgs.removeDependencyArg.values, cliArgs.purgeArg.enabled)
+                cliArgs.publishCommand => publishService.publish()
+            }
+        }
+    }
+
+    public getSourceForPackage(String installationTarget, PackageSource defaultSource = null) -> PackageSource {
+        return package.sources.getOrDefault(installationTarget, { defaultSource })
+    }
+
+    async checkFlatHome() => true {
+        let flatHomeFile = File("#{flatHome}")
+
+        if (!flatHomeFile.isDirectory) {
+            if (!flatHomeFile.getParent().isDirectory) {
+                log.error("Invalid FLAT_HOME directory location '#{flatHome}'")
+                return false
+            }
+
+            flatHomeFile.mkdirs()
+        }
+    }
+
+    public async getGitOriginUrl() -> String => null {
+        let response = Git.getOriginUrl(workingDirectory: packageLocation.location, silent: true)
+
+        if (response.success) {
+            let url = response.value
+
+            return if (!url.endsWith(".git")) {
+                "#{url}.git"
+            } else {
+                url
+            }
+        }
+    }
+
+    getRootParent() -> Airship => this {
+        if (parent) {
+            return parent.getRootParent()
+        }
+    }
+
+    isCoreLibrary() => getRootParent().packageLocation.normalizedLocation.endsWith("/Flat-Core")
+
+    public propagateArgs(String[] args) {
+        if (cliArgs.useLinksArg.enabled) {
+            args.add("--use-links")
+        }
+        if (target) {
+            args.addAll(["-t", target])
+        }
+        if (cliArgs.targetRuntimeArg.enabled) {
+            args.addAll(["-r", cliArgs.targetRuntimeArg["runtime"].value])
+        }
+        if (cliArgs.quietArg.enabled) {
+            args.add("-q")
+        }
+    }
+}

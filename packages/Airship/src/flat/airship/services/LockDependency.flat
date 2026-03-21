@@ -1,0 +1,8 @@
+package flat/airship/services
+
+data class LockDependency {
+    visible data_tostring_ignore Bool isLink
+    visible String name
+    visible String branch
+    visible String sha
+}

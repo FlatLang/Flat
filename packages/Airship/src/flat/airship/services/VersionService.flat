@@ -1,0 +1,24 @@
+package flat/airship/services
+
+import flat
+import flat/log/Logger
+import flat/io/File
+import flat/io/FileWriter
+
+import flat/airship/Airship
+import flat/airship/PackageBinary
+import flat/airship/InvalidScriptException
+import flat/airship/ExecutionFailureException
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(VersionService.class)
+
+    public construct(private Airship airship) {}
+
+    public getVersion() {
+        log.info("v#{App.version}")
+    }
+}

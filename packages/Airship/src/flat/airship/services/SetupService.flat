@@ -1,0 +1,249 @@
+package flat/airship/services
+
+import flat/airship
+import flat/log
+import flat/datastruct
+import flat/io
+import flat/git
+import flat/regedit
+import flat/path
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(SetupService.class)
+    static Logger setupLog = Logger(SetupService.class, showPrefix: false, lineLength: 65)
+
+    public construct(
+        private Airship airship,
+        private AirshipCli cliArgs,
+        private DependencyService dependencyService,
+        private UpdateService updateService
+    ) {}
+
+    public async setup() {
+        if (cliArgs.reinstallArg.enabled) {
+            reinstall()
+        } else if (cliArgs.uninstallArg.enabled) {
+            uninstall()
+        } else {
+            install()
+        }
+    }
+
+    async install() {
+        let existingDependency = GitDependency("git@github.com:FlatLang/Airship", "master")
+
+        if (existingDependency.isFlatPackage() && existingDependency.getFlatPackageDirectory().exists) {
+            Airship.clearCache(existingDependency.airship)
+        }
+
+        let airshipDependency = existingDependency.copy()
+
+        if (dependencyService.isDependencyInstalled(airshipDependency)) {
+            setupLog.info("Airship already installed. Checking for updates")
+            updateService.updatePackage(airshipDependency, build: true)
+        } else {
+            setupLog.info("Installing Airship")
+            airship.installService.installDependency(airshipDependency)
+        }
+
+        let flatHome = File(Airship.flatHome)
+        let pathValue = File(flatHome, "bin").nativeLocation
+
+        setupLog.info("|
+            The Flat home directory is located at:
+
+                #{underscore(flatHome.nativeLocation)}
+
+            This can be modified with the FLAT_HOME environment variable.
+
+            The 'airship' command and others will be added to Flat's bin directory, located at:
+
+                #{underscore(pathValue)}
+
+            |")
+
+        if (System.OS_INT == System.WINDOWS) {
+            setupLog.info("|
+                This path will then be added to your PATH environment variable by modifying the HKEY_CURRENT_USER/Environment/PATH registry key
+
+                |")
+
+            RegEdit.setExternalVBSLocation("#{airshipDependency.getLocation()}/node_modules/regedit/vbs")
+
+            Path.prependToUserPath(pathValue)
+
+            setupLog.info("|
+                Flat is installed now!
+
+                You can uninstall at any time with `airship setup --uninstall` and these changes will be reverted.
+
+                To get started you may need to restart your current shell. This would reload its PATH environment variable to include Airship's bin directory (#{underscore(pathValue)}).
+
+                |")
+
+            question("Press the Enter key to continue.")
+        } else {
+            let files = Path.getUserShellRunCommandsFiles()
+
+            if (files.count == 0) {
+                log.error("|
+                    This user does not seem to have any valid initialization script files (e.g. ~/.bashrc, ~/.zshrc, ...)
+
+                    |")
+                log.error("|
+                    To finish installation, you will need to manually add \"#{underscore(pathValue)}\" to your path, howewer you see fit.
+
+                    |")
+            } else {
+                setupLog.info("|
+                    This path will then be added to your PATH environment variable by modifying the profile files located at:
+
+                        #{files.map({ underscore(_.nativeLocation) }).join("\n    ")}
+
+                    |")
+
+                let envFile = File(flatHome, "env")
+
+                if (!envFile.exists) {
+                    log.debug("Creating env file at \"#{envFile.nativeLocation}\"")
+
+                    FileWriter(envFile)
+                        :write("|
+                            \#!/bin/sh
+                            \# Flat shell setup
+                            \# affix colons on either side of $PATH to simplify matching
+                            case \":${PATH}:\" in
+                                    *:\"#{pathValue}\":*)
+                                            ;;
+                                    *)
+                                            \# Prepending path in case a system-installed Flat needs to be overridden
+                                            export PATH=\"#{pathValue}:$PATH\"
+                                            ;;
+                            esac
+                            |")
+                        :close()
+                } else {
+                    log.debug("Env file already exists at \"#{envFile.nativeLocation}\". Skipping")
+                }
+
+                for (file in files) {
+                    let contents = FileReader(file).readAllContents()
+
+                    if (contents.contains(envFile.nativeLocation)) {
+                        log.debug("Environment file is already loaded to the path in file \"#{file.nativeLocation}\". Skipping")
+                        continue
+                    }
+
+                    log.debug("Appending code to load env file \"#{envFile.nativeLocation}\" in file \"#{file.nativeLocation}\"")
+
+                    FileWriter(file)
+                        :append("|
+
+
+                            #{getFlatUnixConfig(envFile)}
+                            |")
+                        :close()
+                }
+
+                setupLog.info("|
+                    Flat is installed now!
+
+                    You can uninstall at any time with `airship setup --uninstall` and these changes will be reverted.
+
+                    To get started you may need to restart your current shell. This would reload its PATH environment variable to include Airship's bin directory (#{underscore(pathValue)}).
+
+                    To configure your current shell, run:
+                    source \"#{envFile.nativeLocation}\"
+                    |")
+            }
+        }
+    }
+
+    async uninstall() {
+        let airshipDependency = GitDependency("git@github.com:FlatLang/Airship", "master")
+
+        let flatHome = File(Airship.flatHome)
+        let pathValue = File(flatHome, "bin").nativeLocation
+
+        if (System.OS_INT == System.WINDOWS) {
+            setupLog.info("|
+                Removing Flat from PATH environment variable by modifying the HKEY_CURRENT_USER/Environment/PATH registry key
+
+                |")
+
+            RegEdit.setExternalVBSLocation("#{airshipDependency.getLocation()}/node_modules/regedit/vbs")
+
+            Path.removeFromUserPath(pathValue)
+        } else {
+            let files = Path.getUserShellRunCommandsFiles()
+
+            if (files.isNotEmpty) {
+                log.trace("|
+                    Checking for Flat configuration in the files located at:
+
+                        #{files.map({ underscore(_.nativeLocation) }).join("\n    ")}
+
+                    |")
+
+                let envFile = File(flatHome, "env")
+
+                for (file in files) {
+                    let contents = FileReader(file).readAllContents()
+
+                    if (!contents.contains(envFile.nativeLocation)) {
+                        log.debug("Environment file doesn't contain any Flat configuration. Skipping")
+                        continue
+                    }
+
+                    let config = getFlatUnixConfig(envFile)
+                    let index = contents.indexOf(config)
+
+                    if (index == -1) {
+                        log.warn("File \"#{file.nativeLocation}\" has modified Flat configuration. Skipping")
+                        continue
+                    }
+
+                    log.info("Removing Flat configuration from file \"#{file.nativeLocation}\"")
+
+                    let removeStartIndex = contents.nextNonWhitespaceIndex(start: index - 1, direction: -1)
+
+                    let newContents = contents.substring(0, removeStartIndex != -1 ? removeStartIndex + 1 : index) + contents.substring(index + config.count)
+
+                    FileWriter(file)
+                        :write(newContents)
+                        :close()
+                }
+            }
+        }
+
+        log.info("Deleting Flat home directory \"#{flatHome.nativeLocation}\"")
+
+        flatHome.delete(
+            recursive: true,
+            force: true
+        )
+
+        if (cliArgs.reinstallArg.enabled) {
+            setupLog.info("Flat is uninstalled now.")
+        } else {
+            setupLog.info("Flat is uninstalled now. :(")
+        }
+    }
+
+    async reinstall() {
+        uninstall()
+        install()
+    }
+
+    getFlatUnixConfig(File envFile) -> String {
+        return "|
+            \# Flat
+            . \"#{envFile.nativeLocation}\"
+            |"
+    }
+}

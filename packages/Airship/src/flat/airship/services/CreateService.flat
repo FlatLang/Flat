@@ -1,0 +1,427 @@
+package flat/airship/services
+
+import flat/log/Logger
+import flat/io/File
+import flat/io/FileReader
+import flat/io/FileWriter
+
+import flat/airship/Airship
+import flat/airship/InvalidScriptException
+import flat/airship/ExecutionFailureException
+
+import flat/extensions/SyntaxStringFunctions
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(CreateService.class)
+
+    public construct(private Airship airship) {}
+
+    requireValue(String value) => value.trim().count > 0
+
+    public async create(String value, String[] args = Array<String>()) {
+        match value.toLowerCase() {
+            "pipeline" => createPipeline(args)
+            "gitignore" => createGitignore(args)
+            "test" => createTest(args)
+            "testing-suite" => createTestingSuite(args)
+            "mainclass" => createMainClass(args)
+            "main-class" => createMainClass(args)
+        }
+    }
+
+    public async createPipeline(String[] args = Array<String>()) {
+        if (!airship.package.testSource) {
+            throw ExecutionFailureException("No test source configuration exists in \"#{airship.flatJsonLocation}\"")
+        }
+
+        let defaultPipelineLocation = ".github/workflows/test.yml"
+
+        let pipelineLocation = if (args.count == 1) {
+            args[0]
+        } else if (args.count > 1) {
+            throw ExecutionFailureException("Invalid arguments to pipeline command: #{args}")
+        } else {
+            question("#{cyan("Pipeline file")} (default: #{underscore(defaultPipelineLocation)}): ")
+                .trim().orElse(defaultPipelineLocation)
+        }
+
+        let pipelineFile = File(airship.packageLocation.location + "/#{pipelineLocation}")
+
+        let defaultTarget = "es6"
+        let target = airship.target ?:
+            question("#{cyan("Compilation target")} (default: #{underscore(defaultTarget)}): ")
+                .trim().orElse(defaultTarget)
+
+        pipelineFile.getParent().mkdirs()
+
+        FileWriter(pipelineFile)
+            :write("|
+                name: Test #{airship.package.name}
+
+                on:
+                  push:
+                    branches: [ \"master\" ]
+                  pull_request:
+                    branches: [ \"master\" ]
+
+                env:
+                  LOGGING_DEFAULT_SHOW_PREFIX: true
+                  LOGGING_DEFAULT_LOGGING_LEVEL: DEBUG
+                  LOGGING_DEFAULT_SHOW_FORMATTING: true
+
+                jobs:
+                  build:
+
+                    runs-on: ubuntu-latest
+
+                    steps:
+                      - name: Setup Maven Action
+                        uses: s4u/setup-maven-action@v1.8.0
+                        with:
+                          java-version: 8
+
+                      - uses: actions/checkout@v3
+
+                      - name: Download latest Airship
+                        uses: FlatLang/fetch-airship@master
+                        with:
+                          includePrerelease: true
+
+                      - uses: actions/setup-node@v3
+                        with:
+                          node-version: 20
+
+                      - name: Cache Maven dependencies
+                        uses: actions/cache@v3
+                        with:
+                          path: |
+                            ~/.m2/repository
+                          key: ${{ runner.os }}-build-${{ env.cache-name }}
+                          restore-keys: |
+                            ${{ runner.os }}-build-${{ env.cache-name }}-
+                            ${{ runner.os }}-build-
+                            ${{ runner.os }}-
+
+                      - name: Build #{airship.package.name} Test
+                        run: |
+                          node airship.js install test#{target ? " -t #{target}" : ""}
+
+                      - uses: actions/upload-artifact@v4
+                        if: failure()
+                        with:
+                          name: #{airship.package.testSource.outFile}
+                          path: #{airship.package.testSource.outDirectory}/#{airship.package.testSource.outFile}
+
+                      - name: Run #{airship.package.name} Test
+                        run: |
+                          node airship.js run test#{target ? " -t #{target}" : ""}
+            |")
+            :close()
+
+            log.info("Pipeline file created at \"#{pipelineFile.normalizedLocation}\"")
+    }
+
+    public async createGitignore(String[] args = Array<String>()) {
+        let gitignoreFile = File(".gitignore")
+
+        if (gitignoreFile.isFile) {
+            if (!boolQuestion(cyan("Overwrite existing .gitignore file? (Y/n): "))) {
+                return
+            }
+        }
+
+        let outDirectories = airship.sources
+            .map({ _.outDirectory })
+            .filterNull()
+            .unique()
+            .map({ "#{_}/" })
+
+        FileWriter(gitignoreFile)
+            :write("|
+                #{outDirectories.join("\n")}
+                |")
+
+        log.info(".gitignore file created at \"#{gitignoreFile.normalizedLocation}\"")
+    }
+
+    fixupMainClassFileNameSuffix(String name) =>
+        fixupFileNameSuffix(name)
+
+    fixupTestFileNameSuffix(String name) =>
+        fixupFileNameSuffix(name, "_Test")
+
+    fixupTestingSuiteFileNameSuffix(String name) =>
+        fixupFileNameSuffix(name, "_TestSuite")
+
+    fixupFileNameSuffix(var String name, String suffix = null) -> String {
+        name = name.trim()
+        var String previous = null
+
+        while (previous != name) {
+            previous = name
+            let lower = name.toLowerCase()
+
+            if (lower.endsWith(".flat")) {
+                name = name.trimEnd(".flat".count)
+            } else if (suffix != null && lower.endsWith(suffix)) {
+                name = name.trimEnd(suffix.count)
+            }
+
+            name = name.trim()
+        }
+
+        return name
+    }
+
+    public async createTestingSuite(String[] args = Array<String>()) {
+        let suiteName = if (args.count == 0) {
+            question(
+                value: cyan("Enter a suite name: (e.g. MyTestSuite)") + ": ",
+                responseMatcher: value => value.trim().count > 0,
+                responseMapper: fixupTestingSuiteFileNameSuffix,
+                invalidResponseMessage: "Invalid test suite name"
+            )
+        } else {
+            args[0]
+        }
+
+        createTestingSuite(airship.packageLocation, suiteName)
+    }
+
+    public async createTestingSuite(String suiteName) =>
+        createTestingSuite(airship.packageLocation, suiteName)
+
+    async createTestingSuite(File directory, String suiteName) {
+        let srcDirectory = File("#{directory.normalizedLocation}/src")
+        let testSuiteFile = File("#{srcDirectory.normalizedLocation}/#{suiteName}_TestSuite.flat")
+        let packageDirectory = testSuiteFile.getParent()
+        let packageEndLocation = suiteName.lastIndexOf("/")
+        let packageLocation = packageEndLocation == -1 ? null : suiteName.substring(0, packageEndLocation)
+        let packageStatement = packageLocation ? "package #{packageLocation}" : ""
+
+        if (!packageDirectory.exists) {
+            packageDirectory.mkdirs()
+        }
+
+        if (!testSuiteFile.exists) {
+            let testSuiteFileContents = "|
+                #{packageStatement}
+
+                import flat/test/TestResult
+
+                import flat/time/Timer
+                import flat/io/FancyOutputStream
+
+                [TestSuite [
+                ]]
+                class {
+                    public static async main(String[] args) {
+                        let test = #{testSuiteFile.rootName}()
+
+                        let results = TestResult[]
+
+                        Timer timer = Timer().start()
+
+                        test.runTests({
+                            results.add(_)
+                        })
+
+                        timer.stop()
+
+                        let fancy = FancyOutputStream(headerPattern: \"/\\\\\")
+
+                        let unsuccessful = results.filter({ !_.success })
+
+                        if (unsuccessful.count > 0) {
+                            fancy.writeHeader(
+                                \"\#{unsuccessful.count} Failure\#{unsuccessful.count == 1 ? \"\" : \"s\"} out of \#{results.count} test\#{results.count == 1 ? \"\" : \"s\"}\",
+                                pattern: \":'( \",
+                                symmetrical: true
+                            )
+
+                            if (unsuccessful.count > 1 || results.last.success) {
+                                unsuccessful.forEach({
+                                    Console.log(\"\#{_}\")
+                                })
+                            }
+                        } else {
+                            fancy.writeHeader(
+                                \"All \#{results.count} Successful\",
+                                pattern: \":) \",
+                                symmetrical: true
+                            )
+                        }
+
+                        Console.writeLine(\"Took \#{timer.duration}ms\")
+
+                        if (unsuccessful.count > 0) {
+                                System.exit(1)
+                        }
+                    }
+                }\n
+                |".trimStart()
+
+            FileWriter(testSuiteFile)
+                :write(testSuiteFileContents)
+                .close()
+        }
+    }
+
+    public async createTest(String[] args = Array<String>()) {
+        let testClassName = if (args.count == 0) {
+            question(
+                value: cyan("Enter a test class name: (e.g. flat/io/services/MyClassName)") + ": ",
+                responseMatcher: value => value.trim().count > 0,
+                responseMapper: fixupTestFileNameSuffix,
+                invalidResponseMessage: "Invalid test class name"
+            )
+        } else {
+            args[0]
+        }
+
+        createTest(airship.packageLocation, testClassName)
+    }
+
+    public async createTest(String classLocation) =>
+        createTest(airship.packageLocation, classLocation)
+
+    async createTest(File directory, String classLocation) {
+        let srcDirectory = File("#{directory.normalizedLocation}/src")
+        let classFile = File("#{srcDirectory.normalizedLocation}/#{classLocation}")
+        let classTestFile = File("#{srcDirectory.normalizedLocation}/#{classLocation}_Test.flat")
+        let packageDirectory = classTestFile.getParent()
+        let packageEndLocation = classLocation.lastIndexOf("/")
+        let packageLocation = packageEndLocation == -1 ? null : classLocation.substring(0, packageEndLocation)
+        let packageStatement = packageLocation ? "package #{packageLocation}" : ""
+
+        if (!packageDirectory.exists) {
+            packageDirectory.mkdirs()
+        }
+
+        if (!classTestFile.exists) {
+            let classTestFileContents = "|
+                #{packageStatement}
+
+                import #{classLocation}
+
+                testable class {
+                    test `can create`() {
+                        let value = #{classFile.rootName}()
+
+                        expect(value).toNotBe(null)
+                    }
+                }\n
+                |".trimStart()
+
+            FileWriter(classTestFile)
+                :write(classTestFileContents)
+                .close()
+        }
+    }
+
+    public async addTestToTestSuite(
+        String testClassLocation,
+        String testSuiteClassLocation
+    ) =>
+        addTestToTestSuite(
+            airship.packageLocation,
+            testClassLocation,
+            testSuiteClassLocation
+        )
+
+    async addTestToTestSuite(
+        File directory,
+        String testClassLocation,
+        String testSuiteClassLocation
+    ) {
+        let srcDirectory = File("#{directory.normalizedLocation}/src")
+        let testSuiteFile = File("#{srcDirectory.normalizedLocation}/#{testSuiteClassLocation}_TestSuite.flat")
+        let testFile = File("#{srcDirectory.normalizedLocation}/#{testClassLocation}_Test.flat")
+
+        if (!testSuiteFile.isFile) {
+            throw ExecutionFailureException("Testing suite file \"#{testSuiteFile.normalizedLocation}\" does not exist")
+        }
+
+        var testSuiteContents = FileReader(testSuiteFile).readAllContents()
+
+        let annotationPrefix = "[TestSuite ["
+        let annotationIndex = testSuiteContents.findStringOnTopLevel(annotationPrefix)
+
+        if (annotationIndex == -1) {
+            throw ExecutionFailureException("Testing suite file \"#{testSuiteFile.normalizedLocation}\" does not contain a proper [TestSuite] annotation")
+        }
+
+        let annotationEndBracketIndex = testSuiteContents.indexOf(']', start: annotationIndex + annotationPrefix.count)
+        let annotationContents = testSuiteContents.substring(annotationIndex + annotationPrefix.count, annotationEndBracketIndex).trim()
+        let classInsertIndex = testSuiteContents.nextNonWhitespaceIndex(annotationEndBracketIndex - 1, direction: -1)
+
+        if (annotationContents.count > 0) {
+            testSuiteContents = "|
+                #{testSuiteContents.substring(0, classInsertIndex + 1)},
+                    #{testFile.rootName}#{testSuiteContents.substring(classInsertIndex + 1)}
+                |"
+        } else {
+            testSuiteContents = "|
+                #{testSuiteContents.substring(0, classInsertIndex + 1)}
+                    #{testFile.rootName}#{testSuiteContents.substring(classInsertIndex + 1)}
+                |"
+        }
+
+        let importEnd = testSuiteContents.nextNonWhitespaceIndex(annotationIndex - 1, direction: -1)
+
+        testSuiteContents = "|
+            #{testSuiteContents.substring(0, importEnd + 1)}
+            import #{testClassLocation}#{testSuiteContents.substring(importEnd + 1)}
+            |"
+
+        FileWriter(testSuiteFile).write(testSuiteContents).close()
+    }
+
+    public async createMainClass(String[] args = Array<String>()) {
+        let mainClass = if (args.count == 0) {
+            question(
+                value: cyan("Enter a main class name: (e.g. example/myproject/Runner)") + ": ",
+                responseMatcher: value => value.trim().count > 0,
+                responseMapper: fixupMainClassFileNameSuffix,
+                invalidResponseMessage: "Invalid main class name"
+            )
+        } else {
+            args[0]
+        }
+
+        writeMainClassFile(File(System.workingDirectory), mainClass)
+    }
+
+    public async writeMainClassFile(File directory, String mainClass) {
+        let mainClassFile = File("#{directory.normalizedLocation}/src/#{mainClass}.flat")
+
+        if (!mainClassFile.exists) {
+            let packageDirectory = mainClassFile.getParent()
+
+            if (!packageDirectory.exists) {
+                packageDirectory.mkdirs()
+            }
+
+            let packageEndLocation = mainClass.lastIndexOf("/")
+            let packageLocation = packageEndLocation == -1 ? null : mainClass.substring(0, packageEndLocation)
+            let packageStatement = packageLocation ? "package #{packageLocation}" : ""
+
+            let mainClassFileContents = "|
+                #{packageStatement}
+
+                class {
+                    public static main(String[] args) {
+
+                    }
+                }\n
+                |".trimStart()
+
+            FileWriter(mainClassFile)
+                :write(mainClassFileContents)
+                .close()
+        }
+    }
+}

@@ -1,0 +1,59 @@
+package flat/airship
+
+import flat/io
+
+data class extends Dependency {
+    visible Bool isSsh
+    visible String host
+    visible String sshUrl
+    visible String httpsUrl
+    visible String repoDetails
+    visible String branch
+    visible String version
+    visible String? ownerName
+    visible String repoName
+    visible String packageRootLocation
+    visible String packageLocation
+
+    visible lazy String name => repoName
+
+    public construct(
+        String url,
+        this String branch,
+        Bool useLinks = true
+    ) {
+        super()
+
+        let lower = url.toLowerCase()
+        let containsExtension = lower.endsWith(".git")
+
+        isSsh = lower.startsWith("git@")
+        
+        let detailsStart = (isSsh ? url.indexOf(':', start: 4) : url.indexOf('/', start: 8)) + 1
+        let detailsEnd = url.count - (containsExtension ? 4 : 0)
+
+        repoDetails = url.substring(detailsStart, detailsEnd)
+        let slash = repoDetails.lastIndexOf('/')
+        host = url.substring(isSsh ? 4 : 8, detailsStart - 1)
+        ownerName = slash == -1 ? null : repoDetails.substring(end: slash)
+        repoName = repoDetails.substring(slash + 1)
+        packageRootLocation = "#{Airship.flatHome}/packages/#{host}/#{ownerName}/#{repoName}"
+        sshUrl = "git@#{host}:#{repoDetails}.git"
+        httpsUrl = "https://#{host}/#{repoDetails}.git"
+        isLink = useLinks && Airship.useLinks && File("#{packageRootLocation}/[link]").exists
+        version = isLink ? "[link]" : branch
+        packageLocation = "#{packageRootLocation}/#{version}"
+    }
+
+    public getUrl(Bool ssh = false) => ssh ? sshUrl : httpsUrl
+
+    override public getLocation() => packageLocation
+
+    override public toJsonKey() -> String {
+        return "\"#{httpsUrl}\""
+    }
+
+    override public toJsonValue() -> String {
+        return "\"#{branch}\""
+    }
+}

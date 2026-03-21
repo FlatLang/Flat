@@ -1,0 +1,88 @@
+package flat/airship/services
+
+import flat/airship
+import flat/log
+import flat/io
+
+class {
+    static Logger log = Logger(RunScriptService.class)
+
+    public construct(
+        private Airship airship,
+        private AirshipCli cliArgs
+    ) {}
+
+    public async runScripts(String[] scripts) {
+        scripts.forEachAsync({ runScript(_) })
+    }
+
+    public async runScript(String script) {
+        if (!airship.package?.scripts?.containsKey(script)) {
+            throw InvalidScriptException("Script command '#script' is not defined")
+        }
+
+        let workingDirectory = airship.flatJsonFile.getParent().location
+        let cmd = airship.package.scripts[script]
+
+        if (cmd?.class.isOfType(Array.class)) {
+            let Object[] array = (Object[])cmd
+
+            if (array.isEmpty) {
+                return
+            }
+
+            for (obj in array) {
+                if (obj.class.isOfType(Array.class)) {
+                    let String[] c = (Array)obj
+                    let fullCmd = Array<String>():addAll(c):addAll(airship.cliArgs.propagationArgs.values)
+
+                    if (airship.debug) {
+                        Console.writeLine(fullCmd.map({ System.sanitizeCliArgument(_) }).join(" "))
+                    } else {
+                        let response = System.execute(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
+
+                        if (response.exitCode != 0) {
+                            throw ExecutionFailureException("Script exited with exit code #response.exitCode")
+                        }
+                    }
+                } else if (obj.class.isOfType(String.class)) {
+                    let String c = (String)obj
+                    var fullCmd = c
+                    
+                    if (airship.cliArgs.propagationArgs.enabled) {
+                        fullCmd += airship.cliArgs.propagationArgs.values.map({ System.sanitizeCliArgument(_) }).stitchFront(" ")
+                    }
+
+                    if (airship.debug) {
+                        Console.writeLine(fullCmd)
+                    } else {
+                        let response = System.execute(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
+
+                        if (response.exitCode != 0) {
+                            throw ExecutionFailureException("Script exited with exit code #response.exitCode")
+                        }
+                    }
+                }
+            }
+
+            return
+        } else {
+            var fullCmd = cmd.toString()
+                    
+            if (airship.cliArgs.propagationArgs.enabled) {
+                fullCmd += airship.cliArgs.propagationArgs.values.map({ System.sanitizeCliArgument(_) }).stitchFront(" ")
+            }
+
+            if (airship.debug) {
+                Console.writeLine(fullCmd)
+                return
+            }
+
+            let response = System.execute(fullCmd, workingDirectory, silent: cliArgs.quietArg.enabled)
+
+            if (response.exitCode != 0) {
+                throw ExecutionFailureException("Script exited with exit code #response.exitCode")
+            }
+        }
+    }
+}

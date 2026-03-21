@@ -1,0 +1,203 @@
+package flat/airship/services
+
+import flat/airship
+import flat/log
+import flat/io
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(BinaryService.class)
+
+    static File binDirectory = File(Airship.flatHome + "/bin")
+
+    public construct(
+        private Airship airship,
+        private AssetService assetService
+    ) {}
+
+    public async create(String installationTarget) => create([installationTarget])
+
+    public async create(String[] installationTargets) {
+        let targets = installationTargets.clone()
+
+        if (targets.count == 0) {
+            let source = airship.package.defaultSource
+
+            if (source) {
+                log.debug("No explicit installation target passed for package \"#{airship.package.name}\", using default target \"#{source.name}\"")
+                targets.add(source.name)
+            } else {
+                log.info("No bin configuration exists for package \"#{airship.package.name}\"")
+                return
+            }
+        }
+
+        for (target in targets) {
+            log.debug("Creating bin structure in #{binDirectory.nativeLocation} for package #{airship.package.name} installation target \"#{target}\"")
+
+            let source = airship.getSourceForPackage(target)
+
+            if (!source) {
+                log.debug("No bin configured for installation target \"#{target}\"")
+                continue
+            }
+
+            for (bin in source.binaries) {
+                let distDirectory = File(Airship.flatHome + "/bin/.dist/#{bin.name}"):mkdirs()
+                let targetFile = File(airship.packageLocation, bin.value)
+                let distFile = File(distDirectory, targetFile.name)
+                let distFileLocation = ".dist/#{bin.name}/#{distFile.name}"
+
+                log.info("Generating binary: #{bin.name} to #{distDirectory.nativeLocation}")
+
+                createBinFileForOs(bin, distFileLocation)
+
+                log.debug("Copying target file (#{targetFile.nativeLocation}) to dist (#{distFile.nativeLocation})")
+                targetFile.copy(distFile)
+
+                let nodeModules = File(airship.packageLocation, "node_modules")
+
+                if (nodeModules.isDirectory) {
+                    nodeModules.copy(File(distDirectory, nodeModules.name))
+                }
+
+                assetService.copyAssets(distDirectory, target, source)
+            }
+        }
+    }
+
+    async createBinFileForOs(
+        PackageBinary bin,
+        String distFileLocation
+    ) {
+        let distFile = File(distFileLocation)
+        let extension = distFile.extensionName.toLowerCase()
+
+        if (extension != "js") {
+            match System.OS_INT {
+                System.WINDOWS => createAliasBatFile(bin, distFileLocation)
+                default => createAliasBinFile(bin, distFileLocation)
+            }
+
+            return
+        }
+
+        match System.OS_INT {
+            System.WINDOWS => createBinFileForWindows(bin, distFileLocation)
+            default => createBinFileForLinux(bin, distFileLocation)
+        }
+    }
+
+    async createAliasBinFile(
+        PackageBinary bin,
+        String distFileLocation
+    ) {
+        let binFileContents = "|
+            \#!/usr/bin/env bash
+            \"$(dirname \"${BASH_SOURCE[0]}\")/#{distFileLocation}\" \"$@\"
+            |"
+
+        let binFile = File(binDirectory, bin.name)
+
+        log.debug("Creating \"#{bin.name}\" bin file at \"#{binFile.nativeLocation}\"")
+
+        if (binFile.exists) {
+            log.debug("Overwriting existing file \"#{binFile.nativeLocation}\"")
+        }
+
+        FileWriter(binFile):write(binFileContents):close()
+
+        log.debug("Updating file permissions for file \"#{binFile.nativeLocation}\"")
+
+        binFile.chmod("755")
+    }
+
+    async createAliasBatFile(
+        PackageBinary bin,
+        String distFileLocation
+    ) {
+        let binFileContents = "|
+            @echo off
+            %~p0/#{distFileLocation} %*
+            |"
+
+        let binFile = File(binDirectory, "#{bin.name}.bat")
+
+        log.debug("Creating \"#{bin.name}\" bin file at \"#{binFile.nativeLocation}\"")
+
+        if (binFile.exists) {
+            log.debug("Overwriting existing file \"#{binFile.nativeLocation}\"")
+        }
+
+        FileWriter(binFile):write(binFileContents):close()
+
+        log.debug("Updating file permissions for file \"#{binFile.nativeLocation}\"")
+
+        binFile.chmod("755")
+    }
+
+    async createBinFileForLinux(
+        PackageBinary bin,
+        String distFileLocation
+    ) {
+        let binFileContents = "|
+            \#!/usr/bin/env node
+            (function () {
+                \"use strict\";
+
+                require('./#{distFileLocation}');
+            })();
+            |"
+
+        let binFile = File(binDirectory, bin.name)
+
+        log.debug("Creating \"#{bin.name}\" bin file at \"#{binFile.nativeLocation}\"")
+
+        if (binFile.exists) {
+            log.debug("Overwriting existing file \"#{binFile.nativeLocation}\"")
+        }
+
+        FileWriter(binFile):write(binFileContents):close()
+
+        log.debug("Updating file permissions for file \"#{binFile.nativeLocation}\"")
+
+        binFile.chmod("755")
+    }
+
+    async createBinFileForWindows(
+        PackageBinary bin,
+        String distFileLocation
+    ) {
+        let binFileContents = "|
+            @ECHO off
+            GOTO start
+            :find_dp0
+            SET dp0=%~dp0
+            EXIT /b
+            :start
+            SETLOCAL
+            CALL :find_dp0
+
+            IF EXIST \"%dp0%\\node.exe\" (
+                SET \"_prog=%dp0%\\node.exe\"
+            ) ELSE (
+                SET \"_prog=node\"
+                SET PATHEXT=%PATHEXT:;.JS;=;%
+            )
+
+            endLocal & goto \#_undefined_\# 2>NUL || title %COMSPEC% & \"%_prog%\"    \"%dp0%\\#{distFileLocation}\" %*
+            |"
+
+        let binFile = File(binDirectory, "#{bin.name}.cmd")
+
+        log.debug("Creating \"#{bin.name}\" bin file at \"#{binFile.nativeLocation}\"")
+
+        if (binFile.exists) {
+            log.debug("Overwriting existing file \"#{binFile.nativeLocation}\"")
+        }
+
+        FileWriter(binFile):write(binFileContents):close()
+    }
+}

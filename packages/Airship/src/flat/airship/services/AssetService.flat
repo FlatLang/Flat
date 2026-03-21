@@ -1,0 +1,42 @@
+package flat/airship/services
+
+import flat/airship
+import flat/log
+import flat/io
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(AssetService.class)
+
+    public construct(
+        private Airship airship,
+        private DependencyService dependencyService
+    ) {}
+
+    public async copyAssets(File targetDirectory, String target, PackageSource source) {
+        airship.package.assets
+            .map({ File(airship.packageLocation, _) })
+            .forEachParallel((asset) => {
+                let targetFile = File(targetDirectory, asset.name)
+
+                log.debug("Copying assets #{targetFile.isDirectory ? "directory" : "file"} (#{asset.nativeLocation}) to target (#{targetFile.nativeLocation})")
+
+                asset.copy(targetFile)
+            })
+
+        dependencyService.getDependenciesForSource(target, source).dependencies
+            .filter({ _.isFlatPackage() })
+            .map({ _.airship })
+            .filter({ _.package?.assets.isNotEmpty })
+            .flatMap(airship => airship.package.assets.map({ File(airship.packageLocation, _) }))
+            .forEachParallel((asset) => {
+                let targetFile = File(targetDirectory, asset.name)
+
+                log.debug("Copying assets #{targetFile.isDirectory ? "directory" : "file"} (#{asset.nativeLocation}) to target (#{targetFile.nativeLocation})")
+
+                asset.copy(targetFile)
+            })
+    }
+}

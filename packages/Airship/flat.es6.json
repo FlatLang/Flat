@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "test": "node dist/test.js"
+  },
+  "sources": {
+    "main": {
+      "bin": {
+        "airship": "dist/airship.js"
+      }
+    }
+  }
+}

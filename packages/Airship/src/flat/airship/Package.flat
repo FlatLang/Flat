@@ -1,0 +1,52 @@
+package flat/airship
+
+import flat/airship/services
+import flat/datastruct/HashMap
+
+data class {
+    visible String name
+    visible String version
+    visible String description
+    visible String author
+    visible String license
+    visible String defaultTarget
+    visible String[] assets
+    visible HashMap<String, Object> scripts
+    visible HashMap<String, PackageSource> sources
+
+    visible PackageSource mainSource <=> sources["main"]
+    visible PackageSource testSource <=> sources["test"]
+    visible PackageSource defaultSource => mainSource ?: testSource
+
+    public construct(DependencyService dependencyService, HashMap<String, Object> map) {
+        let String name = (String)map["name"]
+        let String version = (String)map["version"]
+        let String description = (String)map["description"]
+        let String author = (String)map["author"]
+        let String license = (String)map["license"]
+        let String defaultTarget = (String)map["defaultTarget"]
+        let String[] assets = (Array)map["assets"]
+        let HashMap<String, Object> scripts = (HashMap)map["scripts"]
+
+        let HashMap<String, HashMap> sourcesMap = (HashMap)map["sources"]
+        var HashMap<String, PackageSource> sources
+
+        if (!sourcesMap || !sourcesMap.class.isOfType(HashMap.class)) {
+            sources = HashMap()
+        } else {
+            sources = sourcesMap.mapValues({ PackageSource(dependencyService, _x.key, (HashMap)_x.value) })
+        }
+
+        this(
+            name: name,
+            version: version,
+            description: description,
+            author: author,
+            license: license,
+            defaultTarget: defaultTarget,
+            assets: assets ?: Array<String>(0),
+            scripts: scripts,
+            sources: sources
+        )
+    }
+}

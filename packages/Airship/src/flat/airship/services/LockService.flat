@@ -1,0 +1,145 @@
+package flat/airship/services
+
+import flat
+import flat/log
+import flat/io
+import flat/git
+import flat/datastruct
+import flat/airship
+import flat/json
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(LockService.class)
+
+    public construct(
+        private Airship airship,
+        private DependencyService dependencyService
+    ) {}
+
+    async fetchLockDependencies() -> HashMap<String, Array<LockDependency>> {
+        let sourceDependencies = airship.package.sources.toArray()
+            .mapAsync({
+                Pair(
+                    _x.key,
+                    dependencyService.getDependenciesForSource(_x.key, _x.value).dependencies
+                        .uniqueBy({ _.getLocation() })
+                        .mapAsync({
+                            LockDependency(
+                                isLink: _x.isLink,
+                                name: (_x.class.isOfType(GitDependency.class) ? ((GitDependency)_x).httpsUrl : _x.getLocation()) ?: "",
+                                branch: (_x.class.isOfType(GitDependency.class) ? ((GitDependency)_x).branch : "") ?: "",
+                                sha: Git.revParse("HEAD", workingDirectory: _x.getLocation()) ?: ""
+                            )
+                        })
+                        .sort((a, b) => a.name.compareTo(b.name))
+                )
+            })
+
+        return HashMap(sourceDependencies)
+    }
+
+    public async generateLockFile() {
+        if (System.getEnv("AIRSHIP_LOCK_FILE_ENABLED") != "true") return
+
+        let existingLockDependencies = getLockFileContents()
+        let lockDependencies = fetchLockDependencies().mapValues({
+            Array<LockDependency> dependencies = _.value
+            return dependencies.filter({ !_.isLink })
+        })
+
+        if (existingLockDependencies == lockDependencies) return
+
+        existingLockDependencies.forEach({
+            let source = _x.key
+            let deps = _x.value
+
+            if (!lockDependencies.containsKey(source)) {
+                lockDependencies.add(source, deps)
+                return
+            }
+
+            lockDependencies[source].addAll(deps)
+            lockDependencies[source] = lockDependencies[source]
+                .unique()
+                .sort((a, b) => a.name.compareTo(b.name))
+        })
+
+        let lockMap = HashMap<String, Object>()
+            :add("name", airship.package.name)
+            :add("dependencies", lockDependencies)
+
+        let json = lockMap.toJson(format: true, tab: "    ")
+
+        FileWriter(airship.flatLockJsonFile).write(json):close()
+    }
+
+    getDependencyLookupMap(HashMap<String, Array<LockDependency>> lock) -> HashMap<String, LockDependency> {
+        let lookup = HashMap<String, LockDependency>()
+
+        lock.forEach((lockPair) => {
+            lockPair.value.forEach({
+                let dep = (LockDependency)_
+                lookup.add("#{lockPair.key}:#{dep.name}[#{dep.branch}]", dep)
+            })
+        })
+
+        return lookup
+    }
+
+    public async getLockFileContents() -> HashMap<String, Array<LockDependency>> {
+        if (!airship.flatLockJsonFile.isFile) return HashMap()
+
+        HashMap lockFileMap = (HashMap)JsonDeserializer().parseObject(airship.flatLockJsonFile)
+        HashMap lockFileMapDependencies = (HashMap)lockFileMap["dependencies"]
+        HashMap<String, HashMap<String, Object>> lockFileDependenciesMap = lockFileMapDependencies
+
+        return lockFileDependenciesMap.mapValues({
+            Array<HashMap<String, Object>> map = (Array)_.value
+            return map.map({
+                LockDependency(
+                    isLink: false,
+                    name: (String)_x["name"],
+                    branch: (String)_x["branch"],
+                    sha: (String)_x["sha"]
+                )
+            })
+        })
+    }
+
+    public async getLockFileDiff() -> DependencyDiff[] {
+        if (!airship.flatLockJsonFile.isFile) return Array()
+
+        let fileLookup = getDependencyLookupMap(getLockFileContents())
+        let currentLookup = getDependencyLookupMap(fetchLockDependencies())
+
+        return currentLookup.toArray().stream()
+            .filter({ !_.value.isLink })
+            .filter({ fileLookup.containsKey(_.key) })
+            .filter({ !fileLookup[_x.key].sha.equals(_x.value.sha) })
+            .map({ DependencyDiff(fileLookup[_x.key], _x.value) })
+            .toArray()
+    }
+
+    public async verifyLockFile() {
+        if (System.getEnv("AIRSHIP_LOCK_FILE_ENABLED") != "true") return
+
+        let diff = getLockFileDiff()
+
+        if (diff.isEmpty) {
+            log.debug("No diffs in lock file")
+            return
+        }
+
+        let dependencyDiffs = diff
+            .map({ "#{_x.current.name}@#{_x.current.branch} - expected #{_x.lock.sha} but received #{_x.current.sha}" })
+            .join("\n    ")
+
+        throw FlatInstallationFailureException("|
+            Lock file differences:
+                #{dependencyDiffs}
+            |")
+    }
+}

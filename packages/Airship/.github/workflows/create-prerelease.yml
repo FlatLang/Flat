@@ -1,0 +1,80 @@
+name: Create Airship Prerelease
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+*'
+      - '*-nightly-*'
+      - 'master-[0-9a-f]+'
+
+jobs:
+  create-prerelease:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.8.0
+        with:
+          java-version: 8
+
+      - uses: actions/checkout@v3
+        with:
+          path: Airship
+
+      - name: Download latest Airship
+        uses: FlatLang/fetch-airship@master
+        with:
+          includePrerelease: true
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Build Airship es6
+        working-directory: Airship
+        run: |
+          node ../airship.js install -t es6
+
+      - name: Replace Airship artifact
+        run: |
+          rm airship.js
+          mv Airship/dist/airship.js airship.js
+
+      - name: Get latest stable release of Airship
+        uses: rez0n/actions-github-release@main
+        id: stable_release
+        env:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "${{ github.repository }}"
+          type: "stable"
+
+      - name: Get latest release of Airship
+        uses: rez0n/actions-github-release@main
+        id: latest_release
+        env:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: "${{ github.repository }}"
+          type: "latest"
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "airship.js"
+          token: ${{ secrets.WORKFLOW_MANAGEMENT_TOKEN }}
+          tag: "${{github.ref_name}}"
+          prerelease: true
+          body: |
+            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.stable_release.outputs.release }}...${{github.ref_name}}
+            **Latest Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest_release.outputs.release }}...${{github.ref_name}}
+          generateReleaseNotes: false

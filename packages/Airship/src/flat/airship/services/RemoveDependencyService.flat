@@ -1,0 +1,107 @@
+package flat/airship/services
+
+import flat/log/Logger
+import flat/io/File
+import flat/io/FileReader
+import flat/io/FileWriter
+
+import flat/airship/Airship
+import flat/airship/PackageSource
+import flat/airship/Dependency
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(RemoveDependencyService.class)
+
+    public construct(
+        private Airship airship,
+        private UninstallService uninstallService,
+        private DependencyService dependencyService,
+        private LockService lockService
+    ) {}
+
+    public async removeDependencies(String[] dependencyNames, Bool purge = false) {
+        for (dependency in dependencyNames) {
+            removeDependency(dependency, purge)
+        }
+    }
+
+    public async removeDependency(String dependencyName, Bool purge = false) {
+        let dependency = dependencyService.getDependencyFromPackage(dependencyName, useLinks: false)
+        let source = airship.cliArgs.sourceArg.enabled
+            ? airship.package.sources[airship.cliArgs.sourceValueArg.value]
+            : airship.package.defaultSource
+
+        if (!source.dependencies.contains(dependency)) {
+            log.info("Dependency \"#{dependencyName}\" not installed")
+
+            return
+        }
+
+        log.debug("Removing dependency #{dependency}...")
+
+        dependencyService.removeDependencyFromSource(source, dependency)
+
+        lockService.verifyLockFile()
+        lockService.generateLockFile()
+
+        let contents = FileReader(airship.flatJsonFile).readAllContents()
+
+        let firstTabLineIndex = contents.indexOf("\n", contents.indexOf("{") + 1) + 1
+        let tab = contents.substring(firstTabLineIndex, contents.nextNonWhitespaceIndex(firstTabLineIndex))
+        let depth = 4
+
+        let sourcesIndex = contents.findStringOnTopLevel("\"sources\"", start: contents.indexOf("{") + 1)
+        let sourceIndex = contents.findStringOnTopLevel("\"#{source.name}\"", start: contents.indexOf("{", start: sourcesIndex) + 1)
+        let dependenciesIndex = contents.findStringOnTopLevel("\"dependencies\"", start: contents.indexOf("{", start: sourceIndex) + 1)
+        let startingBrace = contents.indexOf("{", start: dependenciesIndex)
+        let endingBrace = contents.findEndingMatch(startingBrace, '{', '}')
+        let lastContentIndex = contents.nextNonWhitespaceIndex(start: endingBrace - 1, direction: -1) + 1
+        let dependenciesContent = contents.substring(startingBrace + 1, endingBrace)
+        let containsExistingDependencies = dependenciesContent.trim().count > 0
+        let existingEndingWhitespace = contents.substring(lastContentIndex, endingBrace)
+
+        let dependencyIndex = contents.findStringOnTopLevel("#{dependency.toJsonKey()}", start: startingBrace + 1)
+
+        log.debug("Searched for #{dependency.toJsonKey()} and got index: #dependencyIndex")
+
+        if (dependencyIndex == -1 || dependencyIndex > endingBrace) {
+            log.info("|
+                Dependency \"#{dependencyName}\" not formatted correctly in flat.json file
+                    Could not find dependency with key \"#{dependency.toJsonKey()}\"
+                |")
+
+            return
+        }
+
+        let dependencyLitestart = contents.lastIndexOf("\n", dependencyIndex)
+        let dependencyLineEnd = contents.indexOf("\n", dependencyIndex)
+        let dependencyEndIndex = contents.nextNonWhitespaceIndex(start: dependencyLineEnd - 1, direction: -1)
+        let prevDependencyEndIndex = contents.nextNonWhitespaceIndex(start: dependencyLitestart - 1, direction: -1)
+
+        var Int removeStart = dependencyLitestart
+        var Int removeEnd = dependencyEndIndex + 1
+
+        if (contents[prevDependencyEndIndex] == ',') {
+            removeStart = prevDependencyEndIndex
+
+            if (contents[dependencyEndIndex] == ',') {
+                removeEnd = dependencyEndIndex
+            }
+        }
+
+        let updatedContents = contents.substring(end: removeStart) + contents.substring(removeEnd)
+
+        if (purge) {
+            log.info("Uninstalling dependency from #{dependency.getLocation()}")
+            uninstallService.uninstallDependency(dependency)
+        }
+
+        FileWriter(airship.flatJsonFile)
+            :write(updatedContents)
+            :close()
+
+        log.info("Removed dependency #{dependency.toJsonKey()}")
+    }
+}

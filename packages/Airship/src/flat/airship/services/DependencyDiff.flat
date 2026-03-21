@@ -1,0 +1,8 @@
+package flat/airship/services
+
+import flat/datastruct
+
+data class DependencyDiff {
+    visible LockDependency lock
+    visible LockDependency current
+}

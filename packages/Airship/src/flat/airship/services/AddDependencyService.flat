@@ -1,0 +1,58 @@
+package flat/airship/services
+
+import flat/airship
+import flat/airship/util
+import flat/log/Logger
+import flat/npm/Npm
+import flat/git/Git
+
+class {
+    static Logger log = Logger(AddDependencyService.class)
+
+    public construct(
+        private Airship airship,
+        private GetPackageService getPackageService,
+        private InstallService installService,
+        private DependencyService dependencyService,
+        private LockService lockService
+    ) {}
+
+    public async addDependencies(String[] dependencyNames) {
+        for (dependency in dependencyNames) {
+            addDependency(dependency)
+        }
+    }
+
+    public async addDependency(String dependencyName) {
+        let dependency = dependencyService.getDependencyFromPackage(dependencyName)
+        let source = airship.cliArgs.sourceArg.enabled
+            ? airship.package.sources[airship.cliArgs.sourceValueArg.value]
+            : airship.package.defaultSource
+
+        if (source.dependencies.contains(dependency)) {
+            log.info("Dependency \"#{dependencyName}\" already installed")
+
+            return
+        }
+
+        log.debug("Installing dependency #{dependency}...")
+
+        getPackageService.getPackage(dependencyName, false)
+        Airship.clearCache(dependency.airship)
+        installService.installDependency(
+            dependency,
+            build: false,
+            install: false,
+            installDependencies: false
+        )
+
+        dependencyService.addDependencyToSource(source, dependency)
+
+        lockService.verifyLockFile()
+        lockService.generateLockFile()
+
+        PackageFileUtil.appendJsonValue(airship.flatJsonFile, "sources.#{source.name}.dependencies", dependency.toJsonEntry())
+
+        log.info("Added dependency #{dependency.toJsonKey()}")
+    }
+}

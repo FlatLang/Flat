@@ -1,0 +1,173 @@
+package flat/airship/services
+
+import flat/log/Logger
+import flat/io/File
+import flat/io/FileWriter
+
+import flat/airship/Airship
+import flat/airship/InvalidScriptException
+import flat/airship/ExecutionFailureException
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(InitService.class)
+    static Logger initLog = Logger(InitService.class, showPrefix: false, lineLength: 65)
+
+    public construct(private Airship airship) {}
+
+    requireValue(String value) => value.trim().count > 0
+
+    public async init(String location) {
+        if (location) {
+            init(location, File(location))
+        } else {
+            init(File(System.workingDirectory).name)
+        }
+    }
+
+    public async init(String defaultName, File initialTargetDirectory = File(System.workingDirectory)) {
+        var directory = initialTargetDirectory
+
+        let defaultVersion = "0.1.0"
+        let defaultLicense = "ISC"
+        let defaultDefaultTarget = "es6"
+
+        initLog.info("|
+            This utility will walk you through creating a flat.json file. It only covers the most common items, and tries to guess sensible defaults.
+
+            Use `airship add <pkg>` afterwards to install a package and save it as a dependency in the flat.json file.
+
+            Press ^C at any time to quit.
+            |")
+
+        let name = question("#{cyan("Package name")} (default: #{underscore(defaultName)}): ")
+            .trim().orElse(defaultName)
+
+        let currentDirectory = underscore(directory.getCanonicalPath())
+        var useDefaultFolder = false
+
+        if (directory.location == System.workingDirectory) {
+            useDefaultFolder = boolQuestion(cyan("Initialize package in current folder") + ": \"#{currentDirectory}\"? (Y/n): ")
+        } else {
+            useDefaultFolder = boolQuestion(cyan("Initialize package in folder") + ": \"#{currentDirectory}\"? (Y/n): ")
+        }
+
+        if (!useDefaultFolder) {
+            let folderName = question("#{cyan("Folder name")} (default: #{underscore(name)}): ")
+                .trim().orElse(name)
+
+            directory = File("#{System.workingDirectory}/#{folderName}"):mkdir()
+        } else if (!directory.exists) {
+            directory.mkdir()
+        }
+
+        let flatJson = File("#{directory.normalizedLocation}/flat.json")
+
+        if (flatJson.exists) {
+            throw ExecutionFailureException("#{flatJson.normalizedLocation} exists already")
+        }
+
+        let version = question("#{cyan("Package version")} (default: #{underscore(defaultVersion)}): ")
+            .trim().orElse(defaultVersion)
+        let description = question("#{cyan("Package description")}: ")
+            .trim().orElse("")
+        let author = question("#{cyan("Package author")}: ")
+            .trim().orElse("")
+        let license = question("#{cyan("Package license")} (default: #{underscore(defaultLicense)}): ")
+            .trim().orElse(defaultLicense)
+        let defaultTarget = question("#{cyan("Default compilation target")} (default: #{underscore(defaultDefaultTarget)}): ")
+            .trim().orElse(defaultDefaultTarget)
+        let mainClass = question("#{cyan("Main class")} (e.g.: #{underscore("example/ClassName")}) [optional - press enter to skip]: ")
+            .trim().orElse(null)
+
+        writeFlatJson(
+            flatJson,
+            name,
+            version,
+            description,
+            author,
+            license,
+            defaultTarget,
+            mainClass
+        )
+
+        Airship.clearCache(flatJson.normalizedLocation)
+        let createService = CreateService(Airship(flatJson, airship))
+
+        writeSources(directory, mainClass)
+
+        if (mainClass) {
+            createService.writeMainClassFile(directory, mainClass)
+        }
+
+        if (mainClass && boolQuestion(cyan("Create a testing suite") + " (#{mainClass}_TestSuite)? (Y/n): ")) {
+            createService.createTest(mainClass)
+            createService.createTestingSuite(mainClass)
+            createService.addTestToTestSuite(mainClass, mainClass)
+        }
+
+        if (mainClass && boolQuestion(cyan("Create a testing pipeline") + "? (Y/n): ")) {
+            createService.createPipeline()
+        }
+    }
+
+    async writeSources(File directory, String mainClass) {
+        let sourceRoot = File("#{directory.normalizedLocation}/src")
+
+        if (!sourceRoot.exists) {
+            sourceRoot.mkdir()
+        } else if (!sourceRoot.isDirectory) {
+            throw ExecutionFailureException("Invalid 'src' directory at #sourceRoot.location")
+        }
+    }
+
+    async writeFlatJson(
+        File flatJson,
+        String: name,
+        String: version,
+        String: description,
+        String: author,
+        String: license,
+        String: defaultTarget,
+        String: mainClass
+    ) {
+        let mainClassProperty = mainClass ? "\"mainClass\": \"#{mainClass}\",\n            " : ""
+        let testMainClassProperty = mainClass ? "\"mainClass\": \"#{mainClass}_TestSuite\",\n            " : ""
+
+        let jsonContents = "|
+            {
+                \"name\": \"#name\",
+                \"version\": \"#version\",
+                \"description\": \"#description\",
+                \"author\": \"#author\",
+                \"license\": \"#license\",
+                \"defaultTarget\": \"#defaultTarget\",
+                \"scripts\": {
+                    \"test\": \"node dist/#{defaultTarget}/test.js\"
+                },
+                \"sources\": {
+                    \"main\": {
+                        #mainClassProperty\"source\": \"src\",
+                        \"dependencies\": {
+                            \"git@github.com:FlatLang/System\": \"master\",
+                            \"git@github.com:FlatLang/IO\": \"master\",
+                            \"git@github.com:FlatLang/Stream\": \"master\"
+                        }
+                    },
+                    \"test\": {
+                        #testMainClassProperty\"source\": \"src/**/*_Test*.flat\",
+                        \"dependencies\": {
+                            \"git@github.com:FlatLang/Test\": \"master\"
+                        }
+                    }
+                }
+            }\n
+            |"
+
+        FileWriter(flatJson)
+            :write(jsonContents)
+            .close()
+    }
+}

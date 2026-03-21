@@ -1,0 +1,36 @@
+package flat/airship
+
+import flat/datastruct/HashMap
+
+data class {
+    public construct(
+        visible String location,
+        visible Bool staticImport
+    ) {}
+
+    public construct(Object value) {
+        if (value.class.isOfType(String.class)) {
+            this((String)value, false)
+        } else if (value.class.isOfType(HashMap.class)) {
+            this((HashMap)value)
+        } else {
+            throw Exception("Invalid DefaultExport value: #value")
+        }
+    }
+
+    public construct(HashMap<String, Object> map) {
+        if (map.containsKey("location")) {
+            String location = (String)map["location"]
+            var Bool staticImport = false
+
+            if (map.containsKey("static")) {
+                let staticValue = (Bool)map["static"]
+                staticImport = (Bool)staticValue
+            }
+
+            this(location, staticImport)
+        } else {
+            throw Exception("Invalid DefaultExport value: #map")
+        }
+    }
+}

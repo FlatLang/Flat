@@ -1,0 +1,79 @@
+package flat/airship/services
+
+import flat/airship
+import flat/log/Logger
+import flat/npm/Npm
+import flat/io/File
+import flat/io/FileReader
+import flat/io/FileWriter
+import flat/git/Git
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(GetPackageService.class)
+
+    public construct(
+        private Airship airship,
+        private InstallService installService,
+        private DependencyService dependencyService
+    ) {}
+
+    public async getPackages(String[] dependencyNames) {
+        for (dependency in dependencyNames) {
+            getPackage(dependency)
+        }
+    }
+
+    public async getPackage(String dependencyName, Bool logIfExists = true) {
+        let dependency = dependencyService.getDependencyFromPackage(dependencyName, useLinks: false)
+
+        if (dependencyService.isDependencyInstalled(dependency)) {
+            if (logIfExists) log.info("Package already exists at #{dependency.getLocation()}")
+
+            return
+        }
+
+        verifyDependencyExists(dependency)
+
+        log.debug("Installing dependency #{dependency}...")
+
+        installService.installDependency(dependency)
+    }
+
+    async verifyDependencyExists(Dependency dependency) {
+        if (dependency.class.isOfType(GitDependency.class)) {
+            verifyGitDependencyExists((GitDependency)dependency)
+        } else if (dependency.class.isOfType(NpmDependency.class)) {
+            verifyNpmDependencyExists((NpmDependency)dependency)
+        } else if (dependency.class.isOfType(LocalDependency.class)) {
+            verifyLocalDependencyExists((LocalDependency)dependency)
+        }
+    }
+
+    async verifyGitDependencyExists(GitDependency dependency) {
+        let response = Git.lsRemote(dependency.httpsUrl, silent: true)
+
+        if (response.exitCode == 128) {
+            throw ExecutionFailureException("Dependency GitHub url does not exist \"#{dependency.httpsUrl}\"")
+        } else if (response.exitCode != 0) {
+            throw ExecutionFailureException("Unknown error ocurred: #{response}")
+        }
+    }
+
+    async verifyNpmDependencyExists(NpmDependency dependency) {
+        let response = Npm.view(dependency.packageName, silent: true)
+
+        if (response.exitCode == 1) {
+            throw ExecutionFailureException("Dependency npm package does not exist \"#{dependency.packageName}\"")
+        } else if (response.exitCode != 0) {
+            throw ExecutionFailureException("Unknown error ocurred: #{response}")
+        }
+    }
+
+    async verifyLocalDependencyExists(LocalDependency dependency) {
+        if (!File(dependency.path).isDirectory) {
+            throw ExecutionFailureException("Dependency path is not a valid directory \"#{dependency.path}\"")
+        }
+    }
+}

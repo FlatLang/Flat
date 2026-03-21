@@ -1,0 +1,60 @@
+package flat/airship
+
+import flat/airship/services
+import flat/datastruct/HashMap
+
+data class {
+    visible Dependency[] localDependencies => dependencies.filter({ _.class.isOfType(LocalDependency.class) })
+
+    public construct(
+        visible String name,
+        visible String mainClass,
+        visible String outDirectory,
+        visible String outFile,
+        visible String source,
+        visible ExcludedSource[] excludedSources,
+        visible DefaultExport[] defaultExports,
+        visible Dependency[] dependencies,
+        visible PackageBinary[] binaries
+    ) {}
+
+    public construct(
+        DependencyService dependencyService,
+        String name,
+        HashMap<String, Object> map
+    ) {
+        let excludesValue = (Object)(map["excluded"])
+        let excludedSourcesArray = (Array)excludesValue
+        let excludedSources = excludedSourcesArray?.map({ ExcludedSource(_) })
+        let exportsValue = (Object)(map["defaultExports"])
+        let defaultExportsArray = (Array)exportsValue
+        let defaultExports = defaultExportsArray?.map({ DefaultExport(_) })
+        let dependenciesValue = (Object)(map["dependencies"])
+        let dependenciesMap = (HashMap)dependenciesValue
+        let dependencies = dependenciesMap.map({ dependencyService.getDependencyFromKeyValue((String)_x.key, (String)_x.value) })
+
+        binaries = Array<PackageBinary>()
+
+        if (map["bin"] && map["bin"].class.isOfType(HashMap.class)) {
+            let HashMap<String, String> binMap = (HashMap)map["bin"]
+
+            binMap.forEach({ binaries.add(PackageBinary(_x.key, _x.value)) })
+        } else if (map["bin"] && map["bin"].class.isOfType(String.class)) {
+            let String binString = (String)map["bin"]
+
+            binaries.add(PackageBinary(binString))
+        }
+
+        this(
+            name: name,
+            mainClass: (String)map["mainClass"],
+            outDirectory: (String)map["outDirectory"],
+            outFile: (String)map["outFile"],
+            source: (String)map["source"],
+            excludedSources: excludedSources ?: Array<ExcludedSource>(),
+            defaultExports: defaultExports ?: Array<DefaultExport>(),
+            dependencies: dependencies ?: Array<Dependency>(),
+            binaries: binaries ?: Array<PackageBinary>()
+        )
+    }
+}

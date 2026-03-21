@@ -1,0 +1,32 @@
+package flat/airship
+
+import flat/io/File
+import flat/datastruct/HashMap
+
+import flat/airship/PackageSource
+
+abstract data class {
+    visible Bool isLink
+
+    visible lazy Airship airship => Airship(getLocation())
+    visible lazy String name => File(getLocation()).name
+
+    public abstract getLocation() -> String
+    public abstract toJsonKey() -> String
+    public abstract toJsonValue() -> String
+
+    public toJsonEntry() => "#{toJsonKey()}: #{toJsonValue()}"
+
+    public isFlatPackage() => File(File(getLocation()), "flat.json").isFile
+
+    public getFlatPackageDirectory() => isFlatPackage() ? File(getLocation()) : null
+
+    public getSourcesForInstallation(
+        String installationTarget
+    ) -> PackageSource[] {
+        return Array<PackageSource>()
+            :add(airship.package.mainSource)
+            :add(airship.getSourceForPackage(installationTarget))
+            .unique()
+    }
+}

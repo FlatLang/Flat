@@ -1,0 +1,48 @@
+package flat/airship/services
+
+import flat/airship
+import flat/log
+import flat/io
+
+class {
+    static Logger log = Logger(UninstallService.class)
+
+    public construct(
+        private Airship airship,
+        private AirshipCli cliArgs,
+        private DependencyService dependencyService
+    ) {}
+
+    public async uninstall() {
+        if (cliArgs.uninstallTargetArg.values.isEmpty) {
+            if (cliArgs.uninstallLinkArg.enabled) {
+                if (let gitUrl = airship.getGitOriginUrl()) {
+                    cliArgs.uninstallLinkArg.value = "."
+                    uninstallDependency(GitDependency(gitUrl, "[link]"))
+                    return
+                } else {
+                    throw InvalidCommandException("#{System.workingDirectory} is not a git repository")
+                }
+            }
+
+            throw InvalidCommandException("Invalid uninstall command without a value")
+        }
+
+        for (package in cliArgs.uninstallTargetArg.values) {
+            uninstall(package)
+        }
+    }
+
+    public async uninstall(String package) {
+        uninstallDependency(dependencyService.getDependencyFromPackage(package))
+    }
+
+    public async uninstallDependency(Dependency dependency) {
+        if (dependencyService.isDependencyInstalled(dependency)) {
+            log.debug("Uninstalling dependency #{dependency}")
+            dependencyService.uninstallDependency(dependency)
+        } else {
+            log.debug("Dependency #{dependency} not installed")
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "Airship",
+  "version": "0.1.0",
+  "description": "Flat package manager",
+  "sources": {
+    "main": {
+      "mainClass": "flat/airship/Airship",
+      "outDirectory": "C://test",
+      "outFile": "airship.js",
+      "source": "src",
+      "dependencies": {
+        "git@github.com:FlatLang/Json": "master",
+        "git@github.com:FlatLang/Compiler-String-Extensions": "master"
+      }
+    }
+  },
+  "scripts": {},
+  "author": "Braden Steffaniak",
+  "license": "ISC"
+}

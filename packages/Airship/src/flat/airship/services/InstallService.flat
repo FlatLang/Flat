@@ -1,0 +1,457 @@
+package flat/airship/services
+
+import flat/airship
+import flat/datastruct
+import flat/log
+import flat/io
+import flat/git
+
+class {
+    static Logger log = Logger(InstallService.class)
+
+    public construct(
+        private Airship airship,
+        private AirshipCli cliArgs,
+        private DependencyService dependencyService,
+        private BinaryService binaryService,
+        private AssetService assetService,
+        private LockService lockService
+    ) {}
+
+    public async install() {
+        if (cliArgs.installationTargetArg.values.isEmpty) {
+            if (cliArgs.installLinkArg.enabled) {
+                if (let gitUrl = airship.getGitOriginUrl()) {
+                    cliArgs.installLinkArg.value = "."
+                    installAndLink(gitUrl)
+                    return
+                } else {
+                    throw InvalidCommandException("#{System.workingDirectory} is not a git repository")
+                }
+            }
+            install("main", install: true)
+        } else {
+            for (package in cliArgs.installationTargetArg.values) {
+                install(package, install: true)
+            }
+        }
+    }
+
+    public async install(
+        String package,
+        Bool: install = false,
+        Bool: installDependencies = true
+    ) {
+        if (cliArgs.installLinkArg.enabled) {
+            installAndLink(package)
+        } else if (package.contains(":")) {
+            installDependency(dependencyService.getDependencyFromPackage(package), install, installDependencies)
+        } else {
+            installLocalPackage(package)
+        }
+    }
+
+    async checkInstallCompiler() {
+        let runtime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() ?: "java"
+
+        match runtime {
+            "native" =>
+            "java" => return
+            "flat" => {
+                let package = "git@github.com:FlatLang/Flat-Compiler"
+                let dependency = dependencyService.getDependencyFromPackage(package)
+
+                if (!dependencyService.isDependencyInstalled(dependency)) {
+                    Airship(["get", package]):run()
+                    Airship(["install", "flatc", "-f", dependency.getLocation(), "--flatc-runtime", "java"]):run()
+                }
+            }
+            default => throw ExecutionFailureException("Invalid flatc runtime \"#{runtime}\"")
+        }
+    }
+
+    async checkInstallTarget() {
+        let dependency = getInstallTargetDependency()
+
+        if (!dependency) return
+
+        if (!dependencyService.isDependencyInstalled(dependency)) {
+            installDependency(dependency)
+        }
+    }
+
+    async getInstallTargetDependency() -> Dependency {
+        if (!airship.target) return null
+
+        let target = match airship.target.toLowerCase() {
+            "es6" => "ES6"
+            "js" => "JS"
+            "java" => "Java"
+            "c" => "C"
+            default => airship.target
+        }
+
+        let package = "git@github.com:FlatLang/Flat-#{target}"
+        return dependencyService.getDependencyFromPackage(package)
+    }
+
+    getOutputDirectory(PackageSource source) => File("#{airship.packageLocation.normalizedLocation}/#{source.outDirectory}")
+
+    public async getInstallCommand(String installationTarget, PackageSource source, Dependency[] dependencies) -> String[] {
+        return getFlatcExecutableCommand(dependencies).plus(getFlatcExecutableArguments(installationTarget, source))
+    }
+
+    getFlatcExecutableCommand(Dependency[] dependencies) -> String[] {
+        let flat = dependencies.firstWhere({ _.name == "Flat" })
+        let runtime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() ?: "java"
+
+        match runtime {
+            "native" => {
+                let nativeFileName = match System.OS_INT {
+                    System.WINDOWS => "flatc.exe"
+                    default => "flatc"
+                }
+
+                return [
+                    "#{flat.getLocation()}/target/#{nativeFileName}",
+                ]
+            }
+            "java" => {
+                return [
+                    "java",
+                    "-jar",
+                    "#{flat.getLocation()}/target/flatc.jar",
+                ]
+            }
+            "flat" => {
+                return [
+                    "#{Airship.flatHome}/bin/flatc",
+                ]
+            }
+            default => {
+                throw ExecutionFailureException("Invalid flatc runtime \"#{runtime}\"")
+            }
+        }
+    }
+
+    async getFlatcExecutableArguments(String installationTarget, PackageSource source) -> String[] {
+        let runtime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() ?: "java"
+
+        match runtime {
+            "native" =>
+            "java" => return getLegacyInstallArguments(installationTarget, source)
+            "flat" => return getFlatcInstallArguments(installationTarget, source)
+            default => throw ExecutionFailureException("Invalid flatc runtime \"#{runtime}\"")
+        }
+    }
+
+    public static sanitizeFileLocation(String location) =>
+        location.contains("*") ? "\"#{location}\"" : location
+
+    public async getLegacyInstallArguments(String installationTarget, PackageSource source) -> String[] {
+        let args = String[]
+
+        let originUrl = airship.getGitOriginUrl()
+        let gitDependency = originUrl ? dependencyService.getDependencyFromUrl(originUrl) : null
+        let currentDependencyCanonicalLocation = airship.packageLocation.getCanonicalFile().normalizedLocation
+        let currentDependency = dependencyService.getDependencyFromPackage("local:#{currentDependencyCanonicalLocation}")
+        let sourceLocations = dependencyService.getDependencySourceLocations(currentDependency, installationTarget)
+        let excludeSources = dependencyService.getDependencyExclusions(currentDependency, installationTarget)
+        let excludeSource = installationTarget == "test" ? null : dependencyService.getDependencySourceGlobLocation(currentDependency, "test")
+        let canonicalSourceLocations = sourceLocations.mapParallel({ File(_).getCanonicalPath() }).unique()
+
+        log.trace("Adding source locations: #{sourceLocations}")
+        args.addAll(sourceLocations.map({ sanitizeFileLocation(_) }))
+
+        args.addAll([
+            "-install-dir", "#{Airship.flatHome}/packages",
+        ])
+
+        if (source.outFile) {
+            args.addAll(["-o", "#{getOutputDirectory(source).location}/#{source.outFile}"])
+        }
+
+        args.addAll(["-d", getOutputDirectory(source).location])
+
+        if (airship.target) {
+            log.trace("Adding target: #{airship.target}")
+            args.addAll([
+                "-target", airship.target,
+                "-engine-jar", "#{getInstallTargetDependency().getLocation()}/target/flat-#{airship.target.toLowerCase()}.jar",
+            ])
+        }
+        if (cliArgs.targetRuntimeArg.enabled) {
+            log.trace("Adding source locations: #{cliArgs.targetRuntimeArg["runtime"].value}")
+            args.addAll(["-target-runtime", cliArgs.targetRuntimeArg["runtime"].value])
+        }
+        if (!cliArgs.syncArg.enabled) {
+            args.add("-parallel")
+        }
+        if (cliArgs.noReplaceLogLineArg.enabled) {
+            args.add("-no-replace-log-line")
+        }
+
+        log.trace("Adding source exclusions: #{excludeSources}")
+        excludeSources.forEach({ args.addAll(["-x", sanitizeFileLocation(_)]) })
+
+        if (excludeSource) {
+            args.addAll(["-x", sanitizeFileLocation(excludeSource)])
+        }
+
+        let response = dependencyService.getDependenciesForSource(installationTarget, source)
+        log.trace("All dependencies for \"#installationTarget\": #response.dependencies")
+
+        let topLevelDependencies = dependencyService.getDependenciesForSource(installationTarget, source, recursive: false)
+        log.trace("Tep-level dependencies for \"#installationTarget\": #topLevelDependencies.dependencies")
+
+        let dependencyLocations = HashMap<Dependency, Array<String>>()
+        let excludeLocations = HashMap<Dependency, Array<String>>()
+
+        response.dependencies.forEachParallel({
+            if (!dependencyLocations.containsKey(_x)) {
+                let dependencySourceLocations = dependencyService.getDependencySourceLocations(_x, installationTarget)
+
+                dependencyLocations[_x] = Array()
+
+                for (src in dependencySourceLocations) {
+                     dependencyLocations[_x].add(File(src).getCanonicalPath())
+                }
+            }
+        })
+
+        response.dependencies
+            .filterParallel({ !areDependencySourcesEquivalent(_, gitDependency) })
+            .filter({ _.isFlatPackage() })
+            .filter({ dependencyLocations[_].none({ canonicalSourceLocations.contains(_) }) })
+            .forEach({
+                dependencyService
+                    .getDependencySourceLocations(_x)
+                    .forEach({ args.addAll(["-l", sanitizeFileLocation(_)]) })
+
+                dependencyService
+                    .getDependencyExclusions(_x, installationTarget)
+                    .forEach({ args.addAll(["-x", sanitizeFileLocation(_)]) })
+
+                let dependencyExcludeSource = dependencyService.getDependencySourceGlobLocation(_x, "test")
+
+                if (dependencyExcludeSource) {
+                    args.addAll(["-x", sanitizeFileLocation(dependencyExcludeSource)])
+                }
+            })
+
+        source.defaultExports
+            .filter({ !_.staticImport })
+            .forEach({ args.addAll(["-default-import", _.location]) })
+
+        source.defaultExports
+            .filter({ _.staticImport })
+            .forEach({ args.addAll(["-default-static-import", _.location]) })
+
+        topLevelDependencies.dependencies
+            .filter({ _.isFlatPackage() })
+            .filter({ dependencyLocations[_].none({ canonicalSourceLocations.contains(_) }) })
+            .forEach({
+                let childship = _x.airship
+                let dependencySource = childship.getSourceForPackage(installationTarget, childship.package.defaultSource)
+
+                dependencySource?.defaultExports
+                    .filter({ !_.staticImport })
+                    .forEach({ args.addAll(["-default-import", _.location]) })
+
+                dependencySource?.defaultExports
+                    .filter({ _.staticImport })
+                    .forEach({ args.addAll(["-default-static-import", _.location]) })
+            })
+
+        if (source.mainClass) {
+            args.addAll(["-main", source.mainClass])
+        } else {
+            args.add("-library")
+        }
+
+        let appProps = HashMap()
+            :add("name", airship.package.name)
+            :add("version", airship.package.version)
+            :add("description", airship.package.description)
+            :add("author", airship.package.author)
+            :add("license", airship.package.license)
+            :add("defaultTarget", airship.package.defaultTarget)
+
+        args.addAll(["-app-props", appProps.toJson()])
+
+        args.addAll(airship.cliArgs.propagationArgs.values)
+
+        return args
+    }
+
+    async getGitDependency(Dependency d) -> GitDependency? => null {
+        if (d.class.isOfType(GitDependency.class)) return (GitDependency)d
+
+        let url = Git.getOriginUrl(workingDirectory: d.getLocation(), silent: true).value
+
+        return url ? dependencyService.getDependencyFromUrl(url) : null
+    }
+
+    async areDependencySourcesEquivalent(Dependency d1, Dependency d2) -> Bool {
+        let d1Origin = getGitDependency(d1)?.sshUrl
+        let d2Origin = getGitDependency(d2)?.sshUrl
+
+        if (d1Origin != d2Origin) {
+            log.debug("#{d1Origin} (#{d1.getLocation()}) != #{d2Origin} (#{d2.getLocation()})")
+            return false
+        }
+
+        log.debug("#{d1Origin} (#{d1.getLocation()}) == #{d2Origin} (#{d2.getLocation()})")
+
+        return true
+    }
+
+    public async getFlatcInstallArguments(String installationTarget, PackageSource source) -> String[] {
+        let args = String[]
+
+        let currentDependency = dependencyService.getDependencyFromPackage("local:#{airship.packageLocation.normalizedLocation}")
+        let sourceLocations = dependencyService.getDependencySourceLocations(currentDependency, installationTarget)
+        let excludeSources = dependencyService.getDependencyExclusions(currentDependency, installationTarget)
+        let excludeSource = installationTarget == "test" ? null : dependencyService.getDependencySourceGlobLocation(currentDependency, "test")
+        let canonicalSourceLocations = sourceLocations.mapParallel({ File(_).getCanonicalPath() }).unique()
+
+        log.trace("Adding source locations: #{sourceLocations}")
+        args.addAll(sourceLocations)
+        args.addAll(airship.cliArgs.propagationArgs.values)
+
+        return args
+    }
+
+    async installLocalPackage(String package) {
+        log.debug("Installing local package #{airship.packageLocation.normalizedLocation} with target \"#package\"")
+
+        let source = airship.getSourceForPackage(package, airship.parent ? airship.package.defaultSource : null)
+
+        if (!source) {
+            log.debug("No source for local package #{airship.packageLocation.normalizedLocation}. Skipping installation")
+            return
+        }
+
+        let dependencies = installDependencies(package, source)
+
+        checkInstallTarget()
+        checkInstallCompiler()
+
+        let cmd = getInstallCommand(package, source, dependencies)
+
+        if (airship.debug) {
+            Console.writeLine(cmd.map({ System.sanitizeCliArgument(_) }).join(" "))
+            return
+        }
+
+        lockService.verifyLockFile()
+        lockService.generateLockFile()
+
+        log.debug("Executing command: #cmd")
+
+        let response = System.execute(cmd, silent: cliArgs.quietArg.enabled)
+
+        if (response.exitCode != 0) {
+            throw FlatInstallationFailureException("Compilation failed: exit code #{response.exitCode}")
+        }
+
+        assetService.copyAssets(getOutputDirectory(source), package, source)
+
+        if (source.binaries.count > 0) {
+            binaryService.create(package)
+        }
+
+        log.debug("Successful installation")
+    }
+
+    public async installDependency(
+        Dependency dependency,
+        Bool: build = true,
+        Bool: install = true,
+        Bool: installDependencies = true
+    ) {
+        if (!dependencyService.isDependencyInstalled(dependency)) {
+            log.debug("Installing dependency #{dependency}")
+            dependencyService.installDependency(dependency)
+        } else {
+            log.debug("Dependency #{dependency} already installed")
+        }
+
+        let installable = install && (dependency.airship.target != null || dependency.airship.package.defaultTarget != null)
+
+        if (dependency.isFlatPackage()) {
+            postInstallPackage(
+                File(dependency.getLocation()),
+                build,
+                install: installable,
+                installDependencies
+            )
+        }
+    }
+
+    async installAndLink(String url) {
+        let dependency = GitDependency(url, "[link]")
+        let flatPackageDir = File(dependency.getLocation())
+        flatPackageDir.getParent().mkdirs()
+
+        flatPackageDir.symbolicLinkTo(File("#{System.workingDirectory}/#{cliArgs.installLinkArg.value}"))
+
+        postInstallPackage(flatPackageDir, install: false)
+    }
+
+    async installDependencies(
+        String package,
+        PackageSource source,
+        Bool install = false
+    ) -> Dependency[] {
+        let response = dependencyService.getDependenciesForSource(package, source)
+
+        log.trace("Installing dependencies for source #{source}")
+        log.trace("Dependencies #{response.dependencies}")
+
+        for (dependency in response.dependencies) {
+            installDependency(
+                dependency,
+                build: response.dependenciesDownloaded.contains(dependency),
+                install: false,
+                installDependencies: false
+            )
+        }
+
+        return response.dependencies
+    }
+
+    async postInstallPackage(
+        File flatPackageDir,
+        Bool: build = true,
+        Bool: install = true,
+        Bool: installDependencies = true
+    ) {
+        log.debug("Post-installation for package #{flatPackageDir.nativeLocation}")
+
+        let args = [
+            "-f", flatPackageDir.normalizedLocation
+        ]
+
+        airship.propagateArgs(args)
+
+        let childship = Airship(args, airship)
+
+        if (build && childship.package?.scripts?.containsKey("build")) {
+            if (childship.package.scripts.containsKey("clean")) {
+                childship.runScriptService.runScript("clean")
+            }
+
+            childship.runScriptService.runScript("build")
+        }
+
+        if (childship.package?.mainSource) {
+            if (installDependencies) {
+                childship.installService.installDependencies(flatPackageDir.name, childship.package.defaultSource)
+            }
+            if (install) {
+                childship.installService.install()
+            }
+        }
+    }
+}

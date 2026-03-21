@@ -1,0 +1,39 @@
+package flat/airship/services
+
+import flat/log
+import flat/io
+
+import flat/airship
+
+class {
+    static Logger log = Logger(CleanService.class)
+
+    public construct(private Airship airship) {}
+
+    public async clean() {
+        let count = airship.package.sources.toArray().stream()
+            .map({ _.value.outDirectory })
+            .filterNull()
+            .map({ "#{airship.packageLocation.normalizedLocation}/#_" })
+            .unique()
+            .map({ File(_) })
+            .forEachAsync(clean)
+
+        if (airship.debug && count == 0) {
+            Console.log("No outDirectories to clean")
+        }
+    }
+
+    async clean(File directory) {
+        if (airship.debug) {
+            Console.log("rm -rf #{directory.getCanonicalPath()}")
+            return
+        }
+
+        try {
+            directory.delete(recursive: true)
+        } catch (Exception e) {
+            throw Exception("Failed to clean directory '#{directory.normalizedLocation}'")
+        }
+    }
+}

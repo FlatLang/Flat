@@ -1,0 +1,107 @@
+package flat/airship/util
+
+import flat/airship
+import flat/io
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    data class JsonLocation {
+        visible Int contentOuterStart
+        visible Int contentOuterEnd
+        visible Int contentInnerStart
+        visible Int contentInnerEnd
+        visible Bool containsValues
+        visible String startingWhitespace
+        visible String endingWhitespace
+    }
+
+    static endingChar(Char c) -> Char {
+        match c {
+            '{' => return '}'
+            '[' => return ']'
+            '"' => return '"'
+        }
+
+        throw InvalidFlatJsonException("Invalid char '#{c}'")
+    }
+
+    static getTabString(String contents) -> String {
+        let firstTabLineIndex = contents.indexOf("\n", contents.indexOf("{") + 1) + 1
+        return contents.substring(firstTabLineIndex, contents.nextNonWhitespaceIndex(firstTabLineIndex))
+    }
+
+    public static async setJsonValue(File flatJsonFile, String pathString, Object value) {
+        let contents = FileReader(flatJsonFile).readAllContents()
+        let location = getJsonLocation(pathString, contents)
+
+        let updatedContents = contents.substring(end: location.contentOuterStart) +
+            value.toJson() +
+            contents.substring(location.contentOuterEnd + 1)
+
+        FileWriter(flatJsonFile)
+            :write(updatedContents)
+            :close()
+    }
+
+    public static async appendJsonValue(File flatJsonFile, String pathString, String value) {
+        let contents = FileReader(flatJsonFile).readAllContents()
+        let location = getJsonLocation(pathString, contents)
+
+        let updatedContents = contents.substring(end: location.contentInnerEnd + 1) +
+            (location.containsValues ? "," : "") + "\n" +
+            location.startingWhitespace + value + location.endingWhitespace +
+            contents.substring(location.contentOuterEnd)
+
+        FileWriter(flatJsonFile)
+            :write(updatedContents)
+            :close()
+    }
+
+    public static getJsonLocation(String pathString, String contents) -> JsonLocation {
+        let path = pathString.split(".")
+
+        var Int index = 0
+        var lastPathValue = ""
+
+        path.forEach((pathValue, i) => {
+            let start = contents.indexOf("{", start: index + lastPathValue.count) + 1
+            index = contents.findStringOnTopLevel("\"#{pathValue}\"", start: start)
+            lastPathValue = pathValue
+        })
+
+        let startIndex = contents.nextIndexThatDoesntContain([' ', '\t', '\n', '\r', ':'], index + lastPathValue.count + 3)
+        let startChar = contents[startIndex]
+        let endChar = endingChar(startChar)
+        let endIndex = contents.findEndingMatch(startIndex, startChar, endChar)
+        let firstContentIndex = contents.nextNonWhitespaceIndex(start: startIndex + 1)
+        let lastContentIndex = contents.nextNonWhitespaceIndex(start: endIndex - 1, direction: -1)
+        let valuesContent = contents.substring(startIndex + 1, endIndex)
+        let containsExistingValues = valuesContent.trim().count > 0
+        let existingEndingWhitespace = contents.substring(lastContentIndex + 1, endIndex)
+        let tab = getTabString(contents)
+
+        let startingWhitespace = if (containsExistingValues) {
+            let linestart = contents.lastIndexOf("\n", start: lastContentIndex) + 1
+            contents.substring(linestart, contents.nextNonWhitespaceIndex(linestart))
+        } else {
+            tab.repeat(path.count + 1)
+        }
+
+        let endingWhitespace = if (!existingEndingWhitespace.contains("\n")) {
+            "\n#{tab.repeat(path.count)}"
+        } else {
+            existingEndingWhitespace
+        }
+
+        return JsonLocation(
+            contentOuterStart: startIndex,
+            contentOuterEnd: endIndex,
+            contentInnerStart: firstContentIndex,
+            contentInnerEnd: lastContentIndex,
+            containsValues: containsExistingValues,
+            startingWhitespace: startingWhitespace,
+            endingWhitespace: endingWhitespace
+        )
+    }
+}

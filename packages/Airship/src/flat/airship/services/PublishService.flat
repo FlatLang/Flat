@@ -1,0 +1,150 @@
+package flat/airship/services
+
+import flat/airship
+import flat/airship/util
+import flat/log
+import flat/io
+import flat/regex
+import flat/git
+
+import static flat/readline/ReadLine
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(PublishService.class)
+
+    static String MAJOR = "major"
+    static String MINOR = "minor"
+    static String PATCH = "patch"
+
+    public construct(
+        private Airship airship
+    ) {}
+
+    public async publish() {
+        if (airship.cliArgs.bumpArg.enabled) {
+            if (airship.cliArgs.majorBumpArg.enabled) {
+                bump(MAJOR)
+            } else if (airship.cliArgs.minorBumpArg.enabled) {
+                bump(MINOR)
+            } else {
+                bump(PATCH)
+            }
+            return
+        }
+        if (airship.cliArgs.publishVersionArg.enabled) {
+            let version = formatVersion(airship.cliArgs.publishVersionArg.value)
+            publishVersion(version)
+            return
+        }
+        let tagNames = Git.lsRemoteTags(workingDirectory: airship.packageLocation.location, silent: true).tags.map({ _.name })
+        log.debug("|
+            Checking tag names for v#{airship.package.version}:
+                #{tagNames.join("\n  ")}
+            |")
+        if (!tagNames.contains("v#{airship.package.version}")) {
+            publishVersion(airship.package.version)
+            return
+        }
+        if (airship.cliArgs.pushReleaseArg.enabled) {
+            pushRelease("v#{airship.package.version}")
+            return
+        }
+
+        throw InvalidCommandException("publish command requires #{airship.cliArgs.publishVersionArg.name} or #{airship.cliArgs.bumpArg.name} argument")
+    }
+
+    static formatVersion(var String version) -> String {
+        version = version.toLowerCase()
+        if (version.startsWith("v")) version = version.substring(1)
+        validateVersion(version)
+        return version
+    }
+
+    static validateVersion(String version) {
+        if (!Regex.containsMatch(/^\d+\.\d+\.\d+$/, version)) {
+            throw InvalidCommandException("Invalid version pattern. Must be patterned after semver structure, e.g. 'v0.0.0'")
+        }
+    }
+
+    async bump(String bumpType) {
+        log.debug("Bumping: #{bumpType}")
+        let currentVersion = airship.package.version
+        log.debug("Current version: #{currentVersion}")
+        let parts = currentVersion.split(".").map({ Int.parseInt(_) })
+
+        match bumpType {
+            MAJOR => {
+                parts[0] = parts[0] + 1
+                parts[1] = 0
+                parts[2] = 0
+            }
+            MINOR => {
+                parts[1] = parts[1] + 1
+                parts[2] = 0
+            }
+            PATCH => {
+                parts[2] = parts[2] + 1
+            }
+        }
+
+        let newVersion = parts.join(".")
+        log.debug("New version: #{newVersion}")
+        publishVersion(newVersion)
+    }
+
+    async publishVersion(String version) {
+        let git = Git(airship.packageLocation)
+        let status = git.status(silent: true)
+
+        if (!status.nothingToCommit) {
+            log.error("You have uncommitted changes. Please commit or stash them before publishing.")
+            return
+        }
+
+        log.info("Publishing version: #{version}")
+
+        let tagName = "v#{version}"
+
+        if (airship.package.version != version) {
+            PackageFileUtil.setJsonValue(airship.flatJsonFile, "version", version)
+
+            git.add(".")
+            git.commit(tagName)
+        }
+
+        git.tag(tagName)
+        
+        if (!airship.cliArgs.pushReleaseArg.enabled && !boolQuestion(cyan("Release tag \"#{tagName}\" has been created. Do you want to push the release now? (Y/n): "))) return
+        
+        pushRelease(tagName)
+    }
+
+    async pushRelease(String tagName) {
+        let git = Git(airship.packageLocation.location)
+
+        let localTags = git.showRef(tags: true, silent: true).tags
+
+        if (localTags.none({ _.name == tagName })) {
+            throw InvalidCommandException("No version tag '#{tagName}'")
+        }
+
+        let message = git.show(format: "%s", noPatch: true, silent: true).stdout.join().trimEnd()
+
+        if (message == tagName) {
+            log.info("Pushing version bump commit...")
+            git.push()
+        } else {
+            log.debug("Not pushing HEAD since the last commit was not a version bump commit: '#{message}'")
+        }
+
+        let remoteTags = git.lsRemoteTags(silent: true).tags
+
+        if (remoteTags.none({ _.name == tagName })) {
+            log.debug("Pushing release tag '#{tagName}'...")
+            git.pushTag(tagName)
+        } else {
+            log.info("Release tag '#{tagName}' already pushed")
+        }
+    }
+}

@@ -1,0 +1,22 @@
+package flat/airship
+
+import flat/log/Logger
+
+data class extends Dependency {
+    static Logger log = Logger(NpmDependency.class)
+
+    public construct(
+        visible String packageName,
+        visible String version
+    ) {}
+
+    override public getLocation() => "node_modules/#{packageName}"
+
+    override public toJsonKey() -> String {
+        return "\"npm:#{packageName}\""
+    }
+
+    override public toJsonValue() -> String {
+        return "\"#{version}\""
+    }
+}

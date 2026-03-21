@@ -1,0 +1,420 @@
+package flat/airship
+
+import flat/fucli
+
+class {
+    visible CliArg targetLanguageArg = CliArg(
+        name: "target",
+        description: "The language to compile the package to",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg targetArg = CliArg(
+        name: "--target",
+        aliases: ["-t"],
+        description: "Specify the target language to compile the package to",
+        args: [targetLanguageArg]
+    )
+
+    visible CliArg targetRuntimeValueArg = CliArg(
+        name: "runtime",
+        description: "The language runtime to compile the package for",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg targetRuntimeArg = CliArg(
+        name: "--target-runtime",
+        aliases: ["--runtime", "-r"],
+        description: "Specify the target runtime the binary will build for",
+        args: [targetRuntimeValueArg]
+    )
+
+    visible CliArg sourceValueArg = CliArg(
+        name: "sourceValue",
+        description: "The source to target. e.g. main/test",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg sourceArg = CliArg(
+        name: "--source",
+        aliases: ["-s"],
+        description: "Specify an explicit package source to reference when running the Airship commands",
+        args: [sourceValueArg],
+        commandHelpDisplay: "main, test, etc..."
+    )
+
+    visible CliArg fileLocationArg = CliArg(
+        name: "file",
+        description: "The flat.json file location to use",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg fileArg = CliArg(
+        name: "--file",
+        aliases: ["-f"],
+        description: "Specify an explicit flat.json file to reference when running the Airship commands",
+        args: [fileLocationArg]
+    )
+
+    visible CliArg debugArg = CliArg(
+        name: "--debug",
+        aliases: ["-d"],
+        description: "Print the command used to compile the package to stdout and exit"
+    )
+
+    visible CliArg syncArg = CliArg(
+        name: "--sync",
+        aliases: ["-s"],
+        description: "Run the compilation synchronously"
+    )
+
+    visible CliArg noReplaceLogLineArg = CliArg(
+        name: "--no-replace-log-line",
+        description: "Do not replace the logging info output after each line"
+    )
+
+    visible CliArg quietArg = CliArg(
+        name: "--quiet",
+        aliases: ["-q"],
+        description: "Do not print Airship log messages"
+    )
+
+    visible CliArg flatcRuntimeValueArg = CliArg(
+        name: "runtime",
+        description: "The flatc runtime to compile the package with",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg flatcRuntimeArg = CliArg(
+        name: "--flatc-runtime",
+        description: "Specify the Flat compiler runtime",
+        args: [flatcRuntimeValueArg]
+    )
+
+    visible CliArg versionArg = CliArg(
+        name: "--version",
+        description: "Print version info and exit"
+    )
+
+    visible CliArg uninstallArg = CliArg(
+        name: "--uninstall",
+        description: "Uninstall the Airship CLI package"
+    )
+
+    visible CliArg reinstallArg = CliArg(
+        name: "--reinstall",
+        description: "Reinstall the Airship CLI package"
+    )
+
+    visible CliArg allHelpArg = CliArg(
+        name: "--all",
+        description: "Print all the help information recursively for an argument, command, or option"
+    )
+
+    visible CliArg useLinksArg = CliArg(
+        name: "--use-links",
+        description: "Use packages installed as symbolic links where possible in favor of any version defined in a flat.json file"
+    )
+
+    visible CliArg setupCommand = CliArg(
+        name: "setup",
+        description: "Setup the Airship CLI",
+        args: [
+            uninstallArg,
+            reinstallArg,
+        ]
+    )
+
+    visible CliArg installationTargetArg = CliArg(
+        name: "installationTarget",
+        description: "The package installation target",
+        minCount: 0,
+        wildcard: true
+    )
+
+    visible CliArg installLinkArg = CliArg(
+        name: "--link",
+        description: "Link the Flat package to the location in #{Airship.flatHome}/packages"
+    )
+
+    visible CliArg installCommand = CliArg(
+        name: "install",
+        description: "Install a Flat package",
+        args: [
+            installationTargetArg,
+            installLinkArg,
+        ]
+    )
+
+    visible CliArg uninstallTargetArg = CliArg(
+        name: "installationTarget",
+        description: "The installation target to uninstall",
+        minCount: 0,
+        wildcard: true
+    )
+
+    visible CliArg uninstallLinkArg = CliArg(
+        name: "--link",
+        description: "Uninstall a symbolic link of the Flat package from the location in #{Airship.flatHome}/packages"
+    )
+
+    visible CliArg uninstallCommand = CliArg(
+        name: "uninstall",
+        description: "Uninstall a Flat package",
+        args: [
+            uninstallTargetArg,
+            uninstallLinkArg,
+        ]
+    )
+
+    visible CliArg reinstallTargetArg = CliArg(
+        name: "installationTarget",
+        description: "The installation target to reinstall",
+        minCount: 0,
+        wildcard: true
+    )
+
+    visible CliArg reinstallLinkArg = CliArg(
+        name: "--link",
+        description: "Link the Flat package to the location in #{Airship.flatHome}/packages"
+    )
+
+    visible CliArg reinstallCommand = CliArg(
+        name: "reinstall",
+        description: "Reinstall a Flat package",
+        args: [
+            reinstallTargetArg,
+            reinstallLinkArg,
+        ]
+    )
+
+    visible CliArg updateTargetsArg = CliArg(
+        name: "installationTarget",
+        description: "The installation target to update the dependencies for",
+        minCount: 0,
+        wildcard: true
+    )
+
+    visible CliArg updateCommand = CliArg(
+        name: "update",
+        description: "Update a Flat package's dependencies",
+        args: [updateTargetsArg]
+    )
+
+    visible CliArg getDependencyArg = CliArg(
+        name: "dependency",
+        description: "The dependencies to get",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg getCommand = CliArg(
+        name: "get",
+        description: "Install the specified dependency",
+        args: [getDependencyArg]
+    )
+
+    visible CliArg cleanCommand = CliArg(
+        name: "clean",
+        description: "Clean a Flat package's out directory"
+    )
+
+    visible CliArg runScriptArg = CliArg(
+        name: "script",
+        description: "The name of the script to run",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg runCommand = CliArg(
+        name: "run",
+        description: "Run a script defined in a flat.json",
+        args: [runScriptArg]
+    )
+
+    visible CliArg initPackageNameArg = CliArg.wildcard(
+        name: "packageName",
+        description: "The name of the package to initialize"
+    )
+
+    visible CliArg initCommand = CliArg(
+        name: "init",
+        description: "Initialize a new Flat package, guided by a CLI prompt",
+        args: [initPackageNameArg]
+    )
+
+    visible CliArg createPipelineArg = CliArg(
+        name: "pipeline",
+        description: "The type of pipeline to create",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg createPipelineArgArg = CliArg(
+        name: "pipelineArg",
+        description: "An argument to pass to the pipeline creation",
+        minCount: 0,
+        wildcard: true
+    )
+
+    visible CliArg createCommand = CliArg(
+        name: "create",
+        description: "Create Flat package scaffoldings",
+        args: [
+            createPipelineArg,
+            createPipelineArgArg,
+        ]
+    )
+
+    visible CliArg binaryArg = CliArg(
+        name: "binary",
+        description: "The name of the binary to create",
+        minCount: 0,
+        wildcard: true
+    )
+
+    visible CliArg binCommand = CliArg(
+        name: "bin",
+        description: "Generate a Flat package binary file",
+        args: [binaryArg]
+    )
+
+    visible CliArg addDependencyArg = CliArg(
+        name: "dependency",
+        description: "The dependency to add",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg addDependencyCommand = CliArg(
+        name: "add",
+        description: "Add a Flat package as a dependency",
+        args: [addDependencyArg]
+    )
+
+    visible CliArg purgeArg = CliArg(
+        name: "--purge",
+        description: "Uninstall the dependency from the disk"
+    )
+
+    visible CliArg removeDependencyArg = CliArg(
+        name: "dependency",
+        description: "The dependency to remove",
+        minCount: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg removeDependencyCommand = CliArg(
+        name: "remove",
+        description: "Remove a Flat package from the dependecies",
+        args: [removeDependencyArg]
+    )
+
+    visible CliArg helpCommandArg = CliArg(
+        name: "name",
+        description: "The name of the argument, command, or option to get help on",
+        minCount: 0,
+        wildcard: true
+    )
+
+    visible CliArg helpCommand = CliArg(
+        name: "help",
+        aliases: ["?"],
+        description: "Print help information",
+        args: [
+            helpCommandArg,
+            allHelpArg,
+        ]
+    )
+
+    visible CliArg readmeCommand = CliArg(
+        name: "readme",
+        hidden: true
+    )
+
+    visible CliArg publishVersionArg = CliArg(
+        name: "--version",
+        description: "Specify the version to publish",
+        count: 1,
+        wildcard: true
+    )
+
+    visible CliArg majorBumpArg = CliArg(
+        name: "major",
+        description: "Bump the version by a major version. e.g. from v1.2.3 to v2.0.0",
+        count: 0
+    )
+
+    visible CliArg minorBumpArg = CliArg(
+        name: "minor",
+        description: "Bump the version by a minor version. e.g. from v1.2.3 to v1.3.0",
+        count: 0
+    )
+
+    visible CliArg patchBumpArg = CliArg(
+        name: "patch",
+        description: "Bump the version by a patch version. e.g. from v1.2.3 to v1.2.4",
+        count: 0
+    )
+
+    visible CliArg bumpArg = CliArg(
+        name: "--bump",
+        description: "Bump the version number",
+        minCount: 0,
+        maxCount: 1,
+        args: [
+            majorBumpArg,
+            minorBumpArg,
+            patchBumpArg,
+        ],
+        commandHelpDisplay: "major|minor|patch"
+    )
+
+    visible CliArg pushReleaseArg = CliArg(
+        name: "--push",
+        description: "Push the release commit and tag"
+    )
+
+    visible CliArg publishCommand = CliArg(
+        name: "publish",
+        description: "Publish a new release",
+        args: [
+            bumpArg,
+            publishVersionArg,
+            pushReleaseArg,
+        ]
+    )
+
+    visible CliArg propagationArgs = CliArg(
+        name: "wildcardArg",
+        description: "An argument to propagate to the flat compiler binary",
+        minCount: 1,
+        wildcard: true,
+        hidden: true,
+        required: true
+    )
+
+    visible CliArg propagateArg = CliArg(
+        name: "--",
+        description: "Pass-through arguments to the flat compiler binary",
+        minCount: 1,
+        greedy: true,
+        hidden: true,
+        args: [propagationArgs]
+    )
+}

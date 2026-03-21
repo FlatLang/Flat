@@ -1,0 +1,5 @@
+{
+  "main": "dist/airship.js",
+  "output": "dist/sea-prep.blob",
+  "disableExperimentalSEAWarning": true
+}

@@ -1,0 +1,23 @@
+package flat/airship
+
+import flat/datastruct/HashMap
+
+data class {
+    public construct(
+        visible String location
+    ) {}
+
+    public construct(Object value) {
+        if (value.class.isOfType(String.class)) {
+            this((String)value)
+        } else if (value.class.isOfType(HashMap.class)) {
+            this((HashMap)value)
+        } else {
+            throw Exception("Invalid ExcludedSource value: #value")
+        }
+    }
+
+    public construct(HashMap<String, Object> map) {
+        throw Exception("Invalid ExcludedSource value: #map")
+    }
+}
