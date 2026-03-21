@@ -1,0 +1,6 @@
+package flat/ast/java
+
+import flat/ast
+
+data class extends Node implements Expression {
+}
