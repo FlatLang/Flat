@@ -1,0 +1,34 @@
+package stabilitytest
+
+import flat/datastruct/list/LinkedList
+import flat/time/Time
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class LambdaStability {
+    test `lambdas`() {
+        String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+        Int[] list2 = [1, 2, 3, 4, 5, 6, 7]
+
+        String mappedOutput = list.filter({ _.count >= 4 }).map({ "#{_i}: #{_x}?" }).join(", ")
+        String mappedExpected = "0: this?, 1: test?, 2: what shows up?"
+
+        expect(mappedOutput == mappedExpected).toBe(true, "Failed first list map with 2 args. Expected '#mappedExpected' but received '#mappedOutput'")
+        //Console.writeLine("Mapped backwards: " + list.filter({ _.count >= 4 }).map({ "#{_}?" }).reverse().join(", "))
+        //if (list2.map({ "#{_}!" }).join(", ") != "")
+
+        LinkedList<String> linked = LinkedList()
+
+        linked.add("test").add("test2").add("test3")
+
+        expect(linked.reverse().join(", ") == "test3, test2, test").toBe(true, "Failed reverse linked list")
+        expect(linked.join(", ") == "test, test2, test3").toBe(true, "Failed forward linked list")
+
+        String[] repeated = list.map({ "test" })
+
+        for (item in repeated) {
+            expect(item == "test").toBe(true, "Map with no arguments failed")
+        }
+    }
+}

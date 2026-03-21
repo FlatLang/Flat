@@ -1,0 +1,114 @@
+package stabilitytest
+
+import flat/time/Timer
+import flat/thread/Thread
+import flat/io/File
+import flat/io/FancyOutputStream
+
+import flat/test/TestResult
+
+import stabilitytest/io
+import stabilitytest/syntax
+
+[TestSuite [
+    ExceptionStability,
+    SyntaxStability,
+    ClosureStability,
+    PolymorphismStability,
+    LambdaStability,
+    ToStringStability,
+    AssignmentStability,
+    StaticImportStability,
+    InnerClassStability,
+    ExternalInnerClassStability,
+    PrimitiveOverloadStability,
+    FancyOutputStreamTests,
+    FirstClassFunctionStability,
+    LibraryLoadingStability,
+    CastStability,
+    IfStatementStability,
+    ElseStatementStability,
+    ElseIfStatementStability,
+    LiteralMethodNamesStability,
+    LiteralFieldNamesStability,
+    UnaryOperatorStability,
+    IteratorStability,
+    EqualsStability,
+    RegexStability,
+    NamedArgumentStability,
+    StringLiteralStability,
+    MultilineStringLiteralStability,
+    LazyStability,
+    DataClassStability,
+    ReifiedGenericStability
+]]
+[Target js]
+[TargetRuntime not browser]
+[TestSuite [
+    NetworkStability,
+    FileStability
+]]
+[Target c]
+[TestSuite [
+    TimeStability,
+    ThreadStability
+]]
+class StabilityTest {
+    public static async main(String[] args) {
+        let test = StabilityTest()
+
+        Timer timer = Timer().start()
+
+        let results = TestResult[]
+
+        let suites = args.skip(2)
+
+        if (suites.count > 0) {
+            suites.forEach({
+                native_array native TestResult[] suiteResults
+                var count = 0
+
+                external js {
+                    #{suiteResults} = [];
+
+                    var instance = #{System.jsCreateInstance(_)};
+
+                    instance.runTests((r) => {
+                        #{suiteResults}.push(r);
+                        #{count}++;
+                    });
+                }
+
+                for (i in 0..count) {
+                    results.add(suiteResults[i])
+                }
+            })
+        } else {
+            test.runTests({
+                results.add(_)
+            })
+        }
+
+        let fancy = FancyOutputStream(headerPattern: "/\\")
+
+        let unsuccessful = results.filter({ !_.success })
+
+        if (unsuccessful.count > 0) {
+            fancy.writeHeader("#unsuccessful.count Failure#{unsuccessful.count == 1 ? "" : "s"} out of #results.count test#{results.count == 1 ? "" : "s"}", pattern: ":'( ", symmetrical: true)
+
+            unsuccessful.forEach({
+                Console.log("#_")
+            })
+        } else {
+            fancy.writeHeader("All #results.count Successful", pattern: ":) ", symmetrical: true)
+        }
+
+        timer.stop()
+
+        Console.writeLine("Took " + timer.duration + "ms")
+
+        if (unsuccessful.count > 0) {
+            System.exit(1)
+        }
+    }
+}

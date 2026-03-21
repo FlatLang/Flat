@@ -1,0 +1,62 @@
+package stabilitytest/syntax
+
+import flat/datastruct/list/Iterator
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class LiteralMethodNamesStability {
+    `my literal method`() => "hey"
+
+    test `call single literal method name`() {
+        let value = `my literal method`()
+
+        expect(value).toBe("hey")
+    }
+
+    static class ClassWithLiteralMethodName {
+        var String value
+
+        `my lit`() => value = "yo, it's lit"
+
+        `add something spicy`(String spice) => value += spice
+    }
+
+    test `call single literal method name as argument to function`() {
+        expect(`my literal method`()).toBe("hey")
+    }
+
+    test `call single literal method name with subsequent call`() {
+        let value = `my literal method`().toUpperCase()
+
+        expect(value).toBe("HEY")
+    }
+
+    test `call single literal method name with preceding call`() {
+        let value = ClassWithLiteralMethodName().`my lit`()
+
+        expect(value).toBe("yo, it's lit")
+    }
+
+    test `call single literal method name with preceding and subsequent call`() {
+        let value = ClassWithLiteralMethodName().`my lit`().toUpperCase()
+
+        expect(value).toBe("YO, IT'S LIT")
+    }
+
+    test `call single literal method name with chaining calls`() {
+        let value = ClassWithLiteralMethodName():`my lit`():`add something spicy`(" spicy!!").value.toUpperCase()
+
+        expect(value).toBe("YO, IT'S LIT SPICY!!")
+    }
+
+    test `call single literal method name with chaining calls on multiple lines`() {
+        let value = ClassWithLiteralMethodName()
+            :`my lit`()
+            :`add something spicy`(" spicy!!")
+            .value
+            .toUpperCase()
+
+        expect(value).toBe("YO, IT'S LIT SPICY!!")
+    }
+}

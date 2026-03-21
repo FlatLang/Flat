@@ -1,0 +1,17 @@
+package stabilitytest
+
+import stabilitytest/InnerClassStability.MyInner
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class ExternalInnerClassStability {
+    test `external inner klass access`() {
+        let instance = MyInner(3, 5)
+
+        // [ExpectCompileError InvalidAccessError]
+        // instance.y = 45
+
+        expect(instance.x).toBe(3, "did not set values correctly")
+    }
+}

@@ -1,0 +1,7 @@
+package stabilitytest
+
+class PolymorphicSubClass extends PolymorphicSuperClass implements PolymorphicSubInterface {
+    visible Int myProperty => 2
+
+    public toString() => "sub class"
+}

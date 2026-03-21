@@ -1,0 +1,14 @@
+package stabilitytest/syntax
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    let Object eagerThing => Object()
+    let lazy Object lazyThing => Object()
+
+    test `basic lazy property accessor`() {
+        expect(eagerThing).toNotBe(eagerThing)
+        expect(lazyThing).toBe(lazyThing)
+    }
+}

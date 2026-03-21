@@ -1,0 +1,59 @@
+package stabilitytest
+
+import flat/io/FancyOutputStream
+import flat/io/StringBuilder
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class FancyOutputStreamTests {
+    var FancyOutputStream stream
+    var StringBuilder builder
+
+    init_test init() {
+        builder = StringBuilder()
+        stream = FancyOutputStream(builder)
+    }
+
+    clean_test clean() {
+        stream = null
+        builder = null
+    }
+
+    test oddHeader() {
+        stream.writeHeader("Testing")
+
+        let string = builder.toString()
+        let expected = "=================================== "
+
+        expect(string.count).toBe(81, "Untrimmed value count expected to be 81, but was #string.count")
+        expect(string.last).toBe('\n', "Expected new line at end of header, received '#string.last'")
+        expect(string.trim().count).toBe(80, "Trimmed value count expected to be 80, but was #string.count")
+        expect(string.startsWith(expected)).toBe(true, "Header width not correct (#string.count chars)\n#expected\n#string")
+    }
+
+    test evenHeader() {
+        stream.writeHeader("Test")
+
+        let string = builder.toString()
+        let expected = "===================================== "
+
+        expect(string.count).toBe(81, "Untrimmed value count expected to be 81, but was #string.count")
+        expect(string.last).toBe('\n', "Expected new line at end of header, received '#string.last'")
+        expect(string.trim().count).toBe(80, "Trimmed value count expected to be 80, but was #string.count")
+        expect(string.startsWith(expected)).toBe(true, "Header width not correct (#string.count chars)\n#expected\n#string")
+    }
+
+    test headerPattern() {
+        stream.headerPattern = "/\\"
+        stream.writeHeader("Test")
+
+        let string = builder.toString()
+        let expected = "/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/ "
+
+        expect(string.count).toBe(81, "Header count expected 81, but received #string.count")
+        expect(string.last).toBe('\n', "Expected new line at end of header, received '#string.last'")
+        expect(string.trim().count).toBe(80, "Trimmed header count expected 80, but received #string.trim().count")
+        expect(string.startsWith(expected)).toBe(true, "Header width not correct (#string.count chars)\n#expected\n#string")
+    }
+}

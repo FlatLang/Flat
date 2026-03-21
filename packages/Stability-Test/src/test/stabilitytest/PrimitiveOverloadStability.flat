@@ -1,0 +1,137 @@
+package stabilitytest
+
+import flat/datastruct/HashMap
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class PrimitiveOverloadStability {
+    test `primitive key for HashMap<Int, String>`() {
+        let map1 = HashMap<Int, String>()
+
+        map1[5] = "test"
+        map1[10] = "test2"
+
+        var sum = 0
+        var counter = 0
+
+        for (entry in map1) {
+            sum += entry.key
+
+            counter++
+        }
+
+        expect(counter).toBe(2, "Failed to iterator over map values. Expected counter value of 2, but got #counter")
+        expect(sum).toBe(15, "Failed to get valid key values. Expected a sum of 15, but got #sum")
+    }
+
+    test `primitive key and value for HashMap<Int, Int>`() {
+        let map2 = HashMap<Int, Int>()
+
+        var sum = 0
+        var counter = 0
+
+        map2[1] = 49
+        map2[3] = 2
+        map2[-2] = 11
+
+        for (entry in map2) {
+            sum += entry.key * entry.value
+
+            counter++
+        }
+
+        expect(counter).toBe(3, "Failed to iterator over map values. Expected counter value of 2, but got #counter")
+        expect(sum).toBe(49 + 6 - 22, "Failed to get valid key values. Expected a sum of #{49 + 6 - 22}, but got #sum")
+    }
+
+    test `functional primitive key for HashMap<Int, String>`() {
+        let map1 = HashMap<Int, String>()
+
+        map1[5] = "test"
+        map1[10] = "test2"
+
+        var sum = 0
+        var counter = 0
+
+        map1.forEach({
+            sum += _.key
+
+            counter++
+        })
+
+        expect(counter).toBe(2, "Failed to iterator over map values. Expected counter value of 2, but got #counter")
+        expect(sum).toBe(15, "Failed to get valid key values. Expected a sum of 15, but got #sum")
+    }
+
+    test `functional primitive key and value for HashMap<Int, Int>`() {
+        let map2 = HashMap<Int, Int>()
+
+        var sum = 0
+        var counter = 0
+
+        map2[1] = 49
+        map2[3] = 2
+        map2[-2] = 11
+
+        map2.forEach({
+            sum += _x.key * _x.value
+
+            counter++
+        })
+
+        expect(counter).toBe(3, "Failed to iterator over map values. Expected counter value of 2, but got #counter")
+        expect(sum).toBe(49 + 6 - 22, "Failed to get valid key values. Expected a sum of #{49 + 6 - 22}, but got #sum")
+    }
+
+    test `primitive facade functionality`() {
+        let str = 'a'.toString()
+
+        expect(str).toBe("a")
+    }
+
+    test `unboxes primitive at the correct time (allows for null primitives)`() {
+        let array = ["one", "two", "three"]
+
+        let index = array.firstNonNull<Int>({
+            if (_ == "one") {
+                return 0
+            }
+        })
+
+        expect(index).toNotBe(null)
+
+        if (index) {
+
+        } else {
+            fail("Failed to unbox primitive correctly")
+        }
+
+        if (!index) {
+            fail("Failed to unbox primitive correctly (second if)")
+        }
+    }
+
+    [Target js]
+    test `unboxes primitive: doesnt unbox if could potentially be null`() {
+        let array = [0, 1, 2]
+
+        let index = array.first
+
+        if (index) {
+
+        } else {
+            fail("Failed to unbox primitive correctly")
+        }
+
+        if (!index) {
+            fail("Failed to unbox primitive correctly (second if)")
+        }
+
+        external {
+            if (#{index}.value !== 0) {
+                #{fail("Expected index to be a boxed primitive")}
+            }
+        }
+    }
+}

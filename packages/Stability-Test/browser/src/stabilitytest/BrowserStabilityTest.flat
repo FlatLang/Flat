@@ -1,0 +1,79 @@
+package stabilitytest
+
+import flat/selenium
+import flat/fucli
+import flat/io
+
+class {
+    static CliArg sourceArg = CliArg(
+        name: "source",
+        description: "The file to run in the selenium browser",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg browserArg = CliArg(
+        name: "browser",
+        description: "The language to compile the package to",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg browserOption = CliArg(
+        name: "--browser",
+        description: "Specify the browser to run the script on",
+        args: [browserArg]
+    )
+
+    static CliArg headlessArg = CliArg(
+        name: "headless",
+        description: "The language to compile the package to",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    static CliArg headlessOption = CliArg(
+        name: "--headless",
+        description: "Specify whether to run the browser in headless mode",
+        args: [headlessArg]
+    )
+
+    public static async main(String[] args) {
+        let cli = FuCli(
+            "stability-test-browser",
+            [
+                sourceArg,
+                browserOption,
+                headlessOption
+            ]
+        ):parse(args.skip(1))
+
+        var browser = Browser.CHROME
+
+        if (browserOption.enabled) {
+            match browserArg.value.toLowerCase() {
+                "chrome" => browser = Browser.CHROME
+                "firefox" => browser = Browser.FIREFOX
+                "safari" => browser = Browser.SAFARI
+                "ie" => "internet-explorer" => browser = Browser.INTERNET_EXPLORER
+                "edge" => browser = Browser.EDGE
+                "opera" => browser = Browser.OPERA
+            }
+        }
+
+        let headless = !headlessOption.enabled || Bool.fromString(headlessArg.value)
+
+        let driver = Selenium.getDriver(browser, headless)
+
+        try {
+            let script = FileReader(File(sourceArg.value)).readAllContents()
+
+            driver.executeScript(script)
+        } finally {
+            driver.quit()
+        }
+    }
+}

@@ -1,0 +1,25 @@
+package stabilitytest
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class InnerClassStability {
+    test `inner classes`() {
+        let instance = MyInner(3, 5)
+
+        expect(instance.x == 3 && instance.y == 5).toBe(true, "did not set values correctly")
+    }
+
+    class MyInner {
+        public construct(public Int x, private Int y) {}
+    }
+}
+
+private class MyOuter {
+    public testFunc() {
+        let instance = MyInner(4, 6)
+
+        // [ExpectCompileError InvalidAccessError]
+        // instance.y = 45
+    }
+}

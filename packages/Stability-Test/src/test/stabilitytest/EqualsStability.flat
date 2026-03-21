@@ -1,0 +1,20 @@
+package stabilitytest
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test `equivalent string array equality`() {
+        let array1 = ["one", "two", "three"]
+        let array2 = ["one", "two", "three"]
+
+        expect(array1).toBe(array2)
+    }
+
+    test `unequivalent string array equality`() {
+        let array1 = ["one", "two", "three"]
+        let array2 = ["one", "two", "four"]
+
+        expect(array1).toNotBe(array2)
+    }
+}

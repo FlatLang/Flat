@@ -1,0 +1,61 @@
+package stabilitytest/syntax
+
+import flat/datastruct
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test `can access single explicit generic parameter type`() {
+        expect(SingleTest<String>().getClass()).toBe(String.class)
+    }
+
+    test `can access single default generic parameter type`() {
+        expect(SingleTest().getClass()).toBe(Object.class)
+    }
+
+    test `can access two explicit generic parameter types`() {
+        let value = DoubleTest<String, HashMap>()
+
+        expect(value.getClass1()).toBe(String.class)
+        expect(value.getClass2()).toBe(HashMap.class)
+    }
+
+    test `can access one explicit generic parameter type and one default`() {
+        let value = DoubleTest<String>()
+
+        expect(value.getClass1()).toBe(String.class)
+        expect(value.getClass2()).toBe(Object.class)
+    }
+
+    test `can access single explicit sub-class generic parameter type`() {
+        expect(Subclass<String>().getClass()).toBe(String.class)
+    }
+
+    test `can access single sub-class default generic parameter type`() {
+        expect(Subclass().getClass()).toBe(Object.class)
+    }
+
+    test `can access two explicit generic parameter types after data copy`() {
+        let value = DataTest<String, HashMap>().copy()
+
+        expect(value.getClass1()).toBe(String.class)
+        expect(value.getClass2()).toBe(HashMap.class)
+    }
+}
+
+class SingleTest<reified GenType> {
+    public getClass() => GenType.class
+}
+
+class DoubleTest<reified GenType1, reified GenType2> {
+    public getClass1() => GenType1.class
+    public getClass2() => GenType2.class
+}
+
+class Subclass<GenType> extends SingleTest<GenType> {}
+
+data class DataTest<reified GenType1, reified GenType2> {
+    public getClass1() => GenType1.class
+    public getClass2() => GenType2.class
+}

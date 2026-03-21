@@ -1,0 +1,81 @@
+package stabilitytest/io
+
+import flat/io/File
+import flat/io/FileReader
+import flat/io/FileWriter
+import flat/time/Time
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    static String inputString = "This is test input..."
+
+    static Int lines = 100
+
+    var File f
+    var FileWriter writer
+    var FileReader reader
+
+    test `can get parent directory`() {
+        let file = File.EXECUTED_FILE
+
+        expect(file.name).toBe("test.js")
+
+        let parent = file.getParent()
+        let allowed = ["js", "es6"]
+
+        expect(allowed.contains(parent.name)).toBe(true)
+
+        let parentParent = parent.getParent()
+
+        expect(parentParent.name).toBe("dist")
+    }
+
+    // init_test_class initClass() {
+    //     f = File("temp#Time.currentTimeMillis")
+
+    //     writer = FileWriter(f)
+    //     reader = FileReader(f)
+    // }
+
+    // [Test "Testing file creation"]
+    // createFile() {
+    //     expect(writer.create()).toBe(true, "Failed to create file")
+    // }
+
+    // [Test "Testing writing lines of data to file"]
+    // writeToFile() {
+    //     for (i in 0..lines) {
+    //         writer.writeLine(inputString)
+    //     }
+    // }
+
+    // [Test "Testing reading lines from file"]
+    // readFromFile() {
+    //     if (!reader.isOpen) {
+    //         reader.open()
+    //     }
+
+    //     expect(reader.isOpen).toBe(true, "File reader failed to open")
+
+    //     var Int times = 0
+    //     var line = reader.readLine()
+
+    //     while (line) {
+    //         expect(line == inputString).toBe(true, "Reading from file failed: '#line' != '#inputString'")
+
+    //         line = reader.readLine()
+
+    //         times++
+    //     }
+
+    //     reader.close()
+
+    //     expect(times != lines).toBe(false, "Failed; only read #{times}/100 lines")
+    // }
+
+    // clean_test_class deleteFile() {
+    //     expect(writer.delete()).toBe(true, "Failed to delete file")
+    // }
+}

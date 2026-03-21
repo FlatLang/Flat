@@ -1,0 +1,36 @@
+package stabilitytest
+
+import flat/regex/Regex
+import flat/regex/Match
+import flat/regex/Pattern
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test `regex containsMatch can find valid match`() {
+        expect(Regex.containsMatch(/a[bd]c/, "hello adc goodbye")).toBe(true, "Failed to find valid match")
+    }
+
+    test `regex containsMatch can NOT find valid match`() {
+        expect(Regex.containsMatch(/a[bd]c/, "no match here...")).toBe(false, "Failed to not find match")
+    }
+
+    test `regex containsMatch can find valid letter matches`() {
+        var matches = Regex.getMatches(/a[bd]c/, "this is abc test adc adc hello")
+
+        out.write("(")
+        out.write("#matches.count match#{matches.count != 1 ? "es" : ""}: ")
+        out.write(matches.join(", "))
+        out.write("), ")
+    }
+
+    test `regex containsMatch can find valid numeric matches`() {
+        var matches2 = Regex.getMatches(/\d+/, "whats my number? 818 414-5326")
+
+        out.write("(")
+        out.write("#matches2.count match#{matches2.count != 1 ? "es" : ""}: ")
+        out.write(matches2.join(", "))
+        out.write(") ")
+    }
+}

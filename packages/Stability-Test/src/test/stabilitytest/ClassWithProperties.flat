@@ -1,0 +1,9 @@
+package stabilitytest
+
+class ClassWithProperties {
+    Int privateProp1
+    Int privateProp2
+
+    public var Int prop1 <=> privateProp1
+    public var Int prop2 <=> privateProp2
+}

@@ -1,0 +1,133 @@
+package stabilitytest/syntax
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test `plain multi-line string`() {
+        let value = "
+            hey there
+        "
+
+        expect(value).toBe("\n            hey there\n        ")
+    }
+
+    test `can trim indentation less than the first lines indentation`() {
+        let value = "
+            hey there
+        |"
+
+        expect(value).toBe("\n    hey there")
+    }
+
+    test `can trim indentation equal to the first lines indentation`() {
+        let value = "
+            hey there
+            |"
+
+        expect(value).toBe("\nhey there")
+    }
+
+    test `can trim indentation more than the first lines indentation`() {
+        let value = "
+            hey there
+                |"
+
+        expect(value).toBe("\nhey there")
+    }
+
+    test `can trim indentation less than the first lines indentation with start trimmed`() {
+        let value = "|
+            hey there
+        |"
+
+        expect(value).toBe("    hey there")
+    }
+
+    test `can trim indentation equal to the first lines indentation with start trimmed`() {
+        let value = "|
+            hey there
+            |"
+
+        expect(value).toBe("hey there")
+    }
+
+    test `can trim indentation more than the first lines indentation with start trimmed`() {
+        let value = "|
+            hey there
+                |"
+
+        expect(value).toBe("hey there")
+    }
+
+    test `can trim indentation less than the first lines indentation with interpolation`() {
+        let value = "
+            #{2 + 2}
+            hey there
+            #{1 + 1}
+        |"
+
+        expect(value).toBe("\n    4\n    hey there\n    2")
+    }
+
+    test `can trim indentation equal to the first lines indentation with interpolation`() {
+        let value = "
+            #{2 + 2}
+            hey there
+            #{1 + 1}
+            |"
+
+        expect(value).toBe("\n4\nhey there\n2")
+    }
+
+    test `can trim indentation more than the first lines indentation with interpolation`() {
+        let value = "
+            #{2 + 2}
+            hey there
+            #{1 + 1}
+                |"
+
+        expect(value).toBe("\n4\nhey there\n2")
+    }
+
+    test `can trim indentation less than the first lines indentation with start trimmed with interpolation`() {
+        let value = "|
+            #{2 + 2}
+            hey there
+            #{1 + 1}
+        |"
+
+        expect(value).toBe("    4\n    hey there\n    2")
+    }
+
+    test `can trim indentation equal to the first lines indentation with start trimmed with interpolation`() {
+        let value = "|
+            #{2 + 2}
+            hey there
+            #{1 + 1}
+            |"
+
+        expect(value).toBe("4\nhey there\n2")
+    }
+
+    test `can trim indentation more than the first lines indentation with start trimmed with interpolation`() {
+        let value = "|
+            #{2 + 2}
+            hey there
+            #{1 + 1}
+                |"
+
+        expect(value).toBe("4\nhey there\n2")
+    }
+
+    test `can trim indentation equal to the first lines indentation with start trimmed with interpolation, but doesnt trim empty interpolation values`() {
+        let value = "|
+            #{""}
+            hey there
+            #{1 + 1}
+            |"
+
+        expect(value).toBe("\nhey there\n2")
+        expect(value.trimStart()).toBe("hey there\n2")
+    }
+}

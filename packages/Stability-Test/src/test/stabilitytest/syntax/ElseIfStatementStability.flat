@@ -1,0 +1,114 @@
+package stabilitytest/syntax
+
+import flat/datastruct/list/Iterator
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class ElseIfStatementStability {
+    test `basic else-if statement with scope`() {
+        var value = false
+
+        if (value) {
+            fail("Got inside if instead of else-if")
+        } else if (!value) {
+            value = true
+        } else {
+            fail("Got inside else instead of else-if")
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic else-if statement with scope")
+    }
+
+    test `basic single line else-if statement without scope`() {
+        var value = false
+
+        if (value) {
+            fail("Got inside if instead of else-if")
+        } else if (!value) value = true
+        else {
+            fail("Got inside else instead of else-if")
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic continuation line else-if statement without scope")
+    }
+
+    test `basic single line else-if statement without scope with single line if statement without scope`() {
+        var value = false
+
+        if (value) fail("Got inside if instead of else-if")
+        else if (!value) value = true
+        else {
+            fail("Got inside else instead of else-if")
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic continuation line else-if statement without scope with single line if statement without scope")
+    }
+
+    test `basic single line else-if statement without scope with continuation line if statement without scope`() {
+        var value = false
+
+        if (value)
+            fail("Got inside if instead of else-if")
+        else if (!value) value = true
+        else fail("Got inside else instead of else-if")
+
+        expect(value).toBe(true, "Failed to get inside basic continuation line else-if statement without scope with continuation line if statement without scope")
+    }
+
+    test `basic continuation line else-if statement without scope`() {
+        var value = false
+
+        if (value) {
+            fail("Got inside if instead of else-if")
+        } else if (!value)
+            value = true
+        else {
+            fail("Got inside else instead of else-if")
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic continuation line else-if statement without scope")
+    }
+
+    test `basic multi-continuation line else-if statement without scope`() {
+        var value = false
+
+        if (value) {
+            fail("Got inside (first) if instead of else-if")
+        } else if (!value)
+            value =
+            true
+        else {
+            fail("Got inside else instead of else-if")
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic multi-continuation line (first) else-if statement without scope")
+
+        value = false
+
+        if (value) {
+            fail("Got inside (second) if instead of else-if")
+        } else if (!value)
+            value
+            = true
+        else {
+            fail("Got inside else instead of else-if")
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic multi-continuation line (second) else-if statement without scope")
+
+        value = false
+
+        if (value) {
+            fail("Got inside (third) if instead of else-if")
+        } else if (!value)
+            value
+            =
+            true
+        else {
+            fail("Got inside else instead of else-if")
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic multi-continuation line (third) else-if statement without scope")
+    }
+}

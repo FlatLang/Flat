@@ -1,0 +1,43 @@
+package stabilitytest
+
+import flat/io/OutputStream
+import flat/network/ClientSocket
+import flat/thread/Thread
+
+import flat/test/Test
+import flat/test/TestSuite
+
+class ClientThread extends Thread {
+    public construct(private Int port, private OutputStream out) {}
+
+    [Target js]
+    public async run() {
+        String ip = "127.0.0.1"
+
+        let client = ClientSocket(ip, port)
+
+        out.write("ClientSocket attempting to connect to #ip:#{port}... ")
+
+        expect(client.connect()).toNotBe(null, "Failed to connect to localhost server")
+
+        out.writeLine("Success")
+
+        out.writeLine("Waiting for String from ServerSocket...")
+
+        String s = client.connection.in.readString()
+
+        expect(s.count == NetworkStability.RECEIVED.count && s == NetworkStability.RECEIVED).toBe(true, "Client unable to receive the correct message from server")
+
+        out.write("Attempting to send String to ServerSocket... ")
+
+        client.connection.out.write(NetworkStability.RECEIVED)
+
+        out.writeLine("Success")
+
+        out.write("Attempting to close ClientSocket... ")
+
+        expect(client.close()).toNotBe(null, "Unable to close Client connection")
+
+        out.writeLine("Success")
+    }
+}

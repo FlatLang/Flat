@@ -1,0 +1,67 @@
+package stabilitytest
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class ExceptionStability {
+    test `Testing exceptions`() {
+        expect({ testException(out) }).toThrow(Exception.class, "Failed to catch exception")
+
+        // var worked = false
+
+        // try {
+        //     testSoftExceptions(out)
+        // } catch all (DivideByZeroException e) {
+        //     worked = true
+        // }
+
+        // expect(worked).toBe(true, "Failed to catch soft Exception")
+    }
+
+    testException(OutputStream out) {
+        try {
+            out.write("Testing DivideByZeroException... ")
+
+            try {
+                // Int den = 0
+                // Int i     = 43 / den
+
+                throw DivideByZeroException()
+            } catch (DivideByZeroException e) {
+                out.write("Testing StabilityTestException... ")
+
+                throw StabilityTestException()
+            }
+
+            fail("Failed to catch DivideByZeroException")
+        } catch (StabilityTestException e) {
+            throw Exception()
+        }
+
+        fail("Failed to catch StabilityTestException")
+    }
+
+    // testSoftExceptions(OutputStream out) {
+    //     var worked = false
+
+    //     try {
+    //         out.write("Testing soft exception without a soft catch... ")
+
+    //         toss StabilityTestException()
+
+    //         worked = true
+
+    //         out.writeLine("- Success")
+    //     } catch (StabilityTestException e) {
+    //         fail("Caught soft exception without soft keyword")
+    //     }
+
+    //     expect(worked).toBe(true, "Failed to throw soft without corresponding catch")
+
+    //     out.write("Testing soft exception with a soft catch... ")
+
+    //     toss DivideByZeroException()
+
+    //     fail("Failed to exit subroutine after throwing soft Exception")
+    // }
+}

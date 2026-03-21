@@ -1,0 +1,331 @@
+package stabilitytest
+
+import flat/datastruct/list/Iterator
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class FirstClassFunctionStability {
+    var Bool funcSwitch = false
+    var Int funcCount
+    var Int chainCount
+
+    test `calling a function returned by a function`() {
+        let func = getFunc()
+
+        func()
+
+        expect(funcSwitch).toBe(true, "Failed to call first class function returned from function")
+    }
+
+    test `calling a function returned by an inline function`() {
+        funcSwitch = false
+
+        let func2 = inlineGetFunc()
+
+        func2()
+
+        expect(funcSwitch).toBe(true, "Failed to call first class function returned from inline function")
+    }
+
+    test `calling a function returned by an inline function with type specified`() {
+        funcSwitch = false
+
+        let func3 = inlineGetFunc2()
+
+        func3()
+
+        expect(funcSwitch).toBe(true, "Failed to call first class function returned from inline function with type specified")
+    }
+
+//    [Test "Testing calling a chained function returned by a function"]
+//    testCallingChainedFunctionReturnedByFunction() {
+//        funcCount = 0
+//        funcSwitch = false
+//
+//        let chained = chainedFuncReference()
+//
+//        chained()()
+//
+//        expect(funcSwitch && funcCount == 1).toBe(true, "Failed to call first class chained function returned from function: #funcSwitch, #funcCount")
+//    }
+
+    test `calling an assigned chained function returned by a function`() {
+        funcCount = 0
+        funcSwitch = false
+
+        let chained = chainedFuncReference()
+
+        let c = chained()
+        c()
+        c()
+        c()
+
+        expect(funcSwitch && funcCount == 3).toBe(true, "Failed to call first class chained function returned from function: #funcSwitch, #funcCount")
+    }
+
+//    [Test "Testing calling a chained function x3 returned by a function"]
+//    testCallingChainedFunctionX3() {
+//        funcCount = 0
+//        funcSwitch = false
+//        chainCount = 0
+//
+//        let chainX3 = chainedFuncReference3()
+//
+//        chainX3()()()
+//
+//        expect(funcSwitch && funcCount == 1 && chainCount == 3).toBe(true, "Failed to call first class chained function x3 returned from function: #funcSwitch, #funcCount, x#chainCount")
+//    }
+//
+//    [Test "Testing calling a chained function x4 returned by a function"]
+//    testCallingChainedFunctionX4() {
+//        funcCount = 0
+//        funcSwitch = false
+//        chainCount = 0
+//
+//        let chainX4 = chainedFuncReference4()
+//
+//        chainX4()()()()
+//
+//        expect(funcSwitch && funcCount == 1 && chainCount == 4).toBe(true, "Failed to call first class chained function x4 returned from function: #funcSwitch, #funcCount, x#chainCount")
+//    }
+//
+//    [Test "Testing calling a chained function x5 returned by a function"]
+//    testCallingChainedFunctionX5() {
+//        funcCount = 0
+//        funcSwitch = false
+//        chainCount = 0
+//
+//        let chainX5 = chainedFuncReference5()
+//
+//        chainX5()()()()()
+//
+//        expect(funcSwitch && funcCount == 1 && chainCount == 5).toBe(true, "Failed to call first class chained function x5 returned from function: #funcSwitch, #funcCount, x#chainCount")
+//    }
+//
+//    [Test "Testing calling a chained function x6 returned by a function"]
+//    testCallingChainedFunctionX6() {
+//        funcCount = 0
+//        funcSwitch = false
+//        chainCount = 0
+//
+//        let chainX6 = chainedFuncReference6()
+//
+//        chainX6()()()()()()
+//
+//        expect(funcSwitch && funcCount == 1 && chainCount == 6).toBe(true, "Failed to call first class chained function x6 returned from function: #funcSwitch, #funcCount, x#chainCount")
+//    }
+
+    refFunc() {
+        funcSwitch = true
+        funcCount++
+    }
+
+    getFunc() -> func() {
+        return refFunc
+    }
+
+    inlineGetFunc() => refFunc { chainCount++ }
+
+    inlineGetFunc2() -> f() => refFunc
+
+    chainedFuncReference() => inlineGetFunc { chainCount++ }
+    chainedFuncReference3() => chainedFuncReference { chainCount++ }
+    chainedFuncReference4() => chainedFuncReference3 { chainCount++ }
+    chainedFuncReference5() => chainedFuncReference4 { chainCount++ }
+    chainedFuncReference6() => chainedFuncReference5 { chainCount++ }
+
+    test `single function in Array`() {
+        let array = Array<func()>()
+
+        array.add(refFunc)
+    }
+
+//    [Test "Testing calling a single function from Array"]
+//    testCallingFunctionFromCollection() {
+//        let array = Array<func()>()
+//
+//        array.add(refFunc)
+//
+//        funcSwitch = false
+//
+//        array.first()
+//
+//        expect(funcSwitch).toBe(true, "Failed to call single function from collection")
+//    }
+
+//    [Test "Testing calling a single function with parameters from Array"]
+//    testCallingFunctionWithParametersFromCollection() {
+//        let array = Array<func(Int, String) -> Int>()
+//
+//        array.add(paramFunc)
+//
+//        var result = array[0](5, "a")
+//
+//        expect(result).toBe(5 + 1, "Failed to call single function with parameters from collection by array access (#result)")
+//
+//        result = array.first(2, "4a")
+//
+//        expect(result).toBe(2 + 2, "Failed to call single function with parameters from collection (#result)")
+//    }
+
+    paramFunc(Int x, String y) => x + y.count
+
+    test `parameterless lambda variable functionality`() {
+        var worked = false
+
+        let func = {
+            worked = true
+        }
+
+        expect(worked).toBe(false)
+        func()
+        expect(worked).toBe(true)
+
+        worked = false
+
+        expect(worked).toBe(false)
+        callFunc(func)
+        expect(worked).toBe(true)
+    }
+
+    callFunc(func()) => func()
+
+    test `parameterless local function`() {
+        var worked = false
+
+        let func() {
+            worked = true
+        }
+
+        expect(worked).toBe(false)
+        func()
+        expect(worked).toBe(true)
+    }
+
+    test `lambda variable with parameters functionality`() {
+        var worked = false
+
+        let func = (Int x) => {
+            worked = x * 2 == 6
+        }
+
+        expect(worked).toBe(false)
+        func(3)
+        expect(worked).toBe(true)
+    }
+
+    test `local function with parameters`() {
+        var worked = false
+
+        let func(Int x) {
+            worked = x * 2 == 6
+        }
+
+        expect(worked).toBe(false)
+        func(3)
+        expect(worked).toBe(true)
+    }
+
+    test `returning a lambda`() {
+        let func = returnLambda(5)
+
+        let returned = func()
+
+        expect(returned).toBe(10, "Expected 10, but received #returned")
+    }
+
+    returnLambda(Int input) -> func() -> Int {
+        return {
+            input * 2
+        }
+    }
+
+    test `returning a lambda with parameters`() {
+        let func = returnLambdaWithParameters(5)
+
+        let returned = func(3, 6)
+
+        expect(returned).toBe(3 * 6 + 5, "Expected #{3 * 6 + 5}, but received #returned")
+    }
+
+    returnLambdaWithParameters(Int input) -> func(Int, Int) -> Int {
+        return (x, y) => {
+            x * y + input
+        }
+    }
+
+    test `inline returning a lambda`() {
+        let func = inlineReturnLambda(5)
+
+        let returned = func()
+
+        expect(returned).toBe(10, "Expected 10, but received #returned")
+    }
+
+    inlineReturnLambda(Int input) => { input * 2 }
+
+    test `inline returning a lambda with parameters`() {
+        let func = inlineReturnLambdaWithParameters(5)
+
+        let returned = func(3, 6)
+
+        expect(returned).toBe(3 * 6 + 5, "Expected #{3 * 6 + 5}, but received #returned")
+    }
+
+    inlineReturnLambdaWithParameters(Int input) => (Int x, Int y) => {
+        x * y + input
+    }
+
+    test `inline returning a lambda with parameters and type predefined`() {
+        let func = inlineReturnLambdaWithParametersAndType(5)
+
+        let returned = func(3, 6)
+
+        expect(returned).toBe(3 * 6 + 5, "Expected #{3 * 6 + 5}, but received #returned")
+    }
+
+    inlineReturnLambdaWithParametersAndType(Int input) -> afunc(Int, Int) -> Int => (Int x, Int y) => {
+        x * y + input
+    }
+
+    test `inline returning a lambda with parameters and type predefined with body`() {
+        expect(bodyWorked).toBe(false)
+
+        let func = inlineReturnLambdaWithParametersAndTypeWithBody(5)
+
+        expect(bodyWorked).toBe(true)
+
+        let returned = func(3, 6)
+
+        expect(returned).toBe(3 * 6 + 5, "Expected #{3 * 6 + 5}, but received #returned")
+    }
+
+    var Bool bodyWorked = false
+
+    inlineReturnLambdaWithParametersAndTypeWithBody(Int input) -> afunc(Int, Int) -> Int => (Int x, Int y) => {
+        x * y + input
+    } {
+        bodyWorked = true
+    }
+
+    test `implicit null function reference`() {
+        let func()
+
+        // expectNull(func, "func was not null")
+    }
+
+    test `explicit null function reference`() {
+        let func() = null
+
+        // expectNull(func, "func was not null")
+    }
+
+    test `non-null function reference`() {
+        let func() {
+
+        }
+
+        // expectValue(func, "func was null")
+    }
+}

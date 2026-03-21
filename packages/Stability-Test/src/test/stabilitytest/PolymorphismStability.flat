@@ -1,0 +1,53 @@
+package stabilitytest
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class PolymorphismStability {
+    test `polymorphic method calls`() {
+        PolymorphicSuperClass superClass = PolymorphicSuperClass()
+        PolymorphicSubClass     subClass = PolymorphicSubClass()
+
+        expect(testSubCall(subClass)).toBe(true, "Did not call sub class method")
+    }
+
+    static testSubCall(PolymorphicSuperClass obj) => obj.toString() == "sub class"
+
+    test `polymorphic closure method calls`() {
+        PolymorphicSuperClass obj = PolymorphicSubClass()
+
+        expect(callPolymorphicClosure(obj.toString)).toBe(true, "Did not call sub class method as closure")
+
+        obj.giveBirth()
+
+        String child = obj.child + "!"
+
+        expect(callPolymorphicClosure(obj.child.toString)).toBe(true, "Did not call sub class method as closure")
+    }
+
+    static callPolymorphicClosure(closure() -> String) => closure() == "sub class"
+
+    test `polymorphic properties`() {
+        PolymorphicSuperClass superClass = PolymorphicSuperClass()
+        PolymorphicSuperClass subClass = PolymorphicSubClass()
+
+        expect(superClass.myProperty == 1).toBe(true, "Did not call super polymorphic property accessor correctly")
+        expect(subClass.myProperty == 2).toBe(true, "Did not call sub polymorphic property accessor correctly")
+    }
+
+    test `isOfType`() {
+        PolymorphicSuperClass superClass = PolymorphicSuperClass()
+        PolymorphicSuperClass subClass = PolymorphicSubClass()
+
+        expect(superClass.class.isOfType(PolymorphicSubClass.class)).toBe(false, "Superclass should not be isOfType the subclass")
+        expect(superClass.class.isOfType(PolymorphicSuperClass.class)).toBe(true, "Superclass should be isOfType itself")
+        expect(superClass.class.isOfType(Object.class)).toBe(true, "Superclass should be isOfType Object")
+        expect(superClass.class.isOfType(PolymorphicSuperInterface.class)).toBe(true, "Superclass should be isOfType super interface")
+        expect(superClass.class.isOfType(PolymorphicSubInterface.class)).toBe(false, "Superclass should not be isOfType sub interface")
+        expect(subClass.class.isOfType(PolymorphicSuperClass.class)).toBe(true, "Subclass should be isOfType the superclass")
+        expect(subClass.class.isOfType(PolymorphicSubClass.class)).toBe(true, "Subclass should be isOfType itself")
+        expect(subClass.class.isOfType(Object.class)).toBe(true, "Subclass should be isOfType Object")
+        expect(subClass.class.isOfType(PolymorphicSuperInterface.class)).toBe(true, "Subclass should be isOfType super interface")
+        expect(subClass.class.isOfType(PolymorphicSubInterface.class)).toBe(true, "Subclass should be isOfType sub interface")
+    }
+}

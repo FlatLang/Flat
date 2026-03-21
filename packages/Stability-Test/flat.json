@@ -1,0 +1,38 @@
+{
+  "name": "StabilityTest",
+  "version": "1.0.0",
+  "description": "Stability test for Flat",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "js",
+  "scripts": {
+    "test": "node dist/js/test.js"
+  },
+  "sources": {
+    "browser": {
+      "mainClass": "stabilitytest/BrowserStabilityTest",
+      "source": "browser/src",
+      "excluded": ["src"],
+      "bin": "browser-stability-test",
+      "outFile": "browser-stability-test.js",
+      "dependencies": {
+        "https://github.com/FlatLang/FuCli.git": "master",
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Selenium.git": "master"
+      }
+    },
+    "test": {
+      "mainClass": "stabilitytest/StabilityTest",
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master",
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Network.git": "master",
+        "https://github.com/FlatLang/Redis.git": "master",
+        "https://github.com/FlatLang/Thread.git": "master"
+      }
+    }
+  }
+}

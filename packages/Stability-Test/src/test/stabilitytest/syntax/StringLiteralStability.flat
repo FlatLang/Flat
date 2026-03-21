@@ -1,0 +1,52 @@
+package stabilitytest/syntax
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test `plain string`() {
+        let value = "hey there"
+
+        expect(value).toBe("hey there")
+    }
+
+    test `handles tick marks surrounding text`() {
+        let value = "hey `there`"
+
+        expect(value).toBe("hey " + '`' + "there" + '`')
+    }
+
+    test `handles multi-line tick marks surrounding text`() {
+        let value = "|
+            hey `there`
+            `test` aoeu
+            `aoeeeee`
+            ``
+            |"
+
+        expect(value).toBe("hey " + '`' + "there" + '`' + "\n`" + "test" + '`' + " aoeu\n" + '`' + "aoeeeee" + '`' + "\n" + '`' + "" + '`')
+    }
+
+    test `handles escaped hashtag`() {
+        let value = "hey \#there bob"
+
+        expect(value).toBe("hey " + '#' + "there bob")
+    }
+
+    test `handles multi-line escaped hashtag`() {
+        let value = "|
+            hey \#there
+            \#{test} aoeu
+            \#aoeeeee
+            |"
+
+        expect(value).toBe("hey " + '#' + "there\n" + '#' + "{test} aoeu\n" + '#' + "aoeeeee")
+    }
+
+    test `handles both escaped and unescaped hashtag`() {
+        let test = "yo"
+        let value = "hey \#there #{1 + 1} \#bob #{test} #5 aeou"
+
+        expect(value).toBe("hey " + '#' + "there 2 " + '#' + "bob yo 5 aeou")
+    }
+}

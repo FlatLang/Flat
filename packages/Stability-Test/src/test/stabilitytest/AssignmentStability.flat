@@ -1,0 +1,27 @@
+package stabilitytest
+
+import flat/datastruct/list/LinkedList
+import flat/time/Time
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class AssignmentStability {
+    test `embedded property assignments`() {
+        var props = ClassWithProperties()
+
+        var num = props.prop1 = props.prop2 = 1
+
+        expect(num == 1 && props.prop1 == 1 && props.prop2 == 1).toBe(true, "Did not return mutated property value correctly. Expected 1, 1, 1 but received #num, #props.prop1, #props.prop2")
+    }
+
+    test `embedded primitive assignments`() {
+        var a
+        var b
+        var c
+
+        a = b = c = 1
+
+        expect(a == 1 && b == 1 && c == 1).toBe(true, "Did not set assigned primitive values correctly. Expected 1, 1, 1 but received #a, #b, #c")
+    }
+}

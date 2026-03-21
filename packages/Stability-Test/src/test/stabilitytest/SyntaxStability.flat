@@ -1,0 +1,424 @@
+package stabilitytest
+
+import flat/datastruct/list/Iterator
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class SyntaxStability {
+    test `simple match statement`() {
+        let num    = 3
+        var worked = false
+
+        match (num) {
+            1 => fail("Match accepted incorrect case")
+            2 => fail("Match accepted incorrect case")
+            3 => worked = true
+            4 => fail("Match accepted incorrect case")
+            default => fail("Match failed to accept the correct case")
+        }
+
+        expect(worked).toBe(true)
+    }
+
+    test `simple match statement with indentation`() {
+        let num    = 3
+        var worked = false
+
+        switch (num)
+            1 =>
+                fail("Match accepted incorrect case")
+            2 => fail("Match accepted incorrect case")
+            3 =>
+                worked = true
+            4 =>
+                fail("Match accepted incorrect case")
+            default =>
+                fail("Match failed to accept the correct case")
+
+        expect(worked).toBe(true)
+    }
+
+    test `simple match statement with scopes`() {
+        let num    = 3
+        var worked = false
+
+        match (num) {
+            1 => {
+                fail("Match accepted incorrect case")
+            }
+            2 => {
+                fail("Match accepted incorrect case")
+            }
+            3 => {
+                worked = true
+            }
+            4 => {
+                fail("Match accepted incorrect case")
+            }
+            default => {
+                fail("Match failed to accept the correct case")
+            }
+        }
+
+        expect(worked).toBe(true)
+    }
+
+    test `match statement with variable case values`() {
+        var val    = 1
+        var num    = 3
+        var worked = false
+
+        match (num) {
+            val++ => {
+                fail("Match accepted incorrect case")
+            } val++ => {
+                fail("Match accepted incorrect case")
+            } (val++) => {
+                worked = true
+            }
+            val++ => {
+                fail("Match accepted incorrect case")
+            } default => {
+                fail("Match failed to accept the correct case")
+            }
+        }
+
+        expect(worked).toBe(true)
+    }
+
+    test `match statement with variable case values and fallthrough`() {
+        var val    = 1
+        var num    = 3
+        var worked = false
+
+        var worked2 = false
+
+        match (num++) {
+            val++ => {
+                fail("Match accepted incorrect case")
+            } val++ => {
+                fail("Match accepted incorrect case")
+            } val++ => {
+                worked = true
+                fallthrough
+            } val++ => {
+                worked2 = true
+            } default => {
+                fail("Match failed to accept the correct case")
+            }
+        }
+
+        expect(worked && worked2).toBe(true)
+    }
+
+    test `inline while loop`() {
+        var num    = 0
+        var num2 = 0
+        var num3 = 0
+
+        while (num < 100) num++
+
+        while (num2 < 100)
+            num2++
+
+        while (num3 < 100)
+            if (true)
+                if (true) {
+                    num3++
+                }
+
+        expect(num == 100 && num2 == 100 && num3 == 100).toBe(true, "Inline while loop failed.")
+    }
+
+    test `inline for loop`() {
+        var num    = 0
+        var num2 = 0
+        var num3 = 0
+
+        for (i in 0..100) num++
+
+        for (i2 in 0..100)
+            num2++
+
+        for (i3 in 0..100)
+            if (true)
+                if (true) {
+                    num3++
+                }
+
+        expect(num == 100 && num2 == 100 && num3 == 100).toBe(true, "Inline for loop failed. Expected 100, 100, 100 received #{num}, #{num2}, #{num3}")
+    }
+
+    test `until statement`() {
+        var obj
+
+        until (obj) {
+            obj = test1()
+            obj = test2()
+            obj = test3()
+
+            fail("Failed to stop after correct condition")
+        }
+
+//        if (obj == null) {
+//            obj = test1();
+//            if (obj == null) {
+//                obj = test2();
+//                if (obj == null) {
+//                    obj = test3();
+//                    if (obj == null) {
+//                        program.fail("Until statement failed");
+//                    }
+//                }
+//            }
+//        }
+
+        expect(obj).toNotBe(null, "Failed to reach correct condition")
+    }
+
+    static test1() => null
+    static test2() => null
+    static test3() => Object()
+
+    static filterFunc(String i) -> Bool {
+        return i.count >= 4
+    }
+
+    static foreachClosure(String s) {
+        if (s.count < 4) {
+            throw UnstableException("filtering failed")
+        }
+    }
+
+    test `filter functionality`() {
+        String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+        String[] list2 = list.filter(filterFunc)
+
+        try {
+            list2.forEach(foreachClosure)
+        } catch (UnstableException e) {
+            fail("Failed to filter data correctly")
+        }
+
+        for (n in 0..list2.count) {
+            expect(list2[n].count >= 4).toBe(true, "Failed to filter data correctly")
+        }
+
+        /*if (list2.any(x -> x.count < 4)) {
+            program.fail("Failed to filter data correctly")
+        }
+        if (!list2.all(x -> x.count >= 4)) {
+            program.fail("Failed to filter data correctly")
+        }*/
+    }
+
+    test `foreach loop functionality`() {
+        String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+        String[] list2 = list.filter(filterFunc)
+
+        for (string in list2) {
+            expect(string.count >= 4).toBe(true, "Failed to run foreach loop")
+        }
+    }
+
+    test `ternary functionality`() {
+        var first = trueValue() ? "hey" == "hey" : "hey" == "hey2"
+
+        expect(first).toBe(true, "Failed first ternary test")
+
+        var second = falseValue() ? "one" : "two"
+
+        expect(second == "two").toBe(true, "Failed second ternary test")
+    }
+
+    test `elvis functionality`() {
+        var str = "this isnt null"
+        String str2 = null
+
+        var result1 = str ?: "wtf"
+
+        expect(result1 == "wtf").toBe(false, "Failed first elvis test")
+
+        var result2 = str2 ?: "this is null"
+
+        expect(result2 == "this is null").toBe(true, "Failed second elvis test")
+    }
+
+    trueValue() -> Bool {
+        return true
+    }
+
+    falseValue() -> Bool {
+        return false
+    }
+
+    // checkRepeat() {
+    //     out.write("Checking repeat functionality... ")
+
+    //     Int i = 0
+
+    //     repeat {
+    //         if (i == 101) {
+    //             break
+    //         }
+
+    //         i++
+    //     }
+
+    //     program.fail("Vanilla repeat failed", i != 101)
+
+    //     i = 0
+
+    //     repeat (101) {
+    //         i++
+    //     }
+
+    //     program.fail("Repeat 101 times failed", i != 101)
+
+    //     i = 0
+
+    //     Int times = 101
+
+    //     repeat (times) {
+    //         i++
+    //     }
+
+    //     program.fail("Repeat times (#times) failed", i != 101)
+
+    //     i = 0
+
+    //     repeat (times) i++
+
+    //     program.fail("Repeat fragment failed", i != 101)
+
+    //     out.writeLine("OK")
+    // }
+
+    named(String s, String arg, Int jum = 4, Int jdd = 0, Int joe = 0) -> Int {
+        return -1
+    }
+
+    named(String s, String arg, Int num = 4, Int add = 0) -> Int {
+        return num * arg.count + add
+    }
+
+    test `named arguments`() {
+        var num = named("", arg: "yo", num: 4)
+
+        expect(num == 8).toBe(true, "Default argument failed. Expected 8, received #num")
+
+        num = named("", add: 2, arg: "heyasdf", num: 5)
+
+        expect(num == 37).toBe(true, "Named arguments failed. Expeced 37, received #num first")
+
+        num = named(add: 2, num: 5, arg: "heyasdf", s: "")
+
+        expect(num == 37).toBe(true, "Named arguments failed. Expeced 37, received #num second")
+    }
+
+    func1(Int a) -> Int => a * 2
+    func2(Int a) -> Int => a * 4
+
+    myFunc(something(Int) -> Int = func2) => something(5)
+
+    test `default closure arguments`() {
+    	expect(myFunc() == 20).toBe(true, "Failed to call default closure")
+    	expect(myFunc(func1) == 10).toBe(true, "Failed to call overrided default closure")
+    }
+
+    test `zipper`() { // lol
+        var array1 = ["This", "is", "a", "test"]
+        var array2 = ["one", "two", "three", "four"]//[1, 2, 4, 3]
+
+        var zipped = array1.zip(array2, { "#_x1 #_x2" })
+        out.write("Zipped: #zipped ")
+    }
+
+    test `safe navigation operator`() {
+        var node = Node()
+        node.value = 1
+
+        node.child = Node()
+        node.child.value = 2
+
+        node.child.child = Node()
+        node.child.child.value = 3
+
+        out.write("if statement... ")
+
+        if (node?.child?.child?.value == 3 && node?.child?.value == 2 && node?.value == 1) {
+            out.write("assignment... ")
+
+            node?.child?.child.value = 5
+
+            expect(node?.child?.child.value == 5).toBe(true, "Failed to set node value while safely navigating it")
+
+            node.child.child = null
+
+            expect(node?.child?.child?.value == 3).toBe(false, "Failed to skip null child")
+
+            node.child.child = Node()
+            node.child.child.child = Node()
+            node.child.child.child.child = Node()
+            node.child.child.child.child.value = 91
+
+            out.write("function call... ")
+            callMeWithNode(node?.child?.child?.child?.child)
+
+            var array = ["1", "2", "3", "4", "5"]
+
+            out.write("array access... ")
+            array[node?.child?.value] = "hello"
+
+            expect(array[2] == "hello").toBe(true, "Failed to set correct array index with correct value using the safe navigation operator")
+        } else {
+            fail("Failed to safely navigate valid children")
+        }
+    }
+
+    test `array safe navigation`() {
+    	/*var myArray = [0, 1, 2, 3, 4, 5, 6]
+
+    	program.fail("Failed to access valid index with safe navigation", myArray?[4] != 4)
+    	*/
+    }
+
+    callMeWithNode(Node n) => expect(n.value == 91).toBe(true, "Failed to call method with correct safely navigated node")
+
+    test `snake case numbers`() {
+    	Double dPos =    51_325_753.131313
+    	Double dNeg = -51_325_753.131313
+
+    	expect(dPos ==    51325753.131313).toBe(true, "Positive snake case double failed to parse")
+    	expect(dNeg == -51325753.131313).toBe(true, "Negative snake case double failed to parse")
+
+    	Long lPos =    922_547_211
+    	Long lNeg = -922_547_211
+
+    	expect(lPos ==    922547211).toBe(true, "Positive snake case long failed to parse")
+    	expect(lNeg == -922547211).toBe(true, "Negative snake case long failed to parse")
+    }
+
+    test `array initializers`() {
+    	Int num1 = 1
+    	Int num2 = 2
+
+    	var myInts = [0, 0, num1, num2, 0]
+
+    	expect(myInts[2] == num1 && myInts[3] == num2).toBe(true)
+    }
+
+    test `chain operator`() {
+    	var myInts = [1, 2, 3, 4]
+    	var sum = 0
+
+        myInts // [1, 2, 3, 4]
+            .map({ _ * 2 }) // [2, 4, 6, 8]
+            :forEach({ sum += _ }) // 0 + (2 + 4 + 6 + 8) = 20
+            :forEach({ sum += 1 }) // 20 + (1 + 1 + 1 + 1) = 24
+            :forEach({ sum += 3 }) // 24 + (3 + 3 + 3 + 3) = 36
+
+    	expect(sum).toBe(36)
+    }
+}

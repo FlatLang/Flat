@@ -1,0 +1,62 @@
+package stabilitytest/syntax
+
+import flat/datastruct/list/Iterator
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class IfStatementStability {
+    test `basic if statement with scope`() {
+        var value = false
+
+        if (!value) {
+            value = true
+        }
+
+        expect(value).toBe(true, "Failed to get inside basic if statement with scope")
+    }
+
+    test `basic single line if statement without scope`() {
+        var value = false
+
+        if (!value) value = true
+
+        expect(value).toBe(true, "Failed to get inside basic single line if statement without scope")
+    }
+
+    test `basic continuation line if statement without scope`() {
+        var value = false
+
+        if (!value)
+            value = true
+
+        expect(value).toBe(true, "Failed to get inside basic continuation line if statement without scope")
+    }
+
+    test `basic multi-continuation line if statement without scope`() {
+        var value = false
+
+        if (!value)
+            value =
+            true
+
+        expect(value).toBe(true, "Failed to get inside basic multi-continuation line (first) if statement without scope")
+
+        value = false
+
+        if (!value)
+            value
+            = true
+
+        expect(value).toBe(true, "Failed to get inside basic multi-continuation line (second) if statement without scope")
+
+        value = false
+
+        if (!value)
+            value
+            =
+            true
+
+        expect(value).toBe(true, "Failed to get inside basic multi-continuation line (third) if statement without scope")
+    }
+}

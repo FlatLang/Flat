@@ -1,0 +1,278 @@
+package stabilitytest/syntax
+
+import flat/datastruct/list/Iterator
+import flat/datastruct/HashMap
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    test `basic string iterator with explicit type declarations`() {
+        String[] list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+        String[] list2 = list.filter({ _.count >= 4 })
+
+        Iterator<String> iter = list2.iterator
+
+        while (iter.hasNext) {
+            expect(iter.stepNext.count >= 4).toBe(true, "Failed to run iterator")
+        }
+    }
+
+    test `basic string iterator with implicit type declaration`() {
+        let list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+        let list2 = list.filter({ _.count >= 4 })
+        let iter = list2.iterator
+
+        while (iter.hasNext) {
+            expect(iter.stepNext.count >= 4).toBe(true, "Failed to run iterator")
+        }
+    }
+
+    test `basic string iterator with two variable declarations`() {
+        let list = ["this", "is", "a", "test", "to", "see", "what shows up"]
+        let iter = list.filter({ _.count >= 4 }).iterator
+
+        while (iter.hasNext) {
+            expect(iter.stepNext.count >= 4).toBe(true, "Failed to run iterator")
+        }
+    }
+
+    // test `basic string iterator with one variable declaration`() {
+    //         let iter = ["this", "is", "a", "test", "to", "see", "what shows up"]
+    //             .filter({ _.count >= 4 })
+    //             .iterator
+
+    //         while (iter.hasNext) {
+    //                 expect(iter.stepNext.count >= 4).toBe(true, "Failed to run iterator")
+    //         }
+    // }
+
+    test `basic HashMap iterator`() {
+        let map = HashMap<String, String>()
+            :add("one", "1")
+            :add("two", "2")
+            :add("three", "3")
+
+        let iter = map.iterator
+        let keys = Array<String>()
+        let values = Array<String>()
+
+        while (iter.hasNext) {
+            let pair = iter.stepNext
+            keys.add(pair.key)
+            values.add(pair.value)
+            expect(pair.key.count >= 3).toBe(true, "Failed to run iterator. Expected count of >= 3 for #pair.key")
+        }
+
+        expect(keys.count).toBe(3)
+        expect(keys[0]).toBe("one")
+        expect(keys[1]).toBe("two")
+        expect(keys[2]).toBe("three")
+        expect(values.count).toBe(3)
+        expect(values[0]).toBe("1")
+        expect(values[1]).toBe("2")
+        expect(values[2]).toBe("3")
+    }
+
+    test `HashMapIterator.next`() {
+        let map = HashMap<String, String>()
+            :add("one", "1")
+            :add("two", "2")
+            :add("three", "3")
+
+        let iterator = map.iterator
+
+        expect(iterator.next).toBe(Pair("one", "1"))
+
+        iterator.stepNext
+
+        expect(iterator.next).toBe(Pair("two", "2"))
+
+        iterator.stepNext
+
+        expect(iterator.next).toBe(Pair("three", "3"))
+
+        iterator.stepNext
+
+        expect(iterator.next).toBe(null)
+    }
+
+    test `HashMapIterator.current`() {
+        let map = HashMap<String, String>()
+            :add("one", "1")
+            :add("two", "2")
+            :add("three", "3")
+
+        let iterator = map.iterator
+
+        expect(iterator.current).toBe(null)
+
+        iterator.stepNext
+
+        expect(iterator.current).toBe(Pair("one", "1"))
+
+        iterator.stepNext
+
+        expect(iterator.current).toBe(Pair("two", "2"))
+
+        iterator.stepNext
+
+        expect(iterator.current).toBe(Pair("three", "3"))
+    }
+
+    test `HashMapIterator.previous`() {
+        let map = HashMap<String, String>()
+            :add("one", "1")
+            :add("two", "2")
+            :add("three", "3")
+
+        let iterator = map.iterator
+
+        expect(iterator.previous).toBe(null)
+
+        iterator.stepNext
+
+        expect(iterator.previous).toBe(null)
+
+        iterator.stepNext
+
+        expect(iterator.previous).toBe(Pair("one", "1"))
+
+        iterator.stepNext
+
+        expect(iterator.previous).toBe(Pair("two", "2"))
+    }
+
+    test `ArrayIterator.next`() {
+        let array = ["one", "two", "three"]
+        let iterator = array.iterator
+
+        expect(iterator.next).toBe("one")
+
+        iterator.stepNext
+
+        expect(iterator.next).toBe("two")
+
+        iterator.stepNext
+
+        expect(iterator.next).toBe("three")
+
+        iterator.stepNext
+
+        expect(iterator.next).toBe(null)
+    }
+
+    test `ArrayIterator.current`() {
+        let array = ["one", "two", "three"]
+        let iterator = array.iterator
+
+        expect(iterator.current).toBe(null)
+
+        iterator.stepNext
+
+        expect(iterator.current).toBe("one")
+
+        iterator.stepNext
+
+        expect(iterator.current).toBe("two")
+
+        iterator.stepNext
+
+        expect(iterator.current).toBe("three")
+    }
+
+    test `ArrayIterator.previous`() {
+        let array = ["one", "two", "three"]
+        let iterator = array.iterator
+
+        expect(iterator.previous).toBe(null)
+
+        iterator.stepNext
+
+        expect(iterator.previous).toBe(null)
+
+        iterator.stepNext
+
+        expect(iterator.previous).toBe("one")
+
+        iterator.stepNext
+
+        expect(iterator.previous).toBe("two")
+    }
+
+    test `ArrayIterator.allNext`() {
+        let array = ["one", "two", "three"]
+        let iterator = array.iterator
+
+        expect(iterator.allNext).toBe(["one", "two", "three"])
+
+        iterator.stepNext
+
+        expect(iterator.allNext).toBe(["two", "three"])
+
+        iterator.stepNext
+
+        expect(iterator.allNext).toBe(["three"])
+
+        iterator.stepNext
+
+        expect(iterator.allNext).toBe(Array())
+    }
+
+    test `ArrayIterator.allPrevious`() {
+        let array = ["one", "two", "three"]
+        let iterator = array.iterator
+
+        expect(iterator.allPrevious).toBe(Array())
+
+        iterator.stepNext
+
+        expect(iterator.allPrevious).toBe(["one"])
+
+        iterator.stepNext
+
+        expect(iterator.allPrevious).toBe(["one", "two"])
+
+        iterator.stepNext
+
+        expect(iterator.allPrevious).toBe(["one", "two", "three"])
+    }
+
+    test `ArrayIterator.allNextInclusive`() {
+        let array = ["one", "two", "three"]
+        let iterator = array.iterator
+
+        expect(iterator.allNextInclusive).toBe(["one", "two", "three"])
+
+        iterator.stepNext
+
+        expect(iterator.allNextInclusive).toBe(["one", "two", "three"])
+
+        iterator.stepNext
+
+        expect(iterator.allNextInclusive).toBe(["two", "three"])
+
+        iterator.stepNext
+
+        expect(iterator.allNextInclusive).toBe(["three"])
+    }
+
+    test `ArrayIterator.allPreviousInclusive`() {
+        let array = ["one", "two", "three"]
+        let iterator = array.iterator
+
+        expect(iterator.allPreviousInclusive).toBe(["one"])
+
+        iterator.stepNext
+
+        expect(iterator.allPreviousInclusive).toBe(["one", "two"])
+
+        iterator.stepNext
+
+        expect(iterator.allPreviousInclusive).toBe(["one", "two", "three"])
+
+        iterator.stepNext
+
+        expect(iterator.allPreviousInclusive).toBe(["one", "two", "three"])
+    }
+}

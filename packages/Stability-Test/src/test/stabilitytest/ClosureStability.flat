@@ -1,0 +1,51 @@
+package stabilitytest
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class ClosureStability {
+    static Double TOLERANCE = 0.0000000001
+
+    var Int number
+
+    incrementNumber() => number++
+
+    test `static math closures`() {
+        Int a = 5
+        Int b = 3
+
+        Double value = 0.5
+
+        expect(callClosure(multiply, a, b)).toBe(multiply(a, b), "Failed to call multiply(Int, Int) closure")
+        expect(callClosure(pow, a, b)).toBe(pow(a, b), "Failed to call pow(Int, Int) closure")
+
+        expect(mathClosure(Math.sin, value) - Math.sin(value) < TOLERANCE).toBe(true, "Failed to call Math.sin(Double) closure")
+        expect(mathClosure(Math.tan, value) - Math.tan(value) < TOLERANCE).toBe(true, "Failed to call Math.tan(Double) closure")
+    }
+
+    test `instance closures`() {
+        ClosureStability c = ClosureStability()
+
+        instanceClosure(c.incrementNumber)
+
+        expect(c.number == 0).toBe(false, "Failed to call incrementNumber() instance closure")
+
+        instanceClosure(ClosureStability().incrementNumber)
+        instanceClosure(c.incrementNumber)
+    }
+
+    static callClosure(closure(Int, Int) -> Int, Int a, Int b) => closure(a, b)
+    static mathClosure(closure(Double) -> Double, Double value) => closure(value)
+    static instanceClosure(closure()) => closure()
+    static multiply(Int value1, Int value2) => value1 * value2
+
+    static pow(Int base, Int pow) -> Int {
+        Int value = base
+
+        for (i in 0..(pow - 1)) {
+            value *= base
+        }
+
+        return value
+    }
+}

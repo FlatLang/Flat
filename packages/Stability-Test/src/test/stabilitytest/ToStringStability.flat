@@ -1,0 +1,40 @@
+package stabilitytest
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class ToStringStability {
+    // [Test "Testing toString implementations"]
+    testToString() {
+        Double d = 5.232
+
+        checkToString("Double", d, "5.232")
+
+        Byte b = 127
+
+        checkToString("Byte", b, "127")
+
+        Int i = 2147483647
+
+        checkToString("Int", i, "2147483647")
+
+        Long l = -9223372036854775808
+
+        checkToString("Long", l, "-9223372036854775808")
+    }
+
+    test `char toString`() {
+        checkToString("Char", 'a', "a")
+
+        Char char = 'b'
+
+        checkToString("Char", char, "b")
+
+        let char2 = 'c'
+
+        checkToString("Char", char2, "c")
+    }
+
+    checkToString(String type, Number number, String expected) =>
+        expect(number.toString() == expected).toBe(true, "#{type}.toString failed. expected #expected but received #number #{number.toString().compareTo(expected)}")
+}

@@ -1,0 +1,36 @@
+package stabilitytest
+
+// import flat/meta/Library
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class LibraryLoadingStability {
+    // var Library lib
+
+    // init_test_class initClass() {
+    //     lib = Library("C:/Users/Braden/GitHub/NovaWorkspace/testlib").load()
+
+    //     expectValue(lib, "Failed to load library")
+    // }
+
+    // test getStaticFunction() {
+    //     let func = lib.getFunction("staticFunc", "nova/test/Test")
+
+    //     expectValue(func, "staticFunc not found")
+    // }
+
+    // test callStaticFunction() {
+    //     let func(Int x) -> Int = lib.getFunction("staticFuncInt", "nova/test/Test")
+
+    //     let returned = func(5)
+
+    //     expect(returned).toBe(10, "Expected return value of 10, but received #returned")
+    // }
+
+    // test nonExistentFunction() {
+    //     let func = lib.getFunction("thisFunctionDoesNotExist", "nova/test/Test")
+
+    //     expectNull(func, "found non-existent function")
+    // }
+}

@@ -1,0 +1,43 @@
+package stabilitytest
+
+import flat/thread
+
+testable class ThreadStability {
+    [Target js]
+    public async `handles 20 Threads with memory access`() {
+        ThreadImplementation[] threads = Array(20)
+
+        createThreads(threads, 20)
+
+        checkMemoryAccess()
+
+        joinThreads(threads, 20)
+    }
+
+    [Target js]
+    createThreads(ThreadImplementation[] threads, Int amount) {
+        StabilityExceptionHandler handler = StabilityExceptionHandler()
+
+        for (i in 0..amount) {
+            threads[i] = ThreadImplementation(10, 10)
+            //threads[i].addUncaughtExceptionHandler(handler)
+            threads[i].start()
+        }
+    }
+
+    [Target js]
+    static async checkMemoryAccess() {
+        Thread.sleep(30)
+
+        for (i in 0..1000) {
+            String s = Int.toString(i)
+        }
+    }
+
+    [Target js]
+    static joinThreads(ThreadImplementation[] threads, Int amount) {
+        for (i in 0..amount) {
+            threads[i].join()
+        }
+    }
+}

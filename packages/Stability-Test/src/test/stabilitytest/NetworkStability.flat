@@ -1,0 +1,61 @@
+package stabilitytest
+
+import flat/network/ServerSocket
+import flat/network/ClientSocket
+import flat/network/ConnectionSocket
+import flat/thread/Thread
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class NetworkStability {
+    visible static String RECEIVED = "THIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVEDTHIS IS THE STRING THAT SHOULD BE RECEIVED"
+
+    visible static Int PORT = 24243
+
+    [Target js]
+    async test `starting ServerSocket`() {
+        let server = ServerSocket()
+
+        expect(server.start(PORT)).toBe(true, "Unable to start server")
+        expect(server.close()).toBe(true, "Unable to close server")
+    }
+
+    [Target js]
+    async test `ClientSocket connection`() {
+        let server = ServerSocket():start(PORT)
+
+        let receivedClientAsync = server.on("client_connected")$
+
+        out.write("- accepting ClientSocket connection... ")
+
+        let client = ClientSocket("localhost", PORT)
+
+        expect(client.connect()).toBe(true, "Client failed to connect")
+
+        let receivedClient = await receivedClientAsync
+
+        expect(receivedClient).toNotBe(null, "Failed to accept the client")
+        expect(client.close()).toBe(true, "Unable to close client connection")
+        expect(server.close()).toBe(true, "Unable to close server")
+    }
+
+    [Target js]
+    async test `Socket communication`() {
+        let server = ServerSocket():start(PORT)
+        let client = ClientSocket("localhost", PORT):connect()
+
+        out.write("- sending String to ClientSocket... ")
+
+        let responseDataAsync = server.on("data")$
+
+        expect(client.write(RECEIVED)).toBe(true, "Server unable to send data to client")
+
+        let responseData = await responseDataAsync
+
+        expect(responseData.count == RECEIVED.count && responseData == RECEIVED).toBe(true, "Server unable to receive correct message from client. Expected message of size #RECEIVED.count, but received of size #responseData.count")
+
+        expect(client.close()).toBe(true, "Unable to close client connection")
+        expect(server.close()).toBe(true, "Unable to close server")
+    }
+}

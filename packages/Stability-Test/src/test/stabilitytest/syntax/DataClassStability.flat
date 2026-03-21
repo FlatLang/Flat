@@ -1,0 +1,568 @@
+package stabilitytest/syntax
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    data class InnerTestClass {
+        public construct(
+            visible String one,
+            visible Int two,
+            visible List three
+        ) {}
+    }
+
+    test `can create outer data class`() {
+        let value = OuterTestClass(
+            "one",
+            2,
+            Array<String>():add("three")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+    }
+
+    test `can copy outer data class`() {
+        let value = OuterTestClass(
+            "one",
+            2,
+            Array<String>():add("three")
+        )
+
+        let copy = value.copy(
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    test `can copyTo outer data class`() {
+        let value = OuterTestClass(
+            "one",
+            2,
+            Array<String>():add("three")
+        )
+
+        let initial = OuterTestClass(null, 0, null)
+
+        let copy = value.copyTo(
+            initial,
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    test `can create inner data class`() {
+        let value = InnerTestClass(
+            "one",
+            2,
+            Array<String>():add("three")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+    }
+
+    test `can copy inner data class`() {
+        let value = InnerTestClass(
+            "one",
+            2,
+            Array<String>():add("three")
+        )
+
+        let copy = value.copy(
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    test `can copyTo inner data class`() {
+        let value = InnerTestClass(
+            "one",
+            2,
+            Array<String>():add("three")
+        )
+
+        let initial = InnerTestClass(null, 0, null)
+
+        let copy = value.copyTo(
+            initial,
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    data class SubInnerTestClass extends InnerTestClass {
+        public construct(
+            String one,
+            Int two,
+            List three,
+            visible String four,
+            visible Int five,
+            visible List six
+        ) {
+            super(one, two, three)
+        }
+    }
+
+    test `can create sub data class`() {
+        let value = SubInnerTestClass(
+            "one",
+            2,
+            Array<String>():add("three"),
+            "four",
+            5,
+            Array<String>():add("six")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+        expect(value.four).toBe("four")
+        expect(value.five).toBe(5)
+        expect(value.six).toBe(["six"])
+    }
+
+    test `can copy sub data class`() {
+        let value = SubInnerTestClass(
+            "one",
+            2,
+            Array<String>():add("three"),
+            "four",
+            5,
+            Array<String>():add("six")
+        )
+
+        let copy = value.copy(
+            two: 4,
+            six: Array<String>():add("seven")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+        expect(value.four).toBe("four")
+        expect(value.five).toBe(5)
+        expect(value.six).toBe(["six"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+        expect(copy.four).toBe("four")
+        expect(copy.five).toBe(5)
+        expect(copy.six).toBe(["seven"])
+    }
+
+    test `can copyTo sub data class`() {
+        let value = SubInnerTestClass(
+            "one",
+            2,
+            Array<String>():add("three"),
+            "four",
+            5,
+            Array<String>():add("six")
+        )
+
+        let initial = SubInnerTestClass(null, 0, null, null, 0, null)
+
+        let copy = value.copyTo(
+            initial,
+            two: 4,
+            six: Array<String>():add("seven")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+        expect(value.four).toBe("four")
+        expect(value.five).toBe(5)
+        expect(value.six).toBe(["six"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+        expect(copy.four).toBe("four")
+        expect(copy.five).toBe(5)
+        expect(copy.six).toBe(["seven"])
+    }
+
+    test `can copyTo sub dataclass from the baseclass`() {
+        let value = SubInnerTestClass(
+            "one",
+            2,
+            Array<String>():add("three"),
+            "four",
+            5,
+            Array<String>():add("six")
+        )
+
+        let initial = InnerTestClass(null, 0, null)
+
+        let copy = (SubInnerTestClass)initial.copyTo(
+            value,
+            two: 4,
+            three: Array<String>():add("seven")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+        expect(value.four).toBe("four")
+        expect(value.five).toBe(5)
+        expect(value.six).toBe(["six"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe(null)
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["seven"])
+        expect(copy.four).toBe("four")
+        expect(copy.five).toBe(5)
+        expect(copy.six).toBe(["six"])
+    }
+
+    data class InnerTestClassWithoutConstructor {
+        visible String one
+        visible Int two
+        visible List three
+    }
+
+    test `can create outer dataclass without constructors`() {
+        let value = OuterTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+    }
+
+    test `can copy outer dataclass without constructors`() {
+        let value = OuterTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        let copy = value.copy(
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    test `can copyTo outer dataclass without constructors`() {
+        let value = OuterTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        let initial = OuterTestClassWithoutConstructor()
+
+        let copy = value.copyTo(
+            initial,
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    test `can create inner dataclass without constructors`() {
+        let value = InnerTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+    }
+
+    test `can copy inner dataclass without constructors`() {
+        let value = InnerTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        let copy = value.copy(
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    test `can copyTo inner dataclass without constructors`() {
+        let value = InnerTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        let initial = InnerTestClassWithoutConstructor()
+
+        let copy = value.copyTo(
+            initial,
+            two: 4
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+    }
+
+    data class SubInnerTestClassWithoutConstructor extends InnerTestClassWithoutConstructor {
+        visible String four
+        visible Int five
+        visible List six
+    }
+
+    test `can create sub dataclass without constructors`() {
+        let value = SubInnerTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three"),
+            four: "four",
+            five: 5,
+            six: Array<String>():add("six")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+        expect(value.four).toBe("four")
+        expect(value.five).toBe(5)
+        expect(value.six).toBe(["six"])
+    }
+
+    test `can copy sub dataclass without constructors`() {
+        let value = SubInnerTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three"),
+            four: "four",
+            five: 5,
+            six: Array<String>():add("six")
+        )
+
+        let copy = value.copy(
+            two: 4,
+            six: Array<String>():add("seven")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+        expect(value.four).toBe("four")
+        expect(value.five).toBe(5)
+        expect(value.six).toBe(["six"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+        expect(copy.four).toBe("four")
+        expect(copy.five).toBe(5)
+        expect(copy.six).toBe(["seven"])
+    }
+
+    test `can copyTo sub dataclass without constructors`() {
+        let value = SubInnerTestClassWithoutConstructor(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three"),
+            four: "four",
+            five: 5,
+            six: Array<String>():add("six")
+        )
+
+        let initial = SubInnerTestClassWithoutConstructor()
+
+        let copy = value.copyTo(
+            initial,
+            two: 4,
+            six: Array<String>():add("seven")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+        expect(value.four).toBe("four")
+        expect(value.five).toBe(5)
+        expect(value.six).toBe(["six"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["three"])
+        expect(copy.four).toBe("four")
+        expect(copy.five).toBe(5)
+        expect(copy.six).toBe(["seven"])
+    }
+
+    test `can create dataclass with generics`() {
+        let value = OuterTestClassWithGenerics<String>(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+    }
+
+    test `can copy dataclass with generics`() {
+        let value = OuterTestClassWithGenerics<String>(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        let copy = value.copy(
+            two: 4,
+            three: Array<String>():add("seven")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["seven"])
+    }
+
+    test `can copyTo dataclass with generics`() {
+        let value = OuterTestClassWithGenerics<String>(
+            one: "one",
+            two: 2,
+            three: Array<String>():add("three")
+        )
+
+        let initial = OuterTestClassWithGenerics<String>()
+
+        let copy = value.copyTo(
+            initial,
+            two: 4,
+            three: Array<String>():add("seven")
+        )
+
+        expect(value).toNotBe(null)
+        expect(value.one).toBe("one")
+        expect(value.two).toBe(2)
+        expect(value.three).toBe(["three"])
+
+        expect(copy).toNotBe(null)
+        expect(copy.one).toBe("one")
+        expect(copy.two).toBe(4)
+        expect(copy.three).toBe(["seven"])
+    }
+}
+
+data class OuterTestClass {
+    public construct(
+        visible String one,
+        visible Int two,
+        visible List three
+    ) {}
+}
+
+data class OuterTestClassWithoutConstructor {
+    visible String one
+    visible Int two
+    visible List three
+}
+
+data class OuterTestClassWithGenerics<Type> {
+    visible Type one
+    visible Int two
+    visible List three
+}

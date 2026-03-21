@@ -1,0 +1,6 @@
+package stabilitytest
+
+class Node {
+    public var Node child
+    public var Int value
+}

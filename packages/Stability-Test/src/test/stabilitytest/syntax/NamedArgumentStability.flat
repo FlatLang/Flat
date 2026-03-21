@@ -1,0 +1,16 @@
+package stabilitytest/syntax
+
+import flat/datastruct/list/Iterator
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class {
+    basicSingle(
+        String: test
+    ) => test + "single"
+
+    test `single named argument`() {
+        expect(basicSingle(test: "bob")).toBe("bobsingle")
+    }
+}

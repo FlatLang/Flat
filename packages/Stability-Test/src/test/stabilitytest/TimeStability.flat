@@ -1,0 +1,110 @@
+package stabilitytest
+
+import flat/time/Timer
+import flat/time/DateTime
+import flat/time/DateTime.InvalidDateException
+import flat/thread/Thread
+
+import flat/test/Test
+import flat/test/TestSuite
+
+testable class TimeStability {
+    async test `can sleep for 100ms`() {
+        let timer = Timer()
+        timer.start()
+
+        Thread.sleep(100)
+
+        timer.stop()
+
+        expect(timer.duration >= 99 && timer.duration < 130).toBe(true, "Failed; expected 100ms, found #{timer.duration}ms")
+    }
+
+    test leapYear() {
+        expect(DateTime(year: 1900).isLeapYear).toBe(false, "1900 is not a leap year")
+        expect(DateTime(year: 2016).isLeapYear).toBe(true, "2016 is a leap year")
+        expect(DateTime(year: 2017).isLeapYear).toBe(false, "2017 is not a leap year")
+        expect(DateTime(year: 2018).isLeapYear).toBe(false, "2018 is not a leap year")
+        expect(DateTime(year: 2019).isLeapYear).toBe(false, "2019 is not a leap year")
+        expect(DateTime(year: 2020).isLeapYear).toBe(true, "2020 is a leap year")
+
+        expect({ DateTime(year: 2017, month: 2, dayOfMonth: 29) }).toThrow(InvalidDateException.class)
+        expect({ DateTime(year: 2016, month: 2, dayOfMonth: 29) }).toNotThrow(InvalidDateException.class)
+    }
+
+    test invalidDateTimeYear() {
+        expect({ DateTime(year: 0) }).toNotThrow(InvalidDateException.class)
+    }
+
+    test invalidDateTimeMonth() {
+        expect({ DateTime(month: 0) }).toThrow(InvalidDateException.class)
+
+        var m = 1
+
+        for (i in 0..12) {
+            expect({ DateTime(month: /*100+*/m++) }).toNotThrow(InvalidDateException.class)
+        }
+
+        expect({ DateTime(month: 13) }).toThrow(InvalidDateException.class)
+        expect({ DateTime(month: -1) }).toThrow(InvalidDateException.class)
+    }
+
+    test invalidDateTimeDay() {
+        expect({ DateTime(month: 12, dayOfMonth: 31) }).toNotThrow(InvalidDateException.class)
+        expect({ DateTime(month: 11, dayOfMonth: 31) }).toThrow(InvalidDateException.class)
+        expect({ DateTime(year: 2020, month: 2, dayOfMonth: 29) }).toNotThrow(InvalidDateException.class)
+        expect({ DateTime(year: 2021, month: 2, dayOfMonth: 29) }).toThrow(InvalidDateException.class)
+
+        DateTime.MONTH_DAYS.forEach((days, month) => {
+            var d = 1
+
+            for (i in 0..days) {
+                expect({ DateTime(year: 2020, month: month + 1, dayOfMonth: d++) }).toNotThrow(InvalidDateException.class)
+            }
+
+            expect({ DateTime(year: 2020, month: month + 1, dayOfMonth: -1) }).toThrow(InvalidDateException.class)
+            expect({ DateTime(year: 2020, month: month + 1, dayOfMonth: 0) }).toThrow(InvalidDateException.class)
+            expect({ DateTime(year: 2020, month: month + 1, dayOfMonth: days + 1) }).toThrow(InvalidDateException.class)
+        })
+    }
+
+    test basicEpochTime() {
+        let millis = 1490227200000
+        let fromEpoch = DateTime(millis: millis)
+
+        expect(fromEpoch.millis).toBe(millis)
+        expect(fromEpoch.year).toBe(2017)
+        expect(fromEpoch.month).toBe(3)
+        expect(fromEpoch.dayOfMonth).toBe(23)
+    }
+
+    test newYearEpochTime() {
+        let newYearMillis = 1483228800000
+        let newYear = DateTime(millis: newYearMillis)
+
+        expect(newYear.millis).toBe(newYearMillis)
+        expect(newYear.year).toBe(2017)
+        expect(newYear.month).toBe(1)
+        expect(newYear.dayOfMonth).toBe(1)
+    }
+
+    test newYearEveEpochTime() {
+        let newYearEveMillis = 1483142400000
+        let newYearEve = DateTime(millis: newYearEveMillis)
+
+        expect(newYearEve.millis).toBe(newYearEveMillis)
+        expect(newYearEve.year).toBe(2016)
+        expect(newYearEve.month).toBe(12)
+        expect(newYearEve.dayOfMonth).toBe(31)
+    }
+
+    test leapYearEpochTime() {
+        let leapYear2016Millis = 1456722000000
+        let leapYear2016 = DateTime(millis: leapYear2016Millis)
+
+        expect(leapYear2016.millis).toBe(leapYear2016Millis)
+        expect(leapYear2016.year).toBe(2016)
+        expect(leapYear2016.month).toBe(2)
+        expect(leapYear2016.dayOfMonth).toBe(29)
+    }
+}
