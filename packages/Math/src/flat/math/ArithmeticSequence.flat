@@ -1,0 +1,5 @@
+package flat/math
+
+class ArithmeticSequence extends Sequence {
+    public construct() {}
+}

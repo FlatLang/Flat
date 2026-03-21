@@ -1,0 +1,20 @@
+package flat/math
+
+class Vector {
+    visible Double magnitude => Math.sqrt(data.sum({ _x * _x }))
+
+    visible Double[] data
+
+    public construct(Int size) => this(Array<Double>(size))
+    public construct(visible Double[] data) {}
+
+    public dotProduct(Vector other) => data.sum({ _x * other.data[_i] })
+    public innerProduct(Vector other) => dotProduct(other)
+    public scale(Double scalar) => data.forEach({ _array[_i] = _x * scalar })
+    public normalize() =>
+        (let m = magnitude) > 0 ?
+            data.forEach({ _array[_i] = _x / m }) :
+            data.forEach({ _array[_i] = 0 })
+
+    public toString() => "<#{data.join(", ")}>"
+}
