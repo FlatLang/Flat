@@ -1,0 +1,22 @@
+package flat/network
+
+import flat/datastruct/HashMap
+
+class Socket {
+    public static interface JsSocket {
+        on(native_array native Char[] eventType, action(String))
+    }
+
+    JsSocket[] clients = Array()
+
+    public async on(String eventType) -> String {
+        var resolveFunc = (String s) => {}
+
+        external {
+            return await new Promise(resolve => {
+                #{resolveFunc} = resolve;
+                #{on(eventType, {resolveFunc(_)})};
+            });
+        }
+    }
+}

@@ -1,0 +1,13 @@
+package flat/network
+
+import flat/network/NativeServerSocket.h
+import flat/network/NativeSocket.h
+import flat/io/InputStream
+import flat/io/OutputStream
+import flat/io/ClosedStreamException
+
+class ServerSocket extends Socket {
+    visible ConnectionSocket[] requests = Array()
+
+    public construct() {}
+}

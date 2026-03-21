@@ -1,0 +1,11 @@
+package flat/network
+
+import flat/io/OutputStream
+
+class implements OutputStream {
+    public construct(private ConnectionSocket socket) {}
+
+    public write(String data) => this {
+        socket.write(data)
+    }
+}

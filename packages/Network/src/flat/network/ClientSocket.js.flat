@@ -1,0 +1,51 @@
+package flat/network
+
+import flat/io/OutputStream
+import flat/io/InputStream
+
+class ClientSocket extends Socket {
+    external type SOCKET_TYPE
+
+    var SOCKET_TYPE socket
+
+    visible var ConnectionSocket connection
+
+    public async connect() => true {
+        external {
+            return await new Promise((resolve, reject) => {
+                #{socket} = #{ServerSocket.NetGlobal.net}.Socket();
+
+                #{socket}.on('connect', () => {
+                    #{alertEventListeners("connect", null)};
+                    resolve(true);
+                });
+
+                #{socket}.on('error', (data) => {
+                    resolve(false);
+                });
+
+                #{socket}.on('timeout', (data) => {
+                    resolve(false);
+                });
+
+                #{socket}.connect(#{port}, #{ip.chars.data});
+            });
+        }
+    }
+
+    public write(String value) => true {
+        if (!socket) {
+            throw Exception("Socket not connected")
+        }
+
+        external {
+            #{socket}.write(#{value.chars.data});
+        }
+    }
+
+    public close() => true {
+        external {
+            #{socket}.end();
+        }
+    }
+}

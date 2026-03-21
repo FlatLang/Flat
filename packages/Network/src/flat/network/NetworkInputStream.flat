@@ -1,0 +1,11 @@
+package flat/network
+
+import flat/network/NativeSocket.h
+import flat/io/InputStream
+
+class NetworkInputStream implements InputStream {
+    public construct(private ConnectionSocket socket) {}
+
+    public readString() => socket.readString()
+    public readBytes() -> Byte[] => null
+}

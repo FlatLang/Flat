@@ -1,0 +1,28 @@
+{
+  "name": "Network",
+  "version": "0.1.0",
+  "description": "Flat Networking Library",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/NodeImport.git": "master"
+      }
+    },
+    "test": {
+      "source": "src/**/*_Test*.flat",
+      "mainClass": "flat/network/Network_TestSuite",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+package flat/network
+
+import flat/io
+
+import static flat/node/import/Import
+
+class ServerSocket extends Socket {
+    external type SERVER_TYPE
+    external type SOCKET_TYPE
+
+    var Socket.JsSocket server
+
+    visible Bool open => server != 0
+
+    public async start(Int port) => true {
+        var Socket.JsSocket client
+        var native_array native Char[] dataChars
+        var String dataString
+
+        external {
+            await new Promise(resolve => {
+                #{server} = #{ServerSocket.NetGlobal.net}.createServer(socket => {
+                    #{client} = socket;
+                    #{clients.add(client)};
+
+                    #{alertEventListeners("client_connected", clients.count.toString())};
+
+                    socket.on('data', (data) => {
+                        #{dataChars} = data.toString();
+                        #{dataString = String(dataChars)};
+                        #{alertEventListeners("data", dataString)};
+                    });
+                });
+
+                #{server}.listen(#{port}, "localhost", () => {
+
+                });
+
+                #{server}.on("listening", () => {
+                    resolve(#{true});
+                });
+
+                #{server}.on("error", () => {
+                    resolve(#{false});
+                });
+            });
+        }
+    }
+
+    public close() => true {
+        external {
+             #{server}.close();
+        }
+    }
+
+    public acceptClient() -> ConnectionSocket => null {
+        if (!open) {
+            throw ClosedStreamException("ServerSocket not started")
+        }
+
+        var SOCKET_TYPE clientSocket
+        external {
+            #{clientSocket} = null;
+        }
+
+        if (clientSocket) {
+            //return ConnectionSocket(clientSocket)
+        }
+    }
+
+    public static class NetGlobal {
+        public static native Object net
+
+        async static {
+            net = import("net")
+        }
+    }
+}

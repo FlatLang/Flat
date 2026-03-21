@@ -1,0 +1,31 @@
+package flat/network
+
+import flat/io/InputStream
+import flat/io/OutputStream
+import flat/datastruct/list/Queue
+
+class ConnectionSocket extends Socket {
+    external type SOCKET_TYPE
+
+    visible var Bool connected
+
+    visible InputStream    in
+    visible OutputStream out
+
+    public construct(private SOCKET_TYPE socket) {
+        //in = NetworkInputStream(this)
+        //out = NetworkOutputStream(this)
+
+        //connected = true
+    }
+
+    public close() {
+        connected = false
+
+        external {
+            #{socket}.close();
+        }
+    }
+
+    public write(String data) => false
+}

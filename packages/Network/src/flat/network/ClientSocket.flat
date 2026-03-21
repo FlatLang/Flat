@@ -1,0 +1,10 @@
+package flat/network
+
+import flat/io/OutputStream
+import flat/io/InputStream
+
+class ClientSocket extends Socket {
+    visible var ConnectionSocket connection
+
+    public construct(visible String ip, visible Int port) {}
+}
