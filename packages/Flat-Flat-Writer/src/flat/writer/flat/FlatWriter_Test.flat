@@ -1,0 +1,9 @@
+package flat/writer/flat
+
+testable class {
+    test `can create`() {
+        let value = FlatWriter()
+
+        expect(value).toNotBe(null)
+    }
+}

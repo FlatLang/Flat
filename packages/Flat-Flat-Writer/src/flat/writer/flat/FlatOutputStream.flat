@@ -1,0 +1,6 @@
+package flat/writer/flat
+
+import flat/writer
+
+class extends WriterOutputStream {
+}
