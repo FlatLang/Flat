@@ -1,0 +1,56 @@
+package novex/parser/nova/nodes/annotations
+
+import nova/datastruct/HashMap
+import nova/datastruct/ImmutableHashMap
+
+import novex/astro/InvalidParseException
+import novex/astro/SyntaxErrorException
+import novex/astro/tree/nodes/Node
+
+trait Modifier extends Annotation {
+        visible static final immutable HashMap<String, Class<Modifier>> MODIFIERS
+
+        visible static immutable String[] aliases => new String[0]
+        visible String alias
+
+        public static default() -> Modifier => null
+
+        static {
+                let modifiers = HashMap<String, Class<Modifier>>()
+
+                for (class in Class.ALL.filter(x => { x.isOfType(Modifier) && !x.isInterface })) {
+                        Class<Modifier> c = (Class)class
+
+                        for (alias in c.propertyMap.aliases()) {
+                                if (modifiers[alias]) {
+                                        throw SyntaxErrorException("Redefinition of alias '#alias' in class #c")
+                                } else {
+                                        modifiers[alias] = c
+                                }
+                        }
+                }
+
+                MODIFIERS = modifiers.toImmutable()
+        }
+
+        public apply(Node to, String alias) => true {
+                if (!aliases.contains(alias)) {
+                        throw InvalidParseException("Invalid modifier '#alias' given when expected " + aliases.map({ "'#_'" }).toEnglish("or"), this)
+                }
+
+                if (to != parent) {
+                        if (onAppliedAsModifier(to, false)) {
+                                to.addAnnotation(this)
+
+                                this.alias = alias
+                        } else {
+                                return false
+                        }
+                }
+        }
+
+        public onAppliedAsModifier(Node toNode, Bool throwError = true) =>
+                checkApplication(toNode, throwError) && onApplied(toNode, throwError)
+
+        public writeNova() => alias ?: super.writeNova()
+}

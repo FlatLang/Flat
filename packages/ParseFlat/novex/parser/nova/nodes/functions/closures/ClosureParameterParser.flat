@@ -1,0 +1,55 @@
+package novex/parser/nova/nodes/functions/closures
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/functions/Parameter
+import novex/astro/util/Location
+
+class ClosureParameter extends Parameter {
+        /// Create a new ClosureParameter node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ClosureParameter node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a ClosureParameter node. If the input cannot be parsed
+        /// into a ClosureParameter node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a ClosureParameter instance.
+        /// parent:     The parent of the ClosureParameter node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed ClosureParameter node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> ClosureParameter => null {
+                var type = Type.parse(input, parent)
+
+                if (type) {
+                        var node    = ClosureParameter(parent)
+                        node.type = type
+                        node.name = "_#{node.parentParameterList.parameters.count + 1}"
+
+                        return node
+                } else {
+                        var parameter = Parameter.parse(input, parent, location, require)
+
+                        if (parameter) {
+                                var node = ClosureParameter(parent)
+                                parameter.cloneTo(node)
+                                node.name = "_#node.name"
+
+                                return node
+                        }
+                }
+        }
+}

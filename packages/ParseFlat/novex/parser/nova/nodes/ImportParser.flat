@@ -1,0 +1,52 @@
+package novex/parser/nova/nodes
+
+import novex/astro/SyntaxMessage
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+class ImportParser extends NodeParser {
+        /// Parse the given input into a Import node. If the input cannot be parsed
+        /// into a Import node, null is returned.
+        ///
+        /// #exampleInputs
+        ///         Example inputs:
+        ///            * import nova/datastruct/list/Array as MyArray
+        ///            * import nova/datastruct/Tree
+        ///            * import nova/Object
+        ///
+        /// input:        The input string to parse into a Import instance.
+        /// parent:     The parent of the Import node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Import node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Import => null {
+                if (input.nextWordIndex(IDENTIFIER) == 0) {
+                        var node = Import(parent, location)
+
+                        var quoteStart = input.nextNonWhitespaceIndex(IDENTIFIER.count)
+
+                        if (quoteStart < 0 || input[quoteStart] != '"') {
+                                return null
+                        }
+
+                        var quoteEnd = input.findEndingChar('"', quoteStart)
+
+                        if (quoteEnd < 0) {
+                                SyntaxMessage.error("Missing ending quotation for import statement", node)
+                        }
+
+                        var importLocation = input.substring(quoteStart + 1, quoteEnd)
+                        var alias = input.substring(quoteEnd + 1).trim()
+
+                        node.importLocation = importLocation
+                        node.alias = alias.count > 0 ? alias : null
+
+                        if (true) {//node.validateImportLocation(importLocation) && node.validateAlias(alias, require))
+                                return node
+                        }
+                }
+        }
+}

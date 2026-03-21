@@ -1,0 +1,33 @@
+package novex/parser/nova/nodes
+
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class StaticClassReferenceParser extends IdentifierParser implements AccessibleParser {
+        /// Parse the given input into a StaticClassReference node. If the input cannot be parsed
+        /// into a StaticClassReference node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a StaticClassReference instance.
+        /// parent:     The parent of the StaticClassReference node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed StaticClassReference node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) =>
+                parent.parentFile.imports.any({ _.className.equals(input) }) ?
+                        StaticClassReference(parent, location, input) :
+                        null
+}

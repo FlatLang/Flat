@@ -1,0 +1,51 @@
+package novex/parser/nova/nodes/annotations
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/ClassDeclaration
+import novex/astro/tree/nodes/functions/FunctionDeclaration
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Annotation extension that represents
+///
+/// author: Braden Steffaniak
+class AbstractAnnotation extends Annotation implements Modifier {
+        visible static immutable String[] aliases => ["abstract"]
+
+        public static default() -> Modifier => AbstractAnnotation()
+        visible static immutable Class<Node>[] applicationTypes => [ClassDeclaration, FunctionDeclaration]
+
+        /// Create a new AbstractAnnotation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the AbstractAnnotation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a AbstractAnnotation node. If the input cannot be parsed
+        /// into a AbstractAnnotation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///         *
+        ///         *
+        ///         *
+        ///
+        /// input:        The input string to parse into a AbstractAnnotation instance.
+        /// parent:     The parent of the AbstractAnnotation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed AbstractAnnotation node, if successful; null otherwise.
+        public static parse(String type, String parameters, Node parent = null, Location location = Location.INVALID, Bool require = true) -> AbstractAnnotation => null {
+                if (type == "Abstract" && parameters.count == 0) {
+                        var node = AbstractAnnotation(parent, location)
+
+                        return node
+                }
+        }
+}

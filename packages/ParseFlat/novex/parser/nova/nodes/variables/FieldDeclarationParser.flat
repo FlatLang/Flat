@@ -1,0 +1,195 @@
+package novex/parser/nova/nodes/variables
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/functions/BodyFunction
+import novex/astro/tree/nodes/functions/PropertyFunction
+import novex/astro/tree/nodes/functions/AccessorFunction
+import novex/astro/tree/nodes/functions/MutatorFunction
+import novex/astro/tree/nodes/operations/Assignable
+import novex/astro/SyntaxErrorException
+import novex/astro/SyntaxMessage
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+class FieldDeclaration extends InstanceDeclaration implements Assignable {
+        String[] extraDeclarations
+
+        public Value initializationValue
+
+        visible Value accessorValue
+
+        visible Bool isTwoWayAccessor = false
+
+        visible var AccessorFunction accessor
+        visible var MutatorFunction mutator
+
+        /// Create a new FieldDeclaration node.
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the FieldDeclaration node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        public parseStatement(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) =>
+                PropertyFunction.parse(input, parent, location, require)
+
+        public addChild(Node child) {
+                if (addGlobalNode(child)) {
+
+                } else if (child.class.isOfType(AccessorFunction)) {
+                        accessor = (AccessorFunction)child
+                } else if (child.class.isOfType(MutatorFunction)) {
+                        mutator = (MutatorFunction)child
+                } else {
+                        SyntaxMessage.error("Statement '#child' used in wrong context", child)
+                }
+        }
+
+        public generateTemporaryScopeNode() -> Node {
+                return BodyFunction(this)
+        }
+
+        public onAdded(Node to) {
+                super.onAdded(to)
+
+                if (extraDeclarations) {
+                        for (name in extraDeclarations) {
+                                let declaration = cloneTo(FieldDeclaration(parent, location))
+                                declaration.name = name
+                                declaration.extraDeclarations = null
+
+                                to.addChild(declaration)
+                        }
+                }
+        }
+
+        /// Parse the given input into a FieldDeclaration node. If the input cannot be parsed
+        /// into a FieldDeclaration node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a FieldDeclaration instance.
+        /// parent:     The parent of the FieldDeclaration node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed FieldDeclaration node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> FieldDeclaration => null {
+                String initializationValue = null
+                String accessorValue = null
+
+                var twoWay = false
+
+                var accessorIndex = findAccessorIndex(input)
+
+                if (accessorIndex > 0) {
+                        var accessorOperator = input[accessorIndex] == '<' ? "<=>" : "=>"
+
+                        accessorValue = input.substring(accessorIndex + accessorOperator.count).trim()
+                        twoWay = accessorOperator == "<=>"
+                        input = input.substring(end: accessorIndex).trim()
+                } else {
+                        var initializationValueIndex = input.indexOf('=')
+
+                        if (initializationValueIndex > 0) {
+                                initializationValue = input.substring(initializationValueIndex + 1).trim()
+                                input = input.substring(end: initializationValueIndex).trim()
+                        }
+                }
+
+                let extraDeclarationsIndex = findExtraDeclarationsIndex(input)
+                var extraDeclarations = (String)null
+
+                if (extraDeclarationsIndex > 0) {
+                        extraDeclarations = input.substring(extraDeclarationsIndex + 1).trim()
+                        input = input.substring(end: extraDeclarationsIndex).trim()
+                }
+
+                let declaration = InstanceDeclaration.parse(input, parent, location, require)
+
+                if (declaration) {
+                        var node = FieldDeclaration(parent, location)
+
+                        if (accessorValue) {
+                                node.accessorValue = Value.parse(accessorValue, node, location)
+                                node.isTwoWayAccessor = twoWay
+                        } else if (initializationValue) {
+                                node.initializationValue = Value.parse(initializationValue, node, location)
+                        } else if (extraDeclarations) {
+                                node.extraDeclarations = extraDeclarations.splitAtCommas()
+                        }
+
+                        return (FieldDeclaration)declaration.cloneTo(node)
+                }
+        }
+
+        static findExtraDeclarationsIndex(String input) -> Int {
+                var index = input.lastIndexOf(',')
+                var last = input.count - 1
+
+                while (index > 0) {
+                        if (!input.substring(index + 1, last).trim().isIdentifier) {
+                                return 0
+                        }
+
+                        last = index
+                        index = input.lastIndexOf(',', index - 2)
+                }
+
+                return last < input.count - 1 ? last : 0
+        }
+
+        static findAccessorIndex(String input, Int defaultReturnValue = -1) => defaultReturnValue {
+                var index = input.findOperatorOnTopLevel("=>")
+
+                if (index < 0) {
+                        index = input.findOperatorOnTopLevel("<=>")
+
+                        if (index >= 0) {
+                                return index
+                        }
+                } else {
+                        return index
+                }
+        }
+
+        public writeInitializationValue() => initializationValue ? " = #initializationValue.toNova()" : ""
+        public writeAccessorValue() =>
+                accessorValue ?
+                        (isTwoWayAccessor ? " <=> " : " => ") + accessorValue.toNova() :
+                        ""
+
+        public writePropertyFunctions() => "" {
+                if (accessor || mutator) {
+                        var output = " {"
+
+                        if (accessor) {
+                                output += "\n" + accessor.writeNova() + "\n"
+                        }
+                        if (mutator) {
+                                output += "\n" + mutator.writeNova() + "\n"
+                        }
+
+                        return output + "}"
+                }
+        }
+
+        public writeNova() => super.writeNova() + writeInitializationValue() + writeAccessorValue() + writePropertyFunctions()
+
+        public cloneTo(FieldDeclaration other) => other {
+                super.cloneTo(other)
+
+                other.initializationValue = initializationValue
+                other.accessorValue = accessorValue
+                other.isTwoWayAccessor = isTwoWayAccessor
+                other.extraDeclarations = extraDeclarations
+        }
+}

@@ -1,0 +1,35 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/NodeList
+import novex/astro/tree/nodes/variables/VariableDeclaration
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ObjectNotation extends NodeList {
+        /// Create a new ObjectNotation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ObjectNotation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        public writeChildren() =>
+                children.count > 0 ?
+                        "\n" + children.map({ _.toNova() + "\n" }).join() :
+                        ""
+
+        public writeNova() =>
+                "{" + writeChildren() + "}"
+}

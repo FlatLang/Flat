@@ -1,0 +1,27 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/Scope
+import novex/astro/tree/nodes/Return
+import novex/astro/tree/nodes/Value
+import novex/astro/util/Location
+import novex/astro/SyntaxMessage
+
+import novex/astro/util/CompilerStringFunctions
+
+class InitializationFunction extends BodyFunction {
+        /// Create a new InitializationFunction node.
+        ///
+        /// parent:     The parent of the InitializationFunction node.
+        /// location: The location of the input text in the source file.
+        public construct(Constructor constructor) {
+                super(constructor.parent, constructor.location)
+
+                constructor.cloneTo(this)
+
+                name = "this"
+        }
+
+
+}

@@ -1,0 +1,65 @@
+package novex/parser/nova/nodes
+
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Value extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class LiteralParser extends ValueParser implements AccessibleParser {
+        /// Parse the given input into a Literal node. If the input cannot be parsed
+        /// into a Literal node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a Literal instance.
+        /// parent:     The parent of the Literal node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Literal node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Literal => null {
+                var type = getLiteralType(input)
+
+                if (type) {
+                        var node = Literal(parent, location)
+
+                        node.type = Type.parse(type)
+                        node.value = input
+
+                        if (formatValue(node)) {
+                                return node
+                        }
+                }
+        }
+
+        static getLiteralType(String input) -> String => null {
+                if (input == "null") {
+                        return "Object"
+                } else if (input.count >= 2 && input[0] == '"' && input.chars.last == '"') {
+                        return "String"
+                } else if ((input.count == 3 || input.count == 4 && input[1] == '\\') && input[0] == '\'' && input.chars.last == '\'') {
+                        return "Char"
+                } else if (input.isBool) {
+                        return "Bool"
+                } else if (input.isNumber) {
+                        return "Int"
+                }
+        }
+
+        static formatValue(Literal node) -> Bool {
+                if (node.type.name == "String") {
+
+                }
+
+                return true
+        }
+}

@@ -1,0 +1,51 @@
+package novex/parser/nova/nodes/annotations
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/functions/FunctionDeclaration
+import novex/astro/tree/nodes/variables/FieldDeclaration
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Annotation extension that represents
+///
+/// author: Braden Steffaniak
+class OverrideAnnotation extends Annotation implements Modifier {
+        visible static immutable String[] aliases => ["override"]
+
+        public static default() -> Modifier => OverrideAnnotation()
+        visible static immutable Class<Node>[] applicationTypes => [FunctionDeclaration, FieldDeclaration]
+
+        /// Create a new OverrideAnnotation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the OverrideAnnotation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a OverrideAnnotation node. If the input cannot be parsed
+        /// into a OverrideAnnotation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///         *
+        ///         *
+        ///         *
+        ///
+        /// input:        The input string to parse into a OverrideAnnotation instance.
+        /// parent:     The parent of the OverrideAnnotation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed OverrideAnnotation node, if successful; null otherwise.
+        public static parse(String type, String parameters, Node parent = null, Location location = Location.INVALID, Bool require = true) -> OverrideAnnotation => null {
+                if (type == "Override" && parameters.count == 0) {
+                        var node = OverrideAnnotation(parent, location)
+
+                        return node
+                }
+        }
+}

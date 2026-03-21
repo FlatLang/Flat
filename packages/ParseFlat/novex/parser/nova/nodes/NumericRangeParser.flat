@@ -1,0 +1,45 @@
+package novex/parser/nova/nodes
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/functions/Instantiation
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Instantiation extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class NumericRangeParser extends InstantiationParser {
+        /// Parse the given input into a NumericRange node. If the input cannot be parsed
+        /// into a NumericRange node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a NumericRange instance.
+        /// parent:     The parent of the NumericRange node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed NumericRange node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> NumericRange => null {
+                var startIndex = input.findStringOnTopLevel("..")
+
+                if (startIndex > 0 && input.isStrictlyOperator("..", startIndex)) {
+                        var start = input.substring(end: startIndex).trim()
+                        var end = input.substring(startIndex + "..".count).trim()
+
+                        var instantiation = Instantiation.parse("IntRange(#start, #end)", parent, location, require)
+
+                        if (instantiation) {
+                                return (NumericRange)instantiation.cloneTo(NumericRange(parent, location))
+                        }
+                }
+        }
+}

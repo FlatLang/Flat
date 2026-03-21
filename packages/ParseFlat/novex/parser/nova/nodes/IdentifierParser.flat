@@ -1,0 +1,35 @@
+package novex/parser/nova/nodes
+
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/operations/Assignable
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Value extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class IdentifierParser extends ValueParser implements AccessibleParser {
+        /// Parse the given input into a Identifier node. If the input cannot be parsed
+        /// into a Identifier node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            * correctGrammar
+        ///            * INCORrect_grammaR_but_123123STILL_workz
+        ///            * identifierName4
+        ///
+        /// input:        The input string to parse into a Identifier instance.
+        /// parent:     The parent of the Identifier node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Identifier node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Identifier => null {
+                if (input.isIdentifier) {
+                        return Identifier(parent, location, input)
+                }
+        }
+}

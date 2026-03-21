@@ -1,0 +1,96 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/InvalidParseException
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/variables/LocalDeclaration
+import novex/astro/tree/nodes/functions/closures/ClosureDeclaration
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+class Parameter extends LocalDeclaration {
+        public Value defaultValue
+
+        visible ParameterList parentParameterList =>
+                parent.class.isOfType(ParameterList) ? (ParameterList)parent : null
+
+        /// Create a new Parameter node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the Parameter node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a Parameter node. If the input cannot be parsed
+        /// into a Parameter node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a Parameter instance.
+        /// parent:     The parent of the Parameter node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Parameter node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Parameter => null {
+                let closure = ClosureDeclaration.parse(input, parent, location, require)
+
+                if (closure) {
+                        return closure
+                }
+
+                let node = Parameter(parent, location)
+
+                if (input = node.parseDefaultValueAndGetRemaining(input)) {
+                        let declaration = LocalDeclaration.parse(input, parent, location, require)
+
+                        if (declaration) {
+                                return (Parameter)declaration.cloneTo(node)
+                        }
+                }
+        }
+
+        public parseDefaultValueAndGetRemaining(String input) => input {
+                String defaultValue = null
+                let assignmentIndex = input.indexOf('=')
+
+                if (assignmentIndex > 0 && input.isStrictlyOperator('=', assignmentIndex)) {
+                        defaultValue = input.substring(assignmentIndex + 1).trim()
+
+                        if (!parseDefaultValue(defaultValue)) {
+                                toss InvalidParseException("Failed to parse default value '#defaultValue' for parameter '#input'", this)
+
+                                return null
+                        }
+
+                        input = input.substring(end: assignmentIndex).trim()
+                }
+        }
+
+        public parseDefaultValue(String input) => defaultValue {
+                until (defaultValue) {
+                        defaultValue = Value.parse(input, this, location)
+                }
+        }
+
+        public cloneTo(Parameter other) => other {
+                super.cloneTo(other)
+
+                other.defaultValue = defaultValue
+        }
+
+        public writeDefaultValue() =>
+                defaultValue ?
+                        " = " + defaultValue.toNova() :
+                        ""
+
+        public writeNova() => super.writeNova() + writeDefaultValue()
+}

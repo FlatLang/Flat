@@ -1,0 +1,86 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/NodeList
+import novex/astro/tree/nodes/functions/FunctionDeclaration
+import novex/astro/tree/nodes/variables/VariableDeclaration
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @FunctionCall extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class Instantiation extends FunctionCall {
+        visible ObjectNotation objectNotation
+
+        visible Instantiation parentInstantiation => this
+
+        /// Create a new Instantiation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the Instantiation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        public addChild(Node node) {
+                objectNotation = objectNotation ?: ObjectNotation(this)
+
+                objectNotation.addChild(node)
+        }
+
+        public parseStatement(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Node => null {
+                var node = ObjectNotationProperty.parse(input, parent, location, require)
+
+                return node
+        }
+
+        /// Parse the given input into a Instantiation node. If the input cannot be parsed
+        /// into a Instantiation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a Instantiation instance.
+        /// parent:     The parent of the Instantiation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Instantiation node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Instantiation => null {
+                if (input.nextWord() == "new") {
+                        var node = Instantiation(parent, location)
+
+                        var callString = input.substring("new".count + 1).trim()
+                        var parenthesisIndex = callString.indexOf('(', defaultReturnValue: 0)
+                        var className = callString.substring(0, parenthesisIndex).trim()
+
+                        if (className.isIdentifier) {
+                                var parameters = callString.substring(parenthesisIndex)
+                                var call = FunctionCall.parse(className + parameters, parent)
+
+                                if (call) {
+                                        return (Instantiation)call.cloneTo(node)
+                                }
+                        }
+                }
+        }
+
+        public writeObjectNotation() =>
+                objectNotation ?
+                        " " + objectNotation.toNova() :
+                        ""
+
+        public writeNova() => "new #super.writeNova()"
+}

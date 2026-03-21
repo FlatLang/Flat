@@ -1,0 +1,90 @@
+package novex/parser/nova/nodes/operations
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/Accessible
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Value extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class TernaryOperation extends Value {
+        visible Value condition
+        visible Value trueValue
+        visible Value falseValue
+
+        /// Create a new TernaryOperation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the TernaryOperation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a TernaryOperation node. If the input cannot be parsed
+        /// into a TernaryOperation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a TernaryOperation instance.
+        /// parent:     The parent of the TernaryOperation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed TernaryOperation node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> TernaryOperation => null {
+                var questionIndex = input.findOperatorOnTopLevel('?')
+
+                if (questionIndex > 0) {
+                        var colonIndex = input.findOperatorOnTopLevel(':', start: questionIndex + 2)
+
+                        if (colonIndex > 0) {
+                                var node = TernaryOperation(parent, location)
+
+                                var condition = input.substring(end: questionIndex).trim()
+                                var trueValue = input.substring(questionIndex + 1, colonIndex).trim()
+                                var falseValue = input.substring(colonIndex + 1).trim()
+
+                                if (!node.parseCondition(condition)) {
+                                        toss InvalidParseException("Could not parse ternary condition '#condition'", node)
+                                } else if (!node.parseTrueValue(trueValue)) {
+                                        toss InvalidParseException("Could not parse ternary true value '#trueValue'", node)
+                                } else if (!node.parseFalseValue(falseValue)) {
+                                        toss InvalidParseException("Could not parse ternary false value '#falseValue'", node)
+                                } else if (!node.parseType()) {
+                                        toss InvalidParseException("Could not parse type for ternary operation '#input'", node)
+                                } else {
+                                        return node
+                                }
+                        }
+                }
+        }
+
+        parseCondition(String input) =>
+                (condition = Value.parse(input, this)) != null
+
+        parseTrueValue(String input) =>
+                (trueValue = Value.parse(input, this)) != null
+
+        parseFalseValue(String input) =>
+                (falseValue = Value.parse(input, this)) != null
+
+        parseType() => true {
+                type = trueValue.type
+        }
+
+        public writeNova() =>
+                "#condition.toNova() ? #trueValue.toNova() : #falseValue.toNova()"
+}

@@ -1,0 +1,118 @@
+package novex/parser/nova/nodes/operations
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/SyntaxMessage
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/Node
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+class Operation extends Value {
+        visible Operator[] operators
+        visible Value[] operands
+
+        /// Create a new Operation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the Operation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+                operators = new Operator[]
+                operands = new Value[]
+        }
+
+        /// Parse the given input into a Operation node. If the input cannot be parsed
+        /// into a Operation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a Operation instance.
+        /// parent:     The parent of the Operation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Operation node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Operation => null {
+                var matches = input.findOperatorIndices(includeEdges: false)
+
+                if (matches.count > 0) {
+                        var node = Operation(parent, location)
+
+                        node.parseOperators(input, matches)
+
+                        if (!node.parseOperands(input, matches)) {
+                                toss InvalidParseException("Failed to parse operands for '#input'", node)
+                        } else {
+                                return node
+                        }
+                } else {
+                        toss InvalidParseException("No operators in '#input'")
+                }
+        }
+
+        parseOperators(String input, Int[] matches) =>
+                matches.forEach(start => {
+                        var end = input.nextIndexThatDoesntContain(Operator.OPERATOR_SYMBOLS, start: start)
+                        var operator = Operator(this, location, input.substring(start, end))
+
+                        operators.add(operator)
+                })
+
+        parseOperands(String[] operands) =>
+                operands.all({
+                        var operand = Value.parse(_, this, location)
+
+                        if (operand) {
+                                this.operands.add(operand)
+                        }
+
+                        return operand != null
+                })
+
+        parseOperands(String input, Int[] matches) -> Bool {
+                var operands = new String[]
+
+                var prev = 0
+
+                if (!matches.all(start => {
+                        if (prev > start) {
+                                toss InvalidParseException("Invalid operator location in operation '#input' (current operands: #operands)", this)
+
+                                return false
+                        } else {
+                                operands.add(input.substring(prev, start).trim())
+
+                                prev = input.nextIndexThatDoesntContain(Operator.OPERATOR_SYMBOLS, start: start)
+
+                                return true
+                        }
+                })) {
+                        return false
+                }
+
+                operands.add(input.substring(prev).trim())
+
+                return parseOperands(operands)
+        }
+
+        public writeNova() -> String {
+                var output = ""
+
+                for (i in 0..operators.count) {
+                        output += "#operands[i] #operators[i] "
+                }
+
+                output += "#operands.last"
+
+                return output
+        }
+}

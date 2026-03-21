@@ -1,0 +1,23 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/NodeList
+import novex/astro/util/Location
+
+class ParameterList extends NodeList<Parameter> {
+        public Parameter[] parameters <=> (Parameter[])children
+
+        this[Int index] <=> parameters[index]
+
+        /// Create a new ParameterList node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ParameterList node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        public writeNova() => "(#{parameters.join(", ")})"
+}

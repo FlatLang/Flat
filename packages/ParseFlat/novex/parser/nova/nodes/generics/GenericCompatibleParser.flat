@@ -1,0 +1,48 @@
+package novex/parser/nova/nodes/generics
+
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/Type
+
+import novex/astro/util/CompilerStringFunctions
+
+trait GenericCompatible extends Node {
+        visible GenericParameter[] genericParameters
+
+        public parseGenericParameters(String input, Bool requireWholeString = false) =>
+                genericParameters = parseGenericParameters(this, input, requireWholeString)
+
+        public static parseGenericParameters(Node parent, String input, Bool requireWholeString = false) -> GenericParameter[] {
+                let genericIndex = input.indexOf('<')
+
+                if (genericIndex >= 0 && (!requireWholeString || genericIndex == 0)) {
+                        let end = input.findEndingMatch(genericIndex, '<', '>')
+
+                        if (end > 0 && (!requireWholeString || end == input.count - 1)) {
+                                let contents = input.substring(genericIndex + 1, end)
+                                let params = contents.splitAtCommas().map({ GenericParameter(parent, parent.location, _) })
+
+                                if (params.any({ !_ })) { // if any generic parameters didnt parse
+                                        toss InvalidParseException("Failed to parse all generic parameters '#contents'", parent)
+
+                                        return null
+                                } else {
+                                        return params
+                                }
+                        }
+                }
+
+                return new GenericParameter[0]
+        }
+
+        public writeGenericParameters() =>
+                genericParameters.count > 0 ?
+                        "<" + genericParameters.map({ _.toNova() }).join(", ") + ">" :
+                        ""
+
+        public cloneTo(GenericCompatible other) => other {
+                other.genericParameters = genericParameters
+        }
+}

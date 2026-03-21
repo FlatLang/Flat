@@ -1,0 +1,42 @@
+package novex/parser/nova/nodes/variables
+
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/Identifier
+import novex/astro/tree/nodes/Accessible
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/operations/Assignable
+
+import novex/astro/util/CompilerStringFunctions
+
+class Variable extends Identifier implements Accessible, Assignable {
+        public VariableDeclaration declaration
+
+        public Type type => declaration?.type
+
+        /// Create a new Variable node.
+        ///
+        /// parent:     The parent of the Variable node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID, VariableDeclaration declaration = null) {
+                super(parent, location)
+
+                this.declaration = declaration
+        }
+
+        [Override]
+        public onAssigned(Value value) {
+                ((Assignable)declaration).onAssigned(value)
+        }
+
+        public cloneTo(Variable other) => other {
+                super.cloneTo(other)
+                Accessible.super.cloneTo(other)
+
+                other.declaration = declaration
+        }
+
+        public writeNova() => declaration.name + writeArrayAccess() + writeAccessedNodes()
+}

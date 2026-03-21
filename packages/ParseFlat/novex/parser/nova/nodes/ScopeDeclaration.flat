@@ -1,0 +1,8 @@
+package novex/parser/nova/nodes
+
+import novex/astro/util/Location
+
+trait ScopeDeclarationParser extends NodeParser {
+        public static parseStatement(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) =>
+                scope.parseStatement(input, this, location, require)
+}

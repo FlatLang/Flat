@@ -1,0 +1,27 @@
+package novex/parser/nova/nodes/annotations
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/variables/VariableDeclaration
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Annotation extension that represents
+///
+/// author: Braden Steffaniak
+class VarAnnotation extends Annotation implements Modifier {
+        visible static immutable String[] aliases => ["var"]
+
+        public static default() -> Modifier => VarAnnotation()
+        visible static immutable Class<Node>[] applicationTypes => [VariableDeclaration]
+
+        /// Create a new VarAnnotation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the VarAnnotation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+}

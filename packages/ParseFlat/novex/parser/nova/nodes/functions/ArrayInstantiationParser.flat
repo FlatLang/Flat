@@ -1,0 +1,98 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/ArrayType
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/variables/VariableDeclaration
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Instantiation extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ArrayInstantiation extends Instantiation {
+        visible Value[] dimensions = new Value[]
+
+        visible ArrayType arrayType => (ArrayType)declaration.type
+
+        /// Create a new ArrayInstantiation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ArrayInstantiation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a ArrayInstantiation node. If the input cannot be parsed
+        /// into a ArrayInstantiation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a ArrayInstantiation instance.
+        /// parent:     The parent of the ArrayInstantiation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed ArrayInstantiation node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> ArrayInstantiation => null {
+                if (input.nextWord() == "new") {
+                        let node = ArrayInstantiation(parent, location)
+
+                        let arrayString = input.substring("new".count + 1).trim()
+                        let arrayData = arrayString.getArrayAccesses()
+
+                        if (arrayData.item1) {
+                                let type = arrayString.substring(end: arrayData.item2).trim()
+
+                                if (!node.parseType(type)) {
+                                        toss InvalidParseException("Unable to parse array type '#type'", node)
+                                } else if (!node.parseDimensions(arrayData.item1)) {
+                                        toss InvalidParseException("Unable to parse array dimensions '#arrayString.substring(arrayData.item2).trim()'")
+                                } else {
+                                        node.declaration = VariableDeclaration(parent, location)
+                                        node.declaration.name = type
+                                        node.declaration.type = ArrayType.parse(type + "[]".repeat(node.dimensions.count), node)
+
+                                        if (!node.declaration.type) {
+                                                toss InvalidParseException("Unable to parse array type '#type'", node)
+                                        } else {
+                                                return node
+                                        }
+                                }
+                        }
+                }
+        }
+
+        parseDimension(String dimension) => true {
+                if (dimension.count > 0) {
+                        let value = Value.parse(dimension, this)
+
+                        if (value) {
+                                dimensions.add(value)
+                        } else {
+                                return false
+                        }
+                } else {
+                        dimensions.add(EmptyArrayBracket(this))
+                }
+        }
+
+        parseDimensions(String[] dimensions) =>
+                dimensions.all(parseDimension, false)
+
+        public writeDimensions() => dimensions.map({ "[#{_.toNova()}]" }).join()
+
+        public writeNova() => "new #arrayType.type.name" + writeDimensions()
+}

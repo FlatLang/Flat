@@ -1,0 +1,137 @@
+package novex/parser/nova/nodes/functions/closures
+
+import nova/datastruct/list/Stack
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Scope
+import novex/astro/tree/nodes/ScopeDeclaration
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/ClassDeclaration
+import novex/astro/tree/nodes/variables/VariableDeclaration
+import novex/astro/tree/nodes/functions/Parameter
+import novex/astro/tree/nodes/functions/ParameterList
+import novex/astro/tree/nodes/functions/FunctionCall
+import novex/astro/tree/nodes/functions/FunctionDeclaration
+import novex/astro/tree/nodes/functions/CallableFunction
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class LambdaExpression extends Value implements CallableFunction, ScopeDeclaration {
+        visible Int index =>
+                parentFunctionCall.arguments.indexOf(this, defaultReturnValue: parentFunctionCall.arguments.count)
+
+        visible LambdaExpression parentLambda => this
+
+        /// Create a new LambdaExpression node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the LambdaExpression node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+                this.scope = Scope(this, location)
+                this.parameterList = ParameterList(this, location)
+        }
+
+        /// Parse the given input into a LambdaExpression node. If the input cannot be parsed
+        /// into a LambdaExpression node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a LambdaExpression instance.
+        /// parent:     The parent of the LambdaExpression node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed LambdaExpression node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> LambdaExpression => null {
+                var arrowIndex = input.findOperatorOnTopLevel("=>", start: 1)
+
+                String parameters = null
+
+                if (arrowIndex > 0) {
+                        parameters = input.substring(end: arrowIndex).trim()
+
+                        if (parameters.first == '(' && parameters.last == ')') {
+                                parameters = parameters.trimEnds(1, true)
+                        }
+                }
+
+                if (parameters || input.first == '{') {
+                        var node = LambdaExpression(parent, location)
+                        var operation = input.substring(arrowIndex > 0 ? arrowIndex : 0).trim()
+
+                        if (!node.parseOperation(operation)) {
+                                toss InvalidParseException("Could not parse lambda expression operation '#operation'", node)
+                        } else if (!node.parseParameters(parameters)) {
+                                toss InvalidParseException("Could not parse lambda expression parameters '#parameters'", node)
+                        } else {
+                                return node
+                        }
+                }
+        }
+
+        findOperation(String input) -> String => null {
+                if ((var start = input.findCharOnTopLevel('{')) >= 0) {
+                        if ((var end = input.findEndingMatch(start, '{', '}')) > 0) {
+                                return input.substring(start + 1, end).trim()
+                        }
+                }
+
+                toss InvalidParseException("Could not find lambda expression operation in '#input'", this)
+        }
+
+        parseOperation(String input) => false {
+                if (let operation = findOperation(input)) {
+                        if (operation.count > 0) {
+                                for (statement in operation.getStatements(Stack([this]))) {
+                                        if (let node = scope.parseStatement(statement, this)) {
+                                                scope.addChild(node)
+                                        } else {
+
+                                        }
+                                }
+                        }
+
+                        return true
+                }
+        }
+
+        public parseParameters(String parameters, Bool require = true) =>
+                !parameters ||
+                CallableFunction.super.parseParameters(parameters, require)
+
+        /// @CallableFunction.parseParameter override that allows typeless parameters.
+        public parseParameter(String parameter, Bool require = true) =>
+                LambdaParameter.parse(parameter, parameterList, require: require)
+
+        public writeParameters() => "" {
+                if (parameters.count == 1) {
+                        return parameters[0].toNova()
+                } else if (parameters.count > 1) {
+                        return "(" + parameters.map({ _.toNova() }).join(", ") + ")"
+                }
+        }
+
+        writeParameterClause() =>
+                parameters.count > 0 ?
+                        writeParameters() + " => " :
+                        ""
+
+        public writeNova() =>
+                writeParameterClause() + scope.writeNova(true)
+}

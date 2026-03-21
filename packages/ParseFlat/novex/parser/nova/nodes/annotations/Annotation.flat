@@ -1,0 +1,99 @@
+package novex/parser/nova/nodes/annotations
+
+import novex/astro/SyntaxErrorException
+import novex/astro/tree/nodes/Node
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+class Annotation extends Node {
+        visible String label =>
+                this.class.name.endsWith("Annotation") ?
+                        this.class.name.trimEnd("Annotation".count) :
+                        null
+
+        visible static immutable Class<Node>[] applicationTypes => null
+
+        final visible static immutable Class<Annotation>[] ANNOTATIONS
+
+        static {
+                let array = Class<Annotation>[]
+
+                Class.ALL.filter({ _.isOfType(Annotation) }).forEach({
+                        array.add(_)
+                })
+
+                ANNOTATIONS = array.toImmutable()
+        }
+
+        visible Bool isModifier => this.class.isOfType(Modifier) && ((Modifier)this).alias
+
+        /// Create a new Annotation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the Annotation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a Annotation node. If the input cannot be parsed
+        /// into a Annotation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///         * [Native]
+        ///         * [Override]
+        ///         * [KeepWhitespace baseline: "indent"]
+        ///         * [Target not js]
+        ///
+        /// input:        The input string to parse into a Annotation instance.
+        /// parent:     The parent of the Annotation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Annotation node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Annotation => null {
+                if (input.startsWith('[')) {
+                        var end = input.findEndingMatch(0, '[', ']')
+
+                        if (end > 1) {
+                                var contents = input.substring(1, end).trim()
+
+                                var bounds = contents.nextWordBounds()
+                                var type = contents.substring(bounds)
+                                var parameters = contents.substring(bounds.end).trim()
+
+                                return ANNOTATIONS.firstNonNull({
+                                        _.functionMap.parse(type, parameters, parent, location, require)
+                                })
+                        }
+                }
+        }
+
+        public static parse(String type, String parameters, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Annotation => null
+
+        public static getRemainingStatement(String input) => input.substring(input.findEndingMatch(0, '[', ']') + 1).trim()
+
+        public onApplied(Node toNode, Bool throwError = true) => true
+
+        public checkApplication(Node toNode, Bool throwError = true) => true {
+                if (applicationTypes && !applicationTypes.any({ toNode.class.isOfType(_) })) {
+                        if (throwError) {
+                                invalidApplication(toNode)
+                        } else {
+                                return false
+                        }
+                }
+        }
+
+        public invalidApplication(Node toNode) {
+                throw SyntaxErrorException("#this.class.location cannot be applied to #toNode.class.location", this)
+        }
+
+        public writeNova() => "[#{label}]"
+}

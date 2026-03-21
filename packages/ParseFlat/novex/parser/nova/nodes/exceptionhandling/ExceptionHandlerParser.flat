@@ -1,0 +1,15 @@
+package novex/parser/nova/nodes/exceptionhandling
+
+import novex/astro/tree/nodes/Node
+import novex/astro/util/Location
+
+/// Node extension that represents the declaration of an exception
+/// handling node type. See {@link #decodeStatement(Node, String, Location, boolean)}
+/// for more details on what correct inputs look like.
+///
+/// @author        Braden Steffaniak
+/// @since        v0.1 Mar 21, 2014 at 10:50:26 PM
+/// @version        v0.2.26 Aug 6, 2014 at 2:48:50 PM
+class ExceptionHandler extends Node {
+
+}

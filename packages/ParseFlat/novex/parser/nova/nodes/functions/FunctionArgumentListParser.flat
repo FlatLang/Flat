@@ -1,0 +1,25 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/ArgumentList
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+
+/// @ArgumentList extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class FunctionArgumentList extends ArgumentList {
+        /// Create a new FunctionArgumentList node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the FunctionArgumentList node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+
+        }
+}

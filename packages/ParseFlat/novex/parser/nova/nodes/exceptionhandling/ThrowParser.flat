@@ -1,0 +1,72 @@
+package novex/parser/nova/nodes/exceptionhandling
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class Throw extends ExceptionHandler {
+        visible Bool soft = false
+        visible Value exception
+
+        /// Create a new Throw node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the Throw node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a Throw node. If the input cannot be parsed
+        /// into a Throw node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a Throw instance.
+        /// parent:     The parent of the Throw node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Throw node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Throw => null {
+                var soft = false
+
+                if (input.nextWord() == "softly") {
+                        soft = true
+                        input = input.substring("softly ".count).trim()
+                }
+
+                if (input.nextWord() == "throw") {
+                        var node = Throw(parent, location)
+                        node.soft = soft
+
+                        var exception = input.substring("throw ".count).trim()
+
+                        if (!node.parseException(exception)) {
+                                toss InvalidParseException("Unable to parse thrown exception '#exception'")
+                        } else {
+                                return node
+                        }
+                }
+        }
+
+        parseException(String input) =>
+                (exception = Value.parse(input, this)) != null
+
+        public writeNova() =>
+                "#{soft ? "softly" : ""} throw #exception.toNova()".trim()
+}

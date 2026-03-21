@@ -1,0 +1,88 @@
+package novex/parser/nova/nodes/operations
+
+import novex/astro/SyntaxMessage
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/variables/LocalDeclaration
+import novex/astro/tree/nodes/variables/Variable
+import novex/astro/tree/nodes/variables/ImplicitDeclaration
+import novex/astro/tree/nodes/variables/VariableDeclaration
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+class Assignment extends Operation {
+        public Value assigned <=> operands[0]
+        public Value assignment <=> operands[1]
+
+        public Node scopeConsumer => assignment ? assignment.returnedNode : null
+
+        visible Type type => assignment.returnedNode.type
+
+        visible VariableDeclaration assignedDeclaration =>
+                assigned.class.isOfType(VariableDeclaration) ?
+                        (VariableDeclaration)assigned :
+                        ((Variable)assigned).declaration
+
+        /// Create a new Assignment node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent: The parent of the Assignment node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+                operands = new Value[2]
+        }
+
+        /// Parse the given input into a Assignment node. If the input cannot be parsed
+        /// into a Assignment node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a Assignment instance.
+        /// parent:     The parent of the Assignment node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Assignment node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Assignment => null {
+                var assignmentIndex = input.findOperatorOnTopLevel('=')
+
+                if (assignmentIndex > 0) {
+                        var node = Assignment(parent, location)
+
+                        if (node.parseAssignedNode(findAssigned(input, assignmentIndex)) && node.parseAssignment(findAssignment(input, assignmentIndex))) {
+                                node.operators.add(Operator(node, location, "="))
+
+                                ((Assignable)node.assigned).onAssigned(node.assignment)
+                                ((Assignable)node.assignment).onAssignedTo(node.assignedDeclaration)
+
+                                return node
+                        }
+                }
+        }
+
+        public static findAssigned(String input, Int assignmentIndex) =>
+                input.substring(end: assignmentIndex).trim()
+
+        public static findAssignment(String input, Int assignmentIndex) =>
+                input.substring(assignmentIndex + 1).trim()
+
+        parseAssignedNode(String input) => assigned.class.isOfType(Assignable) {
+                until (assigned) {
+                        assigned = ImplicitDeclaration.parse(input, this, location, require: false)
+                        assigned = LocalDeclaration.parse(input, this, location, require: false)
+                        assigned = Value.parse(input, this, location, require: false)
+                }
+        }
+
+        parseAssignment(String input) =>
+                (assignment = Value.parse(input, this, location)) != null
+}

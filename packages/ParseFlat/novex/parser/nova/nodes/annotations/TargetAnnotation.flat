@@ -1,0 +1,58 @@
+package novex/parser/nova/nodes/annotations
+
+import novex/astro/tree/nodes/Node
+import novex/astro/util/Location
+import novex/astro/util/Bounds
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Annotation extension that represents
+///
+/// author: Braden Steffaniak
+class TargetAnnotation extends Annotation {
+        visible Bool opposite
+
+        visible String[] targets = new String[]
+
+        /// Create a new TargetAnnotation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the TargetAnnotation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a TargetAnnotation node. If the input cannot be parsed
+        /// into a TargetAnnotation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///         *
+        ///         *
+        ///         *
+        ///
+        /// input:        The input string to parse into a TargetAnnotation instance.
+        /// parent:     The parent of the TargetAnnotation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed TargetAnnotation node, if successful; null otherwise.
+        public static parse(String type, String parameters, Node parent = null, Location location = Location.INVALID, Bool require = true) -> TargetAnnotation => null {
+                if (type == "Target" && parameters.count > 0) {
+                        var node = TargetAnnotation(parent, location)
+
+                        node.targets = parameters.trim().toLowerCase().split(/\s+/)
+                        node.opposite = node.targets.first == "not"
+
+                        if (node.opposite) {
+                                node.targets = node.targets.skip(1)
+                        }
+
+                        return node
+                }
+        }
+
+        public writeNova() => "[#label #{opposite ? "not " : ""}" + "#{targets.join(" ")}]"
+}

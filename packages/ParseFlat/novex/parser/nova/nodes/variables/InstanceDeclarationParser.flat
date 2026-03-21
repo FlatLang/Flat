@@ -1,0 +1,71 @@
+package novex/parser/nova/nodes/variables
+
+import novex/astro/tree/nodes/Node
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @VariableDeclaration extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class InstanceDeclaration extends VariableDeclaration {
+        public Bool isStatic = false
+        visible Bool isInstance => !isStatic
+
+        public String visibility = ""
+
+        public Bool isPublic => visibility == "public"
+        public Bool isPrivate => visibility.count == 0 || visibility == "private"
+        public Bool isProtected => visibility == "protected"
+
+        /// Create a new InstanceDeclaration node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the InstanceDeclaration node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a InstanceDeclaration node. If the input cannot be parsed
+        /// into a InstanceDeclaration node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a InstanceDeclaration instance.
+        /// parent:     The parent of the InstanceDeclaration node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed InstanceDeclaration node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> InstanceDeclaration => null {
+                let words = input.splitValues()
+
+                let declaration = VariableDeclaration.parse(words.takeLast(2).join(" "), parent, location, require)
+
+                if (declaration) {
+                        let node = InstanceDeclaration(parent, location)
+
+                        declaration.cloneTo(node)
+
+                        if (node.parseModifiers(words.skipLast(2))) {
+                                return node
+                        }
+                }
+        }
+
+        public cloneTo(InstanceDeclaration other) => other {
+                super.cloneTo(other)
+
+                other.isStatic = isStatic
+                other.visibility = visibility
+        }
+}

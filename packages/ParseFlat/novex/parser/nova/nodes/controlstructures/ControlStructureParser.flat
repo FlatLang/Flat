@@ -1,0 +1,34 @@
+package novex/parser/nova/nodes/controlstructures
+
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Scope
+import novex/astro/tree/nodes/ScopeDeclaration
+
+class ControlStructure extends Node implements ScopeDeclaration {
+        /// Create a new IfStatement node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the IfStatement node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+                this.scope = Scope(this, location)
+        }
+
+        public addChild(Node child) {
+                scope.children.add(child)
+        }
+
+        public generateTemporaryScopeNode() -> Node {
+                return Scope(this)
+        }
+
+        public cloneTo(ControlStructure other) => other {
+                super.cloneTo(other)
+
+                other.scope = scope
+        }
+}

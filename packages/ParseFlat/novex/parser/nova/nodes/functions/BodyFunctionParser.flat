@@ -1,0 +1,133 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/InvalidParseException
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/ScopeDeclaration
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/Scope
+import novex/astro/tree/nodes/Return
+import novex/astro/tree/nodes/Value
+import novex/astro/util/Location
+import novex/astro/SyntaxMessage
+
+import novex/astro/util/CompilerStringFunctions
+
+class BodyFunction extends FunctionDeclaration implements ScopeDeclaration {
+        visible Node inlineBody
+
+        visible Bool implicitType = false
+
+        /// Create a new BodyFunction node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the BodyFunction node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+                scope = Scope(this, location)
+        }
+
+        public addChild(Node child) {
+                if (!addGlobalNode(child)) {
+                        scope.children.add(child)
+                }
+
+                super.addChild(child)
+        }
+
+        /// Parse the given input into a BodyFunction node. If the input cannot be parsed
+        /// into a BodyFunction node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a BodyFunction instance.
+        /// parent:     The parent of the BodyFunction node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed BodyFunction node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> BodyFunction => null {
+                String inlineBody = null
+                var inlineBodyIndex = findInlineBodyIndex(input)
+
+                if (inlineBodyIndex > 0) {
+                        inlineBody = input.substring(inlineBodyIndex + 2).trim()
+                        input = input.substring(end: inlineBodyIndex).trim()
+                }
+
+                var function = FunctionDeclaration.parse(input, parent, location, require)
+
+                if (function) {
+                        var node = BodyFunction(parent, location)
+
+                        if (inlineBody && !(node.inlineBody = Value.parse(inlineBody, node, location, require))) {
+                                toss InvalidParseException("Failed to parse arrow binding '#inlineBody' for function '#input'", node)
+                        } else {
+                                return (BodyFunction)function.cloneTo(node)
+                        }
+                }
+
+                if (require) {
+                        SyntaxMessage.error("Invalid function declaration '#input'", parent)
+                }
+        }
+
+        static findInlineBodyIndex(String input, Int defaultReturnValue = -1) -> Int {
+                var start = input.indexOf('(')
+
+                if (start < 0) {
+                        return defaultReturnValue
+                }
+
+                var end = input.findEndingMatch(start, '(', ')')
+
+                if (end < 0) {
+                        return defaultReturnValue
+                }
+
+                end = input.nextWordIndex("=>", end + 1)
+
+                if (end < 0) {
+                        return defaultReturnValue
+                } else {
+                        return end
+                }
+        }
+
+        public generateTemporaryScopeNode() -> Node {
+                return Scope(this)
+        }
+
+        public writeReturnType() =>
+                implicitType ?
+                        "" :
+                        super.writeReturnType()
+
+        writeInlineBody() =>
+                "=> " + inlineBody.toNova() +
+                        (scope.children.count > 0 ?
+                                " " + scope.toNova() :
+                                "")
+
+        public writeBody() =>
+                " " + (inlineBody ?
+                        writeInlineBody() :
+                        scope.toNova())
+
+        public writeNova() =>
+                writeHeader() + writeBody()
+
+        public cloneTo(BodyFunction other) => other {
+                super.cloneTo(other)
+
+                other.scope = scope
+                other.inlineBody = inlineBody
+                other.implicitType = implicitType
+        }
+}

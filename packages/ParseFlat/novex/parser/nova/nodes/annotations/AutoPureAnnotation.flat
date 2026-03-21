@@ -1,0 +1,44 @@
+package novex/parser/nova/nodes/annotations
+
+import novex/astro/tree/nodes/Node
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Annotation extension that represents
+///
+/// author: Braden Steffaniak
+class AutoPureAnnotation extends Annotation {
+        /// Create a new AutoPureAnnotation node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the AutoPureAnnotation node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a AutoPureAnnotation node. If the input cannot be parsed
+        /// into a AutoPureAnnotation node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///         *
+        ///         *
+        ///         *
+        ///
+        /// input:        The input string to parse into a AutoPureAnnotation instance.
+        /// parent:     The parent of the AutoPureAnnotation node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed AutoPureAnnotation node, if successful; null otherwise.
+        public static parse(String type, String parameters, Node parent = null, Location location = Location.INVALID, Bool require = true) -> AutoPureAnnotation => null {
+                if (type == "AutoPure" && parameters.count == 0) {
+                        var node = AutoPureAnnotation(parent, location)
+
+                        return node
+                }
+        }
+}

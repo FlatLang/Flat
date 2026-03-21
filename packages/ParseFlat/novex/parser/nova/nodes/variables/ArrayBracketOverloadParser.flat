@@ -1,0 +1,62 @@
+package novex/parser/nova/nodes/variables
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Identifier
+import novex/astro/tree/nodes/functions/BodyFunction
+import novex/astro/tree/nodes/variables/LocalDeclaration
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+class ArrayBracketOverload extends Node {
+        visible LocalDeclaration index
+
+        /// Create a new ArrayBracketOverload node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ArrayBracketOverload node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        public parseStatement(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) => null
+
+        public generateTemporaryScopeNode() -> Node {
+                return BodyFunction(this)
+        }
+
+        /// Parse the given input into a ArrayBracketOverload node. If the input cannot be parsed
+        /// into a ArrayBracketOverload node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            * this[Int index] <=> chars[index]
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a ArrayBracketOverload instance.
+        /// parent:     The parent of the ArrayBracketOverload node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed ArrayBracketOverload node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> ArrayBracketOverload => null {
+                let bracketIndex = input.indexOf('[')
+
+                if (bracketIndex > 0 && input.substring(end: bracketIndex).trim() == "this") {
+                        let end = input.findEndingMatch(bracketIndex, '[', ']')
+
+                        if (end > bracketIndex) {
+                                var node = ArrayBracketOverload(parent, location)
+                                node.index = LocalDeclaration.parse(input, node)
+
+                                return node
+                        }
+                }
+        }
+
+        public writeNova() => "this[#{index}]"
+}

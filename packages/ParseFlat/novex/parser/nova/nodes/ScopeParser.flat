@@ -1,0 +1,59 @@
+package novex/parser/nova/nodes
+
+import nova/datastruct/Pair
+import nova/datastruct/list/List
+
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Accessible
+import novex/astro/tree/nodes/operations/Operation
+import novex/astro/tree/nodes/operations/Assignment
+import novex/astro/tree/nodes/exceptionhandling/Catch
+import novex/astro/tree/nodes/exceptionhandling/Throw
+import novex/astro/tree/nodes/functions/FunctionCall
+import novex/astro/tree/nodes/controlstructures/IfStatement
+import novex/astro/tree/nodes/controlstructures/ElseStatement
+import novex/astro/tree/nodes/controlstructures/loops/Loop
+import novex/astro/tree/nodes/variables/VariableDeclaration
+import novex/astro/tree/nodes/variables/LocalDeclaration
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @NodeList extension that represents a scope of code. In essence, a
+/// collection of statements within a pair of curly braces.
+///
+/// #example:
+///         For example:
+///         <code>
+///         {
+///                 ...
+///
+///                 // Statements within here...
+///
+///                 ...
+///         }
+///         </code>
+///
+/// author:    Braden Steffaniak
+/// since:     v0.1 Apr 5, 2014 at 10:54:20 PM
+/// version: v0.2.41 Dec 17, 2014 at 7:48:17 PM
+class ScopeParser extends NodeListParser {
+        public static parseStatement(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Node {
+                Node node = null
+
+                until (node) {
+                        node = Assignment.parse(input, parent, location, require)
+                        node = ExternalBlock.parse(input, parent, location, require)
+                	node = Accessible.parseDotAccess(input, parent, require: require)
+                        node = IfStatement.parse(input, parent, location, require)
+                        node = ElseStatement.parse(input, parent, location, require)
+                        node = Throw.parse(input, parent, location, require)
+                        node = Loop.parse(input, parent, location, require)
+                        node = Return.parse(input, parent, location, require)
+                        node = LocalDeclaration.parse(input, parent, location, require)
+                        node = Operation.parse(input, parent, location, require)
+                        node = Value.parse(input, parent, location, require)
+                }
+
+                return node
+        }
+}

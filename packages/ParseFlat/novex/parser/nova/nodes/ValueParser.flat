@@ -1,0 +1,79 @@
+package novex/parser/nova/nodes
+
+import nova/datastruct/Tuple2
+
+import novex/astro/SyntaxMessage
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/arrays/ArrayAccess
+import novex/astro/tree/nodes/operations/Operation
+import novex/astro/tree/nodes/operations/UnaryOperation
+import novex/astro/tree/nodes/operations/TernaryOperation
+import novex/astro/tree/nodes/operations/ElvisOperation
+import novex/astro/tree/nodes/operations/Assignable
+import novex/astro/tree/nodes/variables/Variable
+import novex/astro/tree/nodes/functions/FunctionCall
+import novex/astro/tree/nodes/functions/ArrayInstantiation
+import novex/astro/tree/nodes/functions/Instantiation
+
+import novex/astro/util/CompilerStringFunctions
+
+class ValueParser extends NodeParser {
+        /// Parse the given input into a Value node. If the input cannot be parsed
+        /// into a Value node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a Value instance.
+        /// parent:     The parent of the Value node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed Value node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> Value => null {
+                let arrayData = input.getArrayAccesses()
+
+                if (arrayData.item1) {
+                        input = input.substring(end: arrayData.item2).trim()
+                }
+
+                if (let value = parseValue(input, parent, location, require)) {
+                        if (arrayData.item1) {
+                                value.arrayAccess = ArrayAccessParser.parse(arrayData.item1, value)
+                        }
+
+                        return value
+                }
+        }
+
+        static parseValue(String input, Node parent, Location location, Bool require) -> Value {
+                var node = null
+
+                until (node.class.isOfType(Value)) {
+                        node = LiteralParser.parse(input, parent, location, require)
+                        node = IdentifierParser.parse(input, parent, location, require)
+                        node = CastParser.parse(input, parent, location, require)
+                        node = PriorityParser.parse(input, parent, location, require)
+                        node = AccessibleParser.parseDotAccess(input, parent, require)
+                        node = NumericRangeParser.parse(input, parent, location, require)
+                        node = ArrayInstantiationParser.parse(input, parent, location, require)
+                        node = InstantiationParser.parse(input, parent, location, require)
+                        node = FunctionCallParser.parse(input, parent, location, require)
+                        node = ElvisOperationParser.parse(input, parent, location, require)
+                        node = TernaryOperationParser.parse(input, parent, location, require)
+                        node = UnaryOperationParser.parse(input, parent, location, require)
+                        node = OperationParser.parse(input, parent, location, require)
+                        toss InvalidParseException("Could not parse value '#input'")
+                        return null
+                }
+
+                return node
+        }
+
+        public parseType(Value node, String input) =>
+                input && (node.type = TypeParser.parse(input, node))
+}

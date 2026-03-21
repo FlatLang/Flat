@@ -1,0 +1,96 @@
+package novex/parser/nova/nodes/functions/closures
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Type
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/functions/Parameter
+import novex/astro/tree/nodes/functions/ParameterList
+import novex/astro/tree/nodes/functions/CallableFunction
+import novex/astro/tree/nodes/generics/GenericParameter
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+class ClosureDeclaration extends Parameter implements CallableFunction {
+        /// Create a new ClosureDeclaration node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ClosureDeclaration node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+                parameterList = ParameterList(this)
+        }
+
+        /// Parse the given input into a ClosureDeclaration node. If the input cannot be parsed
+        /// into a ClosureDeclaration node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a ClosureDeclaration instance.
+        /// parent:     The parent of the ClosureDeclaration node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed ClosureDeclaration node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> ClosureDeclaration => null {
+                var parenIndex = input.indexOf('(')
+
+                if (parenIndex > 0) {
+                        var endIndex = input.findEndingMatch(parenIndex, '(', ')')
+
+                        if (endIndex > parenIndex) {
+                                var node = ClosureDeclaration(parent, location)
+
+                                if (input = node.parseDefaultValueAndGetRemaining(input)) {
+                                        var name = input.substring(end: parenIndex).trim()
+
+                                        if (node.parseName(name)) {
+                                                var type = findType(input, endIndex)
+
+                                                if (node.parseType(type) && node.parseParameters(input.substring(parenIndex + 1, endIndex).trim(), true)) {
+                                                        node.name = name
+
+                                                        return node
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+
+        public parseDefaultValue(String input) => defaultValue {
+                until (defaultValue) {
+                        defaultValue = LambdaExpression.parse(input, this, location)
+                }
+        }
+
+        public parseType(String type) => !type || super.parseType(type)
+
+        static findType(String input, Int endIndex) -> String {
+                var typeIndex = input.indexOf("->", start: endIndex + 1)
+
+                if (typeIndex > endIndex) {
+                        return input.substring(typeIndex + 2).trim()
+                }
+
+                return null
+        }
+
+        /// @CallableFunction.parseParameter override that allows nameless parameters.
+        public parseParameter(String parameter, Bool require = true) =>
+                ClosureParameter.parse(parameter, parameterList, require: require)
+
+        public writeType() =>
+                type ?
+                        "-> #type.toNova()" :
+                        ""
+
+        public writeNova() => ("#{name}#parameterList.toNova() " + writeType()).trim() + writeDefaultValue()
+}

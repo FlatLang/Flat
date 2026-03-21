@@ -1,0 +1,126 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/variables/Variable
+import novex/astro/tree/nodes/variables/VariableDeclaration
+import novex/astro/tree/nodes/functions/closures/ClosureDeclaration
+import novex/astro/tree/nodes/functions/closures/LambdaExpression
+import novex/astro/tree/nodes/ClassDeclaration
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Accessible
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Variable extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class FunctionCall extends Variable {
+        visible FunctionArgumentList argumentList
+
+        visible Value[] arguments => argumentList.arguments
+
+        public Bool isAssignable => false
+
+        visible FunctionDeclaration function => (FunctionDeclaration)declaration
+
+        visible FunctionCall parentFunctionCall => this
+
+        /// Create a new FunctionCall node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the FunctionCall node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+
+                argumentList = FunctionArgumentList(this, location)
+        }
+
+        /// Parse the given input into a FunctionCall node. If the input cannot be parsed
+        /// into a FunctionCall node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a FunctionCall instance.
+        /// parent:     The parent of the FunctionCall node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed FunctionCall node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> FunctionCall => null {
+                var name = findName(input)
+                var arguments = findArguments(input)
+
+                if (name && arguments) {
+                        var node = FunctionCall(parent, location)
+
+                        node.name = name
+
+                        if (!node.parseArguments(arguments)) {
+                                toss InvalidParseException("Unable to parse arguments '#arguments'", node)
+                        } else {
+                                return node
+                        }
+                }
+        }
+
+        static findName(String input) -> String => null {
+                var index = input.indexOf('(')
+
+                if (index > 0) {
+                        var name = input.substring(end: index).trim()
+
+                        if (name.isIdentifier) {
+                                return name
+                        }
+                }
+        }
+
+        static findArguments(String input) -> String[] => null {
+                var start = input.indexOf('(')
+
+                if (start > 0) {
+                        var end = input.findEndingMatch(start, '(', ')')
+
+                        if (end > start && input.substring(end + 1).trim().count == 0) {
+                                return input.substring(start + 1, end).trim().splitAtCommas()
+                        }
+                }
+        }
+
+        parseArgument(String argument) => true {
+                var value = null
+
+                until (value) {
+                        value = LambdaExpression.parse(argument, argumentList)
+                        value = Value.parse(argument, argumentList)
+                        return false
+                }
+
+                arguments.add(value)
+        }
+
+        parseArguments(String[] arguments) =>
+                arguments.all(parseArgument, false)
+
+        public cloneTo(FunctionCall other) => other {
+                super.cloneTo(other)
+
+                other.argumentList = argumentList
+        }
+
+        public writeName() => name
+
+        public writeNova() => writeName() + "#argumentList" + writeArrayAccess() + writeAccessedNodes()
+        public toString() => toNova()
+}

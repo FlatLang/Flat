@@ -1,0 +1,99 @@
+package novex/parser/nova/nodes/controlstructures/loops
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Scope
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/variables/LocalDeclaration
+import novex/astro/tree/nodes/variables/VariableDeclaration
+import novex/astro/tree/nodes/controlstructures/ControlStructure
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Loop extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ForEachLoop extends Loop {
+        visible LocalDeclaration variable
+        visible Value iterator
+
+        /// Create a new ForEachLoop node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ForEachLoop node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a ForEachLoop node. If the input cannot be parsed
+        /// into a ForEachLoop node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a ForEachLoop instance.
+        /// parent:     The parent of the ForEachLoop node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed ForEachLoop node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> ForEachLoop => null {
+                if (input.nextWord() == "for") {
+                        var node = ForEachLoop(parent, location)
+
+                        var contents = input.substring("for".count).trim()
+
+                        if (contents[0] == '(') {
+                                var end = contents.findEndingMatch(0, '(', ')')
+
+                                if (end > 0) {
+                                        contents = contents.substring(1, end).trim()
+
+                                        var inIndex = contents.findWordOnTopLevel("in")
+
+                                        if (inIndex > 0) {
+                                                var variable = contents.substring(end: inIndex).trim()
+                                                var iterator = contents.substring(inIndex + "in".count + 1).trim()
+
+                                                if (!node.parseIterator(iterator)) {
+                                                        toss InvalidParseException("Unable to parse for each loop iterator '#iterator'", node)
+                                                } else if (!node.parseVariable(variable)) {
+                                                        toss InvalidParseException("Unable to parse for each loop variable '#variable'", node)
+                                                } else {
+                                                        return node
+                                                }
+                                        }
+                                }
+                        }
+                }
+        }
+
+        parseIterator(String input) => iterator = Value.parse(input, parent)
+
+        parseVariable(String input) => variable != null {
+                if (input.isIdentifier) {
+                        variable = LocalDeclaration(this)
+                        variable.name = input
+                        variable.type = iterator.type // needs to be the generic argument
+                }
+        }
+
+        public cloneTo(ForEachLoop other) => other {
+                super.cloneTo(other)
+
+                other.variable = variable
+                other.iterator = iterator
+        }
+
+        public writeNova() =>
+                "for (#variable.name in #iterator.toNova()) #scope.toNova()"
+}

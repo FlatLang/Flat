@@ -1,0 +1,45 @@
+package novex/parser/nova/nodes/annotations
+
+/**
+ * @author        Braden Steffaniak
+ */
+public trait Annotatable {
+        visible Annotation[] annotations
+
+        public addAnnotation(Annotation annotation)
+
+        //containsAnnotationOfType(Class c) -> Bool
+        /*{
+                if (annotations) {
+                        for (a in annotations) {
+                                if (c.isAssignableFrom(a.getClass())) {
+                                        return true
+                                }
+                        }
+                }
+
+                return false
+        }*/
+
+        //generateNovaAnnotations() -> String
+        /*{
+                return generateNovaAnnotations(true)
+        }*/
+
+        //generateNovaAnnotations(Bool newLine) -> String
+        /*{
+                String output = ""
+
+                if (annotations) {
+                        for (a in annotations) {
+                                output += a.generateNovaInput() + (newLine ? '\n' : " ")
+                        }
+
+                        if (newLine) {
+                                output += '\n'
+                        }
+                }
+
+                return output
+        }*/
+}

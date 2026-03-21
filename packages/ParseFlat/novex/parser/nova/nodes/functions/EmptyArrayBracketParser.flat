@@ -1,0 +1,29 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/util/Location
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Value extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+[AutoFinal]
+class EmptyArrayBracket extends Value {
+        /// Create a new EmptyArrayBracket node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the EmptyArrayBracket node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        public writeNova() => ""
+}

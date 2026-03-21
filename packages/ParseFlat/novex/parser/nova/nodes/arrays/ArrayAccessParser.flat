@@ -1,0 +1,60 @@
+package novex/parser/nova/nodes/arrays
+
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/SyntaxErrorException
+import novex/astro/util/Location
+
+/// @Node extension that keeps track of any time an array is being accessed.
+/// For example, the statement: "[34]" is an array access. The previous code
+/// segment does nothing on its own, however these nodes will be intertwined
+/// with method calls, assignments, if statements, etc.
+///
+/// author:    Braden Steffaniak
+/// since:     v0.2 Mar 24, 2014 at 10:45:29 PM
+/// version: v0.2.45 Oct 20, 2016 at 10:19:22 PM
+class ArrayAccess extends Node {
+        visible Value[] dimensions = new Value[]
+
+        /// Create a new ArrayAccess node.
+        ///
+        /// #exampleInputs
+        ///
+        /// input:        The input string to parse into a ArrayAccess instance.
+        /// parent:     The parent of the ArrayAccess node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a ArrayAccess node. If the input cannot be parsed
+        /// into a ArrayAccess node, null is returned.
+        ///
+        /// #exampleInputs
+        ///         Example inputs:
+        ///            * [0][10 + 3]
+        ///            * [10 + x * (y - z)]
+        ///            * [Math.round(4.7) + "hello, world".count]
+        ///
+        /// input:        The input string to parse into a ArrayAccess instance.
+        /// parent:     The parent of the ArrayAccess node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed ArrayAccess node, if successful; null otherwise.
+        public parse(String[] input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> ArrayAccess => null {
+                var node = ArrayAccess(parent, location)
+
+                if (node.parseDimensions(input)) {
+                        return node
+                }
+        }
+
+        public parseDimension(String dimension) =>
+                dimensions.add(Value.parse(dimension, this)).last != null
+
+        parseDimensions(String[] input) =>
+                input.all(parseDimension, false)
+
+        public writeNova() => dimensions.map({ "[#{_.toNova()}]" }).join()
+}

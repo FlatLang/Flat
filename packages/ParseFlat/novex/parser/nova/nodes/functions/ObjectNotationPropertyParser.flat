@@ -1,0 +1,82 @@
+package novex/parser/nova/nodes/functions
+
+import novex/astro/SyntaxErrorException
+import novex/astro/InvalidParseException
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/NodeList
+import novex/astro/tree/nodes/variables/VariableDeclaration
+import novex/astro/tree/nodes/variables/Variable
+import novex/astro/tree/nodes/operations/Assignment
+import novex/astro/tree/nodes/operations/Operator
+
+import novex/astro/util/CompilerStringFunctions
+
+/// @Assignment extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ObjectNotationProperty extends Assignment {
+        /// Create a new ObjectNotationProperty node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the ObjectNotationProperty node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID) {
+                super(parent, location)
+        }
+
+        /// Parse the given input into a ObjectNotationProperty node. If the input cannot be parsed
+        /// into a ObjectNotationProperty node, null is returned.
+        ///
+        /// #exampleInputs:
+        ///         Example inputs:
+        ///            *
+        ///            *
+        ///            *
+        ///
+        /// input:        The input string to parse into a ObjectNotationProperty instance.
+        /// parent:     The parent of the ObjectNotationProperty node.
+        /// location: The location of the input text in the source file.
+        /// require:    Whether or not to throw a syntax error if the input could not
+        ///                     be parsed.
+        /// return:     The parsed ObjectNotationProperty node, if successful; null otherwise.
+        public static parse(String input, Node parent = null, Location location = Location.INVALID, Bool require = true) -> ObjectNotationProperty => null {
+                var assignmentIndex = input.findOperatorOnTopLevel(':')
+
+                if (assignmentIndex > 0) {
+                        var node = ObjectNotationProperty(parent, location)
+
+                        if (node.parseAssignedNode(Assignment.findAssigned(input, assignmentIndex)) && node.parseAssignment(Assignment.findAssignment(input, assignmentIndex))) {
+                                node.operators.add(Operator(node, location, ":"))
+
+                                return node
+                        }
+                }
+        }
+
+        parseAssignedNode(String input) => false {
+                var variable = Value.parse(input, parent)
+
+                if (variable) {
+                        assigned = variable
+
+                        return true
+                }
+        }
+
+        parseAssignment(String input) => false {
+                var value = Value.parse(input, this)
+
+                if (value) {
+                        assignment = value
+
+                        return true
+                }
+        }
+
+        public writeNova() => "#assigned.toNova(): #assignment.toNova()"
+}

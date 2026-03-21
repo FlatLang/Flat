@@ -1,0 +1,22 @@
+package novex/parser/nova/nodes/generics
+
+import novex/astro/util/Location
+import novex/astro/tree/nodes/Node
+import novex/astro/tree/nodes/Value
+import novex/astro/tree/nodes/Type
+
+class GenericParameter extends Value {
+        /// Create a new GenericArgument node.
+        ///
+        /// #exampleInputs
+        ///
+        /// parent:     The parent of the GenericArgument node.
+        /// location: The location of the input text in the source file.
+        public construct(Node parent = null, Location location = Location.INVALID, String type) {
+                super(parent, location)
+
+                this.type = Type(type)
+        }
+
+        public writeNova() => "#type.name"
+}
