@@ -1,0 +1,127 @@
+package flat/selenium
+
+import flat/datastruct
+
+testable class {
+    var WebDriver driver
+
+    async init_test_class setupDriver() {
+        driver = Selenium.getDriver(Browser.CHROME)
+    }
+
+    async clean_test_class destroyDriver() {
+        driver.quit()
+    }
+
+    async test `can execute basic script and get the return value`() {
+        expect(driver.executeScript("return 2")).toBe(2)
+    }
+
+    async test `can execute basic script and capture single line of output`() {
+        let script = "|
+            const logs = [];
+            console.log = function() {
+                logs.push(arguments);
+            };
+            console.log('hey');
+            return logs;
+            |"
+
+        expect(driver.executeScript(script)).toBe(Array():add(["hey"]))
+    }
+
+    async test `can execute basic script and capture two lines of output`() {
+        let script = "|
+            const logs = [];
+            console.log = function() {
+                logs.push(arguments);
+            };
+            console.log('hey');
+            console.log('hey2', 3);
+            return logs;
+            |"
+
+        expect(driver.executeScript(script)).toBe(
+            Array()
+                :add(["hey"])
+                :add(["hey2", 3])
+        )
+    }
+
+    async test `can execute basic script and capture single line of output from stdout and stderr`() {
+        let script = "|
+            const logs = [];
+            console.log = function() {
+                logs.push(arguments);
+            };
+            const errors = [];
+            console.error = function() {
+                errors.push(arguments);
+            };
+            console.log('hey');
+            console.error('error!');
+            return {
+                logs: logs,
+                errors: errors
+            };
+            |"
+
+        expect(driver.executeScript(script)).toBe(
+            HashMap()
+                :add("logs", Array():add(["hey"]))
+                :add("errors", Array():add(["error!"]))
+        )
+    }
+
+    async test `can execute basic script and capture two lines of output from stdout and stderr`() {
+        let script = "|
+            const logs = [];
+            console.log = function() {
+                logs.push(arguments);
+            };
+            const errors = [];
+            console.error = function() {
+                errors.push(arguments);
+            };
+            console.log('hey');
+            console.error('error!');
+            console.log('hey2', 3);
+            console.error('error2!', false);
+            return {
+                logs: logs,
+                errors: errors
+            };
+            |"
+
+        expect(driver.executeScript(script)).toBe(
+            HashMap()
+                :add(
+                    "logs",
+                    Array()
+                        :add(["hey"])
+                        :add(["hey2", 3])
+                )
+                :add(
+                    "errors",
+                    Array()
+                        :add(["error!"])
+                        :add(["error2!", false])
+                )
+        )
+    }
+
+    async test `fails to access node runtime globals`() {
+        let script = "|
+            const env = process.env;
+            return 5;
+            |"
+        let errorMessage = "javascript error: process is not defined"
+
+        expectAsync({ driver.executeScript(script) })
+            .toThrowWithMessage(WebDriverException.class)
+            .toBeTrue(
+                { _.startsWith(errorMessage) },
+                { "Invalid error message \"#{_}\" expected to start with \"#{errorMessage}\"" }
+            )
+    }
+}

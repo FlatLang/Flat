@@ -1,0 +1,5 @@
+package flat/selenium
+
+class {
+    public static async getDriver(Int browser, Bool headless = true) -> WebDriver => WebDriver.build(browser, headless)
+}

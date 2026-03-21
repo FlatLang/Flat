@@ -1,0 +1,5 @@
+package flat/selenium
+
+class extends Exception {
+    public construct(String message) => super(message)
+}

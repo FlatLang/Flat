@@ -1,0 +1,9 @@
+package flat/selenium
+
+class {
+    construct() {}
+
+    public static async build(Int browser, Bool headless = true) {
+        throw Exception("Not implemented for language or runtime")
+    }
+}

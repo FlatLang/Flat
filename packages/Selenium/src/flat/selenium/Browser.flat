@@ -1,0 +1,10 @@
+package flat/selenium
+
+class {
+    public static Int CHROME = 1
+    public static Int FIREFOX = 2
+    public static Int SAFARI = 3
+    public static Int INTERNET_EXPLORER = 4
+    public static Int EDGE = 5
+    public static Int OPERA = 6
+}

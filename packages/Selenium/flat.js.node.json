@@ -1,0 +1,9 @@
+{
+  "sources": {
+    "main": {
+      "dependencies": {
+        "npm:selenium-webdriver": "latest"
+      }
+    }
+  }
+}
