@@ -1,0 +1,95 @@
+package flat/readline
+
+import flat/log/Logger
+
+class {
+    static Logger log = Logger(ReadLine.class)
+
+    public static async boolQuestion(
+        String value,
+        String invalidResponseMessage = null
+    ) =>
+        Bool.fromString(question(
+            value,
+            {
+                match _.toLowerCase() {
+                    "y" => return true
+                    "yes" => return true
+                    "n" => return true
+                    "no" => return true
+                }
+
+                return false
+            },
+            {
+                match _ {
+                    "y" => return "true"
+                    "yes" => return "true"
+                    "n" => return "false"
+                    "no" => return "false"
+                }
+
+                return "false"
+            },
+            invalidResponseMessage ?: "Invalid answer. Please respond with 'y' or 'n'"
+        ))
+
+    public static async question(
+        String value,
+        responseMatcher(String) -> Bool = { true },
+        responseMapper(String) -> String = { _ },
+        String invalidResponseMessage = null
+    ) -> String => null {
+        native_array native var Char[] data
+        var String response
+
+        external {
+            await new Promise((resolve) => {
+                #{ReadLineGlobal.readline}.question(#{value.chars.data}, (value) => {
+                    #{data} = value;
+                    #{response} = #{String(data)};
+                    resolve(#{response});
+                    #{ReadLineGlobal.readline}.close();
+                });
+            });
+        }
+
+        return if (responseMatcher(response)) {
+            responseMapper(response)
+        } else {
+            if (invalidResponseMessage) {
+                log.info(invalidResponseMessage)
+            }
+
+            question(
+                value,
+                responseMatcher,
+                responseMapper,
+                invalidResponseMessage
+            )
+        }
+    }
+
+    public static class ReadLineGlobal {
+        external type ReadLineType
+        private static var ReadLineType _readline
+        visible static ReadLineType readline {
+            get {
+                external {
+                    if (!#{_readline}) {
+                        #{_readline} = require('readline').createInterface({
+                            input: process.stdin,
+                            output: process.stdout
+                        });
+
+                        #{_readline}.on("close", () => {
+                            #{_readline} = null;
+                        });
+                    }
+                }
+
+                return _readline
+            }
+        }
+    }
+}
