@@ -1,0 +1,9 @@
+package flat/test
+
+class TestSuite {
+    visible TestRunnerModel[] testRunners
+
+    public construct(visible TestRunnerModel[] testRunners)
+
+    public toString() => "TestSuite" + (testRunners ? " " + testRunners.toString() : "")
+}

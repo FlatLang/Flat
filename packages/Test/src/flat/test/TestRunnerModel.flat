@@ -1,0 +1,11 @@
+package flat/test
+
+class TestRunnerModel {
+    visible TestCase[] testCases <=> testCases
+
+    visible String description
+
+    public construct(visible TestCase[] testCases, visible String description = null) {}
+
+    public toString() => "TestRunnerModel" + (description ? " \"" + description + '"' : "")
+}

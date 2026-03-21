@@ -1,0 +1,17 @@
+package flat/test
+
+import flat/test/TestException
+
+import static flat/test/Test
+
+testable class {
+	test integer() {
+		expect(5).toBe(5)
+	}
+
+	test real() {
+		expect(5.0).toBe(5.0)
+
+		// expect(5.0 * 2).toBeWithinToleranceOf(10)
+	}
+}

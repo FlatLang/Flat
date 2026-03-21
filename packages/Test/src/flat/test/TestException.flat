@@ -1,0 +1,5 @@
+package flat/test
+
+class TestException extends Exception {
+    public construct(String message = null) => super(message)
+}

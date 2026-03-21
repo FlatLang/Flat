@@ -1,0 +1,5 @@
+package flat/test
+
+trait TestSuiteRunner implements TestRunner {
+
+}

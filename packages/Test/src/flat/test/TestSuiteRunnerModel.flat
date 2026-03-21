@@ -1,0 +1,13 @@
+package flat/test
+
+class TestSuiteRunnerModel extends TestRunnerModel {
+    visible TestCase[] testCases => testRunners.reduce({ _ + _.testCases }, TestCase[])
+
+    visible TestRunnerModel[] testRunners => testSuites.reduce({ _ + _.testRunners }, TestRunnerModel[])
+
+    visible TestSuite[] testSuites
+
+    public construct(visible TestSuite[] testSuites) {
+        super(null, null)
+    }
+}

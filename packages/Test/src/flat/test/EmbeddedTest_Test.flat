@@ -1,0 +1,21 @@
+package flat/test
+
+import flat/test/TestException
+
+import static flat/test/Test
+
+testable class {
+	test embeddedFunction() {
+
+
+		// test thisIsTheEmbeddedFunction() {
+		// 	expect(5).toBe(4)
+		// }
+	}
+
+	test lambdaFunction() {
+		test("something", {
+			expect({ throw TestException("hey there") }).toThrow(TestException.class)
+		})
+	}
+}

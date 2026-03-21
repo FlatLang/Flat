@@ -1,0 +1,11 @@
+package flat/test
+
+import flat/io/OutputStream
+
+trait TestRunner {
+    visible TestRunnerModel model => null
+    visible TestCase[] testCases => model.testCases
+    visible String description => model.description
+
+    public async runTests(onResult(TestResult) = {}, OutputStream out = Console.out) {}
+}
