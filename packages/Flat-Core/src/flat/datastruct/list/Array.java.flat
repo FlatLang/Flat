@@ -1,0 +1,13 @@
+package flat/datastruct/list
+
+class<E> {
+    public native_array cloneData() -> E[] {
+        let native_array d = new E[count]
+
+        external {
+            java.lang.System.arraycopy(#{data}, 0, #{d}, 0, #{count});
+        }
+
+        return d
+    }
+}

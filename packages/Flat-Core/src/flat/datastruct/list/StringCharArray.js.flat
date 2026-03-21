@@ -1,0 +1,74 @@
+package flat/datastruct/list
+
+class {
+    visible Int count
+
+    visible native_array native Char[] data
+
+    visible Char first => count > 0 ? data[0] : 0
+    visible Char last => count > 0 ? data[count - 1] : 0
+
+    this[Int index] -> Char {
+        get {
+            return data[index]
+        }
+
+        set {
+            external {
+                #{data} = #{data}.substr(0, #{index}) + #{value} + #{data}.substr(#{index} + #{value}.length);
+            }
+        }
+    }
+
+    public construct(Char[] data) {
+        this.count = data.count
+
+        external {
+            #{this.data} = #{data.data}.join("");
+        }
+    }
+
+    public construct(Int count) {
+        this.count = count
+
+        native_array native Char[] buf
+
+        external {
+            if (#{count} == 0) {
+                return "";
+            }
+
+            var count2 = #{count} / 2;
+            var result = '\0';
+
+            // double the input until it is long enough.
+            while (result.length <= count2) {
+                result += result;
+            }
+            // use substring to hit the precise length target without
+            // using extra memory
+            #{buf} = result + result.substring(0, #{count} - result.length);
+        }
+
+        this.data = buf
+    }
+
+    public construct(native_array native Char[] data, Int count) {
+        this.data = data
+        this.count = count
+
+        external {
+            #{this.data} = typeof #{data} === 'string' ? #{data} : #{data}.join("");
+        }
+    }
+
+    public equals(StringCharArray other) -> Bool {
+        if (count != other.count) return false
+
+        external {
+            if (#{data} == null) return #{other.data} == null;
+
+            return #{data} === #{other.data};
+        }
+    }
+}

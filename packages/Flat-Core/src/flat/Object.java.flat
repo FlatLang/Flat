@@ -1,0 +1,17 @@
+package flat
+
+class {
+    visible String hashCode => "No hashcode available"
+
+    visible Long hashCodeLong {
+        get {
+            external { return hashCode(); }
+        }
+    }
+
+    public static referenceEquals(Object one, Object two) -> Bool {
+        external {
+            return #{one} == #{two};
+        }
+    }
+}

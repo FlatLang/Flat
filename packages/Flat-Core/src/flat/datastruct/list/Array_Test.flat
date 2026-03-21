@@ -1,0 +1,43 @@
+package flat/datastruct/list
+
+testable class {
+    test `can join with ellipse`() {
+        let value = Array<String>():addAll(["1", "2", "3"])
+
+        expect(value.join(", ", 2)).toBe(
+            "1, ..., 3"
+        )
+    }
+
+    test `can join with ellipse with 5 values`() {
+        let value = Array<String>():addAll(["1", "2", "3", "4", "5"])
+
+        expect(value.join(", ", 2)).toBe(
+            "1, ..., 5"
+        )
+    }
+
+    test `can join with ellipse with 5 values and only 1 skipped`() {
+        let value = Array<String>():addAll(["1", "2", "3", "4", "5"])
+
+        expect(value.join(", ", 4)).toBe(
+            "1, 2, ..., 4, 5"
+        )
+    }
+
+    test `can join with ellipse with 4 values and only 1 skipped`() {
+        let value = Array<String>():addAll(["1", "2", "3", "4"])
+
+        expect(value.join(", ", 3)).toBe(
+            "1, ..., 3, 4"
+        )
+    }
+
+    test `can join with ellipse with 4 values and 2 skipped`() {
+        let value = Array<String>():addAll(["1", "2", "3", "4"])
+
+        expect(value.join(", ", 2)).toBe(
+            "1, ..., 4"
+        )
+    }
+}

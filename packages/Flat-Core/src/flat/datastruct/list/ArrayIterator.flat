@@ -1,0 +1,34 @@
+package flat/datastruct/list
+
+class<E> implements Iterator<E> {
+    visible var Int position
+
+    visible Bool hasNext => array.count > position
+    visible Bool hasPrevious => position > 1
+
+    visible E stepNext {
+        get {
+            if (hasNext) {
+                return array.get(position++)
+            }
+
+            throw NoSuchElementException()
+        }
+    }
+
+    visible E current => position > 0 ? array.get(position - 1) : null
+    visible E previous => hasPrevious ? array.get(position - 2) : null
+    visible E next => hasNext ? array.get(position) : null
+    visible E[] allNext => array.skip(position)
+    visible E[] allPrevious => array.take(position)
+    visible E[] allNextInclusive => array.skip(position > 0 ? position - 1 : 0)
+    visible E[] allPreviousInclusive => array.take(position < array.count ? position + 1 : array.count)
+
+    public construct(private E[] array) {
+        reset()
+    }
+
+    public reset() => this {
+        position = 0
+    }
+}

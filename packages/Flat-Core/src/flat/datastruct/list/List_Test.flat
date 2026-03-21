@@ -1,0 +1,36 @@
+package flat/datastruct/list
+
+testable class {
+    test `can flatmap from same type`() {
+        let value = Array<String>():addAll(["1", "2", "3"])
+
+        let response = value.flatMap({
+            let number = Int.parseInt(_x)
+            let array = Array<String>()
+
+            for (i in 0..number) {
+                array.add(_x)
+            }
+
+            return array
+        })
+
+        expect(response).toBe(["1", "2", "2", "3", "3", "3"])
+    }
+
+    test `can flatmap one type to another`() {
+        let value = Array<Int>():addAll([1, 2, 3])
+
+        let response = value.flatMap({
+            let array = Array<String>()
+
+            for (i in 0.._x) {
+                array.add(_x.toString())
+            }
+
+            return array
+        })
+
+        expect(response).toBe(["1", "2", "2", "3", "3", "3"])
+    }
+}

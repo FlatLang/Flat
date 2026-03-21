@@ -1,0 +1,5 @@
+package flat/exception
+
+class extends Exception {
+    public construct() => super()
+}

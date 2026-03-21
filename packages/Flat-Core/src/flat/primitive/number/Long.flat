@@ -1,0 +1,222 @@
+package flat/primitive/number
+
+import flat/datastruct
+import flat/operators
+
+class extends Number<Long> implements Integer {
+    visible static Long MAX_VALUE =    9223372036854775807
+    visible static Long MIN_VALUE = -9223372036854775808
+
+    public Double realValue => (Double)value
+    public Long integerValue => value
+
+    public construct(public Long value) {}
+
+    public static numDigits(var Long number) -> Int {
+        var Int size = number < 0 ? 2 : 1
+
+        number /= 10
+
+        while (number != 0) {
+            number /= 10
+
+            size++
+        }
+
+        return size
+    }
+
+    public static toJson(Long value, Bool: format = false, String: tab = "\t") => toString(value)
+
+    public static toString(var Long value) -> String {
+        Int charOffset = '0'
+        var Int digits = numDigits(value)
+
+        native_array native Char[] data = new Char[digits + 1]
+
+        data[digits] = '\0'
+
+        var Int offset = 0
+
+        if (value < 0) {
+            data[0] = '-'
+
+            offset = 1
+        }
+
+        Int nums = digits-- - offset
+
+        for (index in 0..nums) {
+            data[digits - index] = (Char)(charOffset + Math.abs(value % 10))
+
+            value = value / 10
+        }
+
+        return String(data)
+    }
+
+    public compareTo(Long other) => (Int)(this.value - other)
+    public compareToReal(Double other) => (Int)(this.value - other)
+    public compareToInteger(Long other) => (Int)(this.value - other)
+
+    public static compareTo(Long value, Long other) => (Int)(value - other)
+    public static compareToReal(Long value, Double other) => (Int)(value - other)
+    public static compareToInteger(Long value, Long other) => (Int)(value - other)
+
+    public plus(Long other) => this.value + other
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) => this.value + other
+
+    public plusEquals(Long other) => this.value += other
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) => this.value += other
+
+    public minus(Long other) => this.value - other
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) => this.value - other
+
+    public minusEquals(Long other) => this.value -= other
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) => this.value -= other
+
+    public multiply(Long other) => this.value * other
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) => this.value * other
+
+    public multiplyEquals(Long other) => this.value *= other
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) => this.value *= other
+
+    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Long)other == value
+    public equals(Long other) => this.value == other
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+
+    public static equals(Long value, Long other) => value == other
+    public static equalsReal(Long value, Double other) => value == other
+    public static equalsInteger(Long value, Long other) => value == other
+
+    public toString() => toString(value)
+    public static hashCodeLong(Long value) => Math.abs(value)
+    public static plus(Long a, Long b) => a + b
+
+    static String[] FILE_SIZES = [
+        "B",
+        "KiB",
+        "MiB",
+        "GiB",
+    ]
+
+    public toFileSize() => toFileSize(value)
+    public static toFileSize(Long size) -> String {
+        var Int index = 0
+        var Double current = size
+
+        while (current >= 1024 && index < FILE_SIZES.count - 1) {
+            current /= 1024
+            index++
+        }
+
+        return "#{current.toFixed(1)}#{FILE_SIZES[index]}"
+    }
+
+    public toEnglish() => toEnglish(value)
+    public static toEnglish(Long size) -> String {
+        let negative = size < 0
+        let negSize = -size
+        let initial = negative ? negSize.toString() : size.toString()
+        var str = initial
+
+        for (var Int i = 3; i < initial.count; i += 3) {
+            str = str.substring(0, initial.count - i) + "," + str.substring(initial.count - i)
+        }
+
+        return negative ? "-#{str}" : str
+    }
+
+    public millisToTime(
+        Bool abbreviate = true,
+        Bool: millis = true,
+        Bool: seconds = true,
+        Bool: minutes = true,
+        Bool: hours = true,
+        String: delimiter = abbreviate ? " " : ", "
+    ) => millisToTime(
+        value,
+        abbreviate,
+        millis,
+        seconds,
+        minutes,
+        hours,
+        delimiter
+    )
+
+    public static millisToTime(
+        var Long time,
+        Bool abbreviate = true,
+        Bool: millis = true,
+        Bool: seconds = true,
+        Bool: minutes = true,
+        Bool: hours = true,
+        String: delimiter = abbreviate ? " " : ", "
+    ) -> String {
+        var str = ""
+        var value = time % 1000
+
+        if (millis) {
+            if (abbreviate) {
+                str = "ms"
+            } else {
+                str = " millisecond#{value == 1 ? "" : "s"}"
+            }
+            str = "#{value}#{str}"
+            if (time < 1000) return str
+        }
+
+        time /= 1000
+        value = time % 60
+        if (seconds) {
+            if (abbreviate) {
+                str = "s#{str.isNotEmpty ? delimiter + str : ""}"
+            } else {
+                str = " second#{value == 1 ? "" : "s"}" + (str.isNotEmpty ? delimiter + str : "")
+            }
+            str = "#{value}#{str}"
+            if (time < 60) return str
+        }
+
+        time /= 60
+        value = time % 60
+        if (minutes) {
+            if (abbreviate) {
+                str = "m#{str.isNotEmpty ? delimiter + str : ""}"
+            } else {
+                str = " minute#{value == 1 ? "" : "s"}" + (str.isNotEmpty ? delimiter + str : "")
+            }
+            str = "#{value}#{str}"
+            if (time < 60) return str
+        }
+
+        time /= 60
+        value = time % 24
+        if (hours) {
+            if (abbreviate) {
+                str = "h#{str.isNotEmpty ? delimiter + str : ""}"
+            } else {
+                str = " hour#{value == 1 ? "" : "s"}" + (str.isNotEmpty ? delimiter + str : "")
+            }
+            str = "#{value}#{str}"
+            if (time < 24) return str
+        }
+
+        time /= 24
+        if (abbreviate) {
+            str = "d#{str.isNotEmpty ? delimiter + str : ""}"
+        } else {
+            str = " days#{str.isNotEmpty ? delimiter + str : ""}"
+        }
+        str = "#{time}#{str}"
+
+        return str
+    }
+}

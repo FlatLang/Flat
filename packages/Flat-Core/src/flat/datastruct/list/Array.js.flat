@@ -1,0 +1,27 @@
+package flat/datastruct/list
+
+class {
+    public static jsStringArrayToFlatArray(Object value) -> String[] {
+        var Int count = 0
+
+        external {
+            #{count} = #{value}.length;
+        }
+
+        return Array(count).map({
+            var native_array native Char[] chars
+
+            external {
+                #{chars} = #{value}[#{_i}];
+            }
+
+            return String(chars)
+        })
+    }
+
+    public native_array cloneData() -> E[] {
+        external {
+            return #{data}.slice(0);
+        }
+    }
+}

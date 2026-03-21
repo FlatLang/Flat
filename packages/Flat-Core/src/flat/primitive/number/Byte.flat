@@ -1,0 +1,63 @@
+package flat/primitive/number
+
+import flat/datastruct
+import flat/operators
+
+class extends Number<Byte> implements Integer {
+    public Double realValue => (Double)value
+    public Long integerValue => value
+
+    public construct(public Byte value)
+
+    public compareTo(Byte other) => this.value - other
+    public compareToReal(Double other) => this.value - other
+    public compareToInteger(Long other) => this.value - other
+
+    public static compareTo(Byte value, Byte other) => value - other
+    public static compareToReal(Byte value, Double other) => value - other
+    public static compareToInteger(Byte value, Long other) => value - other
+
+    public multiply(Byte other) => this.value * other
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) => this.value * other
+
+    public plus(Byte other) => this.value + other
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) => this.value + other
+
+    public plusEquals(Byte other) => this.value += other
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) => this.value += other
+
+    public minus(Byte other) => this.value - other
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) => this.value - other
+
+    public minusEquals(Byte other) => this.value -= other
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) => this.value -= other
+
+    public multiplyEquals(Byte other) => this.value *= other
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) => this.value *= other
+
+    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Byte)other == value
+    public equals(Byte other) => this.value == other
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+
+    public static equals(Byte value, Byte other) => value == other
+    public static equalsReal(Byte value, Double other) => value == other
+    public static equalsInteger(Byte value, Long other) => value == other
+
+    public toString() => toString(value)
+
+    public static numDigits(Byte number) => Long.numDigits(number)
+    public static toString(Byte value) => Long.toString(value)
+    public static toJson(Byte value, Bool: format = false, String: tab = "\t") => toString(value)
+    public static hashCodeLong(Byte value) => Math.abs(value)
+    public static plus(Byte a, Long b) => a + b
+
+    public toEnglish() => toEnglish(value)
+    public static toEnglish(Byte value) => Long.toEnglish(value)
+}

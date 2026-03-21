@@ -1,0 +1,66 @@
+package flat/meta
+
+import flat/operators
+
+class<Type> {
+    visible Bool isInterface
+
+    visible String location
+    visible String package => location.substring(0, location.lastIndexOf("/", defaultReturnValue: 0))
+    visible String name => location.substring(location.lastIndexOf("/") + 1)
+    visible String rootName => location.substring(Math.max(location.lastIndexOf("/"), location.lastIndexOf(".")) + 1)
+
+    visible static lazy Class[] ALL => null
+
+    public construct(
+        visible String location,
+        visible Bool isInterface,
+        visible Class extension,
+        visible Class[] interfaces,
+        visible Field[] fields = null,
+        visible Function[] functions = null
+    ) {}
+
+    public getField(String name, Bool checkAncestors = false) -> Field {
+        return fields.firstWhere({ _.name == name })
+            ?: (checkAncestors ? extension?.getField(name, true) : null)
+            ?: (checkAncestors ? interfaces.mapNotNull({ _.getField(name, true) })?.first : null)
+    }
+
+    public isOfType(Class other) =>
+        (other.isInterface
+            ? isOfTypeInterface(other) || extension && extension.isOfType(other)
+            : isOfTypeClass(other) || interfaces.any({ _.isOfTypeClass(other) }))
+            || Object.referenceEquals(other, Object.class)
+
+    public isOfTypeClass(Class other) => false {
+        var current = this
+
+        while (current) {
+            if (Object.referenceEquals(current, other)) {
+                return true
+            }
+
+            current = current.extension
+        }
+    }
+
+    public isOfTypeInterface(Class other) => false {
+        var current = this
+
+        while (current) {
+            if (current.interfaces.any({ _x == other || _x.isOfTypeInterface(other)})) {
+                return true
+            }
+
+            current = current.extension
+        }
+    }
+
+    public getClassesOfType(Class baseType) => ALL.filter({ _.isOfType(baseType) })
+
+    override public equals(Object other) => (other || !this) && other.class.isOfType(Class.class) && equals((Class)other)
+    public equals(Class another) => this.location.chars == another.location.chars
+
+    public toString() => "Class \"#location\""
+}

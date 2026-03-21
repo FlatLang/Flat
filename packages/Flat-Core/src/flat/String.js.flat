@@ -1,0 +1,96 @@
+package flat
+
+import flat/datastruct
+import flat/datastruct/list
+import flat/operators
+
+class {
+    public construct(Char c) {
+        native_array native Char[] chars
+
+        external {
+            chars = [#{c}];
+        }
+
+        this(chars)
+    }
+
+    public construct(native_array native Char[] chars, Int count) {
+        this.count = count
+        this.chars = StringCharArray(chars, count)
+    }
+
+    public construct(native_array native Char[] chars) {
+        count = calculateSize(chars)
+
+        this.chars = StringCharArray(chars, count)
+    }
+
+    public construct(native String str) {
+        var native native_array Char[] chars
+
+        external {
+            #{chars} = #{str};
+        }
+
+        count = calculateSize(chars)
+
+        this.chars = StringCharArray(chars, count)
+    }
+
+    public transform(transform(Char, Int) -> Char) -> String {
+        native_array native Char[] newData
+
+        external {
+            #{newData} = "";
+        }
+
+        for (i in 0..count) {
+            external {
+                #{newData} += #{transform(chars[i], i)};
+            }
+        }
+
+        return String(newData)
+    }
+
+    public compareTo(String other) -> Int {
+        external {
+            return #{chars.data}.localeCompare(#{other.chars.data});
+        }
+    }
+
+    public concat(String str) -> String {
+        native_array native Char[] buf
+
+        external {
+            #{buf} = #{this.chars.data} + #{str.chars.data};
+        }
+
+        return String(buf)
+    }
+
+    calculateSize(native_array native Char[] chars) -> Int {
+        external js {
+            return #{chars}.length;
+        }
+    }
+
+    public substring(Int start = 0, Int end = count) -> String {
+        if (!validateSubstringBounds(start, end, true)) {
+            return null
+        } else if (start == end) {
+            return ""
+        } else if (start == 0 && end == count) {
+            return this
+        }
+
+        native_array native var Char[] data
+
+        external {
+            #{data} = #{chars.data}.substring(#{start}, #{end});
+        }
+
+        return String(data)
+    }
+}

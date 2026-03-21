@@ -1,0 +1,99 @@
+package flat/primitive/number
+
+import flat/datastruct
+import flat/operators
+
+class extends Number<Char> implements Integer {
+    public Double realValue => (Double)value
+    public Long integerValue => value
+
+    public Bool isNumber => isNumber(value)
+    public Bool isWhitespace => isWhitespace(value)
+
+    public construct(public Char value) {}
+
+    public static toLowerCase(Char c) -> Char => c {
+        Int id = (Int)c
+
+        if (id >= 65 && id <= 90) {
+            return (Char)(id + 32)
+        }
+    }
+
+    public static toUpperCase(Char c) -> Char => c {
+        Int id = (Int)c
+
+        if (id >= 97 && id <= 122) {
+            return (Char)(id - 32)
+        }
+    }
+
+    public repeat(Int times) => repeat(value, times)
+    public static repeat(Char value, Int times) => "#value".repeat(times)
+
+    public toLowerCase() => toLowerCase(value)
+    public toUpperCase() => toUpperCase(value)
+
+    public compareTo(Char other) -> Int => this.value - other
+    public compareToReal(Double other) => this.value - other
+    public compareToInteger(Long other) => this.value - other
+
+    public static compareTo(Char value, Char other) -> Int => value - other
+    public static compareToReal(Char value, Double other) => value - other
+    public static compareToInteger(Char value, Long other) => value - other
+
+    public multiply(Char other) => this.value * other
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) => this.value * other
+
+    public plus(Char other) => this.value + other
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) => this.value + other
+
+    public plusEquals(Char other) => this.value += other
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) => this.value += other
+
+    public minus(Char other) => this.value - other
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) => this.value - other
+
+    public minusEquals(Char other) => this.value - other
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) => this.value -= other
+
+    public multiplyEquals(Char other) => this.value *= other
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) => this.value *= other
+
+    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Char)other == value
+    public equals(Char other) => this.value == other
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+
+    public static equals(Char value, Char other) => value == other
+    public static equalsReal(Char value, Double other) => value == other
+    public static equalsInteger(Char value, Long other) => value == other
+
+    public static isNumber(Char value) -> Bool {
+        let char = (Int)value
+
+        return char >= (Int)'0' && char <= (Int)'9'
+    }
+
+    public static isWhitespace(Char value) => false {
+        switch value {
+            ' ' => fallthrough
+            '\t' => fallthrough
+            '\r' => fallthrough
+            '\n' => return true
+        }
+    }
+
+    public toString() => toString(value)
+
+    public static toString(Char c) => String(c)
+    public static toJson(Char c, Bool: format = false, String: tab = "\t") => toString(c)
+    public static hashCodeLong(Char value) => Math.abs(value)
+    public static plus(Char a, Long b) => a + b
+}

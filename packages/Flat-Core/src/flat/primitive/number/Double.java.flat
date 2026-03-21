@@ -1,0 +1,32 @@
+package flat/primitive/number
+
+class {
+    public static parseDouble(String str) -> Double {
+        external {
+            return java.lang.Double.parseDouble(#{str.chars.string});
+        }
+    }
+
+    public native_array native static toCharArray(Double value) -> Char[] {
+        external {
+            return String.valueOf(#{value}).toCharArray();
+        }
+    }
+
+    public static toString(Double value) => String(toCharArray(value))
+
+    public toFixed(Int precision) => toFixed(value, precision)
+    public static toFixed(Double value, Int precision) -> String {
+        native_array native var Char[] data
+
+        external {
+            String fmt = "0.";
+
+            for (int i = 0; i < #{precision}; i++) fmt += "#";
+
+            #{data} = new java.text.DecimalFormat(fmt).format(#{value}).toCharArray();
+        }
+
+        return String(data)
+    }
+}

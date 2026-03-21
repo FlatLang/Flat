@@ -1,0 +1,62 @@
+package flat
+
+import flat/test
+
+import flat/time
+import flat/io
+import flat/primitive/number
+
+import flat/meta
+import flat/datastruct/list
+
+[TestSuite [
+    FlatCore_Test,
+    Array_Test,
+    List_Test,
+    Class_Test,
+    String_Test,
+    Long_Test
+]]
+class {
+    public static async main(String[] args) {
+        let test = FlatCore_TestSuite()
+
+        Timer timer = Timer().start()
+
+        let results = TestResult[]
+
+        test.runTests({
+            results.add(_)
+        })
+
+        let fancy = FancyOutputStream(headerPattern: "/\\")
+
+        let unsuccessful = results.filter({ !_.success })
+
+        if (unsuccessful.count > 0) {
+            fancy.writeHeader(
+                "#unsuccessful.count Failure#{unsuccessful.count == 1 ? "" : "s"} out of #results.count test#{results.count == 1 ? "" : "s"}",
+                pattern: ":'( ",
+                symmetrical: true
+            )
+
+            unsuccessful.forEach({
+                Console.log("#_")
+            })
+        } else {
+            fancy.writeHeader(
+                "All #results.count Successful",
+                pattern: ":) ",
+                symmetrical: true
+            )
+        }
+
+        timer.stop()
+
+        Console.writeLine("Took #{timer.duration}ms")
+
+        if (unsuccessful.count > 0) {
+                System.exit(1)
+        }
+    }
+}

@@ -1,0 +1,9 @@
+package flat/primitive/number
+
+class {
+    public static parseInt(String num) -> Int {
+        external {
+            return java.lang.Integer.parseInt(#{num.chars.string});
+        }
+    }
+}

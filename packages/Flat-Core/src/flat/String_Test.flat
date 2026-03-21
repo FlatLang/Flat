@@ -1,0 +1,33 @@
+package flat
+
+testable class {
+    test `can split string on single letter string delimiter`() {
+        let str = "this is a test"
+
+        expect(str.split(" ")).toBe(["this", "is", "a", "test"])
+    }
+
+    test `can split string on single letter string delimiter with no matches`() {
+        let str = "this is a test"
+
+        expect(str.split("q")).toBe(["this is a test"])
+    }
+
+    test `can split string on two letter string delimiter with no matches`() {
+        let str = "this()is()a()test"
+
+        expect(str.split("()")).toBe(["this", "is", "a", "test"])
+    }
+
+    test `can split string on char delimiter`() {
+        let str = "this is a test"
+
+        expect(str.split(" ")).toBe(["this", "is", "a", "test"])
+    }
+
+    test `can replace multiple string occurrences`() {
+        let str = "a\\b\\c\\d\\e\\f"
+
+        expect(str.replace("\\", "/")).toBe("a/b/c/d/e/f")
+    }
+}

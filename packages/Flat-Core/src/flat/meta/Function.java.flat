@@ -1,0 +1,9 @@
+package flat/meta
+
+class {
+    public call(Object obj, Object[] args = Array()) -> Object => null {
+    }
+
+    public callStatic(Class c, Object[] args = Array()) -> Object => null {
+    }
+}

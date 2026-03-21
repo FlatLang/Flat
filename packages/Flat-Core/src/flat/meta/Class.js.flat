@@ -1,0 +1,15 @@
+package flat/meta
+
+import flat/operators
+
+class<Type> {
+    public construct(
+        visible String location,
+        visible Bool isInterface,
+        visible Class extension,
+        visible Class[] interfaces,
+        visible Field[] fields = null,
+        visible Function[] functions = null,
+        visible native Object jsClass = null
+    ) {}
+}

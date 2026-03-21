@@ -1,0 +1,54 @@
+name: Build Flat-Core ES6
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 5 * * *'
+
+env:
+  LOGGING_DEFAULT_SHOW_PREFIX: true
+  LOGGING_DEFAULT_LOGGING_LEVEL: TRACE
+  LOGGING_DEFAULT_SHOW_FORMATTING: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.8.0
+        with:
+          java-version: 8
+
+      - uses: actions/checkout@v3
+
+      - name: Download latest Airship
+        uses: FlatLang/fetch-airship@master
+        with:
+          includePrerelease: true
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Build Flat-Core with flatc
+        env:
+          LOGGING_DEFAULT_SHOW_PREFIX: false
+          LOGGING_DEFAULT_LOGGING_LEVEL: INFO
+        run: |
+          node airship.js install --flatc-runtime flat -t es6

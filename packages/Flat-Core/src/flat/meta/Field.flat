@@ -1,0 +1,13 @@
+package flat/meta
+
+data class {
+    public construct(
+        visible String name
+    ) {}
+
+    public getValue(Object obj) -> Object => null {
+    }
+
+    public setValue(Object obj, Object value) -> Object => null {
+    }
+}

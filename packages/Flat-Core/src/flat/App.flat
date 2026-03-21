@@ -1,0 +1,10 @@
+package flat
+
+class {
+    static String name = null
+    static String version = null
+    static String description = null
+    static String author = null
+    static String license = null
+    static String defaultTarget = null
+}

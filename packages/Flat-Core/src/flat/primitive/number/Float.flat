@@ -1,0 +1,66 @@
+package flat/primitive/number
+
+import flat/datastruct
+import flat/operators
+
+class extends Number<Float> implements RealNumber {
+    public Double realValue => value
+    public Long integerValue => (Long)value
+
+    construct(public Float value) {}
+
+    public withinTolerance(Float target, Float tolerance) =>
+        withinTolerance(value, target, tolerance)
+
+    public static withinTolerance(Float value, Float target, Float tolerance = 0.00000001) =>
+        (value - target) < tolerance && (value - target) > -tolerance
+
+    public compareTo(Float other) => (Int)(this.value - other)
+    public compareToReal(Double other) => (Int)(this.value - other)
+    public compareToInteger(Long other) -> Long => (Long)(this.value - other)
+
+    public static compareTo(Float value, Float other) => (Int)(value - other)
+    public static compareToReal(Float value, Double other) => (Int)(value - other)
+    public static compareToInteger(Float value, Long other) => (Long)(value - other)
+
+    public plus(Float other) => this.value + other
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) -> Long => (Long)(this.value + other)
+
+    public plusEquals(Float other) => this.value += other
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) -> Long => (Long)(this.value += other)
+
+    public minus(Float other) => this.value - other
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) -> Long => (Long)(this.value - other)
+
+    public minusEquals(Float other) => this.value -= other
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) -> Long => (Long)(this.value -= other)
+
+    public multiply(Float other) => this.value * other
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) -> Long => (Long)(this.value * other)
+
+    public multiplyEquals(Float other) => this.value *= other
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) -> Long => (Long)(this.value *= other)
+
+    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Float)other == value
+    public equals(Float other) => this.value == other
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+
+    public static equals(Float value, Float other) => value == other
+    public static equalsReal(Float value, Double other) => value == other
+    public static equalsInteger(Float value, Long other) => value == other
+
+    public toString() => toString(value)
+
+    public static numDigits(Float number) => Double.numDigits(number)
+    public static toString(Float value) => Double.toString(value)
+    public static toJson(Float value, Bool: format = false, String: tab = "\t") => toString(value)
+    public static hashCodeLong(Float value) => Math.abs((Long)value)
+    public static plus(Float a, Double b) => a + b
+}

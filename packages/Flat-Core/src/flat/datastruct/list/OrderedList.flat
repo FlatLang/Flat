@@ -1,0 +1,31 @@
+package flat/datastruct/list
+
+trait<Type> implements List<Type> {
+    public findIndex(
+        condition(Type x, Int i, OrderedList<Type> list) -> Bool,
+        Int defaultReturnValue = -1
+    ) -> Int => defaultReturnValue {
+        var Int i = -1
+
+        for (element in this) {
+            if (condition(element, ++i, this)) {
+                return i
+            }
+        }
+    }
+
+    public indexOf(
+        Type element,
+        Int defaultReturnValue = -1
+    ) => defaultReturnValue {
+        var Int i = 0
+
+        for (e in this) {
+            if (element == null && e == null || element != null && element.equals(e)) {
+                return i
+            }
+
+            i++
+        }
+    }
+}

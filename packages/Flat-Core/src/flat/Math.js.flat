@@ -1,0 +1,71 @@
+package flat
+
+class {
+    public static sqrt(Double number) -> Double {
+        external {
+            return Math.sqrt(number);
+        }
+    }
+
+    public static pow(Double base, Double power) -> Double {
+        external {
+            return Math.pow(base, power);
+        }
+    }
+
+    public static sin(Double number) -> Double {
+        external {
+            return Math.sin(number);
+        }
+    }
+
+    public static cos(Double number) -> Double {
+        external {
+            return Math.cos(number);
+        }
+    }
+
+    public static tan(Double number) -> Double {
+        external {
+            return Math.tan(number);
+        }
+    }
+
+    public static asin(Double number) -> Double {
+        external {
+            return Math.asin(number);
+        }
+    }
+
+    public static acos(Double number) -> Double {
+        external {
+            return Math.acos(number);
+        }
+    }
+
+    public static atan(Double number) -> Double {
+        external {
+            return Math.atan(number);
+        }
+    }
+
+    public static round(Double number) => floor(number + 0.5)
+
+    public static random(Long range) -> Long {
+        external {
+            return ~~(Math.random() * #{range});
+        }
+    }
+
+    public static floor(Double number) -> Long {
+        external {
+            return Math.floor(number);
+        }
+    }
+
+    public static ceil(Double number) -> Long {
+        external {
+            return Math.ceil(number);
+        }
+    }
+}

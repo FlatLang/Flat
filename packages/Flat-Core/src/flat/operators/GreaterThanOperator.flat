@@ -1,0 +1,5 @@
+package flat/operators
+
+trait<In> {
+    public greaterThan(In another) -> Bool
+}

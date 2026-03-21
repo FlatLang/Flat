@@ -1,0 +1,349 @@
+package flat
+
+import flat/datastruct
+import flat/datastruct/list
+import flat/operators
+
+class implements Comparable<String>, PlusOperator<String, String>, MultiplyOperator<Int, String> {
+    visible Int count
+
+    visible StringCharArray chars
+
+    visible Char first => chars.first
+    visible Char last => chars.last
+
+    visible String title => capitalize()
+
+    this[Int index] => chars[index]
+
+    static Char[] WHITESPACE = [ ' ', '\t', '\n', '\r' ]
+
+    public Long hashCodeLong => chars.hashCodeLong
+
+    public construct(Char[] chars) {
+        count = chars.count
+
+        this.chars = StringCharArray(chars)
+    }
+
+    public construct(StringCharArray chars) {
+        this.count = chars.count
+        this.chars = chars
+    }
+
+    override public plus(String another) => concat(another)
+
+    override public multiply(Int times) => repeat(times)
+
+    public repeat(Int times) =>
+        Array<String>(times).map({ this }).join()
+
+    public equals(Object other) => (other || !this) && other.class.isOfType(String.class) && equals((String)other)
+    public equals(String other) => (other || !this) && count == other.count && compareTo(other) == 0
+    public equalsIgnoreCase(String other) => (other || !this) && count == other.count && toLowerCase().compareTo(other.toLowerCase()) == 0
+
+    public replace(String search, String replacement, Int start = 0) -> String {
+        var output = this
+        var Int index = start
+        var Int offset = 0
+
+        while ((index = output.indexOf(search, index + offset)) >= 0) {
+            output = output.substring(0, index) + replacement + output.substring(index + search.count)
+            offset = replacement.count
+        }
+
+        return output
+    }
+
+    public indent(
+        Int tabCount = 1,
+        String: tab = "\t",
+        Bool: firstLine = true
+    ) -> String {
+        var value = this
+
+        value = value.replace("\n", "\n" + tab.repeat(tabCount))
+
+        if (firstLine) {
+            value = tab.repeat(tabCount) + value
+        }
+
+        return value
+    }
+
+    public isWhitespace() => true {
+        for (i in 0..count) {
+            let c = chars[i]
+
+            switch c {
+                ' ' => '\n' => '\t' => '\r' => continue
+                default => return false
+            }
+        }
+    }
+
+    public Bool isEmpty => count == 0
+    public Bool isNotEmpty => count > 0
+
+    public startsWith(Char search, Int start = 0) => this[start] == search
+    public startsWith(String search, Int start = 0) => indexOf(search, start, searchCount: 1) == start
+
+    public contains(Char search) => indexOf(search) >= 0
+    public contains(String search) => indexOf(search) >= 0
+
+    public endsWith(Char search) => count > 0 && lastIndexOf(search) == count - 1
+    public endsWith(String search) => count >= search.count && lastIndexOf(search) == count - search.count
+
+    public indexOf(
+        Char search,
+        Int start = 0,
+        Int direction = 1,
+        var Int searchCount = count,
+        Bool: invert = false,
+        Int: defaultReturnValue = -1
+    ) =>
+    	indexOf(Array<Char>():add(search), start, direction, searchCount, invert, defaultReturnValue)
+
+    public indexOf(
+        Char[] searches,
+        Int start = 0,
+        Int direction = 1,
+        var Int searchCount = count,
+        Bool: invert = false,
+        Int: defaultReturnValue = -1
+    ) => defaultReturnValue {
+        var i = start
+
+        while (searchCount > 0 && i < count && i >= 0) {
+            var Int j = 0
+
+            while (j < searches.count) {
+                if ((searches[j] != chars[i]) == invert) return i
+
+                j++
+            }
+
+            i += direction
+            searchCount--
+        }
+    }
+
+    public indexOf(
+        String search,
+        Int start = 0,
+        Int direction = 1,
+        var Int searchCount = count,
+        Int: defaultReturnValue = -1
+    ) => defaultReturnValue {
+        var i = start
+
+        while (searchCount > 0 && i < count && i + search.count <= count && i >= 0) {
+            var found = true
+            var Int j = 0
+
+            while (j < search.count && i + j < count && found) {
+                if (search.chars[j] != chars[i + j]) found = false
+
+                j++
+            }
+
+            if (found) return i
+
+            i += direction
+            searchCount--
+        }
+    }
+
+    public lastIndexOf(Char search, Int start = count - 1, Int defaultReturnValue = -1) =>
+        lastIndexOf(Array<Char>():add(search), start, defaultReturnValue)
+    public lastIndexOf(Char[] searches, Int start = count - 1, Int defaultReturnValue = -1) =>
+        indexOf(searches, start, -1, defaultReturnValue: defaultReturnValue)
+    public lastIndexOf(String search, Int start = count - search.count, Int defaultReturnValue = -1) =>
+        indexOf(search, start, -1, defaultReturnValue: defaultReturnValue)
+
+    public validateSubstringBounds(Int start, Int end, Bool throwException = false) => true {
+        if (end - start <= 0) {
+            if (end - start < 0) {
+                if (throwException) {
+                    throw Exception("Substring bounds of [#start, #end] are invalid")
+                }
+
+                return false
+            }
+        }
+    }
+
+    public trimStart(Int count) => substring(count)
+    public trimEnd(Int count) => substring(end: this.count - count)
+
+    public trimStart(var Int: start = 0, Char[] charsToTrim = WHITESPACE) -> String {
+        while (start <= count - 1 && charsToTrim.contains(chars[start])) start++
+
+        return start > count - 1 ? "" : substring(start, count)
+    }
+
+    public trimEnd(var Int: end = count - 1, Char[] charsToTrim = WHITESPACE) -> String {
+        while (end >= 0 && charsToTrim.contains(chars[end])) end--
+
+        return end < 0 ? "" : substring(0, end + 1)
+    }
+
+    public trimStart(Char charToTrim, var Int: start = 0) =>
+        trimStart(start, charsToTrim: [charToTrim])
+
+    public trimEnd(Char charToTrim, var Int: end = count - 1) =>
+        trimEnd(end, charsToTrim: [charToTrim])
+
+    public trimSurrounding(Char charToTrim, var Int: count = -1) -> String {
+        if ((count == -1 || count > 0) && first == charToTrim && last == charToTrim) {
+            return trimEnds(1).trimSurrounding(charToTrim, count: count - 1)
+        } else {
+            return this
+        }
+    }
+
+    /// Trim the front and back end of the string by the given number
+    /// of characters.
+    ///
+    /// <code>
+    ///     "(hello world! )".trimEnds(1, true)    // "hello world!"
+    ///     "(hello world! )".trimEnds(1, false) // "hello world! "
+    /// </code>
+    ///
+    /// count: The number of characters to trim from each end.
+    /// trimWhitespace: Whether to trim the whitespace from the edges
+    ///     after the edges have been trimmed.
+    /// return: The trimmed string.
+    public trimEnds(Int count, Bool trimWhitespace = false) =>
+        trimWhitespace ?
+            substring(count, this.count - count).trim() :
+            substring(count, this.count - count)
+
+    public trim(var Int start = 0, var Int end = count - 1, Char[] charsToTrim = WHITESPACE) -> String {
+        while (start <= end && charsToTrim.contains(chars[start])) start++
+        while (end >= start && charsToTrim.contains(chars[end])) end--
+
+        return start > end ? "" : substring(start, end + 1)
+    }
+
+    public toLowerCase() => transform(Char.toLowerCase)
+    public toUpperCase() => transform(Char.toUpperCase)
+    public capitalize() => count > 0 ? chars[0].toUpperCase() + substring(1) : this
+
+    public transform(transform(Char, Int) -> Char) -> String {
+        native_array native Char[] newData = new Char[count]
+
+        for (i in 0..count) {
+            newData[i] = transform(chars[i], i)
+        }
+
+        return String(newData)
+    }
+
+    public getStringBetween(String before, String after, Int start = 0) =>
+        (let s = indexOf(before, start)) >= 0 &&
+        (let e = indexOf(after, s + 1)) > 0 ?
+            substring(s + before.count, e) : null
+
+    public reverse(Bool symmetrical = false) -> String {
+        let reversed = chars.reverse()
+
+        if (symmetrical) {
+            for (i in 0..reversed.count) {
+                switch (let c = reversed[i]) {
+                    '('    => reversed[i] = ')'
+                    ')'    => reversed[i] = '('
+                    '<'    => reversed[i] = '>'
+                    '>'    => reversed[i] = '<'
+                    '{'    => reversed[i] = '}'
+                    '}'    => reversed[i] = '{'
+                    '['    => reversed[i] = ']'
+                    ']'    => reversed[i] = '['
+                    '/'    => reversed[i] = '\\'
+                    '\\' => reversed[i] = '/'
+                }
+            }
+        }
+
+        return String(reversed)
+    }
+
+    public surroundWith(String str, Bool symmetrical = false) =>
+        "#{str}#{this}#{symmetrical ? str.reverse() : str}"
+
+    public compareTo(String other) -> Int {
+        var min = Math.min(count, other.count)
+
+        for (i in 0..min) {
+            if (chars[i] - other.chars[i] != 0) {
+                return chars[i] - other.chars[i]
+            }
+        }
+
+        return count - other.count
+    }
+
+    public getGroupedChars(Char[] chars, Int start = 0, Int end = count, Bool opposite = false) -> String {
+        var i = start
+
+        while (start < end && chars.contains(this.chars[i]) != opposite) {
+            i++
+        }
+
+        return substring(start, i)
+    }
+
+    public orElse(String value) => count == 0 ? value : this
+
+    public howMany(Char c) -> Int => 0 {
+        var Int sum = 0
+
+        for (char in chars.toCharArray()) {
+            if (c == char) {
+                sum++
+            }
+        }
+
+        return sum
+    }
+
+    public split(String delimiter) -> String[] {
+        let strs = String[]
+        var Int lastI = 0
+
+        for (var Int i = indexOf(delimiter); i != -1; i = indexOf(delimiter, i + delimiter.count)) {
+            strs.add(substring(lastI, i))
+
+            lastI = i + delimiter.count
+        }
+
+        strs.add(substring(lastI))
+
+        return strs
+    }
+
+    public split(Char delimiter) -> String[] {
+        let strs = String[]
+        var Int lastI = 0
+
+        for (var Int i = indexOf(delimiter); i != -1; i = indexOf(delimiter, i + 1)) {
+            strs.add(substring(lastI, i))
+
+            lastI = i + 1
+        }
+
+        strs.add(substring(lastI))
+
+        return strs
+    }
+
+    public toString() => this
+    public toJson(Bool: format = false, String: tab = "\t") -> String {
+        let sanitized = this
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+
+        return "\"#{sanitized}\""
+    }
+}

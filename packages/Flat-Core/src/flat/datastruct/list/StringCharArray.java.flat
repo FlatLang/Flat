@@ -1,0 +1,92 @@
+package flat/datastruct/list
+
+class {
+    visible native String string
+
+    visible Int count {
+        get {
+            external {
+                return #{string}.length();
+            }
+        }
+    }
+
+    visible native_array native Char[] data {
+        get {
+            external {
+                return #{string}.toCharArray();
+            }
+        }
+
+        set {
+            external {
+                #{string} = new String(#{value});
+            }
+        }
+    }
+
+    visible Char first => count > 0 ? this[0] : 0
+    visible Char last => count > 0 ? this[count - 1] : 0
+
+    this[Int index] -> Char {
+        get {
+            external {
+                return #{string}.charAt(#{index});
+            }
+        }
+
+        set {
+            external {
+                #{string} = #{string}.substring(0, #{index}) + #{value} + #{string}.substring(index + 1);
+            }
+        }
+    }
+
+    public construct(Char[] data) {
+        let native_array native Char[] nativeData = new Char[count]
+
+        for (i in 0..count) {
+            nativeData[i] = data[i].value
+        }
+
+        this.data = nativeData
+    }
+
+    public construct(Int count) {
+        this.data = new Char[count]
+    }
+
+    public construct(native_array native Char[] data, Int count) {
+        this.data = data
+    }
+
+    public construct(native String string) {
+        this.string = string
+    }
+
+    public toCharArray() -> Char[] {
+        let array = Array<Char>(count)
+        let native_array native nativeArray = data
+        var native Char c
+
+        for (i in 0..count) {
+            external {
+                #{c} = #{nativeArray}[#{i}];
+            }
+
+            array[i] = c
+        }
+
+        return array
+    }
+
+    public equals(StringCharArray other) -> Bool {
+        if (count != other.count) return false
+
+        external {
+            if (#{string} == null) return #{other.string} == null;
+
+            return #{string}.equals(#{other.string});
+        }
+    }
+}

@@ -1,0 +1,645 @@
+package flat/datastruct/list
+
+import flat/async
+import flat/primitive/number
+import flat/datastruct
+import flat/operators
+
+class<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<E>>, PlusEqualsOperator<Array<E>, Array<E>> {
+    visible var Int capacity
+
+    visible var Int count <=> count
+    visible var Int position
+
+    visible native_array var E[] data
+
+    visible Bool isEmpty => count == 0
+    visible Bool isNotEmpty => !isEmpty
+
+    override visible ArrayIterator<E> iterator => ArrayIterator(this)
+
+    public E first => count > 0 ? this[0] : null {
+        set {
+            if (count > 0) {
+                this[0] = value
+            } else {
+                add(value)
+            }
+        }
+    }
+
+    public E last => getLast() {
+        set {
+            if (count > 0) {
+                this[count - 1] = value
+            } else {
+                add(value)
+            }
+        }
+    }
+
+    this[Int index] <=> data[index]
+
+    public construct() {
+        this(0)
+
+        increaseSize(10)
+    }
+
+    public construct(Int count, Int initialCapacity = count) {
+        this.position = 0
+        this.capacity = 0
+
+        increaseSize(initialCapacity)
+
+        this.count = count
+
+        external js {
+            #{data} = new Array(#{count}).fill(#{null});
+        }
+    }
+
+    public construct(native_array E[] data, Int count) {
+        this.data = data
+        this.count = count
+        this.capacity = count
+        this.position = count
+    }
+
+    public getLast(Int offset = 0) -> E => count > offset ? this[count - 1 - offset] : null
+
+    public fillRemaining(E value) => value {
+        while (count < capacity) {
+            add(value)
+        }
+    }
+
+    override public plus(E[] other) => clone().plusEquals(other)
+
+    override public plusEquals(E[] other) => this:addAll(other)
+
+    public addAll(E[] data) => data {
+        for (d in data) {
+            add(d)
+        }
+    }
+
+    public addUnique(E element) => element {
+        if (!contains(element)) {
+            add(element)
+        }
+    }
+
+    public add(E element) => element {
+        if (position >= capacity) {
+            increaseSize()
+        }
+
+        data[position++] = element
+
+        count = Math.max(position, count)
+    }
+
+    public add(Int index, E element) => element {
+        if (index >= capacity) {
+            increaseSize(index + 1)
+        }
+
+        add(null)
+
+        shiftRight(index, position)
+
+        data[index] = element
+
+        if (index >= position - 1) {
+            position = index + 1
+        }
+
+        count = Math.max(position, count)
+    }
+
+    public unshift(E element) => element {
+        add(0, element)
+    }
+
+    public shift() => removeAtIndex(0)
+    public removeLast() => removeAtIndex(count - 1)
+
+    public removeWhere(func(E x, Int i, Array<E> array) -> Bool) -> E[] {
+        let removed = E[]
+
+        for (var Int i = count - 1; i >= 0; i--) {
+            if (!func(this[i], i, this)) continue
+
+            removed.add(removeAtIndex(i))
+        }
+
+        return removed
+    }
+
+    public remove(Int index) -> E {
+        E element = data[index]
+
+        shiftLeft(index + 1, position--)
+
+        count = count - 1
+
+        return element
+    }
+
+    public removeAtIndex(Int index) => removeAtIndex(index, 1).first
+    public removeAtIndex(Int index, Int count = 1) -> E[] {
+        let output = Array<E>()
+
+        for (i in 0..count) {
+            output.add(remove(index))
+        }
+
+        return output
+    }
+
+    public removeFirstWhere(func(E x, Int i, Array<E> array) -> Bool) -> E => null {
+        var Int i = 0
+
+        for (element in this) {
+            if (func(element, i, this)) {
+                return removeAtIndex(i)
+            }
+            i++
+        }
+    }
+
+    public remove(E element) -> E => null {
+        Int index = indexOf(element)
+
+        if (index >= 0) {
+            shiftLeft(index + 1, position--)
+
+            count = count - 1
+
+            return element
+        }
+    }
+
+    public replace(E element, E other) -> E => null {
+        let index = indexOf(element)
+
+        if (index >= 0) {
+            this[index] = other
+
+            return other
+        }
+    }
+
+    public replaceAt(Int index, E element) => element {
+        this[index] = element
+    }
+
+    public replaceFirst(E element, Int offset = 0) => replaceAt(offset, element)
+    public replaceLast(E element, Int offset = 0) => replaceAt(count - offset - 1, element)
+
+    shiftRight(Int left, Int right) => this {
+        var Int i = right - 1
+
+        while (i > left) {
+            data[i] = data[i - 1]
+
+            i--
+        }
+
+        data[left] = null
+    }
+
+    shiftLeft(Int left, Int right) => this {
+        for (i in left..right) {
+            data[i - 1] = data[i]
+        }
+
+        data[right - 1] = null
+    }
+
+    public swap(Int index1, Int index2) => this {
+        E temp = data[index1]
+        data[index1] = data[index2]
+        data[index2] = temp
+    }
+
+    increaseSize() => this {
+        increaseSize(capacity + 3)
+    }
+
+    [Target not c]
+    increaseSize(Int count) => this {
+        capacity = count
+    }
+
+    public clone() => filter({ true })
+
+    override public toArray() => clone()
+
+    public clear() -> E[] {
+        let copy = Array<E>(data, count)
+
+        external js {
+            #{data} = new Array();
+        }
+
+        position = 0
+        capacity = 0
+        count = 0
+
+        return copy
+    }
+
+    override public lastWhere(func(E x, Int i, Array<E> array) -> Bool) -> E => null {
+        for (var Int i = count - 1; i >= 0; i--) {
+            let element = this[i]
+
+            if (func(element, i, this)) {
+                return element
+            }
+        }
+    }
+
+    override public lastNonNull<Out>(mapFunc(E x, Int i, Array<E> array) -> Out) -> Out => null {
+        for (var Int i = count - 1; i >= 0; i--) {
+            let element = this[i]
+
+            if (let value = mapFunc(element, i, this)) {
+                return value
+            }
+        }
+    }
+
+    override public map<Out>(mapFunc(E x, Int i, Array<E> array) -> Out) -> Out[] {
+        let array = Array<Out>(count)
+
+        var Int i = 0
+
+        for (element in this) {
+            array.add(mapFunc(element, i++, this))
+        }
+
+        return array
+    }
+
+    override public async mapParallel<Out>(async mapFunc(E x, Int i, Array<E> array) -> Out, Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> Out[] {
+        return Async.all(this, { mapFunc(_, _, this) }, maxParallel, onAfterChunk)
+    }
+
+    override public async mapAsync<Out>(async mapFunc(E x, Int i, Array<E> array) -> Out) -> Out[] {
+        let array = Array<Out>(count)
+
+        var Int i = 0
+
+        for (element in this) {
+            array.add(mapFunc(element, i++, this))
+        }
+
+        return array
+    }
+
+    public mapNotNull<Out>(mapFunc(E x, Int i, Array<E> array) -> Out) -> Array<Out> {
+        let array = Array<Out>()
+
+        var Int i = 0
+
+        for (element in this) {
+            let value = mapFunc(element, i++, this)
+
+            if (value != null) {
+                array.add(value)
+            }
+        }
+
+        return array
+    }
+
+    public async mapNotNullParallel<Out>(async mapFunc(E x, Int i, Array<E> array) -> Out, Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> Array<Out> {
+        return Async.all(toArray(), { mapFunc(_, _, this) }, maxParallel, onAfterChunk).filterNull()
+    }
+
+    public async mapNotNullAsync<Out>(async mapFunc(E x, Int i, Array<E> array) -> Out) -> Array<Out> {
+        let array = Array<Out>()
+
+        var Int i = 0
+
+        for (element in this) {
+            let value = mapFunc(element, i++, this)
+
+            if (value != null) {
+                array.add(value)
+            }
+        }
+
+        return array
+    }
+
+    override public flatMap<Out>(mapFunc(E x, Int i, Array<E> array) -> Out[]) -> Out[] {
+        let array = Array<Out>()
+
+        var Int i = 0
+
+        for (element in this) {
+            array.addAll(mapFunc(element, i++, this))
+        }
+
+        return array
+    }
+
+    override public async flatMapAsync<Out>(async mapFunc(E x, Int i, Array<E> array) -> Out[]) -> Out[] {
+        let array = Array<Out>()
+
+        var Int i = 0
+
+        for (element in this) {
+            array.addAll(mapFunc(element, i++, this))
+        }
+
+        return array
+    }
+
+    override public async flatMapParallel<Out>(
+        async mapFunc(E x, Int i, Array<E> array) -> Out[],
+        Int maxParallel = -1,
+        async onAfterChunk(Int count) = {}
+    ) -> Out[] {
+        return Async.all(this, { mapFunc(_, _, this) }, maxParallel, onAfterChunk).flatMap({ _ })
+    }
+
+    override public forEach(func(E x, Int i, Array<E> array)) => this {
+        for (i in 0..count) {
+            func(data[i], i, this)
+        }
+    }
+
+    override public async forEachParallel(async func(E x, Int i, Array<E> array), Int maxParallel = -1, async onAfterChunk(Int count) = {}) => this {
+        Async.all(this, {
+            func(_, _, this)
+            return null
+        }, maxParallel, onAfterChunk)
+    }
+
+    override public async forEachAsync(async func(E x, Int i, Array<E> array)) => this {
+        var Int i = 0
+
+        for (element in this) {
+            func(element, i++, this)
+        }
+    }
+
+    override public filterNull() => filter({ _ != null })
+
+    override public filter(filterFunc(E x, Int i, Array<E> array) -> Bool) -> E[] {
+        let filtered = E[]
+
+        var Int i = 0
+
+        for (element in this) {
+            if (filterFunc(element, i++, this)) {
+                filtered.add(element)
+            }
+        }
+
+        return filtered
+    }
+
+    override public async filterParallel(async filterFunc(E x, Int i, Array<E> array) -> Bool, Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> E[] {
+        let array = E[]
+        let promiseArray = Array<Object>(count)
+
+        let filtered = Async.all<Bool>(this, { filterFunc(_, _, this) }, maxParallel, onAfterChunk)
+
+        var Int i = 0
+
+        for (element in this) {
+            if (filtered[i++] == true) {
+                array.add(element)
+            }
+        }
+
+        return array
+    }
+
+    override public async filterAsync(async filterFunc(E x, Int i, Array<E> array) -> Bool) -> E[] {
+        let array = E[]
+
+        var Int i = 0
+
+        for (element in this) {
+            if (filterFunc(element, i++, this)) {
+                array.add(element)
+            }
+        }
+
+        return array
+    }
+
+    override public filterAtIndex(Int index, Int count = 1) => filter({ _2 >= index && _2 < index + count })
+
+    public uniqueBy(prop(E x) -> Object) -> E[] {
+        let array = E[]
+        let values = Object[]
+
+        for (value in this) {
+            let x = prop(value)
+            if (!values.contains(x)) {
+                array.add(value)
+                values.add(x)
+            }
+        }
+
+        return array
+    }
+
+    public unique() -> E[] {
+        let array = E[]
+
+        for (value in this) {
+            if (!array.contains(value)) {
+                array.add(value)
+            }
+        }
+
+        return array
+    }
+
+    override public take(var Int howMany) -> E[] {
+        howMany = howMany > count ? count : howMany
+
+        let list = E[]
+
+        for (i in 0..howMany) {
+            list.add(data[i])
+        }
+
+        return list
+    }
+
+    override public skip(Int howMany) -> E[] {
+        let list = E[]
+
+        for (i in howMany..count) {
+            list.add(data[i])
+        }
+
+        return list
+    }
+
+    public takeWhile(filterFunc(E x, Int i, Array<E> array) -> Bool) -> E[] {
+        let array = E[]
+
+        var Int i = 0
+
+        for (value in this) {
+            if (!filterFunc(value, i++, this)) {
+                return array
+            }
+
+            array.add(value)
+        }
+
+        return array
+    }
+
+    public takeLast(Int howMany) -> E[] {
+        let array = E[]
+        let startIndex = Math.max(0, count - howMany)
+
+        if (startIndex == count) {
+            return array
+        }
+
+        var Int i = 0
+
+        for (value in this) {
+            if (i++ >= startIndex) {
+                array.add(value)
+            }
+        }
+
+        return array
+    }
+
+    public skipLast(Int howMany) => take(count - howMany)
+
+    override public join(
+        String delimiter = "",
+        var Int maxOutputCount = count,
+        Int ellipsePosition = maxOutputCount / 2,
+        String ellipse = "..."
+    ) -> String {
+        maxOutputCount = maxOutputCount > count ? count : maxOutputCount
+        maxOutputCount = maxOutputCount < 0 ? 0 : maxOutputCount
+
+        if (maxOutputCount >= count)
+            return reduce({ _acc + (_i > 0 ? delimiter : "") + _x }, "")
+
+        if (maxOutputCount == 0 && count > 0)
+            return ellipse
+
+        var str = ""
+
+        for (i in 0..ellipsePosition) {
+            str += data[i] + delimiter
+        }
+
+        str += ellipse
+
+        let start = count - (maxOutputCount - ellipsePosition)
+
+        for (i in start..count) {
+            str += delimiter + data[i]
+        }
+
+        return str
+    }
+
+    override public reverse() -> E[] {
+        let array = Array<E>(count)
+
+        var Int i = 0
+
+        for (element in this) {
+            array.data[count - ++i] = element
+        }
+
+        return array
+    }
+
+    public mergeSort(comparator(E a, E b) -> Int) -> E[] {
+        let sorted = clone()
+
+        if (count > 1) {
+            let mid = count / 2
+            let lefthalf = take(mid).mergeSort(comparator)
+            let righthalf = skip(mid).mergeSort(comparator)
+
+            var Int l = 0
+            var Int r = 0
+            var Int i = 0
+
+            while (l < lefthalf.count && r < righthalf.count) {
+                if (comparator(lefthalf[l], righthalf[r]) < 1) {
+                    sorted[i++] = lefthalf[l++]
+                } else {
+                    sorted[i++] = righthalf[r++]
+                }
+            }
+
+            while (l < lefthalf.count) {
+                sorted[i++] = lefthalf[l++]
+            }
+
+            while (r < righthalf.count) {
+                sorted[i++] = righthalf[r++]
+            }
+        }
+
+        return sorted
+    }
+
+    public quickSort(comparator(E a, E b) -> Int) => quickSortHelper(clone(), 0, count - 1, comparator)
+
+    static quickSortHelper<E>(E[] list, Int first, Int last, comparator(E a, E b) -> Int) => list {
+        if (first < last) {
+            let mid = partition(list, first, last, comparator)
+
+            quickSortHelper(list, first, mid - 1, comparator)
+            quickSortHelper(list, mid + 1, last, comparator)
+        }
+    }
+
+    static partition<E>(E[] list, Int first, Int last, comparator(E a, E b) -> Int) -> Int {
+        let pivot = list[first]
+
+        var l = first + 1
+        var r = last
+
+        while (l <= r) {
+            while (l <= r && comparator(list[l], pivot) <= 0) l++
+            while (l <= r && comparator(list[r], pivot) >= 0) r--
+
+            if (l <= r) list.swap(l, r)
+        }
+
+        list.swap(first, r)
+
+        return r
+    }
+
+    // [RequireGenericType E extends Comparable]
+    // public mergeSort() => mergeSort({ ((Comparable)_).compareTo((Comparable)_) })
+
+    // [RequireGenericType E extends Comparable]
+    // public quickSort() => quickSort({ ((Comparable)_).compareTo((Comparable)_) })
+
+    // [RequireGenericType E extends Comparable]
+    // public sort() => mergeSort()
+
+    public sort(comparator(E a, E b) -> Int) => mergeSort(comparator)
+
+    override public toString() => "[" + map({ _x != null && _x.class.isOfType(String.class) ? "\"#{_x}\"" : _x }).join(", ") + "]"
+
+    public copy() => skip(0)
+}

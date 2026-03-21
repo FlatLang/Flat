@@ -1,0 +1,23 @@
+package flat
+
+class {
+    visible static Double PI = 3.141592653
+
+    public static max(Long a, Long b) -> Long => a > b ? a : b
+    public static max(Int a, Int b) -> Int => a > b ? a : b
+    public static min(Long a, Long b) -> Long => a < b ? a : b
+    public static min(Int a, Int b) -> Int => a < b ? a : b
+    public static sign(Long num) -> Long => num > 0 ? 1 : (num < 0 ? -1 : 0)
+    public static abs(Long number) -> Long => number < 0 ? -number : number
+    public static abs(Int number) -> Int => number < 0 ? -number : number
+    public static abs(Double number) -> Double => number < 0 ? -number : number
+    public static gcd(Int a, Int b) -> Int {
+        let r = a % b
+
+        if (r == 0) {
+            return b
+        } else {
+            return gcd(b, r)
+        }
+    }
+}

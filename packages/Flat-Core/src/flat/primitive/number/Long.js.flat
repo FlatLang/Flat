@@ -1,0 +1,17 @@
+package flat/primitive/number
+
+class {
+    public static parseLong(String num) -> Int {
+        external {
+            return parseInt(#{num.chars.data});
+        }
+    }
+
+    public static native_array native toCharArray(Long value) -> Char[] {
+        external js {
+            return #{value}.toString();
+        }
+    }
+
+    public static toString(Long value) => String(toCharArray(value))
+}

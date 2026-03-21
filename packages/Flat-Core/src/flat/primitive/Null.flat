@@ -1,0 +1,12 @@
+package flat/primitive
+
+class extends String {
+    public construct() => super("null".chars)
+
+    public concat(String other) => "null#other"
+    public toJson(Bool: format = false, String: tab = "\t") => toString()
+    public Long hashCodeLong => 0
+
+    public equals(Object other) => !other
+    public equals(Null other) => !other
+}

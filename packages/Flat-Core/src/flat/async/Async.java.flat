@@ -1,0 +1,38 @@
+package flat/async
+
+class {
+    public static async all<Out>(Object[] promises) -> Out[] {
+        let array = Array<Out>(promises.count)
+
+        native var Out data
+
+        return array
+    }
+
+    public static async all<Out, In>(
+        In[] values,
+        async toPromise(In, Int) -> Out,
+        Int maxParallel = -1,
+        async onAfterChunk(Int count) = {}
+    ) -> Out[] {
+        let array = Array<Out>(values.count)
+
+        native var Object input
+        native var Out data
+        native var Int localIndex
+
+        var Int step = maxParallel
+
+        if (maxParallel <= 0) {
+            step = values.count
+        }
+
+        for (var Int i = 0; i < values.count; i += step) {
+            var Int count = 0
+
+            onAfterChunk(count)
+        }
+
+        return array
+    }
+}

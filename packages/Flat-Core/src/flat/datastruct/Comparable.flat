@@ -1,0 +1,5 @@
+package flat/datastruct
+
+trait<E> {
+    public compareTo(E other) -> Int
+}

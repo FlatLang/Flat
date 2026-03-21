@@ -1,0 +1,30 @@
+package flat/datastruct/list
+
+class implements Iterator<Int> {
+    visible var Int position
+
+    visible Bool hasNext => position < range.end
+    visible Bool hasPrevious => position > range.start
+
+    visible Int stepNext {
+        get {
+            if (hasNext) {
+                return position++
+            }
+
+            throw NoSuchElementException()
+        }
+    }
+
+    visible Int current => position
+    visible Int previous => position - 1
+    visible Int next => position + 1
+
+    public construct(private IntRange range) {
+        reset()
+    }
+
+    public reset() => this {
+        position = range.start
+    }
+}

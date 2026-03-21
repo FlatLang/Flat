@@ -1,0 +1,5 @@
+package flat/operators
+
+trait<In, Out> {
+    public multiply(In value) -> Out
+}

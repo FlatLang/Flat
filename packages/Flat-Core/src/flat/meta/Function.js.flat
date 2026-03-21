@@ -1,0 +1,29 @@
+package flat/meta
+
+class {
+    public call(Object obj, Object[] args = Array()) -> Object {
+        external {
+            return #{obj}[#{name}.chars.data].apply(#{obj}, #{args}.data);
+        }
+    }
+
+    [Target not es6]
+    public callStatic(Class c, Object[] args = Array()) -> Object {
+        if (name == "construct") {
+            external {
+                return flatConstructors["new" + #{c.rootName}.chars.data].apply(null, #{args}.data);
+            }
+        }
+
+        external {
+            return #{c.jsClass}[#{name}.chars.data].apply(null, #{args}.data);
+        }
+    }
+
+    [Target es6]
+    public callStatic(Class c, Object[] args = Array()) -> Object {
+        external {
+            return #{c.jsClass}[#{name}.chars.data].apply(null, #{args}.data);
+        }
+    }
+}

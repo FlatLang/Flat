@@ -1,0 +1,5 @@
+package flat/datastruct/list
+
+trait<E> {
+    visible Iterator<E> iterator
+}

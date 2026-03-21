@@ -1,0 +1,36 @@
+package flat/datastruct/list
+
+class {
+    public construct(Int count) {
+        this.count = count
+        this.data = new Char[count]
+    }
+
+    public reverse() -> StringCharArray {
+        let array = StringCharArray(count)
+
+        for (i in 0..count) {
+            array[count - i - 1] = this[i]
+        }
+
+        return array
+    }
+
+    public toCharArray() -> Char[] {
+        let array = Array<Char>(count)
+
+        for (i in 0..count) {
+            let c = data[i]
+
+            array[i] = c
+        }
+
+        return array
+    }
+
+    public toString() => String(this)
+
+    override public equals(Object other) => (other || !this) && other.class.isOfType(StringCharArray.class) && equals((StringCharArray)other)
+
+    public equals(StringCharArray other) => count == other.count && toCharArray() == other.toCharArray()
+}

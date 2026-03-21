@@ -1,0 +1,34 @@
+package flat/primitive/number
+
+import flat/datastruct
+import flat/primitive
+import flat/operators
+
+abstract class<Type extends Number> extends Primitive implements PlusOperator<Type, Type>, PlusEqualsOperator<Type, Type>, MinusOperator<Type, Type>, MinusEqualsOperator<Type, Type>, MultiplyOperator<Type, Type>, MultiplyEqualsOperator<Type, Type>, Comparable<Type> {
+    visible Double realValue => 0
+    visible Long integerValue => 0
+
+    public abstract plusInteger(Long other) -> Long
+    public abstract plusReal(Double other) -> Double
+
+    public abstract plusEqualsInteger(Long other) -> Long
+    public abstract plusEqualsReal(Double other) -> Double
+
+    public abstract minusInteger(Long other) -> Long
+    public abstract minusReal(Double other) -> Double
+
+    public abstract minusEqualsInteger(Long other) -> Long
+    public abstract minusEqualsReal(Double other) -> Double
+
+    public abstract multiplyInteger(Long other) -> Long
+    public abstract multiplyReal(Double other) -> Double
+
+    public abstract multiplyEqualsInteger(Long other) -> Long
+    public abstract multiplyEqualsReal(Double other) -> Double
+
+    public abstract compareToInteger(Long other) -> Long
+    public abstract compareToReal(Double other) -> Double
+
+    public abstract equalsInteger(Long other) -> Bool
+    public abstract equalsReal(Double other) -> Bool
+}

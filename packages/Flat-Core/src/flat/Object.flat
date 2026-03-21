@@ -1,0 +1,9 @@
+package flat
+
+class {
+    public equals(Object another) => referenceEquals(this, another)
+    public toString() -> String => "{#this.class.name @#hashCode}"
+    public toJson(Bool: format = false, String: tab = "\t") => "{}"
+
+    visible Long hashCodeLong => 0
+}

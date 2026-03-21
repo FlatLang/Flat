@@ -1,0 +1,29 @@
+package flat/exception
+
+class {
+    visible ExceptionData parent
+
+    visible CaughtException[] caught
+
+    public Exception thrownException
+
+    public addCaught(Class type, Bool soft = false) {
+        caught.add(CaughtException(type, soft))
+    }
+
+    getDataByException(Exception exception, Bool soft = false) -> ExceptionData {
+        var data = this
+
+        while (true) {
+            if (data.caught.any({ (!soft || _x.soft) && exception.class.isOfType(_x.type) })) {
+                return data
+            } else if (!data.parent) {
+                return soft ? null : data
+            }
+
+            data = data.parent
+        }
+    }
+
+    public toString() => "{Thrown: #thrownException, Caught: #caught}"
+}

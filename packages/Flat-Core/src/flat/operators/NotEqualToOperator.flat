@@ -1,0 +1,5 @@
+package flat/operators
+
+trait<E> {
+    public notEqualTo(E another) -> Bool
+}

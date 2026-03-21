@@ -1,0 +1,90 @@
+package flat/primitive/number
+
+import flat/datastruct
+import flat/operators
+
+class extends Number<Int> implements Integer {
+    public Long hashCodeLong => value
+
+    visible static Int MAX_VALUE =    2147483647
+    visible static Int MIN_VALUE = -2147483648
+
+    public Double realValue => (Double)value
+    public Long integerValue => value
+
+    public construct(public Int value) {}
+
+    public compareTo(Int other) => this.value - other
+    public compareToReal(Double other) => this.value - other
+    public compareToInteger(Long other) => this.value - other
+
+    public static compareTo(Int value, Int other) => value - other
+    public static compareToReal(Int value, Double other) => value - other
+    public static compareToInteger(Int value, Long other) => value - other
+
+    public plus(Int other) => this.value + other
+    public plusReal(Double other) => this.value + other
+    public plusInteger(Long other) => this.value + other
+
+    public plusEquals(Int other) => this.value += other
+    public plusEqualsReal(Double other) => this.value += other
+    public plusEqualsInteger(Long other) => this.value += other
+
+    public minus(Int other) => this.value - other
+    public minusReal(Double other) => this.value - other
+    public minusInteger(Long other) => this.value - other
+
+    public minusEquals(Int other) => this.value -= other
+    public minusEqualsReal(Double other) => this.value -= other
+    public minusEqualsInteger(Long other) => this.value -= other
+
+    public multiply(Int other) => this.value + other
+    public multiplyReal(Double other) => this.value * other
+    public multiplyInteger(Long other) => this.value * other
+
+    public multiplyEquals(Int other) => this.value *= other
+    public multiplyEqualsReal(Double other) => this.value *= other
+    public multiplyEqualsInteger(Long other) => this.value *= other
+
+    public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Int)other == value
+    public equals(Int other) => this.value == other
+    public equalsReal(Double other) => this.value == other
+    public equalsInteger(Long other) => this.value == other
+
+    public static equals(Int value, Int other) => value == other
+    public static equalsReal(Int value, Double other) => value == other
+    public static equalsInteger(Int value, Long other) => value == other
+
+    public toString() => toString(value)
+
+    public static numDigits(Int number) => Long.numDigits(number)
+    public static toString(Int value) => Long.toString(value)
+    public static toJson(Int value, Bool: format = false, String: tab = "\t") => toString(value)
+    public static hashCodeLong(Int value) => Math.abs(value)
+    public static plus(Int a, Long b) => a + b
+
+    public toFileSize() => toFileSize(value)
+    public static toFileSize(Int value) => Long.toFileSize(value)
+    public toEnglish() => toEnglish(value)
+    public static toEnglish(Int value) => Long.toEnglish(value)
+
+    public static parseOr(String num, Int default) => parseInt(num) {
+        if (!num) return default
+        if (num.isEmpty) return default
+
+        for (i in 0..num.count) {
+            let c = num[i]
+
+            if (i == 0 && c == '-') {
+                if (num.count > 1) continue
+                return default
+            }
+
+            match c {
+                '0' => '1' => '2' => '3' => '4' => '5' => '6' => '7' => '8' => '9' => continue
+            }
+
+            return default
+        }
+    }
+}

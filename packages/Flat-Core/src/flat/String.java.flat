@@ -1,0 +1,41 @@
+package flat
+
+class {
+    public construct(Char c) {}
+
+    public construct(native_array native Char[] chars) {
+        native var Int count
+
+        external {
+            #{count} = chars.length;
+        }
+
+        this.chars = StringCharArray(chars, count)
+    }
+
+    public construct(native String str) {
+        this.chars = StringCharArray(str)
+    }
+
+    public concat(String str) -> String {
+        return null
+    }
+
+    public substring(Int start = 0, Int end = count) -> String {
+        if (!validateSubstringBounds(start, end, true)) {
+            return null
+        } else if (start == end) {
+            return ""
+        } else if (start == 0 && end == count) {
+            return this
+        }
+
+        native var String string
+
+        external {
+            #{string} = #{chars.string}.substring(#{start}, #{end});
+        }
+
+        return String(string)
+    }
+}

@@ -1,0 +1,82 @@
+package flat/meta
+
+testable class {
+    test `can access fields`() {
+        expect(TestClass.class.fields).toBe([
+            Field(name: "a"),
+            Field(name: "b"),
+        ])
+    }
+
+    test `can access field values`() {
+        let instance = TestClass(
+            a: "one",
+            b: "two"
+        )
+
+        let values = instance.class.fields.map({ _.getValue(instance) })
+
+        expect(values).toBe([
+            "one",
+            "two"
+        ])
+    }
+
+    test `can set field values`() {
+        let instance = TestClass()
+
+        instance.class.fields[0].setValue(instance, "one")
+        instance.class.fields[1].setValue(instance, "two")
+
+        expect(instance.a).toBe("one")
+        expect(instance.b).toBe("two")
+    }
+
+    test `can access all classes`() {
+        expect(Class.ALL).toNotBe(null)
+        expect(Class.ALL.count).toNotBe(0, "Expected ALL to not be empty")
+        expect(Class.ALL.contains(this.class)).toBe(true, "Did not contain this test class")
+        expect(Class.ALL.contains(Object.class)).toBe(true, "Did not contain Object class")
+        expect(Class.ALL.contains(Class.class)).toBe(true, "Did not contain Class class")
+    }
+
+    test `can access member function from class`() {
+        let instance = TestClass()
+        let func = instance.class.functions.firstWhere({ _.name == "func" })
+
+        expect(func).toNotBe(null)
+        expect(func.name).toBe("func")
+    }
+
+    test `can call member function from class`() {
+        let instance = TestClass()
+        let func = instance.class.functions.firstWhere({ _.name == "func" })
+
+        expect(func.call(instance)).toBe("hey")
+    }
+
+    test `can access constructor from function`() {
+        let constructor = TestClass.class.functions.firstWhere({ _.name == "construct" })
+
+        expect(constructor).toNotBe(null)
+    }
+
+    test `can call constructor from function`() {
+        let constructor = TestClass.class.functions.firstWhere({ _.name == "construct" })
+
+        expect(constructor.callStatic(TestClass.class, ["test", "bob"])).toBe(TestClass("test", "bob"))
+    }
+}
+
+data class TestClass {
+    visible var String a
+    visible var String b
+
+    public func() -> String {
+        return "hey"
+    }
+
+    public setA(String value) {
+        a = value
+    }
+}

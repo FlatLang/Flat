@@ -1,0 +1,15 @@
+package flat/meta
+
+class {
+    public getValue(Object obj) -> Object {
+        external {
+            return #{obj}[#{name}.chars.data];
+        }
+    }
+
+    public setValue(Object obj, Object value) -> Object {
+        external {
+            return #{obj}[#{name}.chars.data] = #{value};
+        }
+    }
+}
