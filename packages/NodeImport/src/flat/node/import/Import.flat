@@ -1,0 +1,7 @@
+package flat/node/import
+
+class {
+    public native static async import(String module) -> Object {
+        return null
+    }
+}

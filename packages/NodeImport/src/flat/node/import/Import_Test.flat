@@ -1,0 +1,24 @@
+package flat/node/import
+
+import flat/node/import/Import
+
+testable class {
+    [Target js]
+    test async `can import crypto`() {
+        let crypto = Import.import("crypto")
+
+        expect(crypto).toNotBe(null)
+    }
+
+    [Target js]
+    test async `can use crypto`() {
+        let crypto = Import.import("crypto")
+        var native native_array Char[] data
+
+        external {
+            #{data} = #{crypto}.randomUUID();
+        }
+
+        expect(String(data).count).toBe(36)
+    }
+}

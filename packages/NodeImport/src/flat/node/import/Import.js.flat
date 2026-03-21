@@ -1,0 +1,13 @@
+package flat/node/import
+
+class {
+    public native static async import(String module) -> Object {
+        external {
+            const mod = await import(#{[Comment "@vite-ignore"]}#{module.chars.data});
+
+            return mod.default;
+        }
+
+        return null
+    }
+}
