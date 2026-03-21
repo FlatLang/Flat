@@ -1,0 +1,46 @@
+package flat/redis
+
+import flat/future
+
+class RedisConnection {
+        [Target js] external type JsClient
+        [Target js] static JsClient jsClient
+        [Target js] static JsRedis jsRedis
+
+        [Target not js]
+        public construct() {}
+
+        [Target js]
+        public construct() {
+                if (!jsRedis) {
+                        external {
+                                #{jsRedis} = require("redis");
+                        }
+                }
+                jsClient = jsRedis.createClient()
+        }
+
+        [Target not js]
+        get<T>(String key) -> Future<T> => null
+
+        [Target js]
+        get<T>(String key) -> Future<T> {
+                let future = Future.create()
+                native var Object data
+                native_array native var Char[] dataChars
+
+                external {
+                        #{jsClient}.get(#{key.chars.data}, (error, reply) => {
+                                if (error) {
+                                        #{dataChars} = error.toString() || "";
+                                        #{future.error(Exception(String(dataChars)))};
+                                } else {
+                                        #{data} = reply;
+                                        #{future.complete(data)};
+                                }
+                        });
+                }
+
+                return future
+        }
+}

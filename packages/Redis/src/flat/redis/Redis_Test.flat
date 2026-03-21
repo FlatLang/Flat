@@ -1,0 +1,9 @@
+package flat/redis
+
+testable class {
+    test `can create`() {
+        let value = "test"
+
+        expect(value).toNotBe(null)
+    }
+}
