@@ -1,0 +1,8 @@
+package flat/system
+
+data class {
+    visible String[] stdout
+    visible String[] stderr
+    visible String[] output
+    visible Int exitCode
+}

@@ -1,0 +1,64 @@
+package flat/system
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    visible static String workingDirectory {
+        get {
+            native_array native var Char[] data
+
+            external {
+
+            }
+
+            return String(data)
+        }
+    }
+
+    visible static String homeDirectory {
+        get {
+            native_array native var Char[] data
+
+            external {
+
+            }
+
+            return String(data)
+        }
+    }
+
+    public static async execute(String[] arguments, String workingDirectory = null, Bool: silent = false, Bool: shell = true) -> ExecutionResponse {
+        native_array native var Char[] dataBuffer
+
+        let stdout = Array<String>()
+        let stderr = Array<String>()
+
+        var native Int exitCode
+
+        let commandName = arguments.first
+        let processArguments = arguments.skip(1).map({ '"' + _.trimSurrounding('"', count: 1) + '"' })
+
+        external {
+
+        }
+
+        return ExecutionResponse(
+            stdout: stdout,
+            stderr: stderr,
+            exitCode: exitCode
+        )
+    }
+
+    public static async execute(String command, String workingDirectory = null, Bool: silent = false, Bool: shell = true) =>
+        execute(command.splitOnTopLevel(SyntaxStringFunctions.WHITESPACE), workingDirectory, silent: silent, shell: shell)
+
+    public static getEnv(String name) -> String {
+        native_array native var Char[] data
+
+        external {
+
+        }
+
+        return String(data)
+    }
+}

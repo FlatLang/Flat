@@ -1,0 +1,157 @@
+package flat/system
+
+import flat/regex
+
+import flat/regex/RegexStringExtensions
+import flat/extensions/SyntaxStringFunctions
+
+import static flat/node/import/Import
+
+class {
+    visible static String workingDirectory {
+        get {
+            native_array native var Char[] data
+
+            external {
+                #{data} = process.cwd();
+            }
+
+            return String(data)
+        }
+    }
+
+    visible static String homeDirectory {
+        get {
+            native_array native var Char[] data
+
+            external {
+                #{data} = #{SystemGlobal.os}.homedir();
+            }
+
+            return String(data)
+        }
+    }
+
+    public static sanitizeCliArgument(String argument) -> String {
+        if (argument.findWhitespaceOutsideOfString() != -1) {
+            return '"' + argument.replace("\"", "\\\"") + '"'
+        }
+
+        let doubleIndex = argument.indexOf('"')
+        let singleIndex = argument.indexOf('\'')
+
+        if (doubleIndex > 0 && (singleIndex == -1 || doubleIndex < singleIndex)) {
+            return '"' + argument.replace("\"", "\\\"") + '"'
+        }
+        if (singleIndex > 0 && (doubleIndex == -1 || singleIndex < doubleIndex)) {
+            return '\'' + argument.replace("'", "\\'") + '\''
+        }
+
+        return argument
+    }
+
+    public static async execute(String[] arguments, String workingDirectory = null, Bool: silent = false, Bool: shell = true) -> ExecutionResponse {
+        let processArguments = arguments.map({ sanitizeCliArgument(_) })
+
+        return executeExact(processArguments, workingDirectory, silent, shell)
+    }
+
+    public static async executeExact(String[] arguments, String workingDirectory = null, Bool: silent = false, Bool: shell = true) -> ExecutionResponse {
+        native_array native var Char[] dataBuffer
+
+        let stdout = Array<String>()
+        let stderr = Array<String>()
+        let output = Array<String>()
+
+        var native Int exitCode
+
+        let commandName = arguments.first
+        let processArguments = arguments.skip(1)
+
+        log.debug("Running command in '#{workingDirectory}': #{commandName} with args: '#{processArguments}'")
+
+        external {
+            #{exitCode} = await new Promise((resolve, reject) => {
+                try {
+                    var childProcess = #{SystemGlobal.childProcess}.spawn(
+                        #{commandName.chars.data},
+                        #{processArguments.map({ _.chars.data }).data},
+                        {
+                            cwd: #{workingDirectory ? workingDirectory.chars.data : ".".chars.data},
+                            shell: #{shell}
+                        }
+                    );
+
+                    childProcess.stdout.on('data', (data) => {
+                        #{dataBuffer} = data.toString();
+                        #{output.add(String(dataBuffer))};
+                        #{dataBuffer} = data.toString();
+                        #{stdout.add(String(dataBuffer))};
+                        if (#{!silent}) {
+                            process.stdout.write(#{dataBuffer});
+                        }
+                    });
+
+                    childProcess.stderr.on('data', (data) => {
+                        #{dataBuffer} = data.toString();
+                        #{output.add(String(dataBuffer))};
+                        #{dataBuffer} = data.toString();
+                        #{stderr.add(String(dataBuffer))};
+                        if (#{!silent}) {
+                            process.stderr.write(#{dataBuffer});
+                        }
+                    });
+
+                    childProcess.on('error', (err) => {
+                        #{dataBuffer} = err.toString();
+                        reject(#{Exception(String(dataBuffer))});
+                    });
+
+                    childProcess.on('exit', (code) => {
+                        resolve(code);
+                    });
+                } catch (e) {
+                    #{dataBuffer} = e.toString();
+                    reject(#{Exception(String(dataBuffer))});
+                }
+            });
+        }
+
+        return ExecutionResponse(
+            stdout,
+            stderr,
+            output,
+            exitCode
+        )
+    }
+
+    public static async execute(String command, String workingDirectory = null, Bool: silent = false, Bool: shell = true) -> ExecutionResponse {
+        let args = command.splitOnTopLevel(SyntaxStringFunctions.WHITESPACE)
+
+        return executeExact(args, workingDirectory, silent: silent, shell: shell)
+    }
+
+    public static getEnv(String name) -> String {
+        native_array native var Char[] data
+
+        external {
+            #{data} = process.env[#{name.chars.data}];
+
+            if (typeof #{data} !== 'string') {
+                return #{null};
+            }
+        }
+
+        return String(data)
+    }
+
+    public static class SystemGlobal {
+        visible static native Object childProcess
+        visible static native Object os
+
+        async static {
+            childProcess = import("child_process")
+            os = import("os")
+        }
+    }
+}
