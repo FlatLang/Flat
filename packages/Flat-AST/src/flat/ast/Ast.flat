@@ -1,0 +1,7 @@
+package flat/ast
+
+class {
+    public static main(String[] args) {
+
+    }
+}

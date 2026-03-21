@@ -1,0 +1,7 @@
+package flat/ast
+
+import flat/compiler/models
+
+data class extends Node {
+    visible Token value
+}

@@ -1,0 +1,29 @@
+{
+  "name": "Flat-AST",
+  "version": "0.1.0",
+  "description": "Flat Compiler AST",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "mainClass": "flat/ast/Ast",
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Flat-Compiler-Models.git": "master"
+      }
+    },
+    "test": {
+      "mainClass": "flat/ast/Ast_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}

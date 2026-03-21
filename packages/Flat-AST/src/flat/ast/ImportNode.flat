@@ -1,0 +1,8 @@
+package flat/ast
+
+import flat/compiler/models
+
+data class extends Node {
+    visible String location
+    visible Token type
+}

@@ -1,0 +1,4 @@
+package flat/ast
+
+data class extends LiteralNode {
+}

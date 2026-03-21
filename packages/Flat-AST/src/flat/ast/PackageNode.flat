@@ -1,0 +1,5 @@
+package flat/ast
+
+data class extends Node {
+    visible String location
+}

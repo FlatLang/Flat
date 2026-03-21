@@ -1,0 +1,11 @@
+package flat/ast
+
+import flat/ast/Ast
+
+testable class {
+    test `can create`() {
+        let value = Ast()
+
+        expect(value).toNotBe(null)
+    }
+}

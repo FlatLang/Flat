@@ -1,0 +1,7 @@
+package flat/ast
+
+data class extends Node {
+    static visible lazy String identifier => null
+    static visible lazy Array<Class<Node>> allowedBaseParents => null
+    static visible lazy Array<Class<Node>> allowedParents => null
+}
