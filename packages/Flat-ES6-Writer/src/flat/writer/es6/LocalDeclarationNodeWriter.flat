@@ -1,0 +1,14 @@
+package flat/writer/es6
+
+import flat/ast
+import flat/compiler/models/Token
+import flat/io
+import flat/log/Logger
+import flat/eventstream/EventStream
+import flat/writer
+
+class extends NodeWriter<LocalDeclarationNode> {
+    public write(LocalDeclarationNode node, WriterOutputStream output) {
+        output.writeString("")
+    }
+}

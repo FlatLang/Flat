@@ -1,0 +1,6 @@
+package flat/writer/es6
+
+import flat/writer
+
+class extends WriterOutputStream {
+}

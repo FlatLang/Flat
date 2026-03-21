@@ -1,0 +1,25 @@
+package flat/writer/es6
+
+import flat/ast
+import flat/ast/visitor
+import flat/compiler/models/Token
+import flat/io
+import flat/parser
+import flat/parser/matchers
+import flat/parser/flat
+import flat/log/Logger
+import flat/eventstream/EventStream
+import flat/writer
+
+class extends Writer {
+    public write(EventStream nodeStream) -> EventStream {
+        let outputStream = Es6OutputStream()
+        let visitor = Es6Visitor(outputStream)
+        let visitorStream = Visitor().visit(nodeStream, visitor)
+        return visitorStream
+    }
+
+    override public getPattern(Class<Node> nodeType) -> TokenPattern {
+        return null
+    }
+}
