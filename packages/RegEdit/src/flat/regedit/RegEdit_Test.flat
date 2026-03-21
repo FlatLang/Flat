@@ -1,0 +1,11 @@
+package flat/regedit
+
+import flat/regedit/RegEdit
+
+testable class {
+    test `can create`() {
+        let value = RegEdit()
+
+        expect(value).toNotBe(null)
+    }
+}

@@ -1,0 +1,11 @@
+package flat/regedit
+
+import flat/log/Logger
+
+class {
+    static Logger log = Logger(RegEdit_Command.class)
+
+    public static async main(String[] args) {
+        log.info(RegEdit.list("HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment").toJson())
+    }
+}

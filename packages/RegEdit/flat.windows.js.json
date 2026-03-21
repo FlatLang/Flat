@@ -1,0 +1,9 @@
+{
+  "sources": {
+    "main": {
+      "dependencies": {
+        "npm:regedit": "5.0.0"
+      }
+    }
+  }
+}

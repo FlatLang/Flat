@@ -1,0 +1,13 @@
+package flat/regedit
+
+import flat/io/File
+import flat/datastruct/HashMap
+
+class {
+    static File logFile = File("log/registry.txt")
+
+    public static async list(String value) =>
+        list([value]).getOrDefault(value, { HashMap<String, Object>() })
+
+    public static async list(String[] values) -> HashMap<String, HashMap<String, Object>> {}
+}

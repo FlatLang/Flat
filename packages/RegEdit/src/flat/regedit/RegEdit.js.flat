@@ -1,0 +1,88 @@
+package flat/regedit
+
+import flat/io/File
+import flat/io/FileWriter
+import flat/datastruct/HashMap
+
+class {
+    public static async list(String[] values) -> HashMap<String, HashMap<String, Object>> {
+        native var Object result
+
+        external {
+            #{result} = await new Promise((resolve, reject) => {
+                const rawValues = values.data.map(x => x.chars.data);
+
+                #{RegEditGlobal.regedit}.list(rawValues, (err, result) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }
+
+        return HashMap.jsObjectToFlatHashMap(result)
+    }
+
+    public static async putValue(
+        String key,
+        HashMap<String, Object> value
+    ) =>
+        putValues(HashMap():add(key, value))
+
+    public static async putValues(HashMap<String, HashMap<String, Object>> values) {
+        let keys = values.map({ _.key })
+        let valuesJson = values.toJson()
+
+        appendLog("|
+            Updating values
+                request: #{valuesJson}
+                previousValues: #{list(keys).toJson()}
+            |")
+
+        native var Object result
+
+        external {
+            await new Promise((resolve, reject) => {
+                const request = JSON.parse(#{valuesJson.chars.data});
+
+                #{RegEditGlobal.regedit}.putValue(request, (err, result) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(result);
+                    }
+                });
+            });
+        }
+    }
+
+    public static setExternalVBSLocation(String location) {
+        external {
+            #{RegEditGlobal.regedit}.setExternalVBSLocation(#{location.chars.data});
+        }
+    }
+
+    static async appendLog(String message) {
+        logFile.getParent().mkdir()
+        FileWriter(logFile):append(message + "\n\n"):close()
+    }
+
+    public static class RegEditGlobal {
+        external type RegEditType
+        private static var RegEditType _regedit
+        visible static RegEditType regedit {
+            get {
+                external {
+                    if (!#{_regedit}) {
+                        #{_regedit} = require('regedit');
+                        #{_regedit}.setExternalVBSLocation(__dirname + '/node_modules/regedit/vbs');
+                    }
+                }
+
+                return _regedit
+            }
+        }
+    }
+}

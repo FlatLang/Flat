@@ -1,0 +1,34 @@
+{
+  "name": "RegEdit",
+  "version": "0.1.0",
+  "description": "Flat Windows Registry Editor",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Datastruct.git": "master",
+        "https://github.com/FlatLang/Logger.git": "master"
+      }
+    },
+    "cmd": {
+      "mainClass": "flat/regedit/RegEdit_Command",
+      "source": "src",
+      "dependencies": {}
+    },
+    "test": {
+      "mainClass": "flat/regedit/RegEdit_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}
