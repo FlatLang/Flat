@@ -1,0 +1,55 @@
+package flat/elevate
+
+import flat/log/Logger
+
+class {
+    static Logger log = Logger(Elevate.class)
+
+    public static async elevate(String command) =>
+        elevate([command])
+
+    public static async elevate(String[] command) {
+        if (command.count == 0) {
+            throw Exception("Command cannot be empty")
+        }
+
+        let commandString = (command[0] + " " + command.skip(1).map({ "\"#_\"" }).join(" ")).trim()
+
+        log.debug("Executing command with elevated privileges: \"#commandString\"")
+
+        external {
+            const result = await new Promise((resolve, reject) => {
+                const commandData = #{commandString.chars.data};
+                #{ElevateGlobal.nodeWindows}.elevate(commandData, {}, (...args) => {
+                    const [error, stdout, stderr] = args;
+                    resolve({
+                        error,
+                        stdout,
+                        stderr
+                    });
+                });
+            });
+        }
+    }
+
+    public static async isAdminUser() => false {
+        external {
+            return await new Promise((resolve, reject) => {
+                #{ElevateGlobal.nodeWindows}.isAdminUser((isAdmin) => {
+                    resolve(isAdmin);
+                });
+            });
+        }
+    }
+
+    public static class ElevateGlobal {
+        external type NodeWindowsType
+        visible static lazy NodeWindowsType nodeWindows {
+            get {
+                external {
+                    return require('node-windows');
+                }
+            }
+        }
+    }
+}

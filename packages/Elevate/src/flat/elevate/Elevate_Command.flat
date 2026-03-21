@@ -1,0 +1,7 @@
+package flat/elevate
+
+class {
+    public static async main(String[] args) {
+        Elevate.elevate(args.skip(1))
+    }
+}
