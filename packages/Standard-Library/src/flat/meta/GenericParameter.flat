@@ -1,0 +1,5 @@
+package flat/meta
+
+class GenericParameter {
+    public construct(visible Type value, visible Type defaultValue) {}
+}

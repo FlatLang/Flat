@@ -1,0 +1,5 @@
+package flat/meta
+
+class GenericArgument {
+    public construct(visible Type value) {}
+}

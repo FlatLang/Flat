@@ -1,0 +1,5 @@
+*.o
+*.gch
+*.d
+.novalib/*/
+dist/
