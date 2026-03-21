@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "dependencies": {}
+    },
+    "test": {
+      "outFile": "test.js",
+      "dependencies": {}
+    }
+  }
+}

@@ -1,0 +1,132 @@
+package flat/fucli
+
+import flat/log
+
+class {
+    static Logger log = Logger(FuCli.class)
+
+    visible CliArg[] usedArgs = CliArg[]
+
+    CliArg binaryArg
+
+    visible String binaryName => binaryArg.name
+    visible CliArg[] args => binaryArg.args
+    visible String description => binaryArg.description
+
+    this[String argName] => binaryArg[argName]
+
+    public construct(
+        String binaryName,
+        CliArg[] args,
+        String: description = null
+    ) {
+        binaryArg = CliArg(
+            binaryName,
+            description: description,
+            args: args
+        )
+    }
+
+    public parse(List<String> strArgs) {
+        let argsIterator = strArgs.iterator
+
+        while (argsIterator.hasNext) {
+            let value = argsIterator.stepNext
+
+            log.debug("Searching for arg for value \"#{value}\"")
+            if (let arg = getArg(value)) {
+                log.debug("Got arg for value \"#{value}\": #{arg}")
+                usedArgs.add(arg)
+                arg.enabled = true
+
+                if (arg.wildcard) arg.values.add(value)
+            } else {
+                throw InvalidCliArgumentException(value)
+            }
+        }
+
+        if (usedArgs.isEmpty || usedArgs.first.name != "help") {
+            usedArgs.forEach(validateArg)
+        }
+    }
+
+    validateArg(CliArg arg) {
+        log.debug("|
+            Validating arg #{arg.name}
+                required: #{arg.required}
+                values: #{arg.values}
+                minCount: #{arg.minCount}
+                maxCount: #{arg.maxCount}
+            |")
+        if (arg.required && arg.values.count < arg.minCount) {
+            throw RequiredCliArgumentException(arg)
+        }
+
+        if (!arg.args) return
+
+        arg.args.forEach(validateArg)
+    }
+
+    getArg(String value) -> CliArg => null {
+        let lastUsed = usedArgs.lastWhere({ _.args != null })
+        Bool greedy = lastUsed?.greedy ?: false
+        
+        if (greedy) {
+            log.debug("Searching non-wildcard sub-arguments for #{usedArgs.lastWhere({ _.args != null })}")
+            if (CliArg childArg = lastUsed?.getArg(value)) return childArg
+            log.debug("Searching wildcard sub-arguments for #{usedArgs.lastWhere({ _.args != null })}")
+            if (CliArg childWildcardArg = lastUsed?.getWildcardArg(value)) return childWildcardArg
+            log.debug("Searching non-wildcard global arguments")
+            if (CliArg globalArg = binaryArg.getArg(value)) return globalArg
+            log.debug("Searching wildcard global arguments")
+            if (CliArg globalWildcardArg = binaryArg.getWildcardArg(value)) return globalWildcardArg
+        } else {
+            log.debug("Searching non-wildcard sub-arguments for #{usedArgs.lastWhere({ _.args != null })}")
+            if (CliArg childArg = lastUsed?.getArg(value)) return childArg
+            log.debug("Searching non-wildcard global arguments")
+            if (CliArg globalArg = binaryArg.getArg(value)) return globalArg
+            log.debug("Searching wildcard sub-arguments for #{usedArgs.lastWhere({ _.args != null })}")
+            if (CliArg childWildcardArg = lastUsed?.getWildcardArg(value)) return childWildcardArg
+            log.debug("Searching wildcard global arguments")
+            if (CliArg globalWildcardArg = binaryArg.getWildcardArg(value)) return globalWildcardArg
+        }
+    }
+
+    class InvalidCliArgumentException extends Exception {
+        public construct(String argument) =>
+            super("Invalid CLI argument: '#argument'")
+    }
+
+    class RequiredCliArgumentException extends Exception {
+        public construct(CliArg arg) =>
+            super(
+                arg.minCount == 1
+                    ? "CLI argument #{arg} is required but was not given"
+                    : "#{arg.minCount} #{arg} CLI arguments are required but #{arg.values.count == 0 ? "0 were" : (arg.values.count == 1 ? "only 1 was" : "only #{arg.values.count} were")} given"
+            )
+    }
+
+    public getHelp(
+        Bool formatted = true,
+        Int lineLength = 80
+    ) -> CliArgHelp {
+        let helpArgs = [binaryArg]
+        helpArgs.addAll(usedArgs.skip(1))
+
+        return helpArgs.last.getHelp(helpArgs, true, formatted, lineLength)
+    }
+
+    public getAllHelp(
+        Bool formatted = true,
+        Int lineLength = 80
+    ) -> CliArgHelp[] {
+        let helpArgs = [binaryArg]
+        helpArgs.addAll(usedArgs.skip(1))
+
+        return helpArgs.last.getAllHelp(helpArgs, formatted, lineLength)
+    }
+
+    override public toString() => usedArgs.stream()
+        .map({ _x.values.isNotEmpty ? _x.values.join(" ") : _x.toString() })
+        .join(" ")
+}

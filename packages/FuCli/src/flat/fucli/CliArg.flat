@@ -1,0 +1,364 @@
+package flat/fucli
+
+import flat/log
+
+import static flat/colorizer/Colorizer
+import static flat/console/EscapeCode
+
+class {
+    static Logger log = Logger(CliArg.class)
+
+    var Bool enabled = false
+
+    this[String argName] => args.firstWhere({ _.name == argName })
+
+    var String value {
+        get {
+            return values.first
+        }
+
+        set {
+            if (values.isEmpty) {
+                values = [value]
+            } else {
+                values[0] = value
+            }
+        }
+    }
+
+    visible String[] values = Array<String>()
+
+    public construct(
+        String name,
+        String[] aliases = Array<String>(),
+        Int: count = 0,
+        String: description = null,
+        CliArg[]: args = null,
+        Bool: wildcard = false,
+        Bool: greedy = false,
+        Bool: required = false,
+        Bool: hidden = false,
+        String: argumentHelpDisplay = null,
+        String: commandHelpDisplay = null,
+        String: optionHelpDisplay = null
+    ) {
+        this(
+            name,
+            aliases,
+            minCount: count,
+            maxCount: count,
+            description: description,
+            args: args,
+            wildcard: wildcard,
+            greedy: greedy,
+            required: required,
+            hidden: hidden,
+            argumentHelpDisplay: argumentHelpDisplay,
+            commandHelpDisplay: commandHelpDisplay,
+            optionHelpDisplay: optionHelpDisplay
+        )
+    }
+
+    public construct(
+        String name,
+        Int: minCount,
+        Int: maxCount = -1,
+        String: description = null,
+        CliArg[]: args = null,
+        Bool: wildcard = false,
+        Bool: greedy = false,
+        Bool: required = false,
+        Bool: hidden = false,
+        String: argumentHelpDisplay = null,
+        String: commandHelpDisplay = null,
+        String: optionHelpDisplay = null
+    ) {
+        this(
+            name,
+            Array<String>(),
+            minCount: minCount,
+            maxCount: maxCount,
+            description: description,
+            args: args,
+            wildcard: wildcard,
+            greedy: greedy,
+            required: required,
+            hidden: hidden,
+            argumentHelpDisplay: argumentHelpDisplay,
+            commandHelpDisplay: commandHelpDisplay,
+            optionHelpDisplay: optionHelpDisplay
+        )
+    }
+
+    public construct(
+        visible String name,
+        visible String[] aliases,
+        visible Int: minCount,
+        visible Int: maxCount = -1,
+        visible String: description = null,
+        visible CliArg[]: args = null,
+        visible Bool: wildcard = false,
+        visible Bool: greedy = false,
+        visible Bool: required = false,
+        visible Bool: hidden = false,
+        visible String: argumentHelpDisplay = null,
+        visible String: commandHelpDisplay = null,
+        visible String: optionHelpDisplay = null
+    ) {}
+
+    public static wildcard(
+        String name,
+        String[] aliases = Array<String>(),
+        Int: count = 1,
+        String: description = null,
+        CliArg[]: args = null,
+        Bool: greedy = false,
+        Bool: required = false,
+        Bool: hidden = false,
+        String: argumentHelpDisplay = null,
+        String: commandHelpDisplay = null,
+        String: optionHelpDisplay = null
+    ) => CliArg(
+        name,
+        aliases,
+        count,
+        description,
+        args,
+        wildcard: true,
+        greedy,
+        required,
+        hidden,
+        argumentHelpDisplay,
+        commandHelpDisplay,
+        optionHelpDisplay
+    )
+
+    public matches(String value) => wildcard || value == name || aliases.any({ value == _ })
+
+    public getArg(String value) -> CliArg => null {
+        if (!args) return null
+
+        log.trace("Searching #{name} non-wildcard args: #{args.stream().filter({ !_.wildcard }).toArray()}")
+
+        return args.stream()
+            .filter({ !_.wildcard })
+            .filter({ _.matches(value) })
+            .first
+    }
+
+    public getWildcardArg(String value) -> CliArg => null {
+        if (!args) return null
+
+        log.trace("Searching #{name} wildcard args: #{args.stream().filter({ _.wildcard }).toArray()}")
+
+        return args.stream()
+            .filter({ _.wildcard })
+            .filter({ _x.maxCount == -1 || _x.values.count < _x.maxCount })
+            .first
+    }
+
+    static header(
+        String value,
+        Bool formatted,
+        String prefix = "",
+        String suffix = ""
+    ) -> String {
+        let upper = prefix + value.toUpperCase() + suffix
+
+        return formatted ? yellow(upper) : upper
+    }
+
+    static argument(
+        String arg,
+        Bool formatted,
+        String prefix = "",
+        String suffix = ""
+    ) -> String {
+        let value = prefix + arg + suffix
+
+        return formatted ? cyan(value) : value
+    }
+
+    static option(
+        String option,
+        Bool formatted,
+        String prefix = "",
+        String suffix = ""
+    ) -> String {
+        let value = prefix + option + suffix
+
+        return formatted ? gray(value) : value
+    }
+
+    getUsageString(
+        CliArg[] breadcrumbs,
+        CliArg[] arguments,
+        CliArg[] commands,
+        CliArg[] options,
+        Bool formatted
+    ) -> String {
+        let usageValues = breadcrumbs.map({ argument(_x.toString(), _i > 0 && formatted) })
+
+        if (arguments.count == 1) {
+            usageValues.add(argument(arguments.first.toString(), formatted))
+        } else if (arguments.isNotEmpty) {
+            usageValues.add(argument(argumentHelpDisplay ?: "arguments", formatted, "<", ">"))
+        }
+
+        if (commands.count == 1) {
+            usageValues.add(argument(commands.first.toString(), formatted, "<", ">"))
+        } else if (commands.isNotEmpty) {
+            usageValues.add(argument(commandHelpDisplay ?: "command", formatted, "<", ">"))
+        }
+
+        if (options.count == 1) {
+            usageValues.add(option(options.first.toString(), formatted, "[", "]"))
+        } else if (options.isNotEmpty) {
+            usageValues.add(option(optionHelpDisplay ?: "options", formatted, "[", "]"))
+        }
+
+        return usageValues.join(" ")
+    }
+
+    public getHelp(
+        CliArg[] breadcrumbs,
+        Bool printHelpLine = true,
+        Bool formatted = true,
+        Int lineLength = 80
+    ) -> CliArgHelp {
+        var str = ""
+
+        if (description) {
+            str += wrapLine(description, lineLength).join("\n")
+            str += "\n\n"
+        }
+
+        let gutterSize = 4
+        let gutter = " ".repeat(gutterSize)
+
+        let visibleArgs = args?.filter({ !_.hidden }) ?: Array()
+
+        let arguments = visibleArgs.filter({ _.wildcard })
+        let commands = visibleArgs.filter({ !_x.wildcard && !_x.name.startsWith("--") })
+        let options = visibleArgs.filter({ !_x.wildcard && _x.name.startsWith("--") })
+
+        let usage = getUsageString(breadcrumbs, arguments, commands, options, formatted)
+
+        str += "|
+            #{header("Usage", formatted)}:
+            #{wrapLine(gutter + usage, lineLength, gutter).join("\n")}
+            |"
+
+        let argumentDescriptions = printDefinitions(
+            arguments,
+            gutter,
+            lineLength,
+            { "#{argument(_.toString(), formatted)}" }
+        )
+
+        if (argumentDescriptions.isNotEmpty) {
+            str += "\n\n"
+            str += header("Arguments", formatted)
+            str += ":\n"
+            str += argumentDescriptions.join("\n")
+        }
+
+        let commandDescriptions = printDefinitions(
+            commands,
+            gutter,
+            lineLength,
+            (arg) => {
+                let aliases = arg.aliases?.isNotEmpty ? arg.aliases.map({ argument(_, formatted) }).stitchFront(", ") : ""
+                return "#{argument(arg.toString(), formatted)}#{aliases}"
+            }
+        )
+
+        if (commandDescriptions.isNotEmpty) {
+            str += "\n\n"
+            str += header("Commands", formatted)
+            str += ":\n"
+            str += commandDescriptions.join("\n")
+        }
+
+        let optionDescriptions = printDefinitions(
+            options,
+            gutter,
+            lineLength,
+            (arg) => {
+                let aliases = arg.aliases?.isNotEmpty ? arg.aliases.map({ option(_, formatted) }).stitchFront(", ") : ""
+                return "#{option(arg.toString(), formatted)}#{aliases}"
+            }
+        )
+
+        if (optionDescriptions.isNotEmpty) {
+            str += "\n\n"
+            str += header("Options", formatted)
+            str += ":\n"
+            str += optionDescriptions.join("\n")
+        }
+
+        if (printHelpLine && (arguments.isNotEmpty || commands.isNotEmpty || options.isNotEmpty)) {
+            let binaryName = breadcrumbs.first.name
+
+            let types = Array<String>():addAll([
+                arguments.isNotEmpty ? (argumentHelpDisplay ?:"argument") : null,
+                commands.isNotEmpty ? (commandHelpDisplay ?: "command") : null,
+                options.isNotEmpty ? (optionHelpDisplay ?: "option") : null,
+            ]).filterNull()
+
+            str += "\n\n"
+            str += wrapLine(
+                "See '#{binaryName} help#{breadcrumbs.skip(1).stitchFront(" ")} <#{types.join("/")}>' for more information on a specific #{types.toEnglish("or")}",
+                lineLength
+            ).join("\n")
+        }
+
+        return CliArgHelp(
+            arg: this,
+            breadcrumbs: breadcrumbs,
+            help: str
+        )
+    }
+
+    public getAllHelp(
+        CliArg[] breadcrumbs,
+        Bool formatted = true,
+        Int lineLength = 80
+    ) -> CliArgHelp[] {
+        if (hidden) return Array()
+
+        let help = [getHelp(breadcrumbs, false, formatted, lineLength)]
+
+        if (!args || args.isEmpty) return help
+
+        return help:addAll(args.flatMap((arg) => {
+            arg.getAllHelp(breadcrumbs.plus([arg]), formatted, lineLength)
+        }))
+    }
+
+    printDefinitions(
+        CliArg[] args,
+        String gutter,
+        Int lineLength,
+        formatter(CliArg) -> String
+    ) -> String[] {
+        let Int gutterSpace = args.max({ visibleCount(formatter(_)) }) + gutter.count
+
+        return args.map((arg) => {
+            let key = formatter(arg)
+            let value = arg.description
+
+            if (!value) return "#{gutter}#{key}"
+
+            let argGutter = " ".repeat(gutterSpace - visibleCount(key))
+            let wrapIndentation = gutter + " ".repeat(visibleCount(key)) + argGutter
+
+            return wrapLine("#{gutter}#{key}#{argGutter}#{value}", lineLength, wrapIndentation).join("\n")
+        })
+    }
+
+    override public toString() => name {
+        if (wildcard) return "<#{name}>"
+        if (values.isNotEmpty) return "#{name} #{values.join(" ")}"
+    }
+}

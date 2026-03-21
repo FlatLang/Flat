@@ -1,0 +1,7 @@
+package flat/fucli
+
+data class {
+    visible CliArg arg
+    visible CliArg[] breadcrumbs
+    visible String help
+}
