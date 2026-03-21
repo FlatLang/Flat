@@ -1,0 +1,13 @@
+package flat/thread
+
+import flat/datastruct
+
+class ThreadLocal<T> {
+    HashMap<Long, T> map = HashMap()
+
+    public construct(T value = null) => set(value)
+
+    public get() => map[Thread.id]
+    public set(T value) => map[Thread.id] = value
+    public remove() => map.remove(Thread.id)
+}

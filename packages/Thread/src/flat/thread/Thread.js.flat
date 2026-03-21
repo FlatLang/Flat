@@ -1,0 +1,13 @@
+package flat/thread
+
+class {
+    public static async sleep(Long millis) {
+        external {
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    resolve();
+                }, #{millis});
+            });
+        }
+    }
+}

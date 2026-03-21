@@ -1,0 +1,11 @@
+package flat/thread
+
+import flat/thread/Thread
+
+testable class {
+    test `can create`() {
+        let value = Thread()
+
+        expect(value).toNotBe(null)
+    }
+}

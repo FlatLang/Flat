@@ -1,0 +1,13 @@
+package flat/thread
+
+class {
+    visible static Long id
+
+    public start() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    public join() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+}
