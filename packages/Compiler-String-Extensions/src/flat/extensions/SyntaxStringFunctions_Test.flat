@@ -1,0 +1,11 @@
+package flat/extensions
+
+import flat/extensions/SyntaxStringFunctions
+
+testable class {
+    test `can create`() {
+        let value = "this is".nextNonWhitespaceChar()
+
+        expect(value).toNotBe(4)
+    }
+}
