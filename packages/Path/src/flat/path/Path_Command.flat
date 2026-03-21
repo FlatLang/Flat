@@ -1,0 +1,11 @@
+package flat/path
+
+import flat/log/Logger
+
+class {
+    static Logger log = Logger(Path_Command.class)
+
+    public static async main(String[] args) {
+        Path.appendToUserPath(System.homeDirectory + "/.flat/bin")
+    }
+}

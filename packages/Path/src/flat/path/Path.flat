@@ -1,0 +1,231 @@
+package flat/path
+
+import flat/log/Logger
+import flat/datastruct/HashMap
+import flat/io/File
+import flat/io/FileReader
+import flat/io/FileWriter
+import flat/time/DateTime
+import flat/exception/UnimplementedOperationException
+
+import static flat/colorizer/Colorizer
+import static flat/regedit/RegEdit
+
+class {
+    static Logger log = Logger(Path.class)
+
+    public static async prependToUserPath(
+        String value,
+        Bool requireValidDirectory = true,
+        Bool skipIfAlreadyExistsInPath = true
+    ) {
+        addToUserPath(
+            value,
+            requireValidDirectory,
+            skipIfAlreadyExistsInPath,
+            prepend: true
+        )
+    }
+
+    public static async appendToUserPath(
+        String value,
+        Bool requireValidDirectory = true,
+        Bool skipIfAlreadyExistsInPath = true
+    ) {
+        addToUserPath(
+            value,
+            requireValidDirectory,
+            skipIfAlreadyExistsInPath,
+            prepend: false
+        )
+    }
+
+    public static async addToUserPath(
+        String value,
+        Bool requireValidDirectory = true,
+        Bool skipIfAlreadyExistsInPath = true,
+        Bool: prepend = false
+    ) {
+        match System.OS_INT {
+            System.WINDOWS => windowsAddToUserPath(value, requireValidDirectory, skipIfAlreadyExistsInPath, prepend)
+            default => addToRunCommandsFiles(value, requireValidDirectory, skipIfAlreadyExistsInPath, prepend)
+        }
+    }
+
+    static async windowsAddToUserPath(
+        String value,
+        Bool requireValidDirectory = true,
+        Bool skipIfAlreadyExistsInPath = true,
+        Bool: prepend = false
+    ) {
+        let sanitizedValue = value.trimStart(';').trimEnd(';').replace("/", "\\").trim()
+
+        if (requireValidDirectory && !File(sanitizedValue).isDirectory) {
+            throw Exception("Directory \"#{sanitizedValue}\" does not exist")
+        }
+
+        let path = windowsGetPath()
+        log.debug("Retreived path from registry: #{path}")
+
+        let sanitizedPath = path.endsWith(";") ? path : "#{path};"
+
+        if (skipIfAlreadyExistsInPath && sanitizedPath.contains("#{sanitizedValue};")) {
+            log.debug("Value already exists in Path entry. Skipping adding it")
+            return
+        }
+
+        log.debug("Appending value \"#{sanitizedValue}\" to path")
+
+        let putRequest = HashMap():add(
+            "Path",
+            HashMap()
+                :add("type", "REG_EXPAND_SZ")
+                :add("value",
+                    prepend ?
+                        "#{sanitizedValue};#{sanitizedPath}" :
+                        "#{sanitizedPath}#{sanitizedValue};"
+                )
+        )
+
+        RegEdit.putValue("HKCU\\Environment", putRequest)
+    }
+
+    static async addToRunCommandsFiles(
+        String value,
+        Bool requireValidDirectory = true,
+        Bool skipIfAlreadyExistsInPath = true,
+        Bool: prepend = false
+    ) {
+        let sanitizedValue = value.trimStart(':').trimEnd(':').trim()
+
+        if (requireValidDirectory && !File(sanitizedValue).isDirectory) {
+            throw Exception("Directory \"#{sanitizedValue}\" does not exist")
+        }
+
+        for (file in getUserShellRunCommandsFiles()) {
+            let contents = FileReader(file).readAllContents()
+
+            if (contents.contains(sanitizedValue)) {
+                log.debug("Value \"#{sanitizedValue}\" is already appended to the path in file \"#{file.nativeLocation}\". Skipping")
+                continue
+            }
+
+            backupFile(file)
+
+            log.debug("Appending value \"#{sanitizedValue}\" to path in file \"#{file.nativeLocation}\"")
+
+            let addValue = prepend ?
+                "PATH=\"$PATH_APPEND_VALUE${PATH:+\":$PATH\"}\"" :
+                "PATH=\"${PATH:+\"$PATH:\"}$PATH_APPEND_VALUE\""
+
+            FileWriter(file)
+                :append("|
+
+                    PATH_APPEND_VALUE=#{sanitizedValue}
+                    if [ -d \"$PATH_APPEND_VALUE\" ] && [[ \":$PATH:\" != *\":$PATH_APPEND_VALUE:\"* ]]; then
+                        #{addValue}
+                    fi
+                    |")
+                :close()
+        }
+    }
+
+    static async backupFile(File rcFile) {
+        File file = File("bak/#{rcFile.name}-#{DateTime.now().millis}")
+        file.getParent().mkdir()
+
+        log.debug("Backing up \"#{rcFile.nativeLocation}\" to #{file.nativeLocation}")
+
+        rcFile.copy(file)
+    }
+
+    public static getUserRunCommandsFiles() =>
+        File(System.homeDirectory)
+            .getChildFiles(includeHidden: true)
+            .filter({ _.isHidden })
+            .filter({
+                return _x.name.endsWith("rc") ||
+                    _x.name == ".profile" ||
+                    _x.name == ".bash_profile"
+            })
+
+    public static getUserShellRunCommandsFiles() =>
+        getUserRunCommandsFiles().filter({
+            return _x.name == ".bashrc" ||
+                _x.name == ".zshrc" ||
+                _x.name == ".profile" ||
+                _x.name == ".bash_profile"
+        })
+
+    public static async removeFromUserPath(
+        String value,
+        Bool requireValidDirectory = true
+    ) {
+        match System.OS_INT {
+            System.WINDOWS => windowsRemoveFromUserPath(value, requireValidDirectory)
+            default => throw UnimplementedOperationException("Not implemented")
+        }
+    }
+
+    static async windowsRemoveFromUserPath(
+        String value,
+        Bool requireValidDirectory = true
+    ) {
+        let sanitizedValue = value.trimStart(';').trimEnd(';').replace("/", "\\").trim()
+
+        if (requireValidDirectory && !File(sanitizedValue).isDirectory) {
+            throw Exception("Directory \"#{sanitizedValue}\" does not exist")
+        }
+
+        let path = windowsGetPath()
+        log.debug("Retreived path from registry: #{path}")
+
+        let index = path.indexOf(sanitizedValue)
+
+        if (index == -1) {
+            log.debug("Value does not exist in path")
+            return
+        }
+
+        var newPath = path.substring(0, index) + path.substring(index + sanitizedValue.count)
+
+        while(index > 0 && newPath[index - 1] == ';' && newPath[index] == ';') {
+            newPath = newPath.substring(0, index) + newPath.substring(index + 1)
+        }
+
+        let sanitizedPath = newPath.endsWith(";") ? newPath : "#{newPath};"
+
+        log.debug("Updating value to \"#{sanitizedPath}\"")
+
+        let putRequest = HashMap():add(
+            "Path",
+            HashMap()
+                :add("type", "REG_EXPAND_SZ")
+                :add("value", sanitizedPath)
+        )
+
+        RegEdit.putValue("HKCU\\Environment", putRequest)
+    }
+
+    static async windowsGetPath() -> String {
+        let environment = RegEdit.list("HKCU\\Environment")
+        log.trace("Retreived environment from registry: #{environment.toJson()}")
+
+        let HashMap values = (HashMap)environment["values"]
+
+        var String pathKeyName
+
+        values
+            .filter({ _.key.toString().toLowerCase() == "path" })
+            :forEach({ pathKeyName = _.key.toString() })
+
+        if (!pathKeyName) {
+            throw Exception("Environment does not contain Path entry")
+        }
+
+        let HashMap pathMap = (HashMap)values[pathKeyName]
+        let String path = (String)pathMap["value"]
+
+        return path
+    }
+}
