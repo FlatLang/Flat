@@ -1,0 +1,8 @@
+package flat/annotations
+
+import flat/compiler/models
+
+trait Modifier {
+    static visible lazy String[] aliases => Array<String>()
+    visible Token aliasUsed
+}

@@ -1,0 +1,10 @@
+package flat/annotations
+
+import flat/ast
+
+data class extends AnnotationNode {
+    override static visible lazy String identifier => "TargetRuntime"
+
+    visible String[] includes = Array()
+    visible String[] excludes = Array()
+}

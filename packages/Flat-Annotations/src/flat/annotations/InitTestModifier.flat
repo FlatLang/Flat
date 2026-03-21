@@ -1,0 +1,12 @@
+package flat/annotations
+
+import flat/ast
+import flat/compiler/models
+
+data class extends AnnotationNode implements Modifier {
+    override static visible lazy String[] aliases => Array<String>():add("init_test")
+    override static visible lazy String identifier => null
+    override static visible lazy Array<Class<Node>> allowedBaseParents => [ClassNode.class]
+
+    override visible Token aliasUsed
+}
