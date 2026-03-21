@@ -1,0 +1,37 @@
+package flat/compiler/models
+
+data class extends Lexeme {
+    visible Int type
+
+    class Type {
+        visible static Int IDENTIFIER = 1
+        visible static Int INTEGER = 2
+        visible static Int FLOAT = 3
+        visible static Int STRING = 4
+        visible static Int COMMENT = 5
+        visible static Int WHITESPACE = 6
+        visible static Int WS = 6
+        visible static Int SYMBOL = 7
+        visible static Int BOOL = 8
+        visible static Int NULL = 9
+        visible static Int CHAR = 10
+        visible static Int CODE = 11
+
+        public static toString(Int value) => "#{value}" {
+            match value {
+                IDENTIFIER => return "IDENTIFIER"
+                INTEGER => return "INTEGER"
+                FLOAT => return "FLOAT"
+                STRING => return "STRING"
+                COMMENT => return "COMMENT"
+                WHITESPACE => return "WHITESPACE"
+                WS => return "WS"
+                SYMBOL => return "SYMBOL"
+                BOOL => return "BOOL"
+                NULL => return "NULL"
+                CHAR => return "CHAR"
+                CODE => return "CODE"
+            }
+        }
+    }
+}

@@ -1,0 +1,9 @@
+package flat/compiler/models
+
+testable class {
+    test `can create`() {
+        let value = Lexeme()
+
+        expect(value).toNotBe(null)
+    }
+}

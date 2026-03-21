@@ -1,0 +1,11 @@
+package flat/compiler/models
+
+data class {
+    visible String value
+    visible data_equals_ignore data_tostring_ignore Location location
+
+    visible lazy Int endLineNumber => location.lineNumber + value.howMany('\n')
+    visible lazy Int endColumn => value.howMany('\n') > 0 ?
+        value.count - value.lastIndexOf('\n') :
+        (location.column + value.count)
+}

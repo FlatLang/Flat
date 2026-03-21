@@ -1,0 +1,6 @@
+package flat/compiler/models
+
+data class {
+    visible Int lineNumber
+    visible Int column
+}
