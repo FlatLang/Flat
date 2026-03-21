@@ -1,0 +1,7 @@
+package flat/parser/matchers
+
+class {
+    public static main(String[] args) {
+
+    }
+}

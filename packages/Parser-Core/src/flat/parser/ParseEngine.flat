@@ -1,0 +1,81 @@
+package flat/parser
+
+import flat/datastruct/list/Stack
+import flat/ast
+import flat/compiler/models/Token
+import flat/io/File
+import flat/log/Logger
+import flat/eventstream/EventStream
+
+import static flat/colorizer/Colorizer
+
+class {
+    static Logger log = Logger(ParseEngine.class)
+
+    var Int lastLineNumber = 0
+
+    public construct(
+        private ParserBase rootParser,
+        visible var ParseContext context,
+        private var EventStream stream
+    ) {
+        rootParser.context = context
+    }
+
+    public consume(Token token) {
+        if (stream.closed) return
+
+        match token.type {
+            Token.Type.COMMENT =>
+            Token.Type.WS => return
+        }
+
+        if (token.location && token.location.lineNumber > lastLineNumber) {
+            lastLineNumber = token.location.lineNumber
+            log.debug("line #{magenta(token.location.lineNumber.toString())} col #{magenta(token.location.column.toString())}")
+        }
+
+        context.tokens.add(token)
+
+        matchToken(token)
+    }
+
+    public end() {
+        log.debug("Reached end of parsing")
+        if (rootParser.lastMatch) {
+            rootParser.traverseNodes({
+                stream.emit("data", NodeResult(_node, _context, _pattern))$
+            })
+        }
+    }
+
+    public matchToken(Token token) {
+        log.debug("Matching token: '#{token.value}' (line #{magenta(token.location?.lineNumber.toString())}) (tokens: [#{context.tokens.map({ "'#{green(_x.value)}'" }).join(", ", 50)}]) #{green(rootParser.class.name)}")
+
+        if (let match = rootParser.match(token)) {
+            log.debug("Matched: #{rootParser.class.name}")
+        } else if (rootParser.matcher.partial) {
+            log.debug("Partial match: #{rootParser.class.name}")
+        } else {
+            invalidTokens()
+        }
+    }
+
+    public invalidTokens() {
+        invalidTokensError(context.tokens)
+    }
+
+    public invalidTokensError(Token[] tokens) {
+        log.debug("Could not parse tokens [#{tokens.map({ "'#{green(_x.value)}'" }).join(", ")}]. Resetting tokens. Parser #{context.currentParser.class.name}")
+        if (tokens.isNotEmpty && tokens.first.location) {
+            if (tokens.count == 1) {
+                let token = tokens.first
+
+                log.error("Could not parse token '#{token.value}' at #{context.file?.name}:#{token.location.lineNumber}:#{token.location.column}")
+            } else {
+                log.error("Could not parse tokens [#{tokens.map({ "'#{green(_x.value)}'" }).join(", ")}] at #{context.file?.name}:#{tokens.first.location.lineNumber}:#{tokens.first.location.column}-#{tokens.last.endLineNumber}:#{tokens.last.endColumn}")
+            }
+        }
+        stream.emit("quit")$
+    }
+}

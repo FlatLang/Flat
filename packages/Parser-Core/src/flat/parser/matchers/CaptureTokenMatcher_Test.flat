@@ -1,0 +1,102 @@
+package flat/parser/matchers
+
+import flat/datastruct/HashMap
+import flat/parser
+import flat/parser/flat
+import flat/annotations
+import flat/ast
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match parentheses capture`() {
+        let capturePattern = CaptureTokenPattern(
+            start: Token(value: "("),
+            end: Token(value: ")")
+        )
+
+        let matcher = capturePattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "hey", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = CaptureTokenMatch(
+            tokens: [
+                Token(value: "(", type: Token.Type.SYMBOL),
+                Token(value: "hey", type: Token.Type.IDENTIFIER),
+                Token(value: ")", type: Token.Type.SYMBOL)
+            ],
+            capture: [Token(value: "hey", type: Token.Type.IDENTIFIER)]
+        )
+
+        expect(result).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match partial parentheses capture no with contents`() {
+        let capturePattern = CaptureTokenPattern(
+            start: Token(value: "("),
+            end: Token(value: ")")
+        )
+
+        let matcher = capturePattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [Token(value: "(", type: Token.Type.SYMBOL)]
+
+        expect(matcher.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match partial parentheses capture with contents`() {
+        let capturePattern = CaptureTokenPattern(
+            start: Token(value: "("),
+            end: Token(value: ")")
+        )
+
+        let matcher = capturePattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "hey", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "hey", type: Token.Type.IDENTIFIER)
+        ]
+
+        expect(matcher.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match partial parentheses capture with tested parentheses contents`() {
+        let capturePattern = CaptureTokenPattern(
+            start: Token(value: "("),
+            end: Token(value: ")")
+        )
+
+        let matcher = capturePattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "hey", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "hey", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL)
+        ]
+
+        expect(matcher.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+}

@@ -1,0 +1,25 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/annotations
+import flat/parser
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can generate node from TokenPattern node type`() {
+        let testParser = TestParser()
+        testParser.match(Token(type: Token.Type.IDENTIFIER, value: "test"))
+
+        let node = testParser.generateNode()
+
+        expect(node).toNotBe(null)
+        expect(node.class).toBe(FieldNode.class)
+    }
+
+    class TestParser extends ParserBase {
+        override lazy TokenPattern pattern => SingleTokenPattern<FieldNode>(
+            type: Token.Type.IDENTIFIER
+        )
+    }
+}

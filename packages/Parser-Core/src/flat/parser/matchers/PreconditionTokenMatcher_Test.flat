@@ -1,0 +1,90 @@
+package flat/parser/matchers
+
+import flat/datastruct
+import flat/datastruct/list
+import flat/parser
+import flat/annotations
+import flat/ast
+import flat/parser/flat
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `returns no tokens on successful annotation match`() {
+        let pattern = PreconditionTokenPattern(annotations: [LetModifier.class])
+
+        let context = ParseContext(
+            annotations: [LetModifier(aliasUsed: Token(value: "let", type: Token.Type.IDENTIFIER))]
+        )
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER), context)
+
+        expect(result?.tokens).toBe(Array())
+    }
+
+    test `returns null on unsuccessful annotation match`() {
+        let pattern = PreconditionTokenPattern(annotations: [LetModifier.class])
+
+        let context = ParseContext(
+            annotations: [VarModifier(aliasUsed: Token(value: "var", type: Token.Type.IDENTIFIER))]
+        )
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER), context)
+
+        expect(result).toBe(null)
+    }
+
+    test `returns no tokens on successful baseParentType match`() {
+        let pattern = PreconditionTokenPattern(baseParentTypes: [FileNode.class])
+
+        let context = ParseContext(
+            currentBaseParser: FileParser()
+        )
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER), context)
+
+        expect(result?.tokens).toBe(Array())
+    }
+
+    test `returns null on unsuccessful baseParentType match`() {
+        let pattern = PreconditionTokenPattern(baseParentTypes: [FunctionNode.class])
+
+        let context = ParseContext(
+            currentBaseParser: FileParser()
+        )
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER), context)
+
+        expect(result).toBe(null)
+    }
+
+    test `returns no tokens on successful parentType match`() {
+        let pattern = PreconditionTokenPattern(parentTypes: [FileNode.class])
+
+        let context = ParseContext(
+            parserStack: Stack():push(FileParser()):push(AnnotationParser())
+        )
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER), context)
+
+        expect(result?.tokens).toBe(Array())
+    }
+
+    test `returns null on unsuccessful parentType match`() {
+        let pattern = PreconditionTokenPattern(parentTypes: [FunctionNode.class])
+
+        let context = ParseContext(
+            parserStack: Stack():push(FileParser()):push(AnnotationParser())
+        )
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER), context)
+
+        expect(result).toBe(null)
+    }
+}

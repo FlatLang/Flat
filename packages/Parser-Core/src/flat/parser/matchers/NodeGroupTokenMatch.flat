@@ -1,0 +1,48 @@
+package flat/parser/matchers
+
+import flat/parser
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/ast/Node
+
+data class extends TokenMatch<NodeGroupTokenPattern> {
+    visible TokenMatch[] childMatches = TokenMatch[]
+
+    visible ParserBase parser {
+        get {
+            var ParserBase lastParser
+
+            if (childMatches.last.class == NodeTokenMatch.class) {
+                let obj = (Object)childMatches.last
+                let matcher = (NodeTokenMatch)obj
+                lastParser = matcher.parser
+            } else {
+                let obj = (Object)childMatches.last
+                let matcher = (NodeGroupTokenMatch)obj
+                lastParser = matcher.parser
+            }
+
+            return lastParser
+        }
+    }
+
+    public traverseNodes(func(Node, ParseContext, TokenPattern)) => childMatches.forEach({ _.traverseNodes(func) })
+
+    tokenMatchToNodeTokenMatches(TokenMatch childMatch) -> NodeTokenMatch[] {
+        if (childMatch.class.isOfType(NodeGroupTokenMatch.class)) {
+            let groupMatch = (NodeGroupTokenMatch)childMatch
+            return groupMatch.getChildNodeMatches()
+        } else if (childMatch.class.isOfType(NodeTokenMatch.class)) {
+            let nodeMatch = (NodeTokenMatch)childMatch
+            return Array<NodeTokenMatch>():add(nodeMatch)
+        } else {
+            throw Exception("Invalid child match type: #{childMatch.class.name}")
+        }
+
+        return null
+    }
+
+    public getChildNodeMatches() -> NodeTokenMatch[] {
+        return childMatches.flatMap({ tokenMatchToNodeTokenMatches(_x) })
+    }
+}

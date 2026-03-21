@@ -1,0 +1,8 @@
+package flat/parser
+
+import flat/compiler/models/Token
+
+data class {
+    visible Token[] tokens
+    visible ParserBase[] parsers
+}

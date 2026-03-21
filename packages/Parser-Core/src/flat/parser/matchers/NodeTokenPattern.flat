@@ -1,0 +1,42 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/parser
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class<NodeType extends Node> extends TokenPattern<NodeType> {
+    static Logger log = Logger(NodeTokenPattern.class)
+
+    public construct(
+        visible var ParserBase[] parsers,
+        this Bool optional = false,
+        this Bool repeat = false,
+        this Bool greedy = true,
+        this Bool exact = false,
+        this Bool metadata = false,
+        this Bool includeTokens = true,
+        visible Token statementEndToken = null,
+        visible Bool parseChildren = true,
+        visible Bool baseParser = false
+    ) {}
+
+    public getMatcher() => NodeTokenMatcher(this) {
+        parsers = parsers.map({ _.copy() })
+    }
+
+    var String _pattern
+
+    override public toPatternString() => _pattern {
+        if (!_pattern) {
+            _pattern = ""
+
+            if (getNodeType() != Node.class) {
+                _pattern += "#{getNodeType().name} => "
+            }
+
+            _pattern += "node(#{parsers.map({ _x.class.name.trimEnd("Parser".count) }).join(" ")})#{getModifiersString()}"
+        }
+    }
+}

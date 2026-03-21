@@ -1,0 +1,56 @@
+package flat/parser
+
+import flat/ast
+import flat/parser/matchers
+import flat/compiler/models/Token
+
+abstract data class {
+    ParserBase[] childParsers => null
+
+    visible lazy TokenPattern pattern => null
+    visible lazy TokenMatcher matcher => pattern?.getMatcher()
+
+    public data_ignore var TokenMatch lastMatch
+    public data_ignore var ParseContext context
+
+    public generateNode() -> Node {
+        var Node value = null
+
+        traverseNodes({ value = value ?: _ })
+
+        return value
+    }
+
+    public generateNodes() -> Node[] {
+        let array = Node[]
+
+        traverseNodes({ array.add(_) })
+
+        return array
+    }
+
+    public traverseNodes(func(Node node, ParseContext context, TokenPattern pattern)) => lastMatch?.traverseNodes(func)
+
+    public matchAll(Token[] tokens) -> TokenMatch[] => tokens.map({ this.match(_) })
+
+    public match(Token token) -> TokenMatch => null {
+        if (!matcher) return null
+        if (context && !Object.referenceEquals(context.currentParser, this)) {
+            context = context.copy(
+                parserStack: context.parserStack.copy():push(this)
+            )
+        }
+
+        if (let match = matcher.match(token, context))    {
+            return lastMatch = match
+        }
+    }
+
+    public reset() {
+        lastMatch = null
+
+        if (pattern) {
+            matcher.reset()
+        }
+    }
+}

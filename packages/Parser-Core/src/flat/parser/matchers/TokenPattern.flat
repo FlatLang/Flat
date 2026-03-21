@@ -1,0 +1,51 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/log/Logger
+
+abstract data class TokenPattern<reified NodeType extends Node> {
+    static Logger log = Logger(TokenPattern.class)
+
+    lazy Int requiredTokenCount => optional ? 0 : 1
+
+    visible Bool optional = false
+    visible Bool repeat = false
+    visible Bool greedy = true
+    visible Bool exact = false
+    visible Bool metadata = false
+    visible Bool includeTokens = true
+
+    public getNodeType() => NodeType.class
+
+    public abstract getMatcher() -> TokenMatcher
+
+    public abstract toPatternString() -> String
+
+    public getModifiersString() -> String {
+        if (optional && repeat) {
+            if (greedy) {
+                return "*"
+            } else {
+                return "*?"
+            }
+        } else if (optional) {
+            if (greedy) {
+                return "?"
+            } else {
+                return "??"
+            }
+        } else if (repeat) {
+            if (greedy) {
+                return "+"
+            } else {
+                return "+?"
+            }
+        } else if (!greedy) {
+            return "?!"
+        } else {
+            return ""
+        }
+    }
+}

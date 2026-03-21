@@ -1,0 +1,61 @@
+package flat/parser/matchers
+
+import flat/parser
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/log/Logger
+
+import static flat/colorizer/Colorizer
+
+data class extends TokenMatcher {
+    static Logger log = Logger(SingleTokenMatcher.class)
+
+    SingleTokenPattern pattern
+
+    override public checkMatch(Token token, ParseContext context) -> SingleTokenMatch {
+        if (disqualified) return null
+
+        log.trace("Matching token '#{green(token.value)}'")
+
+        if (!pattern.repeat && tokens.isNotEmpty) {
+            log.trace("Repeating not allowed. Disqualified")
+            disqualified = true
+            return null
+        }
+        if (pattern.type != token.type) {
+            log.trace("Incorrect token type. Disqualified")
+            disqualified = true
+            return null
+        }
+        if (pattern.value && pattern.value != token.value) {
+            log.trace("Incorrect token value. Disqualified")
+            disqualified = true
+            return null
+        }
+        if (pattern.values && pattern.values.none({ _ == token.value})) {
+            log.trace("Incorrect token value (from values). Disqualified")
+            disqualified = true
+            return null
+        }
+        if (pattern.notValues && pattern.notValues.any({ _ == token.value})) {
+            log.trace("Token value is not allowed. Disqualified")
+            disqualified = true
+            return null
+        }
+
+        log.trace("Matched token '#{green(token.value)}'")
+
+        tokens.add(token)
+
+        valid = true
+        complete = true
+
+        if (!pattern.repeat) {
+            disqualified = true
+        }
+
+        return SingleTokenMatch(
+            tokens: pattern.includeTokens ? tokens.copy() : Token[]
+        )
+    }
+}

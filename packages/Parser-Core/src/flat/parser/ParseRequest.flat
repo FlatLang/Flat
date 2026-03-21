@@ -1,0 +1,5 @@
+package flat/parser
+
+data class {
+    visible ParseRequestData[] requests = ParseRequestData[]
+}

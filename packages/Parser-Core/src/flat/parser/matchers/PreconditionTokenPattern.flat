@@ -1,0 +1,53 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/datastruct
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class<NodeType extends Node> extends TokenPattern<NodeType> {
+    static Logger log = Logger(PreconditionTokenPattern.class)
+
+    public construct(
+        visible Array<Class<AnnotationNode>> annotations = null,
+        visible Array<Class<Node>> parentTypes = null,
+        visible Array<Class<Node>> baseParentTypes = null,
+        this Bool optional = false,
+        this Bool repeat = false,
+        this Bool greedy = true,
+        this Bool exact = false,
+        this Bool metadata = false,
+        this Bool includeTokens = true
+    ) {}
+
+    public getMatcher() => PreconditionTokenMatcher(this)
+
+    var String _pattern
+
+    override public toPatternString() => _pattern {
+        if (!_pattern) {
+            _pattern = ""
+
+            if (getNodeType() != Node.class) {
+                _pattern += "#{getNodeType().name} => "
+            }
+
+            _pattern += "pre("
+
+            let args = String[]
+
+            if (annotations) {
+                args.add("Annotations[#{annotations.map({ _x.name }).join(", ")}]")
+            }
+
+            if (parentTypes) {
+                args.add("ParentTypes[#{parentTypes.map({ _x.name }).join(", ")}]")
+            }
+
+            _pattern += args.join(" ")
+
+            _pattern += ")"
+            _pattern += getModifiersString()
+        }
+    }
+}

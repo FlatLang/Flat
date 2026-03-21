@@ -1,0 +1,23 @@
+package flat/parser
+
+import flat/ast
+import flat/datastruct
+import flat/datastruct/list
+import flat/parser/matchers
+
+class {
+    HashMap<Class<Node>, TokenPattern> patternMap = HashMap()
+    Array<resolver(Class<Node>) -> TokenPattern> resolvers = Array()
+
+    public getPattern(Class<Node> nodeType) -> TokenPattern {
+        return patternMap[nodeType] ?: resolvers.firstNonNull({ _(nodeType) })
+    }
+
+    public addPattern(TokenPattern pattern) => pattern {
+        patternMap[pattern.getNodeType()] = pattern
+    }
+
+    public addResolver(resolver(Class<Node>) -> TokenPattern) {
+        resolvers.add(resolver)
+    }
+}

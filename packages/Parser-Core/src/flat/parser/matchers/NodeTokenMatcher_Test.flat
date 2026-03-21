@@ -1,0 +1,325 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/annotations
+import flat/compiler/models
+import flat/parser
+import flat/parser/flat
+import flat/datastruct/HashMap
+import flat/io/File
+
+testable class {
+    test `can match partial import parser`() {
+        let importParser = ImportParser()
+        let pattern = NodeTokenPattern([importParser])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "import", type: Token.Type.IDENTIFIER))
+
+        expect(result).toBe(null)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match complete import parser`() {
+        let importParser = ImportParser()
+        let pattern = NodeTokenPattern([importParser])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "import", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "import", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `doesnt match package token when not using package parser`() {
+        let importParser = ImportParser()
+        let pattern = NodeTokenPattern([importParser])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.match(Token(value: "package", type: Token.Type.IDENTIFIER))
+
+        expect(result).toBe(null)
+    }
+
+    test `matches full import parser`() {
+        let pattern = NodeTokenPattern([ImportParser()])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher
+            :match(Token(value: "import", type: Token.Type.IDENTIFIER))
+            .match(Token(value: "test", type: Token.Type.IDENTIFIER))
+
+        expect(result?.childMatches.count).toBe(1)
+        expect(result.childMatches.first.parser).toBe(ImportParser())
+    }
+
+    test `can match correctly in a group token pattern`() {
+        let pattern = GroupTokenPattern([
+            NodeTokenPattern([ParameterParser()]),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ",")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: ",", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        expect(result).toBe(
+            GroupTokenMatch(
+                tokens: [
+                    Token(value: "String", type: Token.Type.IDENTIFIER),
+                    Token(value: "test", type: Token.Type.IDENTIFIER),
+                    Token(value: ",", type: Token.Type.SYMBOL)
+                ],
+                tokenMatches: [
+                    NodeTokenMatch(
+                        tokens: [
+                            Token(value: "String", type: Token.Type.IDENTIFIER),
+                            Token(value: "test", type: Token.Type.IDENTIFIER)
+                        ],
+                        childMatches: [
+                            NodeTokenMatchChild(
+                                tokens: [
+                                    Token(value: "String", type: Token.Type.IDENTIFIER),
+                                    Token(value: "test", type: Token.Type.IDENTIFIER)
+                                ],
+                                parser: ParameterParser()
+                            )
+                        ]
+                    ),
+                    SingleTokenMatch(tokens: [Token(value: ",", type: Token.Type.SYMBOL)])
+                ]
+            )
+        )
+    }
+
+    test `can match a parameter in parentheses`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+            NodeTokenPattern([ParameterParser()]),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                NodeTokenPattern([ParameterParser()])
+            ], optional: true, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        expect(match).toNotBe(null)
+    }
+
+    test `can match a parameter with array brackets in parentheses`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+            NodeTokenPattern([ParameterParser()]),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                NodeTokenPattern([ParameterParser()])
+            ], optional: true, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        expect(match).toNotBe(null)
+    }
+
+    test `can match a multi-node expression`() {
+        let pattern = NodeTokenPattern([IdentifierParser()])
+
+        let matcher = pattern.getMatcher()
+        matcher.matchAll([
+            Token(value: "thing", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "otherThing", type: Token.Type.IDENTIFIER)
+        ])
+
+        let match = matcher.lastMatch
+
+        expect(match).toNotBe(null, "match was null")
+
+        expect(match).toBe(
+            NodeTokenMatch(
+
+                tokens: [
+                    Token(value: "thing", type: Token.Type.IDENTIFIER),
+                    Token(value: ".", type: Token.Type.SYMBOL),
+                    Token(value: "otherThing", type: Token.Type.IDENTIFIER)
+                ],
+                childMatches: [
+                    NodeTokenMatchChild(
+                        tokens: [Token(value: "thing", type: Token.Type.IDENTIFIER)],
+                        parser: IdentifierParser()
+                    ),
+                    NodeTokenMatchChild(
+                        tokens: [Token(value: ".", type: Token.Type.SYMBOL)],
+                        parser: DotAccessParser()
+                    ),
+                    NodeTokenMatchChild(
+                        tokens: [Token(value: "otherThing", type: Token.Type.IDENTIFIER)],
+                        parser: IdentifierParser()
+                    )
+                ]
+            )
+        )
+    }
+
+    test `can backtrack to a successful match and continue with children`() {
+        let pattern = NodeTokenPattern([LocalDeclarationParser(), IdentifierParser()])
+
+        let matcher = pattern.getMatcher()
+        matcher.matchAll([
+            Token(value: "thing", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "otherThing", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL)
+        ], ParseContext())
+
+        let match = matcher.lastMatch
+
+        expect(match).toNotBe(null, "match was null")
+    }
+
+    test `returns partial match if the sub-match is partial`() {
+        let pattern = NodeTokenPattern([IdentifierParser()])
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "x", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "x", type: Token.Type.IDENTIFIER)
+        ])
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match preceding annotations`() {
+        let pattern = NodeTokenPattern([AnnotationParser(), IdentifierParser()])
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "async", type: Token.Type.IDENTIFIER),
+            Token(value: "x", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "async", type: Token.Type.IDENTIFIER),
+            Token(value: "x", type: Token.Type.IDENTIFIER)
+        ])
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match multiple continuation tokens`() {
+        let pattern = NodeTokenPattern([IdentifierParser(), FunctionCallParser()])
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+            Token(value: "++", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+            Token(value: "++", type: Token.Type.SYMBOL),
+        ])
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match multiple child continuation tokens`() {
+        let pattern = NodeTokenPattern([IdentifierParser(), FunctionCallParser()])
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+            Token(value: "++", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+            Token(value: "++", type: Token.Type.SYMBOL),
+        ])
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match multiple child continuation tokens that eventually break at statement end token`() {
+        let pattern = NodeTokenPattern(
+            [IdentifierParser(), FunctionCallParser()],
+            statementEndToken: Token(value: ";", type: Token.Type.SYMBOL)
+        )
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+            Token(value: ";", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+            Token(value: ";", type: Token.Type.SYMBOL),
+        ])
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match multiple child continuation tokens that eventually break`() {
+        let pattern = NodeTokenPattern([IdentifierParser(), FunctionCallParser()])
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+            Token(value: ";", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "x", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "y", type: Token.Type.IDENTIFIER),
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "count", type: Token.Type.IDENTIFIER),
+        ])
+        expect(matcher.partial).toBe(false)
+    }
+}

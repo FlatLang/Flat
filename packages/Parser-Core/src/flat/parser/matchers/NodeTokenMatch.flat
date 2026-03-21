@@ -1,0 +1,17 @@
+package flat/parser/matchers
+
+import flat/parser
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/ast
+import flat/log
+
+data class extends TokenMatch<NodeTokenPattern> {
+    static Logger log = Logger(NodeTokenMatch.class)
+
+    visible NodeTokenMatchChild[] childMatches = NodeTokenMatchChild[]
+
+    visible ParserBase parser => childMatches.last.parser
+
+    public traverseNodes(func(Node, ParseContext, TokenPattern)) => childMatches.forEach({ _.traverseNodes(func) })
+}

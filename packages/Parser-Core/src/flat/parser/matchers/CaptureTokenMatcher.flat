@@ -1,0 +1,52 @@
+package flat/parser/matchers
+
+import flat/parser
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/compiler/models/SyntaxTokenFunctions
+import flat/log/Logger
+
+data class extends TokenMatcher {
+    static Logger log = Logger(CaptureTokenMatcher.class)
+
+    CaptureTokenPattern pattern
+
+    override public checkMatch(Token token, ParseContext context) -> CaptureTokenMatch => null {
+        if (disqualified) return null
+        if (tokens.isEmpty && pattern.start && pattern.start.value != token.value) {
+            log.trace("Tokens do not start with start value. Disqualified")
+            disqualified = true
+            return null
+        }
+        if (pattern.allowedTokens && !pattern.allowedTokens.any({ (_x.value == null || _x.value == token.value) && _x.type == token.type })) {
+            log.trace("Token '#{token.value}' does match allowed values. Disqualified")
+            disqualified = true
+            return null
+        }
+
+        tokens.add(token)
+
+        let index = SyntaxTokenFunctions.findTokenOnTopLevel(tokens, pattern.end, 0, skipGenerics: pattern.skipGenerics)
+
+        if (tokens.isNotEmpty && index == tokens.count - 1) {
+            let capture = pattern.start ? tokens.skip(1) : tokens
+
+            disqualified = true
+
+            if (tokens.count >= pattern.minimumTokenCount + 1) {
+                valid = true
+                complete = true
+
+                log.trace("Matched capture tokens. Returning match")
+                return CaptureTokenMatch(
+                    tokens: pattern.includeTokens ? (pattern.includeEndToken ? tokens.copy() : tokens.skipLast(1)) : Token[],
+                    capture: capture.skipLast(1)
+                )
+            } else {
+                log.trace("Matched capture tokens, but did not meet the minimum token count. Disqualified")
+            }
+        } else {
+            log.trace("Did not match the end token")
+        }
+    }
+}

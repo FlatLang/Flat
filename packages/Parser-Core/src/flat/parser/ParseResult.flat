@@ -1,0 +1,50 @@
+package flat/parser
+
+import flat/ast
+
+data class {
+    visible Node node {
+        get {
+            if (nodes.count == 1) {
+                return nodes.first
+            } else {
+                throw Exception("ParseResult contains #{nodes.count} nodes")
+            }
+        }
+    }
+
+    public construct() {
+        this(
+            nodes: Array<Node>(),
+            success: false,
+            errorMessage: null
+        )
+    }
+
+    public construct(String: errorMessage) {
+        this(
+            nodes: Array<Node>(),
+            success: false,
+            errorMessage
+        )
+    }
+
+    public construct(
+        Node node,
+        Bool: success = true,
+        String: errorMessage = null,
+        String: remainder = ""
+    ) {
+        this(
+            nodes: Array<Node>():add(node),
+            success
+        )
+    }
+
+    public construct(
+        visible Node[] nodes,
+        visible Bool: success = true,
+        visible String: errorMessage = null,
+        visible String: remainder = ""
+    ) {}
+}

@@ -1,0 +1,39 @@
+package flat/parser
+
+import flat/datastruct/list/Stack
+import flat/ast
+import flat/compiler/models/Token
+import flat/io/File
+import flat/log/Logger
+import flat/eventstream/EventStream
+
+class {
+    static Logger log = Logger(Parser.class)
+
+    public parse(
+        ParserBase rootParser,
+        ParseContext parseContext,
+        EventStream tokenStream
+    ) =>
+        EventStream(true).on("start", (_, stream) => {
+            let engine = ParseEngine(rootParser, parseContext, stream)
+
+            tokenStream.on<Token>("data", (token) => {
+                log.trace("Received data from Token EventStream: #{token}")
+
+                engine.consume(token)
+                stream.emit("parsed_token", token)
+            })
+
+            tokenStream.on<String>("error", (error) => {
+                log.trace("Received error from Token EventStream: #{error}")
+                stream.emit("error", error)
+            })
+
+            tokenStream.on("close", {
+                log.trace("Token EventStream closed")
+                engine.end()
+                stream.emit("close")
+            })
+        })
+}

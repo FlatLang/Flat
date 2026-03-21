@@ -1,0 +1,846 @@
+package flat/parser/matchers
+
+import flat/datastruct/HashMap
+import flat/parser
+import flat/parser/flat
+import flat/annotations
+import flat/ast
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match package matcher group`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER)
+        ])
+
+        let result = groupPattern
+            .getMatcher()
+            .matchAll([
+                Token(value: "package", type: Token.Type.IDENTIFIER),
+                Token(value: "test", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toNotBe(null)
+    }
+
+    test `does not return value after second time matching`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        var result = matcher.matchAll([
+            Token(value: "package", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(result).toNotBe(null)
+
+        result = matcher.matchAll([
+            Token(value: "package", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(result).toBe(null)
+    }
+
+    test `does return value after second time matching if the matcher is reset`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        var result = matcher.matchAll([
+            Token(value: "package", type: Token.Type.IDENTIFIER),
+            Token(value: "test", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(result).toNotBe(null)
+
+        matcher.reset()
+        result = matcher.matchAll([
+            Token(value: "package", type: Token.Type.IDENTIFIER),
+            Token(value: "test2", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(result).toNotBe(null)
+    }
+
+    test `can match package matcher group with unmatched optional repeating package_location_component`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "/"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], repeat: true, optional: true)
+        ])
+
+        let result = groupPattern
+            .getMatcher()
+            .matchAll([
+                Token(value: "package", type: Token.Type.IDENTIFIER),
+                Token(value: "test", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toNotBe(null)
+    }
+
+    test `can match package matcher group with matched optional repeating package_location_component`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "/"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], repeat: true, optional: true)
+        ])
+
+        let result = groupPattern
+            .getMatcher()
+            .matchAll([
+                Token(value: "package", type: Token.Type.IDENTIFIER),
+                Token(value: "test", type: Token.Type.IDENTIFIER),
+                Token(value: "/", type: Token.Type.SYMBOL),
+                Token(value: "thing", type: Token.Type.IDENTIFIER),
+                Token(value: "/", type: Token.Type.SYMBOL),
+                Token(value: "thing2", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toNotBe(null)
+    }
+
+    test `can match multiple tested matcher groups with matched optional repeating values`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "class"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, optional: true, greedy: false),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], optional: true),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "implements"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER)
+                ], repeat: true, optional: true)
+            ], optional: true)
+        ])
+
+        let result = groupPattern
+            .getMatcher()
+            .matchAll([
+                Token(value: "class", type: Token.Type.IDENTIFIER),
+                Token(value: "extends", type: Token.Type.IDENTIFIER),
+                Token(value: "Extended", type: Token.Type.IDENTIFIER),
+                Token(value: "implements", type: Token.Type.IDENTIFIER),
+                Token(value: "I1", type: Token.Type.IDENTIFIER),
+                Token(value: ",", type: Token.Type.SYMBOL),
+                Token(value: "I2", type: Token.Type.IDENTIFIER),
+                Token(value: ",", type: Token.Type.SYMBOL),
+                Token(value: "I3", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toNotBe(null)
+    }
+
+    test `can match multiple tested matcher groups with matched optional repeating values where the non-greedy value is matched`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "class"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, optional: true, greedy: false),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], optional: true),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "implements"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER)
+                ], repeat: true, optional: true)
+            ], optional: true)
+        ])
+
+        let result = groupPattern
+            .getMatcher()
+            .matchAll([
+                Token(value: "class", type: Token.Type.IDENTIFIER),
+                Token(value: "Bob", type: Token.Type.IDENTIFIER),
+                Token(value: "extends", type: Token.Type.IDENTIFIER),
+                Token(value: "Extended", type: Token.Type.IDENTIFIER),
+                Token(value: "implements", type: Token.Type.IDENTIFIER),
+                Token(value: "I1", type: Token.Type.IDENTIFIER),
+                Token(value: ",", type: Token.Type.SYMBOL),
+                Token(value: "I2", type: Token.Type.IDENTIFIER),
+                Token(value: ",", type: Token.Type.SYMBOL),
+                Token(value: "I3", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toNotBe(null)
+    }
+
+    test `can match against matcher with multiple values`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, values: Array():addAll([
+                    "test1", "test2", "test3", "test4"
+                ])
+            )
+        ])
+
+        let result = groupPattern
+            .getMatcher()
+            .matchAll([
+                Token(value: "test3", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toNotBe(null)
+    }
+
+    test `can match partially against matcher when too few tokens given`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "/"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], repeat: true, optional: true)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+
+        let result = matcher
+            .matchAll([
+                Token(value: "package", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toBe(null)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `doesnt match partially against matcher when too few and incorrect tokens given`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "import"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "/"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], repeat: true, optional: true)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+
+        let result = matcher
+            .matchAll([
+                Token(value: "package", type: Token.Type.IDENTIFIER)
+            ])
+            .last
+
+        expect(result).toBe(null)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `doesnt match partially against matcher when too many tokens that dont match are given`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "class"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, optional: true, greedy: false),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], optional: true),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "implements"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER)
+                ], repeat: true, optional: true)
+            ], optional: true)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "public", type: Token.Type.IDENTIFIER),
+            Token(value: "static", type: Token.Type.IDENTIFIER),
+            Token(value: "async", type: Token.Type.IDENTIFIER),
+            Token(value: "main", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "String", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "]", type: Token.Type.SYMBOL),
+            Token(value: "args", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL),
+            Token(value: "{", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        expect(result).toBe(null)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `matches against just first identifier if all others are optional`() {
+        let groupPattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "class"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, optional: true, greedy: false),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], optional: true),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "implements"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER)
+                ], repeat: true, optional: true)
+            ], optional: true)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        let result = matcher.match(Token(value: "class", type: Token.Type.IDENTIFIER))
+
+        let expected = [Token(value: "class", type: Token.Type.IDENTIFIER)]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `matches completely against multiple entry options`() {
+        let groupPattern = GroupTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+            ], optional: true),
+            GroupTokenPattern([
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, values: Array()
+                        :addAll(VisibleModifier.aliases)
+                        :addAll(PublicModifier.aliases)
+                        :addAll(PrivateModifier.aliases)
+                        :addAll(LetModifier.aliases)
+                        :addAll(VarModifier.aliases)
+                    )
+                ])
+            ], optional: true)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        let result = matcher.match(Token(value: "public", type: Token.Type.IDENTIFIER))
+
+        let expected = [Token(value: "public", type: Token.Type.IDENTIFIER)]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `doesnt match complete single array bracket in annotation matcher`() {
+        let groupPattern = GroupTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+            ], optional: true),
+            GroupTokenPattern([
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, values: Array()
+                        :addAll(VisibleModifier.aliases)
+                        :addAll(PublicModifier.aliases)
+                        :addAll(PrivateModifier.aliases)
+                        :addAll(LetModifier.aliases)
+                        :addAll(VarModifier.aliases)
+                    )
+                ])
+            ], optional: true)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        let result = matcher.match(Token(value: "[", type: Token.Type.SYMBOL))
+
+        let expected = [Token(value: "[", type: Token.Type.SYMBOL)]
+
+        expect(matcher.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `doesnt match ending part of annotation`() {
+        let groupPattern = GroupTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+            ], optional: true),
+            GroupTokenPattern([
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, values: Array()
+                        :addAll(VisibleModifier.aliases)
+                        :addAll(PublicModifier.aliases)
+                        :addAll(PrivateModifier.aliases)
+                        :addAll(LetModifier.aliases)
+                        :addAll(VarModifier.aliases)
+                    )
+                ])
+            ], optional: true)
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "1", type: Token.Type.INTEGER),
+            Token(value: "]", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        expect(result).toBe(null)
+    }
+
+    test `can match complete multiple captures with tested contents`() {
+        let groupPattern = GroupTokenPattern([
+            CaptureTokenPattern(
+                start: Token(value: "<"),
+                end: Token(value: ">")
+            ),
+            CaptureTokenPattern(
+                start: Token(value: "("),
+                end: Token(value: ")")
+            )
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "bob", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "saget", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "bob", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "saget", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match partial multiple captures with tested contents`() {
+        let groupPattern = GroupTokenPattern([
+            CaptureTokenPattern(
+                start: Token(value: "<"),
+                end: Token(value: ">")
+            ),
+            CaptureTokenPattern(
+                start: Token(value: "("),
+                end: Token(value: ")")
+            )
+        ])
+
+        let matcher = groupPattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "bob", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "saget", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL)
+        ])
+
+        let expected = [
+            Token(value: "<", type: Token.Type.SYMBOL),
+            Token(value: "bob", type: Token.Type.IDENTIFIER),
+            Token(value: ">", type: Token.Type.SYMBOL),
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "saget", type: Token.Type.IDENTIFIER),
+            Token(value: "(", type: Token.Type.SYMBOL)
+        ]
+
+        expect(matcher.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can match a parameter with array brackets in parentheses`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+                ], repeat: true, optional: true),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ]),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                    GroupTokenPattern([
+                        SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                        SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+                    ], repeat: true, optional: true),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER)
+                ])
+            ], optional: true, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+        ])
+
+        let match = pattern
+            .getMatcher()
+            .matchAll([
+                Token(value: "(", type: Token.Type.SYMBOL),
+                Token(value: "String", type: Token.Type.IDENTIFIER),
+                Token(value: "[", type: Token.Type.SYMBOL),
+                Token(value: "]", type: Token.Type.SYMBOL),
+                Token(value: "test", type: Token.Type.IDENTIFIER),
+                Token(value: ")", type: Token.Type.SYMBOL)
+            ], ParseContext()).last
+
+        expect(match).toNotBe(null)
+    }
+
+    test `does not return full match if last required pattern is not matched`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, repeat: true),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "value", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(match).toBe(null)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `does not return full match if last required pattern is not matched, where the pattern before it is completed`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, repeat: true)
+            ]),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "value", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(match).toBe(null)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `continues on when precondition matcher matches`() {
+        let pattern = GroupTokenPattern([
+            PreconditionTokenPattern(annotations: [LetModifier.class]),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "test"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "test2")
+        ])
+
+        let context = ParseContext(
+            annotations: [LetModifier(aliasUsed: Token(value: "let", type: Token.Type.IDENTIFIER))]
+        )
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "test2", type: Token.Type.IDENTIFIER)
+        ], context).last
+
+        expect(match).toNotBe(null)
+        expect(match.tokens).toBe([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "test2", type: Token.Type.IDENTIFIER)
+        ])
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `breaks when precondition matcher doesnt matches`() {
+        let pattern = GroupTokenPattern([
+            PreconditionTokenPattern(annotations: [LetModifier.class]),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "test"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "test2")
+        ])
+
+        let context = ParseContext(
+            annotations: [VarModifier(aliasUsed: Token(value: "var", type: Token.Type.IDENTIFIER))]
+        )
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "test2", type: Token.Type.IDENTIFIER)
+        ], context).last
+
+        expect(match).toBe(null)
+    }
+
+    test `can handle reaching forward multiple patterns for a non-greedy match`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "class"),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, optional: true, greedy: false),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], optional: true),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "implements"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: ","),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER)
+                ], repeat: true, optional: true)
+            ], optional: true)
+        ])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "implements", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "implements", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(true)
+    }
+
+    test `can handle matching required pattern after repeating pattern`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "external"),
+            GroupTokenPattern([
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "not"),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                ], optional: true),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, optional: true)
+            ], repeat: true, optional: true),
+            CaptureTokenPattern(
+
+                start: Token(value: "{"),
+                end: Token(value: "}")
+            )
+        ])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "external", type: Token.Type.IDENTIFIER),
+            Token(value: "not", type: Token.Type.IDENTIFIER),
+            Token(value: "thing", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "external", type: Token.Type.IDENTIFIER),
+            Token(value: "not", type: Token.Type.IDENTIFIER),
+            Token(value: "thing", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL)
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `does not match when required pattern after repeating pattern is not matched`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "external"),
+            GroupTokenPattern([
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "not"),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                ], optional: true),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, optional: true)
+            ], repeat: true, optional: true),
+            CaptureTokenPattern(
+
+                start: Token(value: "{"),
+                end: Token(value: "}")
+            )
+        ])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "external", type: Token.Type.IDENTIFIER),
+            Token(value: "not", type: Token.Type.IDENTIFIER),
+            Token(value: "thing", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(result).toBe(null)
+    }
+
+    test `can match an inner multi-node expression node pattern`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "("),
+            NodeTokenPattern([IdentifierParser()]),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: ")")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "(", type: Token.Type.SYMBOL),
+            Token(value: "thing", type: Token.Type.IDENTIFIER),
+            Token(value: ".", type: Token.Type.SYMBOL),
+            Token(value: "otherThing", type: Token.Type.IDENTIFIER),
+            Token(value: ")", type: Token.Type.SYMBOL)
+        ], ParseContext()).last
+
+        expect(match).toNotBe(null)
+    }
+
+    test `does not match when optional broken sub-match had some of the tokens matched`() {
+        let pattern = GroupTokenPattern([
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+                    SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+                ], repeat: true, greedy: false, optional: true)
+            ]),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER)
+        ])
+
+        let matcher = pattern.getMatcher()
+        let match = matcher.matchAll([
+            Token(value: "test", type: Token.Type.IDENTIFIER),
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "thing", type: Token.Type.IDENTIFIER)
+        ], ParseContext()).last
+
+        expect(match).toBe(null)
+        expect(matcher.disqualified).toBe(true)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `can match non-greedy sub-matches`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "class"),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], optional: true, greedy: false),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "extends"),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                CaptureTokenPattern(
+
+                    start: Token(value: "<"),
+                    end: Token(value: ">"),
+                    skipGenerics: false,
+                    allowedTokens: [
+                        Token(type: Token.Type.IDENTIFIER),
+                        Token(type: Token.Type.SYMBOL, value: "<"),
+                        Token(type: Token.Type.SYMBOL, value: ">"),
+                        Token(type: Token.Type.SYMBOL, value: "["),
+                        Token(type: Token.Type.SYMBOL, value: "]"),
+                        Token(type: Token.Type.SYMBOL, value: ",")
+                    ],
+                    optional: true
+                )
+            ], optional: true),
+            GroupTokenPattern([
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "{"),
+                NodeGroupTokenPattern(LocalScopeParser().valueParsers, optional: true),
+                SingleTokenPattern(type: Token.Type.SYMBOL, value: "}")
+            ])
+        ])
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "extends", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        let expected = [
+            Token(value: "class", type: Token.Type.IDENTIFIER),
+            Token(value: "extends", type: Token.Type.IDENTIFIER),
+            Token(value: "Test", type: Token.Type.IDENTIFIER),
+            Token(value: "{", type: Token.Type.SYMBOL),
+            Token(value: "}", type: Token.Type.SYMBOL),
+        ]
+
+        expect(result?.tokens).toBe(expected)
+        expect(matcher.partial).toBe(false)
+    }
+
+    test `does not match on non-greedy repeating sub-match`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "Target"),
+            XorTokenPattern([
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "not"),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                ]),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], repeat: true, greedy: false),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Target", type: Token.Type.IDENTIFIER),
+            Token(value: "c", type: Token.Type.IDENTIFIER),
+        ], ParseContext()).last
+
+        expect(result).toBe(null)
+    }
+
+    test `can match after a non-greedy repeating sub-match`() {
+        let pattern = GroupTokenPattern([
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "["),
+            SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "Target"),
+            XorTokenPattern([
+                GroupTokenPattern([
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "not"),
+                    SingleTokenPattern(type: Token.Type.IDENTIFIER),
+                ]),
+                SingleTokenPattern(type: Token.Type.IDENTIFIER)
+            ], repeat: true, greedy: false),
+            SingleTokenPattern(type: Token.Type.SYMBOL, value: "]")
+        ])
+
+        let matcher = pattern.getMatcher()
+        let result = matcher.matchAll([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Target", type: Token.Type.IDENTIFIER),
+            Token(value: "c", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ], ParseContext()).last
+
+        expect(result?.tokens).toBe([
+            Token(value: "[", type: Token.Type.SYMBOL),
+            Token(value: "Target", type: Token.Type.IDENTIFIER),
+            Token(value: "c", type: Token.Type.IDENTIFIER),
+            Token(value: "]", type: Token.Type.SYMBOL),
+        ])
+    }
+}

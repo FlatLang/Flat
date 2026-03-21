@@ -1,0 +1,33 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/parser
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/log
+
+abstract data class<TokenPatternType extends TokenPattern> {
+    static Logger log = Logger(TokenMatch.class)
+
+    visible Token[] tokens
+    visible data_equals_ignore data_tostring_ignore var TokenPatternType pattern
+    visible data_equals_ignore data_tostring_ignore var ParseContext context
+
+    lazy Function constructor => pattern
+        .getNodeType()
+        .functions
+        .firstWhere({ _.name == "construct" })
+
+    public inflateNode<NodeType extends Node>(NodeType node) => node
+
+    public traverseNodes(func(Node, ParseContext, TokenPattern)) {
+        if (Object.referenceEquals(pattern.getNodeType(), Node.class)) return
+
+        if (let f = constructor) {
+            if (let value = f.callStatic(pattern.getNodeType())) {
+                let node = (Node)value
+                func(inflateNode(node), context, pattern)
+            }
+        }
+    }
+}

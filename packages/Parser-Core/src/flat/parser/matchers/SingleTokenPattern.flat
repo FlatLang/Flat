@@ -1,0 +1,43 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/log/Logger
+
+data class<NodeType extends Node> extends TokenPattern<NodeType> {
+    static Logger log = Logger(SingleTokenPattern.class)
+
+    visible Int type
+    visible String value = null
+    visible String[] values = null
+    visible String[] notValues = null
+    visible String field = null
+
+    public getMatcher() => SingleTokenMatcher(this)
+
+    var String _pattern
+
+    override public toPatternString() => _pattern {
+        if (!_pattern) {
+            _pattern = ""
+
+            if (getNodeType() != Node.class) {
+                _pattern += "#{getNodeType().name} => "
+            }
+
+            _pattern += "<"
+            _pattern += Token.Type.toString(type)
+
+            if (values) {
+                _pattern += "[" + values.map({ "\"#{_}\"" }).join(" ") + "]"
+            }
+            if (value) {
+                _pattern += ":\"" + value + "\""
+            }
+
+            _pattern += ">"
+            _pattern += getModifiersString()
+        }
+    }
+}

@@ -1,0 +1,27 @@
+package flat/parser
+
+import flat/ast
+import flat/datastruct/list/Stack
+import flat/compiler/models/Token
+import flat/io/File
+import flat/log/Logger
+
+data class {
+    static Logger log = Logger(ParseContext.class)
+
+    visible Stack<ParserBase> parserStack = Stack()
+    visible var ParserBase currentParser => parserStack.peek()
+    visible var ParserBase currentParentParser => parserStack.peek(1)
+    visible var ParserBase currentBaseParser
+    visible var Token[] tokens = Token[]
+    visible var AnnotationNode[] annotations = AnnotationNode[]
+
+    visible File file
+
+    public addMetadata(Node node) {
+        if (node.class.isOfType(AnnotationNode.class)) {
+            annotations.add((AnnotationNode)node)
+            log.debug("Added annotation #{node.class.name}")
+        }
+    }
+}

@@ -1,0 +1,35 @@
+package flat/parser/matchers
+
+import flat/datastruct/HashMap
+import flat/parser
+import flat/annotations
+import flat/ast
+import flat/parser/flat
+import flat/compiler/models/Token
+import flat/io/File
+
+testable class {
+    test `can match token`() {
+        let pattern = SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package")
+
+        let result = pattern
+            .getMatcher()
+            .match(Token(value: "package", type: Token.Type.IDENTIFIER))
+
+        let expected = [Token(value: "package", type: Token.Type.IDENTIFIER)]
+
+        expect(result?.tokens).toBe(expected)
+    }
+
+    test `doesnt match wrong token`() {
+        let pattern = SingleTokenPattern(type: Token.Type.IDENTIFIER, value: "package")
+
+        let result = pattern
+            .getMatcher()
+            .match(Token(value: "parckage", type: Token.Type.IDENTIFIER))
+
+        let expected = null
+
+        expect(result).toBe(expected)
+    }
+}

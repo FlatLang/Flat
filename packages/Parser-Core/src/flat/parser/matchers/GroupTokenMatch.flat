@@ -1,0 +1,23 @@
+package flat/parser/matchers
+
+import flat/ast
+import flat/datastruct/HashMap
+import flat/compiler/models/Token
+import flat/log
+
+data class extends TokenMatch<GroupTokenPattern> {
+    static Logger log = Logger(GroupTokenMatch.class)
+
+    visible TokenMatch[] tokenMatches
+
+    override public inflateNode<NodeType extends Node>(NodeType node) => node {
+        tokenMatches
+            .filter({ Object.referenceEquals(_.pattern.getNodeType(), Node.class) })
+            .forEach({ _.inflateNode(node) })
+    }
+
+    override public traverseNodes(func(Node, ParseContext, TokenPattern)) {
+        super.traverseNodes(func)
+        tokenMatches.forEach({ _.traverseNodes(func) })
+    }
+}

@@ -1,0 +1,12 @@
+package flat/parser
+
+import flat/parser/flat
+import flat/parser/matchers
+import flat/annotations
+import flat/compiler/models
+import flat/ast
+import flat/eventstream/EventStream
+import flat/io/File
+
+testable class {
+}
