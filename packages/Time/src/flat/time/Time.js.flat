@@ -1,0 +1,11 @@
+package flat/time
+
+class Time {
+    visible static Long currentTimeMillis {
+        get {
+            external {
+                return new Date().getTime();
+            }
+        }
+    }
+}

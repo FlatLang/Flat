@@ -1,0 +1,20 @@
+package flat/time
+
+class Date {
+    public var Int year
+    public var Int month
+    public var Int day
+    public var Int hour
+    public var Int minute
+    public var Int second
+
+    public construct() => updateTime()
+
+    public decodeDate(String prototype, String date) {}
+
+    public updateTime() {}
+
+    public formatDate(String str, Int first = month, Int second = day, Int third = year, Int fourth = hour, Int fifth = minute, Int sixth = second) -> String {
+        return null
+    }
+}

@@ -1,0 +1,6 @@
+package flat/time
+
+class Time {
+    visible static Long currentTimeMillis =>
+        throw Exception("Not implemented for language target or runtime") extCurrentTimeMillis()
+}

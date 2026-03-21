@@ -1,0 +1,9 @@
+package flat/time
+
+testable class {
+    test `can create`() {
+        let value = Time()
+
+        expect(value).toNotBe(null)
+    }
+}
