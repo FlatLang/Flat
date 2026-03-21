@@ -1,0 +1,8 @@
+package flat/terminalsize
+
+data class {
+    visible Int columns
+    visible Int lines
+
+    override public toString() => "#{columns}x#{lines}"
+}

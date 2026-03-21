@@ -1,0 +1,11 @@
+package flat/terminalsize
+
+import flat/terminalsize/TerminalSize
+
+testable class {
+    test `can create`() {
+        let value = TerminalSize()
+
+        expect(value).toNotBe(null)
+    }
+}

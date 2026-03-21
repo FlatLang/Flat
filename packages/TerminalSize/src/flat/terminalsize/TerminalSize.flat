@@ -1,0 +1,17 @@
+package flat/terminalsize
+
+import flat/log
+
+class {
+    static Logger log = Logger(TerminalSize.class)
+
+    public static getTerminalSize() -> Dimensions => null
+    public static getTerminalSize(Dimensions default) => getTerminalSize() ?: default
+    public static getTerminalSize(Int defaultColumns, Int defaultLines) =>
+        getTerminalSize(
+            Dimensions(
+                columns: defaultColumns,
+                lines: defaultLines
+            )
+        )
+}

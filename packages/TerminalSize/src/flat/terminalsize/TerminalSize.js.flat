@@ -1,0 +1,148 @@
+package flat/terminalsize
+
+import flat/io
+
+class {
+    public static getTerminalSize() -> Dimensions => null {
+        let native native_array Int[] values = getTerminalSize_native()
+
+        if (values) {
+            return Dimensions(
+                columns: values[0],
+                lines: values[1]
+            )
+        }
+    }
+
+    // Following code is based off of https://github.com/sindresorhus/term-size
+    // refactored to handle non-ESM node and Flat conventions
+    static native native_array getTerminalSize_native() -> Int[] => null {
+        var native native_array String[] args
+        var native String errorMessageData
+
+        external {
+            const {env, stdout, stderr} = process;
+
+            if (stdout && stdout.columns && stdout.rows) {
+                #{log.debug("Found terminal dimensions from process.stdout")};
+                return [stdout.columns, stdout.rows];
+            }
+
+            if (stderr && stderr.columns && stderr.rows) {
+                #{log.debug("Found terminal dimensions from process.stderr")};
+                return [stderr.columns, stderr.rows];
+            }
+
+            // These values are static, so not the first choice
+            if (env.COLUMNS && env.LINES) {
+                #{log.debug("Found terminal dimensions from process.env.COLUMNS and process.env.LINES")};
+                return [parseInt(env.COLUMNS), parseInt(env.LINES)];
+            }
+
+            if (process.platform === "win32") {
+                try {
+                    #{log.debug("Attempting to get terminal dimensions from term-size.exe")};
+                    // Binary: https://github.com/sindresorhus/win-term-size
+                    const size = #{execNative("vendor/windows/term-size.exe", false)};
+
+                    if (size.length === 2) {
+                        #{log.debug("Found terminal dimensions from term-size.exe")};
+                        return [parseInt(size[0]), parseInt(size[1])];
+                    }
+                } catch (e) {
+                    #{errorMessageData} = e.message || "";
+                    #{log.debug("Encountered error: " + String(errorMessageData))};
+                }
+            } else {
+                if (process.platform === "darwin") {
+                    try {
+                        #{log.debug("Attempting to get terminal dimensions from macos term-size")};
+                        // Binary: https://github.com/sindresorhus/macos-term-size
+                        const size = #{execNative("vendor/macos/term-size", true)};
+
+                        if (size.length === 2) {
+                            #{log.debug("Found terminal dimensions from macos term-size")};
+                            return [parseInt(size[0]), parseInt(size[1])];
+                        }
+                    } catch (e) {
+                        #{errorMessageData} = e.message || "";
+                        #{log.debug("Encountered error: " + String(errorMessageData))};
+                    }
+                }
+
+                // `resize` is preferred as it works even when all file descriptors are redirected
+                // https://linux.die.net/man/1/resize
+                try {
+                    #{args} = ["-u"];
+                    const size = #{exec("resize", args, false)}.match(/\d+/g);
+
+                    if (size.length === 2) {
+                        #{log.debug("Found terminal dimensions from resize")};
+                        return [parseInt(size[0]), parseInt(size[1])];
+                    }
+                } catch (e) {
+                    #{errorMessageData} = e.message || "";
+                    #{log.debug("Encountered error: " + String(errorMessageData))};
+                }
+
+                if (process.env.TERM) {
+                    try {
+                        #{args} = ["cols"];
+                        const columns = #{exec("tput", args, false)};
+                        #{args} = ["lines"];
+                        const rows = #{exec("tput", args, false)};
+
+                        if (columns && rows) {
+                            #{log.debug("Found terminal dimensions from tput")};
+                            return [parseInt(columns), parseInt(rows)];
+                        }
+                    } catch (e) {
+                        #{errorMessageData} = e.message || "";
+                        #{log.debug("Encountered error: " + String(errorMessageData))};
+                    }
+                }
+            }
+
+            #{log.debug("Could not find terminal dimensions")};
+        }
+    }
+
+    static native exec(native String command, native native_array String[] args, Bool shell) -> String {
+        external {
+            return #{TerminalSizeGlobal.childProcess}.execFileSync(#{command}, #{args}, {encoding: 'utf8', shell, stdio: ['ignore', 'pipe', 'ignore']}).trim();
+        }
+    }
+
+    static native execNative(String command, Bool shell) -> String {
+        var native String commandData
+        var native native_array String[] args
+
+        external {
+            #{log.debug("before")};
+            #{commandData} = #{TerminalSizeGlobal.path}.join(#{File.EXECUTED_DIRECTORY.location.chars.data}, #{command.chars.data});
+            #{log.debug("Executing " + String(commandData))};
+            #{args} = [];
+            return #{exec(commandData, args, shell)}.split(/\r?\n/);
+        }
+    }
+
+    public static class TerminalSizeGlobal {
+        external type Path
+        visible static lazy Path path {
+            get {
+                external {
+                    return require('path');
+                }
+            }
+        }
+
+        external type ChildProcess
+        visible static lazy ChildProcess childProcess {
+            get {
+                external {
+                    return require('child_process');
+                }
+            }
+        }
+    }
+}
