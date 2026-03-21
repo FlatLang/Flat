@@ -1,0 +1,22 @@
+package flat/datastruct/list
+
+import flat/datastruct/list/ArrayIterator
+
+class Queue<E> implements List<E> {
+    visible Int count => data.count
+
+    override visible ArrayIterator<E> iterator => ArrayIterator(data)
+
+    public E first <=> data.first
+    public E last <=> data.last
+
+    E[] data
+
+    public construct() => data = Array()
+    public construct(List<E> data) => this.data = data.toArray()
+
+    public dequeue() -> E => data.remove(0)
+    public enqueue(E element) => data.add(element)
+    public reverse() => Queue<E>(data.reverse())
+    public toString() => "Queue [#{join(", ")}]"
+}

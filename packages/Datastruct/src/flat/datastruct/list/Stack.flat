@@ -1,0 +1,78 @@
+package flat/datastruct/list
+
+class Stack<E> {
+    visible var Int count
+
+    var ListNode<E> top
+
+    visible Bool isEmpty => count == 0
+    visible Bool isNotEmpty => count > 0
+
+    public construct() {}
+
+    public construct(E[] data) {
+        for (e in data) {
+            push(e) // y do u hve to be so pushy?
+        }
+    }
+
+    construct(this ListNode<E> top) {}
+
+    public push(E data) => data {
+        let node = ListNode(data, top)
+        top = node
+
+        count++
+    }
+
+    public pop() -> E {
+        if (isEmpty) {
+            throw EmptyStackException()
+        }
+
+        E data = top.data
+
+        top = top.next
+
+        count--
+
+        return data
+    }
+
+    public clear() -> Stack<E> {
+        let copy = Stack<E>(top)
+
+        top = null
+        count = 0
+
+        return copy
+    }
+
+    public peek(var Int offset = 0) -> E {
+        if (!top) return null
+
+        var current = top
+        while (current && offset-- > 0) {
+            current = current.next
+        }
+
+        return current?.data
+    }
+
+    public copy() => Stack<E>(toArray())
+
+    public toArray() -> E[] {
+        let array = Array<E>(count)
+        var current = top
+
+        while (current != null) {
+            array.unshift(current.data)
+
+            current = current.next
+        }
+
+        return array
+    }
+
+    override public toString() => toArray().toString()
+}

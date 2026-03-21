@@ -1,0 +1,9 @@
+package flat/datastruct
+
+testable class {
+    test `can create`() {
+        let value = HashMap()
+
+        expect(value).toNotBe(null)
+    }
+}

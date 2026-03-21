@@ -1,0 +1,7 @@
+package flat/datastruct/list
+
+class ListNode<E> {
+    public construct(public var E data, public var ListNode<E> next = null) {}
+
+    public clone() => ListNode(data, next)
+}

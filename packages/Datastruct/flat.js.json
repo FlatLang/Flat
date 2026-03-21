@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "test": "node dist/js/test.js"
+  },
+  "sources": {
+    "main": {
+      "outFile": "index.js",
+      "dependencies": {}
+    },
+    "test": {
+      "outFile": "test.js",
+      "dependencies": {}
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "Datastruct",
+  "version": "0.1.0",
+  "description": "Flat Datastruct Library",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "sources": {
+    "main": {
+      "source": "src",
+      "dependencies": {}
+    },
+    "test": {
+      "mainClass": "flat/datastruct/Datastruct_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master",
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master"
+      }
+    }
+  }
+}

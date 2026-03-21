@@ -1,0 +1,121 @@
+package flat/datastruct
+
+import flat/datastruct/list
+import flat/primitive
+
+class HashMap<K, V> {
+    public static jsObjectToFlatHashMap(Object obj) -> HashMap<String, Object> {
+        native_array native var Char[] key
+        native var Object nativeValue
+        var Object value
+
+        let map = HashMap<String, Object>()
+
+        external {
+            Object.entries(obj).forEach((entry) => {
+                #{key} = entry[0];
+                #{nativeValue} = entry[1];
+                #{value} = #{fromJsonValue(nativeValue)};
+
+                #{map.add(String(key), value)};
+            });
+        }
+
+        return map
+    }
+
+    public static fromJsonValue(native external_name Object obj) -> Object {
+        var Object value
+        native_array native var Char[] data
+        native_array var Object[] arrayData
+        native var Int arrayCount
+        native var Long num
+        native var Bool boolValue
+
+        external {
+            if (typeof obj === 'string') {
+                #{data} = obj;
+                #{value} = #{String(data)};
+            } else if (typeof obj === 'number') {
+                #{num} = obj;
+                #{value} = #{Long(num)};
+            } else if (typeof obj === 'boolean') {
+                #{boolValue} = obj;
+                #{value} = #{Bool(boolValue)};
+            } else if (Array.isArray(obj)) {
+                #{arrayData} = obj.map(o => {
+                    #{value} = o;
+                    return #{fromJsonValue(value)};
+                });
+                #{arrayCount} = obj.length;
+                #{value} = #{Array(arrayData, arrayCount)};
+            } else if (obj === null) {
+                #{value} = #{null};
+            } else if (typeof obj === 'object') {
+                #{value} = obj;
+                #{value} = #{jsObjectToFlatHashMap(value)};
+            } else if (typeof obj === 'undefined') {
+                #{value} = #{null};
+            } else {
+                throw new Error("Invalid type: " + (typeof obj));
+            }
+        }
+
+        return value
+    }
+
+    static toJsonArray(Array array) -> Object {
+        var native Object jsArray
+        var native Object data
+
+        external {
+            jsArray = #{array.data}.map((value) => {
+                #{data} = value;
+                return #{fromJsonValue(data)};
+            });
+        }
+
+        return jsArray
+    }
+
+    static toJsonValue(Object obj) -> Object => null {
+        if (obj == null) {
+            external {
+                return undefined;
+            }
+        } else if (obj.class.isOfType(String.class)) {
+            let String str = (String)obj
+            external {
+                return #{str.chars.data};
+            }
+        } else if (obj.class.isOfType(Primitive.class)) {
+            external {
+                return #{obj}.value;
+            }
+        } else if (obj.class.isOfType(Array.class)) {
+            return toJsonArray((Array)obj)
+        } else if (obj.class.isOfType(HashMap.class)) {
+            let HashMap map = (HashMap)obj
+
+            return map.toJsObject()
+        } else {
+            throw Exception("Invalid type: #{obj.class}")
+        }
+    }
+
+    public toJsObject() -> Object {
+        var native Object map
+
+        external {
+            map = {};
+        }
+
+        forEach({
+            external {
+                map[#{toJsonValue(_x.key)}] = #{toJsonValue(_x.value)};
+            }
+        })
+
+        return map
+    }
+}

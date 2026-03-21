@@ -1,0 +1,219 @@
+package flat/datastruct/list
+
+class LinkedList<E> implements List<E>
+{
+	visible var ListNode<E>	start
+	visible var ListNode<E>	current
+
+	var visible Int size
+
+	visible LinkedListIterator<E> iterator => LinkedListIterator(this)
+
+	public E first => start?.data {
+		set {
+            start = ListNode(value, start)
+		}
+	}
+
+	public E last => current?.data {
+		set {
+            current.next = ListNode(value)
+			current = current.next
+		}
+	}
+
+	public addAll(E[] data) -> LinkedList<E> {
+	        for (d in data) {
+	                add(d)
+	        }
+
+	        return this
+	}
+
+	public add(E data) -> LinkedList<E> {
+		ListNode<E> node = ListNode(data)
+
+		if (start) {
+			current.next = node
+		}
+		else {
+			start     = node
+			current = node
+		}
+
+		current = node
+
+		size++
+
+		return this
+	}
+
+	public remove(E data) -> LinkedList<E> {
+		if (start.data == data) {
+			start = start.next
+		}
+
+		var ListNode<E> prev = start
+		var ListNode<E> cur    = start.next
+
+		while (cur) {
+			E d = cur.data
+
+			if (d == data) {
+				prev.next = cur.next
+
+				size--
+			}
+
+			cur = cur.next
+		}
+
+		return this
+	}
+
+	override public contains(E value) -> Bool {
+	        return any({ _ == value })
+	}
+
+	override public toArray() -> E[] {
+		E[] array = Array(size)
+
+		var Int i = 0
+
+		for (element in this) {
+			array.set(i++, element)
+		}
+
+		return array
+	}
+
+	override public map<Out>(mapFunc(E x, Int i, LinkedList<E> list) -> Out) -> LinkedList<Out> {
+		LinkedList<Out> array = LinkedList()
+
+		var Int i = 0
+
+		for (element in this) {
+			array.add(mapFunc(element, i++, this))
+		}
+
+		return array
+	}
+
+	override public forEach(func(E x, Int i, LinkedList<E> list)) => this {
+		var Int i = 0
+
+		for (element in this) {
+			func(element, i++, this)
+		}
+	}
+
+	override public any(anyFunc(E x, Int i, LinkedList<E> list) -> Bool) -> Bool {
+		var Int i = 0
+
+		for (element in this) {
+			if (anyFunc(element, i++, this)) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	override public all(allFunc(E x, Int i, LinkedList<E> list) -> Bool, Bool stopOnContradiction = true) -> Bool {
+		var contradiction = false
+		var Int i = 0
+
+		for (element in this) {
+			if (!allFunc(element, i++, this)) {
+				if (stopOnContradiction) {
+					return false
+				}
+
+				contradiction = true
+			}
+		}
+
+		return !contradiction
+	}
+
+	override public filter(filterFunc(E x, Int i, LinkedList<E> list) -> Bool) -> LinkedList<E> {
+		LinkedList<E> filtered = LinkedList()
+
+		var Int i = 0
+
+		for (element in this) {
+			if (filterFunc(element, i++, this)) {
+				filtered.add(element)
+			}
+		}
+
+		return filtered
+	}
+
+	override public take(var Int howMany) -> LinkedList<E> {
+		if (howMany > size) {
+			howMany = size
+		}
+
+		LinkedList<E> list = LinkedList()
+
+		for (element in this) {
+			if (list.size == howMany) break
+
+			list.add(element)
+		}
+
+		return list
+	}
+
+	override public skip(Int howMany) -> LinkedList<E> {
+		LinkedList<E> list = LinkedList()
+
+		var Int i = 0
+
+		for (element in this) {
+			if (i++ > howMany) list.add(element)
+		}
+
+		return list
+	}
+
+	override public firstWhere(func(E x, Int i, LinkedList<E> list) -> Bool) -> E {
+		var Int i = 0
+
+        for (element in this) {
+			if (func(element, i++, this)) {
+				return element
+			}
+		}
+
+		return null
+	}
+
+	override public reverse() -> LinkedList<E> {
+		LinkedList<E> list = LinkedList()
+
+		var ListNode<E> prev = null
+		var ListNode<E> current = null
+		var ListNode<E> next = null
+
+		if (start) {
+			current = start.clone()
+		}
+
+		while (current) {
+			next = current.next
+			current.next = null
+
+			if (next) next = next.clone()
+			if (prev) current.next = prev.clone()
+
+			prev = current
+			current = next
+		}
+
+		list.start = prev
+
+		return list
+	}
+}

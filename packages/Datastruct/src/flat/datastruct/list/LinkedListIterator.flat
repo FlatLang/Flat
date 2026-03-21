@@ -1,0 +1,40 @@
+package flat/datastruct/list
+
+import flat/datastruct/list/Iterator
+import flat/datastruct/list/NoSuchElementException
+
+class LinkedListIterator<E> implements Iterator<E> {
+    visible var ListNode<E> position
+    visible var ListNode<E> previousNode
+
+    visible Bool hasNext => position != null
+    visible Bool hasPrevious => previousNode != null
+
+    visible E stepNext {
+        get {
+            if (hasNext) {
+                E data = position.data
+
+                previousNode = position
+                position = position.next
+
+                return data
+            }
+
+            throw NoSuchElementException()
+        }
+    }
+
+    visible E current => position?.data
+    visible E next => position?.next?.data
+    visible E previous => previousNode?.data
+
+    public construct(private LinkedList<E> list) {
+        reset()
+    }
+
+    public reset() => this {
+        position = list.start
+        previousNode = null
+    }
+}
