@@ -1,0 +1,12 @@
+package flat/stream
+
+import flat/datastruct/list
+
+class<In, Out> implements Iterator<Out> {
+    public construct(visible Iterator<In> iterator) {}
+
+    override visible Bool hasNext => false
+    override visible Out stepNext => null
+    override visible Out next => null
+    override visible Out current => null
+}

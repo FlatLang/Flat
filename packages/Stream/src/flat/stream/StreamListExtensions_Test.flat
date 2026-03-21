@@ -1,0 +1,37 @@
+package flat/stream
+
+import flat/datastruct
+
+testable class {
+    test `can convert array to stream`() {
+        let array = ["one", "two", "three"]
+
+        let stream = array.stream()
+
+        expect(stream).toNotBe(null)
+    }
+
+    test `can convert HashMap to stream`() {
+        let map = HashMap()
+            :add("one", 1)
+            :add("two", 2)
+            :add("three", 3)
+
+        let stream = map.stream()
+
+        expect(stream).toNotBe(null)
+    }
+
+    test `can iterate over pair values of HashMap stream with explicit generic types`() {
+        let map = HashMap<String, Int>()
+            :add("one", 1)
+            :add("two", 2)
+            :add("three", 3)
+
+        var output = ""
+
+        map.stream<Pair<String, Int>>().forEach({ output += "#{_x.key}: #{_x.value}" })
+
+        expect(output).toBe("one: 1two: 2three: 3")
+    }
+}

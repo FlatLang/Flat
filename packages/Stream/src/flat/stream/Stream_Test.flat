@@ -1,0 +1,472 @@
+package flat/stream
+
+import flat/datastruct
+import flat/datastruct/list
+
+testable class {
+    test `can create a Stream from an Iterator`() {
+        let array = ["test", "one", "two", "three"]
+        let stream = Stream(array.iterator)
+
+        expect(stream).toNotBe(null)
+    }
+
+    test `can collect to set`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().toSet()).toBe(HashSet(array))
+    }
+
+    test `can collect to set without duplicates`() {
+        let array = ["one", "two", "two", "three", "one"]
+
+        expect(array.stream().toSet()).toBe(HashSet(["one", "three", "two"]))
+    }
+
+    test `can filter objects`() {
+        let array = ["one", "two", "three", "333", "222", "five", "six"]
+
+        let result = array.stream()
+            .filter({ _.count == 3 })
+            .toArray()
+
+        expect(result).toBe([
+            "one",
+            "two",
+            "333",
+            "222",
+            "six",
+        ])
+    }
+
+    test `can get unique objects`() {
+        let array = ["one", "one", "three", "three", "three", "five", "six"]
+
+        let result = array.stream()
+            .unique()
+            .toArray()
+
+        expect(result).toBe([
+            "one",
+            "three",
+            "five",
+            "six",
+        ])
+    }
+
+    test `can get min value`() {
+        let array = ["one", "one", "three", "three", "three", "five", "six"]
+
+        let result = array.stream()
+            .minBy({ _.count })
+
+        expect(result).toBe(3)
+    }
+
+    test `can get max value`() {
+        let array = ["one", "one", "three", "three", "three", "five", "six"]
+
+        let result = array.stream()
+            .maxBy({ _.count })
+
+        expect(result).toBe(5)
+    }
+
+    test `can get sum value`() {
+        let array = ["one", "one", "three", "three", "three", "five", "six"]
+
+        let result = array.stream()
+            .sumBy({ _.count })
+
+        expect(result).toBe(28)
+    }
+
+    test `can get countWhere value`() {
+        let array = ["one", "one", "three", "three", "three", "five", "six"]
+
+        let result = array.stream()
+            .countWhere({ _.count == 3 })
+
+        expect(result).toBe(3)
+    }
+
+    test `can get mean value`() {
+        let array = ["one", "one", "three", "three", "three", "five", "six"]
+
+        let result = array.stream()
+            .meanBy({ _.count })
+
+        expect(result).toBe(4)
+    }
+
+    test `can map then filter objects`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+
+        let result = array.stream()
+            .map({ _ + "!" })
+            .filter({ _.count == 3 })
+            .toArray()
+
+        expect(result).toBe([
+            "to!",
+            "th!",
+            "22!",
+        ])
+    }
+
+    test `can filterNot objects`() {
+        let array = ["one", "two", "three", "333", "222", "five", "six"]
+
+        let result = array.stream()
+            .filterNot({ _.count == 3 })
+            .toArray()
+
+        expect(result).toBe([
+            "three",
+            "five",
+        ])
+    }
+
+    test `can map then filterNot objects`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+
+        let result = array.stream()
+            .map({ _ + "!" })
+            .filterNot({ _.count == 3 })
+            .toArray()
+
+        expect(result).toBe([
+            "one!",
+            "333!",
+            "five!",
+            "six!",
+        ])
+    }
+
+    test `can mapNotNull objects`() {
+        let array = ["one", null, "th", null, "22", "five", "six"]
+
+        let result = array.stream()
+            .mapNotNull({ _ ? _ + "!" : null })
+            .toArray()
+
+        expect(result).toBe([
+            "one!",
+            "th!",
+            "22!",
+            "five!",
+            "six!",
+        ])
+    }
+
+    test `iterates through objects sequentially`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+
+        let actions = String[]
+
+        let result = array.stream()
+            .map({
+                actions.add("mapped #_x")
+                return _x + "!"
+            })
+            .filter({
+                actions.add("filtered #_x")
+                return _x.count == 3
+            })
+            .map({
+                actions.add("mapped2 #_x")
+                return _x + "!!"
+            })
+            .toArray()
+
+        expect(actions).toBe([
+            "mapped one",
+            "filtered one!",
+            "mapped to",
+            "filtered to!",
+            "mapped2 to!",
+            "mapped th",
+            "filtered th!",
+            "mapped2 th!",
+            "mapped 333",
+            "filtered 333!",
+            "mapped 22",
+            "filtered 22!",
+            "mapped2 22!",
+            "mapped five",
+            "filtered five!",
+            "mapped six",
+            "filtered six!",
+        ])
+    }
+
+    test `can flatMap objects`() {
+        let array = ["one", "two"]
+
+        let result = array.stream()
+            .flatMap({ Array():addAll([_x, "mid", _x]).stream() })
+            .toArray()
+
+        expect(result).toBe([
+            "one",
+            "mid",
+            "one",
+            "two",
+            "mid",
+            "two",
+        ])
+    }
+
+    test `iterates through flatMap objects sequentially`() {
+        let array = ["one", "two"]
+
+        let actions = String[]
+
+        array.stream<Array>()
+            .flatMap({
+                actions.add("flatMapped #_x")
+                return Array():addAll([_x, _x, _x]).stream()
+            })
+            .map({
+                actions.add("mapped #_x")
+                return _x
+            })
+            .toArray()
+
+        expect(actions).toBe([
+            "flatMapped one",
+            "mapped one",
+            "mapped one",
+            "mapped one",
+            "flatMapped two",
+            "mapped two",
+            "mapped two",
+            "mapped two",
+        ])
+    }
+
+    test `can find firstWhere in objects`() {
+        let array = ["one", "two", "three", "333", "222", "five", "six"]
+
+        let result = array.stream()
+            .firstWhere({ _[0] == 't' })
+
+        expect(result).toBe("two")
+    }
+
+    test `can find firstWhere after filter in objects`() {
+        let array = ["one", "two", "three", "333", "222", "five", "six"]
+
+        let result = array.stream()
+            .filter({ _.count > 3 })
+            .firstWhere({ _[0] == 't' })
+
+        expect(result).toBe("three")
+    }
+
+    test `can skip elements`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().skip(1).toArray()).toBe(["two", "three"])
+    }
+
+    test `can take elements`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().take(2).toArray()).toBe(["one", "two"])
+    }
+
+    test `can get first`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().first).toBe("one")
+        expect(array.stream().skip(1).first).toBe("two")
+    }
+
+    test `can get last`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().last).toBe("three")
+    }
+
+    test `can get first non null`() {
+        let array = [null, null, "three"]
+
+        expect(array.stream().firstNonNull).toBe("three")
+
+        let nullArray = [null, null, null]
+
+        expect(nullArray.stream().firstNonNull).toBe(null)
+    }
+
+    test `can get firstOr actual value`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().firstOr("hey")).toBe("one")
+    }
+
+    test `can get firstOr default value`() {
+        let emptyArray = Array()
+
+        expect(emptyArray.stream().firstOr("hey")).toBe("hey")
+    }
+
+    test `can get last non null`() {
+        let array = [null, "one", "three", null, null]
+
+        expect(array.stream().lastNonNull).toBe("three")
+
+        let nullArray = [null, null, null]
+
+        expect(nullArray.stream().lastNonNull).toBe(null)
+    }
+
+    test `can check any`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().any({ _ == "two" })).toBe(true)
+        expect(array.stream().any({ _ == "twoo" })).toBe(false)
+    }
+
+    test `can check all`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().all({ _.count == 3 })).toBe(false)
+        expect(array.stream().all({ _.count >= 3 })).toBe(true)
+    }
+
+    test `can check none`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().none({ _.count == 32 })).toBe(true)
+        expect(array.stream().none({ _.count == 5 })).toBe(false)
+    }
+
+    test `can access count`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().filter({ _ == "two" }).count).toBe(1)
+        expect(array.stream().filter({ _ == "twoo" }).count).toBe(0)
+        expect(array.stream().filter({ _.count == 3 }).count).toBe(2)
+        expect(array.stream().filter({ _.count >= 3 }).count).toBe(3)
+    }
+
+    test `can access count by function`() {
+        let array = ["one", "two", "three"]
+
+        expect(array.stream().count({ _ == "two" })).toBe(1)
+        expect(array.stream().count({ _ == "twoo" })).toBe(0)
+        expect(array.stream().count({ _.count == 3 })).toBe(2)
+        expect(array.stream().count({ _.count >= 3 })).toBe(3)
+    }
+
+    test `can map then forEach objects`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+        let result = Array()
+
+        array.stream()
+            .map({ _ + "!" })
+            .forEach({ result.add(_) })
+
+        expect(result).toBe([
+            "one!",
+            "to!",
+            "th!",
+            "333!",
+            "22!",
+            "five!",
+            "six!",
+        ])
+    }
+
+    async test `can map then forEachParallel objects`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+        let result = Array()
+
+        array.stream()
+            .map({ _ + "!" })
+            .forEachParallel({ result.add(_) })
+
+        expect(result).toBe([
+            "one!",
+            "to!",
+            "th!",
+            "333!",
+            "22!",
+            "five!",
+            "six!",
+        ])
+    }
+
+    async test `can map then forEachAsync objects`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+        let result = Array()
+
+        array.stream()
+            .map({ _ + "!" })
+            .forEachAsync({ result.add(_) })
+
+        expect(result).toBe([
+            "one!",
+            "to!",
+            "th!",
+            "333!",
+            "22!",
+            "five!",
+            "six!",
+        ])
+    }
+
+    test `can peek at objects`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+        let result = Array()
+
+        var stream = array.stream()
+            .peek({ result.add(_) })
+
+        expect(result).toBe(Array())
+
+        stream = stream
+            .filter({ _.count == 2 })
+            .peek({ result.add(_) })
+
+        expect(result).toBe(Array())
+
+        expect(stream.toArray()).toBe([
+            "to",
+            "th",
+            "22",
+        ])
+
+        expect(result).toBe([
+            "one",
+            "to",
+            "to",
+            "th",
+            "th",
+            "333",
+            "22",
+            "22",
+            "five",
+            "six",
+        ])
+    }
+
+    async test `can join objects to String`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+
+        expect(array.stream().join(", ")).toBe("one, to, th, 333, 22, five, six")
+    }
+
+    async test `can join even number of objects with ellipses in the middle to String`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+
+        expect(array.stream().join(", ", 4)).toBe("one, to, ..., five, six")
+    }
+
+    async test `can join odd number of objects with ellipses in the middle to String`() {
+        let array = ["one", "to", "th", "333", "22", "five", "six"]
+
+        expect(array.stream().join(", ", 5)).toBe("one, to, ..., 22, five, six")
+    }
+}

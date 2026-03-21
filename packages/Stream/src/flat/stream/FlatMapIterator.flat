@@ -1,0 +1,64 @@
+package flat/stream
+
+import flat/datastruct/list
+
+class<In, Out> extends StreamIterator<In, Out> {
+    Array<mapFunc(In) -> Stream<Out>> funcs = Array()
+
+    var Out _currentValue = null
+    var Out _nextValue = null
+    var Stream<Out> _next = null
+
+    public construct(Iterator<In> iterator, func(In) -> Stream<Out>) => super(iterator) {
+        funcs.add(func)
+    }
+
+    mapNext() -> Stream<Out> {
+        return funcs.map({ _(iterator.next) }).first
+    }
+
+    visible Bool hasNext {
+        get {
+            if (_next) return true
+            else if (iterator.hasNext) return true
+            else return false
+        }
+    }
+
+    visible Out stepNext {
+        get {
+            let value = next
+
+            if (!_next?.iterator.hasNext) {
+                _next = null
+                iterator.stepNext
+
+                return value
+            }
+
+            _currentValue = _nextValue
+            _nextValue = _next.iterator.stepNext
+
+            return value
+        }
+    }
+
+    visible Out next {
+        get {
+            if (_next) return _nextValue
+
+            while ((_next = mapNext()) && !_next.iterator.hasNext) {
+                iterator.stepNext
+
+                if (!iterator.hasNext) return null
+            }
+
+            _currentValue = _nextValue
+            _nextValue = _next.iterator.stepNext
+
+            return _nextValue
+        }
+    }
+
+    override visible Out current => _currentValue
+}

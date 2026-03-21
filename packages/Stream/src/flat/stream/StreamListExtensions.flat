@@ -1,0 +1,7 @@
+package flat/stream
+
+extension class {
+    public stream<Out>(List<Out> this) -> Stream<Out> {
+        return Stream(iterator)
+    }
+}

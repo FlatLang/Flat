@@ -1,0 +1,37 @@
+{
+  "name": "Stream",
+  "version": "0.1.0",
+  "description": "Flat Stream Library",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "source": "src",
+      "defaultExports": [
+        {
+          "location": "flat/stream/StreamListExtensions",
+          "static": true
+        }
+      ],
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Datastruct.git": "master",
+        "https://github.com/FlatLang/Logger.git": "master"
+      }
+    },
+    "test": {
+      "mainClass": "flat/stream/Stream_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master",
+        "https://github.com/FlatLang/Thread.git": "master",
+        "https://github.com/FlatLang/Time.git": "master"
+      }
+    }
+  }
+}

@@ -1,0 +1,246 @@
+package flat/stream
+
+import flat/async/Async
+import flat/datastruct
+import flat/datastruct/list
+import flat/log/Logger
+
+class<Type> {
+    static Logger log = Logger(Stream.class)
+
+    visible Type first => iterator.hasNext ? iterator.stepNext : null
+    visible Type last {
+        get {
+            var Type value
+
+            while (iterator.hasNext) {
+                value = iterator.stepNext
+            }
+
+            return value
+        }
+    }
+    visible Type firstNonNull => filter({ _ != null }).first
+    visible Type lastNonNull {
+        get {
+            var Type value
+
+            while (iterator.hasNext) {
+                if (let x = iterator.stepNext) {
+                    value = x
+                }
+            }
+
+            return value
+        }
+    }
+    visible Int count {
+        get {
+            var Int value = 0
+
+            for (x in iterator) {
+                value++
+            }
+
+            return value
+        }
+    }
+
+    public construct(visible Iterator<Type> iterator) {}
+
+    public map<Out>(mapFunc(Type x) -> Out) =>
+        Stream<Out>(MapIterator<Type, Out>(iterator, mapFunc))
+
+    public mapNotNull<Out>(mapFunc(Type x) -> Out) =>
+        map(mapFunc).filterNull()
+
+    public peek(func(Type x)) =>
+        Stream<Type>(PeekIterator<Type>(iterator, func))
+
+    public flatMap<Out>(mapFunc(Type x) -> Stream<Out>) =>
+        Stream<Out>(FlatMapIterator<Type, Out>(iterator, mapFunc))
+
+    public filter(filterFunc(Type x) -> Bool) =>
+        Stream<Type>(FilterIterator<Type>(iterator, filterFunc))
+
+    public filterNot(filterFunc(Type x) -> Bool) =>
+        Stream<Type>(FilterNotIterator<Type>(iterator, filterFunc))
+
+    public filterNull() =>
+        filter({ _ != null })
+
+    public unique() =>
+        Stream<Type>(UniqueIterator<Type>(iterator))
+
+    public skip(Int count) =>
+        Stream<Type>(SkipIterator<Type>(iterator, count))
+
+    public take(Int count) =>
+        Stream<Type>(TakeIterator<Type>(iterator, count))
+
+    public firstWhere(func(Type x) -> Bool) -> Type =>
+        filter(func).first
+
+    public firstOr(Type default) -> Type =>
+        iterator.hasNext ? iterator.stepNext : default
+
+    public countWhere(func(Type x) -> Bool) =>
+        filter(func).count
+
+    public any(func(Type x) -> Bool) =>
+        filter(func).iterator.hasNext
+
+    public all(func(Type x) -> Bool) =>
+        !filterNot(func).iterator.hasNext
+
+    public none(func(Type x) -> Bool) =>
+        !filter(func).iterator.hasNext
+
+    public count(func(Type x) -> Bool) =>
+        filter(func).count
+
+    public toArray() -> Type[] {
+        let array = Type[]
+
+        for (value in iterator) {
+            array.add(value)
+        }
+
+        return array
+    }
+
+    public toSet() -> HashSet<Type> {
+        let set = HashSet<Type>()
+
+        for (value in iterator) {
+            set.add(value)
+        }
+
+        return set
+    }
+
+    public forEach(func(Type x)) -> Int {
+        var Int count = 0
+
+        for (value in iterator) {
+            func(value)
+            count++
+        }
+
+        return count
+    }
+
+    public async forEachParallel(async func(Type x), Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> Int {
+        var Int count = 0
+
+        Async.all(
+            toArray(),
+            {
+                func(_)
+                count++
+            },
+            maxParallel,
+            onAfterChunk
+        )
+
+        return count
+    }
+
+    public async forEachAsync(async func(Type x)) -> Int {
+        var Int count = 0
+
+        for (value in iterator) {
+            func(value)
+            count++
+        }
+
+        return count
+    }
+
+    public minBy(func(Type x) -> Long) -> Long {
+        var Long min = Long.MAX_VALUE
+
+        for (value in iterator) {
+            min = Math.min(min, func(value))
+        }
+
+        return min
+    }
+
+    public maxBy(func(Type x) -> Long) -> Long {
+        var Long max = Long.MIN_VALUE
+
+        for (value in iterator) {
+            max = Math.max(max, func(value))
+        }
+
+        return max
+    }
+
+    public sumBy(func(Type x) -> Long) -> Long {
+        var Long sum = 0
+
+        for (value in iterator) {
+            sum += func(value)
+        }
+
+        return sum
+    }
+
+    public meanBy(func(Type x) -> Double) -> Double {
+        var Double sum = 0
+        var Int count = 0
+
+        for (value in iterator) {
+            sum += func(value)
+            count++
+        }
+
+        if (count == 0) return 0
+
+        return sum / count
+    }
+
+    public join(
+        String delimiter = "",
+        var Int maxOutputCount = -1,
+        Int ellipsePosition = maxOutputCount / 2,
+        String ellipse = "..."
+    ) -> String {
+        if (maxOutputCount == 0 && iterator.hasNext) return ellipse
+
+        var str = ""
+
+        if (maxOutputCount == -1) {
+            for (value in iterator) {
+                if (maxOutputCount == 0) return ellipse
+                if (str.isNotEmpty) str += delimiter
+
+                str += value
+            }
+        } else {
+            var Int i = 0
+            let buffer = String[]
+
+            for (value in iterator) {
+                if (i < ellipsePosition) {
+                    str += value + delimiter
+                } else if (i == ellipsePosition) {
+                    str += ellipse
+                } else {
+                    buffer.add(value.toString())
+                }
+
+                i++
+            }
+
+            let start = buffer.count - ellipsePosition - (maxOutputCount % 2)
+
+            for (j in start..buffer.count) {
+                str += delimiter + buffer[j]
+            }
+        }
+
+        return str
+    }
+}
