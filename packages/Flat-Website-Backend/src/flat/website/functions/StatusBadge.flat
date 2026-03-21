@@ -1,0 +1,79 @@
+package flat/website/functions
+
+import flat/log/Logger
+import flat/io/File
+import flat/io/FileReader
+import flat/json/JsonDeserializer
+import flat/datastruct/HashMap
+import flat/http/Http
+import flat/time/Timer
+
+class {
+    static Logger log = Logger(StatusBadge.class)
+    let lazy Array<HashMap<String, String>> badges => JsonDeserializer().parseArray(File("res/badges.json"))
+
+    public construct() {}
+
+    public async run() -> String {
+        let Array<HashMap<String, String>> svgs = badges.mapParallel({
+            let svgData = Http.get(_x["svg"]).data
+
+            return HashMap()
+                :add("svg", svgData)
+                :add("url", _x["url"])
+                :add("label", _x["label"])
+        })
+
+        var Int x = 0
+        var Int y = 0
+        let canvasWidth = 800
+
+        let svgContents = svgs.map({
+            let svgContent = _x["svg"]
+            let success = svgContent.contains("passing")
+            let content = generateStatusBox(_x["url"], _x["label"], success, x, y)
+
+            x += 20 + 1
+
+            if (x + 20 > canvasWidth && _i != svgs.count - 1) {
+                x = 0
+                y += 20 + 1
+            }
+
+            return content
+        })
+
+        return "|
+            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 #{canvasWidth} #{y + 20}\">
+                <defs xmlns=\"http://www.w3.org/2000/svg\">
+                    <linearGradient id=\"success-fill\" x1=\"50%\" y1=\"0%\" x2=\"50%\" y2=\"100%\">
+                        <stop stop-color=\"\#34D058\" offset=\"0%\"/>
+                        <stop stop-color=\"\#28A745\" offset=\"100%\"/>
+                    </linearGradient>
+                    <linearGradient id=\"failing-fill\" x1=\"50%\" y1=\"0%\" x2=\"50%\" y2=\"100%\">
+                        <stop stop-color=\"\#D73A49\" offset=\"0%\"/>
+                        <stop stop-color=\"\#CB2431\" offset=\"100%\"/>
+                    </linearGradient>
+                </defs>
+                #{svgContents.join("")}
+            </svg>
+            |"
+    }
+
+    static generateStatusBox(
+        String url,
+        String title,
+        Bool success,
+        Int x,
+        Int y
+    ) -> String {
+        return "|
+            <a target=\"_blank\" href=\"#{url}\">
+                <title>#{title}</title>
+                <g font-family=\"'DejaVu Sans',Verdana,Geneva,sans-serif\" font-size=\"11\">
+                    <rect x=\"#{x}\" y=\"#{y}\" width=\"20\" height=\"20\" ry=\"2\" rx=\"2\" fill=\"url(#{success ? "\#success-fill" : "\#failing-fill"})\"/>
+                </g>
+            </a>
+            |"
+    }
+}

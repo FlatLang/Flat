@@ -1,0 +1,11 @@
+package flat/website/functions
+
+import flat/website/functions/StatusBadge
+
+testable class {
+    test `can create`() {
+        let value = StatusBadge()
+
+        expect(value).toNotBe(null)
+    }
+}

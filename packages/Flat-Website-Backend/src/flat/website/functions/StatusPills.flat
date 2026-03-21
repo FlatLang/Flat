@@ -1,0 +1,200 @@
+package flat/website/functions
+
+import flat/log
+import flat/io
+import flat/json
+import flat/datastruct
+import flat/http
+import flat/time
+import flat/cache
+import flat/server/Request
+import flat/github
+import flat/github/models
+
+import static flat/github/GitHub
+
+class {
+    static String TOKEN = System.getEnv("GITHUB_FETCH_ACTIONS_TOKEN")
+    static String ORG_NAME = "FlatLang"
+    static Logger log = Logger(StatusPills.class)
+    static JsonDeserializer deserializer = JsonDeserializer()
+
+    ItemCache<Array<Workflow>> workflowsCache = ItemCache.Builder()
+        .withLifetime(300000)
+        .withStore(ItemFileCacheStore({ _.toJson() }, { deserializer.parseArray(_).map({ Workflow((HashMap)_x) }) }, File("cache/workflows.json")))
+        .build()
+
+    ItemCache<Array<HashMap<String, String>>> svgCache = ItemCache.Builder()
+        .withLifetime(30000)
+        .withStore(ItemJsonFileCacheStore(File("cache/pills.json")))
+        .build()
+
+    public construct() {}
+
+    public async run(Request req) -> String {
+        let workflows = workflowsCache.getThenStoreIfInvalid({
+            return getOrganizationRepos(ORG_NAME, token: TOKEN)
+                .filter({ _.visibility == "public" })
+                .flatMapParallel({ getRepositoryWorkflows(ORG_NAME, _.name, token: TOKEN) })
+                .stream()
+                .filter({ _.state == "active" })
+                .filter({ !_.name.startsWith("Create ") })
+                .filter({ !_.name.startsWith("Prepare ") })
+                .toArray()
+        })
+
+        let svgs = svgCache.getOrStore({
+            return workflows.mapParallel({
+                let svgData = Http.get(_x.badgeUrl).data
+                let prefix = "https://api.github.com/repos/#{ORG_NAME}/"
+                let repoName = _x.url.substring(prefix.count, _x.url.indexOf('/', start: prefix.count + 1))
+                let workflowPath = _x.path.substring(".github/".count)
+
+                return HashMap()
+                    :add("svg", svgData)
+                    :add("url", "https://github.com/#{ORG_NAME}/#{repoName}/actions/#{workflowPath}")
+                    :add("label", _x.name)
+                    :add("repoName", repoName)
+            })
+        })
+
+        var Double x = 0
+        var Double y = 0
+        let Double canvasWidth = Int.parseOr(req.query["width"], 800)
+        let Double pillHeight = 20.0
+        let Double margin = Int.parseOr(req.query["pill-margin"], 1)
+        let Double textMargin = Int.parseOr(req.query["text-margin"], 2)
+        let Double charWidth = 6.7
+
+        let rowWidths = Double[]
+        let rowCounts = Int[]
+
+        rowCounts.add(0)
+
+        let rects = svgs.map({
+            let Int width = Math.ceil(_x["label"].count * charWidth + textMargin * 2)
+
+            if (x + width > canvasWidth) {
+                rowWidths.add(x - margin)
+                rowCounts.add(0)
+                x = 0
+                y += pillHeight + margin
+            }
+
+            let rect = Rect(x, y, width, pillHeight)
+
+            x += width + margin
+            rowCounts.last = rowCounts.last + 1
+
+            return rect
+        })
+
+        rowWidths.add(x - margin)
+
+        let currentOffset = 0.0
+        let lastIndex = 0
+
+        let resizedRects = rects.map({
+            let Int index = Math.round(_x.y / (pillHeight + margin))
+            let count = rowCounts[index]
+            let width = rowWidths[index]
+            let delta = (canvasWidth - width) / count
+            let increase = index == rowCounts.count - 1 && delta > 30 ? 0 : delta
+
+            if (index > lastIndex) {
+                lastIndex = index
+                currentOffset = 0
+            }
+
+            let newRect = _x.copy(
+                x: _x.x + currentOffset,
+                width: _x.width + increase
+            )
+
+            currentOffset += increase
+
+            return newRect
+        })
+
+        let svgContents = svgs.map({
+            return generateStatusBox(
+                id: _i,
+                url: _x["url"],
+                title: _x["label"],
+                repoName: _x["repoName"],
+                success: _x["svg"].contains("passing"),
+                rect: resizedRects[_i],
+                textMargin: textMargin
+            )
+        })
+
+        return "|
+            <svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 #{canvasWidth} #{y + pillHeight}\">
+                <defs xmlns=\"http://www.w3.org/2000/svg\">
+                    <linearGradient id=\"success-fill\" x1=\"50%\" y1=\"0%\" x2=\"50%\" y2=\"100%\">
+                        <stop stop-color=\"\#34D058\" offset=\"0%\"/>
+                        <stop stop-color=\"\#28A745\" offset=\"100%\"/>
+                    </linearGradient>
+                    <linearGradient id=\"failing-fill\" x1=\"50%\" y1=\"0%\" x2=\"50%\" y2=\"100%\">
+                        <stop stop-color=\"\#D73A49\" offset=\"0%\"/>
+                        <stop stop-color=\"\#CB2431\" offset=\"100%\"/>
+                    </linearGradient>
+                </defs>
+                #{svgContents.join("\n")}
+            </svg>
+            |"
+    }
+
+    static generateStatusBox(
+        Int id,
+        String url,
+        String title,
+        String repoName,
+        Bool success,
+        Rect rect,
+        Double textMargin
+    ) -> String {
+        let x = rect.x
+        let y = rect.y
+        let width = rect.width
+        let height = rect.height
+        return "|
+            <a target=\"_blank\" href=\"#{url}\">
+                <title>#{title}</title>
+                <g font-family=\"monospace\" font-size=\"11\">
+                    <rect
+                        x=\"#{x}\"
+                        y=\"#{y}\"
+                        width=\"#{width}\"
+                        height=\"#{height}\"
+                        ry=\"2\"
+                        rx=\"2\"
+                        fill=\"url(#{success ? "\#success-fill" : "\#failing-fill"})\"
+                    />
+                    <text
+                        x=\"#{x + width / 2}\"
+                        y=\"#{y + height / 2 + height / 14}\"
+                        dominant-baseline=\"middle\"
+                        text-anchor=\"middle\"
+                    >#{title}</text>
+                </g>
+            </a>
+            |"
+    }
+
+    static class Rect {
+        public construct(
+            visible Double x = 0,
+            visible Double y = 0,
+            visible Double width = 0,
+            visible Double height = 0
+        ) {}
+
+        copy(
+            Double: x = x,
+            Double: y = y,
+            Double: width = width,
+            Double: height = height
+        ) => Rect(x, y, width, height)
+    }
+}

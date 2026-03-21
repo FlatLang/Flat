@@ -1,0 +1,18 @@
+package flat/website/functions
+
+class {
+    public static async main(String[] args) {
+        if (args.count <= 1) {
+            throw Exception("Requires an argument")
+        }
+
+        let functionName = args[1]
+
+        let response = match functionName {
+            "StatusBadge" => StatusBadge().run()
+            default => "Invalid function name \"#{functionName}\""
+        }
+
+        Console.writeLine(response)
+    }
+}
