@@ -1,0 +1,61 @@
+name: Http / Test Http
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  schedule:
+    - cron: '0 6 * * *'
+
+env:
+  LOGGING_DEFAULT_SHOW_PREFIX: true
+  LOGGING_DEFAULT_LOGGING_LEVEL: DEBUG
+  LOGGING_DEFAULT_SHOW_FORMATTING: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.8.0
+        with:
+          java-version: 8
+
+      - uses: actions/checkout@v3
+
+      - name: Download latest Airship
+        uses: FlatLang/fetch-airship@master
+        with:
+          includePrerelease: true
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-build-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Build Http Test
+        run: |
+          node airship.js install test -t es6
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test.js
+          path: dist/es6/test.js
+
+      - name: Run Http Test
+        run: |
+          node airship.js run test

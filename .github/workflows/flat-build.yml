@@ -1,0 +1,285 @@
+name: Flat / Build Flat
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  schedule:
+    - cron: "0 5 * * *"
+
+env:
+  LOGGING_DEFAULT_SHOW_PREFIX: true
+  LOGGING_DEFAULT_LOGGING_LEVEL: TRACE
+  LOGGING_DEFAULT_SHOW_FORMATTING: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Checkout Flat Testing
+        uses: actions/checkout@master
+        with:
+          repository: BSteffaniak/Flat-Testing
+          path: Flat-Testing
+
+      - name: Checkout Flat JS Writer
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Flat-js
+          path: Flat-JS
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: "temurin"
+          cache: maven
+
+      - name: Build CLI
+        run: |
+          mvn install
+
+      - name: Build JS Writer
+        run: |
+          mvn -f Flat-JS install
+
+      - name: Checkout Test library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Test
+          path: Test
+
+      - name: Checkout Compiler-String-Extensions library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Compiler-String-Extensions
+          path: Compiler-String-Extensions
+
+      - name: Checkout Network library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Network
+          path: Network
+
+      - name: Checkout MySQL library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/MySQL
+          path: MySQL
+
+      - name: Checkout Redis library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Redis
+          path: Redis
+
+      - name: Checkout Svg library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Svg
+          path: Svg
+
+      - name: Checkout Json library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Json
+          path: Json
+
+      - name: Checkout Stability-Test library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Stability-Test
+          path: Stability-Test
+
+      - name: Checkout SimpleGapRuleFlat
+        uses: actions/checkout@master
+        with:
+          repository: BSteffaniak/SimpleGapRuleFlat
+          path: SimpleGapRuleFlat
+
+      - name: Checkout IO
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/IO
+          path: IO
+
+      - name: Checkout Time
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Time
+          path: Time
+
+      - name: Checkout Math
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Math
+          path: Math
+
+      - name: Checkout System
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/System
+          path: System
+
+      - name: Checkout Flat-Core library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Flat-Core
+          path: Flat-Core
+
+      - name: Checkout Datastruct library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Datastruct
+          path: Datastruct
+
+      - name: Checkout Logger library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Logger
+          path: Logger
+
+      - name: Checkout CoLorIzer library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/CoLorIzer
+          path: CoLorIzer
+
+      - name: Checkout Regex library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Regex
+          path: Regex
+
+      - name: Checkout Stream library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Stream
+          path: Stream
+
+      - name: Checkout Event-Stream library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Event-Stream
+          path: Event-Stream
+
+      - name: Checkout Console-Escape-Codes library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Console-Escape-Codes
+          path: Console-Escape-Codes
+
+      - name: Checkout Thread library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Thread
+          path: Thread
+
+      - name: Checkout Future library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/Future
+          path: Future
+
+      - name: Checkout NodeImport library
+        uses: actions/checkout@master
+        with:
+          repository: FlatLang/NodeImport
+          path: NodeImport
+
+      - name: Build Stability Test
+        working-directory: Stability-Test
+        run: |
+          java -jar ../target/flatc.jar \
+            src \
+            ../Flat-Testing/example \
+            ../SimpleGapRuleFlat \
+            -l ../Flat-Core \
+            -l ../Datastruct \
+            -l ../Regex \
+            -l ../Test \
+            -l ../Compiler-String-Extensions \
+            -l ../Network \
+            -l ../MySQL \
+            -l ../Redis \
+            -l ../Svg \
+            -l ../Json \
+            -l ../Logger \
+            -l ../CoLorIzer \
+            -l ../IO \
+            -l ../Time \
+            -l ../Math \
+            -l ../System \
+            -l ../Stream \
+            -l ../Event-Stream \
+            -l ../Console-Escape-Codes \
+            -l ../Thread \
+            -l ../Future \
+            -x ../Future/src/**/*_Test*.flat \
+            -l ../NodeImport \
+            -install-dir .. \
+            -main stabilitytest/StabilityTest \
+            -o dist/js/test.js \
+            -target js
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test.js
+          path: Stability-Test/dist/js/test.js
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Run Stability Test
+        working-directory: Stability-Test
+        run: |
+          node dist/js/test.js
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test.js
+          path: Stability-Test/dist/js/test.js
+
+      - name: Build SimpleGapRule Test
+        run: |
+          java -jar target/flatc.jar \
+            SimpleGapRuleFlat \
+            -l ./Flat-Core \
+            -l ./Datastruct \
+            -l ./Regex \
+            -l ./Test \
+            -l ./Json \
+            -l ./Logger \
+            -l ./CoLorIzer \
+            -l ./Compiler-String-Extensions \
+            -l ./IO \
+            -l ./Time \
+            -l ./System \
+            -l ./Stream \
+            -l ./Event-Stream \
+            -l ./Console-Escape-Codes \
+            -l ./Future \
+            -x ./Future/src/**/*_Test*.flat \
+            -l ./NodeImport \
+            -install-dir . \
+            -main simplegaprule/AllTestsRunner \
+            -o ./SimpleGapRuleFlat/SimpleGapRuleTests \
+            -target js
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: SimpleGapRuleTests.js
+          path: SimpleGapRuleFlat/SimpleGapRuleTests.js
+
+      - name: Run SimpleGapRule Test
+        working-directory: SimpleGapRuleFlat
+        run: |
+          node ./SimpleGapRuleTests.js
