@@ -1,0 +1,78 @@
+package flat/npm
+
+import flat/system/ExecutionResponse
+
+class {
+    public construct(
+        visible String workingDirectory = System.workingDirectory
+    ) {}
+
+    public async view(
+        String packageName,
+        Bool: silent = false
+    ) => Npm.view(
+        packageName,
+        workingDirectory,
+        silent
+    )
+
+    public static async view(
+        String packageName,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "npm",
+            "view",
+            packageName
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async install(
+        String packageName,
+        Bool: silent = false
+    ) => Npm.install(
+        packageName,
+        workingDirectory,
+        silent
+    )
+
+    public static async install(
+        String packageName,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "npm",
+            "install",
+            packageName
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
+    public async uninstall(
+        String packageName,
+        Bool: silent = false
+    ) => Npm.uninstall(
+        packageName,
+        workingDirectory,
+        silent
+    )
+
+    public static async uninstall(
+        String packageName,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "npm",
+            "uninstall",
+            packageName
+        ]
+
+        return System.execute(args, workingDirectory, silent)
+    }
+}

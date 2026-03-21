@@ -1,0 +1,11 @@
+package flat/npm
+
+import flat/npm/Npm
+
+testable class {
+    test `can create`() {
+        let value = Npm()
+
+        expect(value).toNotBe(null)
+    }
+}
