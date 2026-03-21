@@ -1,0 +1,173 @@
+slash=/
+E =
+bslash=\$(E)
+colon=\:
+comma=,
+space= 
+
+home = $(NOVA_COMPILE_HOME)
+stdlib = $(NOVA_STDLIB_LOCATION)
+IDIR=-I$(home) -I$(home)/include/gc -I$(home)/include -I$(home)/../Misc -I$(home)/include/nova_mysql -I$(home)/include/nova_openssl -I$(stdlib) -I.
+CFLAGS=
+
+CC = $(NOVA_CC)
+
+LIBS = 
+
+ifdef VERBOSE
+	V=
+	ifdef QUIET
+		ECHO=@true
+	else
+		ECHO=@echo
+	endif
+else
+	V=@
+	ifdef QUIET
+		ECHO=@true
+	else
+		ECHO=@echo
+	endif
+endif
+
+ifndef NOVA_CC
+	CC=gcc
+endif
+
+ifeq ($(CC), gcc)
+	ifdef LINE_NUMBERS
+		CFLAGS += -g
+	endif
+	ifdef SMALL_BIN
+		CFLAGS += -Os -s
+	else ifndef NO_OPTIMIZE
+		CFLAGS += -O2
+	endif
+	
+	CFLAGS += -pipe
+endif
+
+ifndef NO_GC
+	CFLAGS += -DUSE_GC -DPARALLEL_MARK# -DGC_PTHREADS -DGC_PTHREADS_PARAMARK
+	LIBS += -lgc
+endif
+ifeq ($(OS), Windows_NT)
+	CFLAGS += -mwindows -mconsole -Wl,--enable-stdcall-fixup
+	LIBS += -lws2_32 -lmysql -lpcre2-8-0 -limagehlp -lcomctl32
+else
+	LIBS += -lpcre2-8
+	
+	ifeq ($(shell uname), Linux)
+		LDIRS += -L/usr/include/openssl
+		LIBS += -lm -ldl -lc -lmysqlclient
+	else
+		CFLAGS += -Wno-logical-op-parentheses
+	endif
+	
+	LIBS += -lpthread
+endif
+
+ifndef NO_OPTIMIZE
+	ifdef SMALL_BIN
+		CFLAGS += -ffast-math
+	else
+		CFLAGS += -march=native -fomit-frame-pointer
+	endif
+endif
+
+EXTRADEPS = VTableDeclarations.h\
+			InterfaceVTable.h\
+			$(home)/include/Nova.h\
+			$(home)/include/NovaExceptionHandling.h
+
+EXTRAOBJ = VTableDeclarations.o\
+			$(home)/include/Nova.o\
+			$(home)/include/NovaExceptionHandling.o
+			
+ifndef LIBRARY
+	EXTRADEPS += MainFunction.h
+	EXTRAOBJ += MainFunction.o
+endif
+
+DEPS = $(patsubst %,%,$(NOVA_DEPS) $(EXTRADEPS))
+
+QOBJ = $(patsubst %\,%,$(patsubst %,$(subst $(space),$(bslash)$(space),%),$(NOVA_OBJ)))
+NOOBJ = $(EXTRAOBJ) $(NOVA_OBJ)
+QOOBJ = $(patsubst %\,%,$(patsubst %,$(subst $(space),$(bslash)$(space),%),$(EXTRAOBJ))) $(QOBJ)
+ALLOBJ = $(EXTRAOBJ) $(NOVA_OBJ)
+QOGCH = $(patsubst %\,%,$(patsubst %,$(subst $(space),$(bslash)$(space),%),$(ALLOBJ:.o=.gch)))
+OBJ = $(subst :,$(colon),$(EXTRAOBJ)) $(NOVA_OBJ)
+GENERATED_FILES = $(QOOBJ) $(QOGCH)
+
+ifdef COMPILE_C_FILES
+	COMPILE_ITEMS = $(ALLOBJ:.o=.c)# resources.o
+else
+	COMPILE_ITEMS = $(ALLOBJ)# resources.o
+endif
+
+#rwildcard=$(foreach d,$(wildcard $1*/),$(call rwildcard,$d*/) echo $d)
+rwildcard=$(sort $(dir $(foreach d,$(wildcard $1*/),$(sort $(dir $(call rwildcard,$d*/) $d)))))
+
+ALL_DIRS = $(patsubst %,%,$(call rwildcard,./))
+HOME_DIRS = $(patsubst %,%,$(call rwildcard,$(subst \,/,$(home))/nova/))
+INCLUDE_DIRS = $(patsubst %,%,$(call rwildcard,$(subst \,/,$(home))/include/))
+
+resources.o: *.exe.manifest
+ifeq ($(OS), Windows_NT)
+	$(ECHO) "Building resources"
+	$(V)windres resources.rc -o resources.o
+endif
+
+%.gch: %.h
+	$(ECHO) "Compiling '$<'"
+	$(V)$(CC) $(CFLAGS) $(IDIR) -c -o "$@" "$<"
+
+%.o: %.c %.d
+	$(ECHO) "Compiling '$<'"
+	$(V)$(CC) -MMD $(CFLAGS) $(IDIR) -c -o "$@" "$<"
+
+%.d:;
+
+.PHONY: install link headers clean
+
+install: $(COMPILE_ITEMS)
+ifdef LIBRARY
+	$(ECHO) "Building shared library"
+	$(V)$(CC) -shared $(CFLAGS) $(IDIR) $(COMPILE_ITEMS) -o $(EXEC_PATH).dll $(LDIRS) $(LIBS)
+else
+	$(ECHO) "Linking program"
+	$(V)$(CC) $(CFLAGS) $(IDIR) $(COMPILE_ITEMS) -o $(EXEC_PATH) $(LDIRS) $(LIBS)
+endif
+
+link:
+	$(ECHO) "Linking program"
+	$(V)$(CC) $(CFLAGS) $(IDIR) $(COMPILE_ITEMS) -o $(EXEC_PATH) $(LDIRS) $(LIBS)
+
+headers: $(OBJ:.o=.gch)
+	$(ECHO) "done headers"
+
+clean:
+#ifeq ($(OS), Windows_NT)
+#	$(foreach f, $(GENERATED_FILES), echo $(f);)
+#	$(shell for %%a in ($(GENERATED_FILES)) do if exist "%%a" del "%%a")
+#	@echo "Deleting all *.o and *.gch files"
+#	rm -rf $(home)/*.o $(home)/*.gch $(home)/*.d
+#else
+#	rm -f $(GENERATED_FILES)
+#endif
+#	@echo $(ALL_DIRS)
+#	@echo $(sort $(dir $(wildcard ./*/)))
+	$(V)$(foreach var,$(ALL_DIRS),\
+		echo cleaning contents of $(var);\
+		rm -f $(var)*.o $(var)*.gch $(var)*.d;\
+	)
+	$(V)$(foreach var,$(HOME_DIRS),\
+		echo cleaning contents of $(var);\
+		rm -f $(var)*.o $(var)*.gch $(var)*.d;\
+	)
+	$(V)$(foreach var,$(INCLUDE_DIRS),\
+		echo cleaning contents of $(var);\
+		rm -f $(var)*.o $(var)*.gch $(var)*.d;\
+	)
+
+-include $(ALLOBJ:.o=.d)
