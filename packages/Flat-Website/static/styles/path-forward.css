@@ -1,0 +1,6 @@
+.path-forward.flow-container td:first-of-type > .flow-stage {
+  width: 180px;
+
+  padding-left: 10px;
+  padding-right: 10px;
+}

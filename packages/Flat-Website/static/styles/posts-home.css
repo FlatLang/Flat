@@ -1,0 +1,67 @@
+.date {
+  font-size: 12px;
+}
+
+li {
+  margin-bottom: 10px;
+}
+
+.show-all {
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+span.show-all {
+  font-size: 14px;
+}
+
+.recent-posts-header {
+  width: 100%;
+
+  margin-left: 8px;
+}
+
+.recent-posts-header .search {
+  text-align: right;
+}
+
+.recent-posts-header .search input {
+  border: 2px solid #f15d3b;
+  border-radius: 10px;
+
+  width: 250px;
+
+  padding: 4px 10px;
+
+  font-size: 18px;
+}
+
+.post-list {
+  padding-left: 15px;
+}
+
+.post h1,
+.post h2,
+.post h3,
+.post h4,
+.post h5,
+.post h6 {
+  margin: 5px 0;
+}
+
+.post {
+  margin-bottom: 18px;
+}
+
+.post a {
+  text-decoration: none;
+}
+
+.post a:hover {
+  text-decoration: underline;
+}
+
+.page-container > #content-container {
+  display: block;
+}

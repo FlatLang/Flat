@@ -1,0 +1,87 @@
+.flow-stage {
+  min-width: 180px;
+  /*min-height: 60px;*/
+
+  border: 2px solid black;
+
+  padding: 15px 10px;
+  margin: 5px 10px;
+
+  display: inline-block;
+}
+
+.flow-stage p {
+  text-align: center;
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.flow-container {
+  text-align: center;
+
+  margin: 35px 0;
+}
+
+.flow-container.wrap-friendly .flow-stage {
+  max-width: 250px;
+}
+
+.flow-container .disabled {
+  opacity: 0.25;
+}
+
+.down-arrow {
+  height: 25px;
+
+  margin: 10px 0;
+}
+
+.drilled-down.flow-container > tbody > tr > td:first-of-type {
+  border-right: 2px solid #d0d0d0;
+}
+
+.drilled-down.flow-container > tbody > tr > td:first-of-type p {
+  padding: 25px 0;
+}
+
+.drilled-down.flow-container > tbody > tr > :first-child {
+  padding-right: 30px;
+}
+
+.drilled-down.flow-container > tbody > tr > :nth-child(2) {
+  padding-left: 30px;
+}
+
+.drilled-down.flow-container > tbody > tr > td:not(:first-child) {
+  /*white-space: nowrap;*/
+
+  text-align: left;
+}
+
+.drilled-down.flow-container > tbody > tr > td:not(:first-child) .flow-stage {
+  font-size: 16px;
+
+  padding: 4px 5px;
+
+  margin: 5px 1.5%;
+
+  width: 27%;
+
+  min-width: unset;
+
+  text-align: center;
+}
+
+table.horizontal-bordered {
+  width: 100%;
+}
+
+table.horizontal-bordered td:nth-of-type(odd) {
+  width: 49%;
+}
+table.horizontal-bordered td:nth-of-type(even) {
+  width: 1%;
+
+  padding: 0 10px;
+}

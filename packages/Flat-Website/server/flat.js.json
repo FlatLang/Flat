@@ -1,0 +1,10 @@
+{
+  "sources": {
+    "main": {
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/Server.git": "master"
+      }
+    }
+  }
+}

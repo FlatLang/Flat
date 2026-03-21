@@ -1,0 +1,146 @@
+#main-view > div {
+  min-height: 100%;
+}
+
+#downloads {
+}
+
+#downloads ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+#downloads a.download-button {
+  text-decoration: none;
+  display: inline-block;
+  margin-right: 10px;
+  margin-bottom: 12px;
+}
+
+#downloads .more-formats li::before {
+  content: '• ';
+}
+
+#downloads .more-formats ul {
+  padding-left: 20px;
+}
+
+.download #content-container {
+  display: block;
+  padding-bottom: 70px;
+}
+
+#content-container section {
+  max-width: 1000px;
+  margin: auto;
+  padding: 0 40px;
+}
+
+#stable .download-button button {
+  background-color: #9bcb3c;
+  border-color: #6b8b0c;
+}
+
+#beta .download-button button {
+  background-color: #f15d3b;
+  border-color: #c12d0b;
+
+  outline: none;
+}
+
+.download-button.disabled button {
+  /*background-color: #ccc !important;
+    border-color: #aaa !important;*/
+
+  opacity: 0.5;
+
+  cursor: default;
+}
+
+.download-button button {
+  cursor: pointer;
+
+  border: 2px solid;
+
+  border-radius: 125px;
+
+  padding-right: 10px;
+
+  outline: none;
+}
+
+.download-button button .icon-container {
+  width: 25px;
+  height: 25px;
+
+  border-radius: 50%;
+
+  display: inline-block;
+
+  /*background-color: #ccc;*/
+
+  overflow: hidden;
+}
+
+.download-button button img {
+  width: 70%;
+
+  position: relative;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+}
+
+.show-all {
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.why {
+  font-size: 12px;
+}
+
+.why .tooltip {
+  cursor: pointer;
+}
+
+#installation {
+  margin-top: 50px;
+}
+
+#installation h4 {
+  margin-bottom: 8px;
+}
+
+#installation ul {
+  margin-top: 0px;
+}
+
+.step-number {
+  vertical-align: top;
+}
+
+.step-number > h1 {
+  margin: 0;
+}
+
+.instructions {
+  padding-top: 13px;
+}
+
+.asset-size {
+  font-size: smaller;
+}
+
+.os-comment {
+  font-size: smaller;
+}
+
+.date {
+  font-size: 65%;
+  font-weight: normal;
+  white-space: nowrap;
+}

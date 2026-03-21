@@ -1,0 +1,59 @@
+@media screen and (orientation: portrait) {
+  p {
+    font-size: 22px;
+  }
+
+  h1 {
+    font-size: 38px;
+  }
+
+  h2 {
+    font-size: 34px;
+  }
+
+  h3 {
+    font-size: 28px;
+  }
+
+  h4 {
+    font-size: 25px;
+  }
+
+  h5 {
+    font-size: 24px;
+  }
+
+  h6 {
+    font-size: 23px;
+  }
+
+  pre > code,
+  code {
+    font-size: 20px;
+  }
+
+  .content-view-container {
+    flex-direction: column;
+  }
+
+  .content-view-container .references {
+    border: none;
+    padding-left: 20px;
+  }
+
+  .share-modal {
+    width: 65%;
+  }
+
+  .share-modal input {
+    font-size: 22px;
+  }
+
+  .share-modal h1 {
+    font-size: 42px;
+  }
+
+  .share-modal img {
+    height: 65px;
+  }
+}

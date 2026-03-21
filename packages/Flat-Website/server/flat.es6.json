@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "outDirectory": "../src/lib/server",
+      "outFile": "server.js"
+    }
+  }
+}

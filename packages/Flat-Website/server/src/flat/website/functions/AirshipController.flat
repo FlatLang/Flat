@@ -1,0 +1,46 @@
+package flat/website/functions
+
+import flat/log
+import flat/json
+import flat/datastruct
+import flat/http
+import flat/server/Request
+import flat/server/Response
+
+class {
+    static String TOKEN = System.getEnv("GITHUB_API_TOKEN")
+    static Logger log = Logger(AirshipController.class)
+
+    public construct() {}
+
+    public async getLatestAsset(Request req, Response res) {
+        let assetName = req.params["assetName"]
+
+        if (!assetName) {
+            throw Exception("assetName query parameter required")
+        }
+
+        let responseData = Http.get(
+            "https://api.github.com/repos/FlatLang/Airship/releases",
+            headers: HashMap()
+                :add("Authorization", "Bearer #{AirshipController.TOKEN}")
+                :add("User-Agent", "flat-github-client")
+        ).data
+
+        let Array<HashMap<String, Object>> releases = JsonDeserializer().parseArray(responseData)
+        let sortedReleases = releases.sort({ -_a["created_at"].toString().compareTo(_b["created_at"].toString()) })
+        let latestRelease = sortedReleases.first
+        let HashMap<String, Object>[] assets = (Array)latestRelease["assets"]
+        let HashMap<String, Object> asset = assets.firstWhere({ _["name"].toString() == assetName })
+
+        if (!asset) {
+            res.setHeader("Content-Type", "text/html")
+            res.status(404)
+            res.send("Invalid asset name: \"#{assetName}\"")
+            return
+        }
+
+        res.redirect(asset["browser_download_url"].toString(), 302)
+        res.end()
+    }
+}

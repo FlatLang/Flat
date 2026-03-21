@@ -1,0 +1,9 @@
+package flat/website/functions
+
+testable class {
+    test `can create`() {
+        let value = StatusPills("test")
+
+        expect(value).toNotBe(null)
+    }
+}

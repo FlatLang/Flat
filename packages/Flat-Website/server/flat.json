@@ -1,0 +1,32 @@
+{
+  "name": "Flat-Website-Backend",
+  "version": "0.1.0",
+  "description": "Flat Website Backend",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "es6",
+  "sources": {
+    "main": {
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Json.git": "master",
+        "https://github.com/FlatLang/Http.git": "master",
+        "https://github.com/FlatLang/Time.git": "master",
+        "https://github.com/FlatLang/FuCli.git": "master",
+        "https://github.com/FlatLang/Logger.git": "master",
+        "https://github.com/FlatLang/Cache.git": "master",
+        "https://github.com/FlatLang/GitHubClient.git": "master",
+        "https://github.com/FlatLang/DynamoDB.git": "master"
+      }
+    },
+    "test": {
+      "mainClass": "flat/website/functions/Server_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}
