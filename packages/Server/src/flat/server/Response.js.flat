@@ -1,0 +1,49 @@
+package flat/server
+
+import flat/datastruct/HashMap
+
+class {
+    public construct(private native Object res) {
+
+    }
+
+    public send(String data) {
+        external {
+            #{res}.send(#{data.chars.data});
+        }
+    }
+
+    public end() {
+        external {
+            #{res}.end();
+        }
+    }
+
+    public status(Int statusCode) {
+        external {
+            #{res}.status(#{statusCode});
+        }
+    }
+
+    public setHeaders(HashMap<String, Object> headers) {
+        headers.forEach(entry => setHeader(entry.key, entry.value.toString()))
+    }
+
+    public setHeader(String key, String value) {
+        external {
+            #{res}.setHeader(#{key.chars.data}, #{value.chars.data});
+        }
+    }
+
+    public redirect(String url) {
+        external {
+            #{res}.redirect(#{url.chars.data});
+        }
+    }
+
+    public redirect(String url, Int statusCode) {
+        external {
+            #{res}.redirect(#{statusCode}, #{url.chars.data});
+        }
+    }
+}

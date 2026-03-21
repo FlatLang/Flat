@@ -1,0 +1,11 @@
+package flat/server
+
+import flat/server/Server
+
+testable class {
+    test `can create`() {
+        let value = Server()
+
+        expect(value).toNotBe(null)
+    }
+}

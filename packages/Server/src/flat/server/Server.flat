@@ -1,0 +1,7 @@
+package flat/server
+
+class {
+    public construct() {
+
+    }
+}

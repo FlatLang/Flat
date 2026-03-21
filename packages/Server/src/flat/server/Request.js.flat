@@ -1,0 +1,26 @@
+package flat/server
+
+class {
+    public construct(private native Object req) {
+        native_array native var Char[] paramKey
+        native_array native var Char[] paramValue
+
+        external {
+            Object.entries(#{req}.params).forEach(([key, value]) => {
+                #{paramKey} = key;
+                #{paramValue} = value;
+
+                #{params.add(String(paramKey), String(paramValue))};
+            });
+        }
+
+        external {
+            Object.entries(#{req}.query).forEach(([key, value]) => {
+                #{paramKey} = key;
+                #{paramValue} = value;
+
+                #{query.add(String(paramKey), String(paramValue))};
+            });
+        }
+    }
+}

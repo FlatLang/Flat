@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "dependencies": {
+        "npm:express": "latest"
+      }
+    }
+  }
+}

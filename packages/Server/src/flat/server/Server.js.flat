@@ -1,0 +1,163 @@
+package flat/server
+
+import flat/log/Logger
+import flat/time/Timer
+
+import static flat/node/import/Import
+
+class {
+    static Logger log = Logger(Server.class)
+
+    native var Object expressObj
+    native var Object expressObjPromise
+
+    async native fetchExpress() -> Object {
+        if (expressObj) return expressObj
+        if (expressObjPromise) return await expressObjPromise
+
+        external {
+            #{expressObjPromise} = new Promise(async (resolve) => {
+                #{expressObj} = #{import("express")}();
+                #{expressObj}.disable("x-powered-by");
+                resolve(#{expressObj});
+            });
+        }
+
+        return await expressObjPromise
+    }
+
+    public async listen(Int port) {
+        let express = fetchExpress()
+
+        external {
+            await new Promise((resolve, reject) => {
+                #{express}.listen(#{port}, (...args) => {
+                    resolve(args);
+                });
+            });
+        }
+    }
+
+    public get(String path, async onRequest(Request req, Response res)) {
+        handle("get", path, onRequest)
+    }
+
+    public post(String path, async onRequest(Request req, Response res)) {
+        handle("post", path, onRequest)
+    }
+
+    public put(String path, async onRequest(Request req, Response res)) {
+        handle("put", path, onRequest)
+    }
+
+    public delete(String path, async onRequest(Request req, Response res)) {
+        handle("delete", path, onRequest)
+    }
+
+    public head(String path, async onRequest(Request req, Response res)) {
+        handle("head", path, onRequest)
+    }
+
+    public connect(String path, async onRequest(Request req, Response res)) {
+        handle("connect", path, onRequest)
+    }
+
+    public options(String path, async onRequest(Request req, Response res)) {
+        handle("options", path, onRequest)
+    }
+
+    public trace(String path, async onRequest(Request req, Response res)) {
+        handle("trace", path, onRequest)
+    }
+
+    public patch(String path, async onRequest(Request req, Response res)) {
+        handle("patch", path, onRequest)
+    }
+
+    static async handleRunRequest(
+        String method,
+        String path,
+        Request request,
+        Response response,
+        async onRequest(Request req, Response res)
+    ) {
+        log.debug("|
+            Handling request:
+                method: #{method}
+                path: #{path}
+            |")
+
+        let timer = Timer():start()
+
+        try {
+            onRequest(request, response)
+            timer.stop()
+        } catch (Exception e) {
+            timer.stop()
+            external {
+                if (#{e}.error) {
+                    console.error(#{e}.error);
+                }
+            }
+            log.error("|
+                Exception encountered while handling request:
+                    method: #{method}
+                    path: #{path}
+                    error: #{e.message}
+                |")
+
+            response
+                :setHeader("Content-Type", "text/html")
+                :status(500)
+                :send("500 Error")
+        }
+
+        log.debug("|
+            Finished handling request (#{timer.duration}ms):
+                method: #{method}
+                path: #{path}
+            |")
+    }
+
+    public handle(
+        String method,
+        String path,
+        async onRequest(Request req, Response res)
+    ) {
+        var native Object reqObj
+        var native Object resObj
+
+        log.debug("|
+            Setting up request handler:
+                method: #{method}
+                path: #{path}
+            |")
+
+        external {
+            #{fetchExpress()$}.then((express) => {
+                express[#{method.chars.data}](#{path.chars.data}, async (req, res) => {
+                    #{reqObj} = req;
+                    #{resObj} = res;
+
+                    await #{
+                        handleRunRequest(
+                            method,
+                            path,
+                            wrapRequest(reqObj),
+                            wrapResponse(resObj),
+                            onRequest
+                        )$
+                    };
+                });
+            });
+        }
+    }
+
+    static wrapRequest(native Object req) -> Request {
+        return Request(req)
+    }
+
+    static wrapResponse(native Object res) -> Response {
+        return Response(res)
+    }
+}
