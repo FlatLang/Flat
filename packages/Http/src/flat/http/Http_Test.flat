@@ -1,0 +1,11 @@
+package flat/http
+
+import flat/http/Http
+
+testable class {
+    test `can create`() {
+        let value = Http()
+
+        expect(value).toNotBe(null)
+    }
+}

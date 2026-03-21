@@ -1,0 +1,88 @@
+package flat/http
+
+import flat/datastruct/HashMap
+import flat/time/Timer
+
+import static flat/node/import/Import
+
+class {
+    public async run() -> Response => null {
+        external {
+            var headers = {};
+        }
+
+        native_array native var Char[] data
+
+        headers.forEach({
+            external {
+                headers[#{_x.key.chars.data}] = #{_x.value.chars.data};
+            }
+        })
+
+        log.debug("|
+            Sending request:
+                method: #{method}
+                url: #{url}
+                headers: #{headers.toJson()}
+            |")
+
+        let timer = Timer():start()
+        native_array native var Char[] error_message
+
+        external {
+            try {
+                const options = {
+                    method: #{method.chars.data},
+                    headers: headers,
+                    timeout: #{timeout}
+                };
+
+                const chunks = [];
+
+                await new Promise((resolve, reject) => {
+                    #{import("https")$}.then((https) => {
+                        https.request(#{url.chars.data}, options, (res) => {
+                            res.on("data", (chunk) => {
+                                chunks.push(chunk);
+                            });
+
+                            res.on("end", () => {
+                                #{timer:stop()};
+                                #{data} = Buffer.concat(chunks).toString();
+                                resolve();
+                            });
+                        }).on("error", (err) => {
+                            reject(err);
+                        }).end();
+                    });
+                });
+            } catch (e) {
+                #{timer:stop()};
+                console.error(e);
+                #{error_message} = e.toString();
+                #{throw Exception("|
+                    Request unsuccessful:
+                        method: #{method}
+                        url: #{url}
+                        headers: #{headers.toJson()}
+                        message: #{String(error_message)}
+                    |")};
+            }
+        }
+
+        log.debug("|
+            Received response for request (#{timer.duration}ms):
+                method: #{method}
+                url: #{url}
+                headers: #{headers.toJson()}
+            |")
+
+        let responseData = String(data)
+
+        log.trace("responseData: #{responseData}")
+
+        return Response(
+            data: responseData
+        )
+    }
+}

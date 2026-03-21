@@ -1,0 +1,23 @@
+package flat/http
+
+import flat/log/Logger
+import flat/datastruct/HashMap
+import flat/regex/Regex
+import flat/regex/Pattern
+
+import flat/regex/RegexStringExtensions
+
+class {
+    static Logger log = Logger(Request.class)
+        :addFilter({ _.replace(Pattern("(\"Authorization\":\")[^\"]+\""), "$1{{REDACTED}}\"") })
+
+    public construct(
+        visible String url,
+        visible String method,
+        visible HashMap<String, String> headers = HashMap(),
+        visible String encoding = null,
+        visible Int timeout = 60000
+    ) {}
+
+    public async run() -> Response => null {}
+}

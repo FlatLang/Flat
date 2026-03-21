@@ -1,0 +1,25 @@
+package flat/http
+
+import flat/datastruct/HashMap
+
+class {
+    public static async get(
+        String url,
+        HashMap<String, String> headers = HashMap()
+    ) => request(url, "GET", headers)
+
+    public static async post(
+        String url,
+        HashMap<String, String> headers = HashMap()
+    ) => request(url, "POST", headers)
+
+    public static async request(
+        String url,
+        String method,
+        HashMap<String, String> headers = HashMap()
+    ) => Request(
+            url,
+            method: method,
+            headers: headers
+        ).run()
+}
