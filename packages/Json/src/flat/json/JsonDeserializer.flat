@@ -1,0 +1,150 @@
+package flat/json
+
+import flat/log/Logger
+import flat/datastruct/HashMap
+import flat/io/File
+import flat/io/FileReader
+import flat/time/Timer
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    static Logger log = Logger(JsonDeserializer.class)
+
+    public parse(File file) => parse(FileReader(file).readAllContents())
+
+    public parse(String json) -> Object {
+        if (isObject(json)) {
+            return innerParseObject(json)
+        } else if (isArray(json)) {
+            return innerParseArray(json)
+        } else {
+            throw InvalidParseException()
+        }
+    }
+
+    parseValue(String value) -> Object {
+        if (isObject(value)) {
+            return innerParseObject(value)
+        } else if (isArray(value)) {
+            return innerParseArray(value)
+        } else if (isString(value)) {
+            return value.trimEnds(1).replace("\\\"", "\"")
+        } else if (isBool(value)) {
+            return Bool(Bool.fromString(value))
+        } else if (isNumber(value)) {
+            return Long(Long.parseLong(value))
+        } else {
+            return value
+        }
+    }
+
+    public parseArray(File file) -> Object[] => null {
+        log.debug("Reading \"#{file.normalizedLocation}\" contents ...")
+        let timer = Timer():start()
+        let contents = FileReader(file).readAllContents()
+        timer.stop()
+        log.debug("Reading \"#{file.normalizedLocation}\" contents took #{timer.duration}ms")
+
+        return parseArray(contents)
+    }
+
+    public parseArray(String json) -> Object[] {
+        log.("Parsing object ...")
+        let timer = Timer():start()
+
+        let result = innerParseArray(json)
+
+        log.debug("Parsing object took #{timer.stop().duration}ms")
+
+        return result
+    }
+    
+    innerParseArray(String json) -> Object[] => null {
+        let trimmed = json.trim()
+
+        if (trimmed.first != '[') {
+            throw InvalidParseException("Not a JSON array")
+        } else if (trimmed.last != ']') {
+            throw MissingMatchingTokenException(']')
+        }
+
+        let contents = trimmed.trimEnds(1, true)
+        let values = contents.splitAtCommas(allowTrailing: true)
+
+        return values.map({ parseValue(_) })
+    }
+
+    public isObject(String json) => (let trimmed = json.trim()).first == '{' && trimmed.findEndingMatch(0, '{', '}') == trimmed.count - 1
+    public isArray(String json) => (let trimmed = json.trim()).first == '[' && trimmed.findEndingMatch(0, '[', ']') == trimmed.count - 1
+    public isSingleQuoteString(String json) => (let trimmed = json.trim()).first == '\'' && trimmed.findEndingSingleQuote(0) == trimmed.count - 1
+    public isDoubleQuoteString(String json) => (let trimmed = json.trim()).first == '"' && trimmed.findEndingQuote(0) == trimmed.count - 1
+    public isString(String json) => isSingleQuoteString(json) || isDoubleQuoteString(json)
+    public isBool(String json) => json == "true" || json == "false"
+    public isNumber(String json) => json.count > 0 {
+        for (i in 0..json.count) {
+            let char = (Int)json[i]
+
+            if (char < '0' || char > '9') {
+                return false
+            }
+        }
+    }
+
+    public parseObject(File file, HashMap<String, Object> map = HashMap(5, 5)) -> HashMap<String, Object> {
+        log.debug("Reading \"#{file.normalizedLocation}\" contents ...")
+        let timer = Timer():start()
+        let contents = FileReader(file).readAllContents()
+        timer.stop()
+        log.debug("Reading \"#{file.normalizedLocation}\" contents took #{timer.duration}ms")
+
+        return parseObject(contents, map)
+    }
+    public parseObject(String json, HashMap<String, Object> map = HashMap(5, 5)) => map {
+        log.("Parsing object ...")
+        let timer = Timer():start()
+
+        let result = innerParseObject(json, map)
+
+        log.debug("Parsing object took #{timer.stop().duration}ms")
+
+        return result
+    }
+
+    innerParseObject(String json, HashMap<String, Object> map = HashMap(5, 5)) => map {
+        let trimmed = json.trim()
+
+        if (trimmed.first != '{') {
+            throw InvalidParseException("Not a JSON object")
+        } else if (trimmed.last != '}') {
+            throw MissingMatchingTokenException('}')
+        }
+
+        let contents = trimmed.trimEnds(1, true)
+        let properties = contents.splitAtCommas(allowTrailing: true)
+
+        properties.forEach(prop => {
+            let colonIndex = prop.findCharOnTopLevel(':')
+
+            if (colonIndex == -1) {
+                throw InvalidParseException("Not a valid JSON object")
+            }
+
+            let split = [prop.substring(0, colonIndex).trim(), prop.substring(colonIndex + 1).trim()]
+
+            if (isString(split.first)) {
+                split[0] = split.first.trimEnds(1)
+            }
+
+            map[split.first] = parseValue(split.last)
+        })
+    }
+
+    class InvalidParseException extends Exception {
+        public construct(String message = "Invalid parse") => super(message)
+    }
+
+    class MissingMatchingTokenException extends InvalidParseException {
+        public construct(Char token) => super("Missing matching '#token' token")
+    }
+}

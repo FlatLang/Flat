@@ -1,0 +1,95 @@
+package flat/json
+
+import flat/datastruct
+
+class {
+    public parse(String json) -> Object {
+        if (isObject(json)) {
+            return innerParseObject(json)
+        } else if (isArray(json)) {
+            return innerParseArray(json)
+        } else {
+            throw InvalidParseException()
+        }
+    }
+
+    innerParseArray(String json) -> Object[] => null {
+        external_name native var Object data
+
+        external {
+            data = JSON.parse(#{json.chars.data});
+        }
+
+        return (Array<Object>)fromJsonValue(data)
+    }
+
+    innerParseObject(String json, HashMap<String, Object> map = HashMap(5, 5)) => map {
+        external_name native var Object data
+
+        external {
+            data = JSON.parse(#{json.chars.data});
+        }
+
+        return (HashMap<String, Object>)fromJsonValue(data)
+    }
+
+    public static jsObjectToFlatHashMap(Object obj) -> HashMap<String, Object> {
+        external_name native_array native var Char[] key
+        external_name native var Object nativeValue
+        external_name var Object value
+
+        let map = HashMap<String, Object>()
+
+        external {
+            Object.entries(obj).forEach((entry) => {
+                key = entry[0];
+                nativeValue = entry[1];
+                value = #{fromJsonValue(nativeValue)};
+
+                #{map.add(String(key), value)};
+            });
+        }
+
+        return map
+    }
+
+    public static fromJsonValue(native external_name Object obj) -> Object {
+        external_name var Object value
+        external_name native_array native var Char[] data
+        external_name native_array var Object[] arrayData
+        external_name native var Int arrayCount
+        external_name native var Long num
+        external_name native var Bool boolValue
+
+        external {
+            if (typeof obj === 'string') {
+                data = obj;
+                value = #{String(data)};
+            } else if (typeof obj === 'number') {
+                num = obj;
+                value = #{Long(num)};
+            } else if (typeof obj === 'boolean') {
+                boolValue = obj;
+                value = #{Bool(boolValue)};
+            } else if (Array.isArray(obj)) {
+                arrayData = obj.map(o => {
+                    value = o;
+                    return #{fromJsonValue(value)};
+                });
+                arrayCount = obj.length;
+                value = #{Array(arrayData, arrayCount)};
+            } else if (obj === null) {
+                value = #{null};
+            } else if (typeof obj === 'object') {
+                value = obj;
+                value = #{jsObjectToFlatHashMap(value)};
+            } else if (typeof obj === 'undefined') {
+                value = #{null};
+            } else {
+                throw new Error("Invalid type: " + (typeof obj));
+            }
+        }
+
+        return value
+    }
+}

@@ -1,0 +1,64 @@
+package flat/json
+
+import flat/datastruct
+import flat/datastruct/list
+import flat/primitive
+
+class {
+    public static toJsonArray(Array array) -> Object {
+        var native Object jsArray
+        var native Object data
+
+        external {
+            jsArray = #{array.data}.map((value) => {
+                #{data} = value;
+                return #{toJsonValue(data)};
+            });
+        }
+
+        return jsArray
+    }
+
+    public static toJsonValue(Object obj) -> Object => null {
+        if (obj == null) {
+            external {
+                return undefined;
+            }
+        } else if (obj.class.isOfType(String.class)) {
+            let String str = (String)obj
+            external {
+                return #{str.chars.data};
+            }
+        } else if (obj.class.isOfType(Primitive.class)) {
+            external {
+                return #{obj}.value;
+            }
+        } else if (obj.class.isOfType(Array.class)) {
+            return toJsonArray((Array)obj)
+        } else if (obj.class.isOfType(HashMap.class)) {
+            let HashMap map = (HashMap)obj
+
+            return map.toJsObject()
+        } else {
+            throw Exception("Invalid type: #{obj.class}")
+        }
+    }
+
+    public static toJsObject(Object object) -> Object {
+        var native Object obj
+        var native Object currentValue
+
+        external {
+            obj = {};
+        }
+
+        external {
+            Object.entries(#{object}).forEach(([key, value]) => {
+                #{currentValue} = value;
+                obj[key] = #{toJsonValue(currentValue)};
+            });
+        }
+
+        return obj
+    }
+}

@@ -1,0 +1,11 @@
+package flat/json
+
+import flat/json/JsonDeserializer
+
+testable class {
+    test `can create`() {
+        let value = JsonDeserializer()
+
+        expect(value).toNotBe(null)
+    }
+}
