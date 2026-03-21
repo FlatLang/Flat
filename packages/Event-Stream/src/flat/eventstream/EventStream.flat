@@ -1,0 +1,89 @@
+package flat/eventstream
+
+import flat/datastruct
+import flat/log
+import flat/future
+
+class {
+    static Logger log = Logger(EventStream.class)
+
+    HashMap<String, Array<action(Object, EventStream)>> eventListeners = HashMap()
+    HashMap<String, Array<Object>> eventBacklog = HashMap()
+
+    Future[] pendingFutures = Future[]
+
+    visible Bool backlogEvents = true
+    visible var Bool closed = false
+
+    public construct(
+        visible Bool backlogMissedEvents = false
+    ) {}
+
+    public emit<DataType>(String eventType, DataType data = null) => data {
+        if (closed) return null
+
+        if (backlogEvents) {
+            eventBacklog.getOrDefault(eventType, { Array() }).add(data)
+        }
+
+        if (let listeners = eventListeners.get(eventType)) {
+            listeners.forEach({ _(data, this) })
+        }
+    }
+
+    public on<DataType>(String eventType, action(DataType data, EventStream stream)) => this {
+        if (closed) return this
+
+        let a(Object data, EventStream stream) = action
+
+        eventListeners.getOrDefault(eventType, { Array() }).add(a)
+
+        if (backlogMissedEvents) {
+            eventBacklog.get(eventType)?.forEach({ a(_, this) })
+        }
+    }
+
+    public close() {
+        pendingFutures.forEach({ _.cancel() })
+        closed = true
+    }
+
+    public async consumeAll<DataType>(String eventType, String closeEvent = "close") -> DataType[] {
+        if (closed) return DataType[]
+
+        let results = Array<DataType>()
+
+        on<DataType>(eventType, {
+            results.add(_data)
+        })
+
+        waitFor(closeEvent)
+
+        return results
+    }
+
+    public waitFor<DataType>(String eventType) -> Future<DataType> {
+        var Future<DataType> future
+
+        future = Future.fromResolve<DataType>({
+            if (let event = eventBacklog.get(eventType)?.last) {
+                pendingFutures.remove((Future)future)
+                _resolve(event)
+            } else if (closed) {
+                pendingFutures.remove((Future)future)
+                _resolve(null)
+            } else {
+                on<DataType>(eventType, {
+                    pendingFutures.remove((Future)future)
+                    _resolve(_data)
+                })
+            }
+        })
+
+        if (!future.completed) {
+            pendingFutures.add((Future)future)
+        }
+
+        return future
+    }
+}

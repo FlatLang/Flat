@@ -1,0 +1,84 @@
+package flat/eventstream
+
+testable class {
+    test `can send event to nobody`() {
+        let stream = EventStream()
+
+        stream.emit("test", "I love you")
+
+        expect(stream).toNotBe(null)
+    }
+
+    test `can send event and receive it`() {
+        let stream = EventStream()
+
+        var triggered = false
+
+        stream.on("test", { triggered = true })
+
+        expect(triggered).toBe(false)
+
+        stream.emit("test", "I love you")
+
+        expect(triggered).toBe(true)
+    }
+
+    test `doesnt receive events in non-existant channel`() {
+        let stream = EventStream()
+
+        var triggered = false
+
+        stream.on("test", { triggered = true })
+
+        expect(triggered).toBe(false)
+
+        stream.emit("testy", "I love you")
+
+        expect(triggered).toBe(false)
+    }
+
+    test `doesnt receive events in wrong channel`() {
+        let stream = EventStream()
+
+        var testTriggered = false
+        var testyTriggered = false
+
+        stream.on("test", { testTriggered = true })
+        stream.on("testy", { testyTriggered = true })
+
+        expect(testTriggered).toBe(false)
+        expect(testyTriggered).toBe(false)
+
+        stream.emit("test", "I love you")
+
+        expect(testTriggered).toBe(true)
+        expect(testyTriggered).toBe(false)
+    }
+
+    async test `can waitFor an event type`() {
+        let stream = EventStream()
+        stream.emit("test", "hey")
+
+        expect(stream.waitFor("test")).toBe("hey")
+    }
+
+    async test `can cancel a waitFor of an event type`() {
+        let stream = EventStream()
+
+        let future = stream.waitFor("test")$
+
+        expect(future.completed).toBe(false)
+
+        future.cancel()
+    }
+
+    async test `does cancel the waitFor future if the stream is closed`() {
+        let stream = EventStream()
+
+        let future = stream.waitFor("test")$
+
+        stream.close()
+
+        expect(future.completed).toBe(true)
+    }
+}
