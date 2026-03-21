@@ -1,0 +1,11 @@
+package flat/colorizer
+
+import flat/colorizer/Colorizer
+
+testable class {
+    test `can create`() {
+        let value = Colorizer()
+
+        expect(value).toNotBe(null)
+    }
+}

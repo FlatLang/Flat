@@ -1,0 +1,109 @@
+package flat/colorizer
+
+class {
+    static String PREFIX = "\x1b["
+
+    static String RESET = "0"
+    static String BRIGHT = "1"
+    static String DIM = "2"
+    static String UNDERSCORE = "4"
+    static String BLINK = "5"
+    static String REVERSE = "7"
+    static String HIDDEN = "8"
+
+    static String BLACK_FOREGROUND = "30"
+    static String RED_FOREGROUND = "31"
+    static String GREEN_FOREGROUND = "32"
+    static String YELLOW_FOREGROUND = "33"
+    static String BLUE_FOREGROUND = "34"
+    static String MAGENTA_FOREGROUND = "35"
+    static String CYAN_FOREGROUND = "36"
+    static String WHITE_FOREGROUND = "37"
+    static String RGB_FOREGROUND = "38"
+    static String GRAY_FOREGROUND = "90"
+    static String BRIGHT_BLACK_FOREGROUND = "90"
+    static String BRIGHT_RED_FOREGROUND = "91"
+    static String BRIGHT_GREEN_FOREGROUND = "92"
+    static String BRIGHT_YELLOW_FOREGROUND = "93"
+    static String BRIGHT_BLUE_FOREGROUND = "94"
+    static String BRIGHT_MAGENTA_FOREGROUND = "95"
+    static String BRIGHT_CYAN_FOREGROUND = "96"
+    static String BRIGHT_WHITE_FOREGROUND = "97"
+
+    static String BLACK_BACKGROUND = "40"
+    static String RED_BACKGROUND = "41"
+    static String GREEN_BACKGROUND = "42"
+    static String YELLOW_BACKGROUND = "43"
+    static String BLUE_BACKGROUND = "44"
+    static String MAGENTA_BACKGROUND = "45"
+    static String CYAN_BACKGROUND = "46"
+    static String WHITE_BACKGROUND = "47"
+    static String RGB_BACKGROUND = "48"
+    static String GRAY_BACKGROUND = "100"
+    static String BRIGHT_BLACK_BACKGROUND = "100"
+    static String BRIGHT_RED_BACKGROUND = "101"
+    static String BRIGHT_GREEN_BACKGROUND = "102"
+    static String BRIGHT_YELLOW_BACKGROUND = "103"
+    static String BRIGHT_BLUE_BACKGROUND = "104"
+    static String BRIGHT_MAGENTA_BACKGROUND = "105"
+    static String BRIGHT_CYAN_BACKGROUND = "106"
+    static String BRIGHT_WHITE_BACKGROUND = "107"
+
+    public static format(String code, String value) -> String {
+        let stripped = if (code != RESET) {
+            value.replace("#{PREFIX}#{RESET}m", "#{PREFIX}#{RESET}m#{PREFIX}#{code}m")
+        } else {
+            value
+        }
+
+        return "#{PREFIX}#{code}m#{stripped}#{PREFIX}#{RESET}m"
+    }
+
+    public static reset(String value) => format(RESET, value)
+    public static bright(String value) => format(BRIGHT, value)
+    public static dim(String value) => format(DIM, value)
+    public static underscore(String value) => format(UNDERSCORE, value)
+    public static blink(String value) => format(BLINK, value)
+    public static reverse(String value) => format(REVERSE, value)
+    public static hidden(String value) => format(HIDDEN, value)
+
+    public static rgb(String value, Int r, Int g, Int b) => format(RGB_FOREGROUND + ";2;#{r};#{g};#{b}", value)
+    public static foreground256(String value, Int num) => format(RGB_FOREGROUND + ";5;#{num}", value)
+    public static black(String value) => format(BLACK_FOREGROUND, value)
+    public static red(String value) => format(RED_FOREGROUND, value)
+    public static green(String value) => format(GREEN_FOREGROUND, value)
+    public static yellow(String value) => format(YELLOW_FOREGROUND, value)
+    public static blue(String value) => format(BLUE_FOREGROUND, value)
+    public static magenta(String value) => format(MAGENTA_FOREGROUND, value)
+    public static cyan(String value) => format(CYAN_FOREGROUND, value)
+    public static white(String value) => format(WHITE_FOREGROUND, value)
+    public static gray(String value) => format(GRAY_FOREGROUND, value)
+    public static brightBlack(String value) => format(GRAY_FOREGROUND, value)
+    public static brightRed(String value) => format(RED_FOREGROUND, value)
+    public static brightGreen(String value) => format(GREEN_FOREGROUND, value)
+    public static brightYellow(String value) => format(YELLOW_FOREGROUND, value)
+    public static brightBlue(String value) => format(BLUE_FOREGROUND, value)
+    public static brightMagenta(String value) => format(MAGENTA_FOREGROUND, value)
+    public static brightCyan(String value) => format(CYAN_FOREGROUND, value)
+    public static brightWhite(String value) => format(WHITE_FOREGROUND, value)
+
+    public static rgbBackground(String value, Int r, Int g, Int b) => format(RGB_BACKGROUND + ";2;#{r};#{g};#{b}", value)
+    public static background256(String value, Int num) => format(RGB_BACKGROUND + ";5;#{num}", value)
+    public static blackBackground(String value) => format(BLACK_BACKGROUND, value)
+    public static redBackground(String value) => format(RED_BACKGROUND, value)
+    public static greenBackground(String value) => format(GREEN_BACKGROUND, value)
+    public static yellowBackground(String value) => format(YELLOW_BACKGROUND, value)
+    public static blueBackground(String value) => format(BLUE_BACKGROUND, value)
+    public static magentaBackground(String value) => format(MAGENTA_BACKGROUND, value)
+    public static cyanBackground(String value) => format(CYAN_BACKGROUND, value)
+    public static whiteBackground(String value) => format(WHITE_BACKGROUND, value)
+    public static grayBackground(String value) => format(GRAY_BACKGROUND, value)
+    public static brightBlackBackground(String value) => format(GRAY_BACKGROUND, value)
+    public static brightRedBackground(String value) => format(RED_BACKGROUND, value)
+    public static brightGreenBackground(String value) => format(GREEN_BACKGROUND, value)
+    public static brightYellowBackground(String value) => format(YELLOW_BACKGROUND, value)
+    public static brightBlueBackground(String value) => format(BLUE_BACKGROUND, value)
+    public static brightMagentaBackground(String value) => format(MAGENTA_BACKGROUND, value)
+    public static brightCyanBackground(String value) => format(CYAN_BACKGROUND, value)
+    public static brightWhiteBackground(String value) => format(WHITE_BACKGROUND, value)
+}
