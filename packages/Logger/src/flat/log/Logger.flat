@@ -1,0 +1,703 @@
+package flat/log
+
+import flat/io
+import flat/datastruct
+import flat/time
+import flat/regex
+import flat/console
+
+import flat/regex/RegexStringExtensions
+
+import static flat/colorizer/Colorizer
+import static flat/stream/StreamListExtensions
+import static flat/console/EscapeCode
+
+class {
+    visible static Int TRACE = 6
+    visible static Int DEBUG = 5
+    visible static Int INFO = 4
+    visible static Int WARN = 3
+    visible static Int ERROR = 2
+    visible static Int FATAL = 1
+    visible static Int OFF = 0
+
+    var static Int _defaultLoggingLevel = INFO
+    public var static Int defaultLoggingLevel {
+        get {
+            return _defaultLoggingLevel
+        }
+
+        set {
+            _defaultLoggingLevel = value
+
+            currentDisabledLoggersModificationId++
+        }
+    }
+
+    public var static Bool? defaultShowPrefix = false
+    public var static Bool? defaultShowFormatting = true
+    public var static Int? defaultLineLength = null
+    public var static Bool? defaultSplitOnWord = true
+    public var static String defaultLinePrefix = null
+    public var static String defaultLineSuffix = null
+    public var static String defaultPrefix = null
+    public var static String defaultSuffix = null
+    public var static String defaultPrefixSeparator = " - "
+
+    public var static Int? forceLoggingLevel = null
+    public var static Bool? forceShowPrefix = null
+    public var static Bool? forceShowFormatting = null
+    public var static Int? forceLineLength = null
+    public var static Bool? forceSplitOnWord = null
+    public var static String forceLinePrefix = null
+    public var static String forceLineSuffix = null
+    public var static String forcePrefix = null
+    public var static String forceSuffix = null
+    public var static String forcePrefixSeparator = null
+
+    public var static OutputStream[] defaultTraceStreams = [Console.out]
+    public var static OutputStream[] defaultDebugStreams = [Console.out]
+    public var static OutputStream[] defaultInfoStreams = [Console.out]
+    public var static OutputStream[] defaultWarnStreams = [Console.warn]
+    public var static OutputStream[] defaultErrorStreams = [Console.error]
+    public var static OutputStream[] defaultFatalStreams = [Console.error]
+
+    [TargetRuntime not browser]
+    static {
+        if (let labelLoggingLevels = System.getEnv("LOGGING_LABEL_LOGGING_LEVELS")) {
+            labelLoggingLevels
+                .split(";")
+                .stream()
+                .map({ _.split(":") })
+                .filter({ _.count == 2 })
+                .forEach({ setLoggingLevel((String)_x[0], getLevelFromString((String)_x[1])) })
+        }
+        if (let traceLoggingLabels = System.getEnv("LOGGING_TRACE_LABEL_LOGGING_LEVELS")) {
+            traceLoggingLabels.split(";").forEach({
+                setLoggingLevel(_, TRACE)
+            })
+        }
+        if (let debugLoggingLabels = System.getEnv("LOGGING_DEBUG_LABEL_LOGGING_LEVELS")) {
+            debugLoggingLabels.split(";").forEach({
+                setLoggingLevel(_, DEBUG)
+            })
+        }
+        if (let infoLoggingLabels = System.getEnv("LOGGING_INFO_LABEL_LOGGING_LEVELS")) {
+            infoLoggingLabels.split(";").forEach({
+                setLoggingLevel(_, INFO)
+            })
+        }
+        if (let warnLoggingLabels = System.getEnv("LOGGING_WARN_LABEL_LOGGING_LEVELS")) {
+            warnLoggingLabels.split(";").forEach({
+                setLoggingLevel(_, WARN)
+            })
+        }
+        if (let errorLoggingLabels = System.getEnv("LOGGING_ERROR_LABEL_LOGGING_LEVELS")) {
+            errorLoggingLabels.split(";").forEach({
+                setLoggingLevel(_, ERROR)
+            })
+        }
+        if (let fatalLoggingLabels = System.getEnv("LOGGING_FATAL_LABEL_LOGGING_LEVELS")) {
+            fatalLoggingLabels.split(";").forEach({
+                setLoggingLevel(_, FATAL)
+            })
+        }
+        if (let offLoggingLabels = System.getEnv("LOGGING_OFF_LABEL_LOGGING_LEVELS")) {
+            offLoggingLabels.split(";").forEach({
+                setLoggingLevel(_, OFF)
+            })
+        }
+        if (let level = System.getEnv("LOGGING_DEFAULT_LOGGING_LEVEL")) {
+            defaultLoggingLevel = getLevelFromString(level)
+        }
+        if (let showPrefix = System.getEnv("LOGGING_DEFAULT_SHOW_PREFIX")) {
+            defaultShowPrefix = Bool.fromString(showPrefix)
+        }
+        if (let showFormatting = System.getEnv("LOGGING_DEFAULT_SHOW_FORMATTING")) {
+            defaultShowFormatting = Bool.fromString(showFormatting)
+        }
+        if (let linePrefix = System.getEnv("LOGGING_DEFAULT_LINE_PREFIX")) {
+            defaultLinePrefix = linePrefix
+        }
+        if (let lineSuffix = System.getEnv("LOGGING_DEFAULT_LINE_SUFFIX")) {
+            defaultLineSuffix = lineSuffix
+        }
+        if (let prefix = System.getEnv("LOGGING_DEFAULT_PREFIX")) {
+            defaultPrefix = prefix
+        }
+        if (let suffix = System.getEnv("LOGGING_DEFAULT_SUFFIX")) {
+            defaultSuffix = suffix
+        }
+        if (let prefixSeparator = System.getEnv("LOGGING_DEFAULT_PREFIX_SEPARATOR")) {
+            defaultPrefixSeparator = prefixSeparator
+        }
+        if (let forceLevel = System.getEnv("LOGGING_FORCE_LOGGING_LEVEL")) {
+            forceLoggingLevel = getLevelFromString(forceLevel)
+        }
+        if (let forceShowPrefixEnv = System.getEnv("LOGGING_FORCE_SHOW_PREFIX")) {
+            forceShowPrefix = Bool.fromString(forceShowPrefixEnv)
+        }
+        if (let forceShowFormattingEnv = System.getEnv("LOGGING_FORCE_SHOW_FORMATTING")) {
+            forceShowFormatting = Bool.fromString(forceShowFormattingEnv)
+        }
+        if (let forceLinePrefixEnv = System.getEnv("LOGGING_FORCE_LINE_PREFIX")) {
+            forceLinePrefix = forceLinePrefixEnv
+        }
+        if (let forceLineSuffixEnv = System.getEnv("LOGGING_FORCE_LINE_SUFFIX")) {
+            forceLineSuffix = forceLineSuffixEnv
+        }
+        if (let forcePrefixEnv = System.getEnv("LOGGING_FORCE_PREFIX")) {
+            forcePrefix = forcePrefixEnv
+        }
+        if (let forceSuffixEnv = System.getEnv("LOGGING_FORCE_SUFFIX")) {
+            forceSuffix = forceSuffixEnv
+        }
+        if (let forcePrefixSeparatorEnv = System.getEnv("LOGGING_FORCE_PREFIX_SEPARATOR")) {
+            forcePrefixSeparator = forcePrefixSeparatorEnv
+        }
+    }
+
+    var Int? _loggingLevel = null
+    public var Int? loggingLevel {
+        get {
+            return if (forceLoggingLevel != null) {
+                forceLoggingLevel
+            } else if (_loggingLevel != null) {
+                _loggingLevel
+            } else {
+                return level
+            }
+        }
+
+        set {
+            _loggingLevel = value
+        }
+    }
+
+    var Bool? _showPrefix = null
+    public var Bool? showPrefix {
+        get {
+            return if (forceShowPrefix != null) {
+                forceShowPrefix
+            } else if (_showPrefix != null) {
+                _showPrefix
+            } else {
+                defaultShowPrefix
+            }
+        }
+
+        set {
+            _showPrefix = value
+        }
+    }
+
+    var Bool? _showFormatting = null
+    public var Bool? showFormatting {
+        get {
+            return if (forceShowFormatting != null) {
+                forceShowFormatting
+            } else if (_showFormatting != null) {
+                _showFormatting
+            } else {
+                defaultShowFormatting
+            }
+        }
+
+        set {
+            _showFormatting = value
+        }
+    }
+
+    var Int? _lineLength = null
+    public var Int? lineLength {
+        get {
+            return if (forceLineLength != null) {
+                forceLineLength
+            } else if (_lineLength != null) {
+                _lineLength
+            } else {
+                defaultLineLength
+            }
+        }
+
+        set {
+            _lineLength = value
+        }
+    }
+
+    var String _linePrefix = null
+    public var String linePrefix {
+        get {
+            return if (forceLinePrefix != null) {
+                forceLinePrefix
+            } else if (_linePrefix != null) {
+                _linePrefix
+            } else {
+                defaultLinePrefix
+            }
+        }
+
+        set {
+            _linePrefix = value
+        }
+    }
+
+    var String _lineSuffix = null
+    public var String lineSuffix {
+        get {
+            return if (forceLineSuffix != null) {
+                forceLineSuffix
+            } else if (_lineSuffix != null) {
+                _lineSuffix
+            } else {
+                defaultLineSuffix
+            }
+        }
+
+        set {
+            _lineSuffix = value
+        }
+    }
+
+    var String _prefix = null
+    public var String prefix {
+        get {
+            return if (forcePrefix != null) {
+                forcePrefix
+            } else if (_prefix != null) {
+                _prefix
+            } else {
+                defaultPrefix
+            }
+        }
+
+        set {
+            _prefix = value
+        }
+    }
+
+    var String _suffix = null
+    public var String suffix {
+        get {
+            return if (forceSuffix != null) {
+                forceSuffix
+            } else if (_suffix != null) {
+                _suffix
+            } else {
+                defaultSuffix
+            }
+        }
+
+        set {
+            _suffix = value
+        }
+    }
+
+    var String _prefixSeparator = null
+    public var String prefixSeparator {
+        get {
+            return if (forcePrefixSeparator != null) {
+                forcePrefixSeparator
+            } else if (_prefixSeparator != null) {
+                _prefixSeparator
+            } else {
+                defaultPrefixSeparator
+            }
+        }
+
+        set {
+            _prefixSeparator = value
+        }
+    }
+
+    var Bool? _splitOnWord = null
+    public var Bool? splitOnWord {
+        get {
+            return if (forceSplitOnWord != null) {
+                forceSplitOnWord
+            } else if (_splitOnWord != null) {
+                _splitOnWord
+            } else {
+                defaultSplitOnWord
+            }
+        }
+
+        set {
+            _splitOnWord = value
+        }
+    }
+
+    Array<filter(String) -> String> filters = Array()
+
+    static var Long currentDisabledLoggersModificationId = 1
+    var Long lastDisabledLoggersModificationId = 0
+
+    visible Bool disabled => level == OFF
+
+    var Int? _level = defaultLoggingLevel
+    visible Int? level {
+        get {
+            if (lastDisabledLoggersModificationId == currentDisabledLoggersModificationId) return _level
+
+            if (loggerClass) {
+                _level = getClassLoggingLevel(loggerClass)
+            } else if (label) {
+                _level = getLabelLoggingLevel(label)
+            } else {
+                _level = defaultLoggingLevel
+            }
+
+            lastDisabledLoggersModificationId = currentDisabledLoggersModificationId
+
+            return _level
+        }
+    }
+
+    static var HashMap<Class, Int> classLoggingLevels = HashMap()
+    static var HashMap<String, Int> labelLoggingLevels = HashMap()
+    static var HashMap<String, Int> wildcardLabelLoggingLevels = HashMap()
+
+    public construct(
+        private Class loggerClass = null,
+        private String: label = null,
+        Int?: loggingLevel = null,
+        Bool?: showPrefix = null,
+        Bool?: showFormatting = null,
+        Int?: lineLength = null,
+        Bool?: splitOnWord = null,
+        OutputStream: stream = null,
+        OutputStream[]: streams = null,
+        public var OutputStream[]: traceStreams = null,
+        public var OutputStream[]: debugStreams = null,
+        public var OutputStream[]: infoStreams = null,
+        public var OutputStream[]: warnStreams = null,
+        public var OutputStream[]: errorStreams = null,
+        public var OutputStream[]: fatalStreams = null
+    ) {
+        if (stream) {
+            this.traceStreams = [stream]
+            this.debugStreams = [stream]
+            this.infoStreams = [stream]
+            this.warnStreams = [stream]
+            this.errorStreams = [stream]
+            this.fatalStreams = [stream]
+        } else if (streams) {
+            this.traceStreams = streams
+            this.debugStreams = streams
+            this.infoStreams = streams
+            this.warnStreams = streams
+            this.errorStreams = streams
+            this.fatalStreams = streams
+        } else {
+            this.traceStreams = traceStreams ?: defaultTraceStreams
+            this.debugStreams = debugStreams ?: defaultDebugStreams
+            this.infoStreams = infoStreams ?: defaultInfoStreams
+            this.warnStreams = warnStreams ?: defaultWarnStreams
+            this.errorStreams = errorStreams ?: defaultErrorStreams
+            this.fatalStreams = fatalStreams ?: defaultFatalStreams
+        }
+
+        _loggingLevel = loggingLevel
+        _showPrefix = showPrefix
+        _showFormatting = showFormatting
+        _lineLength = lineLength
+        _splitOnWord = splitOnWord
+    }
+
+    public static resetLoggingLevels() {
+        classLoggingLevels = HashMap()
+        labelLoggingLevels = HashMap()
+        wildcardLabelLoggingLevels = HashMap()
+    }
+
+    public static disableLogs(Class c) {
+        setLoggingLevel(c, OFF)
+    }
+
+    public static setLoggingLevel(Class c, Int level) {
+        classLoggingLevels[c] = level
+
+        currentDisabledLoggersModificationId++
+    }
+
+    public static enableLogs(Class c) {
+        classLoggingLevels.remove(c)
+
+        currentDisabledLoggersModificationId++
+    }
+
+    public static disableLogs(String label) {
+        setLoggingLevel(label, OFF)
+    }
+
+    public static setLoggingLevel(String label, Int level) {
+        if (label.contains('*')) {
+            wildcardLabelLoggingLevels[label] = level
+        } else {
+            labelLoggingLevels[label] = level
+        }
+
+        currentDisabledLoggersModificationId++
+    }
+
+    public static enableLogs(String label) {
+        if (label.contains('*')) {
+            wildcardLabelLoggingLevels.remove(label)
+        } else {
+            labelLoggingLevels.remove(label)
+        }
+
+        currentDisabledLoggersModificationId++
+    }
+
+    static isClassDisabled(Class c) => getClassLoggingLevel(c) == OFF
+    static isLabelDisabled(String label) => getLabelLoggingLevel(label) == OFF
+
+    static getClassLoggingLevel(Class c) => defaultLoggingLevel {
+        if (!c) return defaultLoggingLevel
+        if (classLoggingLevels.containsKey(c)) return classLoggingLevels[c]
+
+        return getLabelLoggingLevel(c.location)
+    }
+
+    static getLabelLoggingLevel(String label) => defaultLoggingLevel {
+        if (!label) return defaultLoggingLevel
+        if (labelLoggingLevels.containsKey(label)) {
+            return labelLoggingLevels[label]
+        }
+        if (wildcardLabelLoggingLevels.any({ WildcardHelper.isWildcardMatch(label, _.key) })) {
+            return wildcardLabelLoggingLevels.firstWhere({ WildcardHelper.isWildcardMatch(label, _.key) }).value
+        }
+    }
+
+    static getLevelFromString(String str) -> Int {
+        return match (str) {
+            "TRACE" => TRACE
+            "DEBUG" => DEBUG
+            "INFO" => INFO
+            "WARN" => WARN
+            "ERROR" => ERROR
+            "FATAL" => FATAL
+            default => defaultLoggingLevel
+        }
+    }
+
+    getPrefix(Int level) -> String {
+        if (!showPrefix) return ""
+
+        let levelString = match (level) {
+            TRACE => "TRACE"
+            DEBUG => "DEBUG"
+            INFO => "INFO"
+            WARN => "WARN"
+            ERROR => "ERROR"
+            FATAL => "FATAL"
+        }
+
+        let timestamp = DateTime.now().toIsoString()
+        let classPrefix = loggerClass ? loggerClass.location + " " : ""
+        let labelPrefix = label ? label + " " : ""
+
+        let suffix = " #{classPrefix}#{labelPrefix}".trimEnd()
+        let content = "[#{timestamp}] [#{levelString}]" + suffix
+
+        if (showFormatting) {
+            let colored = match (level) {
+                TRACE => black(cyanBackground(content))
+                DEBUG => black(greenBackground(content))
+                INFO => grayBackground(content)
+                WARN => black(yellowBackground(content))
+                ERROR => black(redBackground(content))
+                FATAL => black(redBackground(content))
+            }
+
+            return colored + prefixSeparator
+        }
+
+        return content + prefixSeparator
+    }
+
+    public addFilter(filter(String) -> String) {
+        filters.add(filter)
+    }
+
+    formatContent(var String content, Int level) -> String {
+        filters.forEach({ content = (String)_(content) })
+
+        if (!showFormatting) return content
+
+        let formatted = match level {
+            TRACE => cyan(content)
+            DEBUG => green(content)
+            INFO => content
+            WARN => yellow(content)
+            ERROR => red(content)
+            FATAL => red(content)
+        }
+
+        return formatted
+    }
+
+    wrapLine(String content, String prefix = "") => content {
+        if (lineLength > 0) {
+            let lines = content.split(/\n/)
+
+            return lines.stream()
+                .flatMap({ wrapLine(_x, lineLength, indentation: prefix, breakWord: false).stream() })
+                .join("\n")
+        }
+    }
+
+    addLinePrefix(String content) => content {
+        if (linePrefix) {
+            native_array native var Char[] data
+            native var String str
+
+            external js {
+                #{data} = #{linePrefix.chars.data} + #{content.chars.data}.replaceAll("\n", "\n" + #{linePrefix.chars.data});
+
+                #{return String(data)};
+            }
+            external java {
+                #{str} = #{linePrefix.chars.string} + #{content.chars.string}.replaceAll("\n", "\n" + #{linePrefix.chars.string});
+
+                #{return String(str)};
+            }
+        }
+    }
+
+    addLineSuffix(String content) => content {
+        if (lineSuffix) {
+            native_array native var Char[] data
+            native var String str
+
+            external js {
+                #{data} = #{content.chars.data}.replaceAll("\n", #{linePrefix.chars.data} + "\n") + #{lineSuffix.chars.data};
+
+                #{return String(data)};
+            }
+            external java {
+                #{str} = #{content.chars.string}.replaceAll("\n", #{linePrefix.chars.string} + "\n") + #{lineSuffix.chars.string};
+
+                #{return String(str)};
+            }
+        }
+    }
+
+    addPrefix(String content) => content {
+        if (prefix) {
+            return prefix + content
+        }
+    }
+
+    addSuffix(String content) => content {
+        if (suffix) {
+            return content + suffix
+        }
+    }
+
+    formatMessage(String message) -> String {
+        return wrapLine(
+            addSuffix(
+                addPrefix(
+                    addLineSuffix(
+                        addLinePrefix(message)
+                    )
+                )
+            ),
+            prefix: addLinePrefix("")
+        )
+    }
+
+    public static increaseTab(Int tabCount = 1, String tab = "    ") {
+        if (!defaultLinePrefix) defaultLinePrefix = ""
+
+        defaultLinePrefix += tab.repeat(tabCount)
+    }
+
+    public static decreaseTab(Int tabCount = 1, String tab = "    ") {
+        if (!defaultLinePrefix) return
+
+        defaultLinePrefix = defaultLinePrefix.trimEnd(count: tab.count * tabCount)
+
+        if (defaultLinePrefix.count == 0) {
+            defaultLinePrefix = null
+        }
+    }
+
+    public static indent<Out>(func() -> Out, Int tabCount = 1, String tab = "    ") -> Out {
+        increaseTab(tabCount, tab)
+        let value = func()
+        decreaseTab(tabCount, tab)
+
+        return value
+    }
+
+    writeMessage(OutputStream[] streams, String message, Bool newLine) {
+        if (newLine) {
+            streams.forEach({ _.writeLine(message) })
+        } else {
+            streams.forEach({ _.write(message) })
+        }
+    }
+
+    public trace(lazy Object value, Bool: newLine = true) {
+        if (loggingLevel < TRACE) return
+
+        writeMessage(
+            traceStreams,
+            formatMessage(getPrefix(TRACE) + formatContent(value.toString(), TRACE)),
+            newLine
+        )
+    }
+
+    public debug(lazy Object value, Bool: newLine = true) {
+        if (loggingLevel < DEBUG) return
+
+        writeMessage(
+            debugStreams,
+            formatMessage(getPrefix(DEBUG) + formatContent(value.toString(), DEBUG)),
+            newLine
+        )
+    }
+
+    public info(lazy Object value, Bool: newLine = true) {
+        if (loggingLevel < INFO) return
+
+        writeMessage(
+            infoStreams,
+            formatMessage(getPrefix(INFO) + formatContent(value.toString(), INFO)),
+            newLine
+        )
+    }
+
+    public warn(lazy Object value, Bool: newLine = true) {
+        if (loggingLevel < WARN) return
+
+        writeMessage(
+            warnStreams,
+            formatMessage(getPrefix(WARN) + formatContent(value.toString(), WARN)),
+            newLine
+        )
+    }
+
+    public error(lazy Object value, Bool: newLine = true) {
+        if (loggingLevel < ERROR) return
+
+        writeMessage(
+            errorStreams,
+            formatMessage(getPrefix(ERROR) + formatContent(value.toString(), ERROR)),
+            newLine
+        )
+    }
+
+    public fatal(lazy Object value, Bool: newLine = true) {
+        if (loggingLevel < FATAL) return
+
+        writeMessage(
+            fatalStreams,
+            formatMessage(getPrefix(FATAL) + formatContent(value.toString(), FATAL)),
+            newLine
+        )
+    }
+}

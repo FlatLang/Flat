@@ -1,0 +1,580 @@
+package flat/log
+
+import flat/log/Logger
+
+import static flat/colorizer/Colorizer
+
+testable class {
+    init_test init() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowPrefix = false
+        Logger.defaultShowFormatting = true
+        Logger.defaultLineLength = null
+        Logger.defaultSplitOnWord = true
+        Logger.defaultLinePrefix = null
+        Logger.defaultLineSuffix = null
+        Logger.defaultPrefix = null
+        Logger.defaultSuffix = null
+        Logger.defaultPrefixSeparator = " - "
+        Logger.resetLoggingLevels()
+    }
+
+    async test `can log a basic trace message`() {
+        Logger.defaultLoggingLevel = Logger.TRACE
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.trace("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt log a basic trace message if logging level is DEBUG`() {
+        Logger.defaultLoggingLevel = Logger.DEBUG
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.trace("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can log a basic debug message`() {
+        Logger.defaultLoggingLevel = Logger.DEBUG
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.debug("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt log a basic debug message if logging level is INFO`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.debug("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can log a basic info message`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt log a basic info message if logging level is WARN`() {
+        Logger.defaultLoggingLevel = Logger.WARN
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can log a basic warn message`() {
+        Logger.defaultLoggingLevel = Logger.WARN
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.warn.captureOutput({
+            log.warn("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt log a basic warn message if logging level is ERROR`() {
+        Logger.defaultLoggingLevel = Logger.ERROR
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.warn.captureOutput({
+            log.warn("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can log a basic error message`() {
+        Logger.defaultLoggingLevel = Logger.ERROR
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.error.captureOutput({
+            log.error("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt log a basic error message if logging level is FATAL`() {
+        Logger.defaultLoggingLevel = Logger.FATAL
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.error.captureOutput({
+            log.error("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can log a basic fatal message`() {
+        Logger.defaultLoggingLevel = Logger.FATAL
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.error.captureOutput({
+            log.fatal("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt log a basic fatal message if logging level is OFF`() {
+        Logger.defaultLoggingLevel = Logger.OFF
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.error.captureOutput({
+            log.fatal("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can filter logs based on exact klass name`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs(Object.class)
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can reenable filtered logs based on exact klass name`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs(Object.class)
+        Logger.enableLogs(Object.class)
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on exact label`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test log")
+
+        let log = Logger(label: "test log")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can reenable filtered logs based on exact label`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test log")
+        Logger.enableLogs("test log")
+
+        let log = Logger(label: "test log")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on wildcard label`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test *")
+
+        let log = Logger(label: "test log")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can reenable filtered logs based on wildcard label`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test *")
+        Logger.enableLogs("test *")
+
+        let log = Logger(label: "test log")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on wildcard label with single wildcard character in between literals`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu")
+
+        let log = Logger(label: "test log aoeu")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can reenable filtered logs based on wildcard label with single wildcard character in between literals`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu")
+        Logger.enableLogs("test * aoeu")
+
+        let log = Logger(label: "test log aoeu")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on wildcard label with single wildcard at very end`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test*")
+
+        let log = Logger(label: "test")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can reenable filtered logs based on wildcard label with single wildcard at very end`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test*")
+        Logger.enableLogs("test*")
+
+        let log = Logger(label: "test")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on wildcard label with two wildcards at very end`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test**")
+
+        let log = Logger(label: "test")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can reenable filtered logs based on wildcard label with two wildcards at very end`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test**")
+        Logger.enableLogs("test**")
+
+        let log = Logger(label: "test")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can reenable filtered logs based on wildcard label with seven wildcards at very end`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test*******")
+        Logger.enableLogs("test*******")
+
+        let log = Logger(label: "test")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can reenable filtered logs based on wildcard label with seven wildcards in the middle`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test*******aa")
+        Logger.enableLogs("test*******aa")
+
+        let log = Logger(label: "testaoeuaoeuoeau aa")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on wildcard label with two wildcard characters both in between string literals`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu* a")
+
+        let log = Logger(label: "test log aoeuuauaua a")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `doesnt filter logs based on wildcard label with two wildcard characters both in between string literals and doesnt match first literal`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu* a")
+
+        let log = Logger(label: "teest log aoeuaaa a")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt filter logs based on wildcard label with two wildcard characters both in between string literals and doesnt match middle literal`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu* a")
+
+        let log = Logger(label: "test log aooeuuauau a")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on wildcard label with two wildcard characters both in between string literals and middle literal match is empty`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu* a")
+
+        let log = Logger(label: "test  aoeuuauau a")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt filter logs based on wildcard label with two wildcard characters both in between string literals and doesnt match last literal`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu* a")
+
+        let log = Logger(label: "test log aoeuuauaua")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can reenable filtered logs based on wildcard label with two wildcard characters both in between string literals`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu* a")
+        Logger.enableLogs("test * aoeu* a")
+
+        let log = Logger(label: "test log aoeuuauaua a")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on wildcard label with two wildcard characters and the last at the very end`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu*")
+
+        let log = Logger(label: "test log aoeu")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `doesnt filter logs based on wildcard label with two wildcard characters and the last at the very end where it doesnt match`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu*")
+
+        let log = Logger(label: "test log aoe")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can reenable filtered logs based on wildcard label with two wildcard characters and the last at the very end`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("test * aoeu*")
+        Logger.enableLogs("test * aoeu*")
+
+        let log = Logger(label: "test log aoeu")
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can filter logs based on exact klass name label`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("flat/colorizer/Colorizer")
+
+        let log = Logger(Colorizer.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `can filter logs based on wildcard klass name label`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("flat/colorizer/*")
+
+        let log = Logger(Colorizer.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(Array())
+    }
+
+    async test `doesnt filter logs based on non-matched wildcard klass name label`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+        Logger.disableLogs("flat/colorizer/*")
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `can log a lazy info message`() {
+        Logger.defaultLoggingLevel = Logger.INFO
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        let output = Console.out.captureOutput({
+            log.info("hey")
+        })
+
+        expect(output).toBe(["hey"])
+    }
+
+    async test `doesnt construct parameter value of a lazy info message`() {
+        Logger.defaultLoggingLevel = Logger.WARN
+        Logger.defaultShowFormatting = false
+
+        let log = Logger(Object.class)
+
+        var Int value = 0
+
+        let output = Console.out.captureOutput({
+            log.info("hey #{value++}")
+        })
+
+        expect(output).toBe(Array())
+        expect(value).toBe(0)
+    }
+}

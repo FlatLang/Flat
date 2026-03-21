@@ -1,0 +1,54 @@
+package flat/log
+
+class {
+    public static isWildcardMatch(String value, String wildcard) => true {
+        var Int valueIndex = 0
+        var Int wildcardIndex = 0
+        var Int i = wildcard.indexOf('*')
+
+        while (i != -1) {
+            while (wildcardIndex < i) {
+                if (valueIndex >= value.count) return false
+                if (value[valueIndex++] != wildcard[wildcardIndex++]) return false
+            }
+
+            wildcardIndex = i + 1
+
+            // Skip grouped wildcard symbols
+            while (++i < wildcard.count && wildcard[i] == '*') {
+                wildcardIndex++
+            }
+
+            i = wildcard.indexOf('*', i)
+
+            if (i == -1 && wildcardIndex == wildcard.count) return true
+
+            valueIndex = findInnerWildcardMatch(value, wildcard, valueIndex, wildcardIndex, i == -1 ? wildcard.count : i)
+
+            if (i == -1) return valueIndex != -1
+            if (valueIndex == -1) return false
+        }
+    }
+
+    static findInnerWildcardMatch(
+        String value,
+        String wildcard,
+        Int valueStartIndex,
+        Int wildcardStartIndex,
+        Int stopIndex
+    ) -> Int => -1 {
+        var Int wildcardIndex = wildcardStartIndex
+        var Int currentStartIndex = valueStartIndex
+        var Int currentIndex = currentStartIndex
+
+        while (currentIndex < value.count) {
+            if (value[currentIndex++] != wildcard[wildcardIndex++]) {
+                currentStartIndex = currentIndex
+                wildcardIndex = wildcardStartIndex
+                continue
+            }
+            if (currentStartIndex == valueStartIndex) continue
+            if (wildcardIndex == stopIndex) return currentStartIndex
+        }
+    }
+}
