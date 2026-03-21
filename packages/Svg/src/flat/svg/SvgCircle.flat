@@ -1,0 +1,13 @@
+package flat/svg
+
+import flat/io/FileWriter
+
+class SvgCircle extends SvgComponent {
+    public construct(visible Double x, visible Double y, visible Int r) {}
+
+    public generateOutput(FileWriter writer) {
+        writer.write("<circle cx=\"#x\" cy=\"#y\" r=\"#r\" stroke=\"false\" fill=\"black\"/>\n")
+    }
+
+    public toString() => "[Circle at (#x, #y) with a radius of #r]"
+}

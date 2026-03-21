@@ -1,0 +1,5 @@
+package flat/svg/no3
+
+abstract class No3Node {
+        public abstract toJs() -> String
+}

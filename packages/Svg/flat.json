@@ -1,0 +1,27 @@
+{
+  "name": "SVG Library",
+  "version": "0.1.0",
+  "description": "",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "defaultTarget": "es6",
+  "scripts": {
+    "test": "node dist/es6/test.mjs"
+  },
+  "sources": {
+    "main": {
+      "source": "src",
+      "dependencies": {
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master"
+      }
+    },
+    "test": {
+      "source": "src/**/*_Test*.flat",
+      "outFile": "test.mjs",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}

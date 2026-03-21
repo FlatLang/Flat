@@ -1,0 +1,33 @@
+package flat/svg
+
+import flat/io/FileWriter
+
+class SvgComponentList {
+    public var SvgComponentNode start
+
+    public generateOutput(FileWriter writer) {
+        var current = start
+
+        while (current) {
+            current.component.generateOutput(writer)
+
+            current = current.next
+        }
+    }
+
+    public addChild(SvgComponent component) {
+        let node = SvgComponentNode(component)
+
+        if (!start) {
+            start = node
+        } else {
+            var current = start
+
+            while (current.next) {
+                current = current.next
+            }
+
+            current.next = node
+        }
+    }
+}
