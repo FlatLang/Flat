@@ -1,0 +1,31 @@
+package flat/ast/visitor
+
+import flat/ast
+import flat/eventstream
+import flat/log
+
+class {
+    static Logger log = Logger(Visitor.class)
+
+    public visit(
+        EventStream nodeStream,
+        VisitorBase nodeVisitor
+    ) =>
+        EventStream(true).on("start", (_, stream) => {
+            nodeStream.on<Node>("data", (node) => {
+                log.trace("Received data from Node EventStream: #{node}")
+
+                nodeVisitor.visit(node)
+            })
+
+            nodeStream.on<String>("error", (error) => {
+                log.trace("Received error from Node EventStream: #{error}")
+                stream.emit("error", error)
+            })
+
+            nodeStream.on("close", {
+                log.trace("Node EventStream closed")
+                stream.emit("close")
+            })
+        })
+}

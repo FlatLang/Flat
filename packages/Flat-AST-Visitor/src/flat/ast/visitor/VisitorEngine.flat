@@ -1,0 +1,19 @@
+package flat/ast/visitor
+
+import flat/ast
+import flat/eventstream
+import flat/log
+
+class {
+    static Logger log = Logger(VisitorEngine.class)
+
+    public construct(private EventStream stream) {}
+
+    public consume(Node node) {
+        log.info("Got node #{node}")
+    }
+
+    public end() {
+
+    }
+}
