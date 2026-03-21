@@ -1,0 +1,12 @@
+{
+  "name": "Flat-ES6",
+  "version": "0.1.1",
+  "description": "Flat ES6 Writer",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "scripts": {
+    "build": [
+      ["mvn", "install"]
+    ]
+  }
+}
