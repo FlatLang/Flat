@@ -1,0 +1,11 @@
+package flat/sendsafely
+
+import flat/sendsafely/SendSafely
+
+testable class {
+  test `can create`() {
+    let value = SendSafely()
+
+    expect(value).toNotBe(null)
+  }
+}

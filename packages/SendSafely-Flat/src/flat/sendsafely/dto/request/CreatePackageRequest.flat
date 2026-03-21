@@ -1,0 +1,21 @@
+package flat/sendsafely/dto/request
+
+import flat/sendsafely/enums
+import flat/sendsafely/json
+
+class extends BaseRequest {
+    Int method = HttpMethod.PUT
+    String path = "/package/"
+
+    public construct(JsonManager jsonManager) {
+        initialize(jsonManager, method, path)
+    }
+    
+    public setIsVdr(Bool isVdr) {
+        this.setPostParam("vdr", isVdr)
+    }
+    
+    public setPackageUserEmail(String email) {
+        this.setPostParam("packageUserEmail", email)
+    }
+}

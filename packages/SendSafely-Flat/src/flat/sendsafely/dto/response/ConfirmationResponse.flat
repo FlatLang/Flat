@@ -1,0 +1,4 @@
+package flat/sendsafely/dto/response
+
+class extends BaseResponse {
+}

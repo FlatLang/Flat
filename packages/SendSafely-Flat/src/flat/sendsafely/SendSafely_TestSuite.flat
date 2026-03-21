@@ -1,0 +1,56 @@
+package flat/sendsafely
+
+import flat/test/TestResult
+
+import flat/time/Timer
+import flat/io/FancyOutputStream
+import flat/sendsafely/SendSafely
+
+[TestSuite [
+  SendSafely_Test
+]]
+class {
+  public static async main(String[] args) {
+    let test = SendSafely_TestSuite()
+
+    let results = TestResult[]
+
+    Timer timer = Timer().start()
+
+    test.runTests({
+      results.add(_)
+    })
+
+    timer.stop()
+
+    let fancy = FancyOutputStream(headerPattern: "/\\")
+
+    let unsuccessful = results.filter({ !_.success })
+
+    if (unsuccessful.count > 0) {
+      fancy.writeHeader(
+        "#unsuccessful.count Failure#{unsuccessful.count == 1 ? "" : "s"} out of #results.count test#{results.count == 1 ? "" : "s"}",
+        pattern: ":'( ",
+        symmetrical: true
+      )
+
+      if (unsuccessful.count > 1 || results.last.success) {
+        unsuccessful.forEach({
+          Console.log("#_")
+        })
+      }
+    } else {
+      fancy.writeHeader(
+        "All #results.count Successful",
+        pattern: ":) ",
+        symmetrical: true
+      )
+    }
+
+    Console.writeLine("Took #{timer.duration}ms")
+
+    if (unsuccessful.count > 0) {
+        System.exit(1)
+    }
+  }
+}

@@ -1,0 +1,18 @@
+package flat/sendsafely/upload
+
+class implements UploadManager {
+    public construct() {
+
+    }
+
+    public send(String path, Int method, String data) {}
+    public sendFile(String path, FileManager file, String filename, String data, Progress progress) -> String => null
+    public getJsonManager() -> JsonManager => null
+    public getContentType() -> String => null
+    public getResponse()  -> String => null
+    public getStream() -> InputStream => null
+    public getServer() -> String => null
+    public getDate() -> String => null
+    public getResponseCode() -> Int => 0
+    public getResponseMessage() -> String => null
+}

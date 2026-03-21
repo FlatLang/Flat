@@ -1,0 +1,48 @@
+package flat/sendsafely/handlers
+
+import flat/sendsafely/enums
+import flat/sendsafely/upload
+import flat/datastruct
+
+class {
+    HashMap<Int, BaseHandler> endpoints = HashMap<Int, BaseHandler>()
+    
+    public construct(UploadManager uploadManager) {
+//        let activePackageRequest = GetPackagesRequest(uploadManager.getJsonManager(), HttpMethod.GET, "/package/")
+//        let archivedPackageRequest = GetPackagesRequest(uploadManager.getJsonManager(), HttpMethod.GET, "/package/archived/")
+//        let receivedPackageRequest = GetPackagesRequest(uploadManager.getJsonManager(), HttpMethod.GET, "/package/received/")
+        
+//        endpoints[Endpoint.VerifyVersion] = VerifyVersionHandler(uploadManager)
+//        endpoints[Endpoint.VerifyCredentials] = VerifyCredentialsHandler(uploadManager)
+//        endpoints[Endpoint.USER_INFORMATION] = UserInformationHandler(uploadManager)
+//        endpoints[Endpoint.ENTERPRISE_INFO] = EnterpriseInfoHandler(uploadManager)
+        endpoints[Endpoint.CREATE_PACKAGE] = CreatePackageHandler(uploadManager)
+//        endpoints[Endpoint.UPDATE_RECIPIENT] = UpdateRecipientHandler(uploadManager)
+//        endpoints[Endpoint.DELETE_PACKAGE] = DeletePackageHandler(uploadManager)
+//        endpoints[Endpoint.DELETE_TEMP_PACKAGE] = DeleteTempPackageHandler(uploadManager)
+        endpoints[Endpoint.PACKAGE_INFORMATION] = PackageInformationHandler(uploadManager)
+//        endpoints[Endpoint.PACKAGE_LIFE] = UpdatePackageLifeHandler(uploadManager)
+//        endpoints[Endpoint.ACTIVE_PACKAGES] = GetPackagesHandler(uploadManager, activePackageRequest)
+//        endpoints[Endpoint.ARCHIVED_PACKAGES] = GetPackagesHandler(uploadManager, archivedPackageRequest)
+//        endpoints[Endpoint.RECEIVED_PACKAGES] = GetPackagesHandler(uploadManager, receivedPackageRequest)
+//        endpoints[Endpoint.FINALIZE_PACKAGE] = FinalizePackageHandler(uploadManager)
+//        endpoints[Endpoint.ADD_FILE] = AddFileHandler(uploadManager)
+//        endpoints[Endpoint.UPLOAD_FILE] = UploadFileHandler(uploadManager)
+//        endpoints[Endpoint.ORGANIZATION_PACKAGES] = GetOrganizationPackagesHandler(uploadManager)
+//        endpoints[Endpoint.CREATE_DIRECTORY] = CreateDirectoryHandler(uploadManager)
+//        endpoints[Endpoint.GET_DIRECTORY] = GetDirectoryHandler(uploadManager)
+//        endpoints[Endpoint.PACKAGE_NAME] = UpdatePackageDescriptorHandler(uploadManager)
+//        endpoints[Endpoint.MOVE_DIRECTORY] = MoveDirectoryHandler(uploadManager)
+//        endpoints[Endpoint.MOVE_FILE] = MoveFileHandler(uploadManager)
+//        endpoints[Endpoint.FILE_INFORMATION] = FileInformationHandler(uploadManager)
+//        endpoints[Endpoint.DELETE_FILE] = DeleteFileHandler(uploadManager)
+//        endpoints[Endpoint.DIRECTORY_NAME] = UpdateDirectoryNameHandler(uploadManager)
+//        endpoints[Endpoint.DELETE_DIRECTORY] = DeleteDirectoryHandler(uploadManager)
+//        endpoints[Endpoint.GET_ACTIVITY_LOG] = GetActivityLogHandler(uploadManager)
+//        endpoints[Endpoint.RECIPIENT_HISTORY] = GetRecipientHistoryHandler(uploadManager)
+    }
+    
+    public static getInstance(UploadManager uploadManager, Int p) -> BaseHandler {
+        return HandlerFactory(uploadManager).endpoints[p]
+    }
+}

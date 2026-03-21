@@ -1,0 +1,158 @@
+package flat/sendsafely/dto/response
+
+import flat/sendsafely/enums
+import flat/sendsafely/json
+import flat/time
+
+class extends BaseResponse {
+    private var String packageId
+	private var String packageCode
+	private var String serverSecret
+	private var String packageUserName
+	private var String packageUserId
+	private var List<RecipientResponse> recipients
+	private var List<ContactGroup> contactGroups
+	private var List<FileResponse> files
+	private var List<DirectoryResponse> directories
+	private var List<String> approverList
+	private var Bool needsApproval
+	private var Int state
+	private var Int life
+	private var String description
+	private var String label
+	private var Bool isVdr
+	private var String rootDirectoryId
+	private var Date packageTimestamp
+	private var String packageSender
+	private var String packageParentId
+	private var Bool allowReplyAll
+	private var Bool packageContainsMessage
+	
+	public getRecipients() -> List<RecipientResponse> {
+		return recipients
+	}
+	public setRecipients(List<RecipientResponse> recipients) {
+		this.recipients = recipients
+	}
+	public getFiles() -> List<FileResponse> {
+		return files
+	}
+	public setFiles(List<FileResponse> files) {
+		this.files = files
+	}
+	public getNeedsApproval() -> Bool {
+		return needsApproval
+	}
+	public setNeedsApproval(Bool needsApproval) {
+		this.needsApproval = needsApproval
+	}
+	public getState() -> Int {
+		return state
+	}
+	public setState(Int state) {
+		this.state = state
+	}
+	public getApproverList() -> List<String> {
+		return approverList
+	}
+	public setApproverList(List<String> approverList) {
+		this.approverList = approverList
+	}
+	public getPackageId() -> String {
+		return packageId
+	}
+	public setPackageId(String packageId) {
+		this.packageId = packageId
+	}
+	public getPackageCode() -> String {
+		return packageCode
+	}
+	public setPackageCode(String packageCode) {
+		this.packageCode = packageCode
+	}
+	public getServerSecret() -> String {
+		return serverSecret
+	}
+	public setServerSecret(String serverSecret) {
+		this.serverSecret = serverSecret
+	}
+	public getLife() -> Int {
+		return life
+	}
+	public setLife(Int life) {
+		this.life = life
+	}
+	public getDescription() -> String {
+		return description
+	}
+	public setDescription(String description) {
+		this.description = description
+	}
+	public getContactGroups() -> List<ContactGroup> {
+		return this.contactGroups
+	}
+	
+	public setContactGroups(List<ContactGroup> contactGroups) {
+		this.contactGroups = contactGroups
+	}
+	public getPackageUserName() -> String {
+		return packageUserName
+	}
+	public setPackageUserName(String packageUserName) {
+		this.packageUserName = packageUserName
+	}
+	public getPackageUserId() -> String {
+		return packageUserId
+	}
+	public setPackageUserId(String packageUserId) {
+		this.packageUserId = packageUserId
+	}
+	public getDirectories() -> List<DirectoryResponse> {
+		return directories
+	}
+	public setDirectories(List<DirectoryResponse> directories) {
+		this.directories = directories
+	}
+	public getLabel() -> String {
+		return label
+	}
+	public setLabel(String label) {
+		this.label = label
+	}
+	public getRootDirectoryId() -> String {
+		return rootDirectoryId
+	}
+	public setRootDirectoryId(String rootDirectoryId) {
+		this.rootDirectoryId = rootDirectoryId
+	}
+	public getPackageTimestamp() -> Date {
+		return packageTimestamp
+	}
+	public setPackageTimestamp(Date packageTimestamp) {
+		this.packageTimestamp = packageTimestamp
+	}
+	public getPackageSender() -> String {
+		return packageSender
+	}
+	public setPackageSender(String packageSender) {
+		this.packageSender = packageSender
+	}
+	public getPackageParentId() -> String {
+		return packageParentId
+	}
+	public setPackageParentId(String packageParentId) {
+		this.packageParentId = packageParentId
+	}
+	public isAllowReplyAll() -> Bool {
+		return allowReplyAll
+	}
+	public setAllowReplyAll(Bool allowReplyAll) {
+		this.allowReplyAll = allowReplyAll
+	}
+	public getPackageContainsMessage() -> Bool {
+        return packageContainsMessage
+    }
+	public setPackageContainsMessage(Bool packageContainsMessage) {
+        this.packageContainsMessage = packageContainsMessage
+    }
+}

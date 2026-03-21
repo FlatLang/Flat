@@ -1,0 +1,6 @@
+package flat/sendsafely/json
+
+trait {
+    public toJson(Object obj) -> String 
+    public fromJson<T>(String json, T returnObject) -> T
+}

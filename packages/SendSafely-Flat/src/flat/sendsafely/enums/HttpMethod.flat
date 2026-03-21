@@ -1,0 +1,9 @@
+package flat/sendsafely/enums
+
+class {
+    public static Int GET = 0
+    public static Int PUT = 1
+    public static Int POST = 2
+    public static Int DELETE = 3
+    public static Int OPTIONS = 4
+}

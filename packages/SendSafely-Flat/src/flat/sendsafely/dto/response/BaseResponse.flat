@@ -1,0 +1,26 @@
+package flat/sendsafely/dto/response
+
+import flat/sendsafely/enums
+import flat/sendsafely/json
+import flat/datastruct
+
+class {
+    private var Int response
+	private var String message
+	
+	public getResponse() -> Int {
+		return response
+	}
+
+	public setResponse(Int response) {
+		this.response = response
+	}
+
+	public getMessage() -> String {
+		return message
+	}
+
+	public setMessage(String message) {
+		this.message = message
+	}
+}

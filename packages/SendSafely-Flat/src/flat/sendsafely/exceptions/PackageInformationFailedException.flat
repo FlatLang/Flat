@@ -1,0 +1,11 @@
+package flat/sendsafely/exceptions
+
+class extends Exception {
+    public construct(Exception e) {
+        this(e.message)
+    }
+
+    public construct(String message = "") {
+        super(message)
+    }
+}

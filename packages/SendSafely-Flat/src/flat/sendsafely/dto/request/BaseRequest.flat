@@ -1,0 +1,45 @@
+package flat/sendsafely/dto/request
+
+import flat/sendsafely/enums
+import flat/sendsafely/json
+import flat/datastruct
+
+class {
+    private var JsonManager jsonManager
+    private var Int method
+    private var String path
+    private HashMap<String, Object> postParams = HashMap()
+
+    public construct() {
+    }
+
+    public initialize(JsonManager jsonManager, Int method, String path) {
+        this.method = method
+        this.path = path
+        this.jsonManager = jsonManager
+    }
+
+    public setGetParam(Int key, Object value) {
+        path = path.replace(key.toString(), value?.toString() ?: "null")
+    }
+
+    public setPostParam(String key, Object value) {
+        postParams[key] = value
+    }
+
+    public getPostBody() -> String {
+        return jsonManager.toJson(postParams)
+    }
+
+    public hasPostBody() -> Bool {
+        return postParams.isNotEmpty
+    }
+
+    public getMethod() -> Int {
+        return method
+    }
+
+    public getPath() -> String {
+        return path
+    }
+}

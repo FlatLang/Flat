@@ -1,0 +1,37 @@
+package flat/sendsafely
+
+class extends BasePackage {
+    private var String phonenumber
+    private var Int countryCode
+    private var Bool wasUsedMostRecently
+
+    public construct(String phoneNumber, Int countryCode, Bool wasMostRecent) {
+        this.setPhonenumber(phoneNumber)
+        this.setCountryCode(countryCode)
+        this.setWasUsedMostRecently(wasMostRecent)
+    }
+
+    public getPhonenumber() -> String {
+        return phonenumber
+    }
+
+    public setPhonenumber(String phonenumber) {
+        this.phonenumber = phonenumber
+    }
+
+    public getCountryCode() -> Int {
+        return countryCode
+    }
+
+    public setCountryCode(Int countryCode) {
+        this.countryCode = countryCode
+    }
+
+    public getWasUsedMostRecently() -> Bool {
+        return wasUsedMostRecently
+    }
+
+    public setWasUsedMostRecently(Bool wasUsedMostRecently) {
+        this.wasUsedMostRecently = wasUsedMostRecently
+    }
+}

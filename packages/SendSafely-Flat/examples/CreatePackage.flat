@@ -1,0 +1,9 @@
+import flat/sendsafely
+
+class {
+    public static main(String[] args) {
+        let sendsafely = SendSafely()
+
+        Console.log(sendsafely.createPackage())
+    }
+}

@@ -1,0 +1,20 @@
+package flat/sendsafely/enums
+
+class {
+    public static Int SUCCESS = 0
+    public static Int FAIL = 1
+    public static Int OUTDATED_VERSION = 2
+    public static Int LIMIT_EXCEEDED = 3
+    public static Int GUESTS_PROHIBITED = 4
+    public static Int DENIED = 5
+    public static Int INVALID_EMAIL = 6
+    public static Int DUPLICATE_EMAIL = 7
+    public static Int APPROVER_REQUIRED = 8
+    public static Int AUTHENTICATION_FAILED = 9
+    public static Int UNKNOWN_PACKAGE = 10
+    public static Int INVALID_INPUT = 11
+    public static Int INVALID_RECIPIENT = 12
+    public static Int PACKAGE_NEEDS_APPROVAL = 13
+    public static Int PASSWORD_REQUIRED = 14
+    public static Int TWO_FA_REQUIRED = 15
+}

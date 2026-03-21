@@ -1,0 +1,18 @@
+package flat/sendsafely/upload
+
+import flat/sendsafely/enums
+import flat/sendsafely/json
+import flat/io
+
+trait {
+    public send(String path, Int method, String data)
+    public sendFile(String path, FileManager file, String filename, String data, Progress progress) -> String
+    public getJsonManager() -> JsonManager
+    public getContentType() -> String
+    public getResponse()  -> String
+    public getStream() -> InputStream
+    public getServer() -> String
+    public getDate() -> String
+    public getResponseCode() -> Int
+    public getResponseMessage() -> String
+}

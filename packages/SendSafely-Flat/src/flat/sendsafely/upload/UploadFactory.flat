@@ -1,0 +1,7 @@
+package flat/sendsafely/upload
+
+class {
+    public static getManager() -> UploadManager {
+        return DefaultUploadManager()
+    }
+}

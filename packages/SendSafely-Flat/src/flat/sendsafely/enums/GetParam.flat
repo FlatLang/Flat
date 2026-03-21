@@ -1,0 +1,18 @@
+package flat/sendsafely/enums
+
+class {
+    public static Int PACKAGE_ID = 0
+    public static Int PACKAGE_CODE = 1
+    public static Int FILE_ID = 2
+    public static Int DIRECTORY_ID = 3
+    public static Int API = 4
+    public static Int VERSION_NO = 5
+    public static Int USER_ID = 6
+    public static Int CHECKSUM = 7
+    public static Int PUBLIC_KEY_ID = 8
+    public static Int GROUP_ID = 9
+    public static Int RECIPIENT_ID = 10
+    public static Int RECIPIENT_EMAIL = 11
+    public static Int SOURCE_DIRECTORY_ID = 12
+    public static Int TARGET_DIRECTORY_ID = 13
+}

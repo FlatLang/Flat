@@ -1,0 +1,18 @@
+package flat/sendsafely
+
+import flat/sendsafely/enums
+import flat/sendsafely/handlers
+import flat/sendsafely/upload
+
+class {
+	private UploadManager uploadManager
+
+    public construct() {
+        uploadManager = UploadFactory.getManager()
+    }
+
+    public createPackage() -> Package {
+        let handler = (CreatePackageHandler)HandlerFactory.getInstance(uploadManager, Endpoint.CREATE_PACKAGE)
+		return handler.makeRequest()
+    }
+}

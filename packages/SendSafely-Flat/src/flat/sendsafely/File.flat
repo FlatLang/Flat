@@ -1,0 +1,111 @@
+package flat/sendsafely
+
+import flat/time
+
+class {
+    private var String fileId
+    private var String fileName
+    private var Long fileSize
+    private var Int parts
+    private var Date fileUploaded
+
+    public construct(
+        String fileId,
+        String fileName,
+        Long fileSize,
+        Int parts
+    ) {
+        this.fileId = fileId
+        this.fileName = fileName
+        this.fileSize = fileSize
+        this.parts = parts
+    }
+
+    public construct() {
+    }
+
+    /**
+     * @description Get the unique file ID associated with the file.
+     * @returnType String
+     * @return A string representing File Id.
+     */
+    public getFileId() -> String {
+        return fileId
+    }
+
+    /**
+     * @description Set Internally by the API.
+     * @param fileId
+     */
+    public setFileId(String fileId) {
+        this.fileId = fileId
+    }
+
+    /**
+     * @description Get the filename associated with the file.
+     * @returnType String
+     * @return A string representing File Name.
+     */
+    public getFileName() -> String {
+        return fileName
+    }
+
+    /**
+     * @description Set Internally by the API.
+     * @param fileName
+     */
+    public setFileName(String fileName) {
+        this.fileName = fileName
+    }
+
+    /**
+     * @description Get the file size for the unencrypted file.
+     * @returnType Long
+     * @return A Long representing File Size.
+     */
+    public getFileSize() -> Long {
+        return fileSize
+    }
+
+    /**
+     * @description Set Internally by the API.
+     * @param fileSize
+     */
+    public setFileSize(Long fileSize) {
+        this.fileSize = fileSize
+    }
+
+    /**
+     * @description Returns the number of parts this file is Internally split up Into when stored on the SendSafely servers.
+     * @return
+     * @deprecated
+     */
+    public getParts() -> Int {
+        return parts
+    }
+
+    /**
+     * @description Set Internally by the API.
+     * @param parts
+     */
+    public setParts(Int parts) {
+        this.parts = parts
+    }
+
+    /**
+     * @description Returns the Date object representing when the file was uploaded
+     * @returnType Date
+     * @return A Date representing when the file was upload
+     */
+    public getFileUploaded() -> Date {
+        return fileUploaded
+    }
+
+    /**
+     * @description Set Internally by the API.
+     * @param fileUploaded
+     */
+    public setFileUploaded(Date fileUploaded) {
+        this.fileUploaded = fileUploaded
+    }
+}

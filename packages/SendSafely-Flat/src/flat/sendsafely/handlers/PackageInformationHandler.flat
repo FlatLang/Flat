@@ -1,0 +1,109 @@
+package flat/sendsafely/handlers
+
+import flat/sendsafely
+import flat/sendsafely/enums
+import flat/sendsafely/exceptions
+import flat/sendsafely/upload
+import flat/sendsafely/dto/request
+import flat/sendsafely/dto/response
+
+class extends BaseHandler {
+    private var PackageInformationRequest request
+
+    public construct(UploadManager uploadManager) {
+        super(uploadManager)
+        request = PackageInformationRequest(uploadManager.getJsonManager())
+    }
+
+    public makeRequest(String packageId) -> Package {
+        request.setPackageId(packageId)
+        let response = send()
+
+        if (response.getResponse() == ApiResponse.SUCCESS) {
+            return convert(response)
+        } else {
+            throw PackageInformationFailedException(response.getMessage())
+        }
+    }
+
+    public makeRequestFromLink(String link) -> Package {
+        // Parse the link
+        String packageCode = getPackageCode(link)
+        String keyCode = getKeyCode(link)
+
+        Package pkg = makeRequest(packageCode)
+        pkg.setKeyCode(keyCode)
+        return pkg
+    }
+
+    public send() -> PackageInformationResponse {
+        try {
+            return super.send(request, PackageInformationResponse())
+        } catch (Exception e) {
+            throw PackageInformationFailedException(e)
+        }
+    }
+
+    public convert(PackageInformationResponse obj) -> Package {
+        let info = Package()
+        info.setApproverList(obj.getApproverList())
+        info.setFiles(convertFiles(obj.getFiles()))
+        info.setLife(obj.getLife())
+        info.setNeedsApproval(obj.getNeedsApproval())
+        info.setPackageCode(obj.getPackageCode())
+        info.setPackageId(obj.getPackageId())
+        info.setRecipients(convertRecipients(obj.getRecipients()))
+        info.setContactGroups(obj.getContactGroups())
+        info.setServerSecret(obj.getServerSecret())
+        info.setState(obj.getState())
+        info.setRootDirectoryId(obj.getRootDirectoryId())
+        info.setPackageDescriptor(obj.getLabel())
+        info.setIsWorkspace(obj.isVdr)
+        info.setPackageTimestamp(obj.getPackageTimestamp())
+        info.setPackageOwner(obj.getPackageSender())
+        info.setPackageParentId(obj.getPackageParentId())
+        info.setAllowReplyAll(obj.isAllowReplyAll())
+        info.setPackageContainsMessage(obj.getPackageContainsMessage())
+        return info
+    }
+
+    public convertRecipients(List<RecipientResponse> responses) -> List<Recipient> {
+        let retval = Recipient[]
+
+        return retval
+    }
+
+    public convertFiles(List<FileResponse> responses) -> List<File> {
+        let retval = File[]
+
+        if (!responses) return retval
+
+        for (resp in responses) {
+            retval.add(createFile(resp))
+        }
+
+        return retval
+    }
+
+    public createFile(FileResponse resp) -> File {
+        File f = File()
+        f.setFileId(resp.getFileId())
+        f.setFileName(resp.getFileName())
+        f.setFileSize(resp.getFileSize())
+        f.setParts(resp.getParts())
+        f.setFileUploaded(resp.getFileUploaded())
+        return f
+    }
+
+    public createConfirmationList(RecipientResponse rr) -> List<Confirmation> {
+        return null
+    }
+
+    private getPackageCode(String url) -> String {
+        return null
+    }
+
+    private getKeyCode(String url) -> String {
+        return null
+    }
+}

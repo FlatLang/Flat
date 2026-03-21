@@ -1,0 +1,50 @@
+package flat/sendsafely/dto/response
+
+import flat/time
+
+class extends BaseResponse {
+    private var String fileId
+	private var String fileName
+	private var Long fileSize
+	private var String createdByEmail
+	private var Int parts
+	private var Date fileUploaded
+	private var String fileUploadedStr
+	
+	public getFileId() -> String {
+		return fileId
+	}
+	public setFileId(String fileId) {
+		this.fileId = fileId
+	}
+	public getFileName() -> String {
+		return fileName
+	}
+	public setFileName(String fileName) {
+		this.fileName = fileName
+	}
+	public getFileSize() -> Long {
+		return fileSize
+	}
+	public setFileSize(Long fileSize) {
+		this.fileSize = fileSize
+	}
+	public getCreatedByEmail() -> String {
+		return createdByEmail
+	}
+	public setCreatedByEmail(String createdByEmail) {
+		this.createdByEmail = createdByEmail
+	}
+	public getParts() -> Int {
+		return parts
+	}
+	public setParts(Int parts) {
+		this.parts = parts
+	}
+	public getFileUploaded() -> Date {
+		return fileUploaded
+	}
+	public getFileUploadedStr() -> String {
+		return fileUploadedStr
+	}
+}

@@ -1,0 +1,16 @@
+package flat/sendsafely/handlers
+
+import flat/sendsafely/dto/request
+import flat/sendsafely/upload
+
+class {
+    public UploadManager uploadManager
+    
+    public construct(UploadManager uploadManager) {
+        this.uploadManager = uploadManager
+    }
+    
+    public send<T>(BaseRequest request, T returnObject) -> T {
+        return returnObject
+    }
+}

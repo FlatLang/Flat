@@ -1,0 +1,40 @@
+package flat/sendsafely
+
+data class extends BasePackage {
+    private var List<Recipient> recipients
+    private var List<ContactGroup> contactGroups
+
+    /**
+     * @description Get all recipients that are currently associated with the package
+     * @returnType List<Recipient>
+     * @return A list of recipients.
+     */
+    public getRecipients() -> List<Recipient> {
+        return recipients
+    }
+    
+    /**
+     * @description Set internally by the API.
+     * @param recipients
+     */
+    public setRecipients(List<Recipient> recipients) {
+        this.recipients = recipients
+    }
+
+    /**
+     * @description Set internally by the API.
+     * @returnType List<ContactGroup>
+     * @return A list of contact groups.
+     */
+    public getContactGroups() -> List<ContactGroup> {
+        return contactGroups
+    }
+
+    /**
+     * @description Set internally by the API.
+     * @param contactGroups
+     */
+    public setContactGroups(List<ContactGroup> contactGroups) {
+        this.contactGroups = contactGroups
+    }
+}

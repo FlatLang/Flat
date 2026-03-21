@@ -1,0 +1,19 @@
+package flat/sendsafely/dto
+
+class {
+    private var String userEmail
+    private var String userId
+
+    public getUserEmail() -> String {
+        return userEmail
+    }
+    public setUserEmail(String userEmail) {
+        this.userEmail = userEmail
+    }
+    public getUserId() -> String {
+        return userId
+    }
+    public setUserId(String userId) {
+        this.userId = userId
+    }
+}

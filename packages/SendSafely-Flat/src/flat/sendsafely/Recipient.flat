@@ -1,0 +1,114 @@
+package flat/sendsafely
+
+import flat/sendsafely/dto
+
+class extends BasePackage {
+    private var String recipientId
+    private var String email
+    private var Bool needsApproval
+    private var List<String> approvers
+    private var List<Phonenumber> phonenumbers
+    private var List<Confirmation> confirmations = Confirmation[]
+    private var String role
+
+    /**
+     * @description Get the unique recipient ID for the object. The recipient ID is unique for every new package. The same user will have different recipient IDs for different packages.
+     * @returnType String
+     * @return A string representing recipient id. 
+     */
+    public getRecipientId() -> String {
+        return recipientId
+    }
+
+    /**
+     * @description Set Internally by the Api.
+     * @param recipientId
+     */
+    public setRecipientId(String recipientId) {
+        this.recipientId = recipientId
+    }
+
+    /**
+     * @description Get the email address for the given recipient.
+     * @returnType String
+     * @return an email address string.
+     */
+    public getEmail() -> String {
+        return email
+    }
+
+    /**
+     * @description Set Internally by the Api.
+     * @param email
+     */
+    public setEmail(String email) {
+        this.email = email
+    }
+
+    /**
+     * @description Returns true if this recipient requires approval before the package can be retrieved.
+     * @returnType Bool
+     * @return A Bool representing that the recipient needs approval.
+     */
+    public getNeedsApproval() -> Bool {
+        return needsApproval
+    }
+
+    /**
+     * @description Set Internally by the Api.
+     * @param needsApproval
+     */
+    public setNeedsApproval(Bool needsApproval) {
+        this.needsApproval = needsApproval
+    }
+
+    /**
+     * @description Returns the list of confirmations.
+     * @returnType List<Confirmation>
+     * @return A list of confirmations.
+     */
+    public getConfirmations() -> List<Confirmation> {
+        return confirmations
+    }
+
+    /**
+     * @description Set Internally by the Api.
+     * @param confirmations
+     */
+    public setConfirmations(List<Confirmation> confirmations) {
+        this.confirmations = confirmations
+    }
+
+    /**
+     * @description Retrieves the role of the recipient
+     * @returnType String
+     * @return A String of the role value.
+     */
+    public getRole() -> String {
+        return role
+    }
+
+    /**
+     * @description Sets the role for the recipient
+     * @param roleName Name of the role for the recipient
+     */
+    public setRole(String roleName) {
+        this.role = roleName
+    }
+
+    public getApprovers() -> List<String> {
+        return approvers
+    }
+
+    public setApprovers(List<String> approvers) {
+        this.approvers = approvers
+    }
+
+    public getPhonenumbers() -> List<Phonenumber> {
+        return phonenumbers
+    }
+
+    public setPhonenumbers(List<Phonenumber> phonenumbers) {
+        this.phonenumbers = phonenumbers
+    }
+}

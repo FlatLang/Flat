@@ -1,0 +1,68 @@
+package flat/sendsafely/dto
+
+import flat/sendsafely
+import flat/time
+
+class {
+    private var String ipAddress
+    private var Date timestamp
+    private var File file
+    private var Bool isMessage = false
+
+    /**
+     * @description Get the IPAddress from where the file was downloaded from.
+     * @return the ipAddress
+     */
+    public getIpAddress() -> String {
+        return ipAddress
+    }
+    /**
+     * @description Set Internally by the Api.
+     * @param ipAddress the ipAddress to set
+     */
+    public setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress
+    }
+    /**
+     * @description Get the time when the file or message was downloaded.
+     * @return the timestamp
+     */
+    public getTimestamp() -> Date {
+        return timestamp
+    }
+    /**
+     * @description Set Internally by the Api.
+     * @param timestamp the timestamp to set
+     */
+    public setTimestamp(Date timestamp) {
+        this.timestamp = timestamp
+    }
+    /**
+     * @description A File object referencing the file that was downloaded. Will be null if the confirmation refers to a message. 
+     * @return the file
+     */
+    public getFile() -> File {
+        return file
+    }
+    /**
+     * @description Set Internally by the Api.
+     * @param file the file to set
+     */
+    public setFile(File file) {
+        this.file = file
+    }
+    /**
+     * @description A flag indicating if the confirmation referes to a message. If true, the file object will be null.
+     * @return the isMessage
+     */
+    public isMessage() -> Bool {
+        return isMessage
+    }
+    /**
+     * @description Set Internally by the Api.
+     * @param isMessage the isMessage to set
+     */
+    public setMessage(Bool isMessage) {
+        this.isMessage = isMessage
+    }
+}

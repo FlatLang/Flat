@@ -1,0 +1,78 @@
+package flat/sendsafely
+
+import flat/sendsafely/dto
+
+class extends BasePackage {
+    private var String contactGroupId
+    private var String contactGroupName
+    private var Bool contactGroupIsOrganizationGroup
+    private var List<ContactGroupMember> users = ContactGroupMember[]
+
+    /**
+     * @description Get the contact group id
+     * @returnType String
+     * @return contactGroupId The id representation of the contact group.
+     */
+    public getContactGroupId() -> String {
+        return contactGroupId
+    }
+
+    /**
+     * @description Set Internally by the Api
+     * @param contactGroupId
+     */
+    public setContactGroupId(String contactGroupId) {
+        this.contactGroupId = contactGroupId
+    }
+
+    /**
+     * @description Get the contact group Name
+     * @returnType String
+     * @return A string of contactGroupName
+     */
+    public getContactGroupName() -> String {
+        return contactGroupName
+    }
+
+    /**
+     * @description Set Internally by the Api
+     * @param contactGroupName
+     */
+    public setContactGroupName(String contactGroupName) {
+        this.contactGroupName = contactGroupName
+    }
+
+    /**
+     * @description Get a list of users
+     * @returnType List<ContactGroupMember>
+     * @return A list of ContactGrouMember.
+     */
+    public getContactGroupMembers() -> List<ContactGroupMember> {
+        return users
+    }
+
+    /**
+     * @description Set Internally by the Api
+     * @param users
+     */
+    public setContactGroupMembers(List<ContactGroupMember> users) {
+        this.users = users
+    }
+
+    /**
+     * @description Gets the status of if it's an enterprise contact group.
+     * @returnType Bool
+     * @return is enterprise contact group
+     */
+    public getContactGroupIsOrganizationGroup() -> Bool {
+        return contactGroupIsOrganizationGroup
+    }
+
+    /**
+     * Sets the value for if the group is an enterprise contact group.
+     * @param contactGroupIsOrganizationGroup
+     */
+    public setContactGroupIsOrganizationGroup(Bool contactGroupIsOrganizationGroup) {
+        this.contactGroupIsOrganizationGroup = contactGroupIsOrganizationGroup
+    }
+}

@@ -1,0 +1,17 @@
+package flat/sendsafely/dto/request
+
+import flat/sendsafely/enums
+import flat/sendsafely/json
+
+class extends BaseRequest {
+    Int method = HttpMethod.GET
+    String path = "/package/#{GetParam.PACKAGE_ID}/"
+
+    public construct(JsonManager jsonManager) {
+        initialize(jsonManager, method, path)
+    }
+    
+    public setPackageId(String packageId) {
+		setGetParam(GetParam.PACKAGE_ID, packageId)
+	}
+}

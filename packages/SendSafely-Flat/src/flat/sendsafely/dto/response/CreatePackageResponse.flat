@@ -1,0 +1,34 @@
+package flat/sendsafely/dto/response
+
+import flat/sendsafely/enums
+import flat/sendsafely/json
+
+class extends BaseResponse {
+    private var String packageId
+    private var String packageCode
+    private var String serverSecret
+    
+    public getPackageId() -> String {
+        return packageId
+    }
+
+    public setPackageId(String packageId) {
+        this.packageId = packageId
+    }
+
+    public getServerSecret() -> String {
+        return serverSecret
+    }
+
+    public setServerSecret(String serverSecret) {
+        this.serverSecret = serverSecret
+    }
+
+    public getPackageCode() -> String {
+        return packageCode
+    }
+
+    public setPackageCode(String packageCode) {
+        this.packageCode = packageCode
+    }
+}

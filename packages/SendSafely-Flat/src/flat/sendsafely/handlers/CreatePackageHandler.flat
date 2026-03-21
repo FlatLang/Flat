@@ -1,0 +1,73 @@
+package flat/sendsafely/handlers
+
+import flat/sendsafely
+import flat/sendsafely/enums
+import flat/sendsafely/exceptions
+import flat/sendsafely/upload
+import flat/sendsafely/dto/request
+import flat/sendsafely/dto/response
+
+class extends BaseHandler {
+    private var CreatePackageRequest request
+    public var Bool isVdr = false
+    private var String packageUserEmail 
+
+    public construct(UploadManager uploadManager) {
+        super(uploadManager)
+        request = CreatePackageRequest(uploadManager.getJsonManager())
+    }
+
+    public makeRequest(String email) -> Package {
+        this.packageUserEmail = email
+        return makeRequest()
+    }
+
+    public makeRequest() -> Package {
+        let response = send()
+
+        if (response.getResponse() == ApiResponse.SUCCESS) {
+            return convert(response)
+        } else if (response.getResponse() == ApiResponse.LIMIT_EXCEEDED) {
+            throw LimitExceededException(response.getMessage())
+        } else {
+            throw CreatePackageFailedException(response.getMessage())
+        }
+    }
+
+    public send() -> CreatePackageResponse {
+        this.request.setIsVdr(this.isVdr)
+        this.request.setPackageUserEmail(this.packageUserEmail)
+
+        try {
+            return super.send(request, CreatePackageResponse())
+        } catch (Exception e) {
+            throw CreatePackageFailedException(e)
+        }
+    }
+
+    public convert(CreatePackageResponse obj) -> Package {
+        try {
+            let info = getPackageInformation(obj)
+            info.setKeyCode(null)
+            return info
+        } catch (TokenGenerationFailedException e) {
+            throw CreatePackageFailedException(e)
+        }
+    }
+
+    public getPackageInformation(CreatePackageResponse obj) -> Package {    
+        try {
+            let handler = (PackageInformationHandler)HandlerFactory.getInstance(uploadManager, Endpoint.PACKAGE_INFORMATION)
+            return handler.makeRequest(obj.getPackageId())
+        } catch (PackageInformationFailedException e) {
+            let info = Package()
+
+            info.setPackageId(obj.getPackageId())
+            info.setPackageCode(obj.getPackageCode())
+            info.setServerSecret(obj.getServerSecret())
+            info.setFiles(Array<File>())
+            info.setRecipients(Array<Recipient>())
+            info.setContactGroups(Array<ContactGroup>())
+        }
+    }
+}

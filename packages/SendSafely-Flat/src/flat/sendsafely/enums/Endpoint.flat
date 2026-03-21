@@ -1,0 +1,36 @@
+package flat/sendsafely/enums
+
+class {
+    public static Int USER_INFORMATION = 0
+    public static Int VerifyVersion = 1
+    public static Int VerifyCredentials = 2
+    public static Int ENTERPRISE_INFO = 3
+    public static Int CREATE_PACKAGE = 4
+    public static Int CREATE_DIRECTORY = 5
+    public static Int ADD_RECIPIENT = 6
+    public static Int UPDATE_RECIPIENT = 7
+    public static Int DELETE_PACKAGE = 8
+    public static Int DELETE_TEMP_PACKAGE = 9
+    public static Int PACKAGE_INFORMATION = 10
+    public static Int PACKAGE_LIFE = 11
+    public static Int ACTIVE_PACKAGES = 12
+    public static Int ARCHIVED_PACKAGES = 13
+    public static Int RECEIVED_PACKAGES = 14
+    public static Int ADD_FILE = 15
+    public static Int UPLOAD_FILE = 16
+    public static Int ADD_MESSAGE = 17
+    public static Int FINALIZE_PACKAGE = 18
+    public static Int ADD_PHONENUMBER = 19
+    public static Int FILE_HISTORY = 20
+    public static Int ORGANIZATION_PACKAGES = 21
+    public static Int GET_DIRECTORY = 22
+    public static Int PACKAGE_NAME = 23
+    public static Int MOVE_FILE = 24
+    public static Int MOVE_DIRECTORY = 25
+    public static Int FILE_INFORMATION = 26
+    public static Int DELETE_FILE = 27
+    public static Int DIRECTORY_NAME = 28
+    public static Int DELETE_DIRECTORY = 29
+    public static Int GET_ACTIVITY_LOG = 30
+    public static Int RECIPIENT_HISTORY = 31
+}
