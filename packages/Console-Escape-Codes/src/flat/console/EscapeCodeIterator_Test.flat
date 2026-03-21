@@ -1,0 +1,129 @@
+package flat/console
+
+testable class {
+    test `can iterate single exact RESET escape code`() {
+        let iterator = EscapeCodeIterator(EscapeCode.ESCAPE + EscapeCode.RESET)
+
+        expect(iterator.hasNext).toBe(true, "hasNext should be true")
+        expect(iterator.next).toBe(0)
+        expect(iterator.stepNext).toBe(0)
+        expect(iterator.position).toBe(0)
+        expect(iterator.positionEnd).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.code).toBe(EscapeCode.ESCAPE + EscapeCode.RESET)
+        expect(iterator.hasNext).toBe(false, "hasNext should be false")
+    }
+
+    test `can iterate single RESET escape code at end after normal text`() {
+        let iterator = EscapeCodeIterator("hey" + EscapeCode.ESCAPE + EscapeCode.RESET)
+
+        expect(iterator.hasNext).toBe(true, "hasNext should be true")
+        expect(iterator.next).toBe(3)
+        expect(iterator.stepNext).toBe(3)
+        expect(iterator.position).toBe(3)
+        expect(iterator.positionEnd).toBe(3 + EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.code).toBe(EscapeCode.ESCAPE + EscapeCode.RESET)
+        expect(iterator.hasNext).toBe(false, "hasNext should be false")
+    }
+
+    test `can iterate single RESET escape code in the middle of normal text`() {
+        let iterator = EscapeCodeIterator("hey" + EscapeCode.ESCAPE + EscapeCode.RESET + "there")
+
+        expect(iterator.hasNext).toBe(true, "hasNext should be true")
+        expect(iterator.next).toBe(3)
+        expect(iterator.stepNext).toBe(3)
+        expect(iterator.position).toBe(3)
+        expect(iterator.positionEnd).toBe(3 + EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.code).toBe(EscapeCode.ESCAPE + EscapeCode.RESET)
+        expect(iterator.hasNext).toBe(false, "hasNext should be false")
+    }
+
+    test `can iterate two exact RESET escape codes back to back`() {
+        let iterator = EscapeCodeIterator(EscapeCode.ESCAPE + EscapeCode.RESET + EscapeCode.ESCAPE + EscapeCode.RESET)
+
+        expect(iterator.hasNext).toBe(true, "first hasNext should be true")
+        expect(iterator.next).toBe(0)
+        expect(iterator.stepNext).toBe(0)
+        expect(iterator.position).toBe(0)
+        expect(iterator.positionEnd).toBe(0 + EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.code).toBe(EscapeCode.ESCAPE + EscapeCode.RESET)
+        expect(iterator.hasNext).toBe(true, "second hasNext should be true")
+        expect(iterator.next).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.stepNext).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.position).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.positionEnd).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count + EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.code).toBe(EscapeCode.ESCAPE + EscapeCode.RESET)
+        expect(iterator.hasNext).toBe(false, "third hasNext should be false")
+    }
+
+    test `can iterate two exact escape codes first RESET and second DIM back to back`() {
+        let iterator = EscapeCodeIterator(EscapeCode.ESCAPE + EscapeCode.RESET + EscapeCode.ESCAPE + EscapeCode.DIM)
+
+        expect(iterator.hasNext).toBe(true, "first hasNext should be true")
+        expect(iterator.next).toBe(0)
+        expect(iterator.stepNext).toBe(0)
+        expect(iterator.position).toBe(0)
+        expect(iterator.positionEnd).toBe(0 + EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.code).toBe(EscapeCode.ESCAPE + EscapeCode.RESET)
+        expect(iterator.hasNext).toBe(true, "second hasNext should be true")
+        expect(iterator.next).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.stepNext).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.position).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count)
+        expect(iterator.positionEnd).toBe(EscapeCode.ESCAPE.count + EscapeCode.RESET.count + EscapeCode.ESCAPE.count + EscapeCode.DIM.count)
+        expect(iterator.code).toBe(EscapeCode.ESCAPE + EscapeCode.DIM)
+        expect(iterator.hasNext).toBe(false, "third hasNext should be false")
+    }
+
+    test `can iterate single exact RGB_FOREGROUND escape code`() {
+        let r = 30
+        let g = 200
+        let b = 5
+
+        let code = EscapeCode.ESCAPE + EscapeCode.RGB_FOREGROUND_PREFIX + "#{r};#{g};#{b}" + EscapeCode.MODE_SUFFIX
+
+        let iterator = EscapeCodeIterator(code)
+
+        expect(iterator.hasNext).toBe(true, "hasNext should be true")
+        expect(iterator.next).toBe(0)
+        expect(iterator.stepNext).toBe(0)
+        expect(iterator.position).toBe(0)
+        expect(iterator.positionEnd).toBe(code.count)
+        expect(iterator.code).toBe(code)
+        expect(iterator.hasNext).toBe(false, "hasNext should be false")
+    }
+
+    test `doesnt match incorrectly suffixed variable escape code`() {
+        let r = 30
+        let g = 200
+        let b = 5
+
+        let code = EscapeCode.ESCAPE + EscapeCode.RGB_FOREGROUND_PREFIX + "#{r};#{g};#{b}Z"
+
+        let iterator = EscapeCodeIterator(code)
+
+        expect(iterator.hasNext).toBe(false)
+    }
+
+    test `can iterate two variable escape codes with normal text in between`() {
+        let firstCode = EscapeCode.ESCAPE + EscapeCode.CURSOR_MOVE_RIGHT_PREFIX + "10" + EscapeCode.CURSOR_MOVE_RIGHT_SUFFIX
+        let secondCode = EscapeCode.ESCAPE + EscapeCode.CURSOR_MOVE_UP_PREFIX + "4" + EscapeCode.CURSOR_MOVE_UP_SUFFIX
+        let normalText = "hey there"
+
+        let string = firstCode + normalText + secondCode
+
+        let iterator = EscapeCodeIterator(string)
+
+        expect(iterator.hasNext).toBe(true, "first hasNext should be true")
+        expect(iterator.next).toBe(0)
+        expect(iterator.stepNext).toBe(0)
+        expect(iterator.position).toBe(0)
+        expect(iterator.positionEnd).toBe(0 + firstCode.count)
+        expect(iterator.code).toBe(firstCode)
+        expect(iterator.hasNext).toBe(true, "second hasNext should be true")
+        expect(iterator.next).toBe(firstCode.count + normalText.count)
+        expect(iterator.stepNext).toBe(firstCode.count + normalText.count)
+        expect(iterator.position).toBe(firstCode.count + normalText.count)
+        expect(iterator.positionEnd).toBe(string.count)
+        expect(iterator.code).toBe(secondCode)
+        expect(iterator.hasNext).toBe(false, "third hasNext should be false")
+    }
+}

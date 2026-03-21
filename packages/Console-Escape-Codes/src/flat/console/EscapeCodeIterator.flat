@@ -1,0 +1,208 @@
+package flat/console
+
+import flat/datastruct/list
+
+class implements Iterator<Int> {
+    var Bool checkedNext = false
+    var Bool started = false
+
+    var Int prevPosition = -1
+    var Int prevPositionEnd = -1
+    var Int nextPosition = -1
+    var Int nextPositionEnd = -1
+    visible var Int position = -1
+    visible var Int positionEnd = -1
+
+    visible Bool hasNext {
+        get {
+            if (checkedNext) return nextPosition != -1
+
+            var start = started ? positionEnd : 0
+
+            checkedNext = true
+            started = true
+
+            while (start < string.count - EscapeCode.ESCAPE.count - 1) {
+                nextPosition = string.indexOf(EscapeCode.ESCAPE, start)
+
+                if (nextPosition == -1) return false
+
+                nextPositionEnd = findEscapeCodeEnd(nextPosition)
+
+                if (nextPositionEnd != -1) return true
+
+                start = nextPosition + EscapeCode.ESCAPE.count
+            }
+
+            nextPosition = -1
+            nextPositionEnd = -1
+
+            return false
+        }
+    }
+
+    visible Bool hasPrevious => prevPosition != -1
+
+    visible Int stepNext {
+        get {
+            if (hasNext) {
+                prevPosition = position
+                prevPositionEnd = positionEnd
+                position = nextPosition
+                positionEnd = nextPositionEnd
+                nextPosition = -1
+                nextPositionEnd = -1
+                checkedNext = false
+                return position
+            }
+
+            throw NoSuchElementException()
+        }
+    }
+
+    visible Int current => position
+    visible Int previous => prevPosition
+    visible Int next => hasNext ? nextPosition : -1
+
+    visible String code => position != -1 ? string.substring(position, positionEnd) : null
+    visible String previousCode => prevPosition != -1 ? string.substring(prevPosition, prevPositionEnd) : null
+    visible String nextCode => hasNext ? string.substring(nextPosition, nextPositionEnd) : null
+
+    visible Int codeCount => position != -1 ? positionEnd - position : -1
+    visible Int previousCodeCount => prevPosition != -1 ? prevPositionEnd - prevPosition : -1
+    visible Int nextCodeCount => hasNext ? nextPositionEnd - positionEnd : -1
+
+    static lazy String[] EXACT_ESCAPE_CODES => [
+        EscapeCode.RESET,
+        EscapeCode.BRIGHT,
+        EscapeCode.DIM,
+        EscapeCode.UNDERSCORE,
+        EscapeCode.BLINK,
+        EscapeCode.REVERSE,
+        EscapeCode.HIDDEN,
+        EscapeCode.BLACK_FOREGROUND,
+        EscapeCode.RED_FOREGROUND,
+        EscapeCode.GREEN_FOREGROUND,
+        EscapeCode.YELLOW_FOREGROUND,
+        EscapeCode.BLUE_FOREGROUND,
+        EscapeCode.MAGENTA_FOREGROUND,
+        EscapeCode.CYAN_FOREGROUND,
+        EscapeCode.WHITE_FOREGROUND,
+        EscapeCode.GRAY_FOREGROUND,
+        EscapeCode.BRIGHT_BLACK_FOREGROUND,
+        EscapeCode.BRIGHT_RED_FOREGROUND,
+        EscapeCode.BRIGHT_GREEN_FOREGROUND,
+        EscapeCode.BRIGHT_YELLOW_FOREGROUND,
+        EscapeCode.BRIGHT_BLUE_FOREGROUND,
+        EscapeCode.BRIGHT_MAGENTA_FOREGROUND,
+        EscapeCode.BRIGHT_CYAN_FOREGROUND,
+        EscapeCode.BRIGHT_WHITE_FOREGROUND,
+        EscapeCode.BLACK_BACKGROUND,
+        EscapeCode.RED_BACKGROUND,
+        EscapeCode.GREEN_BACKGROUND,
+        EscapeCode.YELLOW_BACKGROUND,
+        EscapeCode.BLUE_BACKGROUND,
+        EscapeCode.MAGENTA_BACKGROUND,
+        EscapeCode.CYAN_BACKGROUND,
+        EscapeCode.WHITE_BACKGROUND,
+        EscapeCode.GRAY_BACKGROUND,
+        EscapeCode.BRIGHT_BLACK_BACKGROUND,
+        EscapeCode.BRIGHT_RED_BACKGROUND,
+        EscapeCode.BRIGHT_GREEN_BACKGROUND,
+        EscapeCode.BRIGHT_YELLOW_BACKGROUND,
+        EscapeCode.BRIGHT_BLUE_BACKGROUND,
+        EscapeCode.BRIGHT_MAGENTA_BACKGROUND,
+        EscapeCode.BRIGHT_CYAN_BACKGROUND,
+        EscapeCode.BRIGHT_WHITE_BACKGROUND,
+        EscapeCode.CURSOR_MOVE_TO_HOME,
+        EscapeCode.CURSOR_REQUEST_POSITION,
+        EscapeCode.CURSOR_MOVE_UP_ONE_LINE,
+        EscapeCode.CURSOR_SAVE_POSITION,
+        EscapeCode.CURSOR_RESTORE_POSITION,
+    ]
+
+    static lazy String[][] VARIABLE_ESCAPE_CODES => [
+        Array<String>():addAll([EscapeCode.RGB_FOREGROUND_PREFIX, EscapeCode.MODE_SUFFIX]),
+        Array<String>():addAll([EscapeCode.RGB_FOREGROUND_256_PREFIX, EscapeCode.MODE_SUFFIX]),
+        Array<String>():addAll([EscapeCode.RGB_BACKGROUND_PREFIX, EscapeCode.MODE_SUFFIX]),
+        Array<String>():addAll([EscapeCode.RGB_BACKGROUND_256_PREFIX, EscapeCode.MODE_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_TO_POSITION_PREFIX, EscapeCode.CURSOR_MOVE_TO_POSITION_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_UP_PREFIX, EscapeCode.CURSOR_MOVE_UP_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_DOWN_PREFIX, EscapeCode.CURSOR_MOVE_DOWN_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_RIGHT_PREFIX, EscapeCode.CURSOR_MOVE_RIGHT_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_LEFT_PREFIX, EscapeCode.CURSOR_MOVE_LEFT_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_PREFIX, EscapeCode.CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_PREFIX, EscapeCode.CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_SUFFIX]),
+        Array<String>():addAll([EscapeCode.CURSOR_MOVE_TO_COLUMN_PREFIX, EscapeCode.CURSOR_MOVE_TO_COLUMN_SUFFIX]),
+    ]
+
+    public construct(private String string) {}
+
+    findEscapeCodeEnd(Int index) -> Int => -1 {
+        Int default = -1
+
+        Int exactCodeEnd = EXACT_ESCAPE_CODES.stream()
+            .map({ findExactEscapeCodeEnd(_, index) })
+            .filter({ _ > index })
+            .firstOr(default)
+
+        if (exactCodeEnd != -1) return exactCodeEnd
+
+        return VARIABLE_ESCAPE_CODES.stream()
+            .map({ findVariableEscapeCodeEnd(_x[0], _x[1], index) })
+            .filter({ _ > index })
+            .firstOr(default)
+    }
+
+    findExactEscapeCodeEnd(String escapeCode, Int index) -> Int => -1 {
+        let start = index + EscapeCode.ESCAPE.count
+
+        if (string.count < start + escapeCode.count) return -1
+
+        for (i in 0..escapeCode.count) {
+            if (string[start + i] != escapeCode[i]) break
+            if (i == escapeCode.count - 1) return start + i + 1
+        }
+    }
+
+    findVariableEscapeCodeEnd(String prefix, String suffix, Int index) -> Int => -1 {
+        let start = index + EscapeCode.ESCAPE.count
+
+        if (string.count < start + prefix.count) return -1
+
+        for (i in 0..prefix.count) {
+            if (string[start + i] != prefix[i]) return -1
+        }
+
+        var variableEndIndex = start + prefix.count - 1
+
+        while (variableEndIndex < string.count - 1) {
+            let c = string[++variableEndIndex]
+
+            switch c {
+                '0' => '1' => '2' => '3' => '4' => '5' => '6' => '7' => '8' => '9' => ';' => continue
+            }
+
+            break
+        }
+
+        for (i in 0..suffix.count) {
+            if (variableEndIndex + i >= string.count) return -1
+            if (string[variableEndIndex + i] != suffix[i]) return -1
+        }
+
+        return variableEndIndex + suffix.count
+    }
+
+    public reset() => this {
+        checkedNext = false
+        started = false
+
+        prevPosition = -1
+        prevPositionEnd = -1
+        nextPosition = -1
+        nextPositionEnd = -1
+        position = -1
+        positionEnd = -1
+    }
+}

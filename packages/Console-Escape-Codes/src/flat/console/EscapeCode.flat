@@ -1,0 +1,183 @@
+package flat/console
+
+// https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+class {
+    visible static String ESCAPE = "\x1B"
+    visible static String MODE_SUFFIX = "m"
+
+    visible static String RESET = "[0m"
+    visible static String BRIGHT = "[1m"
+    visible static String DIM = "[2m"
+    visible static String UNDERSCORE = "[4m"
+    visible static String BLINK = "[5m"
+    visible static String REVERSE = "[7m"
+    visible static String HIDDEN = "[8m"
+
+    visible static String BLACK_FOREGROUND = "[30m"
+    visible static String RED_FOREGROUND = "[31m"
+    visible static String GREEN_FOREGROUND = "[32m"
+    visible static String YELLOW_FOREGROUND = "[33m"
+    visible static String BLUE_FOREGROUND = "[34m"
+    visible static String MAGENTA_FOREGROUND = "[35m"
+    visible static String CYAN_FOREGROUND = "[36m"
+    visible static String WHITE_FOREGROUND = "[37m"
+    visible static String RGB_FOREGROUND_PREFIX = "[38;2;"
+    visible static String RGB_FOREGROUND_256_PREFIX = "[38;5;"
+    visible static String GRAY_FOREGROUND = "[90m"
+    visible static String BRIGHT_BLACK_FOREGROUND = "[90m"
+    visible static String BRIGHT_RED_FOREGROUND = "[91m"
+    visible static String BRIGHT_GREEN_FOREGROUND = "[92m"
+    visible static String BRIGHT_YELLOW_FOREGROUND = "[93m"
+    visible static String BRIGHT_BLUE_FOREGROUND = "[94m"
+    visible static String BRIGHT_MAGENTA_FOREGROUND = "[95m"
+    visible static String BRIGHT_CYAN_FOREGROUND = "[96m"
+    visible static String BRIGHT_WHITE_FOREGROUND = "[97m"
+
+    visible static String BLACK_BACKGROUND = "[40m"
+    visible static String RED_BACKGROUND = "[41m"
+    visible static String GREEN_BACKGROUND = "[42m"
+    visible static String YELLOW_BACKGROUND = "[43m"
+    visible static String BLUE_BACKGROUND = "[44m"
+    visible static String MAGENTA_BACKGROUND = "[45m"
+    visible static String CYAN_BACKGROUND = "[46m"
+    visible static String WHITE_BACKGROUND = "[47m"
+    visible static String RGB_BACKGROUND_PREFIX = "[48;2;"
+    visible static String RGB_BACKGROUND_256_PREFIX = "[48;5;"
+    visible static String GRAY_BACKGROUND = "[100m"
+    visible static String BRIGHT_BLACK_BACKGROUND = "[100m"
+    visible static String BRIGHT_RED_BACKGROUND = "[101m"
+    visible static String BRIGHT_GREEN_BACKGROUND = "[102m"
+    visible static String BRIGHT_YELLOW_BACKGROUND = "[103m"
+    visible static String BRIGHT_BLUE_BACKGROUND = "[104m"
+    visible static String BRIGHT_MAGENTA_BACKGROUND = "[105m"
+    visible static String BRIGHT_CYAN_BACKGROUND = "[106m"
+    visible static String BRIGHT_WHITE_BACKGROUND = "[107m"
+
+    visible static String CURSOR_MOVE_TO_HOME = "[H"
+    visible static String CURSOR_MOVE_TO_POSITION_PREFIX = "["
+    visible static String CURSOR_MOVE_TO_POSITION_SUFFIX = "H"
+    visible static String CURSOR_MOVE_UP_PREFIX = "["
+    visible static String CURSOR_MOVE_UP_SUFFIX = "A"
+    visible static String CURSOR_MOVE_DOWN_PREFIX = "["
+    visible static String CURSOR_MOVE_DOWN_SUFFIX = "B"
+    visible static String CURSOR_MOVE_RIGHT_PREFIX = "["
+    visible static String CURSOR_MOVE_RIGHT_SUFFIX = "C"
+    visible static String CURSOR_MOVE_LEFT_PREFIX = "["
+    visible static String CURSOR_MOVE_LEFT_SUFFIX = "D"
+    visible static String CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_PREFIX = "["
+    visible static String CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_SUFFIX = "E"
+    visible static String CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_PREFIX = "["
+    visible static String CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_SUFFIX = "F"
+    visible static String CURSOR_MOVE_TO_COLUMN_PREFIX = "["
+    visible static String CURSOR_MOVE_TO_COLUMN_SUFFIX = "G"
+    visible static String CURSOR_REQUEST_POSITION = "6n"
+    visible static String CURSOR_MOVE_UP_ONE_LINE = " M"
+    visible static String CURSOR_SAVE_POSITION = " 7"
+    visible static String CURSOR_RESTORE_POSITION = " 8"
+
+    public static cursorMoveHome() => "#{ESCAPE}#{CURSOR_MOVE_TO_HOME}"
+    public static cursorMoveToPosition(Int line = 0, Int column = 0) => "#{ESCAPE}#{CURSOR_MOVE_TO_POSITION_PREFIX}#{line};#{column}#{CURSOR_MOVE_TO_POSITION_SUFFIX}"
+    public static cursorMoveUp(Int lines = 0) => "#{ESCAPE}#{CURSOR_MOVE_UP_PREFIX}#{lines}#{CURSOR_MOVE_UP_SUFFIX}"
+    public static cursorMoveDown(Int lines = 0) => "#{ESCAPE}#{CURSOR_MOVE_DOWN_PREFIX}#{lines}#{CURSOR_MOVE_DOWN_SUFFIX}"
+    public static cursorMoveRight(Int columns = 0) => "#{ESCAPE}#{CURSOR_MOVE_RIGHT_PREFIX}#{columns}#{CURSOR_MOVE_RIGHT_SUFFIX}"
+    public static cursorMoveLeft(Int columns = 0) => "#{ESCAPE}#{CURSOR_MOVE_LEFT_PREFIX}#{columns}#{CURSOR_MOVE_LEFT_SUFFIX}"
+    public static cursorMoveDownAtBeginningOfLine(Int lines = 0) => "#{ESCAPE}#{CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_PREFIX}#{lines}#{CURSOR_MOVE_DOWN_AT_BEGINNING_OF_LINE_SUFFIX}"
+    public static cursorMoveUpAtBeginningOfLine(Int lines = 0) => "#{ESCAPE}#{CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_PREFIX}#{lines}#{CURSOR_MOVE_UP_AT_BEGINNING_OF_LINE_SUFFIX}"
+    public static cursorMoveToColumn(Int column = 0) => "#{ESCAPE}#{CURSOR_MOVE_TO_COLUMN_PREFIX}#{column}#{CURSOR_MOVE_TO_COLUMN_SUFFIX}"
+    public static cursorRequestPosition() => "#{ESCAPE}#{CURSOR_REQUEST_POSITION}"
+    public static cursorMoveUpOneLine() => "#{ESCAPE}#{CURSOR_MOVE_UP_ONE_LINE}"
+    public static cursorSavePosition() => "#{ESCAPE}#{CURSOR_SAVE_POSITION}"
+    public static cursorRestorePosition() => "#{ESCAPE}#{CURSOR_RESTORE_POSITION}"
+
+    visible static String ERASE_FROM_CURSOR_TO_END_OF_SCREEN = "[0J"
+    visible static String ERASE_FROM_CURSOR_TO_BEGINNING_OF_SCREEN = "[1J"
+    visible static String ERASE_ENTIRE_SCREEN = "[2J"
+    visible static String ERASE_SAVED_LINES = "[3J"
+    visible static String ERASE_FROM_CURSOR_TO_END_OF_LINE = "[0K"
+    visible static String ERASE_FROM_CURSOR_TO_BEGINNING_OF_LINE = "[1K"
+    visible static String ERASE_ENTIRE_LINE = "[2K"
+
+    public static eraseFromCursorToEndOfScreen() => "#{ESCAPE}#{ERASE_FROM_CURSOR_TO_END_OF_SCREEN}"
+    public static eraseFromCursorToBeginningOfScreen() => "#{ESCAPE}#{ERASE_FROM_CURSOR_TO_BEGINNING_OF_SCREEN}"
+    public static eraseEntireScreen() => "#{ESCAPE}#{ERASE_ENTIRE_SCREEN}"
+    public static eraseSavedLines() => "#{ESCAPE}#{ERASE_SAVED_LINES}"
+    public static eraseFromCursorToEndOfLine() => "#{ESCAPE}#{ERASE_FROM_CURSOR_TO_END_OF_LINE}"
+    public static eraseFromCursorToBeginningOfLine() => "#{ESCAPE}#{ERASE_FROM_CURSOR_TO_BEGINNING_OF_LINE}"
+    public static eraseEntireLine() => "#{ESCAPE}#{ERASE_ENTIRE_LINE}"
+
+    public static visibleCount(String s) -> Int {
+        if (s.count <= ESCAPE.count + 1) return s.count
+
+        let iterator = EscapeCodeIterator(s)
+        var count = s.count
+
+        while (iterator.hasNext) {
+            iterator.stepNext
+            count -= iterator.positionEnd - iterator.position
+        }
+
+        return count
+    }
+
+    public static visibleSubstring(
+        String s,
+        var Int start = 0,
+        var Int end = visibleCount(s)
+    ) -> String {
+        if (s.count <= ESCAPE.count + 1) return s.substring(start, end)
+
+        let iterator = EscapeCodeIterator(s)
+
+        while (iterator.hasNext) {
+            iterator.stepNext
+
+            if (start >= iterator.position) start += iterator.codeCount
+            if (end >= iterator.position) end += iterator.codeCount
+            else break
+        }
+
+        return s.substring(start, end)
+    }
+
+    public static wrapLine(
+        String value,
+        Int lineLength,
+        String indentation = "",
+        Bool breakWord = false
+    ) -> String[] {
+        if (value.count <= lineLength) return [value]
+
+        let vCount = visibleCount(value)
+        if (vCount <= lineLength) return [value]
+
+        let offset = breakWord
+            ? 0
+            : findBreakWordOffset(value, vCount, lineLength)
+
+        let line = visibleSubstring(value, 0, lineLength - offset)
+        let remainder = indentation + visibleSubstring(value, lineLength - offset).trim()
+        let lines = [line]
+
+        return lines:addAll(wrapLine(remainder, lineLength, indentation))
+    }
+
+    static findBreakWordOffset(String value, Int vCount, Int lineLength) -> Int {
+        if (vCount <= lineLength) return 0
+
+        let nextChar = visibleSubstring(value, lineLength, lineLength + 1)[0]
+
+        match nextChar {
+            ' ' => '\n' => '\t' => '\r' => return 0
+        }
+
+        for (offset in 0..lineLength) {
+            let endChar = visibleSubstring(value, lineLength - 1 - offset, lineLength - offset)[0]
+
+            match endChar {
+                ' ' => '\n' => '\t' => '\r' => return offset
+            }
+        }
+
+        return 0
+    }
+}

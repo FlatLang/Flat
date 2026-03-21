@@ -1,0 +1,107 @@
+package flat/console
+
+testable class {
+    test `visibleCount can get count of string without any escape codes`() {
+        let str = "aoeuaoeu aaahhh!!!oeu aoeuthhtht"
+
+        expect(EscapeCode.visibleCount(str)).toBe(str.count)
+    }
+
+    test `visibleCount can get count of string with a single RESET escape code`() {
+        let prefix = "aoeuaoeu aaahhh!!!"
+        let suffix = "oeu aoeuthhtht"
+        let str = "#{prefix}#{EscapeCode.ESCAPE}#{EscapeCode.RESET}#{suffix}"
+
+        expect(EscapeCode.visibleCount(str)).toBe(prefix.count + suffix.count)
+    }
+
+    test `visibleCount can get count of string with a multiple RESET escape codes in between normal text with no normal text in between the escape codes`() {
+        let prefix = "aoeuaoeu aaahhh!!!"
+        let suffix = "oeu aoeuthhtht"
+        let str = "#{prefix}#{EscapeCode.ESCAPE}#{EscapeCode.RESET}#{EscapeCode.ESCAPE}#{EscapeCode.RESET}#{suffix}"
+
+        expect(EscapeCode.visibleCount(str)).toBe(prefix.count + suffix.count)
+    }
+
+    test `visibleCount can get count of string with a multiple RESET escape codes in between normal text with normal text in between the escape codes`() {
+        let prefix = "aoeuaoeu aaahhh!!!"
+        let inBetween = "hey there"
+        let suffix = "oeu aoeuthhtht"
+        let str = "#{prefix}#{EscapeCode.ESCAPE}#{EscapeCode.RESET}#{inBetween}#{EscapeCode.ESCAPE}#{EscapeCode.RESET}#{suffix}"
+
+        expect(EscapeCode.visibleCount(str)).toBe(prefix.count + inBetween.count + suffix.count)
+    }
+
+    test `visibleCount can get count of string with a variable escape codes in between normal text with normal text in between the escape codes`() {
+        let prefix = "aoeuaoeu aaahhh!!!"
+        let inBetween = "hey there"
+        let suffix = "oeu aoeuthhtht"
+
+        let r = 30
+        let g = 200
+        let b = 5
+
+        let rgbCode = EscapeCode.ESCAPE + EscapeCode.RGB_FOREGROUND_PREFIX + "#{r};#{g};#{b}" + EscapeCode.MODE_SUFFIX
+
+        let str = "#{prefix}#{rgbCode}#{inBetween}#{EscapeCode.ESCAPE}#{EscapeCode.RESET}#{suffix}"
+
+        expect(EscapeCode.visibleCount(str)).toBe(prefix.count + inBetween.count + suffix.count)
+    }
+
+    test `visibleSubstring can get substring for string with escape codes`() {
+        let rgbCode = "#{EscapeCode.ESCAPE}#{EscapeCode.RGB_FOREGROUND_PREFIX}30;200;5#{EscapeCode.MODE_SUFFIX}"
+        let resetCode = "#{EscapeCode.ESCAPE}#{EscapeCode.RESET}"
+        let word = "a".repeat(20)
+
+        let str = "[#{rgbCode}#{word}#{resetCode}, #{rgbCode}#{word}#{resetCode}]"
+
+        expect(EscapeCode.visibleSubstring(str, 0, 30)).toBe(
+            "[#{rgbCode}aaaaaaaaaaaaaaaaaaaa#{resetCode}, #{rgbCode}aaaaaaa"
+        )
+    }
+
+    test `wrapLine does not wrap when count is less than lineLength with breakWord false`() {
+        let rgbCode = "#{EscapeCode.ESCAPE}#{EscapeCode.RGB_FOREGROUND_PREFIX}30;200;5#{EscapeCode.MODE_SUFFIX}"
+        let resetCode = "#{EscapeCode.ESCAPE}#{EscapeCode.RESET}"
+        let word = "a".repeat(20)
+
+        let str = "[#{rgbCode}#{word}#{resetCode}, #{rgbCode}#{word}#{resetCode}]"
+
+        expect(EscapeCode.wrapLine(str, 30, breakWord: false)).toBe([
+            "[#{rgbCode}#{word}#{resetCode}, #{rgbCode}",
+            "#{word}#{resetCode}]",
+        ])
+    }
+
+    test `wrapLine does not wrap when count is less than lineLength with breakWord true`() {
+        let rgbCode = "#{EscapeCode.ESCAPE}#{EscapeCode.RGB_FOREGROUND_PREFIX}30;200;5#{EscapeCode.MODE_SUFFIX}"
+        let resetCode = "#{EscapeCode.ESCAPE}#{EscapeCode.RESET}"
+        let word = "a".repeat(20)
+
+        let str = "[#{rgbCode}#{word}#{resetCode}, #{rgbCode}#{word}#{resetCode}]"
+
+        expect(EscapeCode.wrapLine(str, 30, breakWord: true)).toBe([
+            "[#{rgbCode}aaaaaaaaaaaaaaaaaaaa#{resetCode}, #{rgbCode}aaaaaaa",
+            "aaaaaaaaaaaaa#{resetCode}]",
+        ])
+    }
+
+    test `wrapLine wraps when count is one more than lineLength with breakWord false`() {
+        let str = "Specify an explicit flat.json file to reference when running the Airship commands"
+
+        expect(EscapeCode.wrapLine(str, 80, breakWord: false)).toBe([
+            "Specify an explicit flat.json file to reference when running the Airship ",
+            "commands",
+        ])
+    }
+
+    test `wrapLine breaks word when word is too long for a single line`() {
+        let str = "Compiling file .\\src\\flat\\operators\\GreaterThanOrEqualToOperator.flat..."
+
+        expect(EscapeCode.wrapLine(str, 55, breakWord: false)).toBe([
+            "Compiling file ",
+            ".\\src\\flat\\operators\\GreaterThanOrEqualToOperator.flat.",
+            "..",
+        ])
+    }
+}
