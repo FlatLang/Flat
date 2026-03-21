@@ -1,0 +1,47 @@
+package "flat/writer/nova/nodes/functions/closures"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "nova/datastruct/list/Stack"
+
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/tree/nodes/ScopeDeclaration"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/ClassDeclaration"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+import "flat/astro/tree/nodes/functions/Parameter"
+import "flat/astro/tree/nodes/functions/ParameterList"
+import "flat/astro/tree/nodes/functions/FunctionCall"
+import "flat/astro/tree/nodes/functions/FunctionDeclaration"
+import "flat/astro/tree/nodes/functions/CallableFunction"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class LambdaExpressionWriter {
+    public writeParameters(OutputStream writer = new StringBuilder()) => writer {
+        if (parameters.count == 1) {
+            return parameters[0].toNova(writer)
+        } else if (parameters.count > 1) {
+            return writer.write("(" + parameters.map({ _.toNova() }).join(", ") + ")")
+        }
+    }
+
+    writeParameterClause(OutputStream writer = new StringBuilder()) =>
+        parameters.count > 0 ?
+            writeParameters(writer).write(" => ") :
+            writer
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writeParameterClause(writer)
+        scope.writeNova(writer, true)
+    }
+}

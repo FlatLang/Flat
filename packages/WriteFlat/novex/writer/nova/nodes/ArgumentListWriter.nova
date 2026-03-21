@@ -1,0 +1,16 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/ArgumentList"
+
+/// @NodeList extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ArgumentListWriter {
+    public static toString(ArgumentList node, OutputStream writer = new StringBuilder()) => writer.write("(#{node.arguments.join(", ")})")
+}

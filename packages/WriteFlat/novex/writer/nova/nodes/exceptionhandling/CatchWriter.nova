@@ -1,0 +1,30 @@
+package "flat/writer/nova/nodes/exceptionhandling"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/tree/nodes/ScopeDeclaration"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class CatchWriter {
+    public writeException(OutputStream writer = new StringBuilder()) => writer {
+        exception.toNova(writer)
+        writer.write(variable ? " #variable" : "")
+    }
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writer.write("catch #{soft ? "all" : ""}".trim())
+        writer.write(" (#writeException()) #scope.toNova()")
+    }
+}

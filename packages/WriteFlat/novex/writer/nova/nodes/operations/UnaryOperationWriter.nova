@@ -1,0 +1,21 @@
+package "flat/writer/nova/nodes/operations"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "nova/datastruct/HashMap"
+
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/SyntaxMessage"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class UnaryOperationWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) =>
+        operatorSide == LEFT ?
+            writer.write("#{operator.toNova()}#{operand.toNova()}") :
+            writer.write("#{operand.toNova()}#{operator.toNova()}")
+}

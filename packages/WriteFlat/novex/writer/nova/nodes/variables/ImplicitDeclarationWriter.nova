@@ -1,0 +1,19 @@
+package "flat/writer/nova/nodes/variables"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/annotations/Modifier"
+import "flat/astro/tree/nodes/annotations/VarAnnotation"
+import "flat/astro/tree/nodes/annotations/LetAnnotation"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class ImplicitDeclarationWriter {
+    public writeType(OutputStream writer = new StringBuilder()) => writer
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write(name)
+}

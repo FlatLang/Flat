@@ -1,0 +1,21 @@
+package "flat/writer/nova/nodes/exceptionhandling"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ThrowWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) =>
+        writer.write("#{soft ? "softly" : ""} throw #exception.toNova()".trim())
+}

@@ -1,0 +1,23 @@
+package "flat/writer/nova/nodes/controlstructures/loops"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/controlstructures/ControlStructure"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Loop extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class WhileLoopWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) =>
+        writer.write("while (#condition.toNova()) #scope.toNova()")
+}

@@ -1,0 +1,66 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "nova/datastruct/Pair"
+import "nova/datastruct/list/List"
+
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Accessible"
+import "flat/astro/tree/nodes/operations/Operation"
+import "flat/astro/tree/nodes/operations/Assignment"
+import "flat/astro/tree/nodes/exceptionhandling/Catch"
+import "flat/astro/tree/nodes/exceptionhandling/Throw"
+import "flat/astro/tree/nodes/functions/FunctionCall"
+import "flat/astro/tree/nodes/controlstructures/IfStatement"
+import "flat/astro/tree/nodes/controlstructures/ElseStatement"
+import "flat/astro/tree/nodes/controlstructures/loops/Loop"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+import "flat/astro/tree/nodes/variables/LocalDeclaration"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @NodeList extension that represents a scope of code. In essence, a
+/// collection of statements within a pair of curly braces.
+///
+/// #example:
+///     For example:
+///     <code>
+///     {
+///         ...
+///
+///         // Statements within here...
+///
+///         ...
+///     }
+///     </code>
+///
+/// author:  Braden Steffaniak
+/// since:   v0.1 Apr 5, 2014 at 10:54:20 PM
+/// version: v0.2.41 Dec 17, 2014 at 7:48:17 PM
+class ScopeWriter {
+    printPrecedingWhitespace(OutputStream writer = new StringBuilder(), Node child) =>
+        writer.write(LADDER_FORM.contains(child.class) ? " " : "\n")
+
+    childToNova(OutputStream writer = new StringBuilder(), Node child) => writer {
+        printPrecedingWhitespace(writer, child)
+        child.toNova(writer)
+    }
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writeNova(writer, false)
+    public writeNova(OutputStream writer = new StringBuilder(), Bool condense) -> String {
+        writer.write("{")
+
+        if (condense && children.count == 1) {
+            writer.write(" " + children.first.toNova() + " ")
+        } else if (children.count > 1) {
+            write.write(children.map(childToNova).join())
+        }
+
+        if (!condense && children.count > 0) {
+            writer.write("\n")
+        }
+
+        return writer.write("}")
+    }
+}

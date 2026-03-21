@@ -1,0 +1,35 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/variables/Variable"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+import "flat/astro/tree/nodes/functions/closures/ClosureDeclaration"
+import "flat/astro/tree/nodes/functions/closures/LambdaExpression"
+import "flat/astro/tree/nodes/ClassDeclaration"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Accessible"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Variable extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class FunctionCallWriter {
+    public writeName(OutputStream writer = new StringBuilder()) => writer.write(name)
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writeName(writer)
+        writer.write("#argumentList")
+        writeArrayAccess(writer)
+        writeAccessedNodes(writer)
+    }
+
+    public toString(OutputStream writer = new StringBuilder()) => toNova(writer)
+}

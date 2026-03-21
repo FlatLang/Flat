@@ -1,0 +1,31 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxMessage"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/SyntaxTree"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/variables/InstanceDeclaration"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+import "flat/astro/tree/nodes/generics/GenericParameter"
+import "flat/astro/tree/nodes/generics/GenericCompatible"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class FunctionDeclarationWriter {
+    public writeAnnotationSeparator(OutputStream writer = new StringBuilder()) => writer.write("\n")
+
+    public writeReturnType(OutputStream writer = new StringBuilder()) => type ? writer.write(" -> #type") : writer
+
+    public writeHeader(OutputStream writer = new StringBuilder()) => writer {
+        writer.write("#name".replace(/\s+/, " ").trim())
+        writeGenericParameters(writer)
+        parameterList.toNova(writer)
+        writeReturnType(writer)
+    }
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writeHeader(writer)
+}

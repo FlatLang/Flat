@@ -1,0 +1,10 @@
+package "flat/writer/nova/nodes/operations"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/util/Location"
+
+class OperatorWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write(value)
+}

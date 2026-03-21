@@ -1,0 +1,34 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "nova/io/File"
+import "nova/io/FileReader"
+import "nova/datastruct/list/Stack"
+
+import "flat/astro/util/Location"
+import "flat/astro/SyntaxMessage"
+import "flat/astro/tree/StatementIterator"
+import "flat/astro/tree/nodes/annotations/Annotation"
+import "flat/astro/tree/nodes/functions/closures/ClosureContext"
+import "flat/astro/tree/nodes/functions/closures/ClosureDeclaration"
+
+class NovaFileWriter {
+    public writePackageDeclaration(OutputStream writer = new StringBuilder()) =>
+        packageDeclaration ?
+            writer.write(packageDeclaration.toNova() + "\n\n") :
+            writer
+
+    public writeImports(OutputStream writer = new StringBuilder()) =>
+        (let userImports = imports.filter({ _.userAdded })).count > 0 ?
+            writer.write(userImports.map({ _.toNova() + "\n" }).join() + "\n") :
+            writer
+
+    public toNova(OutputStream writer = new StringBuilder()) => writer {
+        writePackageDeclaration(writer)
+        writeImports(writer)
+        writer.write(classes.map({ _.toNova() }).join("\n"))
+    }
+
+    public toString() => file.name
+}

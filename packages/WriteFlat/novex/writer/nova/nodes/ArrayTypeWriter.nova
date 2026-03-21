@@ -1,0 +1,21 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/ArrayType"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+[AutoFinal]
+class ArrayTypeWriter {
+    public static writeArray(ArrayType node, OutputStream writer = new StringBuilder()) =>
+        writer.write("[]".repeat(node.arrayDimensions))
+
+    public static writeNova(ArrayType node, OutputStream writer = new StringBuilder()) => writer {
+        writer.write(node.type.name)
+        writeArray(writer)
+        writeGenericArguments(writer)
+    }
+}

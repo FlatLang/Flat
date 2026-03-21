@@ -1,0 +1,22 @@
+package "flat/writer/nova/nodes/variables"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/Identifier"
+import "flat/astro/tree/nodes/annotations/Modifier"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class VariableDeclarationWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write((type ? writeType() + " " : "") + name)
+}

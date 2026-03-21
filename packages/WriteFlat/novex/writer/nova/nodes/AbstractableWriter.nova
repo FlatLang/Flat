@@ -1,0 +1,10 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+
+import "flat/astro/tree/nodes/Abstractable"
+
+trait AbstractableWriter {
+    public static writeAbstract(Abstractable node, OutputStream writer = new StringBuilder()) => node.isAbstract ? writer.write("abstract ") : writer
+}

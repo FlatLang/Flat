@@ -1,0 +1,22 @@
+package "flat/writer/nova/nodes/variables"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/Identifier"
+import "flat/astro/tree/nodes/Accessible"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/operations/Assignable"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class VariableWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writer.write(declaration.name)
+        writeArrayAccess(writer)
+        writeAccessedNodes(writer)
+    }
+}

@@ -1,0 +1,10 @@
+package "flat/writer/nova/nodes/functions/closures"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+
+class ClosureContextWriter {
+
+}

@@ -1,0 +1,28 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxMessage"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/generics/GenericType"
+import "flat/astro/tree/nodes/generics/GenericArgument"
+import "flat/astro/tree/nodes/generics/GenericParameter"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+[AutoFinal]
+class TypeWriter {
+    public writeGenericArguments(OutputStream writer = new StringBuilder()) =>
+        genericArguments.count > 0 ?
+            writer.write("<#{genericArguments.join(", ")}>") :
+            writer
+
+    public toString(OutputStream writer = new StringBuilder()) => writeNova(writer)
+    public toNova(OutputStream writer = new StringBuilder()) => writeNova(writer)
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writer.write("#name")
+        writeGenericArguments(write)
+    }
+}

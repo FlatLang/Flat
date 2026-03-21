@@ -1,0 +1,11 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/NodeList"
+import "flat/astro/util/Location"
+
+class ParameterListWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write("(#{parameters.join(", ")})")
+}

@@ -1,0 +1,11 @@
+package "flat/writer/nova/nodes/controlstructures/loops"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/controlstructures/ControlStructure"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/util/Location"
+
+class LoopWriter {
+
+}

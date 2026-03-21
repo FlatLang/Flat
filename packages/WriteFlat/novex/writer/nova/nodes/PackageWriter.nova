@@ -1,0 +1,14 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "nova/datastruct/HashMap"
+
+import "flat/astro/util/Location"
+import "flat/astro/SyntaxMessage"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class PackageWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write(location ? "package \"#location\"" : "")
+}

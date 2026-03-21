@@ -1,0 +1,27 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/NodeList"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ObjectNotationWriter {
+    public writeChildren(OutputStream writer = new StringBuilder()) =>
+        children.count > 0 ?
+            writer.write("\n" + children.map({ _.toNova() + "\n" }).join()) :
+            writer
+
+    public writeNova(OutputStream writer = new StringBuilder()) =>
+        writer.write("{" + writeChildren() + "}")
+}

@@ -1,0 +1,15 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/util/Location"
+import "flat/astro/SyntaxMessage"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class MutatorFunctionWriter {
+    public writeHeader(OutputStream writer = new StringBuilder()) => writer.write(disabled ? "no " : "").write("set")
+}

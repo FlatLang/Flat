@@ -1,0 +1,15 @@
+package "flat/writer/nova/nodes/variables"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/operations/Assignable"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class LocalDeclarationWriter {
+
+}

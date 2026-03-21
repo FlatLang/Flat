@@ -1,0 +1,17 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/ArgumentList"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/util/Location"
+
+/// @ArgumentList extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class FunctionArgumentListWriter {
+
+}

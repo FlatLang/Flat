@@ -1,0 +1,11 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/Astro"
+import "flat/astro/tree/SyntaxTree"
+import "flat/astro/SyntaxMessage"
+
+class ProgramWriter {
+    public toString() => "Program"
+}

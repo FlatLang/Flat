@@ -1,0 +1,26 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "nova/datastruct/Tuple2"
+
+import "flat/astro/SyntaxMessage"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/arrays/ArrayAccess"
+import "flat/astro/tree/nodes/operations/Operation"
+import "flat/astro/tree/nodes/operations/UnaryOperation"
+import "flat/astro/tree/nodes/operations/TernaryOperation"
+import "flat/astro/tree/nodes/operations/ElvisOperation"
+import "flat/astro/tree/nodes/operations/Assignable"
+import "flat/astro/tree/nodes/variables/Variable"
+import "flat/astro/tree/nodes/functions/FunctionCall"
+import "flat/astro/tree/nodes/functions/ArrayInstantiation"
+import "flat/astro/tree/nodes/functions/Instantiation"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class ValueWriter {
+    public static writeType(OutputStream writer = new StringBuilder()) => type.toNova(writer)
+    public static writeArrayAccess(OutputStream writer = new StringBuilder()) => arrayAccess ? arrayAccess.toNova(writer) : writer
+}

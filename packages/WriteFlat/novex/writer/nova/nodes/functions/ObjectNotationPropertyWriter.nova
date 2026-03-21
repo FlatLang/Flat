@@ -1,0 +1,25 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/NodeList"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+import "flat/astro/tree/nodes/variables/Variable"
+import "flat/astro/tree/nodes/operations/Assignment"
+import "flat/astro/tree/nodes/operations/Operator"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Assignment extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ObjectNotationPropertyWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write("#assigned.toNova(): #assignment.toNova()")
+}

@@ -1,0 +1,19 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/functions/Instantiation"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Instantiation extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class NumericRangeWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write("#{start?.toNova()}..#{end?.toNova()}")
+}

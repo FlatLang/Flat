@@ -1,0 +1,22 @@
+package "flat/writer/nova/nodes/operations"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/Accessible"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Value extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class TernaryOperationWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) =>
+        writer.write("#condition.toNova() ? #trueValue.toNova() : #falseValue.toNova()")
+}

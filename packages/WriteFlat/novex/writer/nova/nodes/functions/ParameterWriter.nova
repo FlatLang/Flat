@@ -1,0 +1,24 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/variables/LocalDeclaration"
+import "flat/astro/tree/nodes/functions/closures/ClosureDeclaration"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class ParameterWriter {
+    public writeDefaultValue(OutputStream writer = new StringBuilder()) =>
+        defaultValue ?
+            writer.write(" = " + defaultValue.toNova()) :
+            writer
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        super.writeNova(writer)
+        writeDefaultValue(writer)
+    }
+}

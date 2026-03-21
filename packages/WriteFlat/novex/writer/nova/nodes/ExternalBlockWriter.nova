@@ -1,0 +1,32 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "nova/regex/Pattern"
+
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Node extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+[AutoFinal]
+class ExternalBlockWriter {
+    public writeTargets(OutputStream writer = new StringBuilder()) =>
+        targets.count > 0 ?
+            writer.write(targets.map({ " #_" }).join(",")) :
+            writer
+
+    public writeContents(OutputStream writer = new StringBuilder()) => writer.write(" {\n#contents\n}")
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writer.write("external")
+        writeTargets(writer)
+        writeContents(writer)
+    }
+}

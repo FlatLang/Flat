@@ -1,0 +1,22 @@
+package "flat/writer/nova/nodes/operations"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/SyntaxMessage"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class OperationWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        for (i in 0..operators.count) {
+            writer.write("#operands[i] #operators[i] ")
+        }
+
+        writer.write("#operands.last")
+    }
+}

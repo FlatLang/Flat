@@ -1,0 +1,38 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/ScopeDeclaration"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/tree/nodes/Return"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/util/Location"
+import "flat/astro/SyntaxMessage"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class BodyFunctionWriter {
+    public writeReturnType(OutputStream writer = new StringBuilder()) =>
+        implicitType ?
+            writer :
+            super.writeReturnType(writer)
+
+    writeInlineBody(OutputStream writer = new StringBuilder()) =>
+        writer.write("=> " + inlineBody.toNova() +
+            (scope.children.count > 0 ?
+                " " + scope.toNova() :
+                ""))
+
+    public writeBody(OutputStream writer = new StringBuilder()) =>
+        writer.write(" " + (inlineBody ?
+            writeInlineBody() :
+            scope.toNova()))
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writeHeader(writer)
+        writeBody(writer)
+    }
+}

@@ -1,0 +1,23 @@
+package "flat/writer/nova/nodes/controlstructures"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/SyntaxMessage"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @ControlStructure extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ElseStatementWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => {
+        writer.write("else ")
+        writer.write(inlineIf ? inlineIf.toNova() : scope.toNova())
+    }
+}

@@ -1,0 +1,51 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/Astro"
+import "flat/astro/InvalidParseException"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/error/UnimplementedOperationException"
+import "flat/astro/tree/nodes/annotations/Annotatable"
+import "flat/astro/tree/nodes/annotations/Annotation"
+import "flat/astro/tree/nodes/exceptionhandling/Try"
+import "flat/astro/util/Location"
+import "flat/astro/error/UnimplementedOperationException"
+import "flat/astro/tree/nodes/functions/FunctionDeclaration"
+import "flat/astro/tree/nodes/functions/FunctionCall"
+import "flat/astro/tree/nodes/functions/Instantiation"
+import "flat/astro/tree/nodes/functions/closures/LambdaExpression"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+
+import "nova/datastruct/Bounds"
+
+/// Class that is the parent of all Nodes on the Tree. Keeps the basic
+/// information of where the statement was in the source, and where it was
+/// output in the destination file.
+///
+/// author:  Braden Steffaniak
+/// since:   v0.1 Jan 5, 2014 at 9:00:11 PM
+/// version: v0.2.41 Dec 17, 2014 at 7:48:17 PM
+[AutoFinal]
+class NodeWriter {
+    visible Node node
+
+    public construct(visible Node node) {}
+
+    public writeAnnotationSeparator(OutputStream writer = new StringBuilder()) => writer.write(" ")
+
+    public writeAnnotations(OutputStream writer = new StringBuilder()) =>
+        node.annotations && node.annotations.count > 0 ?
+            writer.write(node.annotations.filter({ !_.isModifier }).map({ _.toNova() + writeAnnotationSeparator() }).join() +
+                node.annotations.filter({ _.isModifier }).map({ _.toNova() + " " }).join()) :
+            writer
+
+    public toNova(OutputStream writer = new StringBuilder()) => writer {
+        writeAnnotations(writer)
+        writeNova(writer)
+    }
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write("{{#this.class}}")
+
+    public toString() => toNova().toString()
+}

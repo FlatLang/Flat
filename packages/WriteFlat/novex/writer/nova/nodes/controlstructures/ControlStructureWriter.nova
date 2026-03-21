@@ -1,0 +1,12 @@
+package "flat/writer/nova/nodes/controlstructures"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/tree/nodes/ScopeDeclaration"
+
+class ControlStructureWriter {
+
+}

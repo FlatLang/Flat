@@ -1,0 +1,25 @@
+package "flat/writer/nova/nodes/exceptionhandling"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/Scope"
+import "flat/astro/tree/nodes/ScopeDeclaration"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// ExceptionHandler extension that represents the declaration of a
+/// try node type. See {@link #decodeStatement(Node, String, Location, boolean)}
+/// for more details on what correct inputs look like.
+///
+/// @author    Braden Steffaniak
+/// @since    v0.1 Mar 22, 2014 at 4:01:38 PM
+/// @version    v0.2.38 Dec 6, 2014 at 5:19:17 PM
+class TryWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) =>
+        writer.write("try #scope.toNova()")
+}

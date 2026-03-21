@@ -1,0 +1,10 @@
+package "flat/writer/nova/nodes/operations"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+
+trait AssignableWriter {
+
+}

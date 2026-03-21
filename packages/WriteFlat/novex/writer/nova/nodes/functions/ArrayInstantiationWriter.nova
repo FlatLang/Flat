@@ -1,0 +1,28 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/ArrayType"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/Type"
+import "flat/astro/tree/nodes/variables/VariableDeclaration"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @Instantiation extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+class ArrayInstantiationWriter {
+    public writeDimensions(OutputStream writer = new StringBuilder()) => writer.write(dimensions.map({ "[#{_.toNova()}]" }).join())
+
+    public writeNova(OutputStream writer = new StringBuilder()) => writer {
+        writer.write("new #arrayType.type.name")
+        writeDimensions(writer)
+    }
+}

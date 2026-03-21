@@ -1,0 +1,20 @@
+package "flat/writer/nova/nodes/functions"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Identifier"
+import "flat/astro/InvalidParseException"
+import "flat/astro/tree/nodes/annotations/Annotation"
+import "flat/astro/tree/AnnotationSearchResult"
+import "flat/astro/tree/nodes/generics/GenericParameter"
+import "flat/astro/tree/nodes/generics/GenericCompatible"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/SyntaxTree"
+import "flat/astro/SyntaxMessage"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+trait CallableFunctionWriter {
+
+}

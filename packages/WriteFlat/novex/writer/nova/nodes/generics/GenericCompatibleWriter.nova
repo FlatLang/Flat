@@ -1,0 +1,18 @@
+package "flat/writer/nova/nodes/generics"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/tree/nodes/Type"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+trait GenericCompatibleWriter {
+    public writeGenericParameters(OutputStream writer = new StringBuilder()) =>
+        genericParameters.count > 0 ?
+            writer.write("<" + genericParameters.map({ _.toNova() }).join(", ") + ">") :
+            writer
+}

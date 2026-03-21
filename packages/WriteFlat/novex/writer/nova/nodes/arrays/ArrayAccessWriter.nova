@@ -1,0 +1,20 @@
+package "flat/writer/nova/nodes/arrays"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/tree/nodes/Node"
+import "flat/astro/tree/nodes/Value"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/util/Location"
+
+/// @Node extension that keeps track of any time an array is being accessed.
+/// For example, the statement: "[34]" is an array access. The previous code
+/// segment does nothing on its own, however these nodes will be intertwined
+/// with method calls, assignments, if statements, etc.
+///
+/// author:  Braden Steffaniak
+/// since:   v0.2 Mar 24, 2014 at 10:45:29 PM
+/// version: v0.2.45 Oct 20, 2016 at 10:19:22 PM
+class ArrayAccessWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write(dimensions.map({ "[#{_.toNova()}]" }).join())
+}

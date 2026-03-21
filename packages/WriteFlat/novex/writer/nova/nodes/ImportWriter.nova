@@ -1,0 +1,13 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxMessage"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+class ImportWriter {
+    public writeNova(OutputStream writer = new StringBuilder()) => writer.write("import \"#importLocation\"")
+}

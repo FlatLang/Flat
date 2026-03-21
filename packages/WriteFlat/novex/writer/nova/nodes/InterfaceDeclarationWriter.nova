@@ -1,0 +1,19 @@
+package "flat/writer/nova/nodes"
+
+import "nova/io/OutputStream"
+import "nova/io/StringBuilder"
+import "flat/astro/SyntaxErrorException"
+import "flat/astro/InvalidParseException"
+import "flat/astro/util/Location"
+
+import "flat/astro/util/CompilerStringFunctions"
+
+/// @TraitDeclaration extension that represents
+///
+/// author: Braden Steffaniak
+/// since:
+/// version:
+[AutoFinal]
+class InterfaceDeclarationWriter {
+
+}
