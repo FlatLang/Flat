@@ -1,0 +1,7 @@
+package flat/annotations/java
+
+import flat/ast
+
+data class extends AnnotationNode {
+    override static visible lazy String identifier => "Override"
+}

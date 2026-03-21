@@ -1,0 +1,9 @@
+package flat/annotations/java
+
+testable class {
+    test `can create`() {
+        let value = Annotations()
+
+        expect(value).toNotBe(null)
+    }
+}

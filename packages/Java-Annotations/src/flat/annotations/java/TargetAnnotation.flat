@@ -1,0 +1,10 @@
+package flat/annotations/java
+
+import flat/ast
+
+data class extends AnnotationNode {
+    override static visible lazy String identifier => "Target"
+
+    visible String[] includes = Array()
+    visible String[] excludes = Array()
+}
