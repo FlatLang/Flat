@@ -1,0 +1,17 @@
+package flat/io
+
+class {
+    public construct() {}
+
+    override public write(String data) => this {
+        external {
+            #{File.FileGlobal.fs}.writeFileSync(#{file.location.chars.data}, #{data.chars.data});
+        }
+    }
+
+    public append(String data) => data {
+        external {
+            #{File.FileGlobal.fs}.appendFileSync(#{file.location.chars.data}, #{data.chars.data});
+        }
+    }
+}

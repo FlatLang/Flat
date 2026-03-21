@@ -1,0 +1,68 @@
+package flat/io
+
+import flat/time/Time
+import flat/regex/Pattern
+
+import flat/regex/RegexStringExtensions
+
+class File {
+    visible String location
+    visible String normalizedLocation
+    visible String name => normalizedLocation.substring(normalizedLocation.lastIndexOf('/') + 1)
+    visible String extension => normalizedLocation.substring(normalizedLocation.lastIndexOf('.', defaultReturnValue: normalizedLocation.count))
+    visible String fullExtension => normalizedLocation.substring(normalizedLocation.indexOf('.', start: normalizedLocation.lastIndexOf('/', defaultReturnValue: 0), defaultReturnValue: normalizedLocation.count))
+    visible String extensionName => normalizedLocation.substring(normalizedLocation.lastIndexOf('.', defaultReturnValue: normalizedLocation.count - 1) + 1)
+    visible String rootName => name.substring(end: name.count - extension.count)
+
+    visible String[] extensionNames => fullExtension.split(/\./).skip(1)
+    visible String[] extensions => extensionNames.map({ ".#{_}" })
+
+    visible Bool isHidden => name.startsWith(".")
+    visible Bool isFile => exists && !isDirectory
+    visible Bool isDirectory => false
+    visible Bool exists => false
+
+    visible String nativeLocation {
+        get {
+            return match System.OS_INT {
+                System.WINDOWS => normalizedLocation.replace("/", "\\")
+                default => normalizedLocation
+            }
+        }
+    }
+
+    static {
+        File exitLog = File("log#Time.currentTimeMillis")
+    }
+
+    public getChildFiles(
+        Bool recursive = false,
+        Bool includeHidden = false,
+        Bool includeDirectories = false
+    ) -> File[] {
+        let list = files
+
+        let directories = list
+            .filter({ _.isDirectory })
+            .filter({ includeHidden || !_.isHidden })
+            .filter({ _.name != "." })
+            .filter({ _.name != ".." })
+
+        if (recursive) {
+            directories.forEach({ list.addAll(_.getChildFiles(recursive: true)) })
+        }
+
+        return list
+            .filter({ includeDirectories || !_.isDirectory })
+            .filter({ includeHidden || !_.isHidden })
+    }
+
+    normalizeLocation(String location) -> String {
+        return location.replace("\\", "/").trimEnd('/')
+    }
+
+    public equals(Object other) => (other || !this) && other.class.isOfType(File.class) && equals((File)other)
+    public equals(File other) => (other || !this) && other.normalizedLocation == normalizedLocation
+
+    public toString() => "{File \"#normalizedLocation\"}"
+}

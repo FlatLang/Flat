@@ -1,0 +1,33 @@
+{
+  "name": "IO",
+  "version": "0.1.0",
+  "description": "Flat IO Library",
+  "author": "Braden Steffaniak",
+  "license": "ISC",
+  "scripts": {
+    "test": "node dist/es6/test.js"
+  },
+  "sources": {
+    "main": {
+      "source": "src",
+      "defaultExports": [
+        "flat/io/Console"
+      ],
+      "dependencies": {
+        "https://github.com/FlatLang/Time.git": "master",
+        "https://github.com/FlatLang/Compiler-String-Extensions.git": "master",
+        "https://github.com/FlatLang/System.git": "master",
+        "https://github.com/FlatLang/IO.git": "master",
+        "https://github.com/FlatLang/Event-Stream.git": "master",
+        "https://github.com/FlatLang/NodeImport.git": "master"
+      }
+    },
+    "test": {
+      "mainClass": "flat/io/IO_TestSuite",
+      "source": "src/**/*_Test*.flat",
+      "dependencies": {
+        "https://github.com/FlatLang/Test.git": "master"
+      }
+    }
+  }
+}

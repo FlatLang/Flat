@@ -1,0 +1,17 @@
+package flat/io
+
+class FileReader implements InputStream {
+    visible Bool isOpen => false
+
+    public readBytes() -> Byte[] => null
+
+    visible File file
+
+    public construct(visible File file) {
+        open()
+    }
+
+    public open() {}
+
+    public close() => true {}
+}

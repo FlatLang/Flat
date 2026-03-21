@@ -1,0 +1,6 @@
+package flat/io
+
+trait InputStream {
+    public readString() -> String
+    public readBytes() -> Byte[]
+}

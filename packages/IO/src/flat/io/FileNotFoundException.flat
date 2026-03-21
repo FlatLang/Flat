@@ -1,0 +1,5 @@
+package flat/io
+
+class extends Exception {
+    public construct(File file) => super("File at location '#{file.location}' does not exist")
+}

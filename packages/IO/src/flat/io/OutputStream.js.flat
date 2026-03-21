@@ -1,0 +1,7 @@
+package flat/io
+
+trait OutputStream {
+    public async captureOutput(async action(), Bool silent = true) -> String[] {
+        return Array<String>()
+    }
+}

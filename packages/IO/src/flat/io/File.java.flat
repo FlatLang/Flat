@@ -1,0 +1,257 @@
+package flat/io
+
+import flat/time/Time
+import flat/eventstream/EventStream
+
+class File {
+    visible static File EXECUTED_FILE = getExecutedFile()
+    visible static File EXECUTED_DIRECTORY = getExecutedDirectory()
+
+    native var Object javaFile
+
+    visible Bool isDirectory {
+        get {
+            if (!exists) {
+                return false
+            }
+
+            external {
+
+            }
+
+            return false
+        }
+    }
+
+    visible Bool isSymbolicLink {
+        get {
+            if (!exists) {
+                return false
+            }
+
+            external {
+
+            }
+
+            return false
+        }
+    }
+
+    visible Bool exists {
+        get {
+            external {
+
+            }
+
+            return false
+        }
+    }
+
+    visible File[] files {
+        get {
+            if (!isDirectory) {
+                throw Exception("\"#{location}\" must be a directory to list files")
+            }
+
+            var list = File[]
+            native_array native Char[] filename
+
+            external {
+
+            }
+
+            return list
+        }
+    }
+
+    visible Long bytes {
+        get {
+            external {
+
+            }
+        }
+    }
+
+    public toFileSize() => Long.toFileSize(bytes)
+
+    public construct(File parent, String path) {
+        this(parent.normalizedLocation + "/" + path.trimStart('/'))
+    }
+
+    public construct(visible String location) {
+        normalizedLocation = normalizeLocation(location)
+    }
+
+    static getExecutedFile() -> File => null {
+        native_array native var Char[] data
+
+        external {
+
+        }
+
+        return File(String(data))
+    }
+
+    static getExecutedDirectory() -> File => null {
+        native_array native var Char[] data
+
+        external {
+
+        }
+
+        return File(String(data))
+    }
+
+    public async getCanonicalFile() -> File {
+        return File(getCanonicalPath())
+    }
+
+    public getCanonicalFileSync() -> File {
+        return File(getCanonicalPathSync())
+    }
+
+    public async getCanonicalPath() -> String {
+        var current = this
+        let names = Array<String>()
+
+        while (current) {
+            let target = current.isSymbolicLink ?
+                current.getSymbolicLinkTarget() :
+                current.normalizedLocation
+
+            if (!normalizedLocation.startsWith(target)) {
+                return normalizeLocation(target + "/" + names.join("/"))
+            }
+
+            names.unshift(current.name)
+            current = current.getParent()
+        }
+
+        return normalizedLocation
+    }
+
+    public getCanonicalPathSync() -> String {
+        var current = this
+        let names = Array<String>()
+
+        while (current) {
+            let target = current.isSymbolicLink ?
+                current.getSymbolicLinkTargetSync() :
+                current.normalizedLocation
+
+            if (!normalizedLocation.startsWith(target)) {
+                return normalizeLocation(target + "/" + names.join("/"))
+            }
+
+            names.unshift(current.name)
+            current = current.getParent()
+        }
+
+        return normalizedLocation
+    }
+
+    public async getSymbolicLinkTarget() -> String {
+        native_array native var Char[] data
+
+        external {
+
+        }
+
+        return normalizeLocation(String(data))
+    }
+
+    public getSymbolicLinkTargetSync() -> String {
+        native_array native var Char[] data
+
+        external {
+
+        }
+
+        return normalizeLocation(String(data))
+    }
+
+    public getParent() -> File => null {
+        native_array native var Char[] data
+
+        external {
+
+        }
+
+        let parentLocation = String(data)
+
+        if (parentLocation != location) {
+            return File(parentLocation)
+        }
+    }
+
+    public getChild(String location) => File(this.location + "/" + location)
+
+    public async delete(
+        Bool: recursive = false,
+        Bool: force = false
+    ) => true {
+        if (!exists) {
+            return false
+        }
+
+        native_array native var Char[] errorMessage
+
+        external {
+
+        }
+    }
+
+    public async mkdirs() => mkdir(true)
+
+    public async mkdir(Bool recursive = false, Bool: failOnExistsAlready = false) => true {
+        external {
+
+        }
+    }
+
+    public async copy(File destination) => true {
+        if (isDirectory) {
+            if (!destination.isDirectory) {
+                destination.mkdir()
+            }
+
+            let files = getChildFiles(
+                recursive: false,
+                includeHidden: true,
+                includeDirectories: true
+            )
+
+            for (file in files) {
+                file.copy(File(destination, file.name))
+            }
+        } else {
+
+        }
+    }
+
+    public async chmod(String mode) => true {
+        external {
+
+        }
+    }
+
+    public async symbolicLinkTo(File target) => true {
+        external {
+
+        }
+    }
+
+    public static async symbolicLink(File from, File to) => from.symbolicLinkTo(to)
+
+    public createReadStream(String encoding = "utf8") -> EventStream {
+        let stream = EventStream(true)
+
+        native_array native var Char[] data
+
+        external {
+
+        }
+
+        return stream
+    }
+}

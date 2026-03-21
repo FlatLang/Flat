@@ -1,0 +1,10 @@
+package flat/io
+
+class FileWriter implements OutputStream {
+    visible Bool isOpen => false
+
+    public construct(visible File file) {}
+    public construct(String location) => this(File(location))
+
+    override public writeLine(String line = "") => write("#line\n")
+}

@@ -1,0 +1,7 @@
+package flat/io
+
+class {
+    public static OutputStream out = ConsoleOutputStream("log")
+    public static OutputStream warn = ConsoleOutputStream("warn")
+    public static OutputStream error = ConsoleOutputStream("error")
+}

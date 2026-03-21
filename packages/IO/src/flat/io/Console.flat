@@ -1,0 +1,26 @@
+package flat/io
+
+class {
+    public static log(Object obj = "") => out.writeLine(obj.toString())
+
+    public static writeLine() => out.writeLine("")
+    public static writeLine(String text) => out.writeLine(text)
+    public static writeLine(Object obj) => out.writeLine(obj.toString())
+    public static writeLine(Double num) => out.writeLine(Double.toString(num))
+    public static writeLine(Float num) => out.writeLine(Double.toString(num))
+    public static writeLine(Long num) => out.writeLine(Long.toString(num))
+    public static writeLine(Int num) => out.writeLine(Int.toString(num))
+    public static writeLine(Short num) => out.writeLine(Int.toString(num))
+    public static writeLine(Byte num) => out.writeLine(Byte.toString(num))
+    public static writeLine(Char c) => out.writeLine(Char.toString(c))
+
+    public static write(String text) => out.write(text)
+    public static write(Object obj) => out.write(obj.toString())
+    public static write(Double num) => out.write(Double.toString(num))
+    public static write(Float num) => out.write(Double.toString(num))
+    public static write(Long num) => out.write(Long.toString(num))
+    public static write(Int num) => out.write(Int.toString(num))
+    public static write(Short num) => out.write(Int.toString(num))
+    public static write(Byte num) => out.write(Byte.toString(num))
+    public static write(Char c) => out.write(Char.toString(c))
+}

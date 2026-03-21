@@ -1,0 +1,32 @@
+package flat/io
+
+class FileReader {
+    public readAllContents() -> String {
+        var Int size
+
+        native_array native var Char[] buffer
+
+        external {
+            try {
+                #{buffer} = #{File.FileGlobal.fs}.readFileSync(#{file.location.chars.data}, 'utf8');
+                #{size} = #{buffer}.length;
+            } catch (err) {
+                #{throw Exception("Could not read contents of file '#file.location'")};
+            }
+        }
+
+        return String(buffer, size)
+    }
+
+    public readString() -> String {
+        return readAllContents()
+    }
+
+    public readLine() -> String {
+        return readString()
+    }
+
+    public readChar() -> Char {
+        return 0
+    }
+}

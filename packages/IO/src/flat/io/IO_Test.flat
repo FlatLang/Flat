@@ -1,0 +1,11 @@
+package flat/io
+
+import flat/io/File
+
+testable class {
+    test `can create file`() {
+        let value = File("test")
+
+        expect(value).toNotBe(null)
+    }
+}

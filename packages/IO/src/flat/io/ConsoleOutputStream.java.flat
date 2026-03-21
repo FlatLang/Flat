@@ -1,0 +1,69 @@
+package flat/io
+
+import flat/regex
+
+import flat/regex/RegexStringExtensions
+
+class {
+    native var Object outStream
+
+    public construct(
+        private String name
+    ) {
+        if (name == "out") {
+            external {
+                #{outStream} = java.lang.System.out;
+            }
+        } else if (name == "error") {
+            external {
+                #{outStream} = java.lang.System.err;
+            }
+        }
+    }
+
+    private var String buffer = ""
+
+    override public write(String data = "") => this {
+        let newLines = data.howMany('\n')
+
+        if (newLines > 1) {
+            let index = data.lastIndexOf("\n")
+            let dataToPrint = buffer + data.substring(0, index)
+
+            buffer = data.substring(index)
+
+            external {
+                ((java.io.PrintStream)#{outStream}).print(#{dataToPrint.chars.data});
+            }
+        } else {
+            buffer += data
+        }
+    }
+
+    override public writeLine(String data = "") => this {
+        if (buffer.isNotEmpty) {
+            buffer += data
+            flush()
+        } else {
+            external {
+                ((java.io.PrintStream)#{outStream}).println(#{data.chars.data});
+            }
+        }
+    }
+
+    public async captureOutput(async action(), Bool silent = true) -> String[] {
+        return [""]
+    }
+
+    public flush() => true {
+        if (buffer.count > 0) {
+            external {
+                ((java.io.PrintStream)#{outStream}).println(#{buffer.chars.data});
+            }
+
+            buffer = ""
+        }
+    }
+
+    public close() => false
+}

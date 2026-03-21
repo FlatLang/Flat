@@ -1,0 +1,25 @@
+package flat/io
+
+class FileReader {
+    public readAllContents() -> String {
+        native_array native var Char[] buffer
+
+        external {
+
+        }
+
+        return String(buffer)
+    }
+
+    public readString() -> String {
+        return readAllContents()
+    }
+
+    public readLine() -> String {
+        return readString()
+    }
+
+    public readChar() -> Char {
+        return 0
+    }
+}

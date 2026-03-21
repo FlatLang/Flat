@@ -1,0 +1,105 @@
+package flat/io
+
+import flat/regex/Pattern
+
+import flat/regex/RegexStringExtensions
+
+class {
+    public construct(
+        private String name
+    ) {}
+
+    private var String buffer = ""
+
+    override public write(String data = "") => this {
+        let newLines = data.howMany('\n')
+
+        if (newLines > 1) {
+            let index = data.lastIndexOf("\n")
+            let dataToPrint = buffer + data.substring(0, index)
+
+            buffer = data.substring(index)
+
+            external {
+                console[#{name.chars.data}](#{dataToPrint.chars.data});
+            }
+        } else {
+            buffer += data
+        }
+    }
+
+    override public writeLine(String data = "") => this {
+        if (buffer.isNotEmpty) {
+            buffer += data
+            flush()
+        } else {
+            external {
+                console[#{name.chars.data}](#{data.chars.data});
+            }
+        }
+    }
+
+    public async captureOutput(async action(), Bool silent = true) -> String[] {
+        let output = Array<String>()
+        native_array native var Char[] data
+
+        let oldBuffer = buffer
+        buffer = ""
+
+        external {
+            var originalLog = console[#{name.chars.data}];
+            var log = [];
+        }
+        if (silent) {
+            external {
+                console[#{name.chars.data}] = function () {
+                    log.push([].slice.call(arguments));
+                };
+            }
+        } else {
+            external {
+                console[#{name.chars.data}] = function () {
+                    originalLog.apply(this, [].slice.call(arguments));
+                    log.push([].slice.call(arguments));
+                };
+            }
+        }
+
+        try {
+            action()
+        } finally {
+            external {
+                console[#{name.chars.data}] = originalLog;
+
+                log.forEach((line) => {
+                    #{data} = line.map(o => o.toString()).join(" ");
+
+                    #{output.add(String(data))};
+                });
+            }
+
+            if (buffer.count > 0) {
+                external {
+                    #{data} = #{buffer.chars.data};
+                    #{output.add(String(data))};
+                }
+            }
+
+            buffer = oldBuffer
+        }
+
+        return output
+    }
+
+    public flush() => true {
+        if (buffer.count > 0) {
+            external {
+                console[#{name.chars.data}](#{buffer.chars.data});
+            }
+
+            buffer = ""
+        }
+    }
+
+    public close() => false
+}
