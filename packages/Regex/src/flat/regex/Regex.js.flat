@@ -1,0 +1,57 @@
+package flat/regex
+
+class Regex {
+    public static getMatches(String pattern, String search) =>
+        getMatches(Pattern(pattern), search)
+
+    public static getMatches(Pattern pattern, String search) -> Match[] {
+        var Int count
+        var Int start
+        var String str
+        let matches = Array<Match>()
+
+        external {
+            var regexMatches = #{search.chars.data}.matchAll(#{pattern.regexObj});
+
+            for (var m of regexMatches) {
+                #{start} = m.index;
+                #{count} = m[0].length;
+                #{matches.add(Match(search, start, start + count))};
+            }
+        }
+
+        return matches
+    }
+
+    public static getMatchGroups(Pattern pattern, String search) -> MatchGroup[] {
+        var Int index
+        var Int matchIndex = 0
+        native_array native var Char[] groupData
+        native var String groupStr
+        let matches = Array<MatchGroup>()
+
+        external {
+            var regexMatches = #{search.chars.data}.matchAll(#{pattern.regexObj});
+
+            for (var match of regexMatches) {
+                match.forEach((group, i) => {
+                    #{groupData} = group;
+                    #{groupStr} = typeof group === 'undefined' ? #{null} : #{String(groupData)};
+                    #{index} = i;
+                    #{
+                        matches.add(
+                            MatchGroup(
+                                value: groupStr,
+                                matchIndex: matchIndex,
+                                groupIndex: index
+                            )
+                        )
+                    };
+                });
+                #{matchIndex++};
+            }
+        }
+
+        return matches
+    }
+}

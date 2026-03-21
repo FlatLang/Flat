@@ -1,0 +1,9 @@
+package flat/regex
+
+class Pattern {
+    public construct(visible String pattern) {}
+
+    override public toString() => "|
+        /#{pattern}/g
+        |"
+}

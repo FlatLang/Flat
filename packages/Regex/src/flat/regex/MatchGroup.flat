@@ -1,0 +1,7 @@
+package flat/regex
+
+data class {
+    visible String value
+    visible Int matchIndex
+    visible Int groupIndex
+}

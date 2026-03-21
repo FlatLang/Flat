@@ -1,0 +1,11 @@
+package flat/regex
+
+import flat/regex/Regex
+
+testable class {
+    test `can create`() {
+        let value = Regex()
+
+        expect(value).toNotBe(null)
+    }
+}

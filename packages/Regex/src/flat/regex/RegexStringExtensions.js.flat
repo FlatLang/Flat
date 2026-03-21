@@ -1,0 +1,39 @@
+package flat/regex
+
+import flat/datastruct/list/StringCharArray
+
+extension class {
+    public split(String this, Pattern regex) -> String[] {
+        native_array native Char[][] nativeStrs
+        native_array native Int count
+
+        external {
+            #{nativeStrs} = #{this.chars.data}.split(RegExp(#{regex.pattern.chars.data}));
+            #{count} = #{nativeStrs}.length;
+        }
+
+        return Array(count).map({
+            native_array native Char[] buf
+            native_array native Int length
+
+            external {
+                #{buf} = #{nativeStrs[_2]};
+                #{length} = #{buf}.length;
+            }
+
+            let array = StringCharArray(buf, length)
+
+            return String(array)
+        })
+    }
+
+    public replace(String this, Pattern pattern, String replace) -> String {
+        native_array native var Char[] data
+
+        external {
+            #{data} = #{this.chars.data}.replace(#{pattern.regexObj}, #{replace.chars.data});
+        }
+
+        return String(data)
+    }
+}
