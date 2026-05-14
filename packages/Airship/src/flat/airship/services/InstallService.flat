@@ -220,8 +220,8 @@ class {
         })
 
         response.dependencies
-            .filterParallel({ !areDependencySourcesEquivalent(_, gitDependency) })
             .filter({ _.isFlatPackage() })
+            .filterParallel({ !areDependencySourcesEquivalent(_, gitDependency) })
             .filter({ dependencyLocations[_].none({ canonicalSourceLocations.contains(_) }) })
             .forEach({
                 dependencyService
