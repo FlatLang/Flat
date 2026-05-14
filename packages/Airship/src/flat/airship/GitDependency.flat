@@ -20,7 +20,7 @@ data class extends Dependency {
     public construct(
         String url,
         this String branch,
-        Bool useLinks = true
+        private Bool useLinks = true
     ) {
         super()
 
@@ -40,14 +40,20 @@ data class extends Dependency {
         packageRootLocation = "#{Airship.flatHome}/packages/#{host}/#{ownerName}/#{repoName}"
         sshUrl = "git@#{host}:#{repoDetails}.git"
         httpsUrl = "https://#{host}/#{repoDetails}.git"
+        refreshLocation()
+    }
+
+    public refreshLocation() -> String {
         isLink = useLinks && Airship.useLinks && File("#{packageRootLocation}/[link]").exists
         version = isLink ? "[link]" : branch
         packageLocation = "#{packageRootLocation}/#{version}"
+
+        return packageLocation
     }
 
     public getUrl(Bool ssh = false) => ssh ? sshUrl : httpsUrl
 
-    override public getLocation() => packageLocation
+    override public getLocation() => refreshLocation()
 
     override public toJsonKey() -> String {
         return "\"#{httpsUrl}\""
