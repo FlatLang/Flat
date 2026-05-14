@@ -23,19 +23,20 @@ jobs:
         with:
           java-version: 8
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download latest Airship
-        uses: FlatLang/fetch-airship@master
+        uses: ./.github/actions/download-airship
         with:
+          repo: ${{ github.repository }}
           includePrerelease: true
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -45,9 +46,12 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
+
       - name: Build Flat-Parser with flatc
         env:
           LOGGING_DEFAULT_SHOW_PREFIX: false
           LOGGING_DEFAULT_LOGGING_LEVEL: INFO
         run: |
-          node airship.js install --flatc-runtime flat -t es6
+          node airship.js --use-links -f packages/Flat-Parser install --flatc-runtime flat -t es6

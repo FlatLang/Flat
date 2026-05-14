@@ -28,21 +28,20 @@ jobs:
         with:
           java-version: 11
 
-      - uses: actions/checkout@v3
-        with:
-          path: Airship
+      - uses: actions/checkout@v4
 
       - name: Download latest Airship
-        uses: FlatLang/fetch-airship@master
+        uses: ./.github/actions/download-airship
         with:
+          repo: ${{ github.repository }}
           includePrerelease: true
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -52,54 +51,39 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
+
       - name: Build Airship ${{ matrix.target }}
-        working-directory: Airship
         run: |
-          node ../airship.js install -t ${{ matrix.target }}
+          node airship.js --use-links -f packages/Airship install -t ${{ matrix.target }}
 
       - name: Delete Airship artifact
         run: |
           rm airship.js
 
       - name: Build Airship with Airship ${{ matrix.target }}
-        working-directory: Airship
         run: |
-          node dist/airship.js install -t ${{ matrix.target }}
-
-      - name: Link Airship
-        working-directory: Airship
-        run: |
-          node dist/airship.js install --link
+          node packages/Airship/dist/airship.js --use-links -f packages/Airship install -t ${{ matrix.target }}
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: airship.js
-          path: Airship/dist/airship.js
+          path: packages/Airship/dist/airship.js
 
       - name: Build Airship Tests with Airship ${{ matrix.target }}
-        working-directory: Airship
         run: |
-          node dist/airship.js install test -t ${{ matrix.target }}
+          node packages/Airship/dist/airship.js --use-links -f packages/Airship install test -t ${{ matrix.target }}
 
       - name: Run Airship Tests
-        working-directory: Airship
         run: |
-          node dist/airship.js run test -t ${{ matrix.target }}
-
-      - name: Checkout Stability-Test
-        uses: actions/checkout@master
-        with:
-          repository: FlatLang/Stability-Test
-          path: Stability-Test
+          node packages/Airship/dist/airship.js --use-links -f packages/Airship run test -t ${{ matrix.target }}
 
       - name: Build Stability-Test with Airship ${{ matrix.target }}
-        working-directory: Stability-Test
         run: |
-          node ../Airship/dist/airship.js install --link
-          node ../Airship/dist/airship.js install test -t ${{ matrix.target }}
+          node packages/Airship/dist/airship.js --use-links -f packages/Stability-Test install test -t ${{ matrix.target }}
 
       - name: Run Stability-Test
-        working-directory: Stability-Test
         run: |
-          node dist/${{ matrix.target }}/test.js
+          node packages/Stability-Test/dist/${{ matrix.target }}/test.js

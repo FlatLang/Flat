@@ -1,0 +1,37 @@
+name: Setup Flat monorepo packages
+description: Mirror local monorepo packages into FLAT_HOME so Airship can resolve FlatLang dependencies without cloning archived repos.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+
+        repo_root="${GITHUB_WORKSPACE:-$PWD}"
+        flat_home="${FLAT_HOME:-$HOME/.flat}"
+        package_root="$flat_home/packages/github.com/FlatLang"
+
+        mkdir -p "$package_root"
+
+        for package in "$repo_root"/packages/*; do
+          [ -d "$package" ] || continue
+
+          name="$(basename "$package")"
+          link_root="$package_root/$name"
+          link_path="$link_root/[link]"
+
+          mkdir -p "$link_root"
+          rm -rf "$link_path"
+          mkdir -p "$link_path"
+          cp -R "$package"/. "$link_path"/
+          mkdir -p "$link_path/.git"
+        done
+
+        # Airship treats [link] packages with a .git directory as installed, so it
+        # will not run their build scripts. Prebuild only the compiler/runtime
+        # packages whose target/*.jar artifacts Airship invokes directly.
+        for package in Flat Flat-ES6 Flat-JS Flat-Java; do
+          if [ -f "$package_root/$package/[link]/pom.xml" ]; then
+            mvn -f "$package_root/$package/[link]/pom.xml" install
+          fi
+        done

@@ -24,19 +24,20 @@ jobs:
         with:
           java-version: 8
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download latest Airship
-        uses: FlatLang/fetch-airship@master
+        uses: ./.github/actions/download-airship
         with:
+          repo: ${{ github.repository }}
           includePrerelease: true
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -46,10 +47,13 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
+
       - name: Build Flat-Core Java
         run: |
-          node airship.js install -t java
+          node airship.js --use-links -f packages/Flat-Core install -t java
 
       - name: Build Flat-Core with Maven
         run: |
-          mvn -f dist/java install
+          mvn -f packages/Flat-Core/dist/java install

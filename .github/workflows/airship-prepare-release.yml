@@ -6,6 +6,7 @@ on:
 
 jobs:
   package:
+    if: ${{ startsWith(github.event.release.tag_name, 'airship-') }}
     runs-on: ${{ matrix.release.os }}
 
     strategy:
@@ -17,18 +18,20 @@ jobs:
           - os: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Download Airship ${{ github.event.release.tag_name }}
-        uses: FlatLang/fetch-airship@master
+      - name: Download airship.js ${{ github.event.release.tag_name }}
+        uses: dsaltares/fetch-gh-release-asset@master
         with:
+          repo: ${{ github.repository }}
+          file: airship.js
           version: ${{ github.event.release.id }}
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
           version: 9
@@ -37,28 +40,28 @@ jobs:
       - name: Prepare binary
         shell: bash
         run: |
-          mkdir -p dist/
-          mv airship.js dist/airship.js
-          node --experimental-sea-config sea-config.json
+          mkdir -p packages/Airship/dist/
+          mv airship.js packages/Airship/dist/airship.js
+          (cd packages/Airship && node --experimental-sea-config sea-config.json)
 
       - name: Build windows binary
         if: ${{ matrix.release.os == 'windows-latest' }}
         shell: bash
         run: |
           cp $(command -v node) airship-win.exe
-          pnpm dlx postject airship-win.exe NODE_SEA_BLOB dist/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          pnpm dlx postject airship-win.exe NODE_SEA_BLOB packages/Airship/dist/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
 
       - name: Build macos binary
         if: ${{ matrix.release.os == 'macos-latest' }}
         run: |
           cp $(command -v node) airship-macos
-          pnpm dlx postject airship-macos NODE_SEA_BLOB dist/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
+          pnpm dlx postject airship-macos NODE_SEA_BLOB packages/Airship/dist/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
 
       - name: Build linux binary
         if: ${{ matrix.release.os == 'ubuntu-latest' }}
         run: |
           cp $(command -v node) airship-linux
-          pnpm dlx postject airship-linux NODE_SEA_BLOB dist/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
+          pnpm dlx postject airship-linux NODE_SEA_BLOB packages/Airship/dist/sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
 
       - name: Delete airship-win.exe Asset
         if: ${{ matrix.release.os == 'windows-latest' }}
@@ -124,6 +127,7 @@ jobs:
           asset_content_type: application/octet-stream
 
   compress:
+    if: ${{ startsWith(github.event.release.tag_name, 'airship-') }}
     runs-on: ubuntu-latest
     needs: package
 
@@ -158,8 +162,10 @@ jobs:
 
     steps:
       - name: Download airship.js ${{ github.event.release.tag_name }}
-        uses: FlatLang/fetch-airship@master
+        uses: dsaltares/fetch-gh-release-asset@master
         with:
+          repo: ${{ github.repository }}
+          file: airship.js
           version: ${{ github.event.release.id }}
 
       - name: Download Windows Asset
