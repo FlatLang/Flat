@@ -35,9 +35,20 @@ runs:
             [ -e "$entry" ] || continue
 
             entry_name="$(basename "$entry")"
-            [ "$entry_name" = ".git" ] && continue
+            case "$entry_name" in
+              .git|dist|node_modules|target)
+                continue
+                ;;
+            esac
 
-            ln -s "$entry" "$link_path/$entry_name" 2>/dev/null || cp -R "$entry" "$link_path/$entry_name"
+            if [ -d "$entry" ] && [ ! -L "$entry" ]; then
+              # The Java compiler does not traverse symlinked source roots, so
+              # keep package directories real while still avoiding bulky build
+              # outputs above.
+              cp -R "$entry" "$link_path/$entry_name"
+            else
+              ln -s "$entry" "$link_path/$entry_name" 2>/dev/null || cp -R "$entry" "$link_path/$entry_name"
+            fi
           done
 
           # Airship's GitDependency.isGitDependencyInstalled checks for a .git
