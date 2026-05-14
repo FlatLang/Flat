@@ -1,9 +1,16 @@
 name: Setup Flat monorepo packages
-description: Mirror local monorepo packages into FLAT_HOME so Airship can resolve FlatLang dependencies without cloning archived repos.
+description: Link local monorepo packages into FLAT_HOME so Airship can resolve FlatLang dependencies without cloning archived repos.
+inputs:
+  prebuild-targets:
+    description: "Space or comma separated Airship targets whose compiler/runtime jars should be prebuilt (for example: es6, js, java)."
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
     - shell: bash
+      env:
+        PREBUILD_TARGETS: ${{ inputs.prebuild-targets }}
       run: |
         set -euo pipefail
 
@@ -23,15 +30,49 @@ runs:
           mkdir -p "$link_root"
           rm -rf "$link_path"
           mkdir -p "$link_path"
-          cp -R "$package"/. "$link_path"/
+
+          for entry in "$package"/* "$package"/.[!.]* "$package"/..?*; do
+            [ -e "$entry" ] || continue
+
+            entry_name="$(basename "$entry")"
+            [ "$entry_name" = ".git" ] && continue
+
+            ln -s "$entry" "$link_path/$entry_name" 2>/dev/null || cp -R "$entry" "$link_path/$entry_name"
+          done
+
+          # Airship's GitDependency.isGitDependencyInstalled checks for a .git
+          # child. The linked package contents are still the monorepo package,
+          # but this sentinel keeps Airship from cloning archived repos over it.
           mkdir -p "$link_path/.git"
         done
 
-        # Airship treats [link] packages with a .git directory as installed, so it
-        # will not run their build scripts. Prebuild only the compiler/runtime
-        # packages whose target/*.jar artifacts Airship invokes directly.
-        for package in Flat Flat-ES6 Flat-JS Flat-Java; do
-          if [ -f "$package_root/$package/[link]/pom.xml" ]; then
-            mvn -f "$package_root/$package/[link]/pom.xml" install
+        normalized_targets="$(printf '%s' "$PREBUILD_TARGETS" | tr ',;' '  ')"
+
+        if [ -n "$normalized_targets" ]; then
+          mvn -f "$package_root/Flat/[link]/pom.xml" install
+        fi
+
+        for target in $normalized_targets; do
+          case "$(printf '%s' "$target" | tr '[:upper:]' '[:lower:]')" in
+            es6)
+              runtime_package="Flat-ES6"
+              ;;
+            js)
+              runtime_package="Flat-JS"
+              ;;
+            java)
+              runtime_package="Flat-Java"
+              ;;
+            "")
+              continue
+              ;;
+            *)
+              echo "Unknown Airship prebuild target: $target" >&2
+              exit 1
+              ;;
+          esac
+
+          if [ -f "$package_root/$runtime_package/[link]/pom.xml" ]; then
+            mvn -f "$package_root/$runtime_package/[link]/pom.xml" install
           fi
         done

@@ -49,6 +49,8 @@ jobs:
 
       - name: Link monorepo packages for Airship
         uses: ./.github/actions/setup-flat-monorepo
+        with:
+          prebuild-targets: es6
 
       - name: Build Logger Test
         run: |

@@ -53,6 +53,8 @@ jobs:
 
       - name: Link monorepo packages for Airship
         uses: ./.github/actions/setup-flat-monorepo
+        with:
+          prebuild-targets: ${{ matrix.target }}
 
       - name: Build Stability Test
         run: |
