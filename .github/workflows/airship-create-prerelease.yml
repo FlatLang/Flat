@@ -3,9 +3,9 @@ name: Airship / Create Airship Prerelease
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+*'
-      - '*-nightly-*'
-      - 'master-[0-9a-f]+'
+      - 'airship-v[0-9]+.[0-9]+.[0-9]+-rc[0-9]+*'
+      - 'airship-*-nightly-*'
+      - 'airship-master-[0-9a-f]+'
 
 jobs:
   create-prerelease:
@@ -18,21 +18,17 @@ jobs:
         with:
           java-version: 8
 
-      - uses: actions/checkout@v3
-        with:
-          path: Airship
+      - uses: actions/checkout@v4
 
-      - name: Download latest Airship
-        uses: FlatLang/fetch-airship@master
-        with:
-          includePrerelease: true
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -43,30 +39,31 @@ jobs:
             ${{ runner.os }}-
 
       - name: Build Airship es6
-        working-directory: Airship
         run: |
-          node ../airship.js install -t es6
+          bash .github/scripts/build-airship-from-source.sh es6
 
-      - name: Replace Airship artifact
+      - name: Stage Airship artifact
         run: |
-          rm airship.js
-          mv Airship/dist/airship.js airship.js
+          cp packages/Airship/dist/airship.js airship.js
 
-      - name: Get latest stable release of Airship
-        uses: rez0n/actions-github-release@main
-        id: stable_release
+      - name: Create release body
         env:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "${{ github.repository }}"
-          type: "stable"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          stable_release="$(gh release list --repo "${{ github.repository }}" --limit 100 --exclude-drafts --json tagName,isPrerelease --jq '.[] | select(.tagName | startswith("airship-")) | select(.isPrerelease == false) | .tagName' | head -n 1 || true)"
+          latest_release="$(gh release list --repo "${{ github.repository }}" --limit 100 --exclude-drafts --json tagName --jq '.[] | select(.tagName | startswith("airship-")) | .tagName' | head -n 1 || true)"
 
-      - name: Get latest release of Airship
-        uses: rez0n/actions-github-release@main
-        id: latest_release
-        env:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: "${{ github.repository }}"
-          type: "latest"
+          : > airship-release-body.md
+
+          if [[ -n "$stable_release" ]]; then
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${stable_release}...${{ github.ref_name }}" >> airship-release-body.md
+          else
+            echo "Initial Airship prerelease from the Flat monorepo." >> airship-release-body.md
+          fi
+
+          if [[ -n "$latest_release" && "$latest_release" != "$stable_release" ]]; then
+            echo "**Latest Changelog**: https://github.com/${{ github.repository }}/compare/${latest_release}...${{ github.ref_name }}" >> airship-release-body.md
+          fi
 
       - uses: ncipollo/release-action@v1
         with:
@@ -74,7 +71,5 @@ jobs:
           token: ${{ secrets.WORKFLOW_MANAGEMENT_TOKEN }}
           tag: "${{github.ref_name}}"
           prerelease: true
-          body: |
-            **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.stable_release.outputs.release }}...${{github.ref_name}}
-            **Latest Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest_release.outputs.release }}...${{github.ref_name}}
+          bodyFile: airship-release-body.md
           generateReleaseNotes: false

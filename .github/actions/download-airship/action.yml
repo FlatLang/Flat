@@ -1,0 +1,60 @@
+name: Download Airship
+description: Download airship.js from the latest Airship-prefixed release in this monorepo.
+inputs:
+  repo:
+    description: Repository to download from.
+    required: false
+    default: ${{ github.repository }}
+  version:
+    description: Release tag to download, or latest for the newest airship-* release.
+    required: false
+    default: latest
+  includePrerelease:
+    description: Include prereleases when resolving latest.
+    required: false
+    default: "true"
+  file:
+    description: Asset name to download.
+    required: false
+    default: airship.js
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        INPUT_REPO: ${{ inputs.repo }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_INCLUDE_PRERELEASE: ${{ inputs.includePrerelease }}
+        INPUT_FILE: ${{ inputs.file }}
+      run: |
+        set -euo pipefail
+
+        tag="$INPUT_VERSION"
+
+        if [[ "$tag" == "latest" ]]; then
+          jq_filter='.[] | select(.tagName | startswith("airship-"))'
+
+          if [[ "$INPUT_INCLUDE_PRERELEASE" != "true" ]]; then
+            jq_filter="$jq_filter | select(.isPrerelease == false)"
+          fi
+
+          tag="$(gh release list \
+            --repo "$INPUT_REPO" \
+            --limit 100 \
+            --exclude-drafts \
+            --json tagName,isPrerelease,publishedAt \
+            --jq "$jq_filter | .tagName" \
+            | head -n 1)"
+        fi
+
+        if [[ -z "$tag" ]]; then
+          echo "No airship-* release found in $INPUT_REPO" >&2
+          exit 1
+        fi
+
+        echo "Downloading $INPUT_FILE from $INPUT_REPO@$tag"
+        gh release download "$tag" \
+          --repo "$INPUT_REPO" \
+          --pattern "$INPUT_FILE" \
+          --clobber
