@@ -255,6 +255,15 @@ class HashMap<K, V> implements List<Pair<K, V>> {
         return filter({ func(_, _, this) }).forEach({ remove(_.key) })
     }
 
+    public clear() -> Pair<K, V>[] {
+        let removed = entries
+
+        buckets.forEach({ _.clear() })
+        count = 0
+
+        return removed
+    }
+
     public containsKey(K key) => key && getPair(key)
 
     public clone() => HashMap<K, V>(this)
