@@ -18,6 +18,14 @@ runs:
         flat_home="${FLAT_HOME:-$HOME/.flat}"
         package_root="$flat_home/packages/github.com/FlatLang"
 
+        maven_path() {
+          if [ "${RUNNER_OS:-}" = "Windows" ] && command -v cygpath >/dev/null 2>&1; then
+            cygpath -w "$1"
+          else
+            printf '%s' "$1"
+          fi
+        }
+
         mkdir -p "$package_root"
 
         for package in "$repo_root"/packages/*; do
@@ -69,7 +77,7 @@ runs:
         normalized_targets="$(printf '%s' "$PREBUILD_TARGETS" | tr ',;' '  ')"
 
         if [ -n "$normalized_targets" ]; then
-          mvn -f "$package_root/Flat/[link]/pom.xml" install
+          mvn -f "$(maven_path "$package_root/Flat/[link]/pom.xml")" install
         fi
 
         build_flatc=false
@@ -99,13 +107,13 @@ runs:
           esac
 
           if [ -f "$package_root/$runtime_package/[link]/pom.xml" ]; then
-            mvn -f "$package_root/$runtime_package/[link]/pom.xml" install
+            mvn -f "$(maven_path "$package_root/$runtime_package/[link]/pom.xml")" install
           fi
         done
 
         if [ "$build_flatc" = true ]; then
           if [ -f "$package_root/Flat-ES6/[link]/pom.xml" ]; then
-            mvn -f "$package_root/Flat-ES6/[link]/pom.xml" install
+            mvn -f "$(maven_path "$package_root/Flat-ES6/[link]/pom.xml")" install
           fi
 
           node "$repo_root/airship.js" --use-links -f "$repo_root/packages/Flat-Compiler" install flatc --flatc-runtime java -t es6
