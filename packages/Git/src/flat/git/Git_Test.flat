@@ -1,5 +1,9 @@
 package flat/git
 
+import flat/io
+import flat/system
+import flat/time
+
 testable class {
     test `can create`() {
         let value = Git()
@@ -8,21 +12,54 @@ testable class {
     }
 
     async test `can fetch remote info`() {
-        let repo = "https://github.com/FlatLang/Flat"
-        let info = Git.remoteInfo(repo, silent: true)
+        let fixture = createRemoteFixture()
+        let info = Git.remoteInfo(fixture.location, silent: true)
 
-        expect(info.remote).toBe(repo)
-        expect(info.fetchUrl).toBe(repo)
-        expect(info.pushUrl).toBe(repo)
+        fixture.getParent().delete(recursive: true, force: true)
+
+        expect(info.remote).toBe(fixture.location)
+        expect(info.fetchUrl).toBe(fixture.location)
+        expect(info.pushUrl).toBe(fixture.location)
         expect(info.headBranch).toBe("master")
         expect(info.success).toBe(true)
     }
 
     async test `can fetch remote tags`() {
-        let info = Git.lsRemoteTags("https://github.com/FlatLang/Flat", silent: true)
+        let fixture = createRemoteFixture()
+        let expectedSha = Git.revParse("refs/tags/test-tag-1", workingDirectory: fixture.location, silent: true)
+        let info = Git.lsRemoteTags(fixture.location, silent: true)
 
+        fixture.getParent().delete(recursive: true, force: true)
+
+        expect(info.tags).toBe([
+            Tag(expectedSha, "refs/tags/test-tag-1"),
+            Tag(expectedSha, "refs/tags/test-tag-2"),
+        ])
         expect(info.success).toBe(true)
-        expect(info.tags.any({ _.name.startsWith("flat-") })).toBe(true)
-        expect(info.tags.first.name.count > 0).toBe(true)
+        expect(info.tags.first.name).toBe("test-tag-1")
+    }
+
+    async createRemoteFixture() -> File {
+        let root = File("#{System.workingDirectory}/.git-test-#{Time.currentTimeMillis}")
+        let worktree = File(root, "worktree")
+        let remote = File(root, "remote.git")
+
+        root.delete(recursive: true, force: true)
+        root.mkdirs()
+
+        Git.init(worktree.location, silent: true)
+        System.execute(["git", "config", "user.email", "test@example.com"], worktree.location, silent: true)
+        System.execute(["git", "config", "user.name", "Flat Git Test"], worktree.location, silent: true)
+        FileWriter(File(worktree, "README.md")).writeLine("Git test fixture")
+        Git.add("README.md", workingDirectory: worktree.location, silent: true)
+        Git.commit("Initial commit", workingDirectory: worktree.location, silent: true)
+        Git.tag("test-tag-1", workingDirectory: worktree.location, silent: true)
+        Git.tag("test-tag-2", workingDirectory: worktree.location, silent: true)
+        Git.init(remote.location, bare: true, silent: true)
+        Git.push(branch: "HEAD:refs/heads/master", remote: remote.location, workingDirectory: worktree.location, silent: true)
+        Git.pushTags(remote: remote.location, workingDirectory: worktree.location, silent: true)
+        System.execute(["git", "symbolic-ref", "HEAD", "refs/heads/master"], remote.location, silent: true)
+
+        return remote
     }
 }

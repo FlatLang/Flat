@@ -14,6 +14,35 @@ class {
         visible File workingDirectory
     ) {}
 
+    public async init(
+        String directory = ".",
+        Bool: bare = false,
+        Bool: silent = false
+    ) => Git.init(
+        directory,
+        bare,
+        workingDirectory: workingDirectory.location,
+        silent
+    )
+
+    public static async init(
+        String directory = ".",
+        Bool: bare = false,
+        String: workingDirectory = System.workingDirectory,
+        Bool: silent = false
+    ) -> ExecutionResponse {
+        let args = [
+            "git",
+            "init",
+        ]
+
+        if (bare) args.add("--bare")
+
+        args.add(directory)
+
+        return System.execute(args, workingDirectory, silent)
+    }
+
     public async lsRemote(
         String url,
         Bool: silent = false
