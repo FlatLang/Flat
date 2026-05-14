@@ -6,6 +6,7 @@ on:
 
 jobs:
   compress:
+    if: ${{ startsWith(github.event.release.tag_name, 'flat-java-compiler-') }}
 
     runs-on: ubuntu-latest
 
@@ -40,9 +41,9 @@ jobs:
 
     steps:
       - name: Download flatc.jar ${{ github.event.release.tag_name }}
-        uses: FlatLang/fetch-release-asset@master
+        uses: dsaltares/fetch-gh-release-asset@master
         with:
-          repo: FlatLang/Flat
+          repo: ${{ github.repository }}
           file: flatc.jar
           version: ${{ github.event.release.id }}
 
@@ -65,7 +66,7 @@ jobs:
           fail-if-no-assets: false
           token: ${{ github.token }}
           tag: ${{ github.event.release.tag_name }}
-          repository: FlatLang/Flat
+          repository: ${{ github.repository }}
           assets: ${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }}
 
       - name: Upload ${{ matrix.compression.replace_extension && 'flatc.' || 'flatc.jar.' }}${{ matrix.compression.extension }} Asset

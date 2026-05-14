@@ -3,7 +3,7 @@ name: Airship / Create Airship Release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'airship-v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   create-release:
@@ -16,21 +16,22 @@ jobs:
         with:
           java-version: 8
 
-      - uses: actions/checkout@v3
-        with:
-          path: Airship
+      - uses: actions/checkout@v4
+
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
 
       - name: Download latest Airship
         uses: FlatLang/fetch-airship@master
         with:
           includePrerelease: true
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -41,14 +42,13 @@ jobs:
             ${{ runner.os }}-
 
       - name: Build Airship es6
-        working-directory: Airship
         run: |
-          node ../airship.js install -t es6
+          node airship.js --use-links -f packages/Airship install -t es6
 
       - name: Replace Airship artifact
         run: |
           rm airship.js
-          mv Airship/dist/airship.js airship.js
+          mv packages/Airship/dist/airship.js airship.js
 
       - name: Get latest release of Airship
         uses: rez0n/actions-github-release@main
