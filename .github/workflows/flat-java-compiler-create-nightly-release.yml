@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.WORKFLOW_MANAGEMENT_TOKEN }}
 
@@ -19,7 +19,7 @@ jobs:
         run: |
           git fetch --unshallow --tags
           git show-ref --tags -d
-          if [[ $(git show-ref --tags -d | grep "${{ github.sha }}") =~ "-nightly-" ]]; then
+          if [[ $(git show-ref --tags -d | grep "${{ github.sha }}" | grep -E "flat-java-compiler-.*-nightly-") ]]; then
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "exists"
           else
@@ -31,7 +31,7 @@ jobs:
         if: ${{ steps.check_exists.outputs.exists != 'true' }}
         with:
           keep_latest: 2
-          delete_tag_pattern: -nightly-
+          delete_tag_pattern: flat-java-compiler-.*-nightly-
         env:
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_MANAGEMENT_TOKEN }}
 
@@ -39,7 +39,7 @@ jobs:
         if: ${{ steps.check_exists.outputs.exists != 'true' }}
         id: tag_name
         run: |
-          echo "TAG_NAME=${GITHUB_REF##*/}-nightly-$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
+          echo "TAG_NAME=flat-java-compiler-${GITHUB_REF##*/}-nightly-$(date +%Y-%m-%d)" >> $GITHUB_OUTPUT
 
       - name: Create and push tag
         if: ${{ steps.check_exists.outputs.exists != 'true' }}

@@ -24,21 +24,23 @@ jobs:
         with:
           java-version: 8
 
-      - uses: actions/checkout@v3
-        with:
-          path: Stability-Test
+      - uses: actions/checkout@v4
+
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
 
       - name: Download latest Airship
-        uses: FlatLang/fetch-airship@master
+        uses: ./.github/actions/download-airship
         with:
+          repo: ${{ github.repository }}
           includePrerelease: true
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.m2/repository
@@ -48,20 +50,16 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
 
-      - name: Download Stability Test
-        run: |
-          node airship.js install https://github.com/FlatLang/Stability-Test
-
       - name: Install Stability Test
         run: |
-          node airship.js install test -f ~/.flat/packages/github.com/FlatLang/Stability-Test/master -t js
+          node airship.js --use-links -f packages/Stability-Test install test -t js
 
       - name: Run Stability Test
         run: |
-          node airship.js run test -f ~/.flat/packages/github.com/FlatLang/Stability-Test/master
+          node airship.js --use-links -f packages/Stability-Test run test
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: test.js
-          path: ~/.flat/packages/Stability-Test/dist/js/test.js
+          path: packages/Stability-Test/dist/js/test.js
