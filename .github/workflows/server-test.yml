@@ -49,11 +49,11 @@ jobs:
       - name: Link monorepo packages for Airship
         uses: ./.github/actions/setup-flat-monorepo
         with:
-          prebuild-targets: es6
+          prebuild-targets: es6 js
 
       - name: Build Server Test
         run: |
-          node airship.js --use-links -f packages/Server install test -t es6
+          node airship.js --use-links -f packages/Server install test -t es6 -r node
 
       - uses: actions/upload-artifact@v4
         if: failure()
