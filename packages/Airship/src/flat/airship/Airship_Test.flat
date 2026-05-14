@@ -19,7 +19,7 @@ testable class {
     }
 
     test async `can debug basic install`() {
-        let airship = Airship(["install", "--debug", "-q", "-t", "js"])
+        let airship = Airship(["--use-links", "install", "--debug", "-q", "-t", "js"])
 
         expect(airship.debug).toBe(true, "Expected debug flag to be true")
 
