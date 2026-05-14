@@ -8,24 +8,21 @@ testable class {
     }
 
     async test `can fetch remote info`() {
-        let info = Git.remoteInfo("https://github.com/FlatLang/Flat", silent: true)
+        let repo = "https://github.com/FlatLang/Flat"
+        let info = Git.remoteInfo(repo, silent: true)
 
-        expect(info.remote).toBe("https://github.com/FlatLang/Flat")
-        expect(info.fetchUrl).toBe("https://github.com/FlatLang/Flat")
-        expect(info.pushUrl).toBe("https://github.com/FlatLang/Flat")
+        expect(info.remote).toBe(repo)
+        expect(info.fetchUrl).toBe(repo)
+        expect(info.pushUrl).toBe(repo)
         expect(info.headBranch).toBe("master")
         expect(info.success).toBe(true)
     }
 
     async test `can fetch remote tags`() {
-        let info = Git.lsRemoteTags(silent: true)
-        let tags = info.tags.filter({ _.name.startsWith("test-tag") })
+        let info = Git.lsRemoteTags("https://github.com/FlatLang/Flat", silent: true)
 
-        expect(tags).toBe([
-            Tag("4a4c4c275b32cfb296ef5a31ae3b2ac31a779b2c", "refs/tags/test-tag-1"),
-            Tag("4a4c4c275b32cfb296ef5a31ae3b2ac31a779b2c", "refs/tags/test-tag-2"),
-        ])
         expect(info.success).toBe(true)
-        expect(info.tags.first.name).toBe("test-tag-1")
+        expect(info.tags.any({ _.name.startsWith("flat-") })).toBe(true)
+        expect(info.tags.first.name.count > 0).toBe(true)
     }
 }

@@ -588,10 +588,10 @@ class {
         let success = response.exitCode == 0
 
         let allInfo = response.stdout.firstWhere({ _x.startsWith("* remote") }).split("\n  ")
-        let remote = allInfo[0].substring("* remote ".count)
-        let fetchUrl = allInfo[1].substring("Fetch Url: ".count)
-        let pushUrl = allInfo[2].substring("Push  Url: ".count)
-        let headBranch = allInfo[3].substring("HEAD branch: ".count)
+        let remote = allInfo[0].substring("* remote ".count).trim()
+        let fetchUrl = allInfo[1].substring("Fetch Url: ".count).trim()
+        let pushUrl = allInfo[2].substring("Push  Url: ".count).trim()
+        let headBranch = allInfo[3].substring("HEAD branch: ".count).trim()
 
         return RemoteInfoResponse(
             remote: remote,
@@ -615,7 +615,7 @@ class {
             .stream()
             .filter({ _.count > 45 })
             .filter({ _x.startsWith("refs/tags/", start: _x.indexOf([' ', '\t'], start: 41, invert: true)) })
-            .map({ Tag(_x.substring(end: 40), _x.substring(_x.indexOf([' ', '\t'], start: 41, invert: true))) })
+            .map({ Tag(_x.substring(end: 40).trim(), _x.substring(_x.indexOf([' ', '\t'], start: 41, invert: true)).trim()) })
 
     public async lsRemoteTags(
         String remote = "origin",
