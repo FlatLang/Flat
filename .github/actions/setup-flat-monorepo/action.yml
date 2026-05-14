@@ -72,6 +72,8 @@ runs:
           mvn -f "$package_root/Flat/[link]/pom.xml" install
         fi
 
+        build_flatc=false
+
         for target in $normalized_targets; do
           case "$(printf '%s' "$target" | tr '[:upper:]' '[:lower:]')" in
             es6)
@@ -82,6 +84,10 @@ runs:
               ;;
             java)
               runtime_package="Flat-Java"
+              ;;
+            flatc)
+              build_flatc=true
+              continue
               ;;
             "")
               continue
@@ -96,3 +102,11 @@ runs:
             mvn -f "$package_root/$runtime_package/[link]/pom.xml" install
           fi
         done
+
+        if [ "$build_flatc" = true ]; then
+          if [ -f "$package_root/Flat-ES6/[link]/pom.xml" ]; then
+            mvn -f "$package_root/Flat-ES6/[link]/pom.xml" install
+          fi
+
+          node "$repo_root/airship.js" --use-links -f "$repo_root/packages/Flat-Compiler" install flatc --flatc-runtime java -t es6
+        fi

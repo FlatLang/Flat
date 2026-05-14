@@ -49,7 +49,7 @@ jobs:
       - name: Link monorepo packages for Airship
         uses: ./.github/actions/setup-flat-monorepo
         with:
-          prebuild-targets: es6
+          prebuild-targets: es6 flatc
 
       - name: Build Flat-Parser with flatc
         env:

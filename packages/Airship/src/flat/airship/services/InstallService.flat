@@ -60,9 +60,12 @@ class {
             "flat" => {
                 let package = "git@github.com:FlatLang/Flat-Compiler"
                 let dependency = dependencyService.getDependencyFromPackage(package)
+                let flatc = File("#{Airship.flatHome}/bin/flatc")
 
                 if (!dependencyService.isDependencyInstalled(dependency)) {
                     Airship(["get", package]):run()
+                }
+                if (!flatc.exists) {
                     Airship(["install", "flatc", "-f", dependency.getLocation(), "--flatc-runtime", "java"]):run()
                 }
             }
