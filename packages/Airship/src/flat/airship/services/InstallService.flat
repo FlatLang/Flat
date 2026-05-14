@@ -221,6 +221,7 @@ class {
 
         response.dependencies
             .filter({ _.isFlatPackage() })
+            .filter({ _.name != airship.packageLocation.name })
             .filterParallel({ !areDependencySourcesEquivalent(_, gitDependency) })
             .filter({ dependencyLocations[_].none({ canonicalSourceLocations.contains(_) }) })
             .forEach({
@@ -249,6 +250,7 @@ class {
 
         topLevelDependencies.dependencies
             .filter({ _.isFlatPackage() })
+            .filter({ _.name != airship.packageLocation.name })
             .filter({ dependencyLocations[_].none({ canonicalSourceLocations.contains(_) }) })
             .forEach({
                 let childship = _x.airship

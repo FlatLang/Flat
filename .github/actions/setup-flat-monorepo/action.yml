@@ -51,10 +51,19 @@ runs:
             fi
           done
 
-          # Airship's GitDependency.isGitDependencyInstalled checks for a .git
-          # child. The linked package contents are still the monorepo package,
-          # but this sentinel keeps Airship from cloning archived repos over it.
-          mkdir -p "$link_path/.git"
+          # Airship's GitDependency logic expects each dependency to look like
+          # the old standalone repo. Give both the linked dependency and the
+          # checked-out package a lightweight git remote so cycle/self checks
+          # still distinguish FlatLang packages inside the monorepo.
+          mkdir -p \
+            "$link_path/.git/objects" \
+            "$link_path/.git/refs/heads" \
+            "$package/.git/objects" \
+            "$package/.git/refs/heads"
+          printf 'ref: refs/heads/master\n' > "$link_path/.git/HEAD"
+          printf 'ref: refs/heads/master\n' > "$package/.git/HEAD"
+          printf '[remote "origin"]\n\turl = git@github.com:FlatLang/%s.git\n' "$name" > "$link_path/.git/config"
+          printf '[remote "origin"]\n\turl = git@github.com:FlatLang/%s.git\n' "$name" > "$package/.git/config"
         done
 
         normalized_targets="$(printf '%s' "$PREBUILD_TARGETS" | tr ',;' '  ')"
