@@ -2,7 +2,11 @@ name: Flat-Java-Compiler / Prepare Flat Release
 
 on:
   release:
-    types: [published, edited]
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
 
 jobs:
   compress:
@@ -11,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         compression:
           - algorithm: xz

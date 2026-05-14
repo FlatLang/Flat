@@ -2,7 +2,11 @@ name: Airship / Prepare Airship Release
 
 on:
   release:
-    types: [published, edited]
+    types: [published]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
 
 jobs:
   package:
@@ -132,6 +136,7 @@ jobs:
     needs: package
 
     strategy:
+      fail-fast: false
       matrix:
         compression:
           - algorithm: xz
