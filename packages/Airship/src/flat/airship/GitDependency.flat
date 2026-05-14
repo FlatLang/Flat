@@ -9,18 +9,20 @@ data class extends Dependency {
     visible String httpsUrl
     visible String repoDetails
     visible String branch
-    visible String version
     visible String? ownerName
     visible String repoName
     visible String packageRootLocation
-    visible String packageLocation
+
+    override visible Bool isLink => useLinks && Airship.useLinks && File("#{packageRootLocation}/[link]").exists
+    visible String version => isLink ? "[link]" : branch
+    visible String packageLocation => "#{packageRootLocation}/#{version}"
 
     visible lazy String name => repoName
 
     public construct(
         String url,
         this String branch,
-        Bool useLinks = true
+        private Bool useLinks = true
     ) {
         super()
 
@@ -40,9 +42,6 @@ data class extends Dependency {
         packageRootLocation = "#{Airship.flatHome}/packages/#{host}/#{ownerName}/#{repoName}"
         sshUrl = "git@#{host}:#{repoDetails}.git"
         httpsUrl = "https://#{host}/#{repoDetails}.git"
-        isLink = useLinks && Airship.useLinks && File("#{packageRootLocation}/[link]").exists
-        version = isLink ? "[link]" : branch
-        packageLocation = "#{packageRootLocation}/#{version}"
     }
 
     public getUrl(Bool ssh = false) => ssh ? sshUrl : httpsUrl

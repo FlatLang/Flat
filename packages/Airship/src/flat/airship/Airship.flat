@@ -137,12 +137,7 @@ class {
     ) {
         checkHelpCommand()
 
-        let wasUsingLinks = useLinks
         useLinks = useLinks || cliArgs.useLinksArg.enabled
-
-        if (!wasUsingLinks && useLinks) {
-            clearCache()
-        }
 
         if (cliArgs.debugArg.enabled) {
             cliArgs.quietArg.enabled = true
@@ -215,10 +210,6 @@ class {
 
             return value
         }
-    }
-
-    public static clearCache() {
-        packageCache.clear()
     }
 
     public static clearCache(String flatJsonLocation) {
