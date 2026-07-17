@@ -40,7 +40,7 @@ class {
 
         args.add(directory)
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async lsRemote(
@@ -63,7 +63,7 @@ class {
             url
         ]
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async add(
@@ -86,7 +86,7 @@ class {
             file
         ]
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async tag(
@@ -109,7 +109,7 @@ class {
             tagName
         ]
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async getCurrentBranch(
@@ -129,7 +129,7 @@ class {
             "--show-current",
         ]
 
-        return System.execute(args, workingDirectory, silent).stdout.last.trimEnd()
+        return System.execute(args, workingDirectory, silent, shell: false).stdout.last.trimEnd()
     }
 
     public async revParse(
@@ -158,7 +158,7 @@ class {
 
         args.add(ref)
 
-        return System.execute(args, workingDirectory, silent).stdout.last.trimEnd()
+        return System.execute(args, workingDirectory, silent, shell: false).stdout.last.trimEnd()
     }
 
     public async cherry(
@@ -182,7 +182,7 @@ class {
 
         if (v) args.add("-v")
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async show(
@@ -210,7 +210,7 @@ class {
         if (format != null) args.add("--format=#{format}")
         if (noPatch) args.add("-s")
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async log(
@@ -242,7 +242,7 @@ class {
         if (pretty != null) args.add("--pretty=#{pretty}")
         if (oneline) args.add("--oneline")
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async deleteTag(
@@ -266,7 +266,7 @@ class {
             tagName
         ]
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async commit(
@@ -297,7 +297,7 @@ class {
             args.add("--amend")
         }
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async pushTag(
@@ -324,7 +324,7 @@ class {
             tagName,
         ]
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async pushTags(
@@ -352,7 +352,7 @@ class {
 
         args.add("--tags")
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async push(
@@ -381,7 +381,7 @@ class {
                 args.addAll([remote, branch])
         }
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async clone(
@@ -425,7 +425,7 @@ class {
             args.add(outputDirectory)
         }
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async fetch(
@@ -458,7 +458,7 @@ class {
 
         args.addAll(["--depth", depth.toString()])
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     public async checkout(
@@ -489,7 +489,7 @@ class {
 
         args.add(ref)
 
-        return System.execute(args, workingDirectory, silent)
+        return System.execute(args, workingDirectory, silent, shell: false)
     }
 
     class PullResponse {
@@ -525,7 +525,7 @@ class {
         ]
 
         try {
-            let executionResponse = System.execute(args, workingDirectory, silent)
+            let executionResponse = System.execute(args, workingDirectory, silent, shell: false)
             let success = executionResponse.exitCode == 0
             let upToDate = success && (
                 executionResponse.stdout.first?.trim() == "Already up to date." ||
@@ -696,7 +696,7 @@ class {
 
         if (tags) args.add("--tags")
 
-        let response = System.execute(args, workingDirectory, silent)
+        let response = System.execute(args, workingDirectory, silent, shell: false)
 
         let success = response.exitCode == 0
 

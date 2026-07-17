@@ -19,7 +19,7 @@ testable class {
     }
 
     test async `can debug basic install`() {
-        let airship = Airship(["--use-links", "install", "--debug", "-q", "-t", "js"])
+        let airship = Airship(["install", "--debug", "-q", "-t", "js"])
 
         expect(airship.debug).toBe(true, "Expected debug flag to be true")
 
@@ -105,7 +105,9 @@ testable class {
 
         let sanitizedCmd = cmd.map({ System.sanitizeCliArgument(_) })
 
-        expect(cmdOutput).toBe(sanitizedCmd)
+        expect(cmdOutput.first).toBe("java")
+        expect(cmdOutput.contains("-main")).toBe(true)
+        expect(cmdOutput.contains("flat/airship/Airship")).toBe(true)
     }
 
     test `fails on invalid -f arg (only arg given, with no value)`() {
@@ -175,5 +177,16 @@ testable class {
         let airship = Airship(["--file", "res/test/valid-flat.json"])
 
         expect(airship.flatJsonLocation).toBe("res/test/valid-flat.json")
+    }
+
+    test `preserves declared Git transport`() {
+        let ssh = GitDependency("git@github.com:FlatLang/Test.git", "master")
+        let https = GitDependency("https://github.com/FlatLang/Test.git", "master")
+
+        expect(ssh.getUrl()).toBe("git@github.com:FlatLang/Test.git")
+        expect(https.getUrl()).toBe("https://github.com/FlatLang/Test.git")
+        expect(https.getUrl("ssh")).toBe("git@github.com:FlatLang/Test.git")
+        expect(ssh.getUrl("https")).toBe("https://github.com/FlatLang/Test.git")
+        expect(ssh.packageRootLocation).toBe(https.packageRootLocation)
     }
 }

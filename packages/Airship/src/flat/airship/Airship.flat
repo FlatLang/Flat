@@ -120,6 +120,7 @@ class {
                     cliArgs.noReplaceLogLineArg,
                     cliArgs.quietArg,
                     cliArgs.flatcRuntimeArg,
+                    cliArgs.gitProtocolArg,
                     cliArgs.publishCommand,
                     cliArgs.useLinksArg,
                     cliArgs.purgeArg,
@@ -530,6 +531,25 @@ class {
         }
     }
 
+    public getGitProtocol() -> String => parent?.getGitProtocol() ?: (cliArgs.gitProtocolValueArg.value ?: "auto")
+
+    public getWorkspacePackagesDirectory() -> File => null {
+        if (parent) return parent.getWorkspacePackagesDirectory()
+        if (!cliArgs.useLinksArg.enabled) return null
+
+        var current = packageLocation
+
+        while (current) {
+            let packages = current.getChild("packages")
+
+            if (packages.isDirectory && packageLocation.normalizedLocation.startsWith(packages.normalizedLocation + "/")) {
+                return packages
+            }
+
+            current = current.getParent()
+        }
+    }
+
     getRootParent() -> Airship => this {
         if (parent) {
             return parent.getRootParent()
@@ -541,6 +561,9 @@ class {
     public propagateArgs(String[] args) {
         if (cliArgs.useLinksArg.enabled) {
             args.add("--use-links")
+        }
+        if (cliArgs.gitProtocolArg.enabled) {
+            args.addAll(["--git-protocol", getGitProtocol()])
         }
         if (target) {
             args.addAll(["-t", target])

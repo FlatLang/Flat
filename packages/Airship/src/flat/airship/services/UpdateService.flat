@@ -109,7 +109,7 @@ class {
     public async updateGitPackageVersion(
         GitDependency dependency
     ) -> Bool {
-        let lsRemote = Git.lsRemoteTags(dependency.httpsUrl, silent: true)
+        let lsRemote = Git.lsRemoteTags(dependency.getUrl(airship.getGitProtocol()), silent: true)
         let tags = lsRemote.tags
 
         let versionTags = tags
@@ -141,7 +141,7 @@ class {
             return false
         }
 
-        let updatedDependency = GitDependency(dependency.httpsUrl, version, useLinks: false)
+        let updatedDependency = GitDependency(dependency.getUrl(airship.getGitProtocol()), version, useLinks: false)
 
         installService.installDependency(updatedDependency)
 

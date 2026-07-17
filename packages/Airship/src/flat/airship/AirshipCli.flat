@@ -101,6 +101,20 @@ class {
         args: [flatcRuntimeValueArg]
     )
 
+    visible CliArg gitProtocolValueArg = CliArg(
+        name: "protocol",
+        description: "The Git protocol to use: auto, ssh, or https",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg gitProtocolArg = CliArg(
+        name: "--git-protocol",
+        description: "Specify the Git transport protocol",
+        args: [gitProtocolValueArg]
+    )
+
     visible CliArg versionArg = CliArg(
         name: "--version",
         description: "Print version info and exit"
@@ -123,7 +137,7 @@ class {
 
     visible CliArg useLinksArg = CliArg(
         name: "--use-links",
-        description: "Use packages installed as symbolic links where possible in favor of any version defined in a flat.json file"
+        description: "Prefer packages in the current workspace or installed as symbolic links over versions defined in flat.json"
     )
 
     visible CliArg setupCommand = CliArg(

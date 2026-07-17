@@ -17,25 +17,46 @@ class {
 
     getPackageNameFromGitUrl(String url) => url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'))
 
+    public resolveDependency(Dependency dependency) -> Dependency {
+        if (!dependency.class.isOfType(GitDependency.class)) return dependency
+
+        let gitDependency = (GitDependency)dependency
+
+        if (!gitDependency.isWorkspace && cliArgs.useLinksArg.enabled && gitDependency.host == "github.com" && gitDependency.ownerName == "FlatLang") {
+            if (let packages = airship.getWorkspacePackagesDirectory()) {
+                let workspacePackage = packages.getChild(gitDependency.repoName)
+
+                if (workspacePackage.getChild("flat.json").isFile) {
+                    gitDependency.resolveWorkspace(workspacePackage.normalizedLocation)
+                    log.debug("Resolved #{gitDependency.httpsUrl} to workspace package '#{workspacePackage.normalizedLocation}'")
+                }
+            }
+        }
+
+        return dependency
+    }
+
     public getDependencySourceLocations(Dependency dependency, String installationTarget = "main") -> String[] {
-        if (!dependency.isFlatPackage()) {
+        let resolvedDependency = resolveDependency(dependency)
+        if (!resolvedDependency.isFlatPackage()) {
             return Array<String>()
         }
 
-        let baseLocation = dependency.getLocation()
+        let baseLocation = resolvedDependency.getLocation()
 
-        return dependency.getSourcesForInstallation(installationTarget)
+        return resolvedDependency.getSourcesForInstallation(installationTarget)
             .map({ _?.source ?: "src" })
             .map({ "#{baseLocation}/#{_}" })
     }
 
     public getDependencySourceLocation(Dependency dependency, String installationTarget = "main") -> String {
-        if (!dependency.isFlatPackage()) {
+        let resolvedDependency = resolveDependency(dependency)
+        if (!resolvedDependency.isFlatPackage()) {
             return null
         }
 
-        let baseLocation = dependency.getLocation()
-        let source = dependency.airship.getSourceForPackage(installationTarget, dependency.airship.package.defaultSource)
+        let baseLocation = resolvedDependency.getLocation()
+        let source = resolvedDependency.airship.getSourceForPackage(installationTarget, resolvedDependency.airship.package.defaultSource)
 
         if (source?.source) {
             return "#{baseLocation}/#{source.source}"
@@ -134,6 +155,8 @@ class {
 
         source.dependencies
             :forEach((dependency) => {
+                resolveDependency(dependency)
+
                 if (response.dependencies.none({ _.getLocation() == dependency.getLocation() })) {
                     response.dependencies.add(dependency)
                 }
@@ -194,17 +217,21 @@ class {
     }
 
     public isDependencyInstalled(Dependency dependency) -> Bool {
-        return if (dependency.class.isOfType(GitDependency.class)) {
-            isGitDependencyInstalled((GitDependency)dependency)
-        } else if (dependency.class.isOfType(NpmDependency.class)) {
-            isNpmDependencyInstalled((NpmDependency)dependency)
-        } else if (dependency.class.isOfType(LocalDependency.class)) {
-            isLocalDependencyInstalled((LocalDependency)dependency)
+        let resolvedDependency = resolveDependency(dependency)
+
+        return if (resolvedDependency.class.isOfType(GitDependency.class)) {
+            isGitDependencyInstalled((GitDependency)resolvedDependency)
+        } else if (resolvedDependency.class.isOfType(NpmDependency.class)) {
+            isNpmDependencyInstalled((NpmDependency)resolvedDependency)
+        } else if (resolvedDependency.class.isOfType(LocalDependency.class)) {
+            isLocalDependencyInstalled((LocalDependency)resolvedDependency)
         }
     }
 
     isGitDependencyInstalled(GitDependency dependency) -> Bool {
-        let exists = File(dependency.getLocation()).getChild(".git").exists
+        let exists = dependency.isWorkspace
+            ? File(dependency.getLocation()).getChild("flat.json").isFile
+            : File(dependency.getLocation()).getChild(".git").exists
         log.trace("GitHub dependency #{dependency} is installed: #exists")
         return exists
     }
@@ -222,11 +249,15 @@ class {
     }
 
     public async installDependency(Dependency dependency) {
-        if (dependency.class.isOfType(GitDependency.class)) {
-            cloneGitDependency((GitDependency)dependency)
-        } else if (dependency.class.isOfType(NpmDependency.class)) {
-            installNpmDependency((NpmDependency)dependency)
-        } else if (dependency.class.isOfType(LocalDependency.class)) {
+        let resolvedDependency = resolveDependency(dependency)
+
+        if (resolvedDependency.class.isOfType(GitDependency.class) && ((GitDependency)resolvedDependency).isWorkspace) {
+            log.trace("Nothing to do for workspace dependency installation")
+        } else if (resolvedDependency.class.isOfType(GitDependency.class)) {
+            cloneGitDependency((GitDependency)resolvedDependency)
+        } else if (resolvedDependency.class.isOfType(NpmDependency.class)) {
+            installNpmDependency((NpmDependency)resolvedDependency)
+        } else if (resolvedDependency.class.isOfType(LocalDependency.class)) {
             log.trace("Nothing to do for local dependency installation")
         } else {
             throw Exception("Cannot install dependency #dependency")
@@ -258,12 +289,17 @@ class {
     }
 
     public async cloneGitDependency(GitDependency dependency) {
-        let url = dependency.getUrl()
+        let url = dependency.getUrl(airship.getGitProtocol())
         let branch = dependency.branch
-        let flatPackageDir = File(dependency.getLocation()):mkdirs()
+        let flatPackageDir = File(dependency.getLocation())
+        flatPackageDir.getParent().mkdirs()
 
         if (flatPackageDir.getChild(".git").isDirectory) {
             return
+        }
+
+        if (flatPackageDir.exists) {
+            flatPackageDir.delete(recursive: true, force: true)
         }
 
         log.info("Cloning dependency #{url}@#{branch} into '#{flatPackageDir.normalizedLocation}'...")
@@ -277,6 +313,8 @@ class {
         )
 
         if (clone.exitCode != 0) {
+            flatPackageDir.delete(recursive: true, force: true)
+
             throw ExecutionFailureException("|
                 Failed to clone git repo:
                     #{clone.stderr.join("\n   ")}
@@ -284,11 +322,13 @@ class {
         }
 
         let lsRemote = Git.lsRemoteTags(
-            remote: dependency.httpsUrl,
+            remote: url,
             silent: cliArgs.quietArg.enabled || log.loggingLevel < Logger.DEBUG
         )
 
         if (!lsRemote.success) {
+            flatPackageDir.delete(recursive: true, force: true)
+
             throw ExecutionFailureException("|
                 Failed to fetch ls-remote repo:
                     #{lsRemote.executionResponse.stderr.join("\n   ")}
@@ -308,6 +348,8 @@ class {
         )
 
         if (fetch.exitCode != 0) {
+            flatPackageDir.delete(recursive: true, force: true)
+
             throw ExecutionFailureException("|
                 Failed to fetch git repo:
                     #{fetch.stderr.join("\n   ")}
@@ -321,6 +363,8 @@ class {
         )
 
         if (checkout.exitCode != 0) {
+            flatPackageDir.delete(recursive: true, force: true)
+
             throw ExecutionFailureException("|
                 Failed to checkout git repo:
                     #{checkout.stderr.join("\n   ")}

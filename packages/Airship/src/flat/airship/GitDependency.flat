@@ -12,10 +12,12 @@ data class extends Dependency {
     visible String? ownerName
     visible String repoName
     visible String packageRootLocation
+    visible var String workspaceLocation
 
-    override visible Bool isLink => useLinks && Airship.useLinks && File("#{packageRootLocation}/[link]").exists
-    visible String version => isLink ? "[link]" : branch
-    visible String packageLocation => "#{packageRootLocation}/#{version}"
+    override visible Bool isLink => workspaceLocation != null || (useLinks && Airship.useLinks && File("#{packageRootLocation}/[link]").exists)
+    visible Bool isWorkspace => workspaceLocation != null
+    visible String version => isLink && !isWorkspace ? "[link]" : branch
+    visible String packageLocation => workspaceLocation ?: "#{packageRootLocation}/#{version}"
 
     visible lazy String name => repoName
 
@@ -44,7 +46,19 @@ data class extends Dependency {
         httpsUrl = "https://#{host}/#{repoDetails}.git"
     }
 
-    public getUrl(Bool ssh = false) => ssh ? sshUrl : httpsUrl
+    public getUrl(String protocol = "auto") -> String {
+        let normalized = protocol?.toLowerCase()?.trim() ?: "auto"
+
+        if (normalized == "ssh") return sshUrl
+        if (normalized == "https") return httpsUrl
+        if (normalized == "auto") return isSsh ? sshUrl : httpsUrl
+
+        throw Exception("Invalid Git protocol '#{protocol}'")
+    }
+
+    public resolveWorkspace(String location) {
+        workspaceLocation = location
+    }
 
     override public getLocation() => packageLocation
 
