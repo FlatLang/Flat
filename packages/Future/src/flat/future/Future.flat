@@ -2,6 +2,7 @@ package flat/future
 
 class<TType> {
     Array<action(Exception)> exceptionListeners = Array()
+    Array<action()> cancellationListeners = Array()
 
     visible var Bool completed
     visible var Bool cancelled
@@ -19,6 +20,19 @@ class<TType> {
 
     public onException(func(Exception)) {
         exceptionListeners.add(func)
+    }
+
+    public onCancel(action()) {
+        if (cancelled) {
+            action()
+        } else {
+            cancellationListeners.add(action)
+        }
+    }
+
+    cancelOccurred() {
+        cancellationListeners.forEach({ _() })
+        cancellationListeners.clear()
     }
 
     public static from<TType>(async func() -> TType) -> Future<TType> {

@@ -1,0 +1,127 @@
+package flat/eventstream
+
+testable class {
+    async test `bounded topic broadcasts to every current subscriber`() {
+        let topic = BoundedTopic<String>(2)
+        let first = topic.subscribe(1)
+        let second = topic.subscribe(1)
+
+        let result = topic.publish("hello")
+
+        expect(result.delivered).toBe(2)
+        expect(first.receive().value).toBe("hello")
+        expect(second.receive().value).toBe("hello")
+    }
+
+    async test `topic publish applies subscriber backpressure concurrently`() {
+        let topic = BoundedTopic<String>(2)
+        let fast = topic.subscribe(1)
+        let slow = topic.subscribe(1)
+
+        topic.publish("one")
+        let blocked = topic.publish("two")$
+
+        expect(fast.pendingSendCount).toBe(1)
+        expect(slow.pendingSendCount).toBe(1)
+
+        expect(fast.receive().value).toBe("one")
+        expect(fast.receive().value).toBe("two")
+        expect(fast.pendingSendCount).toBe(0)
+        expect(slow.pendingSendCount).toBe(1)
+
+        expect(slow.receive().value).toBe("one")
+        expect(slow.receive().value).toBe("two")
+        expect(blocked).toNotBe(null)
+    }
+
+    async test `new topic subscriber does not receive prior publications`() {
+        let topic = BoundedTopic<String>(2)
+
+        topic.publish("before")
+
+        let subscriber = topic.subscribe(1)
+        let receive = subscriber.receive()$
+
+        expect(receive.completed).toBe(false)
+
+        topic.publish("after")
+
+        expect(receive.get().value).toBe("after")
+    }
+
+    async test `unsubscribe closes only that subscription`() {
+        let topic = BoundedTopic<String>(2)
+        let removed = topic.subscribe(1)
+        let remaining = topic.subscribe(1)
+
+        topic.unsubscribe(removed)
+        let result = topic.publish("hello")
+
+        expect(topic.subscriberCount).toBe(1)
+        expect(removed.receive().completed).toBe(true)
+        expect(remaining.receive().value).toBe("hello")
+        expect(result.delivered).toBe(1)
+    }
+
+    async test `closing topic closes all subscriptions and future subscriptions`() {
+        let topic = BoundedTopic<String>(2)
+        let subscriber = topic.subscribe(1)
+
+        topic.close()
+
+        expect(subscriber.receive().completed).toBe(true)
+        expect(topic.subscribe(1).receive().completed).toBe(true)
+        expect(topic.publish("ignored").closed).toBe(true)
+    }
+
+    async test `topic subscriber list is explicitly bounded`() {
+        let topic = BoundedTopic<String>(1)
+
+        topic.subscribe(1)
+        let rejected = topic.subscribe(1)
+
+        let firstResult = rejected.receive()
+        let secondResult = rejected.receive()
+
+        expect(topic.subscriberCount).toBe(1)
+        expect(firstResult.failed).toBe(true)
+        expect(secondResult.error.message).toBe("BoundedTopic subscriber capacity exceeded")
+    }
+
+    test `negative topic subscriber capacity is rejected`() {
+        expect({ BoundedTopic<String>(-1) })
+            .toThrowWithMessage(Exception.class, "BoundedTopic subscriber capacity cannot be negative")
+    }
+
+    test `nonpositive publication concurrency is rejected for nonempty topic capacity`() {
+        expect({ BoundedTopic<String>(1, maxParallelPublications: 0) })
+            .toThrowWithMessage(Exception.class, "BoundedTopic parallel publication capacity must be positive")
+    }
+
+    async test `topic reports subscriber pending capacity exhaustion`() {
+        let topic = BoundedTopic<String>(1)
+        let subscriber = topic.subscribe(1)
+
+        topic.publish("buffered")
+        let pending = topic.publish("pending")$
+        let rejected = topic.publish("rejected")
+
+        expect(subscriber.pendingSendCount).toBe(1)
+        expect(rejected.capacityExceeded).toBe(true)
+
+        expect(subscriber.receive().value).toBe("buffered")
+        expect(subscriber.receive().value).toBe("pending")
+        expect(pending).toNotBe(null)
+    }
+
+    async test `failing topic fails all subscriptions and publications`() {
+        let topic = BoundedTopic<String>(2)
+        let subscriber = topic.subscribe(1)
+
+        topic.fail(Exception("broken"))
+
+        expect(subscriber.receive().failed).toBe(true)
+        expect(topic.subscribe(1).receive().failed).toBe(true)
+        expect(topic.publish("ignored").failed).toBe(true)
+    }
+}

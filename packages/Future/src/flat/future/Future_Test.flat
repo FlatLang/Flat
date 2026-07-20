@@ -96,6 +96,27 @@ testable class {
         expect(futureThing().count).toBe(3)
     }
 
+    test `cancel notifies registered listeners exactly once`() {
+        let future = Future.create<String>()
+        var count = 0
+
+        future.onCancel({ count++ })
+        future.cancel()
+        future.cancel()
+
+        expect(count).toBe(1)
+    }
+
+    test `listener registered after cancellation is notified immediately`() {
+        let future = Future.create<String>()
+        var count = 0
+
+        future.cancel()
+        future.onCancel({ count++ })
+
+        expect(count).toBe(1)
+    }
+
     futureThing() -> Future<String> {
         return Future.from({
             return "hey"

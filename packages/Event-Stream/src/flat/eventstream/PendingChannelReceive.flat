@@ -1,0 +1,11 @@
+package flat/eventstream
+
+import flat/future
+
+data class<Type> {
+    visible Future<ChannelReceiveResult<Type>> future
+
+    public complete(ChannelReceiveResult<Type> result) {
+        throw Exception("Not implemented for target language or runtime")
+    }
+}

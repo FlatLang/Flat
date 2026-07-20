@@ -1,0 +1,82 @@
+package flat/eventstream
+
+class<Type> {
+    visible Int subscriberCount => subscribers.count
+    visible var Bool closed
+    visible var Exception failure
+
+    var BoundedChannel<Type>[] subscribers = BoundedChannel<Type>[]
+
+    public construct(
+        visible Int maxSubscribers,
+        visible Int maxParallelPublications = maxSubscribers
+    ) {
+        if (maxSubscribers < 0) {
+            throw Exception("BoundedTopic subscriber capacity cannot be negative")
+        }
+        if (maxParallelPublications <= 0 && maxSubscribers > 0) {
+            throw Exception("BoundedTopic parallel publication capacity must be positive")
+        }
+    }
+
+    public subscribe(Int capacity) -> BoundedChannel<Type> {
+        let channel = BoundedChannel<Type>(capacity)
+
+        if (failure) {
+            channel.fail(failure)
+        } else if (closed) {
+            channel.close()
+        } else if (subscribers.count >= maxSubscribers) {
+            channel.fail(Exception("BoundedTopic subscriber capacity exceeded"))
+        } else {
+            subscribers.add(channel)
+        }
+
+        return channel
+    }
+
+    public unsubscribe(BoundedChannel<Type> channel) {
+        if (subscribers.removeFirstWhere({ Object.referenceEquals(_, channel) })) {
+            channel.close()
+        }
+    }
+
+    public async publish(Type value) -> TopicPublishResult {
+        if (failure) return TopicPublishResult(failed: true, error: failure)
+        if (closed) return TopicPublishResult(closed: true)
+
+        let results = subscribers.copy().mapParallel(
+            { _.send(value) },
+            maxParallel: maxParallelPublications
+        )
+        let failed = results.firstWhere({ _.failed })
+        let capacityExceeded = results.any({ _.capacityExceeded })
+
+        if (failed) return TopicPublishResult(failed: true, error: failed.error)
+        if (capacityExceeded) return TopicPublishResult(capacityExceeded: true)
+
+        let delivered = results.filter({ _.accepted }).count
+        let anyClosed = results.any({ _.closed })
+
+        return TopicPublishResult(
+            delivered: delivered,
+            closed: anyClosed
+        )
+    }
+
+    public close() {
+        if (closed || failure) return
+
+        closed = true
+        subscribers.forEach({ _.close() })
+        subscribers.clear()
+    }
+
+    public fail(Exception error) {
+        if (closed || failure) return
+
+        failure = error
+        subscribers.forEach({ _.fail(error) })
+        subscribers.clear()
+    }
+}

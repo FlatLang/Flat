@@ -1,0 +1,201 @@
+package flat/eventstream
+
+import flat/future
+import flat/datastruct/list/Queue
+
+class<Type> {
+    visible Int bufferedCount => values.count
+    visible Int pendingSendCount => pendingSends.count
+    visible Int pendingReceiveCount => pendingReceives.count
+    visible var Bool closed
+    visible var Exception failure
+
+    var Queue<Type> values = Queue()
+    var Queue<PendingChannelSend<Type>> pendingSends = Queue()
+    var Queue<PendingChannelReceive<Type>> pendingReceives = Queue()
+
+    public construct(
+        visible Int capacity,
+        visible Int maxPendingSends = 1,
+        visible Int maxPendingReceives = 1
+    ) {
+        if (capacity < 0) {
+            throw Exception("BoundedChannel capacity cannot be negative")
+        }
+        if (maxPendingSends < 0 || maxPendingReceives < 0) {
+            throw Exception("BoundedChannel pending capacities cannot be negative")
+        }
+    }
+
+    public send(Type value) -> Future<ChannelSendResult> {
+        if (failure) return completedSend(failedSendResult(failure))$
+        if (closed) return completedSend(closedSendResult())$
+
+        discardCancelledReceives()
+
+        if (pendingReceives.count > 0) {
+            let receive = pendingReceives.dequeue()
+            receive.complete(valueReceiveResult(value))
+            return completedSend(acceptedSendResult())$
+        }
+
+        if (values.count < capacity) {
+            values.enqueue(value)
+            return completedSend(acceptedSendResult())$
+        }
+
+        if (pendingSends.count >= maxPendingSends) {
+            return completedSend(sendCapacityExceededResult())$
+        }
+
+        let completion = Future.create<ChannelSendResult>()
+        let pending = PendingChannelSend<Type>(
+            value: value,
+            future: completion
+        )
+
+        pendingSends.enqueue(pending)
+        completion.onCancel({ removePendingSend(pending) })
+
+        return completion
+    }
+
+    public receive() -> Future<ChannelReceiveResult<Type>> {
+        if (failure) return completedReceive(failedReceiveResult(failure))$
+
+        if (values.count > 0) {
+            let value = values.dequeue()
+            acceptPendingSend()
+            return completedReceive(valueReceiveResult(value))$
+        }
+
+        discardCancelledSends()
+
+        if (pendingSends.count > 0) {
+            let send = pendingSends.dequeue()
+            send.complete(acceptedSendResult())
+            return completedReceive(valueReceiveResult(send.value))$
+        }
+
+        if (closed) return completedReceive(completedReceiveResult())$
+        if (pendingReceives.count >= maxPendingReceives) {
+            return completedReceive(receiveCapacityExceededResult())$
+        }
+
+        let completion = Future.create<ChannelReceiveResult<Type>>()
+        let pending = PendingChannelReceive<Type>(
+            future: completion
+        )
+
+        pendingReceives.enqueue(pending)
+        completion.onCancel({ removePendingReceive(pending) })
+
+        return completion
+    }
+
+    public close() {
+        if (closed || failure) return
+
+        closed = true
+        discardCancelledSends()
+        discardCancelledReceives()
+
+        while (pendingSends.count > 0) {
+            pendingSends.dequeue().complete(closedSendResult())
+        }
+
+        if (values.count == 0) {
+            completePendingReceives(completedReceiveResult())
+        }
+    }
+
+    public fail(Exception error) {
+        if (failure || closed) return
+
+        failure = error
+        values = Queue()
+        discardCancelledSends()
+        discardCancelledReceives()
+
+        let sendResult = failedSendResult(error)
+        let receiveResult = failedReceiveResult(error)
+
+        while (pendingSends.count > 0) {
+            pendingSends.dequeue().complete(sendResult)
+        }
+
+        completePendingReceives(receiveResult)
+    }
+
+    acceptPendingSend() {
+        discardCancelledSends()
+
+        if (closed || failure || pendingSends.count == 0) {
+            if (closed && values.count == 0) completePendingReceives(completedReceiveResult())
+            return
+        }
+
+        let send = pendingSends.dequeue()
+        discardCancelledReceives()
+
+        if (pendingReceives.count > 0) {
+            pendingReceives.dequeue().complete(valueReceiveResult(send.value))
+        } else if (capacity > 0) {
+            values.enqueue(send.value)
+        }
+
+        send.complete(acceptedSendResult())
+    }
+
+    completePendingReceives(ChannelReceiveResult<Type> result) {
+        while (pendingReceives.count > 0) {
+            pendingReceives.dequeue().complete(result)
+        }
+    }
+
+    discardCancelledSends() {
+        pendingSends = Queue<PendingChannelSend<Type>>(
+            pendingSends.filter({ !_.future.cancelled })
+        )
+    }
+
+    discardCancelledReceives() {
+        pendingReceives = Queue<PendingChannelReceive<Type>>(
+            pendingReceives.filter({ !_.future.cancelled })
+        )
+    }
+
+    removePendingSend(PendingChannelSend<Type> pending) {
+        pendingSends = Queue<PendingChannelSend<Type>>(
+            pendingSends.filter({ !Object.referenceEquals(_, pending) })
+        )
+    }
+
+    removePendingReceive(PendingChannelReceive<Type> pending) {
+        pendingReceives = Queue<PendingChannelReceive<Type>>(
+            pendingReceives.filter({ !Object.referenceEquals(_, pending) })
+        )
+    }
+
+    completedSend(ChannelSendResult result) -> Future<ChannelSendResult> {
+        let completion = Future.create<ChannelSendResult>()
+        completion.complete(result)
+        return completion
+    }
+
+    completedReceive(ChannelReceiveResult<Type> result) -> Future<ChannelReceiveResult<Type>> {
+        let completion = Future.create<ChannelReceiveResult<Type>>()
+        completion.complete(result)
+        return completion
+    }
+
+    acceptedSendResult() => ChannelSendResult(accepted: true)
+    closedSendResult() => ChannelSendResult(closed: true)
+    failedSendResult(Exception error) => ChannelSendResult(failed: true, error: error)
+    sendCapacityExceededResult() => ChannelSendResult(capacityExceeded: true)
+
+    valueReceiveResult(Type value) => ChannelReceiveResult<Type>(received: true, value: value)
+    completedReceiveResult() => ChannelReceiveResult<Type>(completed: true)
+    failedReceiveResult(Exception error) => ChannelReceiveResult<Type>(failed: true, error: error)
+    receiveCapacityExceededResult() => ChannelReceiveResult<Type>(capacityExceeded: true)
+}

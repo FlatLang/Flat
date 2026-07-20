@@ -1,0 +1,221 @@
+package flat/eventstream
+
+import flat/future
+
+testable class {
+    async test `bounded channel applies backpressure at capacity`() {
+        let channel = BoundedChannel<String>(1)
+
+        expect(channel.send("one").accepted).toBe(true)
+
+        let blocked = channel.send("two")$
+
+        expect(channel.bufferedCount).toBe(1)
+        expect(channel.pendingSendCount).toBe(1)
+
+        let first = channel.receive()
+
+        expect(first.value).toBe("one")
+        expect(blocked.get().accepted).toBe(true)
+        expect(channel.pendingSendCount).toBe(0)
+        expect(channel.bufferedCount).toBe(1)
+        expect(channel.receive().value).toBe("two")
+    }
+
+    async test `zero capacity channel rendezvous does not buffer`() {
+        let channel = BoundedChannel<String>(0)
+        let send = channel.send("one")$
+
+        expect(channel.bufferedCount).toBe(0)
+        expect(channel.pendingSendCount).toBe(1)
+
+        expect(channel.receive().value).toBe("one")
+        expect(send.get().accepted).toBe(true)
+        expect(channel.pendingSendCount).toBe(0)
+    }
+
+    async test `bounded channel preserves FIFO order`() {
+        let channel = BoundedChannel<String>(2)
+
+        channel.send("one")
+        channel.send("two")
+        let third = channel.send("three")$
+
+        expect(channel.receive().value).toBe("one")
+        expect(third.get().accepted).toBe(true)
+        expect(channel.receive().value).toBe("two")
+        expect(channel.receive().value).toBe("three")
+    }
+
+    async test `close drains accepted values then completes receivers`() {
+        let channel = BoundedChannel<String>(1)
+
+        channel.send("one")
+        channel.close()
+
+        let value = channel.receive()
+        let completed = channel.receive()
+
+        expect(value.received).toBe(true)
+        expect(value.value).toBe("one")
+        expect(completed.received).toBe(false)
+        expect(completed.completed).toBe(true)
+    }
+
+    async test `close rejects sends waiting for capacity`() {
+        let channel = BoundedChannel<String>(1)
+
+        channel.send("one")
+        let blocked = channel.send("two")$
+        channel.close()
+
+        let result = blocked.get()
+
+        expect(result.accepted).toBe(false)
+        expect(result.closed).toBe(true)
+        expect(channel.pendingSendCount).toBe(0)
+        expect(channel.receive().value).toBe("one")
+    }
+
+    async test `failure terminates pending and future operations`() {
+        let channel = BoundedChannel<String>(1)
+        let receive = channel.receive()$
+
+        channel.fail(Exception("broken"))
+
+        let pending = receive.get()
+        let futureReceive = channel.receive()
+        let futureSend = channel.send("one")
+
+        expect(pending.failed).toBe(true)
+        expect(pending.error.message).toBe("broken")
+        expect(futureReceive.failed).toBe(true)
+        expect(futureSend.failed).toBe(true)
+        expect(channel.bufferedCount).toBe(0)
+    }
+
+    async test `cancelling a pending send releases channel capacity wait state`() {
+        let channel = BoundedChannel<String>(1)
+
+        channel.send("one")
+        let blocked = channel.send("two")$
+
+        expect(channel.pendingSendCount).toBe(1)
+
+        blocked.cancel()
+
+        expect(channel.pendingSendCount).toBe(0)
+        expectAsync(async { blocked.get() }).toThrow(CancellationException.class)
+    }
+
+    async test `cancelling a pending receive removes its waiter`() {
+        let channel = BoundedChannel<String>(1)
+        let receive = channel.receive()$
+
+        expect(channel.pendingReceiveCount).toBe(1)
+
+        receive.cancel()
+
+        expect(channel.pendingReceiveCount).toBe(0)
+        expectAsync(async { receive.get() }).toThrow(CancellationException.class)
+    }
+
+    test `negative capacity is rejected`() {
+        expect({ BoundedChannel<String>(-1) })
+            .toThrowWithMessage(Exception.class, "BoundedChannel capacity cannot be negative")
+    }
+
+    async test `pending receiver completes when channel closes`() {
+        let channel = BoundedChannel<String>(1)
+        let receive = channel.receive()$
+
+        channel.close()
+
+        let result = receive.get()
+
+        expect(result.completed).toBe(true)
+        expect(result.received).toBe(false)
+        expect(channel.pendingReceiveCount).toBe(0)
+    }
+
+    async test `send after close is rejected without buffering`() {
+        let channel = BoundedChannel<String>(1)
+
+        channel.close()
+
+        let result = channel.send("one")
+
+        expect(result.closed).toBe(true)
+        expect(result.accepted).toBe(false)
+        expect(channel.bufferedCount).toBe(0)
+    }
+
+    async test `cancelled send is never delivered`() {
+        let channel = BoundedChannel<String>(1)
+
+        channel.send("one")
+        let cancelled = channel.send("two")$
+        cancelled.cancel()
+
+        expect(channel.receive().value).toBe("one")
+        expect(channel.bufferedCount).toBe(0)
+
+        channel.close()
+
+        expect(channel.receive().completed).toBe(true)
+    }
+
+    async test `cancelled receiver does not consume a later send`() {
+        let channel = BoundedChannel<String>(1)
+        let cancelled = channel.receive()$
+        cancelled.cancel()
+
+        expect(channel.send("one").accepted).toBe(true)
+        expect(channel.receive().value).toBe("one")
+    }
+
+    async test `pending send queue is explicitly bounded`() {
+        let channel = BoundedChannel<String>(1, maxPendingSends: 1)
+
+        channel.send("buffered")
+        let pending = channel.send("pending")$
+        let rejected = channel.send("rejected")
+
+        expect(channel.pendingSendCount).toBe(1)
+        expect(rejected.capacityExceeded).toBe(true)
+        expect(rejected.accepted).toBe(false)
+
+        expect(channel.receive().value).toBe("buffered")
+        expect(pending.get().accepted).toBe(true)
+        expect(channel.receive().value).toBe("pending")
+    }
+
+    async test `pending receive queue is explicitly bounded`() {
+        let channel = BoundedChannel<String>(1, maxPendingReceives: 1)
+
+        let pending = channel.receive()$
+        let rejected = channel.receive()
+
+        expect(channel.pendingReceiveCount).toBe(1)
+        expect(rejected.capacityExceeded).toBe(true)
+        expect(rejected.received).toBe(false)
+
+        channel.send("delivered")
+        expect(pending.get().value).toBe("delivered")
+    }
+
+    test `negative pending capacity is rejected`() {
+        expect({ BoundedChannel<String>(1, maxPendingSends: -1) })
+            .toThrowWithMessage(Exception.class, "BoundedChannel pending capacities cannot be negative")
+    }
+
+    async test `close is idempotent`() {
+        let channel = BoundedChannel<String>(1)
+
+        channel.close()
+        channel.close()
+
+        expect(channel.receive().completed).toBe(true)
+        expect(channel.send("one").closed).toBe(true)
+    }
+}

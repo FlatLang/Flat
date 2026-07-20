@@ -1,0 +1,13 @@
+package flat/eventstream
+
+class<Type> {
+    public complete(ChannelReceiveResult<Type> result) {
+        native var ChannelReceiveResult<Type> nativeResult
+
+        nativeResult = result
+
+        external {
+            #{future.resolveFunc}(#{nativeResult});
+        }
+    }
+}
