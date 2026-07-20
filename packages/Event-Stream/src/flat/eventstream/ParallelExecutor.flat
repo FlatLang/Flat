@@ -1,0 +1,62 @@
+package flat/eventstream
+
+import flat/future
+
+class extends Executor {
+    visible var Int activeCount
+    visible Int queuedCount => tasks.count
+
+    var PendingExecutorTask[] tasks = PendingExecutorTask[]
+
+    public construct(
+        visible Int maxParallel,
+        visible Int maxQueued
+    ) {
+        if (maxParallel <= 0) {
+            throw Exception("ParallelExecutor parallelism must be positive")
+        }
+        if (maxQueued < 0) {
+            throw Exception("ParallelExecutor queue capacity cannot be negative")
+        }
+    }
+
+    override public submit(async action()) -> Future<ExecutorTaskResult> {
+        let completion = Future.create<ExecutorTaskResult>()
+        let task = PendingExecutorTask(
+            taskAction: action,
+            future: completion
+        )
+
+        if (activeCount < maxParallel) {
+            execute(task)$
+        } else if (tasks.count < maxQueued) {
+            tasks.add(task)
+            completion.onCancel({ remove(task) })
+        } else {
+            task.complete(ExecutorTaskResult(capacityExceeded: true))
+        }
+
+        return completion
+    }
+
+    async execute(PendingExecutorTask task) {
+        activeCount++
+        task.run()
+        activeCount--
+        startNext()
+    }
+
+    startNext() {
+        while (activeCount < maxParallel && !tasks.isEmpty) {
+            let task = tasks.remove(0)
+
+            if (!task.future.cancelled) {
+                execute(task)$
+            }
+        }
+    }
+
+    remove(PendingExecutorTask task) {
+        tasks.removeFirstWhere({ Object.referenceEquals(_, task) })
+    }
+}

@@ -1,0 +1,197 @@
+package flat/eventstream
+
+import flat/future/CancellationException
+
+testable class {
+    async test `inline executor starts work immediately`() {
+        let executor = InlineExecutor()
+        var started = false
+
+        let completion = executor.submit({ started = true })$
+
+        expect(started).toBe(true)
+        expect(completion.get().completed).toBe(true)
+    }
+
+    async test `controlled executor does not start queued work`() {
+        let executor = ControlledExecutor(2)
+        var started = false
+
+        let completion = executor.submit({ started = true })$
+
+        expect(started).toBe(false)
+        expect(executor.queuedCount).toBe(1)
+        expect(completion.completed).toBe(false)
+
+        let result = executor.runNext()
+
+        expect(started).toBe(true)
+        expect(executor.queuedCount).toBe(0)
+        expect(completion.completed).toBe(true)
+        expect(result.completed).toBe(true)
+    }
+
+    async test `controlled executor runs queued work in FIFO order`() {
+        let executor = ControlledExecutor(3)
+        let order = String[]
+
+        executor.submit({ order.add("one") })$
+        executor.submit({ order.add("two") })$
+        executor.submit({ order.add("three") })$
+
+        executor.runNext()
+        expect(order).toBe(["one"])
+
+        let results = executor.runAll()
+
+        expect(order).toBe(["one", "two", "three"])
+        expect(results.count).toBe(2)
+        expect(results.all({ _.completed })).toBe(true)
+    }
+
+    async test `controlled executor queue capacity is explicit`() {
+        let executor = ControlledExecutor(1)
+
+        executor.submit({})$
+        let rejected = executor.submit({})$
+
+        expect(executor.queuedCount).toBe(1)
+        expect(rejected.completed).toBe(true)
+
+        let result = rejected.get()
+        expect(result.capacityExceeded).toBe(true)
+    }
+
+    async test `controlled executor isolates task failure`() {
+        let executor = ControlledExecutor(2)
+        let failedCompletion = executor.submit({ throw Exception("broken") })$
+        let successfulCompletion = executor.submit({})$
+
+        let results = executor.runAll()
+
+        expect(results.count).toBe(2)
+        expect(results[0].failed).toBe(true)
+        expect(results[0].error.message).toBe("broken")
+        expect(results[1].completed).toBe(true)
+        expect(failedCompletion.completed).toBe(true)
+        expect(successfulCompletion.completed).toBe(true)
+    }
+
+    async test `cancelling queued work removes it without running`() {
+        let executor = ControlledExecutor(1)
+        var started = false
+        let completion = executor.submit({ started = true })$
+
+        completion.cancel()
+
+        expect(executor.queuedCount).toBe(0)
+        expect(started).toBe(false)
+        expectAsync(async { completion.get() }).toThrow(CancellationException.class)
+    }
+
+    async test `parallel executor bounds active work and queues overflow`() {
+        let executor = ParallelExecutor(maxParallel: 2, maxQueued: 1)
+        let firstGate = Future.create<Bool>()
+        let secondGate = Future.create<Bool>()
+        let thirdGate = Future.create<Bool>()
+        var active = 0
+        var peak = 0
+
+        let first = executor.submit({
+            active++
+            peak = Math.max(peak, active)
+            firstGate.get()
+            active--
+        })$
+        let second = executor.submit({
+            active++
+            peak = Math.max(peak, active)
+            secondGate.get()
+            active--
+        })$
+        let third = executor.submit({
+            active++
+            peak = Math.max(peak, active)
+            thirdGate.get()
+            active--
+        })$
+
+        expect(executor.activeCount).toBe(2)
+        expect(executor.queuedCount).toBe(1)
+        expect(active).toBe(2)
+
+        firstGate.complete(true)
+        secondGate.complete(true)
+        thirdGate.complete(true)
+
+        expect(first.get().completed).toBe(true)
+        expect(second.get().completed).toBe(true)
+        expect(third.get().completed).toBe(true)
+        expect(peak).toBe(2)
+        expect(active).toBe(0)
+        expect(executor.activeCount).toBe(0)
+        expect(executor.queuedCount).toBe(0)
+    }
+
+    async test `parallel executor queue capacity is explicit`() {
+        let executor = ParallelExecutor(maxParallel: 1, maxQueued: 1)
+        let gate = Future.create<Bool>()
+
+        let active = executor.submit({ gate.get() })$
+        let queued = executor.submit({})$
+        let rejected = executor.submit({})$
+
+        expect(executor.activeCount).toBe(1)
+        expect(executor.queuedCount).toBe(1)
+        expect(rejected.completed).toBe(true)
+        expect(rejected.get().capacityExceeded).toBe(true)
+
+        gate.complete(true)
+        expect(active.get().completed).toBe(true)
+        expect(queued.get().completed).toBe(true)
+    }
+
+    async test `parallel executor isolates failures`() {
+        let executor = ParallelExecutor(maxParallel: 2, maxQueued: 0)
+
+        let failed = executor.submit({ throw Exception("broken") })$
+        let successful = executor.submit({})$
+
+        let failure = failed.get()
+        let success = successful.get()
+
+        expect(failure.failed).toBe(true)
+        expect(failure.error.message).toBe("broken")
+        expect(success.completed).toBe(true)
+    }
+
+    async test `cancelling parallel queued work removes it without running`() {
+        let executor = ParallelExecutor(maxParallel: 1, maxQueued: 1)
+        let gate = Future.create<Bool>()
+        var queuedStarted = false
+
+        let active = executor.submit({ gate.get() })$
+        let queued = executor.submit({ queuedStarted = true })$
+
+        queued.cancel()
+
+        expect(executor.queuedCount).toBe(0)
+        expect(queuedStarted).toBe(false)
+
+        gate.complete(true)
+        expect(active.get().completed).toBe(true)
+        expectAsync(async { queued.get() }).toThrow(CancellationException.class)
+    }
+
+    test `invalid parallel executor capacities are rejected`() {
+        expect({ ParallelExecutor(maxParallel: 0, maxQueued: 1) })
+            .toThrowWithMessage(Exception.class, "ParallelExecutor parallelism must be positive")
+        expect({ ParallelExecutor(maxParallel: 1, maxQueued: -1) })
+            .toThrowWithMessage(Exception.class, "ParallelExecutor queue capacity cannot be negative")
+    }
+
+    test `negative controlled executor capacity is rejected`() {
+        expect({ ControlledExecutor(-1) })
+            .toThrowWithMessage(Exception.class, "ControlledExecutor queue capacity cannot be negative")
+    }
+}

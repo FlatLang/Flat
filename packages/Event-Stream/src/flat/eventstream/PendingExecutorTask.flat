@@ -1,0 +1,32 @@
+package flat/eventstream
+
+import flat/future
+
+data class {
+    visible Object taskAction
+    visible Future<ExecutorTaskResult> future
+
+    public async run() -> ExecutorTaskResult {
+        if (future.cancelled) return null
+
+        var ExecutorTaskResult result
+
+        try {
+            execute()
+            result = ExecutorTaskResult(completed: true)
+        } catch (Exception error) {
+            result = ExecutorTaskResult(failed: true, error: error)
+        }
+
+        complete(result)
+        return result
+    }
+
+    async execute() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    public complete(ExecutorTaskResult result) {
+        throw Exception("Not implemented for target language or runtime")
+    }
+}

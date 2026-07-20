@@ -1,0 +1,21 @@
+package flat/eventstream
+
+import flat/future
+
+class extends Executor {
+    override public submit(async action()) -> Future<ExecutorTaskResult> {
+        let completion = Future.create<ExecutorTaskResult>()
+        let task = PendingExecutorTask(
+            taskAction: action,
+            future: completion
+        )
+
+        execute(task)$
+
+        return completion
+    }
+
+    async execute(PendingExecutorTask task) {
+        task.run()
+    }
+}

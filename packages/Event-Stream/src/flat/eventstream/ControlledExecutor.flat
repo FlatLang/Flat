@@ -1,0 +1,55 @@
+package flat/eventstream
+
+import flat/future
+
+class extends Executor {
+    visible Int queuedCount => tasks.count
+
+    var PendingExecutorTask[] tasks = PendingExecutorTask[]
+
+    public construct(visible Int capacity) {
+        if (capacity < 0) {
+            throw Exception("ControlledExecutor queue capacity cannot be negative")
+        }
+    }
+
+    override public submit(async action()) -> Future<ExecutorTaskResult> {
+        let completion = Future.create<ExecutorTaskResult>()
+        let task = PendingExecutorTask(
+            taskAction: action,
+            future: completion
+        )
+
+        if (tasks.count >= capacity) {
+            task.complete(ExecutorTaskResult(capacityExceeded: true))
+            return completion
+        }
+
+        tasks.add(task)
+        completion.onCancel({ remove(task) })
+
+        return completion
+    }
+
+    public async runNext() -> ExecutorTaskResult {
+        if (tasks.isEmpty) return null
+
+        let task = tasks.remove(0)
+        return task.run()
+    }
+
+    public async runAll() -> ExecutorTaskResult[] {
+        let results = ExecutorTaskResult[]
+        var ExecutorTaskResult result
+
+        while (result = runNext()) {
+            results.add(result)
+        }
+
+        return results
+    }
+
+    remove(PendingExecutorTask task) {
+        tasks.removeFirstWhere({ Object.referenceEquals(_, task) })
+    }
+}

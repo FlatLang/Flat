@@ -1,7 +1,7 @@
 {
   "name": "Event Stream",
   "version": "0.1.0",
-  "description": "Flat Event Stream Library",
+  "description": "Flat bounded dataflow, executor, and event stream library",
   "author": "Braden Steffaniak",
   "license": "ISC",
   "defaultTarget": "es6",

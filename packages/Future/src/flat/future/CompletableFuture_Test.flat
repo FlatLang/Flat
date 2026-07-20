@@ -38,6 +38,26 @@ testable class {
         expect(response).toBe("hey")
     }
 
+    async test `completing marks the future completed immediately`() {
+        let future = Future.create<String>()
+
+        future.complete("hey")
+
+        expect(future.completed).toBe(true)
+        expect(future.get()).toBe("hey")
+    }
+
+    async test `erroring marks the future completed immediately`() {
+        let future = Future.create<String>()
+        let error = Exception("broken")
+
+        future.error(error)
+
+        expect(future.completed).toBe(true)
+        expect(future.exception).toBe(error)
+        expectAsync(async { future.get() }).toThrowWithMessage(Exception.class, "broken")
+    }
+
     async doStuff(async func()) {
         func()
     }

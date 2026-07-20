@@ -5,6 +5,7 @@ class<Type> {
         native var ChannelSendResult nativeResult
 
         nativeResult = result
+        future.completed = true
 
         external {
             #{future.resolveFunc}(#{nativeResult});

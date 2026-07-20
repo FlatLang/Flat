@@ -1,0 +1,7 @@
+package flat/eventstream
+
+import flat/future
+
+abstract class {
+    public abstract submit(async action()) -> Future<ExecutorTaskResult>
+}

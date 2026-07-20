@@ -1,0 +1,20 @@
+package flat/eventstream
+
+class {
+    async execute() {
+        external {
+            await #{taskAction}();
+        }
+    }
+
+    public complete(ExecutorTaskResult result) {
+        native var ExecutorTaskResult nativeResult
+
+        nativeResult = result
+        future.completed = true
+
+        external {
+            #{future.resolveFunc}(#{nativeResult});
+        }
+    }
+}

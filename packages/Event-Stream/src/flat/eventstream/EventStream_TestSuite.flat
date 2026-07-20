@@ -8,7 +8,8 @@ import flat/io/FancyOutputStream
 [TestSuite [
     EventStream_Test,
     BoundedChannel_Test,
-    BoundedTopic_Test
+    BoundedTopic_Test,
+    Executor_Test
 ]]
 class {
     public static async main(String[] args) {

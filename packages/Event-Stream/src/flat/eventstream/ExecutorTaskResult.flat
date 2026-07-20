@@ -1,0 +1,8 @@
+package flat/eventstream
+
+data class {
+    visible Bool completed
+    visible Bool failed
+    visible Bool capacityExceeded
+    visible Exception error
+}

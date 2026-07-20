@@ -90,12 +90,17 @@ class<TType> {
 
     public static class CompletableFuture<TType> extends Future<TType> {
         public complete(TType value) => value {
+            completed = true
+
             external {
                 #{resolveFunc}(#{value});
             }
         }
 
         public error(Exception value) => value {
+            completed = true
+            exception = value
+
             external {
                 #{rejectFunc}(#{value});
             }

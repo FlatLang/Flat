@@ -16,6 +16,7 @@ testable class {
         let first = channel.receive()
 
         expect(first.value).toBe("one")
+        expect(blocked.completed).toBe(true)
         expect(blocked.get().accepted).toBe(true)
         expect(channel.pendingSendCount).toBe(0)
         expect(channel.bufferedCount).toBe(1)
@@ -131,6 +132,7 @@ testable class {
 
         channel.close()
 
+        expect(receive.completed).toBe(true)
         let result = receive.get()
 
         expect(result.completed).toBe(true)
