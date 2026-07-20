@@ -1,0 +1,52 @@
+package flat/eventstream
+
+import flat/future
+
+class<In, Out> {
+    public static unordered<In, Out>(
+        BoundedFlow<In> input,
+        func(In value) -> Future<Out>,
+        Int maxParallel,
+        Int outputCapacity,
+        Int maxPendingOutputSends = maxParallel
+    ) -> ConcurrentMapOperation<In, Out> {
+        let funcs = Array<mapFunc(In) -> Future<Out>>()
+        funcs.add(func)
+
+        let operation = ConcurrentMapOperation<In, Out>(
+            input,
+            funcs,
+            false,
+            maxParallel,
+            0,
+            outputCapacity,
+            maxPendingOutputSends
+        )
+        operation.start()
+        return operation
+    }
+
+    public static ordered<In, Out>(
+        BoundedFlow<In> input,
+        func(In value) -> Future<Out>,
+        Int maxParallel,
+        Int maxReorder,
+        Int outputCapacity,
+        Int maxPendingOutputSends = maxParallel
+    ) -> ConcurrentMapOperation<In, Out> {
+        let funcs = Array<mapFunc(In) -> Future<Out>>()
+        funcs.add(func)
+
+        let operation = ConcurrentMapOperation<In, Out>(
+            input,
+            funcs,
+            true,
+            maxParallel,
+            maxReorder,
+            outputCapacity,
+            maxPendingOutputSends
+        )
+        operation.start()
+        return operation
+    }
+}

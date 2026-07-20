@@ -1,0 +1,35 @@
+package flat/eventstream
+
+import flat/future
+
+class<Type> {
+    visible Int bufferedCount => channel.bufferedCount
+    visible Int pendingSendCount => channel.pendingSendCount
+    visible Int pendingReceiveCount => channel.pendingReceiveCount
+    visible Bool closed => channel.closed
+    visible Exception failure => channel.failure
+
+    visible BoundedChannel<Type> channel
+
+    public construct(
+        Int capacity,
+        Int maxPendingSends = 1,
+        Int maxPendingReceives = 1
+    ) {
+        channel = BoundedChannel<Type>(
+            capacity,
+            maxPendingSends,
+            maxPendingReceives
+        )
+    }
+
+    public send(Type value) -> Future<ChannelSendResult> {
+        return channel.send(value)$
+    }
+
+    public receive() -> Future<ChannelReceiveResult<Type>> {
+        return channel.receive()$
+    }
+    public close() => channel.close()
+    public fail(Exception error) => channel.fail(error)
+}

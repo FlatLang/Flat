@@ -1,0 +1,255 @@
+package flat/eventstream
+
+import flat/future
+
+class<In, Out> {
+    visible var Int inFlightCount
+    visible var Int peakInFlightCount
+    visible Int reorderCount => reorder.count
+    visible Int activeTaskCount => activeTasks.count
+    visible var Int peakReorderCount
+    visible var Bool cancelled
+    visible var Bool finished
+    visible var Int blockedOutputSendCount
+    visible var Int peakBlockedOutputSendCount
+    visible Future<Bool> outputBackpressure = Future.create<Bool>()
+
+    visible BoundedFlow<ConcurrentMapResult<Out>> output
+    visible Future<Bool> completion = Future.create<Bool>()
+    var Future<Bool> orderedEmitterCompletion = Future.create<Bool>()
+
+    var BoundedChannel<Bool> workerCompletions
+    var BoundedChannel<ConcurrentMapResult<Out>> orderedCompletions
+    var BoundedChannel<Bool> orderedProgress
+    var ConcurrentMapResult<Out>[] reorder = ConcurrentMapResult<Out>[]
+    var ConcurrentMapTask<In, Out>[] activeTasks = ConcurrentMapTask<In, Out>[]
+    var Future<ChannelReceiveResult<In>> currentReceive
+    var Long nextInputIndex
+    var Long nextOutputIndex
+    var Exception upstreamFailure
+
+    public construct(
+        visible BoundedFlow<In> input,
+        visible Array<mapFunc(In) -> Future<Out>> mapFuncs,
+        visible Bool ordered,
+        visible Int maxParallel,
+        visible Int maxReorder,
+        visible Int outputCapacity,
+        visible Int maxPendingOutputSends
+    ) {
+        if (maxParallel <= 0) {
+            throw Exception("Concurrent map parallelism must be positive")
+        }
+        if (outputCapacity < 0) {
+            throw Exception("Concurrent map output capacity cannot be negative")
+        }
+        if (maxReorder < 0) {
+            throw Exception("Concurrent map reorder capacity cannot be negative")
+        }
+        if (maxPendingOutputSends < 0) {
+            throw Exception("Concurrent map pending output capacity cannot be negative")
+        }
+
+        let requiredPending = maxParallel
+
+        if (maxPendingOutputSends < requiredPending) {
+            throw Exception("Concurrent map pending output capacity cannot preserve accepted results")
+        }
+
+        output = BoundedFlow<ConcurrentMapResult<Out>>(
+            outputCapacity,
+            maxPendingOutputSends,
+            1
+        )
+        workerCompletions = BoundedChannel<Bool>(maxParallel, maxParallel, 1)
+        orderedCompletions = BoundedChannel<ConcurrentMapResult<Out>>(
+            maxParallel,
+            maxParallel,
+            1
+        )
+        orderedProgress = BoundedChannel<Bool>(0, 1, 1)
+    }
+
+    public start() {
+        run()$
+    }
+
+    public cancel() {
+        if (cancelled || finished) return
+
+        cancelled = true
+        if (currentReceive) currentReceive.cancel()
+        activeTasks.copy().forEach({ _.cancel() })
+        reorder.clear()
+        output.close()
+        orderedCompletions.close()
+        orderedProgress.close()
+    }
+
+    async run() {
+        if (ordered) emitOrdered()$
+
+        try {
+            dispatch()
+        } catch (Exception error) {
+            if (!cancelled) upstreamFailure = error
+        }
+
+        drainWorkers()
+
+        if (ordered) {
+            if (upstreamFailure) orderedCompletions.fail(upstreamFailure)
+            else orderedCompletions.close()
+
+            orderedEmitterCompletion.get()
+        }
+
+        finishOutput()
+    }
+
+    async dispatch() {
+        while (!cancelled) {
+            while (!cancelled && inFlightCount >= maxParallel) {
+                workerCompletions.receive()
+            }
+
+            while (!cancelled && ordered && nextInputIndex > nextOutputIndex + maxReorder) {
+                orderedProgress.receive()
+            }
+
+            if (cancelled) return
+
+            currentReceive = input.receive()$
+            let received = currentReceive.get()
+            currentReceive = null
+
+            if (received.received) {
+                let task = ConcurrentMapTask<In, Out>(
+                    sourceIndex: nextInputIndex++,
+                    input: received.value
+                )
+                task.mapFuncs = mapFuncs
+
+                activeTasks.add(task)
+                inFlightCount++
+                peakInFlightCount = Math.max(peakInFlightCount, inFlightCount)
+                process(task)$
+            } else if (received.completed) {
+                return
+            } else if (received.failed) {
+                upstreamFailure = received.error
+                output.fail(received.error)
+                if (ordered) orderedCompletions.fail(received.error)
+                return
+            }
+        }
+    }
+
+    async process(ConcurrentMapTask<In, Out> task) {
+        let result = task.run()
+
+        if (ordered) {
+            orderedCompletions.send(result)
+        } else {
+            sendOutput(result)
+        }
+
+        activeTasks.removeFirstWhere({ Object.referenceEquals(_, task) })
+        inFlightCount--
+        workerCompletions.send(true)
+    }
+
+    async sendOutput(ConcurrentMapResult<Out> result) {
+        let pendingBefore = output.pendingSendCount
+        let send = output.send(result)$
+        let blocked = output.pendingSendCount > pendingBefore
+
+        if (blocked) {
+            blockedOutputSendCount++
+            peakBlockedOutputSendCount = Math.max(
+                peakBlockedOutputSendCount,
+                blockedOutputSendCount
+            )
+            signalOutputBackpressure()
+        }
+
+        send.get()
+
+        if (blocked) blockedOutputSendCount--
+    }
+
+    async drainWorkers() {
+        while (inFlightCount > 0) {
+            workerCompletions.receive()
+        }
+    }
+
+    async emitOrdered() {
+        while (!cancelled) {
+            let received = orderedCompletions.receive()
+
+            if (received.received) {
+                reorder.add(received.value)
+                recordReorderPeak()
+                flushOrdered()
+            } else if (received.failed) {
+                upstreamFailure = received.error
+                break
+            } else if (received.completed) {
+                flushOrdered()
+                break
+            }
+        }
+
+        completeOrderedEmitter()
+    }
+
+    recordReorderPeak() {
+        var Int count = reorder.count
+
+        if (reorder.any({ _.sourceIndex == nextOutputIndex })) {
+            count--
+        }
+
+        peakReorderCount = Math.max(peakReorderCount, count)
+    }
+
+    async flushOrdered() {
+        while (!cancelled) {
+            let next = reorder.firstWhere({ _.sourceIndex == nextOutputIndex })
+            if (!next) return
+
+            reorder.removeFirstWhere({ Object.referenceEquals(_, next) })
+            sendOutput(next)
+            nextOutputIndex++
+            orderedProgress.send(true)$
+        }
+    }
+
+    finishOutput() {
+        if (finished) return
+
+        finished = true
+
+        if (cancelled) {
+            output.close()
+        } else if (upstreamFailure) {
+            output.fail(upstreamFailure)
+        } else {
+            output.close()
+        }
+
+        completeOperation()
+    }
+    completeOrderedEmitter() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    signalOutputBackpressure() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    completeOperation() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+}

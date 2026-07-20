@@ -1,0 +1,15 @@
+package flat/eventstream
+
+class<In, Out> {
+    async execute() -> Out {
+        external {
+            #{mappingFuture} = #{mapFuncs.first}(#{input});
+        }
+
+        return mappingFuture.get()
+    }
+
+    public cancel() {
+        if (mappingFuture) mappingFuture.cancel()
+    }
+}

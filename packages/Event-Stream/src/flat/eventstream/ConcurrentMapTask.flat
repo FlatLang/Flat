@@ -1,0 +1,34 @@
+package flat/eventstream
+
+import flat/future
+
+data class<In, Out> {
+    visible Long sourceIndex
+    visible In input
+    visible var Array<mapFunc(In) -> Future<Out>> mapFuncs
+    visible Future<Out> mappingFuture
+
+    public async run() -> ConcurrentMapResult<Out> {
+        try {
+            return ConcurrentMapResult<Out>(
+                sourceIndex: sourceIndex,
+                succeeded: true,
+                value: execute()
+            )
+        } catch (Exception error) {
+            return ConcurrentMapResult<Out>(
+                sourceIndex: sourceIndex,
+                failed: true,
+                error: error
+            )
+        }
+    }
+
+    async execute() -> Out {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    public cancel() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+}

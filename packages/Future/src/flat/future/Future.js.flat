@@ -11,6 +11,7 @@ class<TType> {
                 #{resolveFunc} = resolve;
                 #{rejectFunc} = reject;
             }).catch((e) => {
+                #{completed = true};
                 #{exception} = e;
                 #{exceptionOccurred()};
             });
@@ -36,6 +37,10 @@ class<TType> {
                     #{throw CancellationException()};
                 }
 
+                if (#{exception} !== flat_null) {
+                    throw #{exception};
+                }
+
                 return data;
             } catch (err) {
                 #{completed = true};
@@ -44,7 +49,7 @@ class<TType> {
                     #{throw CancellationException()};
                 }
 
-                return err;
+                throw err;
             }
         }
     }

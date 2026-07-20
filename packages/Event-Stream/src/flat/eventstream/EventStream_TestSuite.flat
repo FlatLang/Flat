@@ -9,7 +9,8 @@ import flat/io/FancyOutputStream
     EventStream_Test,
     BoundedChannel_Test,
     BoundedTopic_Test,
-    Executor_Test
+    Executor_Test,
+    ConcurrentMap_Test
 ]]
 class {
     public static async main(String[] args) {

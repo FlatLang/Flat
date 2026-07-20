@@ -1,0 +1,28 @@
+package flat/eventstream
+
+class<In, Out> {
+    completeOrderedEmitter() {
+        external {
+            if (!#{orderedEmitterCompletion.completed}) {
+                #{orderedEmitterCompletion.completed} = true;
+                #{orderedEmitterCompletion.resolveFunc}(true);
+            }
+        }
+    }
+
+    signalOutputBackpressure() {
+        external {
+            if (!#{outputBackpressure.completed}) {
+                #{outputBackpressure.completed} = true;
+                #{outputBackpressure.resolveFunc}(true);
+            }
+        }
+    }
+
+    completeOperation() {
+        external {
+            #{completion.completed} = true;
+            #{completion.resolveFunc}(true);
+        }
+    }
+}

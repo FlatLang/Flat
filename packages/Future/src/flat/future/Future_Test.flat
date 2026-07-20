@@ -117,6 +117,16 @@ testable class {
         expect(count).toBe(1)
     }
 
+    async test `Future.from: propagates exceptions`() {
+        let future = Future.from<String>(async {
+            throw Exception("broken")
+        })
+
+        expectAsync(async { future.get() }).toThrowWithMessage(Exception.class, "broken")
+        expect(future.completed).toBe(true)
+        expect(future.exception.message).toBe("broken")
+    }
+
     futureThing() -> Future<String> {
         return Future.from({
             return "hey"

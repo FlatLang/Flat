@@ -1,0 +1,9 @@
+package flat/eventstream
+
+data class<Type> {
+    visible Long sourceIndex
+    visible Bool succeeded
+    visible Bool failed
+    visible Type value
+    visible Exception error
+}
