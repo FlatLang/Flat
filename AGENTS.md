@@ -13,6 +13,46 @@
 - Do not commit generated `dist/`, `target/`, cache, or temporary fixture output unless a task explicitly requires it.
 - Do not stage or commit the local compiler progress document.
 
+## Package architecture and domain boundaries
+
+- Each package must own one coherent domain, capability, or infrastructure concern and expose a small, self-describing public contract.
+- Put behavior in the package whose domain owns the decision. Do not place behavior in a convenient caller merely to avoid changing the owning package.
+- Keep orchestration separate from domain implementation. Coordinators may compose package APIs; lower-level packages must not depend on coordinators.
+- Dependencies must follow a clear direction. Frontend packages must not depend on semantic or backend packages; target backends must not be imported into parsing or semantic domains.
+- Production dependency cycles are prohibited. Test-only dependencies may bridge layers only when they do not leak into production APIs.
+- Do not make packages depend on each other for incidental helpers. Keep a helper local unless it represents a stable, reusable domain abstraction.
+- Do not create generic `Utils`, `Common`, `Models`, or catch-all packages. Shared packages require a cohesive domain and more than one legitimate consumer.
+- Do not turn existing shared packages into dumping grounds. New types belong there only when the package owns their lifecycle and semantics.
+- Prefer domain-specific types and operations over loosely typed maps, generic event names, boolean mode flags, and cross-package mutable state.
+- Public APIs must express domain concepts, ownership, lifecycle, failure, ordering, and cancellation clearly enough that callers do not need implementation knowledge.
+- Keep implementation details private. Do not expose parser stacks, target-specific details, mutable indexes, queue internals, or transport/runtime mechanics through unrelated package APIs.
+- A package must be independently understandable from its name, `flat.json`, public source types, and tests. Update package descriptions when responsibilities change.
+- A cross-package change requires an explicit contract change, tests in the owning package, and validation of directly affected consumers.
+- Adding a production dependency requires documenting why it belongs at that architectural layer and why a smaller local abstraction is insufficient.
+- Extract a new package only when the responsibility is cohesive, independently testable, reusable, and has a stable boundary. Do not create speculative packages or one-type wrappers.
+
+### Compiler package direction
+
+The intended production dependency direction is:
+
+```text
+compiler orchestration
+    -> source/project loading
+    -> lexer and parser APIs
+    -> syntax/AST contracts
+    -> declaration and semantic contracts
+    -> bound/lowered IR contracts
+    -> target backends
+    -> artifact sinks
+```
+
+- Generic infrastructure packages must not import compiler orchestration or language-specific packages.
+- `Parser-Core` remains language-neutral; Flat grammar belongs in `Flat-Parser`.
+- Syntax/AST packages must not depend on target writers.
+- Semantic and lowering decisions must remain target-independent.
+- Target writers consume lowered contracts and must not reach back into parser state.
+- `Flat-Compiler` composes the graph but should contain minimal domain behavior itself.
+
 ## Compiler development priorities
 
 - Complete the Flat-written compiler through TDD-driven vertical slices.
@@ -68,3 +108,4 @@ Before finishing, report:
 - Exact build/test commands run and their results.
 - Relevant suites not run and why.
 - Any new barrier, materialization point, queue, mutable shared index, or determinism risk introduced.
+- Any production dependency added or package responsibility moved, including its architectural rationale.
