@@ -8,11 +8,13 @@ import flat/lexer/Lexer
 
 [TestSuite [
     Tokenizer_Test,
-    Lexer_Test
+    Lexer_Test,
+    BoundedLexerPipelineChecks_Test
 ]]
 class {
     public static async main(String[] args) {
         let test = Lexer_TestSuite()
+        test.keepTestRuntimeAlive()
 
         Timer timer = Timer().start()
 
@@ -48,8 +50,18 @@ class {
 
         Console.writeLine("Took #{timer.duration}ms")
 
+        test.releaseTestRuntime()
+
         if (unsuccessful.count > 0) {
                 System.exit(1)
         }
+    }
+
+    keepTestRuntimeAlive() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+
+    releaseTestRuntime() {
+        throw Exception("Not implemented for target language or runtime")
     }
 }

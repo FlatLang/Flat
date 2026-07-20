@@ -1,0 +1,8 @@
+package flat/lexer
+
+import flat/compiler/models/Location
+
+data class {
+    visible String contents
+    visible Location start
+}

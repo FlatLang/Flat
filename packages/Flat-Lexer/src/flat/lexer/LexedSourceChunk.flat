@@ -1,0 +1,30 @@
+package flat/lexer
+
+import flat/compiler/models/Location
+import flat/compiler/models/Token
+
+data class {
+    visible LexicallyCompleteSourceChunk source
+    visible data_tostring_ignore Token[] localTokens
+    visible Int tokenCount => localTokens.count
+
+    public token(Int index) -> Token {
+        let token = localTokens[index]
+        let lineNumber = source.start.lineNumber + token.location.lineNumber - 1
+        let column = token.location.lineNumber == 1
+            ? source.start.column + token.location.column - 1
+            : token.location.column
+
+        return Token(
+            value: token.value,
+            type: token.type,
+            location: Location(lineNumber: lineNumber, column: column)
+        )
+    }
+
+    public tokenMatches(Int index, String value, Int line, Int column) -> Bool {
+        let current = token(index)
+
+        return current.value == value && current.location.lineNumber == line && current.location.column == column
+    }
+}

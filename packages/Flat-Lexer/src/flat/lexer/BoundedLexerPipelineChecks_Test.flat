@@ -1,0 +1,78 @@
+package flat/lexer
+
+import flat/compiler/models/Location
+import flat/eventstream
+
+testable class {
+    async test `bounded lexer pipeline emits ordered absolute tokens`() {
+        let pipeline = BoundedLexerPipeline(
+            maxChunkCharacters: 32,
+            inputCapacity: 2,
+            maxPendingInputSends: 2,
+            maxParallel: 2,
+            outputCapacity: 2
+        )
+
+        pipeline.submit(LexicallyCompleteSourceChunk(
+            contents: "package ",
+            start: Location(lineNumber: 3, column: 5)
+        ))
+        pipeline.submit(LexicallyCompleteSourceChunk(
+            contents: "flat/lexer",
+            start: Location(lineNumber: 3, column: 13)
+        ))
+
+        let first = pipeline.output.receive()
+        let second = pipeline.output.receive()
+        let firstChunk = (LexedSourceChunk)first.value.value
+        let secondChunk = (LexedSourceChunk)second.value.value
+
+        require(first.value.sourceIndex == 0, "first source index")
+        require(second.value.sourceIndex == 1, "second source index")
+        require(firstChunk != null, "first token chunk")
+        require(secondChunk != null, "second token chunk")
+        require(pipeline.peakInFlightCount == 2, "chunk overlap")
+
+        pipeline.cancel()
+        pipeline.completion.get()
+        require(pipeline.inFlightCount == 0, "ordered cleanup")
+    }
+
+    async test `bounded lexer pipeline enforces bounded backpressure`() {
+        let pipeline = BoundedLexerPipeline(
+            maxChunkCharacters: 8,
+            inputCapacity: 1,
+            maxPendingInputSends: 1,
+            maxParallel: 1,
+            outputCapacity: 1
+        )
+
+        pipeline.submit(LexicallyCompleteSourceChunk(contents: "one", start: Location(lineNumber: 1, column: 1)))
+        pipeline.submit(LexicallyCompleteSourceChunk(contents: "two", start: Location(lineNumber: 1, column: 4)))
+        let third = pipeline.submit(LexicallyCompleteSourceChunk(contents: "three", start: Location(lineNumber: 1, column: 7)))$
+        let fourth = pipeline.submit(LexicallyCompleteSourceChunk(contents: "four", start: Location(lineNumber: 1, column: 12)))$
+
+        pipeline.outputBackpressure.get()
+
+        require(pipeline.output.bufferedCount == 1, "output buffer")
+        require(pipeline.output.pendingSendCount == 1, "output pending send")
+        require(pipeline.inputBufferedCount == 1, "input buffer")
+        require(pipeline.inputPendingSendCount == 0, "input pending send")
+        require(pipeline.inFlightCount == 0, "worker returned while blocked output is retained")
+        require(pipeline.peakBlockedOutputSendCount == 1, "peak blocked output send")
+        require(third.completed, "third input was accepted into bounded input storage")
+        require(fourth.completed, "fourth input overflow is immediate")
+        require(fourth.get().capacityExceeded, "fourth input is rejected")
+
+        pipeline.cancel()
+        pipeline.completion.get()
+        require(pipeline.inputBufferedCount == 0, "cancel clears input buffer")
+        require(pipeline.inputPendingSendCount == 0, "cancel clears pending inputs")
+        require(pipeline.inFlightCount == 0, "cancel releases workers")
+        require(pipeline.blockedOutputSendCount == 0, "cancel releases blocked output")
+    }
+
+    require(Bool value, String name) {
+        if (!value) throw Exception("Pipeline check failed: #name")
+    }
+}

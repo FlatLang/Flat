@@ -1,0 +1,77 @@
+package flat/lexer
+
+import flat/compiler/models/Location
+import flat/compiler/models/Token
+import flat/eventstream
+import flat/future
+
+class {
+    visible Int inputBufferedCount => input.bufferedCount
+    visible Int inputPendingSendCount => input.pendingSendCount
+    visible Int inputPendingReceiveCount => input.pendingReceiveCount
+    visible BoundedFlow<ConcurrentMapResult<LexedSourceChunk>> output => operation.output
+    visible Int inFlightCount => operation.inFlightCount
+    visible Int peakInFlightCount => operation.peakInFlightCount
+    visible Int blockedOutputSendCount => operation.blockedOutputSendCount
+    visible Int peakBlockedOutputSendCount => operation.peakBlockedOutputSendCount
+    visible Future<Bool> outputBackpressure => operation.outputBackpressure
+    visible Future<Bool> completion => operation.completion
+
+    var BoundedFlow<LexicallyCompleteSourceChunk> input
+    var ConcurrentMapOperation<LexicallyCompleteSourceChunk, LexedSourceChunk> operation
+
+    public construct(
+        visible Int maxChunkCharacters,
+        Int inputCapacity,
+        Int maxPendingInputSends,
+        Int maxParallel,
+        Int outputCapacity
+    ) {
+        if (maxChunkCharacters <= 0) {
+            throw Exception("Bounded lexer chunk size must be positive")
+        }
+
+        input = BoundedFlow<LexicallyCompleteSourceChunk>(
+            inputCapacity,
+            maxPendingInputSends,
+            1
+        )
+        operation = ConcurrentMap.ordered<LexicallyCompleteSourceChunk, LexedSourceChunk>(
+            input,
+            tokenizeChunk,
+            maxParallel,
+            Math.max(0, maxParallel - 1),
+            outputCapacity
+        )
+    }
+
+    public submit(LexicallyCompleteSourceChunk chunk) -> Future<ChannelSendResult> {
+        if (chunk.contents.count > maxChunkCharacters) {
+            throw Exception("Bounded lexer source chunk exceeds configured character capacity")
+        }
+        if (chunk.start.lineNumber <= 0 || chunk.start.column <= 0) {
+            throw Exception("Bounded lexer source chunk start location must be positive")
+        }
+
+        return input.send(chunk)$
+    }
+
+    public close() => input.close()
+
+    public fail(Exception error) => input.fail(error)
+
+    public cancel() {
+        input.fail(Exception("Bounded lexer pipeline cancelled"))
+        operation.cancel()
+    }
+
+    tokenizeChunk(LexicallyCompleteSourceChunk chunk) -> Future<LexedSourceChunk> {
+        return Future.from<LexedSourceChunk>(async {
+            let stream = Lexer().lex(chunk.contents)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+
+            return LexedSourceChunk(chunk, tokens)
+        })
+    }
+}

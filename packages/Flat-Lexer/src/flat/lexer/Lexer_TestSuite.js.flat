@@ -1,0 +1,17 @@
+package flat/lexer
+
+class {
+    native var Object testRuntimeHandle
+
+    keepTestRuntimeAlive() {
+        external {
+            #{testRuntimeHandle} = setInterval(() => {}, 1000);
+        }
+    }
+
+    releaseTestRuntime() {
+        external {
+            clearInterval(#{testRuntimeHandle});
+        }
+    }
+}
