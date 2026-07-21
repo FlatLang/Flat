@@ -1,0 +1,13 @@
+package flat/compiler/models
+
+data class {
+    visible String value
+
+    public construct(String value) {
+        if (!value || value.trim().count == 0) {
+            throw Exception("Source identity value cannot be empty")
+        }
+
+        this.value = value
+    }
+}

@@ -1,0 +1,23 @@
+package flat/parser
+
+import flat/compiler/models
+
+/**
+ * Immutable envelope for a parser publication that can be scheduled independently.
+ * The identity names the semantic island; the range is end-exclusive and belongs to
+ * the same immutable source snapshot.
+ */
+data class {
+    visible SyntaxIslandIdentity identity
+    visible SourceRange range
+
+    public construct(SyntaxIslandIdentity identity, SourceRange range) {
+        if (!identity || !range) throw Exception("Syntax island requires identity and source range")
+        if (identity.snapshot != range.snapshot) {
+            throw Exception("Syntax island identity and range must belong to the same source snapshot")
+        }
+
+        this.identity = identity
+        this.range = range
+    }
+}

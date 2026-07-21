@@ -1,0 +1,12 @@
+package flat/parser
+
+class {
+    completeOperation() {
+        external {
+            if (!#{completion.completed}) {
+                #{completion.completed} = true;
+                #{completion.resolveFunc}(true);
+            }
+        }
+    }
+}

@@ -1,0 +1,143 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+import flat/lexer/Lexer
+
+testable class {
+    test `publishes package and imports before later declarations`() {
+        let scanner = FlatSyntaxMilestoneScanner(snapshot(), 16)
+        let islands = SyntaxIsland[]
+        let tokens = [
+            token("package", Token.Type.IDENTIFIER, 1),
+            token("flat", Token.Type.IDENTIFIER, 9),
+            token("/", Token.Type.SYMBOL, 13),
+            token("test", Token.Type.IDENTIFIER, 14),
+            token("import", Token.Type.IDENTIFIER, 19),
+            token("static", Token.Type.IDENTIFIER, 26),
+            token("flat", Token.Type.IDENTIFIER, 33),
+            token("/", Token.Type.SYMBOL, 37),
+            token("Value", Token.Type.IDENTIFIER, 38),
+            token("as", Token.Type.IDENTIFIER, 44),
+            token("Alias", Token.Type.IDENTIFIER, 47),
+            token("class", Token.Type.IDENTIFIER, 53)
+        ]
+
+        var Int index
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+
+        expect(islands.count).toBe(2)
+        expect(((PackageSyntaxIsland)islands[0]).packageName).toBe("flat/test")
+        expect(((ImportSyntaxIsland)islands[1]).importedName).toBe("flat/Value")
+        expect(((ImportSyntaxIsland)islands[1]).staticImport).toBe(true)
+        expect(((ImportSyntaxIsland)islands[1]).alias).toBe("Alias")
+        expect(islands[0].identity.ordinal).toBe(0)
+        expect(islands[1].identity.ordinal).toBe(1)
+        expect(islands[0].range.startTokenIndex).toBe(0)
+        expect(islands[0].range.endTokenIndex).toBe(4)
+        expect(islands[0].range.start).toBe(Location(lineNumber: 1, column: 1))
+        expect(islands[0].range.end).toBe(Location(lineNumber: 1, column: 18))
+        expect(islands[1].range.startTokenIndex).toBe(4)
+        expect(islands[1].range.endTokenIndex).toBe(11)
+        expect(scanner.finished).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async test `publishes islands from real lexer tokens`() {
+        let source = "|
+            package flat/test
+            import flat/Value
+            class Example {}
+        |"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let scanner = FlatSyntaxMilestoneScanner(snapshot(), 8)
+        let islands = SyntaxIsland[]
+        var Int index
+
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+
+        expect(islands.count).toBe(2)
+        expect(((PackageSyntaxIsland)islands[0]).packageName).toBe("flat/test")
+        expect(((ImportSyntaxIsland)islands[1]).importedName).toBe("flat/Value")
+        expect(islands[0].range.start).toBe(Location(lineNumber: 1, column: 5))
+        expect(islands[1].range.start).toBe(Location(lineNumber: 2, column: 5))
+    }
+
+    test `independent sources publish without waiting for a delayed source`() {
+        let delayed = FlatSyntaxMilestoneScanner(
+            SourceSnapshotIdentity(SourceIdentity("memory:delayed"), "content:one"),
+            4
+        )
+        let ready = FlatSyntaxMilestoneScanner(
+            SourceSnapshotIdentity(SourceIdentity("memory:ready"), "content:two"),
+            4
+        )
+
+        delayed.accept(token("package", Token.Type.IDENTIFIER, 1), 0)
+        ready.accept(token("package", Token.Type.IDENTIFIER, 1), 0)
+        ready.accept(token("ready", Token.Type.IDENTIFIER, 9), 1)
+        let published = ready.accept(token("class", Token.Type.IDENTIFIER, 15), 2)
+
+        expect(published.count).toBe(1)
+        expect(((PackageSyntaxIsland)published.first).packageName).toBe("ready")
+        expect(delayed.retainedTokenCount).toBe(1)
+        expect(delayed.finished).toBe(false)
+    }
+
+    test `does not publish an incomplete declaration`() {
+        let scanner = FlatSyntaxMilestoneScanner(snapshot(), 4)
+        scanner.accept(token("package", Token.Type.IDENTIFIER, 1), 0)
+        var Bool rejected
+
+        try { scanner.end() } catch (Exception error) { rejected = true }
+
+        expect(rejected).toBe(true)
+        expect(scanner.finished).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    test `bounds retained declaration tokens`() {
+        let scanner = FlatSyntaxMilestoneScanner(snapshot(), 2)
+        scanner.accept(token("package", Token.Type.IDENTIFIER, 1), 0)
+        scanner.accept(token("flat", Token.Type.IDENTIFIER, 9), 1)
+        var Bool rejected
+
+        try { scanner.accept(token("/", Token.Type.SYMBOL, 13), 2) } catch (Exception error) { rejected = true }
+
+        expect(rejected).toBe(true)
+        expect(scanner.peakRetainedTokenCount).toBe(2)
+        expect(scanner.finished).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    test `publishes final import at EOF`() {
+        let scanner = FlatSyntaxMilestoneScanner(snapshot(), 4)
+        scanner.accept(token("import", Token.Type.IDENTIFIER, 1), 0)
+        scanner.accept(token("flat", Token.Type.IDENTIFIER, 8), 1)
+        let islands = scanner.end()
+
+        expect(islands.count).toBe(1)
+        expect(((ImportSyntaxIsland)islands.first).importedName).toBe("flat")
+        expect(islands.first.range.endTokenIndex).toBe(2)
+    }
+
+    snapshot() -> SourceSnapshotIdentity {
+        return SourceSnapshotIdentity(SourceIdentity("memory:test"), "content:abc")
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(
+            value: value,
+            type: type,
+            location: Location(lineNumber: 1, column: column)
+        )
+    }
+}

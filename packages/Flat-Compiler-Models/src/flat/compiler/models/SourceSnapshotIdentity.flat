@@ -1,0 +1,17 @@
+package flat/compiler/models
+
+data class {
+    visible SourceIdentity source
+    visible String revision
+    visible String value => "#{source.value}@#revision"
+
+    public construct(SourceIdentity source, String revision) {
+        if (!source) throw Exception("Source snapshot identity requires a source")
+        if (!revision || revision.trim().count == 0) {
+            throw Exception("Source snapshot revision cannot be empty")
+        }
+
+        this.source = source
+        this.revision = revision
+    }
+}

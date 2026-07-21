@@ -1,11 +1,7 @@
 package flat/parser
 
-import flat/datastruct/list/Stack
-import flat/ast
 import flat/compiler/models/Token
-import flat/io/File
 import flat/log/Logger
-import flat/eventstream/EventStream
 
 import static flat/colorizer/Colorizer
 
@@ -13,17 +9,17 @@ class {
     static Logger log = Logger(ParseEngine.class)
 
     var Int lastLineNumber = 0
+    visible var Bool invalid
 
     public construct(
         private ParserBase rootParser,
-        visible var ParseContext context,
-        private var EventStream stream
+        visible var ParseContext context
     ) {
         rootParser.context = context
     }
 
     public consume(Token token) {
-        if (stream.closed) return
+        if (invalid) return
 
         match token.type {
             Token.Type.COMMENT =>
@@ -36,17 +32,20 @@ class {
         }
 
         context.tokens.add(token)
-
         matchToken(token)
     }
 
-    public end() {
+    public end() -> NodeResult[] {
         log.debug("Reached end of parsing")
+        let results = NodeResult[]
+
         if (rootParser.lastMatch) {
             rootParser.traverseNodes({
-                stream.emit("data", NodeResult(_node, _context, _pattern))$
+                results.add(NodeResult(_node, _context, _pattern))
             })
         }
+
+        return results
     }
 
     public matchToken(Token token) {
@@ -76,6 +75,7 @@ class {
                 log.error("Could not parse tokens [#{tokens.map({ "'#{green(_x.value)}'" }).join(", ")}] at #{context.file?.name}:#{tokens.first.location.lineNumber}:#{tokens.first.location.column}-#{tokens.last.endLineNumber}:#{tokens.last.endColumn}")
             }
         }
-        stream.emit("quit")$
+
+        invalid = true
     }
 }

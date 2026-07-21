@@ -1,39 +1,78 @@
 package flat/parser
 
-import flat/datastruct/list/Stack
-import flat/ast
 import flat/compiler/models/Token
-import flat/io/File
 import flat/log/Logger
-import flat/eventstream/EventStream
+import flat/eventstream
 
 class {
     static Logger log = Logger(Parser.class)
 
+    public operation(
+        ParserBase rootParser,
+        ParseContext parseContext,
+        Int inputCapacity = 1,
+        Int maxPendingInputSends = 1,
+        Int outputCapacity = 1
+    ) -> ParseOperation {
+        return ParseOperation(
+            rootParser,
+            parseContext,
+            inputCapacity,
+            maxPendingInputSends,
+            outputCapacity
+        )
+    }
+
+    /**
+     * Compatibility adapter for legacy EventStream callers.
+     *
+     * Subscriptions are installed before this method returns. The returned stream
+     * backlogs output, so callers may attach listeners without a separate startup
+     * ordering requirement. Emitting the legacy "start" event remains harmless.
+     */
     public parse(
         ParserBase rootParser,
         ParseContext parseContext,
         EventStream tokenStream
-    ) =>
-        EventStream(true).on("start", (_, stream) => {
-            let engine = ParseEngine(rootParser, parseContext, stream)
+    ) -> EventStream {
+        let stream = EventStream(true)
+        let engine = ParseEngine(rootParser, parseContext)
+        var Bool terminal
 
-            tokenStream.on<Token>("data", (token) => {
-                log.trace("Received data from Token EventStream: #{token}")
+        tokenStream.on<Token>("data", (token) => {
+            if (stream.closed || terminal) return
 
-                engine.consume(token)
-                stream.emit("parsed_token", token)
-            })
+            log.trace("Received data from Token EventStream: #{token}")
+            engine.consume(token)
+            stream.emit("parsed_token", token)
 
-            tokenStream.on<String>("error", (error) => {
-                log.trace("Received error from Token EventStream: #{error}")
-                stream.emit("error", error)
-            })
-
-            tokenStream.on("close", {
-                log.trace("Token EventStream closed")
-                engine.end()
+            if (engine.invalid) {
+                terminal = true
+                stream.emit("quit")
                 stream.emit("close")
-            })
+            }
         })
+
+        tokenStream.on<String>("error", (error) => {
+            if (stream.closed || terminal) return
+
+            terminal = true
+
+            log.trace("Received error from Token EventStream: #{error}")
+            stream.emit("error", error)
+            stream.emit("close")
+        })
+
+        tokenStream.on("close", {
+            if (stream.closed || terminal) return
+
+            terminal = true
+
+            log.trace("Token EventStream closed")
+            for (result in engine.end()) stream.emit("data", result)
+            stream.emit("close")
+        })
+
+        return stream
+    }
 }

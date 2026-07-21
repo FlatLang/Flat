@@ -1,0 +1,4 @@
+package flat/parser
+
+data class extends ParseEvent {
+}

@@ -1,0 +1,5 @@
+package flat/parser
+
+data class extends ParseEvent {
+    visible NodeResult result
+}

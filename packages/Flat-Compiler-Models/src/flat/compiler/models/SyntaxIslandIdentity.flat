@@ -1,0 +1,20 @@
+package flat/compiler/models
+
+data class {
+    visible SourceSnapshotIdentity snapshot
+    visible String kind
+    visible Int ordinal
+    visible String value => "#{snapshot.value}:#kind:#ordinal"
+
+    public construct(SourceSnapshotIdentity snapshot, String kind, Int ordinal) {
+        if (!snapshot) throw Exception("Syntax island identity requires a source snapshot")
+        if (!kind || kind.trim().count == 0) {
+            throw Exception("Syntax island kind cannot be empty")
+        }
+        if (ordinal < 0) throw Exception("Syntax island ordinal cannot be negative")
+
+        this.snapshot = snapshot
+        this.kind = kind
+        this.ordinal = ordinal
+    }
+}

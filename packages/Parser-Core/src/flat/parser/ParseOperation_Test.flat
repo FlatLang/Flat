@@ -1,0 +1,155 @@
+package flat/parser
+
+import flat/parser/flat/PackageParser
+import flat/compiler/models/Token
+import flat/eventstream
+import flat/future
+
+testable class {
+    async test `parse operation is active immediately without startup signal`() {
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            inputCapacity: 6,
+            maxPendingInputSends: 1,
+            outputCapacity: 8
+        )
+
+        operation.submit(Token(value: "package", type: Token.Type.IDENTIFIER))
+        operation.submit(Token(value: "flat", type: Token.Type.IDENTIFIER))
+        operation.submit(Token(value: "/", type: Token.Type.SYMBOL))
+        operation.submit(Token(value: "parser", type: Token.Type.IDENTIFIER))
+        operation.close()
+
+        var Int parsed
+        var Int nodes
+
+        while (true) {
+            let received = operation.output.receive()
+            if (received.received) {
+                if (received.value.class.isOfType(ParsedTokenEvent.class)) parsed++
+                if (received.value.class.isOfType(ParsedNodeEvent.class)) nodes++
+            } else if (received.completed) {
+                break
+            } else if (received.failed) {
+                throw received.error
+            }
+        }
+
+        operation.completion.get()
+        expect(parsed).toBe(4)
+        expect(nodes).toBe(1)
+        expect(operation.finished).toBe(true)
+    }
+
+    async test `parse operation applies bounded output backpressure`() {
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            inputCapacity: 4,
+            maxPendingInputSends: 1,
+            outputCapacity: 1
+        )
+
+        operation.submit(Token(value: "package", type: Token.Type.IDENTIFIER))
+        operation.submit(Token(value: "flat", type: Token.Type.IDENTIFIER))
+        operation.close()
+
+        while (operation.outputPendingSendCount == 0) {
+            let pause = Future.from<Bool>(async { true })
+            pause.get()
+        }
+
+        expect(operation.outputBufferedCount).toBe(1)
+        expect(operation.outputPendingSendCount).toBe(1)
+
+        var Int events
+        while (true) {
+            let received = operation.output.receive()
+            if (received.received) events++
+            else if (received.completed) break
+            else if (received.failed) throw received.error
+        }
+
+        operation.completion.get()
+        expect(events).toBe(3)
+        expect(operation.outputPendingSendCount).toBe(0)
+    }
+
+    async test `parse operation reports invalid syntax and releases queued input`() {
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            inputCapacity: 2,
+            maxPendingInputSends: 1,
+            outputCapacity: 2
+        )
+
+        operation.submit(Token(value: "wrong", type: Token.Type.IDENTIFIER))
+        operation.submit(Token(value: "queued", type: Token.Type.IDENTIFIER))
+
+        var Bool sawInvalid
+        while (true) {
+            let received = operation.output.receive()
+            if (received.received) {
+                if (received.value.class.isOfType(InvalidSyntaxEvent.class)) sawInvalid = true
+            } else if (received.completed) {
+                break
+            } else if (received.failed) {
+                throw received.error
+            }
+        }
+
+        operation.completion.get()
+        expect(sawInvalid).toBe(true)
+        expect(operation.invalid).toBe(true)
+        expect(operation.inputBufferedCount).toBe(0)
+        expect(operation.inputPendingSendCount).toBe(0)
+        expect(operation.outputPendingSendCount).toBe(0)
+    }
+
+    async test `parse operation propagates input failure and cancellation`() {
+        let failed = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            inputCapacity: 1,
+            outputCapacity: 1
+        )
+        failed.fail(Exception("token source failed"))
+
+        let failure = failed.output.receive()
+        expect(failure.failed).toBe(true)
+        expect(failure.error.message).toBe("token source failed")
+        failed.completion.get()
+
+        let cancelled = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            inputCapacity: 1,
+            outputCapacity: 1
+        )
+        cancelled.submit(Token(value: "package", type: Token.Type.IDENTIFIER))
+        cancelled.cancel()
+        cancelled.completion.get()
+
+        expect(cancelled.cancelled).toBe(true)
+        expect(cancelled.finished).toBe(true)
+        expect(cancelled.inputBufferedCount).toBe(0)
+        expect(cancelled.inputPendingSendCount).toBe(0)
+        expect(cancelled.outputPendingSendCount).toBe(0)
+    }
+
+    async test `legacy parser adapter subscribes before returning`() {
+        let tokens = EventStream(true)
+        tokens.emit("data", Token(value: "package", type: Token.Type.IDENTIFIER))
+        tokens.emit("data", Token(value: "flat", type: Token.Type.IDENTIFIER))
+        tokens.emit("close")
+
+        let parsed = Parser().parse(PackageParser(), ParseContext(), tokens)
+        let nodes = parsed.consumeAll<NodeResult>("data")
+
+        expect(nodes.count).toBe(1)
+        expect(nodes.first.node).toNotBe(null)
+    }
+
+}

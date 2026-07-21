@@ -10,6 +10,7 @@ import flat/parser/matchers
     Parser_Test,
     PackageParser_Test,
     ImportParser_Test,
+    FlatSyntaxMilestoneScanner_Test,
     VariableDeclarationParser_Test,
     FieldParser_Test,
     ClassParser_Test,

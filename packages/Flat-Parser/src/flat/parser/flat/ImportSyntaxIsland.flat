@@ -1,0 +1,10 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+data class extends SyntaxIsland {
+    visible String importedName
+    visible Bool staticImport
+    visible String alias
+}

@@ -1,0 +1,47 @@
+package flat/parser
+
+import flat/compiler/models
+
+testable class {
+    test `syntax island is tied to one stable source snapshot`() {
+        let source = SourceIdentity("memory:test")
+        let snapshot = SourceSnapshotIdentity(source, "content:abc")
+        let island = SyntaxIsland(
+            SyntaxIslandIdentity(snapshot, "package", 0),
+            SourceRange(
+                snapshot,
+                0,
+                2,
+                Location(lineNumber: 1, column: 1),
+                Location(lineNumber: 1, column: 13)
+            )
+        )
+
+        expect(island.identity.value).toBe("memory:test@content:abc:package:0")
+        expect(island.range.snapshot).toBe(snapshot)
+    }
+
+    test `syntax island rejects a range from another snapshot`() {
+        let source = SourceIdentity("memory:test")
+        let first = SourceSnapshotIdentity(source, "content:first")
+        let second = SourceSnapshotIdentity(source, "content:second")
+        var Bool rejected
+
+        try {
+            SyntaxIsland(
+                SyntaxIslandIdentity(first, "package", 0),
+                SourceRange(
+                    second,
+                    0,
+                    1,
+                    Location(lineNumber: 1, column: 1),
+                    Location(lineNumber: 1, column: 8)
+                )
+            )
+        } catch (Exception error) {
+            rejected = true
+        }
+
+        expect(rejected).toBe(true)
+    }
+}

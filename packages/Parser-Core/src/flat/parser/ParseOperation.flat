@@ -1,0 +1,104 @@
+package flat/parser
+
+import flat/compiler/models/Token
+import flat/eventstream
+import flat/future
+
+class {
+    visible Int inputBufferedCount => input.bufferedCount
+    visible Int inputPendingSendCount => input.pendingSendCount
+    visible Int outputBufferedCount => output.bufferedCount
+    visible Int outputPendingSendCount => output.pendingSendCount
+    visible BoundedFlow<ParseEvent> output
+    visible Future<Bool> completion = Future.create<Bool>()
+    visible var Bool cancelled
+    visible var Bool finished
+    visible var Bool invalid
+
+    var BoundedFlow<Token> input
+    var ParseEngine engine
+
+    public construct(
+        ParserBase rootParser,
+        ParseContext context,
+        Int inputCapacity = 1,
+        Int maxPendingInputSends = 1,
+        Int outputCapacity = 1
+    ) {
+        input = BoundedFlow<Token>(inputCapacity, maxPendingInputSends, 1)
+        output = BoundedFlow<ParseEvent>(outputCapacity, 1, 1)
+        engine = ParseEngine(rootParser, context)
+        run()$
+    }
+
+    public submit(Token token) -> Future<ChannelSendResult> {
+        return input.send(token)$
+    }
+
+    public close() => input.close()
+
+    public fail(Exception error) => input.fail(error)
+
+    public cancel() {
+        if (cancelled || finished) return
+
+        cancelled = true
+        input.fail(Exception("Parse operation cancelled"))
+        output.close()
+    }
+
+    async run() {
+        var Exception failure
+
+        try {
+            while (!cancelled && !invalid) {
+                let received = input.receive()
+
+                if (received.received) {
+                    engine.consume(received.value)
+                    publish(ParsedTokenEvent(received.value))
+
+                    if (engine.invalid) {
+                        invalid = true
+                        publish(InvalidSyntaxEvent())
+                        input.fail(Exception("Parse operation stopped after invalid syntax"))
+                    }
+                } else if (received.completed) {
+                    for (node in engine.end()) {
+                        publish(ParsedNodeEvent(node))
+                    }
+                    break
+                } else if (received.failed) {
+                    failure = received.error
+                    break
+                } else if (received.capacityExceeded) {
+                    failure = Exception("Parse operation exceeded its single-owner input receive capacity")
+                    break
+                }
+            }
+        } catch (Exception error) {
+            failure = error
+        }
+
+        finished = true
+
+        if (!cancelled) {
+            if (failure) output.fail(failure)
+            else output.close()
+        }
+
+        completeOperation()
+    }
+
+    async publish(ParseEvent event) {
+        let result = output.send(event)
+
+        if (result.failed) throw result.error
+        if (result.closed && !cancelled) throw Exception("Parse operation output closed before completion")
+        if (result.capacityExceeded) throw Exception("Parse operation exceeded its output waiter capacity")
+    }
+
+    completeOperation() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+}

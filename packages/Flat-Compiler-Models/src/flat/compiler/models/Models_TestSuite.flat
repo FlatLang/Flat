@@ -6,7 +6,8 @@ import flat/time/Timer
 import flat/io/FancyOutputStream
 
 [TestSuite [
-    Models_Test
+    Models_Test,
+    SourceIdentity_Test
 ]]
 class {
     public static async main(String[] args) {

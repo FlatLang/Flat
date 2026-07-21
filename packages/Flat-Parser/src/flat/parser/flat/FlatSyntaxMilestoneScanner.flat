@@ -1,0 +1,245 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/**
+ * Publishes immutable package/import islands at the first token that proves the
+ * previous declaration complete. Only the active front-matter declaration is
+ * retained; after the first non-package/import token, this scanner is finished.
+ */
+class {
+    static Int NONE = 0
+    static Int PACKAGE_EXPECT_NAME = 1
+    static Int PACKAGE_AFTER_NAME = 2
+    static Int PACKAGE_EXPECT_COMPONENT = 3
+    static Int IMPORT_AFTER_KEYWORD = 4
+    static Int IMPORT_EXPECT_NAME = 5
+    static Int IMPORT_AFTER_NAME = 6
+    static Int IMPORT_EXPECT_COMPONENT = 7
+    static Int IMPORT_EXPECT_MEMBER = 8
+    static Int IMPORT_EXPECT_ALIAS = 9
+    static Int IMPORT_AFTER_ALIAS = 10
+
+    var Int state
+    var Token[] retained = Token[]
+    var Int[] retainedIndexes = Int[]
+    var Int nextOrdinal
+    var Int lastTokenIndex = -1
+    visible var Bool finished
+    visible Int retainedTokenCount => retained.count
+    visible var Int peakRetainedTokenCount
+
+    public construct(
+        visible SourceSnapshotIdentity snapshot,
+        visible Int maxRetainedTokens
+    ) {
+        if (!snapshot) throw Exception("Flat syntax milestone scanner requires a source snapshot")
+        if (maxRetainedTokens <= 0) {
+            throw Exception("Flat syntax milestone retained token capacity must be positive")
+        }
+    }
+
+    public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (tokenIndex < 0) reject("Flat syntax milestone token index cannot be negative")
+        if (tokenIndex <= lastTokenIndex) {
+            reject("Flat syntax milestone token indexes must be strictly increasing")
+        }
+        lastTokenIndex = tokenIndex
+
+        if (finished || token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+            return SyntaxIsland[]
+        }
+
+        if (state == NONE) return begin(token, tokenIndex)
+
+        match state {
+            PACKAGE_EXPECT_NAME => PACKAGE_EXPECT_COMPONENT => {
+                requireIdentifier(token)
+                retain(token, tokenIndex)
+                state = PACKAGE_AFTER_NAME
+            }
+            PACKAGE_AFTER_NAME => {
+                if (isSymbol(token, "/")) {
+                    retain(token, tokenIndex)
+                    state = PACKAGE_EXPECT_COMPONENT
+                } else {
+                    let published = publishPackage()
+                    begin(token, tokenIndex)
+                    return [published]
+                }
+            }
+            IMPORT_AFTER_KEYWORD => {
+                if (isIdentifier(token, "static")) {
+                    retain(token, tokenIndex)
+                    state = IMPORT_EXPECT_NAME
+                } else {
+                    requireIdentifier(token)
+                    retain(token, tokenIndex)
+                    state = IMPORT_AFTER_NAME
+                }
+            }
+            IMPORT_EXPECT_NAME => IMPORT_EXPECT_COMPONENT => IMPORT_EXPECT_MEMBER => {
+                requireIdentifier(token)
+                retain(token, tokenIndex)
+                state = IMPORT_AFTER_NAME
+            }
+            IMPORT_EXPECT_ALIAS => {
+                requireIdentifier(token)
+                retain(token, tokenIndex)
+                state = IMPORT_AFTER_ALIAS
+            }
+            IMPORT_AFTER_NAME => {
+                if (isSymbol(token, "/")) {
+                    retain(token, tokenIndex)
+                    state = IMPORT_EXPECT_COMPONENT
+                } else if (isSymbol(token, ".")) {
+                    retain(token, tokenIndex)
+                    state = IMPORT_EXPECT_MEMBER
+                } else if (isIdentifier(token, "as")) {
+                    retain(token, tokenIndex)
+                    state = IMPORT_EXPECT_ALIAS
+                } else {
+                    let published = publishImport()
+                    begin(token, tokenIndex)
+                    return [published]
+                }
+            }
+            IMPORT_AFTER_ALIAS => {
+                let published = publishImport()
+                begin(token, tokenIndex)
+                return [published]
+            }
+        }
+
+        return SyntaxIsland[]
+    }
+
+    public end() -> SyntaxIsland[] {
+        if (finished || state == NONE) {
+            finished = true
+            return SyntaxIsland[]
+        }
+
+        var SyntaxIsland published
+        if (state == PACKAGE_AFTER_NAME) {
+            published = publishPackage()
+        } else if (state == IMPORT_AFTER_NAME || state == IMPORT_AFTER_ALIAS) {
+            published = publishImport()
+        } else {
+            reject("Flat source ended inside an incomplete package or import declaration")
+        }
+
+        finished = true
+        return [published]
+    }
+
+    begin(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (isIdentifier(token, "package")) {
+            retain(token, tokenIndex)
+            state = PACKAGE_EXPECT_NAME
+        } else if (isIdentifier(token, "import")) {
+            retain(token, tokenIndex)
+            state = IMPORT_AFTER_KEYWORD
+        } else {
+            finished = true
+        }
+
+        return SyntaxIsland[]
+    }
+
+    retain(Token token, Int tokenIndex) {
+        if (!token.location) reject("Flat syntax milestone tokens require source locations")
+        if (retained.count >= maxRetainedTokens) {
+            reject("Flat syntax milestone declaration exceeds configured token capacity")
+        }
+
+        retained.add(token)
+        retainedIndexes.add(tokenIndex)
+        peakRetainedTokenCount = Math.max(peakRetainedTokenCount, retained.count)
+    }
+
+    publishPackage() -> PackageSyntaxIsland {
+        let name = retained.skip(1).map({ _.value }).join()
+        let island = PackageSyntaxIsland(
+            identity("package"),
+            range(),
+            name
+        )
+        reset()
+        return island
+    }
+
+    publishImport() -> ImportSyntaxIsland {
+        let staticImport = retained.count > 1 && retained[1].value == "static"
+        let start = staticImport ? 2 : 1
+        var Int aliasIndex = -1
+        var Int index = start
+
+        while (index < retained.count) {
+            if (retained[index].value == "as") {
+                aliasIndex = index
+                break
+            }
+            index++
+        }
+
+        let end = aliasIndex < 0 ? retained.count : aliasIndex
+        let components = String[]
+        index = start
+        while (index < end) {
+            components.add(retained[index].value)
+            index++
+        }
+        let name = components.join()
+        let alias = aliasIndex < 0 ? null : retained[aliasIndex + 1].value
+        let island = ImportSyntaxIsland(
+            identity("import"),
+            range(),
+            name,
+            staticImport,
+            alias
+        )
+        reset()
+        return island
+    }
+
+    identity(String kind) -> SyntaxIslandIdentity {
+        let value = SyntaxIslandIdentity(snapshot, kind, nextOrdinal)
+        nextOrdinal++
+        return value
+    }
+
+    range() -> SourceRange {
+        let first = retained.first
+        let last = retained.last
+        return SourceRange(
+            snapshot,
+            retainedIndexes.first,
+            retainedIndexes.last + 1,
+            first.location,
+            Location(lineNumber: last.endLineNumber, column: last.endColumn)
+        )
+    }
+
+    reset() {
+        state = NONE
+        retained = Token[]
+        retainedIndexes = Int[]
+    }
+
+    requireIdentifier(Token token) {
+        if (token.type != Token.Type.IDENTIFIER) {
+            reject("Flat package and import declarations require identifier components")
+        }
+    }
+
+    reject(String message) {
+        finished = true
+        reset()
+        throw Exception(message)
+    }
+
+    isIdentifier(Token token, String value) => token.type == Token.Type.IDENTIFIER && token.value == value
+    isSymbol(Token token, String value) => token.type == Token.Type.SYMBOL && token.value == value
+}

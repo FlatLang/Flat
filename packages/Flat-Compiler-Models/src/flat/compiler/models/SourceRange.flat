@@ -1,0 +1,36 @@
+package flat/compiler/models
+
+data class {
+    visible SourceSnapshotIdentity snapshot
+    visible Int startTokenIndex
+    visible Int endTokenIndex
+    visible Location start
+    visible Location end
+
+    public construct(
+        SourceSnapshotIdentity snapshot,
+        Int startTokenIndex,
+        Int endTokenIndex,
+        Location start,
+        Location end
+    ) {
+        if (!snapshot) throw Exception("Source range requires a snapshot identity")
+        if (startTokenIndex < 0 || endTokenIndex < startTokenIndex) {
+            throw Exception("Source range token indexes must be ordered and non-negative")
+        }
+        if (!start || !end || start.lineNumber <= 0 || start.column <= 0 ||
+            end.lineNumber <= 0 || end.column <= 0) {
+            throw Exception("Source range locations must be positive")
+        }
+        if (end.lineNumber < start.lineNumber ||
+            (end.lineNumber == start.lineNumber && end.column < start.column)) {
+            throw Exception("Source range locations must be ordered")
+        }
+
+        this.snapshot = snapshot
+        this.startTokenIndex = startTokenIndex
+        this.endTokenIndex = endTokenIndex
+        this.start = start
+        this.end = end
+    }
+}

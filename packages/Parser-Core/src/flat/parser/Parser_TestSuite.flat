@@ -10,6 +10,8 @@ import flat/parser/matchers
     Parser_Test,
     ParserBase_Test,
     ParseEngine_Test,
+    ParseOperation_Test,
+    SyntaxIsland_Test,
     SingleTokenMatcher_Test,
     GroupTokenMatcher_Test,
     CaptureTokenMatcher_Test,
