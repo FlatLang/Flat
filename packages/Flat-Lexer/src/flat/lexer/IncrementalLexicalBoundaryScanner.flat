@@ -1,0 +1,181 @@
+package flat/lexer
+
+import flat/extensions/SyntaxStringFunctions
+
+class {
+    public inspect(String contents, Bool endOfInput = false) -> IncrementalLexicalBoundary {
+        var Int index
+        var Int complete
+
+        while (index < contents.count) {
+            let start = index
+            let char = contents[index]
+
+            if (char.isWhitespace) {
+                while (index < contents.count && contents[index].isWhitespace) index++
+                if (index == contents.count && !endOfInput) {
+                    return IncrementalLexicalBoundary(complete, true, "whitespace")
+                }
+                complete = index
+                continue
+            }
+
+            if (char == '"' || char == '\'' || char == '`') {
+                let end = findQuotedEnd(contents, index, char)
+                if (end == -1) {
+                    return IncrementalLexicalBoundary(complete, true, quotedKind(char))
+                }
+                index = end
+                complete = index
+                continue
+            }
+
+            if (char == '/' && index + 1 >= contents.count && !endOfInput) {
+                return IncrementalLexicalBoundary(complete, true, "symbol")
+            }
+
+            if (char == '/' && index + 1 < contents.count && contents[index + 1] == '/') {
+                let newline = contents.indexOf('\n', start: index + 2)
+                if (newline == -1) {
+                    if (endOfInput) return IncrementalLexicalBoundary(contents.count)
+                    return IncrementalLexicalBoundary(complete, true, "single-line comment")
+                }
+                index = newline + 1
+                complete = index
+                continue
+            }
+
+            if (char == '/' && index + 1 < contents.count && contents[index + 1] == '*') {
+                let close = contents.indexOf("*/", start: index + 2)
+                if (close == -1) {
+                    return IncrementalLexicalBoundary(complete, true, "multi-line comment")
+                }
+                index = close + 2
+                complete = index
+                continue
+            }
+
+            if (char.isNumber) {
+                while (index < contents.count && contents[index].isNumber) index++
+
+                if (index < contents.count && contents[index] == '.') {
+                    if (index + 1 == contents.count && !endOfInput) {
+                        return IncrementalLexicalBoundary(complete, true, "number")
+                    }
+                    if (index + 1 < contents.count && contents[index + 1].isNumber) {
+                        index += 2
+                        while (index < contents.count && contents[index].isNumber) index++
+                        if (index == contents.count && !endOfInput) {
+                            return IncrementalLexicalBoundary(complete, true, "number")
+                        }
+                    }
+                } else if (index == contents.count && !endOfInput) {
+                    return IncrementalLexicalBoundary(complete, true, "number")
+                }
+
+                complete = index
+                continue
+            }
+
+            if (isWordCharacter(char)) {
+                while (index < contents.count && isWordCharacter(contents[index])) index++
+
+                if (index == contents.count && !endOfInput) {
+                    return IncrementalLexicalBoundary(complete, true, "word")
+                }
+
+                let value = contents.substring(start, index)
+                if (value == "external") {
+                    let externalEnd = findExternalEnd(contents, index, endOfInput)
+                    if (externalEnd == -1) {
+                        return IncrementalLexicalBoundary(complete, true, "external block")
+                    }
+                    if (externalEnd > index) index = externalEnd
+                }
+
+                complete = index
+                continue
+            }
+
+            let symbolEnd = findSymbolEnd(contents, index, endOfInput)
+            if (symbolEnd == -1) {
+                return IncrementalLexicalBoundary(complete, true, "symbol")
+            }
+
+            index = symbolEnd
+            complete = index
+        }
+
+        return IncrementalLexicalBoundary(complete)
+    }
+
+    findQuotedEnd(String contents, Int start, Char quote) -> Int => -1 {
+        var Int end = -1
+
+        if (quote == '"') end = contents.findEndingQuote(start)
+        else if (quote == '\'') end = contents.findEndingSingleQuote(start)
+        else end = contents.findEndingChar('`', start)
+
+        return end < 0 ? -1 : end + 1
+    }
+
+    findExternalEnd(String contents, Int afterKeyword, Bool endOfInput) -> Int => afterKeyword {
+        var Int index = afterKeyword
+        while (index < contents.count && contents[index].isWhitespace) index++
+
+        if (index == contents.count) return endOfInput ? afterKeyword : -1
+        if (contents[index] != '{') return afterKeyword
+
+        let end = contents.findEndingMatch(index, '{', '}')
+        return end < 0 ? -1 : end + 1
+    }
+
+    findSymbolEnd(String contents, Int start, Bool endOfInput) -> Int => -1 {
+        let remaining = contents.count - start
+        let first = contents[start]
+
+        if (remaining >= 3) {
+            let triple = contents.substring(start, start + 3)
+            if (triple == "<=>" || triple == "...") return start + 3
+        }
+
+        if (remaining >= 2) {
+            let pair = contents.substring(start, start + 2)
+            if (!endOfInput && remaining == 2 && (pair == "<=" || pair == "..")) return -1
+            if (isDoubleSymbol(pair)) return start + 2
+            return start + 1
+        }
+
+        if (!endOfInput && canBeginCompoundSymbol(first)) return -1
+        return start + 1
+    }
+
+    isDoubleSymbol(String value) -> Bool {
+        return value == ">=" || value == "<=" || value == "==" || value == "!=" ||
+            value == "%=" || value == "/=" || value == "*=" || value == "+=" ||
+            value == "-=" || value == "++" || value == "--" || value == "->" ||
+            value == "=>" || value == "?." || value == "?:" || value == "::" ||
+            value == "&&" || value == "||" || value == ".."
+    }
+
+    canBeginCompoundSymbol(Char value) -> Bool {
+        return value == '<' || value == '>' || value == '=' || value == '!' ||
+            value == '%' || value == '/' || value == '*' || value == '+' ||
+            value == '-' || value == '?' || value == ':' || value == '&' ||
+            value == '|' || value == '.'
+    }
+
+    isWordCharacter(Char value) -> Bool => !value.isWhitespace && !isDelimiter(value)
+
+    isDelimiter(Char value) -> Bool {
+        return value == '"' || value == '\'' || value == '`' || value == '.' ||
+            value == ',' || value == ';' || value == '{' || value == '}' ||
+            value == '[' || value == ']' || value == '(' || value == ')' ||
+            value == '/' || value == '*' || value == '%' || value == '<' ||
+            value == '>' || value == '=' || value == ':' || value == '?' ||
+            value == '!' || value == '+' || value == '-' || value == '@' ||
+            value == '&' || value == '|' || value == '\\'
+    }
+
+    quotedKind(Char value) => value == '"' ? "string" : (value == '\'' ? "character" : "backtick literal")
+}

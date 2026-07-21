@@ -1,0 +1,7 @@
+package flat/lexer
+
+testable class {
+    async test `incremental lexer applies bounded output backpressure`() {
+        IncrementalLexerChecks().verifyBackpressure()
+    }
+}

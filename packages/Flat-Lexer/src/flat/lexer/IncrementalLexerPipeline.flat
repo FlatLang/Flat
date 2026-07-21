@@ -1,0 +1,176 @@
+package flat/lexer
+
+import flat/compiler/models/Location
+import flat/compiler/models/Token
+import flat/eventstream
+import flat/future
+
+class {
+    visible Int inputBufferedCount => input.bufferedCount
+    visible Int inputPendingSendCount => input.pendingSendCount
+    visible Int retainedCharacterCount => retained.count
+    visible var Int peakRetainedCharacterCount
+    visible Int outputBufferedCount => output.bufferedCount
+    visible Int outputPendingSendCount => output.pendingSendCount
+    visible var Bool cancelled
+    visible var Bool finished
+
+    visible BoundedFlow<Token> output
+    visible Future<Bool> completion = Future.create<Bool>()
+
+    var BoundedFlow<String> input
+    var IncrementalLexicalBoundaryScanner boundaryScanner = IncrementalLexicalBoundaryScanner()
+    var String retained = ""
+    var Location retainedStart
+
+    public construct(
+        visible Int maxChunkCharacters,
+        visible Int maxRetainedCharacters,
+        Location start = Location(lineNumber: 1, column: 1),
+        Int inputCapacity = 1,
+        Int maxPendingInputSends = 1,
+        Int outputCapacity = 1
+    ) {
+        if (maxChunkCharacters <= 0) {
+            throw Exception("Incremental lexer chunk size must be positive")
+        }
+        if (maxRetainedCharacters <= 0) {
+            throw Exception("Incremental lexer retained capacity must be positive")
+        }
+        if (start.lineNumber <= 0 || start.column <= 0) {
+            throw Exception("Incremental lexer start location must be positive")
+        }
+
+        retainedStart = start
+        input = BoundedFlow<String>(inputCapacity, maxPendingInputSends, 1)
+        output = BoundedFlow<Token>(outputCapacity, 1, 1)
+        run()$
+    }
+
+    public submit(String contents) -> Future<ChannelSendResult> {
+        if (contents.count > maxChunkCharacters) {
+            throw Exception("Incremental lexer source chunk exceeds configured character capacity")
+        }
+
+        return input.send(contents)$
+    }
+
+    public close() => input.close()
+
+    public fail(Exception error) => input.fail(error)
+
+    public cancel() {
+        if (cancelled || finished) return
+
+        cancelled = true
+        input.fail(Exception("Incremental lexer cancelled"))
+        retained = ""
+        output.close()
+    }
+
+    async run() {
+        var Exception failure
+
+        try {
+            while (!cancelled) {
+                let received = input.receive()
+
+                if (received.received) {
+                    accept(received.value)
+                } else if (received.completed) {
+                    finishInput()
+                    break
+                } else if (received.failed) {
+                    failure = received.error
+                    break
+                }
+            }
+        } catch (Exception error) {
+            failure = error
+        }
+
+        retained = ""
+        finished = true
+
+        if (!cancelled) {
+            if (failure) output.fail(failure)
+            else output.close()
+        }
+
+        completeOperation()
+    }
+
+    async accept(String contents) {
+        let combined = retained + contents
+        let boundary = boundaryScanner.inspect(combined)
+        let remaining = combined.count - boundary.completePrefixLength
+
+        if (remaining > maxRetainedCharacters) {
+            throw Exception("Incremental lexer retained lexical construct exceeds configured capacity")
+        }
+
+        flushSource(combined, boundary.completePrefixLength)
+        if (cancelled) return
+
+        retained = combined.substring(boundary.completePrefixLength)
+        peakRetainedCharacterCount = Math.max(peakRetainedCharacterCount, retained.count)
+    }
+
+    async finishInput() {
+        let boundary = boundaryScanner.inspect(retained, endOfInput: true)
+        flushSource(retained, boundary.completePrefixLength)
+        retained = retained.substring(boundary.completePrefixLength)
+
+        if (boundary.incomplete || retained.count > 0) {
+            var String kind = "lexical construct"
+            if (boundary.incompleteKind) kind = boundary.incompleteKind
+            throw Exception("Incremental lexer reached EOF inside #kind")
+        }
+    }
+
+    async flushSource(String source, Int count) {
+        if (count <= 0) return
+
+        let contents = source.substring(0, count)
+        let start = retainedStart
+        var Location cursor = start
+        let stream = Lexer().lex(contents)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+
+        for (token in tokens) {
+            output.send(atLocation(token, cursor))
+            cursor = advance(cursor, token.value)
+        }
+
+        retainedStart = advance(start, contents)
+    }
+
+    atLocation(Token token, Location location) -> Token {
+        return Token(
+            value: token.value,
+            type: token.type,
+            location: location
+        )
+    }
+
+    advance(Location start, String contents) -> Location {
+        let lines = contents.howMany('\n')
+
+        if (lines == 0) {
+            return Location(
+                lineNumber: start.lineNumber,
+                column: start.column + contents.count
+            )
+        }
+
+        return Location(
+            lineNumber: start.lineNumber + lines,
+            column: contents.count - contents.lastIndexOf('\n')
+        )
+    }
+
+    completeOperation() {
+        throw Exception("Not implemented for target language or runtime")
+    }
+}

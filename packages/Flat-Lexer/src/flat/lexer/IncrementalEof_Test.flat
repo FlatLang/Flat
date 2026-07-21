@@ -1,0 +1,10 @@
+package flat/lexer
+
+testable class {
+    async test `incremental lexer rejects unterminated constructs at EOF`() {
+        IncrementalLexerChecks().verifyIncompleteEof("\"unterminated", "string")
+        IncrementalLexerChecks().verifyIncompleteEof("/* unterminated", "multi-line comment")
+        IncrementalLexerChecks().verifyIncompleteEof("external { unterminated", "external block")
+        IncrementalLexerChecks().verifyEverySplit("external")
+    }
+}

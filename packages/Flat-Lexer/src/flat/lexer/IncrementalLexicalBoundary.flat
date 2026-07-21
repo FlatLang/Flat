@@ -1,0 +1,7 @@
+package flat/lexer
+
+data class {
+    visible Int completePrefixLength
+    visible Bool incomplete
+    visible String incompleteKind
+}

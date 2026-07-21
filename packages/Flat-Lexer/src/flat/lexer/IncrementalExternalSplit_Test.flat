@@ -1,0 +1,16 @@
+package flat/lexer
+
+testable class {
+    async test `incremental lexer handles native block splits`() {
+        let contents = "|
+            external {
+                value {
+                    \#{other}
+                }
+            }
+            after
+        |"
+
+        IncrementalLexerChecks().verifyEverySplit(contents)
+    }
+}

@@ -1,0 +1,8 @@
+package flat/lexer
+
+testable class {
+    async test `incremental lexer matches numeric and range splits`() {
+        IncrementalLexerChecks().verifyEverySplit("one 12.34 two 56")
+        IncrementalLexerChecks().verifyEverySplit("one ... two")
+    }
+}

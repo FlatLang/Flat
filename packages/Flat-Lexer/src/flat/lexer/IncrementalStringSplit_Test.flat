@@ -1,0 +1,10 @@
+package flat/lexer
+
+testable class {
+    async test `incremental lexer matches whole input at every string split`() {
+        IncrementalLexerChecks().verifyEverySplit("let value = \"hello \\\"flat\\\"\" + 'x'")
+        IncrementalLexerChecks().verifyEverySplit("|
+            \"value \#{other}\"
+        |")
+    }
+}

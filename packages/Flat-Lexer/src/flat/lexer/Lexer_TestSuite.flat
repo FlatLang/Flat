@@ -9,7 +9,18 @@ import flat/lexer/Lexer
 [TestSuite [
     Tokenizer_Test,
     Lexer_Test,
-    BoundedLexerPipelineChecks_Test
+    BoundedLexerPipelineChecks_Test,
+    IncrementalStringSplit_Test,
+    IncrementalCommentSplit_Test,
+    IncrementalExternalSplit_Test,
+    IncrementalSymbolSplit_Test,
+    IncrementalMultibyteSplit_Test,
+    IncrementalEof_Test,
+    IncrementalRetainedBound_Test,
+    IncrementalEdgeSplit_Test,
+    IncrementalLocation_Test,
+    IncrementalBackpressure_Test,
+    IncrementalCancellation_Test
 ]]
 class {
     public static async main(String[] args) {

@@ -1,0 +1,12 @@
+package flat/lexer
+
+class {
+    completeOperation() {
+        external {
+            if (!#{completion.completed}) {
+                #{completion.completed} = true;
+                #{completion.resolveFunc}(true);
+            }
+        }
+    }
+}

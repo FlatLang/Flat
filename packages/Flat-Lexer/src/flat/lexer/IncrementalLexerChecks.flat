@@ -1,0 +1,229 @@
+package flat/lexer
+
+import flat/compiler/models/Location
+import flat/compiler/models/Token
+import flat/future
+
+class IncrementalLexerChecks {
+    public async verifyEverySplit(String contents) {
+        let expected = lexWhole(contents)
+        var Int split
+
+        while (split <= contents.count) {
+            let pipeline = IncrementalLexerPipeline(
+                maxChunkCharacters: contents.count + 1,
+                maxRetainedCharacters: contents.count + 1,
+                inputCapacity: 2,
+                maxPendingInputSends: 2,
+                outputCapacity: expected.count + 1
+            )
+
+            pipeline.submit(contents.substring(0, split))
+            pipeline.submit(contents.substring(split))
+            pipeline.close()
+
+            let actual = collect(pipeline)
+            compare(actual, expected, split)
+            if (pipeline.peakRetainedCharacterCount > contents.count) {
+                throw Exception("Incremental lexer check failed: split #split retained bound")
+            }
+            split++
+        }
+    }
+
+    public async verifyAbsoluteLocations() {
+        let pipeline = IncrementalLexerPipeline(
+            maxChunkCharacters: 8,
+            maxRetainedCharacters: 32,
+            start: Location(lineNumber: 4, column: 6),
+            inputCapacity: 2,
+            maxPendingInputSends: 2,
+            outputCapacity: 8
+        )
+
+        pipeline.submit("one\n")
+        pipeline.submit("two")
+        pipeline.close()
+        let tokens = collect(pipeline)
+
+        require(tokens.count == 3, "absolute token count")
+        require(tokens[0].value == "one", "absolute first value")
+        require(tokens[0].location.lineNumber == 4, "absolute first line")
+        require(tokens[0].location.column == 6, "absolute first column")
+        require(tokens[1].value == "\n", "absolute newline value")
+        require(tokens[1].location.lineNumber == 4, "absolute newline line")
+        require(tokens[1].location.column == 9, "absolute newline column")
+        require(tokens[2].value == "two", "absolute second value")
+        require(tokens[2].location.lineNumber == 5, "absolute second line")
+        require(tokens[2].location.column == 1, "absolute second column")
+    }
+
+    public async verifyIncompleteEof(String contents, String kind) {
+        let pipeline = IncrementalLexerPipeline(
+            maxChunkCharacters: contents.count + 1,
+            maxRetainedCharacters: contents.count + 1,
+            inputCapacity: 1,
+            maxPendingInputSends: 1,
+            outputCapacity: 1
+        )
+
+        pipeline.submit(contents)
+        pipeline.close()
+        let failure = pipeline.output.receive()
+
+        require(failure.failed, "unterminated #kind failure")
+        require(
+            failure.error.message == "Incremental lexer reached EOF inside #kind",
+            "unterminated #kind message"
+        )
+        pipeline.completion.get()
+        require(pipeline.retainedCharacterCount == 0, "unterminated #kind cleanup")
+    }
+
+    public async verifyRetainedBound() {
+        let pipeline = IncrementalLexerPipeline(
+            maxChunkCharacters: 4,
+            maxRetainedCharacters: 6,
+            inputCapacity: 2,
+            maxPendingInputSends: 2,
+            outputCapacity: 1
+        )
+
+        pipeline.submit("\"abc")
+        pipeline.submit("def")
+        pipeline.close()
+        let failure = pipeline.output.receive()
+
+        require(failure.failed, "retained overflow failure")
+        require(
+            failure.error.message == "Incremental lexer retained lexical construct exceeds configured capacity",
+            "retained overflow message"
+        )
+        pipeline.completion.get()
+        if (pipeline.peakRetainedCharacterCount > 6) {
+            throw Exception("Incremental lexer check failed: retained hard bound")
+        }
+        require(pipeline.retainedCharacterCount == 0, "retained overflow cleanup")
+    }
+
+    public async verifyBackpressure() {
+        let pipeline = IncrementalLexerPipeline(
+            maxChunkCharacters: 16,
+            maxRetainedCharacters: 16,
+            inputCapacity: 1,
+            maxPendingInputSends: 1,
+            outputCapacity: 1
+        )
+
+        pipeline.submit("one two three")
+        pipeline.close()
+
+        while (pipeline.outputPendingSendCount == 0) {
+            let pause = Future.from<Bool>(async { true })
+            pause.get()
+        }
+
+        require(pipeline.outputBufferedCount == 1, "backpressure output buffer")
+        require(pipeline.outputPendingSendCount == 1, "backpressure pending output")
+
+        let tokens = collect(pipeline)
+        require(tokens.count == 5, "backpressure token count")
+        require(pipeline.outputPendingSendCount == 0, "backpressure cleanup")
+    }
+
+    public async verifyCancellation() {
+        let pipeline = IncrementalLexerPipeline(
+            maxChunkCharacters: 8,
+            maxRetainedCharacters: 16,
+            inputCapacity: 1,
+            maxPendingInputSends: 1,
+            outputCapacity: 1
+        )
+
+        pipeline.submit("\"partial")
+        while (pipeline.retainedCharacterCount == 0) {
+            let pause = Future.from<Bool>(async { true })
+            pause.get()
+        }
+        pipeline.cancel()
+        pipeline.completion.get()
+
+        require(pipeline.cancelled, "cancellation state")
+        require(pipeline.finished, "cancellation completion")
+        require(pipeline.retainedCharacterCount == 0, "cancellation retained cleanup")
+        require(pipeline.inputBufferedCount == 0, "cancellation input cleanup")
+        require(pipeline.inputPendingSendCount == 0, "cancellation pending input cleanup")
+        require(pipeline.outputPendingSendCount == 0, "cancellation output cleanup")
+    }
+
+    async collect(IncrementalLexerPipeline pipeline) -> Token[] {
+        let tokens = Token[]
+
+        while (true) {
+            let received = pipeline.output.receive()
+
+            if (received.received) tokens.add(received.value)
+            else if (received.completed) break
+            else if (received.failed) throw received.error
+        }
+
+        pipeline.completion.get()
+        return tokens
+    }
+
+    async lexWhole(String contents) -> Token[] {
+        let stream = Lexer().lex(contents)
+        stream.emit("start")
+        let source = stream.consumeAll<Token>("data")
+        let tokens = Token[]
+        var Location cursor
+        cursor = Location(lineNumber: 1, column: 1)
+
+        for (token in source) {
+            let normalized = Token(value: token.value, type: token.type, location: cursor)
+            tokens.add(normalized)
+            cursor = advance(cursor, token.value)
+        }
+
+        return tokens
+    }
+
+    advance(Location start, String contents) -> Location {
+        let lines = contents.howMany('\n')
+        if (lines == 0) {
+            return Location(
+                lineNumber: start.lineNumber,
+                column: start.column + contents.count
+            )
+        }
+
+        return Location(
+            lineNumber: start.lineNumber + lines,
+            column: contents.count - contents.lastIndexOf('\n')
+        )
+    }
+
+    compare(Token[] actual, Token[] expected, Int split) {
+        require(actual.count == expected.count, "split #split token count")
+        var Int index
+
+        while (index < expected.count) {
+            require(actual[index].value == expected[index].value, "split #split token #index value")
+            require(actual[index].type == expected[index].type, "split #split token #index type")
+            require(
+                actual[index].location.lineNumber == expected[index].location.lineNumber,
+                "split #split token #index line"
+            )
+            require(
+                actual[index].location.column == expected[index].location.column,
+                "split #split token #index column"
+            )
+            index++
+        }
+    }
+
+    require(Bool value, String name) {
+        if (!value) throw Exception("Incremental lexer check failed: #name")
+    }
+}
+
