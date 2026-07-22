@@ -1,0 +1,51 @@
+package flat/compiler/models
+
+/**
+ * Stable scope identity. Package scopes are package-owned; source and
+ * declaration scopes are snapshot-owned.
+ */
+data class {
+    visible PackageIdentity packageIdentity
+    visible SourceSnapshotIdentity snapshot
+    visible DeclarationIdentity owner
+    visible String scopeKind
+    visible Int ordinal
+    visible String ownerValue => owner?.value ?: (snapshot?.value ?: packageIdentity.value)
+    visible String value => "#ownerValue:scope:#scopeKind:#ordinal"
+
+    public construct(
+        SourceSnapshotIdentity snapshot,
+        String scopeKind,
+        Int ordinal = 0,
+        DeclarationIdentity owner = null
+    ) {
+        if (!snapshot) throw Exception("Source scope identity requires a source snapshot")
+        if (owner && owner.syntaxIdentity.snapshot != snapshot) {
+            throw Exception("Scope identity owner must belong to its source snapshot")
+        }
+        validate(scopeKind, ordinal)
+        this.snapshot = snapshot
+        this.owner = owner
+        this.scopeKind = scopeKind
+        this.ordinal = ordinal
+    }
+
+    public construct(
+        PackageIdentity packageIdentity,
+        String scopeKind,
+        Int ordinal = 0
+    ) {
+        if (!packageIdentity) throw Exception("Package scope identity requires a package identity")
+        validate(scopeKind, ordinal)
+        this.packageIdentity = packageIdentity
+        this.scopeKind = scopeKind
+        this.ordinal = ordinal
+    }
+
+    validate(String scopeKind, Int ordinal) {
+        if (!scopeKind || scopeKind.trim().count == 0) {
+            throw Exception("Scope identity kind cannot be empty")
+        }
+        if (ordinal < 0) throw Exception("Scope identity ordinal cannot be negative")
+    }
+}

@@ -1,0 +1,6 @@
+package flat/semantic/declarations
+
+data class extends DeclarationPublishResult {
+    visible DeclarationSymbol existing
+    visible DeclarationSymbol rejected
+}

@@ -1,0 +1,29 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Rich source-ordered static initialization group. */
+data class extends BoundStatement {
+    var BoundStatement[] initializationValues
+
+    public construct(
+        SourceRange range,
+        visible String stableOwnerValue,
+        BoundStatement[] initialization
+    ) {
+        if (!range || !stableOwnerValue || stableOwnerValue.trim().count == 0 ||
+            !initialization || initialization.any({ !_ })) {
+            throw Exception("Static initialization requires owner and statements")
+        }
+        initializationValues = BoundStatement[]
+        initializationValues.addAll(initialization)
+        super(range)
+    }
+
+    public initialization() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(initializationValues)
+        return result
+    }
+    override public unitKind() => "static-initialization"
+}

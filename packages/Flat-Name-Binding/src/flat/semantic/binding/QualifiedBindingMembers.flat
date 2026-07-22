@@ -1,0 +1,15 @@
+package flat/semantic/binding
+
+/** Qualified members exported by one package, type, or value candidate. */
+data class {
+    visible BindingCandidate owner
+    visible BindingLayer members
+
+    public construct(BindingCandidate owner, BindingLayer members) {
+        if (!owner || !members) {
+            throw Exception("Qualified binding members require an owner and member layer")
+        }
+        this.owner = owner
+        this.members = members
+    }
+}

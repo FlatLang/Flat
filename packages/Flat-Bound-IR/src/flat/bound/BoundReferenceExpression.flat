@@ -1,0 +1,19 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible String name,
+        visible SymbolIdentity symbolIdentity
+    ) {
+        if (!range || !semanticType || !name || !symbolIdentity) {
+            throw Exception("Bound reference requires range, type, name, and symbol")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "reference"
+}

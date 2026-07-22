@@ -1,0 +1,12 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    public construct(visible String name) {
+        if (name != "String" && name != "Object") {
+            throw Exception("Invalid built-in reference type '#name'")
+        }
+    }
+
+    override public value() => "builtin:#name"
+    override public kind() => name == "String" ? "string" : "object"
+}

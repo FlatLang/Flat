@@ -1,0 +1,36 @@
+package flat/semantic/declarations
+
+import flat/compiler/models
+
+/** Immutable declaration symbol published atomically into one scope. */
+data class {
+    visible SymbolIdentity identity
+    visible ScopeIdentity scopeIdentity
+    visible String name
+    visible String declarationKind
+    visible SourceRange range
+
+    public construct(
+        SymbolIdentity identity,
+        ScopeIdentity scopeIdentity,
+        String name,
+        String declarationKind,
+        SourceRange range
+    ) {
+        if (!identity || !scopeIdentity || !range) {
+            throw Exception("Declaration symbol requires identity, scope, and source range")
+        }
+        if (!name || name.trim().count == 0) throw Exception("Declaration symbol name cannot be empty")
+        if (!declarationKind || declarationKind.trim().count == 0) {
+            throw Exception("Declaration symbol kind cannot be empty")
+        }
+        if (identity.declaration.syntaxIdentity.snapshot != range.snapshot) {
+            throw Exception("Declaration symbol identity and range must belong to one snapshot")
+        }
+        this.identity = identity
+        this.scopeIdentity = scopeIdentity
+        this.name = name
+        this.declarationKind = declarationKind
+        this.range = range
+    }
+}

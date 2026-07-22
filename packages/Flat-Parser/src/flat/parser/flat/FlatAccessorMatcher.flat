@@ -1,0 +1,21 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/compiler/models/Token
+
+/** Internal grammar probe for one complete property/array accessor signature. */
+class {
+    public matches(Token[] tokens) -> Bool {
+        if (tokens.isEmpty || tokens.first.type != Token.Type.IDENTIFIER) return false
+
+        let parser = tokens.first.value == "get"
+            ? (ParserBase)FieldAccessorFunctionParser()
+            : tokens.first.value == "set"
+                ? (ParserBase)FieldMutatorFunctionParser()
+                : null
+        if (!parser) return false
+
+        let match = parser.matchAll(tokens).lastWhere({ _ != null })
+        return match != null && match.tokens.count == tokens.count
+    }
+}

@@ -1,0 +1,8 @@
+package flat/project
+
+import flat/compiler/models/SourceIdentity
+
+abstract class {
+    public identities() -> SourceIdentity[] => SourceIdentity[]
+    public load(SourceIdentity identity) -> LoadedSource => null
+}

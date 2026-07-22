@@ -1,0 +1,123 @@
+package flat/semantic/declarations
+
+import flat/compiler/models
+import flat/datastruct/HashMap
+import flat/datastruct/Pair
+import flat/future
+
+/**
+ * One hierarchical declaration scope. Lookups complete only after local seal so
+ * duplicate winners are deterministic under arbitrary publication schedules.
+ */
+class {
+    var HashMap<String, DeclarationSymbol> symbols = HashMap()
+    var HashMap<String, DeclarationCandidates> duplicates = HashMap()
+    var HashMap<String, PendingDeclarationLookups> pending = HashMap()
+
+    var Int pendingCount
+
+    visible var Bool sealed
+    visible Int declarationCount => symbols.count
+    visible Int pendingLookupCount => pendingCount
+
+    public construct(
+        visible ScopeIdentity identity,
+        visible DeclarationScope parent = null
+    ) {
+        if (!identity) throw Exception("Declaration scope requires an identity")
+    }
+
+    public openChild(ScopeIdentity identity) -> DeclarationScope {
+        if (sealed) throw Exception("Cannot open a child from a sealed declaration scope")
+        return DeclarationScope(identity, this)
+    }
+
+    public declare(DeclarationSymbol symbol) -> DeclarationPublishResult {
+        if (sealed) throw Exception("Cannot publish into a sealed declaration scope")
+        if (!symbol || symbol.scopeIdentity != identity) {
+            throw Exception("Declaration symbol must belong to the receiving scope")
+        }
+
+        let existing = symbols[symbol.name]
+        if (!existing) {
+            symbols[symbol.name] = symbol
+            let values = DeclarationCandidates()
+            values.add(symbol)
+            duplicates[symbol.name] = values
+            return PublishedDeclaration(symbol)
+        }
+
+        let candidates = duplicates[symbol.name]
+        candidates.add(symbol)
+
+        var DeclarationSymbol winner = existing
+        if (symbol.identity.value.compareTo(existing.identity.value) < 0) {
+            winner = symbol
+            symbols[symbol.name] = symbol
+        }
+        let rejected = Object.referenceEquals(winner, symbol) ? existing : symbol
+        return DuplicateDeclaration(winner, rejected)
+    }
+
+    public resolveLookup(
+        String name,
+        PendingDeclarationLookup completion
+    ) {
+        if (!sealed) {
+            var waiters = pending[name]
+            if (!waiters) {
+                waiters = PendingDeclarationLookups()
+                pending[name] = waiters
+            }
+            waiters.add(completion)
+            pendingCount++
+        } else if (let symbol = symbols[name]) {
+            completion.complete(FoundDeclaration(symbol))
+        } else if (parent) {
+            parent.resolveLookup(name, completion)
+        } else {
+            completion.complete(MissingDeclaration(name, identity))
+        }
+    }
+
+    public lookup(String name) -> PendingDeclarationLookup {
+        if (!name || name.trim().count == 0) throw Exception("Declaration lookup name cannot be empty")
+
+        let completion = PendingDeclarationLookup()
+        resolveLookup(name, completion)
+        return completion
+    }
+
+    public seal() {
+        if (sealed) return
+        sealed = true
+
+        let entries = pending.entries
+        var Int index
+        while (index < entries.count) {
+            let Pair<String, PendingDeclarationLookups> entry = entries[index]
+            let String name = entry.key
+            let PendingDeclarationLookups pendingLookups = entry.value
+            if (let symbol = symbols[name]) {
+                let DeclarationLookupResult result = FoundDeclaration(symbol)
+                pendingLookups.complete(result)
+            } else if (parent) {
+                for (lookup in pendingLookups.lookups) {
+                    parent.resolveLookup(name, lookup)
+                }
+            } else {
+                let DeclarationLookupResult result = MissingDeclaration(name, identity)
+                pendingLookups.complete(result)
+            }
+            index++
+        }
+        pending = HashMap()
+        pendingCount = 0
+    }
+
+    public duplicateCandidates(String name) -> DeclarationSymbol[] {
+        let candidates = duplicates[name]
+        if (candidates) return candidates.copySymbols()
+        return DeclarationSymbol[]
+    }
+}

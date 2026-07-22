@@ -1,0 +1,94 @@
+package flat/bound
+
+/** Lowers closures/references/async setup and static initialization in source order. */
+class extends BoundFunctionLoweringPass {
+    override public name() => "deferred-execution-forms"
+    override public inputInvariant() => "typed-deferred-and-static-forms"
+    override public outputInvariant() => "explicit-setup-and-canonical-values"
+
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        let output = BoundStatement[]
+        for (statement in input.statements()) lowerStatement(statement, output)
+        return BoundFunctionUnit(
+            input.identity, input.name, input.returnType, output, input.range,
+            input.parameterValues(), input.staticFunction, input.mainFunction
+        )
+    }
+
+    lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if (statement.class.isOfType(BoundStaticInitializationStatement.class)) {
+            let initialization = (BoundStaticInitializationStatement)statement
+            for (child in initialization.initialization()) lowerStatement(child, output)
+        } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
+            let value = (BoundExpressionStatement)statement
+            let lowered = lowerExpression(value.expression)
+            output.addAll(lowered.setup())
+            output.add(BoundExpressionStatement(value.range, lowered.expression))
+        } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            let value = (BoundAssignmentStatement)statement
+            let lowered = lowerExpression(value.value)
+            output.addAll(lowered.setup())
+            output.add(BoundAssignmentStatement(
+                value.range, value.target, lowered.expression, value.conversion
+            ))
+        } else if (statement.class.isOfType(BoundReturnStatement.class)) {
+            let value = (BoundReturnStatement)statement
+            if (!value.value) {
+                output.add(value)
+            } else {
+                let lowered = lowerExpression(value.value)
+                output.addAll(lowered.setup())
+                output.add(BoundReturnStatement(
+                    value.range, value.requiredType, lowered.expression, value.conversion
+                ))
+            }
+        } else {
+            output.add(statement)
+        }
+    }
+
+    lowerExpression(BoundExpression expression) -> LoweredExpression {
+        if (expression.class.isOfType(BoundDeferredExpression.class)) {
+            let deferred = (BoundDeferredExpression)expression
+            let setup = BoundStatement[]
+            for (statement in deferred.setup()) lowerStatement(statement, setup)
+            let canonical = lowerExpression(deferred.canonicalExpression)
+            setup.addAll(canonical.setup())
+            return LoweredExpression(setup, canonical.expression)
+        }
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            let call = (BoundCallExpression)expression
+            let setup = BoundStatement[]
+            let arguments = BoundExpression[]
+            for (argument in call.argumentValues()) {
+                let lowered = lowerExpression(argument)
+                setup.addAll(lowered.setup())
+                arguments.add(lowered.expression)
+            }
+            return LoweredExpression(
+                setup,
+                BoundCallExpression(
+                    call.range,
+                    call.semanticType,
+                    call.target,
+                    arguments,
+                    call.argumentConversions()
+                )
+            )
+        }
+        if (expression.class.isOfType(BoundConversionExpression.class)) {
+            let conversion = (BoundConversionExpression)expression
+            let lowered = lowerExpression(conversion.value)
+            return LoweredExpression(
+                lowered.setup(),
+                BoundConversionExpression(
+                    conversion.range,
+                    conversion.semanticType,
+                    lowered.expression,
+                    conversion.conversion
+                )
+            )
+        }
+        return LoweredExpression(BoundStatement[], expression)
+    }
+}

@@ -1,0 +1,15 @@
+package flat/writer/es6/bound
+
+import flat/compiler/models
+
+data class {
+    public construct(
+        visible String code,
+        visible String message,
+        visible SourceRange range = null
+    ) {
+        if (!code || code.trim().count == 0 || !message || message.trim().count == 0) {
+            throw Exception("ES6 backend diagnostic requires code and message")
+        }
+    }
+}

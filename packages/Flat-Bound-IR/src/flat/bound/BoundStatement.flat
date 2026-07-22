@@ -1,0 +1,8 @@
+package flat/bound
+
+import flat/compiler/models
+
+abstract data class {
+    visible SourceRange range
+    public abstract unitKind() -> String
+}

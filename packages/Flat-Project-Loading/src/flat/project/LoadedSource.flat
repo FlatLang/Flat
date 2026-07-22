@@ -1,0 +1,15 @@
+package flat/project
+
+import flat/compiler/models
+
+data class {
+    visible SourceSnapshotIdentity snapshot
+    visible String contents
+
+    public construct(SourceSnapshotIdentity snapshot, String contents) {
+        if (!snapshot) throw Exception("Loaded source requires a snapshot")
+        if (contents == null) throw Exception("Loaded source contents cannot be null")
+        this.snapshot = snapshot
+        this.contents = contents
+    }
+}

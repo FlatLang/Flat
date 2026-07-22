@@ -1,0 +1,22 @@
+package flat/bound
+
+/** Lowers data classes and generic/reified/annotation metadata to ordinary type units. */
+class {
+    public static lowerDataClass(BoundDataClassType input) -> BoundTypeUnit {
+        if (!input) throw Exception("Data class lowering requires input")
+        var BoundMetadataUnit[] metadata = MetadataLowering.lower(input.metadata())
+        let dataMetadata = BoundMetadataUnit("data-class", input.semanticType.value(), "synthesized")
+        metadata.add(dataMetadata)
+        metadata = metadata.sort((left, right) => {
+            let kindOrder = left.metadataKind.compareTo(right.metadataKind)
+            return kindOrder != 0 ? kindOrder : left.name.compareTo(right.name)
+        })
+        return BoundTypeUnit(
+            input.identity,
+            input.semanticType,
+            input.synthesizedFunctions(),
+            input.range,
+            metadata
+        )
+    }
+}

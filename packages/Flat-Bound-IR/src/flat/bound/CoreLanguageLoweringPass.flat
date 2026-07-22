@@ -1,0 +1,104 @@
+package flat/bound
+
+import flat/semantic/types
+
+/** Lowers constructor/property/default/named/operator rich forms to canonical calls/statements. */
+class extends BoundFunctionLoweringPass {
+    override public name() => "core-language-forms"
+    override public inputInvariant() => "typed-rich-core-forms"
+    override public outputInvariant() => "canonical-calls-and-statements"
+
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        let output = BoundStatement[]
+        for (statement in input.statements()) lowerStatement(statement, output)
+        return BoundFunctionUnit(
+            input.identity,
+            input.name,
+            input.returnType,
+            output,
+            input.range,
+            input.parameterValues(),
+            input.staticFunction,
+            input.mainFunction
+        )
+    }
+
+    lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if (statement.class.isOfType(BoundConstructorInitializationStatement.class)) {
+            let initialization = (BoundConstructorInitializationStatement)statement
+            for (child in initialization.initializers()) lowerStatement(child, output)
+        } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
+            let value = (BoundExpressionStatement)statement
+            output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
+        } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            let value = (BoundAssignmentStatement)statement
+            output.add(BoundAssignmentStatement(
+                value.range,
+                value.target,
+                lowerExpression(value.value),
+                value.conversion
+            ))
+        } else if (statement.class.isOfType(BoundReturnStatement.class)) {
+            let value = (BoundReturnStatement)statement
+            output.add(BoundReturnStatement(
+                value.range,
+                value.requiredType,
+                lowerExpression(value.value),
+                value.conversion
+            ))
+        } else {
+            output.add(statement)
+        }
+    }
+
+    lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (expression.class.isOfType(BoundRichCallExpression.class)) {
+            return lowerExpression(((BoundRichCallExpression)expression).canonicalCall)
+        }
+        if (expression.class.isOfType(BoundNamedCallExpression.class)) {
+            let named = (BoundNamedCallExpression)expression
+            let values = BoundExpression[]
+            let conversions = TypeConversion[]
+            for (parameter in named.callParameters()) {
+                let supplied = named.suppliedArguments().firstOrNull({ _.name == parameter.name })
+                if (supplied) {
+                    values.add(lowerExpression(supplied.value))
+                    conversions.add(supplied.conversion)
+                } else if (parameter.defaultValue) {
+                    values.add(lowerExpression(parameter.defaultValue))
+                    conversions.add(parameter.defaultConversion)
+                } else {
+                    throw Exception("Named call parameter '#{parameter.name}' has no argument or default")
+                }
+            }
+            return BoundCallExpression(
+                named.range,
+                named.semanticType,
+                named.target,
+                values,
+                conversions
+            )
+        }
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            let call = (BoundCallExpression)expression
+            return BoundCallExpression(
+                call.range,
+                call.semanticType,
+                call.target,
+                call.argumentValues().map({ lowerExpression(_) }),
+                call.argumentConversions()
+            )
+        }
+        if (expression.class.isOfType(BoundConversionExpression.class)) {
+            let conversion = (BoundConversionExpression)expression
+            return BoundConversionExpression(
+                conversion.range,
+                conversion.semanticType,
+                lowerExpression(conversion.value),
+                conversion.conversion
+            )
+        }
+        return expression
+    }
+}

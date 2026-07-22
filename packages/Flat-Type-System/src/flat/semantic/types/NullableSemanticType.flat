@@ -1,0 +1,15 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    public construct(visible SemanticType underlyingType) {
+        if (!underlyingType) throw Exception("Nullable type requires an underlying type")
+        if (underlyingType.kind() == "null" || underlyingType.kind() == "void" ||
+            underlyingType.kind() == "unit" || underlyingType.kind() == "error" ||
+            underlyingType.kind() == "unknown" || underlyingType.kind() == "nullable") {
+            throw Exception("Semantic type '#{underlyingType.kind()}' cannot be nullable")
+        }
+    }
+
+    override public value() => "nullable:#{underlyingType.value()}"
+    override public kind() => "nullable"
+}

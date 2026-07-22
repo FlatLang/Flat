@@ -1,0 +1,19 @@
+package flat/bound
+
+data class {
+    var BoundStatement[] setupValues
+
+    public construct(BoundStatement[] setup, visible BoundExpression expression) {
+        if (!setup || setup.any({ !_ }) || !expression) {
+            throw Exception("Lowered expression requires setup and expression")
+        }
+        setupValues = BoundStatement[]
+        setupValues.addAll(setup)
+    }
+
+    public setup() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(setupValues)
+        return result
+    }
+}

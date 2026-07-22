@@ -1,0 +1,35 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Immutable generic declaration and its semantic result template. */
+data class {
+    var GenericParameterSemanticType[] parameters
+
+    public construct(
+        visible DeclarationIdentity identity,
+        GenericParameterSemanticType[] genericParameters,
+        visible SemanticType templateType
+    ) {
+        if (!identity || !genericParameters || genericParameters.isEmpty ||
+            genericParameters.any({ !_ }) || !templateType) {
+            throw Exception("Generic declaration requires identity, parameters, and template")
+        }
+        var Int index
+        while (index < genericParameters.count) {
+            if (genericParameters[index].ownerIdentity != identity ||
+                genericParameters[index].ordinal != index) {
+                throw Exception("Generic parameters must be contiguously owned by their declaration")
+            }
+            index++
+        }
+        parameters = GenericParameterSemanticType[]
+        parameters.addAll(genericParameters)
+    }
+
+    public genericParameters() -> GenericParameterSemanticType[] {
+        let result = GenericParameterSemanticType[]
+        result.addAll(parameters)
+        return result
+    }
+}

@@ -1,0 +1,29 @@
+package flat/semantic/declarations
+
+import flat/compiler/models
+
+class DeclarationIndex_TestFixture {
+    visible SourceSnapshotIdentity snapshot = SourceSnapshotIdentity(
+        SourceIdentity("workspace:Package.flat"),
+        "sha256:abc"
+    )
+    visible ScopeIdentity packageScope = ScopeIdentity(snapshot, "package")
+
+    public symbol(String name, Int ordinal, ScopeIdentity scope) -> DeclarationSymbol {
+        let syntax = SyntaxIslandIdentity(snapshot, "type-header", ordinal)
+        let declaration = DeclarationIdentity(syntax, "class", name)
+        return DeclarationSymbol(
+            SymbolIdentity(declaration, "type"),
+            scope,
+            name,
+            "class",
+            SourceRange(
+                snapshot,
+                ordinal,
+                ordinal + 1,
+                Location(lineNumber: 1, column: ordinal + 1),
+                Location(lineNumber: 1, column: ordinal + 2)
+            )
+        )
+    }
+}

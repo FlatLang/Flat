@@ -1,0 +1,14 @@
+package flat/semantic/types
+
+data class {
+    public construct(
+        visible String key,
+        visible GenericDeclaration declaration,
+        visible GenericSubstitution substitution,
+        visible SemanticType instantiatedType
+    ) {
+        if (!key || !declaration || !substitution || !instantiatedType) {
+            throw Exception("Generic instantiation work requires key, declaration, substitution, and type")
+        }
+    }
+}

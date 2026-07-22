@@ -1,0 +1,14 @@
+package flat/writer/es6/bound
+
+/** Immutable independently emitted ES6 artifact fragment. */
+data class {
+    public construct(
+        visible String identity,
+        visible Int ordinal,
+        visible String code
+    ) {
+        if (!identity || identity.trim().count == 0 || ordinal < 0 || code == null) {
+            throw Exception("ES6 fragment requires identity, ordinal, and code")
+        }
+    }
+}

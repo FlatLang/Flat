@@ -1,0 +1,29 @@
+package flat/parser
+
+import flat/compiler/models
+
+/** Immutable source-scoped parser diagnostic published on a dedicated flow. */
+data class {
+    visible String code
+    visible String message
+    visible SourceSnapshotIdentity snapshot
+    visible SourceRange range
+
+    public construct(
+        String code,
+        String message,
+        SourceSnapshotIdentity snapshot,
+        SourceRange range = null
+    ) {
+        if (!code || code.trim().count == 0) throw Exception("Parser diagnostic code cannot be empty")
+        if (!message || message.trim().count == 0) throw Exception("Parser diagnostic message cannot be empty")
+        if (!snapshot) throw Exception("Parser diagnostic requires a source snapshot")
+        if (range && range.snapshot != snapshot) {
+            throw Exception("Parser diagnostic range must belong to its source snapshot")
+        }
+        this.code = code
+        this.message = message
+        this.snapshot = snapshot
+        this.range = range
+    }
+}

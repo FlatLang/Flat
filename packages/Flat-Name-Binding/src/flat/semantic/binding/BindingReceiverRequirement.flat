@@ -1,0 +1,9 @@
+package flat/semantic/binding
+
+class {
+    public construct(visible String value) {
+        if (value != "none" && value != "static" && value != "instance") {
+            throw Exception("Invalid binding receiver requirement '#value'")
+        }
+    }
+}

@@ -1,0 +1,21 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class extends BoundStatement {
+    public construct(
+        SourceRange range,
+        visible BoundReferenceExpression target,
+        visible BoundExpression value,
+        visible TypeConversion conversion
+    ) {
+        if (!range || !target || !value || !conversion || !conversion.applicable ||
+            conversion.fromType.value() != value.semanticType.value() ||
+            conversion.toType.value() != target.semanticType.value()) {
+            throw Exception("Bound assignment requires consistent target/value conversion")
+        }
+        super(range)
+    }
+    override public unitKind() => "assignment"
+}

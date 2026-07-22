@@ -1,0 +1,42 @@
+package flat/semantic/binding
+
+/** Resolves a qualified path one accessible declaration-owned layer at a time. */
+class {
+    public construct(
+        visible LayeredBindingLookup root,
+        visible QualifiedBindingMembers[] memberScopes
+    ) {
+        if (!root || !memberScopes) {
+            throw Exception("Qualified binding lookup requires root and member scopes")
+        }
+    }
+
+    public lookup(
+        String[] segments,
+        BindingLookupContext context
+    ) -> BindingLookupResult {
+        if (!segments || segments.isEmpty || segments.any((segment) =>
+            !segment || segment.trim().count == 0
+        )) {
+            throw Exception("Qualified binding lookup requires non-empty name segments")
+        }
+        var BindingLookupResult current = root.lookup(segments.first, context)
+        var Int index = 1
+        while (index < segments.count && current.found) {
+            let next = BindingCandidate[]
+            for (candidate in current.candidates) {
+                let scope = memberScopes.firstOrNull((memberScope) =>
+                    memberScope.owner.symbol.identity == candidate.symbol.identity
+                )
+                if (scope) next.addAll(scope.members.find(segments[index], context))
+            }
+            current = BindingLookupResult(
+                segments[index],
+                next.sort({ _a.symbol.identity.value.compareTo(_b.symbol.identity.value) })
+            )
+            index++
+        }
+        if (index < segments.count) return BindingLookupResult(segments.last, BindingCandidate[])
+        return current
+    }
+}

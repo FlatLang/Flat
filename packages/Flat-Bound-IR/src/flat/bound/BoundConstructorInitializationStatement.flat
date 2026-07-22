@@ -1,0 +1,24 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Rich constructor prologue expanded to canonical reduced statements. */
+data class extends BoundStatement {
+    var BoundStatement[] initializerValues
+
+    public construct(SourceRange range, BoundStatement[] initializers) {
+        if (!range || !initializers || initializers.any({ !_ })) {
+            throw Exception("Constructor initialization requires range and statements")
+        }
+        initializerValues = BoundStatement[]
+        initializerValues.addAll(initializers)
+        super(range)
+    }
+
+    public initializers() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(initializerValues)
+        return result
+    }
+    override public unitKind() => "constructor-initialization"
+}

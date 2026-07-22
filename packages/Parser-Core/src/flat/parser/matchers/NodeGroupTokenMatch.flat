@@ -28,6 +28,18 @@ data class extends TokenMatch<NodeGroupTokenPattern> {
 
     public traverseNodes(func(Node, ParseContext, TokenPattern)) => childMatches.forEach({ _.traverseNodes(func) })
 
+    visible ParserMatchSpan[] directSpans {
+        get {
+            let spans = ParserMatchSpan[]
+
+            for (childMatch in childMatches) {
+                childMatch.appendDirectParserSpans(spans)
+            }
+
+            return spans
+        }
+    }
+
     tokenMatchToNodeTokenMatches(TokenMatch childMatch) -> NodeTokenMatch[] {
         if (childMatch.class.isOfType(NodeGroupTokenMatch.class)) {
             let groupMatch = (NodeGroupTokenMatch)childMatch

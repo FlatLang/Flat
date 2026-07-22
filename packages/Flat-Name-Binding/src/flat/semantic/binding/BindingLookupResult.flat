@@ -1,0 +1,17 @@
+package flat/semantic/binding
+
+/** Deterministically ordered candidates from the first non-empty lookup layer. */
+data class {
+    visible String name
+    visible BindingCandidate[] candidates
+    visible Bool found => candidates.isNotEmpty
+    visible BindingCandidate candidate => candidates.first
+
+    public construct(String name, BindingCandidate[] candidates) {
+        if (!name || name.trim().count == 0 || !candidates) {
+            throw Exception("Binding lookup result requires a name and candidates")
+        }
+        this.name = name
+        this.candidates = candidates
+    }
+}

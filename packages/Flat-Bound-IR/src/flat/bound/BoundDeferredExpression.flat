@@ -1,0 +1,35 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Rich lambda/closure/reference/async expression with explicit setup and canonical value. */
+data class extends BoundExpression {
+    var BoundStatement[] setupValues
+
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible String featureKind,
+        BoundStatement[] setup,
+        visible BoundExpression canonicalExpression
+    ) {
+        if (!range || !semanticType ||
+            (featureKind != "lambda" && featureKind != "closure" &&
+             featureKind != "function-reference" && featureKind != "async") ||
+            !setup || setup.any({ !_ }) || !canonicalExpression ||
+            canonicalExpression.semanticType.value() != semanticType.value()) {
+            throw Exception("Deferred expression requires kind, setup, and canonical value")
+        }
+        setupValues = BoundStatement[]
+        setupValues.addAll(setup)
+        super(range, semanticType)
+    }
+
+    public setup() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(setupValues)
+        return result
+    }
+    override public expressionKind() => featureKind
+}

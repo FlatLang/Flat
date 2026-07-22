@@ -1,0 +1,55 @@
+package flat/bound
+
+/** Lowers external/native rich forms while recursively preserving argument order. */
+class extends BoundFunctionLoweringPass {
+    override public name() => "external-native-forms"
+    override public inputInvariant() => "typed-external-native-forms"
+    override public outputInvariant() => "canonical-native-calls"
+
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        let output = BoundStatement[]
+        for (statement in input.statements()) {
+            if (statement.class.isOfType(BoundExpressionStatement.class)) {
+                let value = (BoundExpressionStatement)statement
+                output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
+            } else if (statement.class.isOfType(BoundReturnStatement.class)) {
+                let value = (BoundReturnStatement)statement
+                output.add(BoundReturnStatement(
+                    value.range, value.requiredType, lowerExpression(value.value), value.conversion
+                ))
+            } else {
+                output.add(statement)
+            }
+        }
+        return BoundFunctionUnit(
+            input.identity, input.name, input.returnType, output, input.range,
+            input.parameterValues(), input.staticFunction, input.mainFunction
+        )
+    }
+
+    lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (expression.class.isOfType(BoundExternalExpression.class)) {
+            return lowerExpression(((BoundExternalExpression)expression).nativeCall)
+        }
+        if (expression.class.isOfType(BoundNativeCallExpression.class)) {
+            let nativeCall = (BoundNativeCallExpression)expression
+            return BoundNativeCallExpression(
+                nativeCall.range,
+                nativeCall.semanticType,
+                nativeCall.nativeName,
+                nativeCall.argumentValues().map({ lowerExpression(_) })
+            )
+        }
+        if (expression.class.isOfType(BoundConversionExpression.class)) {
+            let conversion = (BoundConversionExpression)expression
+            return BoundConversionExpression(
+                conversion.range,
+                conversion.semanticType,
+                lowerExpression(conversion.value),
+                conversion.conversion
+            )
+        }
+        return expression
+    }
+}

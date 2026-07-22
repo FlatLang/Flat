@@ -1,0 +1,25 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Rich constructor/property/accessor/mutator/operator form with selected call semantics. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible String featureKind,
+        visible BoundCallExpression canonicalCall
+    ) {
+        if (!range || !semanticType || !canonicalCall ||
+            (featureKind != "constructor" && featureKind != "property-get" &&
+             featureKind != "accessor" && featureKind != "mutator" &&
+             featureKind != "operator") ||
+            canonicalCall.semanticType.value() != semanticType.value()) {
+            throw Exception("Rich call feature requires kind and consistent canonical call")
+        }
+        super(range, semanticType)
+    }
+
+    override public expressionKind() => featureKind
+}

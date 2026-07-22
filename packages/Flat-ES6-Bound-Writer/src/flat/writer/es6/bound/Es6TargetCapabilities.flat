@@ -1,0 +1,39 @@
+package flat/writer/es6/bound
+
+/** Backend capability contract; unsupported semantics become stable diagnostics. */
+class {
+    public static supportsStatement(String kind) -> Bool {
+        return kind == "expression" || kind == "local-declaration" ||
+            kind == "assignment" || kind == "return"
+    }
+
+    public static supportsExpression(String kind) -> Bool {
+        return kind == "literal" || kind == "reference" || kind == "member-access" ||
+            kind == "conversion" || kind == "call" || kind == "native-call"
+    }
+
+    public static diagnoseStatement(String kind) -> Es6BackendDiagnostic {
+        if (supportsStatement(kind)) return null
+        return Es6BackendDiagnostic(
+            "es6.unsupported-statement",
+            "ES6 backend does not support reduced statement '#kind'"
+        )
+    }
+
+    public static diagnoseExpression(String kind) -> Es6BackendDiagnostic {
+        if (supportsExpression(kind)) return null
+        return Es6BackendDiagnostic(
+            "es6.unsupported-expression",
+            "ES6 backend does not support reduced expression '#kind'"
+        )
+    }
+
+    public static diagnoseMetadata(String kind) -> Es6BackendDiagnostic {
+        if (kind == "data-class" || kind == "generic" || kind == "reified" ||
+            kind == "annotation") return null
+        return Es6BackendDiagnostic(
+            "es6.unsupported-metadata",
+            "ES6 backend does not support metadata '#kind'"
+        )
+    }
+}

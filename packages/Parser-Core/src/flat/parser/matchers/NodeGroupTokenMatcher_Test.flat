@@ -9,6 +9,41 @@ import flat/datastruct/HashMap
 import flat/io/File
 
 testable class {
+    test `direct parser spans are immutable and null safe`() {
+        let first = NodeTokenMatch(
+            tokens: [Token(value: "one", type: Token.Type.IDENTIFIER)],
+            childMatches: [NodeTokenMatchChild(
+                tokens: [Token(value: "one", type: Token.Type.IDENTIFIER)],
+                parser: ImportParser()
+            )]
+        )
+        let empty = NodeTokenMatch(
+            tokens: [Token(value: "ignored", type: Token.Type.IDENTIFIER)]
+        )
+        let second = NodeTokenMatch(
+            tokens: [
+                Token(value: "two", type: Token.Type.IDENTIFIER),
+                Token(value: "(", type: Token.Type.SYMBOL),
+                Token(value: ")", type: Token.Type.SYMBOL)
+            ],
+            childMatches: [NodeTokenMatchChild(
+                tokens: [
+                    Token(value: "two", type: Token.Type.IDENTIFIER),
+                    Token(value: "(", type: Token.Type.SYMBOL),
+                    Token(value: ")", type: Token.Type.SYMBOL)
+                ],
+                parser: FunctionCallParser()
+            )]
+        )
+        let spans = NodeGroupTokenMatch(
+            childMatches: [first, empty, second]
+        ).directSpans
+
+        expect(spans).toBe([
+            ParserMatchSpan("ImportParser", 1),
+            ParserMatchSpan("FunctionCallParser", 3)
+        ])
+    }
     test `can match one import`() {
         let pattern = NodeGroupTokenPattern([ImportParser()])
 

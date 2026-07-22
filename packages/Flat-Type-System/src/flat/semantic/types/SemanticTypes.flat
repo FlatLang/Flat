@@ -1,0 +1,23 @@
+package flat/semantic/types
+
+class {
+    public static boolType() => PrimitiveSemanticType("Bool")
+    public static byteType() => PrimitiveSemanticType("Byte")
+    public static unsignedByteType() => PrimitiveSemanticType("UByte")
+    public static shortType() => PrimitiveSemanticType("Short")
+    public static unsignedShortType() => PrimitiveSemanticType("UShort")
+    public static intType() => PrimitiveSemanticType("Int")
+    public static unsignedIntType() => PrimitiveSemanticType("UInt")
+    public static longType() => PrimitiveSemanticType("Long")
+    public static unsignedLongType() => PrimitiveSemanticType("ULong")
+    public static floatType() => PrimitiveSemanticType("Float")
+    public static doubleType() => PrimitiveSemanticType("Double")
+    public static charType() => PrimitiveSemanticType("Char")
+    public static stringType() => BuiltinReferenceSemanticType("String")
+    public static objectType() => BuiltinReferenceSemanticType("Object")
+    public static nullType() => NullSemanticType()
+    public static voidType() => SpecialSemanticType("void")
+    public static unitType() => SpecialSemanticType("unit")
+    public static unknownType() => SpecialSemanticType("unknown")
+    public static errorType() => SpecialSemanticType("error")
+}

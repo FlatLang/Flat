@@ -1,0 +1,16 @@
+package flat/bound
+
+import flat/semantic/types
+
+data class {
+    public construct(
+        visible String name,
+        visible BoundExpression value,
+        visible TypeConversion conversion
+    ) {
+        if (!name || name.trim().count == 0 || !value || !conversion ||
+            !conversion.applicable || conversion.fromType.value() != value.semanticType.value()) {
+            throw Exception("Bound named argument requires name, value, and conversion")
+        }
+    }
+}

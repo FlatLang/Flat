@@ -1,0 +1,9 @@
+package flat/bound
+
+class IdentityLoweringPass_TestFixture extends BoundFunctionLoweringPass {
+    public construct(visible String passName) {}
+    override public name() => passName
+    override public inputInvariant() => "bound-function"
+    override public outputInvariant() => "identity-preserved"
+    override public lower(BoundFunctionUnit input) => input
+}

@@ -1,0 +1,511 @@
+package flat/bound
+
+import flat/semantic/types
+
+testable class {
+    test `type metadata and foreign call lowering is structural`() {
+        let fixture = BoundIR_TestFixture()
+        let unitType = SemanticTypes.unitType()
+        let intType = SemanticTypes.intType()
+        let synthesized = BoundFunctionUnit(
+            fixture.declaration("function", "equals", 50),
+            "equals",
+            unitType,
+            BoundStatement[],
+            fixture.range()
+        )
+        let typeIdentity = fixture.declaration("class", "Data", 51)
+        let richType = BoundDataClassType(
+            typeIdentity,
+            UserClassSemanticType(typeIdentity),
+            [synthesized],
+            [
+                BoundRichMetadata("reified", "T", "runtime"),
+                BoundRichMetadata("generic", "T", "declaration"),
+                BoundRichMetadata("annotation", "Serializable", "true")
+            ],
+            fixture.range()
+        )
+        let loweredType = TypeFeatureLowering.lowerDataClass(richType)
+
+        expect(loweredType.functionUnits()).toBe([synthesized])
+        expect(loweredType.metadata().map({ _.metadataKind })).toBe([
+            "annotation", "data-class", "generic", "reified"
+        ])
+
+        let foreignCall = BoundNativeCallExpression(
+            fixture.range(), intType, "foreign.read", [
+                BoundLiteralExpression(fixture.range(), intType, "1")
+            ]
+        )
+        let externalExpression = BoundExternalExpression(
+            fixture.range(), intType, "external", foreignCall
+        )
+        let input = BoundFunctionUnit(
+            fixture.declaration("function", "foreignRead", 52),
+            "foreignRead",
+            intType,
+            [BoundExpressionStatement(fixture.range(), externalExpression)],
+            fixture.range()
+        )
+        let result = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, ExternalNativeLoweringPass())
+        ]).lower(input)
+
+        expect(result.succeeded).toBe(true)
+        expect(BoundIRAssertions.expressionKinds(result.loweredFunction)).toBe(["native-call"])
+        BoundIRAssertions.assertNoExternalForms(result.loweredFunction)
+        BoundIRAssertions.assertReducedSubset(result.loweredFunction)
+    }
+
+    test `deferred execution pass lowers lambda closure references async and static setup in order`() {
+        let fixture = BoundIR_TestFixture()
+        let unitType = SemanticTypes.unitType()
+        let functionType = FunctionSemanticType(SemanticType[], unitType)
+        let canonicalFunction = BoundLiteralExpression(
+            fixture.range(), functionType, "function-value"
+        )
+        let staticSetup = BoundExpressionStatement(
+            fixture.range(), BoundLiteralExpression(fixture.range(), unitType, "static")
+        )
+        let lambdaSetup = BoundExpressionStatement(
+            fixture.range(), BoundLiteralExpression(fixture.range(), unitType, "lambda-setup")
+        )
+        let captureSetup = BoundExpressionStatement(
+            fixture.range(), BoundLiteralExpression(fixture.range(), unitType, "capture")
+        )
+        let referenceSetup = BoundExpressionStatement(
+            fixture.range(), BoundLiteralExpression(fixture.range(), unitType, "reference")
+        )
+        let asyncSetup = BoundExpressionStatement(
+            fixture.range(), BoundLiteralExpression(fixture.range(), unitType, "continuation")
+        )
+        let values = [
+            BoundDeferredExpression(
+                fixture.range(), functionType, "lambda", [lambdaSetup], canonicalFunction
+            ),
+            BoundDeferredExpression(
+                fixture.range(), functionType, "closure", [captureSetup], canonicalFunction
+            ),
+            BoundDeferredExpression(
+                fixture.range(), functionType, "function-reference", [referenceSetup], canonicalFunction
+            ),
+            BoundDeferredExpression(
+                fixture.range(), functionType, "async", [asyncSetup], canonicalFunction
+            )
+        ]
+        let statements = BoundStatement[]
+        statements.add(BoundStaticInitializationStatement(
+            fixture.range(), fixture.snapshot.value, [staticSetup]
+        ))
+        values.forEach({ statements.add(BoundExpressionStatement(fixture.range(), _)) })
+        let input = BoundFunctionUnit(
+            fixture.declaration("function", "deferred", 40),
+            "deferred",
+            unitType,
+            statements,
+            fixture.range()
+        )
+        let result = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, DeferredExecutionLoweringPass())
+        ]).lower(input)
+
+        expect(result.succeeded).toBe(true)
+        BoundIRAssertions.assertStatementKinds(result.loweredFunction, [
+            "expression", "expression", "expression", "expression", "expression",
+            "expression", "expression", "expression", "expression"
+        ])
+        expect(BoundIRAssertions.expressionKinds(result.loweredFunction)).toBe([
+            "literal", "literal", "literal", "literal", "literal",
+            "literal", "literal", "literal", "literal"
+        ])
+        BoundIRAssertions.assertNoDeferredForms(result.loweredFunction)
+        BoundIRAssertions.assertReducedSubset(result.loweredFunction)
+    }
+
+    test `nested deferred call arguments preserve left to right setup order`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let unitType = SemanticTypes.unitType()
+        let identity = TypeConversions.classify(intType, intType)
+        let target = CallableSignature(
+            fixture.symbol("function", "combine", 41),
+            "combine",
+            CallableKind("function"),
+            [intType, intType],
+            unitType
+        )
+        let firstSetup = BoundExpressionStatement(
+            fixture.range(), BoundLiteralExpression(fixture.range(), unitType, "first")
+        )
+        let secondSetup = BoundExpressionStatement(
+            fixture.range(), BoundLiteralExpression(fixture.range(), unitType, "second")
+        )
+        let first = BoundDeferredExpression(
+            fixture.range(), intType, "closure", [firstSetup],
+            BoundLiteralExpression(fixture.range(), intType, "1")
+        )
+        let second = BoundDeferredExpression(
+            fixture.range(), intType, "async", [secondSetup],
+            BoundLiteralExpression(fixture.range(), intType, "2")
+        )
+        let call = BoundCallExpression(
+            fixture.range(), unitType, target, [first, second], [identity, identity]
+        )
+        let input = BoundFunctionUnit(
+            fixture.declaration("function", "combine", 42),
+            "combine",
+            unitType,
+            [BoundExpressionStatement(fixture.range(), call)],
+            fixture.range()
+        )
+        let result = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, DeferredExecutionLoweringPass())
+        ]).lower(input)
+
+        expect(result.succeeded).toBe(true)
+        BoundIRAssertions.assertStatementKinds(
+            result.loweredFunction, ["expression", "expression", "expression"]
+        )
+        BoundIRAssertions.assertNoDeferredForms(result.loweredFunction)
+    }
+
+    test `collection control pass lowers arrays ranges safe access match and foreach structurally`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let boolType = SemanticTypes.boolType()
+        let unitType = SemanticTypes.unitType()
+        let canonical = BoundLiteralExpression(fixture.range(), intType, "1")
+        let array = BoundRichCollectionExpression(
+            fixture.range(), intType, "array", canonical
+        )
+        let access = BoundRichCollectionExpression(
+            fixture.range(), intType, "array-access", canonical
+        )
+        let range = BoundRichCollectionExpression(
+            fixture.range(), intType, "range", canonical
+        )
+        let safe = BoundRichCollectionExpression(
+            fixture.range(), intType, "safe-access", canonical
+        )
+        let matchValue = BoundRichCollectionExpression(
+            fixture.range(), intType, "match", canonical
+        )
+        let initialize = BoundExpressionStatement(
+            fixture.range(),
+            BoundLiteralExpression(fixture.range(), unitType, "initialize")
+        )
+        let body = BoundExpressionStatement(fixture.range(), matchValue)
+        let advance = BoundExpressionStatement(
+            fixture.range(),
+            BoundLiteralExpression(fixture.range(), unitType, "advance")
+        )
+        let condition = BoundLiteralExpression(fixture.range(), boolType, "true")
+        let foreach = BoundForEachStatement(
+            fixture.range(),
+            [initialize],
+            condition,
+            [body],
+            [advance],
+            "loop:#{fixture.snapshot.value}:1",
+            "exit:#{fixture.snapshot.value}:1"
+        )
+        let input = BoundFunctionUnit(
+            fixture.declaration("function", "iterate", 30),
+            "iterate",
+            unitType,
+            [
+                BoundExpressionStatement(fixture.range(), array),
+                BoundExpressionStatement(fixture.range(), access),
+                BoundExpressionStatement(fixture.range(), range),
+                BoundExpressionStatement(fixture.range(), safe),
+                foreach
+            ],
+            fixture.range()
+        )
+        let result = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, CollectionControlLoweringPass())
+        ]).lower(input)
+
+        expect(result.succeeded).toBe(true)
+        BoundIRAssertions.assertStatementKinds(result.loweredFunction, [
+            "expression", "expression", "expression", "expression", "expression",
+            "label", "conditional-branch", "expression", "expression", "branch", "label"
+        ])
+        expect(BoundIRAssertions.expressionKinds(result.loweredFunction)).toBe([
+            "literal", "literal", "literal", "literal", "literal", "literal", "literal"
+        ])
+        BoundIRAssertions.assertNoRichCollectionForms(result.loweredFunction)
+        BoundIRAssertions.assertReducedSubset(result.loweredFunction)
+    }
+
+    test `core language pass lowers constructors properties accessors defaults names and operators structurally`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let unitType = SemanticTypes.unitType()
+        let constructorOwnerIdentity = fixture.declaration("class", "Example", 10)
+        let constructorOwner = UserClassSemanticType(constructorOwnerIdentity)
+        let constructorTarget = CallableSignature(
+            fixture.symbol("constructor", "Example", 11),
+            "Example",
+            CallableKind("constructor"),
+            [intType],
+            constructorOwner,
+            constructorOwner
+        )
+        let literal = BoundLiteralExpression(fixture.range(1, 2), intType, "1")
+        let identity = TypeConversions.classify(intType, intType)
+        let constructorCall = BoundCallExpression(
+            fixture.range(1, 3), constructorOwner, constructorTarget, [literal], [identity]
+        )
+        let richConstructor = BoundRichCallExpression(
+            fixture.range(1, 3), constructorOwner, "constructor", constructorCall
+        )
+        let propertyTarget = CallableSignature(
+            fixture.symbol("instance-method", "value", 12),
+            "value",
+            CallableKind("instance-method"),
+            SemanticType[],
+            intType,
+            constructorOwner
+        )
+        let propertyCall = BoundCallExpression(
+            fixture.range(3, 4), intType, propertyTarget, BoundExpression[], TypeConversion[]
+        )
+        let richProperty = BoundRichCallExpression(
+            fixture.range(3, 4), intType, "property-get", propertyCall
+        )
+        let richAccessor = BoundRichCallExpression(
+            fixture.range(3, 4), intType, "accessor", propertyCall
+        )
+        let operatorTarget = CallableSignature(
+            fixture.symbol("function", "plus", 13),
+            "plus",
+            CallableKind("function"),
+            [intType, intType],
+            intType
+        )
+        let operatorCall = BoundCallExpression(
+            fixture.range(4, 6), intType, operatorTarget, [literal, literal], [identity, identity]
+        )
+        let richOperator = BoundRichCallExpression(
+            fixture.range(4, 6), intType, "operator", operatorCall
+        )
+        let mutatorTarget = CallableSignature(
+            fixture.symbol("instance-method", "setValue", 17),
+            "setValue",
+            CallableKind("instance-method"),
+            [intType],
+            unitType,
+            constructorOwner
+        )
+        let mutatorCall = BoundCallExpression(
+            fixture.range(4, 6), unitType, mutatorTarget, [literal], [identity]
+        )
+        let richMutator = BoundRichCallExpression(
+            fixture.range(4, 6), unitType, "mutator", mutatorCall
+        )
+        let namedTarget = CallableSignature(
+            fixture.symbol("function", "configure", 14),
+            "configure",
+            CallableKind("function"),
+            [intType, intType],
+            unitType
+        )
+        let defaultValue = BoundLiteralExpression(fixture.range(6, 7), intType, "2")
+        let namedCall = BoundNamedCallExpression(
+            fixture.range(6, 8),
+            unitType,
+            namedTarget,
+            [
+                BoundCallParameter("first", intType),
+                BoundCallParameter("second", intType, defaultValue, identity)
+            ],
+            [BoundNamedArgument("first", literal, identity)]
+        )
+        let target = BoundReferenceExpression(
+            fixture.range(), intType, "field", fixture.symbol("field", "field", 15)
+        )
+        let initializer = BoundAssignmentStatement(fixture.range(), target, literal, identity)
+        let input = BoundFunctionUnit(
+            fixture.declaration("function", "run", 16),
+            "run",
+            unitType,
+            [
+                BoundConstructorInitializationStatement(fixture.range(), [initializer]),
+                BoundExpressionStatement(fixture.range(), richConstructor),
+                BoundExpressionStatement(fixture.range(), richProperty),
+                BoundExpressionStatement(fixture.range(), richAccessor),
+                BoundExpressionStatement(fixture.range(), richMutator),
+                BoundExpressionStatement(fixture.range(), richOperator),
+                BoundExpressionStatement(fixture.range(), namedCall)
+            ],
+            fixture.range()
+        )
+        let pipeline = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, CoreLanguageLoweringPass())
+        ])
+        let result = pipeline.lower(input)
+
+        expect(result.succeeded).toBe(true)
+        BoundIRAssertions.assertStatementKinds(
+            result.loweredFunction,
+            [
+                "assignment", "expression", "expression", "expression",
+                "expression", "expression", "expression"
+            ]
+        )
+        expect(BoundIRAssertions.expressionKinds(result.loweredFunction)).toBe([
+            "literal", "call", "call", "call", "call", "call", "call"
+        ])
+        BoundIRAssertions.assertNoRichCoreForms(result.loweredFunction)
+        BoundIRAssertions.assertReducedSubset(result.loweredFunction)
+        expect(BoundIRAssertions.lastCallArgumentCount(result.loweredFunction)).toBe(2)
+        expect(BoundIRAssertions.lastCallLiteralValues(result.loweredFunction)).toBe(["1", "2"])
+    }
+
+    test `named calls reject missing parameters rather than inventing arguments`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let target = CallableSignature(
+            fixture.symbol("function", "required", 20),
+            "required",
+            CallableKind("function"),
+            [intType],
+            SemanticTypes.unitType()
+        )
+        let rich = BoundNamedCallExpression(
+            fixture.range(),
+            SemanticTypes.unitType(),
+            target,
+            [BoundCallParameter("required", intType)],
+            BoundNamedArgument[]
+        )
+        let input = BoundFunctionUnit(
+            fixture.declaration("function", "run", 21),
+            "run",
+            SemanticTypes.unitType(),
+            [BoundExpressionStatement(fixture.range(), rich)],
+            fixture.range()
+        )
+        let result = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, CoreLanguageLoweringPass())
+        ]).lower(input)
+
+        expect(result.succeeded).toBe(false)
+        expect(result.failedPassName).toBe("core-language-forms")
+        expect(result.failure.message).toBe(
+            "Named call parameter 'required' has no argument or default"
+        )
+    }
+
+    test `pass ordering invariants and telemetry are deterministic`() {
+        let fixture = BoundIR_TestFixture()
+        let statement = BoundExpressionStatement(
+            fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")
+        )
+        let function = BoundFunctionUnit(
+            fixture.declaration("function", "run", 1),
+            "run",
+            SemanticTypes.unitType(),
+            [statement],
+            fixture.range()
+        )
+        let identity = IdentityLoweringPass_TestFixture("identity")
+        let append = AppendReturnLoweringPass_TestFixture()
+        let pipeline = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(1, append),
+            RegisteredLoweringPass(0, identity)
+        ])
+        let result = pipeline.lower(function)
+
+        expect(result.succeeded).toBe(true)
+        expect(pipeline.passes().map({ _.pass.name() })).toBe(["identity", "append-return"])
+        expect(result.telemetry().map({ _.passOrdinal })).toBe([0, 1])
+        expect(result.telemetry().first.inputStatementCount).toBe(1)
+        expect(result.telemetry().first.outputStatementCount).toBe(1)
+        expect(result.telemetry().last.inputStatementCount).toBe(1)
+        expect(result.telemetry().last.outputStatementCount).toBe(2)
+        expect(result.telemetry().last.outputInvariant).toBe("terminal-return")
+        BoundIRAssertions.assertStatementKinds(result.loweredFunction, ["expression", "return"])
+        BoundIRAssertions.assertReducedSubset(result.loweredFunction)
+    }
+
+    test `one failed function does not stop unrelated function lowering`() {
+        let fixture = BoundIR_TestFixture()
+        let failedFunction = BoundFunctionUnit(
+            fixture.declaration("function", "failed", 1),
+            "failed",
+            SemanticTypes.unitType(),
+            BoundStatement[],
+            fixture.range()
+        )
+        let successfulFunction = BoundFunctionUnit(
+            fixture.declaration("function", "successful", 2),
+            "successful",
+            SemanticTypes.unitType(),
+            BoundStatement[],
+            fixture.range()
+        )
+        let failing = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, FailingLoweringPass_TestFixture())
+        ])
+        let successful = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, AppendReturnLoweringPass_TestFixture())
+        ])
+
+        let failure = failing.lower(failedFunction)
+        let success = successful.lower(successfulFunction)
+
+        expect(failure.succeeded).toBe(false)
+        expect(failure.failure.message).toBe("invalid function")
+        expect(failure.failedPassName).toBe("failing")
+        expect(failure.loweredFunction).toBe(failedFunction)
+        expect(success.succeeded).toBe(true)
+        expect(success.loweredFunction.statements().map({ _.unitKind() })).toBe(["return"])
+    }
+
+    test `pipeline rejects pass output that violates identity ownership`() {
+        let fixture = BoundIR_TestFixture()
+        let function = BoundFunctionUnit(
+            fixture.declaration("function", "run", 1),
+            "run",
+            SemanticTypes.unitType(),
+            BoundStatement[],
+            fixture.range()
+        )
+        let pipeline = BoundFunctionLoweringPipeline([
+            RegisteredLoweringPass(0, InvalidIdentityLoweringPass_TestFixture())
+        ])
+        let result = pipeline.lower(function)
+
+        expect(result.succeeded).toBe(false)
+        expect(result.failedPassName).toBe("invalid-identity")
+        expect(result.failure.message).toBe(
+            "Lowering pass 'invalid-identity' violated function identity/type ownership"
+        )
+    }
+
+    test `pipeline and structural assertions reject invalid ordering and shapes`() {
+        let fixture = BoundIR_TestFixture()
+        let function = BoundFunctionUnit(
+            fixture.declaration("function", "run", 1),
+            "run",
+            SemanticTypes.unitType(),
+            BoundStatement[],
+            fixture.range()
+        )
+        var Int rejected
+        try {
+            BoundFunctionLoweringPipeline([
+                RegisteredLoweringPass(1, IdentityLoweringPass_TestFixture("identity"))
+            ])
+        } catch (Exception error) { rejected++ }
+        try {
+            BoundIRAssertions.assertStatementKinds(function, ["return"])
+        } catch (Exception error) { rejected++ }
+
+        expect(rejected).toBe(2)
+    }
+}

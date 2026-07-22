@@ -1,0 +1,9 @@
+package flat/semantic/binding
+
+class {
+    public construct(visible String value) {
+        if (value != "public" && value != "private" && value != "package" && value != "protected") {
+            throw Exception("Invalid binding visibility '#value'")
+        }
+    }
+}

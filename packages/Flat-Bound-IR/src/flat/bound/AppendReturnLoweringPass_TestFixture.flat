@@ -1,0 +1,22 @@
+package flat/bound
+
+class AppendReturnLoweringPass_TestFixture extends BoundFunctionLoweringPass {
+    override public name() => "append-return"
+    override public inputInvariant() => "bound-function"
+    override public outputInvariant() => "terminal-return"
+
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        let statements = input.statements()
+        statements.add(BoundReturnStatement(input.range, input.returnType))
+        return BoundFunctionUnit(
+            input.identity,
+            input.name,
+            input.returnType,
+            statements,
+            input.range,
+            input.parameterValues(),
+            input.staticFunction,
+            input.mainFunction
+        )
+    }
+}

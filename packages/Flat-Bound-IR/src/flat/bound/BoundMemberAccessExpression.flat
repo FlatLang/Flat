@@ -1,0 +1,20 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundExpression receiver,
+        visible String memberName,
+        visible SymbolIdentity memberIdentity
+    ) {
+        if (!range || !semanticType || !receiver || !memberName || !memberIdentity) {
+            throw Exception("Bound member access requires receiver, member, and type")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "member-access"
+}

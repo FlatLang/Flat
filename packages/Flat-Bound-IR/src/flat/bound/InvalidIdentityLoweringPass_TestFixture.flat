@@ -1,0 +1,21 @@
+package flat/bound
+
+import flat/compiler/models
+
+class InvalidIdentityLoweringPass_TestFixture extends BoundFunctionLoweringPass {
+    override public name() => "invalid-identity"
+    override public inputInvariant() => "bound-function"
+    override public outputInvariant() => "identity-preserved"
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        return BoundFunctionUnit(
+            DeclarationIdentity(input.identity.syntaxIdentity, "function", "different"),
+            input.name,
+            input.returnType,
+            input.statements(),
+            input.range,
+            input.parameterValues(),
+            input.staticFunction,
+            input.mainFunction
+        )
+    }
+}

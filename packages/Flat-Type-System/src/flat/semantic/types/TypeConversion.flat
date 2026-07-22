@@ -1,0 +1,33 @@
+package flat/semantic/types
+
+/** Explicit result of testing one semantic conversion. */
+data class {
+    visible SemanticType fromType
+    visible SemanticType toType
+    visible String conversionKind
+    visible Bool applicable
+    visible Bool implicit
+    visible Bool suppressesCascade
+    visible Int cost
+
+    public construct(
+        SemanticType fromType,
+        SemanticType toType,
+        String conversionKind,
+        Bool applicable,
+        Bool implicit,
+        Bool suppressesCascade,
+        Int cost
+    ) {
+        if (!fromType || !toType || !conversionKind || cost < 0) {
+            throw Exception("Type conversion requires types, kind, and non-negative cost")
+        }
+        this.fromType = fromType
+        this.toType = toType
+        this.conversionKind = conversionKind
+        this.applicable = applicable
+        this.implicit = implicit
+        this.suppressesCascade = suppressesCascade
+        this.cost = cost
+    }
+}

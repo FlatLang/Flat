@@ -1,0 +1,32 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    var SemanticType[] parameters
+
+    public construct(SemanticType[] parameterTypes, visible SemanticType returnType) {
+        if (!parameterTypes || parameterTypes.any({ !_ }) || !returnType) {
+            throw Exception("Function type requires parameter and return types")
+        }
+        parameters = SemanticType[]
+        parameters.addAll(parameterTypes)
+    }
+
+    public parameterTypes() -> SemanticType[] {
+        let result = SemanticType[]
+        result.addAll(parameters)
+        return result
+    }
+
+    override public value() -> String {
+        var String result = "function:("
+        var Int index
+        while (index < parameters.count) {
+            if (index > 0) result += ","
+            result += parameters[index].value()
+            index++
+        }
+        return "#result)->#{returnType.value()}"
+    }
+
+    override public kind() => "function"
+}

@@ -1,0 +1,299 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/**
+ * Grammar-proven scanner for non-braced class-body members.
+ * A member is published only after the class-body matcher assigns a following
+ * token to another member, or when EOF proves the entire retained member valid.
+ * Direct metadata parser spans are attached to the declaration that follows.
+ */
+class {
+    var Token[] retained = Token[]
+    var Int[] retainedIndexes = Int[]
+    var Int lastTokenIndex = -1
+    var Int expressionBraceDepth
+    visible var Int nextOrdinal
+    visible var Bool finished
+    visible Int retainedTokenCount => retained.count
+    visible Bool expressionBodyOpen => expressionBraceDepth > 0
+    visible Bool canOpenExpressionBrace => hasLambdaArrowPrefix()
+    visible var Int peakRetainedTokenCount
+
+    public construct(
+        visible SourceSnapshotIdentity snapshot,
+        visible SyntaxIslandIdentity containingTypeIdentity,
+        visible Int maxRetainedTokens,
+        Int startOrdinal = 0
+    ) {
+        if (!snapshot || !containingTypeIdentity) {
+            throw Exception("Non-braced member scanner requires source and containing type identities")
+        }
+        if (containingTypeIdentity.snapshot != snapshot) {
+            throw Exception("Non-braced member scanner identities must belong to one source snapshot")
+        }
+        if (maxRetainedTokens <= 0) throw Exception("Non-braced member token capacity must be positive")
+        if (startOrdinal < 0) throw Exception("Non-braced member starting ordinal cannot be negative")
+        nextOrdinal = startOrdinal
+    }
+
+    public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+        if (tokenIndex < 0 || tokenIndex <= lastTokenIndex) {
+            reject("Non-braced member token indexes must be non-negative and strictly increasing")
+        }
+        lastTokenIndex = tokenIndex
+
+        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+            return SyntaxIsland[]
+        }
+        if (isSymbol(token, "{")) {
+            if (!canOpenExpressionBrace && !expressionBodyOpen) {
+                reject("Non-braced member scanner does not accept braced declarations")
+            }
+            expressionBraceDepth++
+        } else if (isSymbol(token, "}")) {
+            if (!expressionBodyOpen) {
+                reject("Non-braced member scanner does not accept braced declarations")
+            }
+            expressionBraceDepth--
+        }
+
+        retain(token, tokenIndex)
+        if (expressionBodyOpen) return SyntaxIsland[]
+
+        let match = FlatClassBodyMatcher().inspect(retained)
+
+        if (match.memberTokenCounts.count > 1 ||
+            (match.memberTokenCounts.count == 1 && match.consumedTokenCount < retained.count)) {
+            let count = match.memberTokenCounts.first
+            let candidate = retained.take(count)
+            let arrow = findTopLevelArrow(candidate)
+            if (hasLambdaArrowPrefix() && isSymbol(retained.last, "=>")) return SyntaxIsland[]
+            if (arrow < 0 || arrow + 1 < candidate.count) return publishFirst(count)
+        }
+
+        return SyntaxIsland[]
+    }
+
+    /**
+     * The opening brace of a following member proves every complete grammar
+     * span before its trailing candidate. Metadata without a declaration is
+     * retained for the braced scanner that owns the opening brace.
+     */
+    public finishBeforeBracedMember() -> SyntaxIsland[] {
+        if (finished || retained.isEmpty) return SyntaxIsland[]
+
+        let match = FlatClassBodyMatcher().inspect(retained)
+        if (match.memberTokenCounts.isEmpty) return SyntaxIsland[]
+
+        var Int matchedDeclarationTokens
+        for (count in match.memberTokenCounts) matchedDeclarationTokens += count
+
+        var Int publishCount = match.memberTokenCounts.count
+        if (matchedDeclarationTokens == retained.count) publishCount--
+
+        let islands = SyntaxIsland[]
+        var Int index
+        while (index < publishCount) {
+            islands.addAll(publishFirst(match.memberTokenCounts[index]))
+            index++
+        }
+        return islands
+    }
+
+    public end() -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+        if (expressionBodyOpen) reject("Flat type body ended inside an incomplete braced expression body")
+        let islands = SyntaxIsland[]
+
+        while (retained.isNotEmpty) {
+            let match = FlatClassBodyMatcher().inspect(retained)
+            if (!match.matchedAll || match.memberTokenCounts.isEmpty) {
+                reject("Flat type body ended inside an invalid or incomplete non-braced member")
+            }
+            islands.addAll(publishFirst(match.memberTokenCounts.first))
+        }
+
+        finished = true
+        return islands
+    }
+
+    public cancel() {
+        if (finished) return
+        finished = true
+        clear()
+    }
+
+    publishFirst(Int count) -> SyntaxIsland[] {
+        if (count <= 0 || count > retained.count) reject("Class-body grammar returned an invalid member boundary")
+
+        let Token[] memberTokens = retained.take(count)
+        let Int[] memberIndexes = retainedIndexes.take(count)
+        var Int arrow = findTopLevelArrow(memberTokens)
+        var String memberKind = classify(memberTokens)
+        var String memberName = findName(memberTokens, memberKind)
+        var Int headerEndOffset = arrow < 0 ? memberTokens.count : arrow
+        var Int headerEndIndex = arrow < 0 ? memberIndexes.last + 1 : indexAt(memberIndexes, arrow)
+        var Location headerEndLocation = arrow < 0 ? endLocation(memberTokens.last) : tokenAt(memberTokens, arrow).location
+        var SyntaxIslandIdentity headerIdentity = identity("member-header")
+        let headerComponents = String[]
+        var Int componentIndex
+        while (componentIndex < headerEndOffset) {
+            headerComponents.add(tokenAt(memberTokens, componentIndex).value)
+            componentIndex++
+        }
+        var String headerText = headerComponents.join(" ")
+        let memberHeader = NonBracedMemberHeaderSyntaxIsland(
+            headerIdentity,
+            SourceRange(
+                snapshot,
+                memberIndexes.first,
+                headerEndIndex,
+                memberTokens.first.location,
+                headerEndLocation
+            ),
+            containingTypeIdentity,
+            memberKind,
+            memberName,
+            headerText
+        )
+        let islands = SyntaxIsland[]
+        islands.add(memberHeader)
+
+        if (arrow >= 0) {
+            if (arrow + 1 >= memberTokens.count) reject("Expression-bodied member requires a body expression")
+            islands.add(ExpressionMemberBodySyntaxIsland(
+                identity("member-expression-body"),
+                SourceRange(
+                    snapshot,
+                    indexAt(memberIndexes, arrow) + 1,
+                    memberIndexes.last + 1,
+                    endLocation(tokenAt(memberTokens, arrow)),
+                    endLocation(memberTokens.last)
+                ),
+                containingTypeIdentity,
+                headerIdentity,
+                memberKind,
+                memberName
+            ))
+        }
+
+        retained = retained.skip(count)
+        retainedIndexes = retainedIndexes.skip(count)
+        return islands
+    }
+
+    hasLambdaArrowPrefix() -> Bool {
+        var Int arrowCount
+        for (token in retained) {
+            if (isSymbol(token, "=>")) arrowCount++
+        }
+        return arrowCount >= 2
+    }
+
+    findTopLevelArrow(Token[] tokens) -> Int => -1 {
+        var Int parenthesisDepth
+        var Int bracketDepth
+        var Int angleDepth
+        var Int index
+
+        while (index < tokens.count) {
+            let token = tokens[index]
+            if (isSymbol(token, "(")) parenthesisDepth++
+            else if (isSymbol(token, ")")) parenthesisDepth--
+            else if (isSymbol(token, "[")) bracketDepth++
+            else if (isSymbol(token, "]")) bracketDepth--
+            else if (isSymbol(token, "<")) angleDepth++
+            else if (isSymbol(token, ">")) angleDepth--
+            else if (parenthesisDepth == 0 && bracketDepth == 0 && angleDepth == 0 &&
+                (isSymbol(token, "=>") || isSymbol(token, "<=>"))) return index
+            index++
+        }
+    }
+
+    classify(Token[] tokens) -> String {
+        var Bool hasBracket
+        var Bool hasParenthesis
+        for (token in tokens) {
+            if (token.value == "[") hasBracket = true
+            if (token.value == "(") hasParenthesis = true
+        }
+        if (tokens.isNotEmpty && tokens.first.value == "this" && hasBracket) {
+            return "array-override"
+        }
+        if (hasParenthesis) return "function"
+        return "field"
+    }
+
+    findName(Token[] tokens, String memberKind) -> String => null {
+        if (memberKind == "array-override") return "this"
+        if (memberKind == "function") {
+            var Int index
+            while (index < tokens.count) {
+                if (isSymbol(tokens[index], "(")) {
+                    var Int previous = index - 1
+                    if (previous >= 0 && isSymbol(tokens[previous], ">")) {
+                        var Int depth = 1
+                        previous--
+                        while (previous >= 0 && depth > 0) {
+                            if (isSymbol(tokens[previous], ">")) depth++
+                            else if (isSymbol(tokens[previous], "<")) depth--
+                            previous--
+                        }
+                    }
+                    while (previous >= 0) {
+                        if (tokens[previous].type == Token.Type.IDENTIFIER) return tokens[previous].value
+                        previous--
+                    }
+                }
+                index++
+            }
+        }
+
+        var Int nameSearchEnd = findTopLevelArrow(tokens)
+        if (nameSearchEnd < 0) nameSearchEnd = tokens.count
+        var Int index = nameSearchEnd - 1
+        while (index >= 0) {
+            if (tokens[index].type == Token.Type.IDENTIFIER) return tokens[index].value
+            index--
+        }
+    }
+
+    tokenAt(Token[] values, Int index) -> Token => values[index]
+    indexAt(Int[] values, Int index) -> Int => values[index]
+
+    retain(Token token, Int tokenIndex) {
+        if (!token.location) reject("Non-braced member tokens require source locations")
+        if (retained.count >= maxRetainedTokens) reject("Non-braced member exceeds configured token capacity")
+        retained.add(token)
+        retainedIndexes.add(tokenIndex)
+        peakRetainedTokenCount = Math.max(peakRetainedTokenCount, retained.count)
+    }
+
+    identity(String kind) -> SyntaxIslandIdentity {
+        let scopedKind = "#{containingTypeIdentity.kind}:#{containingTypeIdentity.ordinal}/#kind"
+        let value = SyntaxIslandIdentity(snapshot, scopedKind, nextOrdinal)
+        nextOrdinal++
+        return value
+    }
+
+    endLocation(Token token) -> Location {
+        return Location(lineNumber: token.endLineNumber, column: token.endColumn)
+    }
+
+    clear() {
+        retained = Token[]
+        retainedIndexes = Int[]
+        expressionBraceDepth = 0
+    }
+
+    reject(String message) {
+        finished = true
+        clear()
+        throw Exception(message)
+    }
+
+    isSymbol(Token token, String value) => token.type == Token.Type.SYMBOL && token.value == value
+}

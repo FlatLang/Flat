@@ -1,0 +1,12 @@
+package flat/project
+
+data class {
+    visible String location
+    visible Bool library
+
+    public construct(String location, Bool library = false) {
+        if (!location || location.trim().count == 0) throw Exception("Source root location cannot be empty")
+        this.location = location
+        this.library = library
+    }
+}

@@ -11,5 +11,7 @@ data class extends TokenMatch<NodeTokenPattern> {
 
     visible ParserBase parser
 
+    public snapshot(Int tokenCount) => ParserMatchSpan(parser.class.name, tokenCount)
+
     public traverseNodes(func(Node, ParseContext, TokenPattern)) => parser.traverseNodes(func)
 }

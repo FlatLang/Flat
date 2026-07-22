@@ -1,0 +1,11 @@
+package flat/parser
+
+import flat/compiler/models/Token
+
+/**
+ * Language-neutral contract for an explicitly configured safe recovery boundary.
+ * The owning grammar supplies the policy; Parser-Core never guesses boundaries.
+ */
+abstract class {
+    public shouldResume(Token token, Int tokenIndex) -> Bool => false
+}

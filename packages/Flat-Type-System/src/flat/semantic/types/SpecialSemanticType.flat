@@ -1,0 +1,13 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    public construct(visible String typeKind) {
+        if (typeKind != "void" && typeKind != "unit" &&
+            typeKind != "unknown" && typeKind != "error") {
+            throw Exception("Invalid special semantic type '#typeKind'")
+        }
+    }
+
+    override public value() => typeKind
+    override public kind() => typeKind
+}

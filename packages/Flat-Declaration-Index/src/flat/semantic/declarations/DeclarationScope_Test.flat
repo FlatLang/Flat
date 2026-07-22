@@ -1,0 +1,191 @@
+package flat/semantic/declarations
+
+import flat/compiler/models
+import flat/future
+import flat/future
+
+testable class {
+    async test `scope publishes immutable symbols atomically and resolves after seal`() {
+        let fixture = DeclarationIndex_TestFixture()
+        let scope = DeclarationScope(fixture.packageScope)
+        let symbol = fixture.symbol("Example", 2, fixture.packageScope)
+        let published = scope.declare(symbol)
+        let PendingDeclarationLookup pending = scope.lookup("Example")
+
+        expect(published.class).toBe(PublishedDeclaration.class)
+        expect(pending.completed).toBe(false)
+        expect(scope.pendingLookupCount).toBe(1)
+
+        scope.seal()
+        let result = await pending.get()
+        expect(result.class).toBe(FoundDeclaration.class)
+        expect(((FoundDeclaration)result).symbol).toBe(symbol)
+        expect(scope.pendingLookupCount).toBe(0)
+    }
+
+    async test `duplicate winner and diagnostics are deterministic across schedules`() {
+        let fixture = DeclarationIndex_TestFixture()
+        let firstScope = DeclarationScope(fixture.packageScope)
+        let secondScope = DeclarationScope(fixture.packageScope)
+        let low = fixture.symbol("Example", 1, fixture.packageScope)
+        let high = fixture.symbol("Example", 9, fixture.packageScope)
+
+        firstScope.declare(high)
+        let firstDuplicate = firstScope.declare(low)
+        secondScope.declare(low)
+        let secondDuplicate = secondScope.declare(high)
+        firstScope.seal()
+        secondScope.seal()
+
+        let PendingDeclarationLookup firstLookup = firstScope.lookup("Example")
+        let firstResult = await firstLookup.get()
+        let FoundDeclaration first = (FoundDeclaration)firstResult
+        let PendingDeclarationLookup secondLookup = secondScope.lookup("Example")
+        let secondResult = await secondLookup.get()
+        let FoundDeclaration second = (FoundDeclaration)secondResult
+        expect(first.symbol.identity).toBe(low.identity)
+        expect(second.symbol.identity).toBe(low.identity)
+        expect(((DuplicateDeclaration)firstDuplicate).existing.identity).toBe(low.identity)
+        expect(((DuplicateDeclaration)secondDuplicate).existing.identity).toBe(low.identity)
+        expect(firstScope.duplicateCandidates("Example").count).toBe(2)
+        expect(secondScope.duplicateCandidates("Example").count).toBe(2)
+    }
+
+    async test `missing lookup completes only after relevant scope chain seals`() {
+        let fixture = DeclarationIndex_TestFixture()
+        let parent = DeclarationScope(fixture.packageScope)
+        let childIdentity = ScopeIdentity(fixture.snapshot, "type-members", 1)
+        let child = parent.openChild(childIdentity)
+        let PendingDeclarationLookup lookup = child.lookup("Missing")
+
+        child.seal()
+        expect(lookup.completed).toBe(false)
+        parent.seal()
+
+        let result = await lookup.get()
+        expect(result.class).toBe(MissingDeclaration.class)
+        expect(((MissingDeclaration)result).sealedScope).toBe(fixture.packageScope)
+    }
+
+    async test `child scopes resolve parent declarations after both scopes seal`() {
+        let fixture = DeclarationIndex_TestFixture()
+        let parent = DeclarationScope(fixture.packageScope)
+        let symbol = fixture.symbol("ParentValue", 3, fixture.packageScope)
+        parent.declare(symbol)
+        let child = parent.openChild(ScopeIdentity(fixture.snapshot, "function", 2))
+        let PendingDeclarationLookup lookup = child.lookup("ParentValue")
+
+        child.seal()
+        parent.seal()
+
+        let lookupResult = await lookup.get()
+        let FoundDeclaration result = (FoundDeclaration)lookupResult
+        expect(result.symbol).toBe(symbol)
+    }
+
+    async test `forward references resolve across source files after package sealing`() {
+        let index = DeclarationIndex("workspace:project")
+        let packagePartition = index.package("flat/test")
+        let firstSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:first"), "revision:1")
+        let secondSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:second"), "revision:1")
+        packagePartition.source(firstSnapshot)
+        packagePartition.source(secondSnapshot)
+        let lookup = packagePartition.lookup("Later")
+        let syntax = SyntaxIslandIdentity(secondSnapshot, "type-header", 0)
+        let declaration = DeclarationIdentity(syntax, "class", "Later")
+        let symbol = DeclarationSymbol(
+            SymbolIdentity(declaration, "type"),
+            packagePartition.scope.identity,
+            "Later",
+            "class",
+            SourceRange(
+                secondSnapshot,
+                0,
+                1,
+                Location(lineNumber: 1, column: 1),
+                Location(lineNumber: 1, column: 6)
+            )
+        )
+
+        expect(lookup.completed).toBe(false)
+        packagePartition.declare(symbol)
+        expect(lookup.completed).toBe(false)
+        packagePartition.seal()
+
+        let result = await lookup.get()
+        expect(result.class).toBe(FoundDeclaration.class)
+        expect(((FoundDeclaration)result).symbol).toBe(symbol)
+    }
+
+    async test `explicit and default imports resolve across packages in stable order`() {
+        let index = DeclarationIndex("workspace:project")
+        let explicit = index.package("flat/explicit")
+        let defaults = index.package("flat/default")
+        let explicitSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit"), "revision:1")
+        let defaultSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:default"), "revision:1")
+        explicit.source(explicitSnapshot)
+        defaults.source(defaultSnapshot)
+        let fixture = DeclarationIndex_TestFixture()
+        let defaultSyntax = SyntaxIslandIdentity(defaultSnapshot, "type-header", 0)
+        let defaultDeclaration = DeclarationIdentity(defaultSyntax, "class", "Shared")
+        let defaultSymbol = DeclarationSymbol(
+            SymbolIdentity(defaultDeclaration, "type"),
+            defaults.scope.identity,
+            "Shared",
+            "class",
+            SourceRange(
+                defaultSnapshot,
+                0,
+                1,
+                Location(lineNumber: 1, column: 1),
+                Location(lineNumber: 1, column: 7)
+            )
+        )
+        defaults.declare(defaultSymbol)
+        explicit.seal()
+        defaults.seal()
+
+        let imports = ImportedDeclarationScope([explicit, defaults])
+        let result = await imports.lookup("Shared").get()
+        expect(result.class).toBe(FoundDeclaration.class)
+        expect(((FoundDeclaration)result).symbol).toBe(defaultSymbol)
+    }
+
+    async test `package and source partitions progress independently`() {
+        let index = DeclarationIndex()
+        let firstSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:first"), "revision:1")
+        let secondSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:second"), "revision:1")
+        let packagePartition = index.package("flat/test")
+        let first = packagePartition.source(firstSnapshot)
+        let second = packagePartition.source(secondSnapshot)
+        let firstScope = DeclarationScope(ScopeIdentity(firstSnapshot, "source"))
+        let secondScope = DeclarationScope(ScopeIdentity(secondSnapshot, "source"))
+        first.register(firstScope)
+        second.register(secondScope)
+        let firstLookup = firstScope.lookup("Missing")
+        let secondLookup = secondScope.lookup("Missing")
+
+        secondScope.seal()
+        expect(secondLookup.completed).toBe(true)
+        expect(firstLookup.completed).toBe(false)
+        firstScope.seal()
+
+        expect(firstLookup.completed).toBe(true)
+        expect(index.packageCount).toBe(1)
+        expect(packagePartition.sourceCount).toBe(2)
+        expect(first.scopeCount).toBe(1)
+        expect(second.scopeCount).toBe(1)
+    }
+
+    async test `sealed scopes reject publication and child opening`() {
+        let fixture = DeclarationIndex_TestFixture()
+        let scope = DeclarationScope(fixture.packageScope)
+        scope.seal()
+        var Int rejected
+
+        try { scope.declare(fixture.symbol("Late", 1, fixture.packageScope)) } catch (Exception error) { rejected++ }
+        try { scope.openChild(ScopeIdentity(fixture.snapshot, "late")) } catch (Exception error) { rejected++ }
+
+        expect(rejected).toBe(2)
+    }
+}

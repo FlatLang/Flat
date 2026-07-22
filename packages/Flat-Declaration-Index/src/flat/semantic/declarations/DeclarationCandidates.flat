@@ -1,0 +1,12 @@
+package flat/semantic/declarations
+
+class {
+    visible var DeclarationSymbol[] symbols = DeclarationSymbol[]
+
+    public add(DeclarationSymbol symbol) => symbols.add(symbol)
+    public copySymbols() -> DeclarationSymbol[] {
+        let result = DeclarationSymbol[]
+        result.addAll(symbols)
+        return result
+    }
+}

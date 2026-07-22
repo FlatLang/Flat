@@ -46,6 +46,15 @@ abstract data class {
         }
     }
 
+    public release() {
+        lastMatch = null
+        context = null
+
+        if (pattern) {
+            matcher.reset()
+        }
+    }
+
     public reset() {
         lastMatch = null
 

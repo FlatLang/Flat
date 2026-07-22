@@ -1,0 +1,70 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Checks exactly one already-selected function/method/constructor target. */
+class {
+    public static check(
+        CallableSignature target,
+        SemanticType receiverType,
+        SemanticType[] argumentTypes,
+        SourceRange range
+    ) -> CallCheckResult {
+        if (!target || !argumentTypes || argumentTypes.any({ !_ }) || !range) {
+            throw Exception("Call checking requires target, arguments, and source range")
+        }
+        if ((receiverType && receiverType.kind() == "error") ||
+            argumentTypes.any({ _.kind() == "error" })) {
+            return CallCheckResult(target, TypeConversion[], SemanticTypes.errorType())
+        }
+        let kind = target.callableKind.value
+        if (kind == "instance-method") {
+            if (!receiverType) return invalid(target, "type.call-receiver-missing", "Instance call requires a receiver", range)
+            let receiverConversion = TypeConversions.classify(receiverType, target.ownerType)
+            if (!receiverConversion.applicable) {
+                return invalid(target, "type.call-receiver", "Receiver '#{receiverType.value()}' is incompatible with '#{target.ownerType.value()}'", range)
+            }
+        } else if (receiverType) {
+            return invalid(target, "type.call-receiver-unexpected", "Callable '#{target.name}' does not accept a value receiver", range)
+        }
+        let parameterTypes = target.parameterTypes()
+        if (parameterTypes.count != argumentTypes.count) {
+            return invalid(
+                target,
+                "type.call-arity",
+                "Callable '#{target.name}' expects #parameterTypes.count arguments but received #argumentTypes.count",
+                range
+            )
+        }
+        let conversions = TypeConversion[]
+        var Int index
+        while (index < parameterTypes.count) {
+            let conversion = TypeConversions.classify(argumentTypes[index], parameterTypes[index])
+            if (!conversion.applicable) {
+                return invalid(
+                    target,
+                    "type.call-argument",
+                    "Argument #index of '#{argumentTypes[index].value()}' is incompatible with '#{parameterTypes[index].value()}'",
+                    range
+                )
+            }
+            conversions.add(conversion)
+            index++
+        }
+        return CallCheckResult(target, conversions, target.returnType)
+    }
+
+    static invalid(
+        CallableSignature target,
+        String code,
+        String message,
+        SourceRange range
+    ) -> CallCheckResult {
+        return CallCheckResult(
+            target,
+            TypeConversion[],
+            SemanticTypes.errorType(),
+            TypeDiagnostic(code, message, range)
+        )
+    }
+}

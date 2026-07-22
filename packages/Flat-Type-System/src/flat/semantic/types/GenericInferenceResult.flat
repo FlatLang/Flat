@@ -1,0 +1,16 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+data class {
+    public construct(
+        visible GenericSubstitution substitution,
+        visible TypeDiagnostic diagnostic = null
+    ) {
+        if (!substitution && !diagnostic) {
+            throw Exception("Generic inference result requires substitution or diagnostic")
+        }
+    }
+
+    visible Bool inferred => substitution != null && diagnostic == null
+}

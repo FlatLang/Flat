@@ -1,0 +1,7 @@
+package flat/semantic/types
+
+/** Target-independent semantic type identity. */
+abstract data class {
+    public abstract value() -> String
+    public abstract kind() -> String
+}

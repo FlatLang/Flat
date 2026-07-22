@@ -1,0 +1,13 @@
+package flat/semantic/binding
+
+/** Immutable successful binding from one reference to one declaration candidate. */
+data class {
+    visible BindingReference reference
+    visible BindingCandidate candidate
+
+    public construct(BindingReference reference, BindingCandidate candidate) {
+        if (!reference || !candidate) throw Exception("Bound reference requires reference and candidate")
+        this.reference = reference
+        this.candidate = candidate
+    }
+}

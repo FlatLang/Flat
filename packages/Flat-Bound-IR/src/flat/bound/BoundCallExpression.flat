@@ -1,0 +1,48 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class extends BoundExpression {
+    var BoundExpression[] arguments
+    var TypeConversion[] conversions
+
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible CallableSignature target,
+        BoundExpression[] argumentValues,
+        TypeConversion[] argumentConversions
+    ) {
+        if (!range || !semanticType || !target || !argumentValues || !argumentConversions ||
+            argumentValues.count != argumentConversions.count ||
+            target.returnType.value() != semanticType.value()) {
+            throw Exception("Bound call requires target, result type, and aligned arguments/conversions")
+        }
+        var Int index
+        while (index < argumentValues.count) {
+            if (!argumentValues[index] || !argumentConversions[index] ||
+                argumentConversions[index].fromType.value() != argumentValues[index].semanticType.value()) {
+                throw Exception("Bound call argument conversion does not match its expression")
+            }
+            index++
+        }
+        super(range, semanticType)
+        arguments = BoundExpression[]
+        arguments.addAll(argumentValues)
+        conversions = TypeConversion[]
+        conversions.addAll(argumentConversions)
+    }
+
+    public argumentValues() -> BoundExpression[] {
+        let result = BoundExpression[]
+        result.addAll(arguments)
+        return result
+    }
+    public argumentConversions() -> TypeConversion[] {
+        let result = TypeConversion[]
+        result.addAll(conversions)
+        return result
+    }
+    override public expressionKind() => "call"
+}

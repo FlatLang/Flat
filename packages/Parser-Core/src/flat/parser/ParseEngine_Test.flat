@@ -1,12 +1,30 @@
 package flat/parser
 
-import flat/parser/flat
-import flat/parser/matchers
-import flat/annotations
-import flat/compiler/models
-import flat/ast
-import flat/eventstream/EventStream
-import flat/io/File
+import flat/parser/flat/PackageParser
+import flat/compiler/models/Token
 
 testable class {
+    test `parse engine releases obsolete token matcher and context state after EOF`() {
+        let parser = PackageParser()
+        let engine = ParseEngine(parser, ParseContext())
+        engine.consume(Token(value: "package", type: Token.Type.IDENTIFIER))
+        engine.consume(Token(value: "flat", type: Token.Type.IDENTIFIER))
+
+        let results = engine.end()
+        expect(results.count).toBe(1)
+        expect(engine.retainedTokenCount).toBe(0)
+        expect(parser.lastMatch).toBe(null)
+        expect(parser.context).toBe(null)
+    }
+
+    test `parse engine identifies trailing tokens separately from invalid starts`() {
+        let parser = PackageParser()
+        let engine = ParseEngine(parser, ParseContext())
+        engine.consume(Token(value: "package", type: Token.Type.IDENTIFIER))
+        engine.consume(Token(value: "flat", type: Token.Type.IDENTIFIER))
+        engine.consume(Token(value: ";", type: Token.Type.SYMBOL))
+
+        expect(engine.invalid).toBe(true)
+        expect(engine.trailing).toBe(true)
+    }
 }

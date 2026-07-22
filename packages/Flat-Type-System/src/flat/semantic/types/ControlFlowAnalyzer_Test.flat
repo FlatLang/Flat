@@ -1,0 +1,125 @@
+package flat/semantic/types
+
+testable class {
+    test `required return succeeds only when every reachable path returns`() {
+        let fixture = TypeSystem_TestFixture()
+        let complete = FunctionControlFlowGraph(
+            fixture.functionIdentity(),
+            [
+                fixture.flowNode(0, "entry", [1]),
+                fixture.flowNode(1, "condition", [2, 3]),
+                fixture.flowNode(2, "return", Int[]),
+                fixture.flowNode(3, "return", Int[]),
+                fixture.flowNode(4, "exit", Int[])
+            ]
+        )
+        let incomplete = FunctionControlFlowGraph(
+            fixture.functionIdentity("other", 21),
+            [
+                fixture.flowNode(0, "entry", [1]),
+                fixture.flowNode(1, "condition", [2, 3]),
+                fixture.flowNode(2, "return", Int[]),
+                fixture.flowNode(3, "statement", [4]),
+                fixture.flowNode(4, "exit", Int[])
+            ]
+        )
+
+        let completeResult = ControlFlowAnalyzer.analyze(complete, SemanticTypes.intType())
+        let incompleteResult = ControlFlowAnalyzer.analyze(incomplete, SemanticTypes.intType())
+
+        expect(completeResult.diagnostics().any({ _.code == "flow.return-required" })).toBe(false)
+        expect(incompleteResult.diagnostics().last.code).toBe("flow.return-required")
+        expect(ControlFlowAnalyzer.analyze(incomplete, SemanticTypes.unitType())
+            .diagnostics().any({ _.code == "flow.return-required" })).toBe(false)
+    }
+
+    test `definite assignment intersects branch predecessors`() {
+        let fixture = TypeSystem_TestFixture()
+        let partiallyAssigned = FunctionControlFlowGraph(
+            fixture.functionIdentity(),
+            [
+                fixture.flowNode(0, "entry", [1]),
+                fixture.flowNode(1, "statement", [2], declaredLocal: "value"),
+                fixture.flowNode(2, "condition", [3, 4]),
+                fixture.flowNode(3, "statement", [5], assignedLocal: "value"),
+                fixture.flowNode(4, "statement", [5]),
+                fixture.flowNode(5, "statement", [6], readLocal: "value"),
+                fixture.flowNode(6, "exit", Int[])
+            ]
+        )
+        let fullyAssigned = FunctionControlFlowGraph(
+            fixture.functionIdentity("complete", 21),
+            [
+                fixture.flowNode(0, "entry", [1]),
+                fixture.flowNode(1, "statement", [2], declaredLocal: "value"),
+                fixture.flowNode(2, "condition", [3, 4]),
+                fixture.flowNode(3, "statement", [5], assignedLocal: "value"),
+                fixture.flowNode(4, "statement", [5], assignedLocal: "value"),
+                fixture.flowNode(5, "statement", [6], readLocal: "value"),
+                fixture.flowNode(6, "exit", Int[])
+            ]
+        )
+
+        expect(ControlFlowAnalyzer.analyze(partiallyAssigned, SemanticTypes.unitType())
+            .diagnostics().any({ _.code == "flow.unassigned" })).toBe(true)
+        expect(ControlFlowAnalyzer.analyze(fullyAssigned, SemanticTypes.unitType())
+            .diagnostics().any({ _.code == "flow.unassigned" })).toBe(false)
+    }
+
+    test `parameters and loop-carried assignments converge locally`() {
+        let fixture = TypeSystem_TestFixture()
+        let graph = FunctionControlFlowGraph(
+            fixture.functionIdentity(),
+            [
+                fixture.flowNode(0, "entry", [1]),
+                fixture.flowNode(1, "statement", [2], declaredLocal: "value", assignedLocal: "value"),
+                fixture.flowNode(2, "condition", [3, 4], readLocal: "input"),
+                fixture.flowNode(3, "statement", [2], readLocal: "value"),
+                fixture.flowNode(4, "statement", [5], readLocal: "value"),
+                fixture.flowNode(5, "exit", Int[])
+            ],
+            ["input"]
+        )
+        let result = ControlFlowAnalyzer.analyze(graph, SemanticTypes.unitType())
+
+        expect(result.diagnostics().any({ _.code == "flow.unassigned" })).toBe(false)
+        expect(result.reachableOrdinals()).toBe([0, 1, 2, 3, 4, 5])
+    }
+
+    test `unreachable statements are diagnosed in stable ordinal order`() {
+        let fixture = TypeSystem_TestFixture()
+        let graph = FunctionControlFlowGraph(
+            fixture.functionIdentity(),
+            [
+                fixture.flowNode(0, "entry", [1]),
+                fixture.flowNode(1, "return", Int[]),
+                fixture.flowNode(2, "statement", [3]),
+                fixture.flowNode(3, "statement", Int[]),
+                fixture.flowNode(4, "exit", Int[])
+            ]
+        )
+        let diagnostics = ControlFlowAnalyzer.analyze(graph, SemanticTypes.intType()).diagnostics()
+
+        expect(diagnostics.map({ _.code })).toBe(["flow.unreachable", "flow.unreachable"])
+        expect(diagnostics.first.range.startTokenIndex).toBe(2)
+        expect(diagnostics.last.range.startTokenIndex).toBe(3)
+    }
+
+    test `invalid non-local graph edges are rejected`() {
+        let fixture = TypeSystem_TestFixture()
+        var Int rejected
+        try {
+            FunctionControlFlowGraph(
+                fixture.functionIdentity(),
+                [fixture.flowNode(0, "entry", [2])]
+            )
+        } catch (Exception error) { rejected++ }
+        try {
+            FunctionControlFlowGraph(
+                fixture.functionIdentity(),
+                [fixture.flowNode(1, "entry", Int[])]
+            )
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+}

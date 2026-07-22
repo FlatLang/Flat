@@ -1,0 +1,12 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+data class extends SemanticType {
+    public construct(visible DeclarationIdentity declarationIdentity) {
+        if (!declarationIdentity) throw Exception("User class type requires a declaration identity")
+    }
+
+    override public value() => "class:#{declarationIdentity.value}"
+    override public kind() => "user-class"
+}

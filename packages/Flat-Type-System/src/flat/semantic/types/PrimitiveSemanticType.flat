@@ -1,0 +1,15 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    public construct(visible String name) {
+        if (name != "Bool" && name != "Byte" && name != "UByte" &&
+            name != "Short" && name != "UShort" && name != "Int" &&
+            name != "UInt" && name != "Long" && name != "ULong" &&
+            name != "Float" && name != "Double" && name != "Char") {
+            throw Exception("Invalid Flat primitive type '#name'")
+        }
+    }
+
+    override public value() => "primitive:#name"
+    override public kind() => "primitive"
+}

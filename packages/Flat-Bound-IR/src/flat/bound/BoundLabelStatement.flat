@@ -1,0 +1,13 @@
+package flat/bound
+
+import flat/compiler/models
+
+data class extends BoundStatement {
+    public construct(SourceRange range, visible String label) {
+        if (!range || !label || label.trim().count == 0) {
+            throw Exception("Bound label requires range and stable name")
+        }
+        super(range)
+    }
+    override public unitKind() => "label"
+}

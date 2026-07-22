@@ -1,0 +1,41 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+import flat/semantic/declarations
+
+/** One immutable name candidate with binding-owned access semantics. */
+data class {
+    visible DeclarationSymbol symbol
+    visible BindingOrigin origin
+    visible BindingVisibility visibility
+    visible BindingReceiverRequirement receiverRequirement
+    visible PackageIdentity packageIdentity
+    visible DeclarationIdentity ownerType
+    visible String name => symbol.name
+
+    public construct(
+        DeclarationSymbol symbol,
+        BindingOrigin origin,
+        BindingVisibility visibility,
+        BindingReceiverRequirement receiverRequirement,
+        PackageIdentity packageIdentity,
+        DeclarationIdentity ownerType = null
+    ) {
+        if (!symbol || !origin || !visibility || !receiverRequirement || !packageIdentity) {
+            throw Exception("Binding candidate requires symbol, origin, visibility, receiver, and package")
+        }
+        if ((origin.value == "member" || visibility.value == "private" ||
+            visibility.value == "protected") && !ownerType) {
+            throw Exception("Member, private, and protected candidates require an owning type")
+        }
+        if (origin.value != "member" && receiverRequirement.value != "none") {
+            throw Exception("Only member candidates may require a receiver")
+        }
+        this.symbol = symbol
+        this.origin = origin
+        this.visibility = visibility
+        this.receiverRequirement = receiverRequirement
+        this.packageIdentity = packageIdentity
+        this.ownerType = ownerType
+    }
+}

@@ -1,0 +1,135 @@
+package flat/semantic/types
+
+/** Function-local reachability, definite-assignment, and required-return analysis. */
+class {
+    public static analyze(
+        FunctionControlFlowGraph graph,
+        SemanticType returnType
+    ) -> ControlFlowResult {
+        if (!graph || !returnType) throw Exception("Control-flow analysis requires graph and return type")
+        let nodes = graph.nodes()
+        let reachable = Int[]
+        let incoming = String[][]
+        let outgoing = String[][]
+        var Int index
+        while (index < nodes.count) {
+            reachable.add(0)
+            incoming.add(String[])
+            outgoing.add(String[])
+            index++
+        }
+        reachable[0] = 1
+        var Bool changed = true
+        while (changed) {
+            changed = false
+            for (node in nodes) {
+                if (reachable[node.ordinal] != 0) {
+                    for (successor in node.successorOrdinals()) {
+                        if (reachable[successor] == 0) {
+                            reachable[successor] = 1
+                            changed = true
+                        }
+                    }
+                }
+            }
+        }
+        let allLocals = graph.parameterNames()
+        for (node in nodes) {
+            if (node.declaredLocal && !allLocals.contains(node.declaredLocal)) allLocals.add(node.declaredLocal)
+        }
+        incoming[0].addAll(graph.parameterNames())
+        index = 1
+        while (index < nodes.count) {
+            if (reachable[index] != 0) {
+                incoming[index].addAll(allLocals)
+                outgoing[index].addAll(allLocals)
+            }
+            index++
+        }
+        changed = true
+        while (changed) {
+            changed = false
+            for (node in nodes) {
+                if (reachable[node.ordinal] == 0) continue
+                let nextIncoming = node.ordinal == 0 ?
+                    graph.parameterNames() : predecessorIntersection(nodes, outgoing, reachable, node.ordinal, allLocals)
+                var String[] nextOutgoing = copy(nextIncoming)
+                if (node.declaredLocal) nextOutgoing.remove(node.declaredLocal)
+                if (node.assignedLocal && !nextOutgoing.contains(node.assignedLocal)) {
+                    nextOutgoing.add(node.assignedLocal)
+                    nextOutgoing = nextOutgoing.sort({ _a.compareTo(_b) })
+                }
+                if (!same(incoming[node.ordinal], nextIncoming)) {
+                    incoming[node.ordinal] = nextIncoming
+                    changed = true
+                }
+                if (!same(outgoing[node.ordinal], nextOutgoing)) {
+                    outgoing[node.ordinal] = nextOutgoing
+                    changed = true
+                }
+            }
+        }
+        let diagnostics = TypeDiagnostic[]
+        let reachableOrdinals = Int[]
+        for (node in nodes) {
+            if (reachable[node.ordinal] != 0) {
+                reachableOrdinals.add(node.ordinal)
+                if (node.readLocal && !incoming[node.ordinal].contains(node.readLocal)) {
+                    diagnostics.add(TypeDiagnostic(
+                        "flow.unassigned",
+                        "Local '#{node.readLocal}' is not definitely assigned",
+                        node.range
+                    ))
+                }
+            } else if (node.statementKind != "exit") {
+                diagnostics.add(TypeDiagnostic("flow.unreachable", "Statement is unreachable", node.range))
+            }
+        }
+        let exit = nodes.last
+        if (returnType.kind() != "void" && returnType.kind() != "unit" && reachable[exit.ordinal] != 0) {
+            diagnostics.add(TypeDiagnostic(
+                "flow.return-required",
+                "Function returning '#{returnType.value()}' does not return on every path",
+                exit.range
+            ))
+        }
+        return ControlFlowResult(reachableOrdinals, diagnostics)
+    }
+
+    static predecessorIntersection(
+        ControlFlowNode[] nodes,
+        String[][] outgoing,
+        Int[] reachable,
+        Int ordinal,
+        String[] allLocals
+    ) -> String[] {
+        let predecessors = Int[]
+        for (node in nodes) {
+            if (reachable[node.ordinal] != 0 && node.successorOrdinals().contains(ordinal)) {
+                predecessors.add(node.ordinal)
+            }
+        }
+        if (predecessors.isEmpty) return String[]
+        var String[] result = copy(allLocals)
+        for (predecessor in predecessors) {
+            result = result.filter({ outgoing[predecessor].contains(_) })
+        }
+        return result.sort({ _a.compareTo(_b) })
+    }
+
+    static copy(String[] values) -> String[] {
+        let result = String[]
+        result.addAll(values)
+        return result
+    }
+
+    static same(String[] left, String[] right) -> Bool {
+        if (left.count != right.count) return false
+        var Int index
+        while (index < left.count) {
+            if (left[index] != right[index]) return false
+            index++
+        }
+        return true
+    }
+}

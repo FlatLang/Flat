@@ -1,0 +1,10 @@
+package flat/bound
+
+class FailingLoweringPass_TestFixture extends BoundFunctionLoweringPass {
+    override public name() => "failing"
+    override public inputInvariant() => "bound-function"
+    override public outputInvariant() => "never"
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        throw Exception("invalid function")
+    }
+}

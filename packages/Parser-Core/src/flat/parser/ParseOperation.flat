@@ -1,6 +1,6 @@
 package flat/parser
 
-import flat/compiler/models/Token
+import flat/compiler/models
 import flat/eventstream
 import flat/future
 
@@ -9,7 +9,9 @@ class {
     visible Int inputPendingSendCount => input.pendingSendCount
     visible Int outputBufferedCount => output.bufferedCount
     visible Int outputPendingSendCount => output.pendingSendCount
+    visible Int retainedParserTokenCount => engine.retainedTokenCount
     visible BoundedFlow<ParseEvent> output
+    visible BoundedFlow<ParserDiagnostic> diagnostics
     visible Future<Bool> completion = Future.create<Bool>()
     visible var Bool cancelled
     visible var Bool finished
@@ -17,16 +19,31 @@ class {
 
     var BoundedFlow<Token> input
     var ParseEngine engine
+    var Token lastSignificantToken
+    var Int lastSignificantTokenIndex = -1
+    var Int nextTokenIndex
+    var Bool recovering
+    var Bool terminalSyntax
+    var ParserBase rootParser
+    var ParseContext initialContext
 
     public construct(
         ParserBase rootParser,
         ParseContext context,
+        visible SourceSnapshotIdentity snapshot,
+        visible ParseRecoveryPolicy recoveryPolicy = null,
         Int inputCapacity = 1,
         Int maxPendingInputSends = 1,
-        Int outputCapacity = 1
+        Int outputCapacity = 1,
+        Int diagnosticCapacity = 1
     ) {
+        if (!snapshot) throw Exception("Parse operation requires a source snapshot")
+        if (diagnosticCapacity <= 0) throw Exception("Parse operation diagnostic capacity must be positive")
         input = BoundedFlow<Token>(inputCapacity, maxPendingInputSends, 1)
         output = BoundedFlow<ParseEvent>(outputCapacity, 1, 1)
+        diagnostics = BoundedFlow<ParserDiagnostic>(diagnosticCapacity, 0, 1)
+        this.rootParser = rootParser
+        initialContext = context
         engine = ParseEngine(rootParser, context)
         run()$
     }
@@ -40,9 +57,21 @@ class {
     public fail(Exception error) => input.fail(error)
 
     public cancel() {
+        cancelWithDiagnostic()$
+    }
+
+    async cancelWithDiagnostic() {
         if (cancelled || finished) return
 
         cancelled = true
+        engine.release()
+        publishDiagnostic(ParserDiagnostic(
+            "parser.cancelled",
+            "Parsing was cancelled",
+            snapshot,
+            currentRange()
+        ))
+        diagnostics.close()
         input.fail(Exception("Parse operation cancelled"))
         output.close()
     }
@@ -51,22 +80,77 @@ class {
         var Exception failure
 
         try {
-            while (!cancelled && !invalid) {
+            while (!cancelled && !terminalSyntax) {
                 let received = input.receive()
 
                 if (received.received) {
+                    let tokenIndex = nextTokenIndex
+                    nextTokenIndex++
+                    if (received.value.type != Token.Type.COMMENT && received.value.type != Token.Type.WS) {
+                        lastSignificantToken = received.value
+                        lastSignificantTokenIndex = tokenIndex
+                    }
+                    if (recovering) {
+                        if (!recoveryPolicy.shouldResume(received.value, tokenIndex)) {
+                            publish(ParsedTokenEvent(received.value))
+                            continue
+                        }
+                        recovering = false
+                        engine = ParseEngine(
+                            rootParser,
+                            initialContext.copy(tokens: Token[])
+                        )
+                    }
                     engine.consume(received.value)
                     publish(ParsedTokenEvent(received.value))
 
                     if (engine.invalid) {
                         invalid = true
-                        publish(InvalidSyntaxEvent())
-                        input.fail(Exception("Parse operation stopped after invalid syntax"))
+                        let diagnostic = ParserDiagnostic(
+                            engine.trailing ? "parser.trailing-token" : "parser.invalid-token",
+                            engine.trailing
+                                ? "Token '#{received.value.value}' trails a completed syntax construct"
+                                : "Token '#{received.value.value}' is not valid in the current syntax",
+                            snapshot,
+                            tokenRange(received.value, tokenIndex)
+                        )
+                        publishDiagnostic(diagnostic)
+                        publish(InvalidSyntaxEvent(diagnostic))
+                        engine.release()
+                        if (recoveryPolicy) {
+                            recovering = true
+                        } else {
+                            terminalSyntax = true
+                            diagnostics.close()
+                            input.fail(Exception("Parse operation stopped after invalid syntax"))
+                        }
                     }
                 } else if (received.completed) {
-                    for (node in engine.end()) {
-                        publish(ParsedNodeEvent(node))
+                    let incomplete = !recovering && engine.incomplete
+                    let nodes = recovering ? NodeResult[] : engine.end()
+                    if (recovering) {
+                        let diagnostic = ParserDiagnostic(
+                            "parser.recovery-eof",
+                            "Source ended before a configured recovery boundary",
+                            snapshot,
+                            currentRange()
+                        )
+                        publishDiagnostic(diagnostic)
+                        publish(InvalidSyntaxEvent(diagnostic))
+                    } else if (nodes.isEmpty && incomplete) {
+                        invalid = true
+                        let diagnostic = ParserDiagnostic(
+                            "parser.incomplete-eof",
+                            "Source ended inside an incomplete syntax construct",
+                            snapshot,
+                            currentRange()
+                        )
+                        publishDiagnostic(diagnostic)
+                        publish(InvalidSyntaxEvent(diagnostic))
+                    } else {
+                        for (node in nodes) publish(ParsedNodeEvent(node))
                     }
+                    diagnostics.close()
                     break
                 } else if (received.failed) {
                     failure = received.error
@@ -81,10 +165,16 @@ class {
         }
 
         finished = true
+        engine.release()
 
         if (!cancelled) {
-            if (failure) output.fail(failure)
-            else output.close()
+            if (failure) {
+                diagnostics.fail(failure)
+                output.fail(failure)
+            } else {
+                diagnostics.close()
+                output.close()
+            }
         }
 
         completeOperation()
@@ -97,6 +187,31 @@ class {
         if (result.closed && !cancelled) throw Exception("Parse operation output closed before completion")
         if (result.capacityExceeded) throw Exception("Parse operation exceeded its output waiter capacity")
     }
+
+    async publishDiagnostic(ParserDiagnostic diagnostic) {
+        let result = diagnostics.send(diagnostic)
+        if (result.failed) throw result.error
+        if (result.capacityExceeded) throw Exception("Parse operation exceeded its diagnostic capacity")
+    }
+
+    tokenRange(Token token, Int tokenIndex) -> SourceRange => null {
+        if (!token) return null
+        if (!token.location) return null
+        if (token.location.lineNumber <= 0 || token.location.column <= 0 || tokenIndex < 0) {
+            return null
+        }
+        let end = Location(lineNumber: token.endLineNumber, column: token.endColumn)
+        if (end.lineNumber <= 0 || end.column <= 0) return null
+        return SourceRange(
+            snapshot,
+            tokenIndex,
+            tokenIndex + 1,
+            token.location,
+            end
+        )
+    }
+
+    currentRange() -> SourceRange => tokenRange(lastSignificantToken, lastSignificantTokenIndex)
 
     completeOperation() {
         throw Exception("Not implemented for target language or runtime")

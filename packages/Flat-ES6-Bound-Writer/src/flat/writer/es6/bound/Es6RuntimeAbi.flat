@@ -1,0 +1,27 @@
+package flat/writer/es6/bound
+
+/** Explicit ES6 runtime and module ABI consumed by the Bound IR backend. */
+data class {
+    public construct(
+        visible String version = "flat-es6-abi-1",
+        visible String moduleStrategy = "commonjs",
+        visible String objectRepresentation = "es6-class",
+        visible String virtualDispatch = "prototype-method",
+        visible String typeMetadataProperty = "__flatType",
+        visible String arrayRepresentation = "native-array",
+        visible String stringRepresentation = "native-string",
+        visible String exceptionRepresentation = "error-subclass",
+        visible String closureRepresentation = "function-environment",
+        visible String staticInitialization = "module-source-order",
+        visible String nativeInterop = "explicit-native-call"
+    ) {
+        if (version != "flat-es6-abi-1" || moduleStrategy != "commonjs" ||
+            objectRepresentation != "es6-class" || virtualDispatch != "prototype-method" ||
+            !typeMetadataProperty || arrayRepresentation != "native-array" ||
+            stringRepresentation != "native-string" || exceptionRepresentation != "error-subclass" ||
+            closureRepresentation != "function-environment" ||
+            staticInitialization != "module-source-order" || nativeInterop != "explicit-native-call") {
+            throw Exception("Unsupported ES6 runtime ABI contract")
+        }
+    }
+}

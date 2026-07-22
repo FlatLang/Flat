@@ -1,0 +1,39 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Rich data-class type with already typed synthesized member functions. */
+data class {
+    var BoundFunctionUnit[] functions
+    var BoundRichMetadata[] metadataValues
+
+    public construct(
+        visible DeclarationIdentity identity,
+        visible UserClassSemanticType semanticType,
+        BoundFunctionUnit[] synthesizedFunctions,
+        BoundRichMetadata[] metadata,
+        visible SourceRange range
+    ) {
+        if (!identity || !semanticType || !synthesizedFunctions ||
+            synthesizedFunctions.any({ !_ }) || !metadata || metadata.any({ !_ }) || !range ||
+            identity.syntaxIdentity.snapshot != range.snapshot) {
+            throw Exception("Data class lowering source requires type, functions, metadata, and range")
+        }
+        functions = BoundFunctionUnit[]
+        functions.addAll(synthesizedFunctions)
+        metadataValues = BoundRichMetadata[]
+        metadataValues.addAll(metadata)
+    }
+
+    public synthesizedFunctions() -> BoundFunctionUnit[] {
+        let result = BoundFunctionUnit[]
+        result.addAll(functions)
+        return result
+    }
+    public metadata() -> BoundRichMetadata[] {
+        let result = BoundRichMetadata[]
+        result.addAll(metadataValues)
+        return result
+    }
+}

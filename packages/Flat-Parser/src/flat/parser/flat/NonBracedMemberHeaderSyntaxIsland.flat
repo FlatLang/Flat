@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/** Immutable grammar-proven unannotated non-braced member declaration. */
+data class extends SyntaxIsland {
+    visible SyntaxIslandIdentity containingTypeIdentity
+    visible String memberKind
+    visible String name
+    visible String declarationText
+}

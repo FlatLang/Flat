@@ -1,0 +1,12 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class extends BoundExpression {
+    public construct(SourceRange range, SemanticType semanticType, visible String sourceValue) {
+        if (!range || !semanticType || !sourceValue) throw Exception("Bound literal requires range, type, and value")
+        super(range, semanticType)
+    }
+    override public expressionKind() => "literal"
+}

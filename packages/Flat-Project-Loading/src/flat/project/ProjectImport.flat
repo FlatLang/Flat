@@ -1,0 +1,14 @@
+package flat/project
+
+data class {
+    visible String location
+    visible Bool staticImport
+    visible String alias
+
+    public construct(String location, Bool staticImport = false, String alias = null) {
+        if (!location || location.trim().count == 0) throw Exception("Project import location cannot be empty")
+        this.location = location
+        this.staticImport = staticImport
+        this.alias = alias
+    }
+}

@@ -1,0 +1,40 @@
+name: Flat-ES6-Bound-Writer / Test Flat-ES6-Bound-Writer
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["master"]
+  schedule:
+    - cron: "0 9 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.8.0
+        with:
+          java-version: 8
+      - uses: actions/checkout@v4
+      - name: Download latest Airship
+        uses: ./.github/actions/download-airship
+        with:
+          repo: ${{ github.repository }}
+          includePrerelease: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
+        with:
+          prebuild-targets: es6
+      - name: Build Flat-ES6-Bound-Writer Test
+        run: node airship.js --use-links -f packages/Flat-ES6-Bound-Writer install test -t es6
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: flat-es6-bound-writer-test.js
+          path: packages/Flat-ES6-Bound-Writer/dist/es6/test.js
+      - name: Run Flat-ES6-Bound-Writer Test
+        run: node airship.js --use-links -f packages/Flat-ES6-Bound-Writer run test

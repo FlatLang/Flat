@@ -1,0 +1,24 @@
+package flat/compiler/models
+
+/** Stable semantic symbol identity owned by exactly one declaration. */
+data class {
+    visible DeclarationIdentity declaration
+    visible String symbolKind
+    visible Int ordinal
+    visible String value => "#{declaration.value}:symbol:#symbolKind:#ordinal"
+
+    public construct(
+        DeclarationIdentity declaration,
+        String symbolKind,
+        Int ordinal = 0
+    ) {
+        if (!declaration) throw Exception("Symbol identity requires a declaration identity")
+        if (!symbolKind || symbolKind.trim().count == 0) {
+            throw Exception("Symbol identity kind cannot be empty")
+        }
+        if (ordinal < 0) throw Exception("Symbol identity ordinal cannot be negative")
+        this.declaration = declaration
+        this.symbolKind = symbolKind
+        this.ordinal = ordinal
+    }
+}

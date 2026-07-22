@@ -1,0 +1,10 @@
+package flat/project
+
+data class {
+    visible String location
+
+    public construct(String location) {
+        if (!location || location.trim().count == 0) throw Exception("Source exclusion cannot be empty")
+        this.location = location
+    }
+}

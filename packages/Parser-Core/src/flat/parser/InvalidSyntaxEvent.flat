@@ -1,4 +1,6 @@
 package flat/parser
 
+/** Compatibility parse event carrying the structured invalid-syntax diagnostic. */
 data class extends ParseEvent {
+    visible ParserDiagnostic diagnostic
 }

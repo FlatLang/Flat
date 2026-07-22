@@ -1,0 +1,18 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+data class {
+    visible String code
+    visible UserClassSemanticType semanticType
+    visible String message
+
+    public construct(String code, UserClassSemanticType semanticType, String message) {
+        if (!code || !semanticType || !message) {
+            throw Exception("Type hierarchy diagnostic requires code, type, and message")
+        }
+        this.code = code
+        this.semanticType = semanticType
+        this.message = message
+    }
+}

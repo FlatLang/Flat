@@ -1,0 +1,15 @@
+package flat/bound
+
+/** Rich generic/reified/annotation metadata awaiting canonical metadata publication. */
+data class {
+    public construct(
+        visible String featureKind,
+        visible String name,
+        visible String value
+    ) {
+        if ((featureKind != "generic" && featureKind != "reified" &&
+            featureKind != "annotation") || !name || !value) {
+            throw Exception("Rich metadata requires supported kind, name, and value")
+        }
+    }
+}

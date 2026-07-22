@@ -1,0 +1,181 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+
+testable class {
+    test `lookup precedence covers locals parameters members types package and imports`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("class", "Example", 20)
+        let context = BindingLookupContext(fixture.packageIdentity, owner)
+        let local = fixture.candidate("value", 1, "local")
+        let parameter = fixture.candidate("value", 2, "parameter")
+        let member = fixture.candidate("value", 3, "member", receiver: "instance", ownerType: owner)
+        let type = fixture.candidate("value", 4, "type")
+        let packageValue = fixture.candidate("value", 5, "package")
+        let explicitImport = fixture.candidate("value", 6, "import")
+        let defaultImport = fixture.candidate("value", 7, "import")
+
+        var LayeredBindingLookup lookup = fixture.lookup(
+            locals: [fixture.layer([local])],
+            parameters: fixture.layer([parameter]),
+            members: fixture.layer([member]),
+            types: fixture.layer([type]),
+            packageDeclarations: fixture.layer([packageValue]),
+            imports: [fixture.layer([explicitImport]), fixture.layer([defaultImport])]
+        )
+        expect(lookup.lookup("value", context).candidate).toBe(local)
+
+        lookup = fixture.lookup(
+            parameters: fixture.layer([parameter]),
+            members: fixture.layer([member]),
+            types: fixture.layer([type]),
+            packageDeclarations: fixture.layer([packageValue]),
+            imports: [fixture.layer([explicitImport]), fixture.layer([defaultImport])]
+        )
+        expect(lookup.lookup("value", context).candidate).toBe(parameter)
+
+        lookup = fixture.lookup(
+            members: fixture.layer([member]),
+            types: fixture.layer([type]),
+            packageDeclarations: fixture.layer([packageValue]),
+            imports: [fixture.layer([explicitImport]), fixture.layer([defaultImport])]
+        )
+        expect(lookup.lookup("value", context).candidate).toBe(member)
+
+        lookup = fixture.lookup(
+            types: fixture.layer([type]),
+            packageDeclarations: fixture.layer([packageValue]),
+            imports: [fixture.layer([explicitImport]), fixture.layer([defaultImport])]
+        )
+        expect(lookup.lookup("value", context).candidate).toBe(type)
+
+        lookup = fixture.lookup(
+            packageDeclarations: fixture.layer([packageValue]),
+            imports: [fixture.layer([explicitImport]), fixture.layer([defaultImport])]
+        )
+        expect(lookup.lookup("value", context).candidate).toBe(packageValue)
+
+        lookup = fixture.lookup(
+            imports: [fixture.layer([explicitImport]), fixture.layer([defaultImport])]
+        )
+        expect(lookup.lookup("value", context).candidate).toBe(explicitImport)
+
+        lookup = fixture.lookup(imports: [fixture.layer([defaultImport])])
+        expect(lookup.lookup("value", context).candidate).toBe(defaultImport)
+        expect(lookup.lookup("missing", context).found).toBe(false)
+    }
+
+    test `nested local scopes shadow outer scopes deterministically`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("class", "Example", 20)
+        let context = BindingLookupContext(fixture.packageIdentity, owner)
+        let inner = fixture.candidate("value", 9, "local")
+        let outer = fixture.candidate("value", 1, "local")
+        let lookup = fixture.lookup(locals: [fixture.layer([inner]), fixture.layer([outer])])
+
+        expect(lookup.lookup("value", context).candidate).toBe(inner)
+    }
+
+    test `static and instance contexts filter member receiver requirements`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("class", "Example", 20)
+        let staticMember = fixture.candidate(
+            "value", 2, "member", receiver: "static", ownerType: owner
+        )
+        let instanceMember = fixture.candidate(
+            "value", 1, "member", receiver: "instance", ownerType: owner
+        )
+        let lookup = fixture.lookup(members: fixture.layer([staticMember, instanceMember]))
+
+        let staticResult = lookup.lookup(
+            "value",
+            BindingLookupContext(fixture.packageIdentity, owner, staticContext: true)
+        )
+        let instanceResult = lookup.lookup(
+            "value",
+            BindingLookupContext(fixture.packageIdentity, owner)
+        )
+
+        expect(staticResult.candidates).toBe([staticMember])
+        expect(instanceResult.candidates).toBe([instanceMember, staticMember])
+    }
+
+    test `visibility filters public package private and protected candidates`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("class", "Owner", 20)
+        let subclass = fixture.declaration("class", "Subclass", 21)
+        let otherPackage = PackageIdentity("workspace", "flat/other")
+        let publicValue = fixture.candidate("publicValue", 1, "member", ownerType: owner)
+        let packageValue = fixture.candidate(
+            "packageValue", 2, "member", visibility: "package", ownerType: owner
+        )
+        let privateValue = fixture.candidate(
+            "privateValue", 3, "member", visibility: "private", ownerType: owner
+        )
+        let protectedValue = fixture.candidate(
+            "protectedValue", 4, "member", visibility: "protected", ownerType: owner
+        )
+        let members = fixture.layer([publicValue, packageValue, privateValue, protectedValue])
+        let lookup = fixture.lookup(members: members)
+        let sameOwner = BindingLookupContext(fixture.packageIdentity, owner)
+        let samePackage = BindingLookupContext(fixture.packageIdentity, subclass)
+        let subclassContext = BindingLookupContext(
+            otherPackage,
+            subclass,
+            visibleProtectedOwners: [owner]
+        )
+        let unrelated = BindingLookupContext(otherPackage, subclass)
+
+        expect(lookup.lookup("publicValue", unrelated).found).toBe(true)
+        expect(lookup.lookup("packageValue", samePackage).found).toBe(true)
+        expect(lookup.lookup("packageValue", unrelated).found).toBe(false)
+        expect(lookup.lookup("privateValue", sameOwner).found).toBe(true)
+        expect(lookup.lookup("privateValue", samePackage).found).toBe(false)
+        expect(lookup.lookup("protectedValue", samePackage).found).toBe(true)
+        expect(lookup.lookup("protectedValue", subclassContext).found).toBe(true)
+        expect(lookup.lookup("protectedValue", unrelated).found).toBe(false)
+    }
+
+    test `qualified lookup resolves each owner scope and preserves root shadowing`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("class", "Consumer", 30)
+        let context = BindingLookupContext(fixture.packageIdentity, owner)
+        let packageCandidate = fixture.candidate("library", 1, "package")
+        let shadowingLocal = fixture.candidate("library", 2, "local")
+        let typeCandidate = fixture.candidate("Example", 3, "type")
+        let memberCandidate = fixture.candidate(
+            "value", 4, "member", receiver: "static", ownerType: owner
+        )
+        let packageMembers = QualifiedBindingMembers(
+            packageCandidate,
+            fixture.layer([typeCandidate])
+        )
+        let typeMembers = QualifiedBindingMembers(typeCandidate, fixture.layer([memberCandidate]))
+        let packageRoot = QualifiedBindingLookup(
+            fixture.lookup(packageDeclarations: fixture.layer([packageCandidate])),
+            [packageMembers, typeMembers]
+        )
+        let shadowedRoot = QualifiedBindingLookup(
+            fixture.lookup(
+                locals: [fixture.layer([shadowingLocal])],
+                packageDeclarations: fixture.layer([packageCandidate])
+            ),
+            [packageMembers, typeMembers]
+        )
+
+        expect(packageRoot.lookup(["library", "Example", "value"], context).candidate)
+            .toBe(memberCandidate)
+        expect(packageRoot.lookup(["library", "Missing"], context).found).toBe(false)
+        expect(shadowedRoot.lookup(["library", "Example"], context).found).toBe(false)
+    }
+
+    test `same-layer candidates use stable symbol identity order`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let context = BindingLookupContext(fixture.packageIdentity, null)
+        let later = fixture.candidate("value", 9, "type")
+        let earlier = fixture.candidate("value", 1, "type")
+        let lookup = fixture.lookup(types: fixture.layer([later, earlier]))
+
+        expect(lookup.lookup("value", context).candidates).toBe([earlier, later])
+    }
+}

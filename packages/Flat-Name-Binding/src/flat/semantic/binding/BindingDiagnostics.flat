@@ -1,0 +1,58 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+
+class {
+    public static fromLookup(
+        BinderWorkItem work,
+        SourceRange referenceRange,
+        BindingLookupResult result
+    ) -> BindingDiagnostic {
+        if (!work || !referenceRange || !result) {
+            throw Exception("Binding diagnostic lookup requires work, range, and result")
+        }
+        if (work.identity.snapshot != referenceRange.snapshot) {
+            throw Exception("Binding diagnostic reference must belong to its work snapshot")
+        }
+        if (!result.found) {
+            return BindingDiagnostic(
+                "binding.unresolved",
+                result.name,
+                work.identity,
+                referenceRange
+            )
+        }
+        if (result.candidates.count > 1) {
+            let values = result.candidates
+                .map({ _.symbol.identity.value })
+                .sort({ _a.compareTo(_b) })
+            return BindingDiagnostic(
+                "binding.ambiguous",
+                result.name,
+                work.identity,
+                referenceRange,
+                values
+            )
+        }
+        return null
+    }
+
+    public static ordered(BindingDiagnostic[] diagnostics) -> BindingDiagnostic[] {
+        if (!diagnostics) throw Exception("Binding diagnostics cannot be null")
+        let copied = BindingDiagnostic[]
+        copied.addAll(diagnostics)
+        return copied.sort((left, right) => compare(left, right))
+    }
+
+    static compare(BindingDiagnostic left, BindingDiagnostic right) -> Int {
+        var result = left.range.snapshot.value.compareTo(right.range.snapshot.value)
+        if (result != 0) return result
+        result = left.range.startTokenIndex - right.range.startTokenIndex
+        if (result != 0) return result
+        result = left.range.endTokenIndex - right.range.endTokenIndex
+        if (result != 0) return result
+        result = left.code.compareTo(right.code)
+        if (result != 0) return result
+        return left.name.compareTo(right.name)
+    }
+}

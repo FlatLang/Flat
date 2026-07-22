@@ -1,0 +1,16 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class {
+    public construct(
+        visible String name,
+        visible SymbolIdentity identity,
+        visible SemanticType semanticType
+    ) {
+        if (!name || !identity || !semanticType) {
+            throw Exception("Bound function parameter requires name, identity, and type")
+        }
+    }
+}

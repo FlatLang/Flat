@@ -1,0 +1,26 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Immutable type-owned member used by inheritance lookup. */
+data class {
+    visible SymbolIdentity identity
+    visible String name
+    visible SemanticType semanticType
+    visible UserClassSemanticType ownerType
+
+    public construct(
+        SymbolIdentity identity,
+        String name,
+        SemanticType semanticType,
+        UserClassSemanticType ownerType
+    ) {
+        if (!identity || !name || name.trim().count == 0 || !semanticType || !ownerType) {
+            throw Exception("Type member requires identity, name, type, and owner")
+        }
+        this.identity = identity
+        this.name = name
+        this.semanticType = semanticType
+        this.ownerType = ownerType
+    }
+}

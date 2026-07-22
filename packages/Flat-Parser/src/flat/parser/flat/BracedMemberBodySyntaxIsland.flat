@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/** Immutable end-exclusive body range for a validated braced Flat member. */
+data class extends SyntaxIsland {
+    visible SyntaxIslandIdentity containingTypeIdentity
+    visible SyntaxIslandIdentity headerIdentity
+    visible String memberKind
+    visible String name
+}

@@ -1,0 +1,35 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    var SemanticType[] arguments
+
+    public construct(
+        visible UserClassSemanticType declarationType,
+        SemanticType[] typeArguments
+    ) {
+        if (!declarationType || !typeArguments || typeArguments.isEmpty || typeArguments.any({ !_ })) {
+            throw Exception("Generic instance requires declaration type and arguments")
+        }
+        arguments = SemanticType[]
+        arguments.addAll(typeArguments)
+    }
+
+    public typeArguments() -> SemanticType[] {
+        let result = SemanticType[]
+        result.addAll(arguments)
+        return result
+    }
+
+    override public value() -> String {
+        var String result = "generic-instance:#{declarationType.value()}<"
+        var Int index
+        while (index < arguments.count) {
+            if (index > 0) result += ","
+            result += arguments[index].value()
+            index++
+        }
+        return "#result>"
+    }
+
+    override public kind() => "generic-instance"
+}

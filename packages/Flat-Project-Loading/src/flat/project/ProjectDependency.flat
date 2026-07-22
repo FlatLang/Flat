@@ -1,0 +1,15 @@
+package flat/project
+
+data class {
+    visible String packageName
+    visible String sourceLocation
+    visible Bool local
+
+    public construct(String packageName, String sourceLocation, Bool local = false) {
+        if (!packageName || packageName.trim().count == 0) throw Exception("Project dependency package cannot be empty")
+        if (!sourceLocation || sourceLocation.trim().count == 0) throw Exception("Project dependency source cannot be empty")
+        this.packageName = packageName
+        this.sourceLocation = sourceLocation
+        this.local = local
+    }
+}

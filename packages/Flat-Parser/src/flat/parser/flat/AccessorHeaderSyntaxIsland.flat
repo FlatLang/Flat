@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/** Immutable field/array-override accessor signature linked to its owning member. */
+data class extends SyntaxIsland {
+    visible SyntaxIslandIdentity containingTypeIdentity
+    visible SyntaxIslandIdentity memberHeaderIdentity
+    visible String accessorKind
+    visible String headerText
+}

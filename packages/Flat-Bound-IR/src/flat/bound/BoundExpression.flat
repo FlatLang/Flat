@@ -1,0 +1,10 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+abstract data class {
+    visible SourceRange range
+    visible SemanticType semanticType
+    public abstract expressionKind() -> String
+}

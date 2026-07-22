@@ -1,0 +1,228 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+import flat/lexer/Lexer
+
+testable class {
+    async test `publishes adjacent bodyless functions from grammar boundaries`() {
+        let islands = collect("run() next()")
+        expect(islands.count).toBe(2)
+        var NonBracedMemberHeaderSyntaxIsland first
+        first = (NonBracedMemberHeaderSyntaxIsland)islands[0]
+        var NonBracedMemberHeaderSyntaxIsland second
+        second = (NonBracedMemberHeaderSyntaxIsland)islands[1]
+        expect(first.memberKind).toBe("function")
+        expect(first.name).toBe("run")
+        expect(second.name).toBe("next")
+        expect(first.range.endTokenIndex).toBe(3)
+        expect(second.range.startTokenIndex).toBe(3)
+    }
+
+    async test `publishes adjacent bodyless fields`() {
+        let islands = collect("String value Int other")
+        expect(islands.count).toBe(2)
+        var NonBracedMemberHeaderSyntaxIsland first
+        first = (NonBracedMemberHeaderSyntaxIsland)islands[0]
+        var NonBracedMemberHeaderSyntaxIsland second
+        second = (NonBracedMemberHeaderSyntaxIsland)islands[1]
+        expect(first.memberKind).toBe("field")
+        expect(first.name).toBe("value")
+        expect(second.name).toBe("other")
+    }
+
+    async test `publishes function expression body range without swallowing next member`() {
+        let islands = collect("run() => value next()")
+        expect(islands.count).toBe(3)
+        var NonBracedMemberHeaderSyntaxIsland header
+        header = (NonBracedMemberHeaderSyntaxIsland)islands[0]
+        var ExpressionMemberBodySyntaxIsland body
+        body = (ExpressionMemberBodySyntaxIsland)islands[1]
+        var NonBracedMemberHeaderSyntaxIsland next
+        next = (NonBracedMemberHeaderSyntaxIsland)islands[2]
+        expect(header.name).toBe("run")
+        expect(header.range.endTokenIndex).toBe(3)
+        expect(body.range.startTokenIndex).toBe(4)
+        expect(body.range.endTokenIndex).toBe(5)
+        expect(body.headerIdentity).toBe(header.identity)
+        expect(next.name).toBe("next")
+        expect(next.range.startTokenIndex).toBe(5)
+    }
+
+    async test `publishes initialized field expression range`() {
+        let islands = collect("String value <=> initial Int other")
+        expect(islands.count).toBe(3)
+        var NonBracedMemberHeaderSyntaxIsland header
+        header = (NonBracedMemberHeaderSyntaxIsland)islands[0]
+        var ExpressionMemberBodySyntaxIsland body
+        body = (ExpressionMemberBodySyntaxIsland)islands[1]
+        expect(header.memberKind).toBe("field")
+        expect(header.name).toBe("value")
+        expect(body.memberKind).toBe("field")
+        expect(body.name).toBe("value")
+        expect(body.range.endTokenIndex).toBe(4)
+    }
+
+    async test `supports multiline non braced members without newline boundaries`() {
+        let islands = collect("|
+            run(
+                String value
+            )
+                => value
+            next()
+        |")
+        expect(islands.count).toBe(3)
+        var ExpressionMemberBodySyntaxIsland body
+        body = (ExpressionMemberBodySyntaxIsland)islands[1]
+        expect(body.range.start.lineNumber).toBe(4)
+        expect(body.range.end.lineNumber).toBe(4)
+    }
+
+    async test `publishes braced lambda expression body ranges`() {
+        let islands = collect("inlineReturnLambda(Int input) => (Int x, Int y) => { input * x * y }")
+        expect(islands.count).toBe(2)
+        var NonBracedMemberHeaderSyntaxIsland header
+        header = (NonBracedMemberHeaderSyntaxIsland)islands[0]
+        var ExpressionMemberBodySyntaxIsland body
+        body = (ExpressionMemberBodySyntaxIsland)islands[1]
+        expect(header.name).toBe("inlineReturnLambda")
+        expect(body.headerIdentity).toBe(header.identity)
+        expect(body.range.endTokenIndex).toBe(21)
+    }
+
+    async test `rejects incomplete braced lambda expression bodies`() {
+        let tokens = significant(lex("run() => (Int x) => { x"))
+        let scanner = scanner(32)
+        var Int index
+        for (token in tokens) {
+            scanner.accept(token, index)
+            index++
+        }
+        var Bool rejected
+        try { scanner.end() } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async test `does not publish until following grammar proves boundary`() {
+        let tokens = significant(lex("run() => value"))
+        let scanner = scanner(16)
+        let islands = SyntaxIsland[]
+        var Int index
+
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            expect(islands.count).toBe(0)
+            index++
+        }
+
+        islands.addAll(scanner.end())
+        expect(islands.count).toBe(2)
+    }
+
+
+    async test `publishes metadata with the following non braced member`() {
+        let islands = collect("public run() [Target not c] String value => initial")
+        expect(islands.count).toBe(3)
+
+        var NonBracedMemberHeaderSyntaxIsland functionHeader
+        functionHeader = (NonBracedMemberHeaderSyntaxIsland)islands[0]
+        expect(functionHeader.name).toBe("run")
+        expect(functionHeader.range.startTokenIndex).toBe(0)
+        expect(functionHeader.range.endTokenIndex).toBe(4)
+
+        var NonBracedMemberHeaderSyntaxIsland fieldHeader
+        fieldHeader = (NonBracedMemberHeaderSyntaxIsland)islands[1]
+        expect(fieldHeader.name).toBe("value")
+        expect(fieldHeader.range.startTokenIndex).toBe(4)
+        expect(fieldHeader.range.endTokenIndex).toBe(11)
+
+        var ExpressionMemberBodySyntaxIsland body
+        body = (ExpressionMemberBodySyntaxIsland)islands[2]
+        expect(body.range.startTokenIndex).toBe(12)
+        expect(body.range.endTokenIndex).toBe(13)
+    }
+
+    async test `rejects unattached metadata at EOF`() {
+        let tokens = significant(lex("[Target js]"))
+        let scanner = scanner(8)
+        var Int index
+        for (token in tokens) {
+            scanner.accept(token, index)
+            index++
+        }
+
+        var Bool rejected
+        try { scanner.end() } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async test `rejects incomplete and braced forms with cleanup`() {
+        let incomplete = scanner(8)
+        incomplete.accept(token("run", Token.Type.IDENTIFIER, 1), 0)
+        incomplete.accept(token("(", Token.Type.SYMBOL, 4), 1)
+        var Bool eofRejected
+        try { incomplete.end() } catch (Exception error) { eofRejected = true }
+        expect(eofRejected).toBe(true)
+        expect(incomplete.retainedTokenCount).toBe(0)
+
+        let braced = scanner(8)
+        var Bool braceRejected
+        try { braced.accept(token("{", Token.Type.SYMBOL, 1), 0) } catch (Exception error) { braceRejected = true }
+        expect(braceRejected).toBe(true)
+        expect(braced.retainedTokenCount).toBe(0)
+    }
+
+    async test `bounds retained non braced member tokens`() {
+        let scanner = scanner(2)
+        scanner.accept(token("run", Token.Type.IDENTIFIER, 1), 0)
+        scanner.accept(token("(", Token.Type.SYMBOL, 4), 1)
+        var Bool rejected
+        try { scanner.accept(token("value", Token.Type.IDENTIFIER, 5), 2) } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        expect(scanner.peakRetainedTokenCount).toBe(2)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async collect(String source) -> SyntaxIsland[] {
+        let scanner = scanner(32)
+        let tokens = significant(lex(source))
+        let islands = SyntaxIsland[]
+        var Int index
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+        islands.addAll(scanner.end())
+        return islands
+    }
+
+    async lex(String source) -> Token[] {
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        return stream.consumeAll<Token>("data")
+    }
+
+    significant(Token[] tokens) -> Token[] {
+        let values = Token[]
+        for (token in tokens) {
+            if (token.type != Token.Type.COMMENT && token.type != Token.Type.WS) values.add(token)
+        }
+        return values
+    }
+
+    scanner(Int capacity) -> FlatNonBracedMemberMilestoneScanner {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:non-braced"), "content:abc")
+        return FlatNonBracedMemberMilestoneScanner(
+            snapshot,
+            SyntaxIslandIdentity(snapshot, "type-header", 10),
+            capacity,
+            startOrdinal: 20
+        )
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type, location: Location(lineNumber: 1, column: column))
+    }
+}

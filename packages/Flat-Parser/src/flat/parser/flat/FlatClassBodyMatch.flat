@@ -1,0 +1,7 @@
+package flat/parser/flat
+
+data class {
+    visible Int consumedTokenCount
+    visible Int[] memberTokenCounts = Int[]
+    visible Bool matchedAll
+}

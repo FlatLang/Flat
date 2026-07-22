@@ -1,0 +1,33 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Reduced target-independent external/native invocation contract. */
+data class extends BoundExpression {
+    var BoundExpression[] arguments
+
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible String nativeName,
+        BoundExpression[] argumentValues
+    ) {
+        if (!range || !semanticType || !nativeName || nativeName.trim().count == 0 ||
+            nativeName.contains("'") || nativeName.contains("\\") ||
+            nativeName.contains("\n") || nativeName.contains("\r") ||
+            !argumentValues || argumentValues.any({ !_ })) {
+            throw Exception("Native call requires range, type, name, and arguments")
+        }
+        arguments = BoundExpression[]
+        arguments.addAll(argumentValues)
+        super(range, semanticType)
+    }
+
+    public argumentValues() -> BoundExpression[] {
+        let result = BoundExpression[]
+        result.addAll(arguments)
+        return result
+    }
+    override public expressionKind() => "native-call"
+}

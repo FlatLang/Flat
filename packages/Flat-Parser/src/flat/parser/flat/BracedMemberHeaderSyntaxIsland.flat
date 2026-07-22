@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/** Immutable signature for a validated braced member of a Flat type. */
+data class extends SyntaxIsland {
+    visible SyntaxIslandIdentity containingTypeIdentity
+    visible String memberKind
+    visible String name
+    visible String headerText
+}

@@ -1,0 +1,117 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Structural generic argument inference with explicit constraint validation. */
+class {
+    public static infer(
+        GenericDeclaration declaration,
+        SemanticType[] formalTypes,
+        SemanticType[] actualTypes,
+        SourceRange range,
+        TypeHierarchyComponent hierarchy = null
+    ) -> GenericInferenceResult {
+        if (!declaration || !formalTypes || !actualTypes || formalTypes.count != actualTypes.count || !range) {
+            throw Exception("Generic inference requires declaration, aligned types, and range")
+        }
+        let parameters = declaration.genericParameters()
+        let inferred = SemanticType[]
+        parameters.forEach({ inferred.add(null) })
+        var Int index
+        while (index < formalTypes.count) {
+            if (!unify(formalTypes[index], actualTypes[index], parameters, inferred)) {
+                return failed("type.generic-inference", "Cannot infer generic arguments", range)
+            }
+            index++
+        }
+        if (inferred.any({ _ == null })) {
+            return failed("type.generic-unresolved", "Not every generic parameter could be inferred", range)
+        }
+        let substitution = GenericSubstitution(parameters, inferred)
+        index = 0
+        while (index < parameters.count) {
+            let constraint = parameters[index].constraint
+            if (constraint) {
+                let required = substitution.apply(constraint)
+                let conversion = TypeConversions.classify(inferred[index], required, hierarchy: hierarchy)
+                if (!conversion.applicable) {
+                    return failed(
+                        "type.generic-constraint",
+                        "Type '#{inferred[index].value()}' does not satisfy '#{required.value()}'",
+                        range
+                    )
+                }
+            }
+            index++
+        }
+        return GenericInferenceResult(substitution)
+    }
+
+    static unify(
+        SemanticType formal,
+        SemanticType actual,
+        GenericParameterSemanticType[] parameters,
+        SemanticType[] inferred
+    ) -> Bool {
+        if (!formal || !actual) return false
+        if (formal.kind() == "generic-parameter") {
+            let parameter = (GenericParameterSemanticType)formal
+            var Int index
+            while (index < parameters.count) {
+                if (parameters[index].value() == parameter.value()) {
+                    if (inferred[index] == null) inferred[index] = actual
+                    return inferred[index].value() == actual.value()
+                }
+                index++
+            }
+            return false
+        }
+        if (formal.kind() != actual.kind()) return false
+        if (formal.kind() == "array") {
+            let formalArray = (ArraySemanticType)formal
+            let actualArray = (ArraySemanticType)actual
+            return formalArray.dimensions == actualArray.dimensions &&
+                unify(formalArray.elementType, actualArray.elementType, parameters, inferred)
+        }
+        if (formal.kind() == "nullable") {
+            return unify(
+                ((NullableSemanticType)formal).underlyingType,
+                ((NullableSemanticType)actual).underlyingType,
+                parameters,
+                inferred
+            )
+        }
+        if (formal.kind() == "function") {
+            let formalFunction = (FunctionSemanticType)formal
+            let actualFunction = (FunctionSemanticType)actual
+            let formals = formalFunction.parameterTypes()
+            let actuals = actualFunction.parameterTypes()
+            if (formals.count != actuals.count) return false
+            var Int index
+            while (index < formals.count) {
+                if (!unify(formals[index], actuals[index], parameters, inferred)) return false
+                index++
+            }
+            return unify(formalFunction.returnType, actualFunction.returnType, parameters, inferred)
+        }
+        if (formal.kind() == "generic-instance") {
+            let formalInstance = (GenericInstanceSemanticType)formal
+            let actualInstance = (GenericInstanceSemanticType)actual
+            if (formalInstance.declarationType.value() != actualInstance.declarationType.value()) return false
+            let formals = formalInstance.typeArguments()
+            let actuals = actualInstance.typeArguments()
+            if (formals.count != actuals.count) return false
+            var Int index
+            while (index < formals.count) {
+                if (!unify(formals[index], actuals[index], parameters, inferred)) return false
+                index++
+            }
+            return true
+        }
+        return formal.value() == actual.value()
+    }
+
+    static failed(String code, String message, SourceRange range) -> GenericInferenceResult {
+        return GenericInferenceResult(null, TypeDiagnostic(code, message, range))
+    }
+}

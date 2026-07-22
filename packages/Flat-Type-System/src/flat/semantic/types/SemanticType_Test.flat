@@ -1,0 +1,65 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+testable class {
+    test `models every foundational semantic type with stable structural values`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Types.flat"), "revision:1")
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class-header", 1),
+            "class",
+            "Example"
+        )
+        let userType = UserClassSemanticType(declaration)
+        let arrayType = ArraySemanticType(userType, 2)
+        let functionType = FunctionSemanticType(
+            [SemanticTypes.intType(), arrayType],
+            SemanticTypes.stringType()
+        )
+
+        expect(SemanticTypes.boolType().kind()).toBe("primitive")
+        expect(SemanticTypes.byteType().value()).toBe("primitive:Byte")
+        expect(SemanticTypes.unsignedByteType().value()).toBe("primitive:UByte")
+        expect(SemanticTypes.shortType().value()).toBe("primitive:Short")
+        expect(SemanticTypes.unsignedShortType().value()).toBe("primitive:UShort")
+        expect(SemanticTypes.intType().value()).toBe("primitive:Int")
+        expect(SemanticTypes.unsignedIntType().value()).toBe("primitive:UInt")
+        expect(SemanticTypes.longType().value()).toBe("primitive:Long")
+        expect(SemanticTypes.unsignedLongType().value()).toBe("primitive:ULong")
+        expect(SemanticTypes.floatType().value()).toBe("primitive:Float")
+        expect(SemanticTypes.doubleType().value()).toBe("primitive:Double")
+        expect(SemanticTypes.charType().value()).toBe("primitive:Char")
+        expect(SemanticTypes.stringType().kind()).toBe("string")
+        expect(SemanticTypes.objectType().kind()).toBe("object")
+        expect(SemanticTypes.nullType().kind()).toBe("null")
+        expect(arrayType.value()).toBe("array:2:class:#{declaration.value}")
+        expect(userType.kind()).toBe("user-class")
+        expect(functionType.value()).toBe(
+            "function:(primitive:Int,array:2:class:#{declaration.value})->builtin:String"
+        )
+        expect(SemanticTypes.voidType().kind()).toBe("void")
+        expect(SemanticTypes.unitType().kind()).toBe("unit")
+        expect(SemanticTypes.unknownType().kind()).toBe("unknown")
+        expect(SemanticTypes.errorType().kind()).toBe("error")
+    }
+
+    test `function parameters are defensively copied`() {
+        let source = SemanticType[]:add(SemanticTypes.intType())
+        let functionType = FunctionSemanticType(source, SemanticTypes.unitType())
+        source.add(SemanticTypes.stringType())
+        let returned = functionType.parameterTypes()
+        returned.add(SemanticTypes.objectType())
+
+        expect(functionType.parameterTypes().count).toBe(1)
+        expect(functionType.value()).toBe("function:(primitive:Int)->unit")
+    }
+
+    test `invalid primitive array function and special types are rejected`() {
+        var Int rejected
+        try { PrimitiveSemanticType("Number") } catch (Exception error) { rejected++ }
+        try { ArraySemanticType(SemanticTypes.intType(), 0) } catch (Exception error) { rejected++ }
+        try { FunctionSemanticType([null], SemanticTypes.unitType()) } catch (Exception error) { rejected++ }
+        try { SpecialSemanticType("never") } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(4)
+    }
+}

@@ -1,0 +1,61 @@
+package flat/semantic/types
+
+testable class {
+    test `error operands suppress derivative operation diagnostics`() {
+        let fixture = TypeSystem_TestFixture()
+        let range = fixture.range()
+        let errorType = SemanticTypes.errorType()
+        let results = [
+            TypeOperations.assignment(SemanticTypes.intType(), errorType, range),
+            TypeOperations.returnValue(SemanticTypes.intType(), errorType, range),
+            TypeOperations.unary("!", errorType, range),
+            TypeOperations.binary("+", errorType, SemanticTypes.stringType(), range),
+            TypeOperations.cast(errorType, SemanticTypes.intType(), range),
+            TypeOperations.arrayAccess(errorType, SemanticTypes.intType(), range),
+            TypeOperations.arrayInitializer(
+                ArraySemanticType(SemanticTypes.intType()), [errorType], range
+            ),
+            TypeOperations.memberAccess(errorType, SemanticTypes.stringType(), false, range)
+        ]
+
+        expect(results.all({ _.semanticType.kind() == "error" })).toBe(true)
+        expect(results.all({ _.diagnostic == null })).toBe(true)
+        expect(results.all({ _.conversion.suppressesCascade })).toBe(true)
+    }
+
+    test `error arguments suppress call and overload diagnostics`() {
+        let fixture = TypeSystem_TestFixture()
+        let target = fixture.signature(
+            "run", "function", [SemanticTypes.intType()], SemanticTypes.unitType()
+        )
+        let direct = CallTypeChecker.check(
+            target, null, [SemanticTypes.errorType()], fixture.range()
+        )
+        let overloaded = OverloadResolver.resolve(
+            "run", [target], null, [SemanticTypes.errorType()], fixture.range()
+        )
+
+        expect(direct.valid).toBe(true)
+        expect(direct.semanticType.kind()).toBe("error")
+        expect(direct.diagnostic).toBe(null)
+        expect(overloaded.resolved).toBe(false)
+        expect(overloaded.diagnostic).toBe(null)
+        expect(overloaded.candidates()).toBe([target])
+    }
+
+    test `independent non-error failures still diagnose`() {
+        let fixture = TypeSystem_TestFixture()
+        let assignment = TypeOperations.assignment(
+            SemanticTypes.intType(), SemanticTypes.stringType(), fixture.range()
+        )
+        let target = fixture.signature(
+            "run", "function", [SemanticTypes.intType()], SemanticTypes.unitType()
+        )
+        let resolution = OverloadResolver.resolve(
+            "run", [target], null, [SemanticTypes.stringType()], fixture.range()
+        )
+
+        expect(assignment.diagnostic.code).toBe("type.assignment")
+        expect(resolution.diagnostic.code).toBe("type.call-no-match")
+    }
+}

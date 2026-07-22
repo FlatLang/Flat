@@ -1,0 +1,35 @@
+package flat/project
+
+import flat/compiler/models
+import flat/io
+
+class extends SourceProvider {
+    var File[] sourceFiles
+
+    public construct(visible String root, visible String revisionPrefix = "filesystem") {
+        let directory = File(root)
+        if (!directory.isDirectory) throw Exception("Filesystem source root must be a directory")
+        let files = File[]
+        for (file in directory.getChildFiles(recursive: true)) {
+            if (file.isFile && file.extensionNames.contains("flat")) files.add(file)
+        }
+        sourceFiles = files.sort({ _a.normalizedLocation.compareTo(_b.normalizedLocation) })
+    }
+
+    override public identities() -> SourceIdentity[] {
+        let identities = SourceIdentity[]
+        for (file in sourceFiles) identities.add(SourceIdentity("file:#{file.normalizedLocation}"))
+        return identities
+    }
+
+    override public load(SourceIdentity identity) -> LoadedSource => null {
+        let prefix = "file:"
+        if (!identity.value.startsWith(prefix)) return null
+        let location = identity.value.substring(prefix.count)
+        let file = sourceFiles.firstWhere({ _.normalizedLocation == location })
+        if (!file) return null
+        let contents = FileReader(file).readAllContents()
+        let revision = "#revisionPrefix:#{contents.count}:#{contents.hashCodeLong}"
+        return LoadedSource(SourceSnapshotIdentity(identity, revision), contents)
+    }
+}

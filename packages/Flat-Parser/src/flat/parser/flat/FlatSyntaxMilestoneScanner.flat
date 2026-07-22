@@ -24,7 +24,7 @@ class {
     var Int state
     var Token[] retained = Token[]
     var Int[] retainedIndexes = Int[]
-    var Int nextOrdinal
+    visible var Int nextOrdinal
     var Int lastTokenIndex = -1
     visible var Bool finished
     visible Int retainedTokenCount => retained.count
@@ -32,12 +32,15 @@ class {
 
     public construct(
         visible SourceSnapshotIdentity snapshot,
-        visible Int maxRetainedTokens
+        visible Int maxRetainedTokens,
+        Int startOrdinal = 0
     ) {
         if (!snapshot) throw Exception("Flat syntax milestone scanner requires a source snapshot")
         if (maxRetainedTokens <= 0) {
             throw Exception("Flat syntax milestone retained token capacity must be positive")
         }
+        if (startOrdinal < 0) throw Exception("Flat syntax milestone starting ordinal cannot be negative")
+        nextOrdinal = startOrdinal
     }
 
     public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
@@ -132,6 +135,13 @@ class {
 
         finished = true
         return [published]
+    }
+
+    public cancel() {
+        if (finished) return
+
+        finished = true
+        reset()
     }
 
     begin(Token token, Int tokenIndex) -> SyntaxIsland[] {

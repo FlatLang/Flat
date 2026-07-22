@@ -1,0 +1,14 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+
+data class extends BinderWorkItem {
+    public construct(
+        SyntaxIslandIdentity identity,
+        DeclarationIdentity ownerIdentity,
+        ScopeIdentity scopeIdentity,
+        SourceRange range
+    ) {
+        super(identity, ownerIdentity, scopeIdentity, range, "field-initializer")
+    }
+}

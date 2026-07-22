@@ -1,0 +1,125 @@
+package flat/bound
+
+import flat/semantic/types
+
+/** Structural assertions over reduced Bound IR, independent of target snapshots. */
+class {
+    public static statementKinds(BoundFunctionUnit function) -> String[] {
+        if (!function) throw Exception("Structural assertion requires a function")
+        return function.statements().map({ _.unitKind() })
+    }
+
+    public static lastCallArgumentCount(BoundFunctionUnit function) -> Int {
+        let statements = function.statements()
+        let statement = (BoundExpressionStatement)statements.last
+        let expression = statement.expression
+        let call = (BoundCallExpression)expression
+        return call.argumentValues().count
+    }
+
+    public static lastCallLiteralValues(BoundFunctionUnit function) -> String[] {
+        let statements = function.statements()
+        let statement = (BoundExpressionStatement)statements.last
+        let expression = statement.expression
+        let call = (BoundCallExpression)expression
+        let arguments = call.argumentValues()
+        let result = String[]
+        for (argument in arguments) {
+            if (!argument.class.isOfType(BoundLiteralExpression.class)) {
+                throw Exception("Call argument is not a literal")
+            }
+            let literal = (BoundLiteralExpression)argument
+            result.add(literal.sourceValue)
+        }
+        return result
+    }
+
+    public static expressionKinds(BoundFunctionUnit function) -> String[] {
+        if (!function) throw Exception("Structural assertion requires a function")
+        let result = String[]
+        for (statement in function.statements()) {
+            if (statement.class.isOfType(BoundExpressionStatement.class)) {
+                result.add(((BoundExpressionStatement)statement).expression.expressionKind())
+            } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+                result.add(((BoundAssignmentStatement)statement).value.expressionKind())
+            } else if (statement.class.isOfType(BoundReturnStatement.class) &&
+                ((BoundReturnStatement)statement).value) {
+                result.add(((BoundReturnStatement)statement).value.expressionKind())
+            }
+        }
+        return result
+    }
+
+    public static assertNoRichCoreForms(BoundFunctionUnit function) {
+        let prohibited = [
+            "constructor", "property-get", "accessor", "mutator", "operator", "named-call"
+        ]
+        for (kind in expressionKinds(function)) {
+            if (prohibited.contains(kind)) {
+                throw Exception("Expression '#kind' was not lowered to the reduced core subset")
+            }
+        }
+        if (statementKinds(function).contains("constructor-initialization")) {
+            throw Exception("Constructor initialization was not lowered to reduced statements")
+        }
+    }
+
+    public static assertNoRichCollectionForms(BoundFunctionUnit function) {
+        let prohibited = ["array", "array-access", "range", "safe-access", "match"]
+        for (kind in expressionKinds(function)) {
+            if (prohibited.contains(kind)) {
+                throw Exception("Expression '#kind' was not lowered to the reduced collection subset")
+            }
+        }
+        if (statementKinds(function).contains("foreach")) {
+            throw Exception("Foreach was not lowered to explicit control flow")
+        }
+    }
+
+    public static assertNoDeferredForms(BoundFunctionUnit function) {
+        let prohibited = ["lambda", "closure", "function-reference", "async"]
+        for (kind in expressionKinds(function)) {
+            if (prohibited.contains(kind)) {
+                throw Exception("Expression '#kind' was not lowered to explicit setup/value form")
+            }
+        }
+        if (statementKinds(function).contains("static-initialization")) {
+            throw Exception("Static initialization was not lowered to reduced statements")
+        }
+    }
+
+    public static assertNoExternalForms(BoundFunctionUnit function) {
+        for (kind in expressionKinds(function)) {
+            if (kind == "external" || kind == "native") {
+                throw Exception("Expression '#kind' was not lowered to a native call")
+            }
+        }
+    }
+
+    public static assertStatementKinds(
+        BoundFunctionUnit function,
+        String[] expectedKinds
+    ) {
+        if (!expectedKinds) throw Exception("Structural assertion requires expected kinds")
+        let actual = statementKinds(function)
+        if (actual.count != expectedKinds.count) {
+            throw Exception("Expected #expectedKinds.count statements but received #actual.count")
+        }
+        var Int index
+        while (index < actual.count) {
+            if (actual[index] != expectedKinds[index]) {
+                throw Exception("Expected statement '#{expectedKinds[index]}' at #index but received '#{actual[index]}'")
+            }
+            index++
+        }
+    }
+
+    public static assertReducedSubset(BoundFunctionUnit function) {
+        let allowed = [
+            "expression", "assignment", "local-declaration", "return", "label", "branch", "conditional-branch"
+        ]
+        for (kind in statementKinds(function)) {
+            if (!allowed.contains(kind)) throw Exception("Statement '#kind' is outside the reduced backend subset")
+        }
+    }
+}

@@ -1,0 +1,19 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Stable source-ranged type-checking failure. */
+data class {
+    visible String code
+    visible String message
+    visible SourceRange range
+
+    public construct(String code, String message, SourceRange range) {
+        if (!code || code.trim().count == 0 || !message || message.trim().count == 0 || !range) {
+            throw Exception("Type diagnostic requires code, message, and source range")
+        }
+        this.code = code
+        this.message = message
+        this.range = range
+    }
+}

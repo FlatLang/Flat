@@ -1,0 +1,26 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+
+/** Immutable identifier path assigned to one binder work item. */
+data class {
+    var String[] path
+
+    public construct(String[] segments, visible SourceRange range) {
+        if (!segments || segments.isEmpty || segments.any((segment) =>
+            !segment || segment.trim().count == 0
+        ) || !range) {
+            throw Exception("Binding reference requires name segments and a source range")
+        }
+        path = String[]
+        path.addAll(segments)
+    }
+
+    public segments() -> String[] {
+        let result = String[]
+        result.addAll(path)
+        return result
+    }
+
+    public name() => path.last
+}

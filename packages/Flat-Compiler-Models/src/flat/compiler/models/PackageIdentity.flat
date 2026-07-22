@@ -1,0 +1,19 @@
+package flat/compiler/models
+
+/** Stable package identity within one immutable project configuration. */
+data class {
+    visible String projectValue
+    visible String name
+    visible String value => "#projectValue:package:#name"
+
+    public construct(String projectValue, String name) {
+        if (!projectValue || projectValue.trim().count == 0) {
+            throw Exception("Package identity project value cannot be empty")
+        }
+        if (!name || name.trim().count == 0) {
+            throw Exception("Package identity name cannot be empty")
+        }
+        this.projectValue = projectValue
+        this.name = name
+    }
+}

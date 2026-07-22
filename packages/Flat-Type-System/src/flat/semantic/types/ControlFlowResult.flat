@@ -1,0 +1,29 @@
+package flat/semantic/types
+
+/** Complete function-local control-flow result. */
+data class {
+    var Int[] reachableValues
+    var TypeDiagnostic[] diagnosticValues
+
+    public construct(Int[] reachableOrdinals, TypeDiagnostic[] diagnostics) {
+        if (!reachableOrdinals || !diagnostics) {
+            throw Exception("Control-flow result requires reachability and diagnostics")
+        }
+        reachableValues = Int[]
+        reachableValues.addAll(reachableOrdinals)
+        diagnosticValues = TypeDiagnostic[]
+        diagnosticValues.addAll(diagnostics)
+    }
+
+    public reachableOrdinals() -> Int[] {
+        let result = Int[]
+        result.addAll(reachableValues)
+        return result
+    }
+
+    public diagnostics() -> TypeDiagnostic[] {
+        let result = TypeDiagnostic[]
+        result.addAll(diagnosticValues)
+        return result
+    }
+}

@@ -1,0 +1,30 @@
+package flat/semantic/declarations
+
+import flat/compiler/models
+import flat/datastruct/HashMap
+
+/** Root directory partitioned by package then immutable source snapshot. */
+class {
+    var HashMap<String, PackageDeclarationPartition> packages = HashMap()
+
+    public construct(visible String projectValue = "workspace:default") {
+        if (!projectValue || projectValue.trim().count == 0) {
+            throw Exception("Declaration index project value cannot be empty")
+        }
+    }
+
+    public package(String name) -> PackageDeclarationPartition {
+        var partition = packages[name]
+        if (!partition) {
+            partition = PackageDeclarationPartition(PackageIdentity(projectValue, name))
+            packages[name] = partition
+        }
+        return partition
+    }
+
+    public lookup(String packageName, String name) -> PendingDeclarationLookup {
+        return package(packageName).lookup(name)
+    }
+
+    visible Int packageCount => packages.count
+}

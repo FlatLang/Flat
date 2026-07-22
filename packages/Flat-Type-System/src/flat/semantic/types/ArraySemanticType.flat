@@ -1,0 +1,11 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    public construct(visible SemanticType elementType, visible Int dimensions = 1) {
+        if (!elementType) throw Exception("Array type requires an element type")
+        if (dimensions <= 0) throw Exception("Array type dimensions must be positive")
+    }
+
+    override public value() => "array:#dimensions:#{elementType.value()}"
+    override public kind() => "array"
+}

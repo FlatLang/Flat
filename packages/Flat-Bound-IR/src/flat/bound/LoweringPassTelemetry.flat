@@ -1,0 +1,18 @@
+package flat/bound
+
+/** Deterministic count telemetry for one function-local pass execution. */
+data class {
+    public construct(
+        visible String passName,
+        visible Int passOrdinal,
+        visible Int inputStatementCount,
+        visible Int outputStatementCount,
+        visible String inputInvariant,
+        visible String outputInvariant
+    ) {
+        if (!passName || passOrdinal < 0 || inputStatementCount < 0 || outputStatementCount < 0 ||
+            !inputInvariant || !outputInvariant) {
+            throw Exception("Lowering telemetry requires pass identity, counts, and invariants")
+        }
+    }
+}

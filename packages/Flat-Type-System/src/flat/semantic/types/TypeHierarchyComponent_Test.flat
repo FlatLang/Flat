@@ -1,0 +1,120 @@
+package flat/semantic/types
+
+testable class {
+    test `component-local inheritance distances and conversions stabilize independently`() {
+        let fixture = TypeSystem_TestFixture()
+        let object = fixture.userType("Object", 1)
+        let base = fixture.userType("Base", 2)
+        let child = fixture.userType("Child", 3)
+        let unrelated = fixture.userType("Unrelated", 4)
+        let first = TypeHierarchyComponent()
+        first.add(fixture.hierarchyDeclaration(child, parents: [base]))
+        first.add(fixture.hierarchyDeclaration(object))
+        first.add(fixture.hierarchyDeclaration(base, parents: [object]))
+        let second = TypeHierarchyComponent()
+        second.add(fixture.hierarchyDeclaration(unrelated))
+
+        second.seal()
+        expect(second.valid).toBe(true)
+        expect(first.sealed).toBe(false)
+        first.seal()
+
+        expect(first.distance(child, child)).toBe(0)
+        expect(first.distance(child, base)).toBe(1)
+        expect(first.distance(child, object)).toBe(2)
+        expect(first.distance(base, child)).toBe(-1)
+        expect(TypeConversions.classify(child, base, hierarchy: first).conversionKind)
+            .toBe("reference-upcast")
+        expect(TypeConversions.classify(base, child, explicit: true, hierarchy: first).conversionKind)
+            .toBe("reference-cast")
+        expect(TypeConversions.classify(base, child, hierarchy: first).applicable).toBe(false)
+    }
+
+    test `nearest declaration shadows inherited members and diamond candidates are deterministic`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Root", 1)
+        let left = fixture.userType("Left", 2)
+        let right = fixture.userType("Right", 3)
+        let diamond = fixture.userType("Diamond", 4)
+        let rootMember = fixture.member(root, "value", SemanticTypes.objectType(), 10)
+        let leftMember = fixture.member(left, "value", SemanticTypes.stringType(), 11)
+        let rightMember = fixture.member(right, "value", SemanticTypes.intType(), 12)
+        let localMember = fixture.member(diamond, "local", SemanticTypes.boolType(), 13)
+        let component = TypeHierarchyComponent()
+        component.add(fixture.hierarchyDeclaration(diamond, parents: [right, left], members: [localMember]))
+        component.add(fixture.hierarchyDeclaration(right, parents: [root], members: [rightMember]))
+        component.add(fixture.hierarchyDeclaration(root, members: [rootMember]))
+        component.add(fixture.hierarchyDeclaration(left, parents: [root], members: [leftMember]))
+        component.seal()
+
+        let local = component.lookup(diamond, "local")
+        let inherited = component.lookup(diamond, "value")
+        let rootLookup = component.lookup(root, "value")
+
+        expect(local.distance).toBe(0)
+        expect(local.members()).toBe([localMember])
+        expect(inherited.distance).toBe(1)
+        expect(inherited.ambiguous).toBe(true)
+        expect(inherited.members()).toBe([leftMember, rightMember])
+        expect(rootLookup.members()).toBe([rootMember])
+    }
+
+    test `duplicate diamond paths deduplicate the same inherited declaration`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Root", 1)
+        let left = fixture.userType("Left", 2)
+        let right = fixture.userType("Right", 3)
+        let diamond = fixture.userType("Diamond", 4)
+        let rootMember = fixture.member(root, "value", SemanticTypes.objectType(), 10)
+        let component = TypeHierarchyComponent()
+        component.add(fixture.hierarchyDeclaration(root, members: [rootMember]))
+        component.add(fixture.hierarchyDeclaration(left, parents: [root]))
+        component.add(fixture.hierarchyDeclaration(right, parents: [root]))
+        component.add(fixture.hierarchyDeclaration(diamond, parents: [left, right]))
+        component.seal()
+
+        let result = component.lookup(diamond, "value")
+        expect(result.distance).toBe(2)
+        expect(result.ambiguous).toBe(false)
+        expect(result.members()).toBe([rootMember])
+    }
+
+    test `missing parents and cycles diagnose in stable type order`() {
+        let fixture = TypeSystem_TestFixture()
+        let first = fixture.userType("First", 1)
+        let second = fixture.userType("Second", 2)
+        let missing = fixture.userType("Missing", 3)
+        let component = TypeHierarchyComponent()
+        component.add(fixture.hierarchyDeclaration(second, parents: [first, missing]))
+        component.add(fixture.hierarchyDeclaration(first, parents: [second]))
+        component.seal()
+
+        expect(component.valid).toBe(false)
+        expect(component.diagnostics().map({ _.code })).toBe([
+            "type.hierarchy-cycle",
+            "type.hierarchy-cycle",
+            "type.hierarchy-missing-parent"
+        ])
+        expect(component.diagnostics().first.semanticType).toBe(first)
+        expect(component.diagnostics().last.semanticType).toBe(second)
+        expect({ component.distance(first, second) }).toThrow(Exception.class)
+    }
+
+    test `components reject mutation after sealing and invalid member ownership`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Owner", 1)
+        let other = fixture.userType("Other", 2)
+        let component = TypeHierarchyComponent()
+        component.add(fixture.hierarchyDeclaration(owner))
+        component.seal()
+        var Int rejected
+        try { component.add(fixture.hierarchyDeclaration(other)) } catch (Exception error) { rejected++ }
+        try {
+            fixture.hierarchyDeclaration(
+                owner,
+                members: [fixture.member(other, "value", SemanticTypes.intType(), 10)]
+            )
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+}

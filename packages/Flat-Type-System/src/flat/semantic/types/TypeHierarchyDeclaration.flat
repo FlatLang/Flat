@@ -1,0 +1,43 @@
+package flat/semantic/types
+
+/** One immutable class/interface declaration in an inheritance component. */
+data class {
+    var UserClassSemanticType[] parents
+    var TypeMember[] declaredMembers
+
+    public construct(
+        visible UserClassSemanticType semanticType,
+        visible String declarationKind,
+        UserClassSemanticType[] directParents,
+        TypeMember[] members = TypeMember[]
+    ) {
+        if (!semanticType || (declarationKind != "class" && declarationKind != "interface") ||
+            !directParents || directParents.any({ !_ }) || !members || members.any({ !_ })) {
+            throw Exception("Type hierarchy declaration requires type, kind, parents, and members")
+        }
+        if (directParents.any({ _.value() == semanticType.value() })) {
+            throw Exception("Type hierarchy declaration cannot directly inherit itself")
+        }
+        if (members.any({ _.ownerType.value() != semanticType.value() })) {
+            throw Exception("Declared hierarchy members must belong to their type")
+        }
+        parents = UserClassSemanticType[]
+        parents.addAll(directParents)
+        parents = parents.sort({ _a.value().compareTo(_b.value()) })
+        declaredMembers = TypeMember[]
+        declaredMembers.addAll(members)
+        declaredMembers = declaredMembers.sort({ _a.identity.value.compareTo(_b.identity.value) })
+    }
+
+    public directParents() -> UserClassSemanticType[] {
+        let result = UserClassSemanticType[]
+        result.addAll(parents)
+        return result
+    }
+
+    public members() -> TypeMember[] {
+        let result = TypeMember[]
+        result.addAll(declaredMembers)
+        return result
+    }
+}

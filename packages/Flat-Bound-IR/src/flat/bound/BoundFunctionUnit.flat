@@ -1,0 +1,42 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class {
+    var BoundStatement[] body
+    var BoundFunctionParameter[] parameters
+
+    public construct(
+        visible DeclarationIdentity identity,
+        visible String name,
+        visible SemanticType returnType,
+        BoundStatement[] statements,
+        visible SourceRange range,
+        BoundFunctionParameter[] parameterValues = BoundFunctionParameter[],
+        visible Bool staticFunction = false,
+        visible Bool mainFunction = false
+    ) {
+        if (!identity || !name || !returnType || !statements || statements.any({ !_ }) || !range ||
+            !parameterValues || parameterValues.any({ !_ }) ||
+            identity.syntaxIdentity.snapshot != range.snapshot) {
+            throw Exception("Bound function requires identity, name, return type, statements, and range")
+        }
+        body = BoundStatement[]
+        body.addAll(statements)
+        parameters = BoundFunctionParameter[]
+        parameters.addAll(parameterValues)
+    }
+
+    public statements() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(body)
+        return result
+    }
+
+    public parameterValues() -> BoundFunctionParameter[] {
+        let result = BoundFunctionParameter[]
+        result.addAll(parameters)
+        return result
+    }
+}

@@ -1,0 +1,33 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+
+/** Immutable, source-ranged name-binding failure. */
+data class {
+    visible String code
+    visible String name
+    visible SyntaxIslandIdentity workIdentity
+    visible SourceRange range
+    visible String[] candidateValues
+
+    public construct(
+        String code,
+        String name,
+        SyntaxIslandIdentity workIdentity,
+        SourceRange range,
+        String[] candidateValues = String[]
+    ) {
+        if (!code || code.trim().count == 0 || !name || name.trim().count == 0 ||
+            !workIdentity || !range || !candidateValues) {
+            throw Exception("Binding diagnostic requires code, name, work, range, and candidates")
+        }
+        if (workIdentity.snapshot != range.snapshot) {
+            throw Exception("Binding diagnostic work and range must share one snapshot")
+        }
+        this.code = code
+        this.name = name
+        this.workIdentity = workIdentity
+        this.range = range
+        this.candidateValues = candidateValues
+    }
+}

@@ -1,0 +1,26 @@
+package flat/compiler/models
+
+/** Stable declaration identity derived from one immutable syntax island. */
+data class {
+    visible SyntaxIslandIdentity syntaxIdentity
+    visible String declarationKind
+    visible String name
+    visible String value => "#{syntaxIdentity.value}:declaration:#declarationKind:#name"
+
+    public construct(
+        SyntaxIslandIdentity syntaxIdentity,
+        String declarationKind,
+        String name
+    ) {
+        if (!syntaxIdentity) throw Exception("Declaration identity requires a syntax identity")
+        if (!declarationKind || declarationKind.trim().count == 0) {
+            throw Exception("Declaration identity kind cannot be empty")
+        }
+        if (!name || name.trim().count == 0) {
+            throw Exception("Declaration identity name cannot be empty")
+        }
+        this.syntaxIdentity = syntaxIdentity
+        this.declarationKind = declarationKind
+        this.name = name
+    }
+}

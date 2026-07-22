@@ -1,0 +1,104 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+class TypeSystem_TestFixture {
+    visible SourceSnapshotIdentity snapshot = SourceSnapshotIdentity(
+        SourceIdentity("memory:Types.flat"),
+        "revision:types"
+    )
+
+    public range(Int start = 0, Int end = 1) -> SourceRange {
+        return SourceRange(
+            snapshot,
+            start,
+            end,
+            Location(lineNumber: 1, column: start + 1),
+            Location(lineNumber: 1, column: end + 1)
+        )
+    }
+
+    public flowNode(
+        Int ordinal,
+        String kind,
+        Int[] successors,
+        String declaredLocal = null,
+        String assignedLocal = null,
+        String readLocal = null
+    ) -> ControlFlowNode {
+        return ControlFlowNode(
+            ordinal,
+            kind,
+            range(ordinal, ordinal + 1),
+            successors,
+            declaredLocal,
+            assignedLocal,
+            readLocal
+        )
+    }
+
+    public functionIdentity(String name = "run", Int ordinal = 20) -> DeclarationIdentity {
+        return DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function-header", ordinal),
+            "function",
+            name
+        )
+    }
+
+    public symbolIdentity(String name, String kind, Int ordinal = 1) -> SymbolIdentity {
+        return SymbolIdentity(
+            DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "#kind-header", ordinal),
+                kind,
+                name
+            ),
+            kind
+        )
+    }
+
+    public member(
+        UserClassSemanticType ownerType,
+        String name,
+        SemanticType semanticType,
+        Int ordinal
+    ) -> TypeMember {
+        return TypeMember(symbolIdentity(name, "member", ordinal), name, semanticType, ownerType)
+    }
+
+    public hierarchyDeclaration(
+        UserClassSemanticType type,
+        String kind = "class",
+        UserClassSemanticType[] parents = UserClassSemanticType[],
+        TypeMember[] members = TypeMember[]
+    ) -> TypeHierarchyDeclaration {
+        return TypeHierarchyDeclaration(type, kind, parents, members)
+    }
+
+    public signature(
+        String name,
+        String kind,
+        SemanticType[] parameterTypes,
+        SemanticType returnType,
+        UserClassSemanticType ownerType = null,
+        Int ordinal = 1
+    ) -> CallableSignature {
+        return CallableSignature(
+            symbolIdentity(name, kind, ordinal),
+            name,
+            CallableKind(kind),
+            parameterTypes,
+            returnType,
+            ownerType
+        )
+    }
+
+    public userType(String name, Int ordinal = 1) -> UserClassSemanticType {
+        return UserClassSemanticType(
+            DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "class-header", ordinal),
+                "class",
+                name
+            )
+        )
+    }
+}

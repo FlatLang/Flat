@@ -1,0 +1,4 @@
+package flat/semantic/declarations
+
+abstract data class {
+}

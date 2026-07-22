@@ -1,0 +1,98 @@
+package flat/semantic/types
+
+testable class {
+    test `declared and literal types retain exact immutable source typing`() {
+        let fixture = TypeSystem_TestFixture()
+        let declared = DeclaredType("Int?", NullableSemanticType(SemanticTypes.intType()), fixture.range())
+        let integer = LiteralType("integer", "42", SemanticTypes.intType(), fixture.range(1, 2))
+        let floating = LiteralType("float", "1.5", SemanticTypes.doubleType(), fixture.range(2, 3))
+        let string = LiteralType("string", "\"text\"", SemanticTypes.stringType(), fixture.range(3, 4))
+        let character = LiteralType("char", "'x'", SemanticTypes.charType(), fixture.range(4, 5))
+        let bool = LiteralType("bool", "true", SemanticTypes.boolType(), fixture.range(5, 6))
+        let nullValue = LiteralType("null", "null", SemanticTypes.nullType(), fixture.range(6, 7))
+
+        expect(declared.sourceName).toBe("Int?")
+        expect(declared.semanticType.value()).toBe("nullable:primitive:Int")
+        expect(integer.semanticType.value()).toBe("primitive:Int")
+        expect(floating.semanticType.value()).toBe("primitive:Double")
+        expect(string.semanticType.kind()).toBe("string")
+        expect(character.semanticType.value()).toBe("primitive:Char")
+        expect(bool.semanticType.value()).toBe("primitive:Bool")
+        expect(nullValue.semanticType.kind()).toBe("null")
+    }
+
+    test `identity numeric and explicit primitive conversions are classified`() {
+        let identity = TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType())
+        let widening = TypeConversions.classify(SemanticTypes.shortType(), SemanticTypes.longType())
+        let floating = TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.doubleType())
+        let narrowing = TypeConversions.classify(
+            SemanticTypes.longType(), SemanticTypes.byteType(), explicit: true
+        )
+        let implicitNarrowing = TypeConversions.classify(
+            SemanticTypes.longType(), SemanticTypes.byteType()
+        )
+        let boolNumeric = TypeConversions.classify(
+            SemanticTypes.boolType(), SemanticTypes.intType(), explicit: true
+        )
+        let signedUnsigned = TypeConversions.classify(
+            SemanticTypes.intType(), SemanticTypes.unsignedLongType()
+        )
+
+        expect(identity.conversionKind).toBe("identity")
+        expect(identity.cost).toBe(0)
+        expect(widening.conversionKind).toBe("numeric-widening")
+        expect(widening.implicit).toBe(true)
+        expect(floating.applicable).toBe(true)
+        expect(narrowing.conversionKind).toBe("numeric-cast")
+        expect(narrowing.implicit).toBe(false)
+        expect(implicitNarrowing.applicable).toBe(false)
+        expect(boolNumeric.applicable).toBe(false)
+        expect(signedUnsigned.applicable).toBe(false)
+    }
+
+    test `reference null and nullable conversions preserve safety`() {
+        let fixture = TypeSystem_TestFixture()
+        let userType = fixture.userType("Example")
+        let nullableUser = NullableSemanticType(userType)
+        let toObject = TypeConversions.classify(userType, SemanticTypes.objectType())
+        let nullToUser = TypeConversions.classify(SemanticTypes.nullType(), userType)
+        let nullToNullable = TypeConversions.classify(SemanticTypes.nullType(), nullableUser)
+        let lift = TypeConversions.classify(userType, nullableUser)
+        let unsafeUnwrap = TypeConversions.classify(nullableUser, userType)
+        let explicitUnwrap = TypeConversions.classify(nullableUser, userType, explicit: true)
+        let objectCast = TypeConversions.classify(
+            SemanticTypes.objectType(), userType, explicit: true
+        )
+
+        expect(toObject.conversionKind).toBe("reference-upcast")
+        expect(nullToUser.applicable).toBe(false)
+        expect(nullToNullable.conversionKind).toBe("null")
+        expect(lift.conversionKind).toBe("nullable-lift")
+        expect(unsafeUnwrap.applicable).toBe(false)
+        expect(explicitUnwrap.conversionKind).toBe("nullable-unwrap")
+        expect(objectCast.conversionKind).toBe("reference-cast")
+    }
+
+    test `unknown and error conversions distinguish pending and diagnosed state`() {
+        let unknown = TypeConversions.classify(SemanticTypes.unknownType(), SemanticTypes.intType())
+        let error = TypeConversions.classify(SemanticTypes.errorType(), SemanticTypes.intType())
+
+        expect(unknown.applicable).toBe(false)
+        expect(unknown.conversionKind).toBe("unknown")
+        expect(unknown.suppressesCascade).toBe(true)
+        expect(error.applicable).toBe(true)
+        expect(error.conversionKind).toBe("error-recovery")
+        expect(error.suppressesCascade).toBe(true)
+    }
+
+    test `invalid nullable literal and declared type shapes are rejected`() {
+        let fixture = TypeSystem_TestFixture()
+        var Int rejected
+        try { NullableSemanticType(SemanticTypes.nullType()) } catch (Exception error) { rejected++ }
+        try { NullableSemanticType(NullableSemanticType(SemanticTypes.intType())) } catch (Exception error) { rejected++ }
+        try { LiteralType("integer", "1", SemanticTypes.stringType(), fixture.range()) } catch (Exception error) { rejected++ }
+        try { LiteralType("other", "x", SemanticTypes.intType(), fixture.range()) } catch (Exception error) { rejected++ }
+        try { DeclaredType("", SemanticTypes.intType(), fixture.range()) } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(5)
+    }
+}

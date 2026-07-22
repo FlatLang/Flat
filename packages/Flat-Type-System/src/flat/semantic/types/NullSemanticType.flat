@@ -1,0 +1,6 @@
+package flat/semantic/types
+
+data class extends SemanticType {
+    override public value() => "null"
+    override public kind() => "null"
+}

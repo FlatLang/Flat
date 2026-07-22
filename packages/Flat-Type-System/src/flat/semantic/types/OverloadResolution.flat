@@ -1,0 +1,36 @@
+package flat/semantic/types
+
+/** Deterministic result of overload candidate collection and ranking. */
+data class {
+    var CallableSignature[] collected
+    var CallCheckResult[] applicableValues
+
+    public construct(
+        CallableSignature[] candidates,
+        CallCheckResult[] applicable,
+        visible CallableSignature selected,
+        visible TypeDiagnostic diagnostic
+    ) {
+        if (!candidates || !applicable) {
+            throw Exception("Overload resolution requires candidate and applicability snapshots")
+        }
+        collected = CallableSignature[]
+        collected.addAll(candidates)
+        applicableValues = CallCheckResult[]
+        applicableValues.addAll(applicable)
+    }
+
+    public candidates() -> CallableSignature[] {
+        let result = CallableSignature[]
+        result.addAll(collected)
+        return result
+    }
+
+    public applicableCandidates() -> CallCheckResult[] {
+        let result = CallCheckResult[]
+        result.addAll(applicableValues)
+        return result
+    }
+
+    visible Bool resolved => selected != null && diagnostic == null
+}

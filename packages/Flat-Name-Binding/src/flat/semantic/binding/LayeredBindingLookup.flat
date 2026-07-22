@@ -1,0 +1,41 @@
+package flat/semantic/binding
+
+/**
+ * Fixed lookup precedence: inner locals, outer locals, parameters, members,
+ * types, package declarations, then explicit/default import layers.
+ */
+class {
+    public construct(
+        visible BindingLayer[] localScopes,
+        visible BindingLayer parameters,
+        visible BindingLayer members,
+        visible BindingLayer types,
+        visible BindingLayer packageDeclarations,
+        visible BindingLayer[] imports
+    ) {
+        if (!localScopes || !parameters || !members || !types ||
+            !packageDeclarations || !imports) {
+            throw Exception("Layered binding lookup requires every lookup layer")
+        }
+    }
+
+    public lookup(String name, BindingLookupContext context) -> BindingLookupResult {
+        for (scope in localScopes) {
+            let candidates = scope.find(name, context)
+            if (candidates.isNotEmpty) return BindingLookupResult(name, candidates)
+        }
+        let parameterCandidates = parameters.find(name, context)
+        if (parameterCandidates.isNotEmpty) return BindingLookupResult(name, parameterCandidates)
+        let memberCandidates = members.find(name, context)
+        if (memberCandidates.isNotEmpty) return BindingLookupResult(name, memberCandidates)
+        let typeCandidates = types.find(name, context)
+        if (typeCandidates.isNotEmpty) return BindingLookupResult(name, typeCandidates)
+        let packageCandidates = packageDeclarations.find(name, context)
+        if (packageCandidates.isNotEmpty) return BindingLookupResult(name, packageCandidates)
+        for (scope in imports) {
+            let candidates = scope.find(name, context)
+            if (candidates.isNotEmpty) return BindingLookupResult(name, candidates)
+        }
+        return BindingLookupResult(name, BindingCandidate[])
+    }
+}

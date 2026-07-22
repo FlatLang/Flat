@@ -1,0 +1,24 @@
+package flat/semantic/declarations
+
+import flat/compiler/models/SourceSnapshotIdentity
+import flat/datastruct/HashMap
+
+/** Source partition containing independently sealed type/member scope trees. */
+class {
+    var HashMap<String, DeclarationScope> scopes = HashMap()
+
+    public construct(visible SourceSnapshotIdentity snapshot) {
+        if (!snapshot) throw Exception("Source declaration partition requires a snapshot")
+    }
+
+    public register(DeclarationScope scope) {
+        if (!scope || scope.identity.snapshot != snapshot) {
+            throw Exception("Declaration scope must belong to its source partition")
+        }
+        if (scopes[scope.identity.value]) throw Exception("Declaration scope identity is already registered")
+        scopes[scope.identity.value] = scope
+    }
+
+    public get(String value) -> DeclarationScope => scopes[value]
+    visible Int scopeCount => scopes.count
+}

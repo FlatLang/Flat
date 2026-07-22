@@ -1,0 +1,339 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+import flat/lexer/Lexer
+
+testable class {
+    async test `publishes nested type braced member`() {
+        let result = collectResults("private class Nested {}")
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)result[0]
+        var BracedMemberBodySyntaxIsland bodyRange
+        bodyRange = (BracedMemberBodySyntaxIsland)result[1]
+        expect(result.count).toBe(2)
+        expect(header.memberKind).toBe("nested-type")
+        expect(header.name).toBe("Nested")
+        expect(bodyRange.headerIdentity).toBe(header.identity)
+    }
+
+    async test `publishes static block braced member`() {
+        let result = collectResults("static { work() }")
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)result[0]
+        expect(result.count).toBe(2)
+        expect(header.memberKind).toBe("static-block")
+        expect(header.name).toBe(null)
+    }
+
+    async test `publishes property braced member`() {
+        let result = collectResults("visible String value { get { read() } set(String next) { write() } }")
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)result[0]
+        expect(result.count).toBe(6)
+        expect(header.memberKind).toBe("field")
+        expect(header.name).toBe("value")
+        var AccessorHeaderSyntaxIsland getterHeader
+        getterHeader = (AccessorHeaderSyntaxIsland)result[1]
+        var AccessorBodySyntaxIsland getterBody
+        getterBody = (AccessorBodySyntaxIsland)result[2]
+        var AccessorHeaderSyntaxIsland setterHeader
+        setterHeader = (AccessorHeaderSyntaxIsland)result[3]
+        var AccessorBodySyntaxIsland setterBody
+        setterBody = (AccessorBodySyntaxIsland)result[4]
+        var BracedMemberBodySyntaxIsland propertyBody
+        propertyBody = (BracedMemberBodySyntaxIsland)result[5]
+        expect(getterHeader.accessorKind).toBe("get")
+        expect(getterBody.accessorHeaderIdentity).toBe(getterHeader.identity)
+        expect(setterHeader.accessorKind).toBe("set")
+        expect(setterBody.accessorHeaderIdentity).toBe(setterHeader.identity)
+        expect(propertyBody.headerIdentity).toBe(header.identity)
+    }
+
+    async test `publishes array override braced member`() {
+        let result = collectResults("public this[Int index] -> String { get { read() } set(String next) { write() } }")
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)result[0]
+        expect(result.count).toBe(6)
+        expect(header.memberKind).toBe("array-override")
+        expect(header.name).toBe("this")
+        expect(result[1].class).toBe(AccessorHeaderSyntaxIsland.class)
+        expect(result[2].class).toBe(AccessorBodySyntaxIsland.class)
+        expect(result[3].class).toBe(AccessorHeaderSyntaxIsland.class)
+        expect(result[4].class).toBe(AccessorBodySyntaxIsland.class)
+    }
+
+    async test `publishes bodyless accessor signatures`() {
+        let result = collectResults("String value { get set(String next) }")
+        expect(result.count).toBe(4)
+        var AccessorHeaderSyntaxIsland getter
+        getter = (AccessorHeaderSyntaxIsland)result[1]
+        var AccessorHeaderSyntaxIsland setter
+        setter = (AccessorHeaderSyntaxIsland)result[2]
+        expect(getter.accessorKind).toBe("get")
+        expect(setter.accessorKind).toBe("set")
+        expect(getter.range.startTokenIndex).toBe(6)
+        expect(getter.range.endTokenIndex).toBe(7)
+        expect(setter.range.startTokenIndex).toBe(8)
+        expect(setter.range.endTokenIndex).toBe(14)
+        expect(result[3].class).toBe(BracedMemberBodySyntaxIsland.class)
+    }
+
+    async test `publishes exact end exclusive accessor ranges before property completion`() {
+        let result = collectResults("String value { get { read() } set(String next) { write() } }")
+        var AccessorHeaderSyntaxIsland getterHeader
+        getterHeader = (AccessorHeaderSyntaxIsland)result[1]
+        var AccessorBodySyntaxIsland getterBody
+        getterBody = (AccessorBodySyntaxIsland)result[2]
+        var AccessorHeaderSyntaxIsland setterHeader
+        setterHeader = (AccessorHeaderSyntaxIsland)result[3]
+        var AccessorBodySyntaxIsland setterBody
+        setterBody = (AccessorBodySyntaxIsland)result[4]
+
+        expect(getterHeader.range.startTokenIndex).toBe(6)
+        expect(getterHeader.range.endTokenIndex).toBe(8)
+        expect(getterBody.range.startTokenIndex).toBe(9)
+        expect(getterBody.range.endTokenIndex).toBe(14)
+        expect(setterHeader.range.startTokenIndex).toBe(16)
+        expect(setterHeader.range.endTokenIndex).toBe(23)
+        expect(setterBody.range.startTokenIndex).toBe(24)
+        expect(setterBody.range.endTokenIndex).toBe(29)
+    }
+
+    async test `publishes an accessor header while its body remains delayed`() {
+        let tokens = lex("String value { set(String next) {")
+        let scanner = scanner(16)
+        let islands = SyntaxIsland[]
+        var Int index
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+
+        expect(islands.count).toBe(2)
+        expect(islands[0].class).toBe(BracedMemberHeaderSyntaxIsland.class)
+        expect(islands[1].class).toBe(AccessorHeaderSyntaxIsland.class)
+        expect(scanner.retainedHeaderTokenCount).toBe(0)
+        scanner.cancel()
+    }
+
+    async test `rejects invalid and incomplete accessor syntax with cleanup`() {
+        let invalid = scanner(16)
+        let invalidTokens = lex("String value { wrong {")
+        var Int index
+        var Bool invalidRejected
+        try {
+            for (token in invalidTokens) {
+                invalid.accept(token, index)
+                index++
+            }
+        } catch (Exception error) { invalidRejected = true }
+        expect(invalidRejected).toBe(true)
+        expect(invalid.retainedHeaderTokenCount).toBe(0)
+
+        let incomplete = scanner(16)
+        let incompleteTokens = lex("String value { set(")
+        index = 0
+        for (token in incompleteTokens) {
+            incomplete.accept(token, index)
+            index++
+        }
+        var Bool incompleteRejected
+        try { incomplete.end() } catch (Exception error) { incompleteRejected = true }
+        expect(incompleteRejected).toBe(true)
+        expect(incomplete.retainedHeaderTokenCount).toBe(0)
+    }
+
+    async test `publishes function braced member`() {
+        let result = collectResults("public run<T>(String value) -> Object { nested() { work() } }")
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)result[0]
+        expect(result.count).toBe(2)
+        expect(header.memberKind).toBe("function")
+        expect(header.name).toBe("run")
+        expect(header.identity.ordinal).toBe(20)
+        expect(header.identity.kind).toBe("type-header:10/member-signature")
+        expect(result[1].identity.ordinal).toBe(21)
+        expect(result[1].identity.kind).toBe("type-header:10/member-body")
+    }
+
+    async test `publishes signature before a delayed braced member body`() {
+        let tokens = lex("run() { delayed() {")
+        let scanner = scanner(16)
+        let islands = SyntaxIsland[]
+        var Int index
+
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+
+        expect(islands.count).toBe(1)
+        expect(islands.first.class).toBe(BracedMemberHeaderSyntaxIsland.class)
+        expect(scanner.retainedHeaderTokenCount).toBe(0)
+        expect(scanner.finished).toBe(false)
+
+        scanner.cancel()
+        expect(scanner.finished).toBe(true)
+        expect(scanner.retainedHeaderTokenCount).toBe(0)
+    }
+
+    async test `records exact end exclusive braced member body range`() {
+        let tokens = lex("run() { one() { two() } }")
+        let scanner = scanner(12)
+        var BracedMemberHeaderSyntaxIsland headerIsland
+        var BracedMemberBodySyntaxIsland bodyIsland
+        var Int opening = -1
+        var Int closing = -1
+        var Int depth
+        var Int index
+
+        for (token in tokens) {
+            if (token.value == "{") {
+                if (opening < 0) opening = index
+                depth++
+            } else if (token.value == "}") {
+                depth--
+                if (depth == 0) closing = index
+            }
+
+            for (island in scanner.accept(token, index)) {
+                if (island.class.isOfType(BracedMemberHeaderSyntaxIsland.class)) {
+                    headerIsland = (BracedMemberHeaderSyntaxIsland)island
+                } else {
+                    bodyIsland = (BracedMemberBodySyntaxIsland)island
+                }
+            }
+            index++
+        }
+
+        expect(headerIsland.range.endTokenIndex).toBe(opening)
+        expect(bodyIsland.range.startTokenIndex).toBe(opening + 1)
+        expect(bodyIsland.range.endTokenIndex).toBe(closing)
+        expect(bodyIsland.range.start).toBe(Location(lineNumber: 1, column: 8))
+        expect(bodyIsland.range.end).toBe(Location(lineNumber: 1, column: 25))
+    }
+
+    async test `does not retain braced member body tokens`() {
+        let tokens = lex("run() { one() { two() { three() } } }")
+        let scanner = scanner(8)
+        var Int index
+
+        for (token in tokens) {
+            scanner.accept(token, index)
+            if (token.value == "one" || token.value == "two" || token.value == "three") {
+                expect(scanner.retainedHeaderTokenCount).toBe(0)
+            }
+            index++
+        }
+
+        expect(scanner.peakRetainedHeaderTokenCount).toBe(4)
+    }
+
+    async test `rejects invalid incomplete and unsupported non braced members`() {
+        let invalidTokens = lex("nonsense { value }")
+        let invalid = scanner(8)
+        var Bool invalidRejected
+        var Int index
+
+        try {
+            for (token in invalidTokens) {
+                invalid.accept(token, index)
+                index++
+            }
+        } catch (Exception error) { invalidRejected = true }
+
+        expect(invalidRejected).toBe(true)
+        expect(invalid.finished).toBe(true)
+        expect(invalid.retainedHeaderTokenCount).toBe(0)
+
+        let incomplete = scanner(8)
+        let partial = lex("run() {")
+        index = 0
+        for (token in partial) {
+            incomplete.accept(token, index)
+            index++
+        }
+        var Bool incompleteRejected
+        try { incomplete.end() } catch (Exception error) { incompleteRejected = true }
+        expect(incompleteRejected).toBe(true)
+        expect(incomplete.retainedHeaderTokenCount).toBe(0)
+
+        let unsupported = scanner(8)
+        let expression = lex("run() => value")
+        index = 0
+        for (token in expression) {
+            unsupported.accept(token, index)
+            index++
+        }
+        var Bool unsupportedRejected
+        try { unsupported.end() } catch (Exception error) { unsupportedRejected = true }
+        expect(unsupportedRejected).toBe(true)
+        expect(unsupported.retainedHeaderTokenCount).toBe(0)
+    }
+
+    async test `bounds accessor header retention`() {
+        let scanner = scanner(3)
+        let tokens = lex("String value { set(String next)")
+        var Int index
+        var Bool rejected
+        try {
+            for (token in tokens) {
+                scanner.accept(token, index)
+                index++
+            }
+        } catch (Exception error) { rejected = true }
+
+        expect(rejected).toBe(true)
+        expect(scanner.peakRetainedHeaderTokenCount).toBe(3)
+        expect(scanner.retainedHeaderTokenCount).toBe(0)
+    }
+
+    async test `bounds braced member header retention`() {
+        let scanner = scanner(2)
+        scanner.accept(token("run", Token.Type.IDENTIFIER, 1), 0)
+        scanner.accept(token("(", Token.Type.SYMBOL, 4), 1)
+        var Bool rejected
+
+        try { scanner.accept(token(")", Token.Type.SYMBOL, 5), 2) } catch (Exception error) { rejected = true }
+
+        expect(rejected).toBe(true)
+        expect(scanner.peakRetainedHeaderTokenCount).toBe(2)
+        expect(scanner.retainedHeaderTokenCount).toBe(0)
+    }
+
+
+    async collectResults(String source) -> SyntaxIsland[] {
+        let scanner = scanner(32)
+        let tokens = lex(source)
+        let islands = SyntaxIsland[]
+        var Int index
+
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+        islands.addAll(scanner.end())
+        return islands
+    }
+
+    async lex(String source) -> Token[] {
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        return stream.consumeAll<Token>("data")
+    }
+
+    scanner(Int capacity) -> FlatBracedMemberMilestoneScanner {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:member"), "content:abc")
+        return FlatBracedMemberMilestoneScanner(
+            snapshot,
+            SyntaxIslandIdentity(snapshot, "type-header", 10),
+            capacity,
+            startOrdinal: 20
+        )
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type, location: Location(lineNumber: 1, column: column))
+    }
+}

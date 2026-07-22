@@ -1,0 +1,10 @@
+package flat/semantic/binding
+
+class {
+    public construct(visible String value) {
+        if (value != "local" && value != "parameter" && value != "member" &&
+            value != "type" && value != "package" && value != "import") {
+            throw Exception("Invalid binding origin '#value'")
+        }
+    }
+}

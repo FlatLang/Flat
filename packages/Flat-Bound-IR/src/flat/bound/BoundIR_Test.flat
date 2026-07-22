@@ -1,0 +1,123 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+testable class {
+    test `program type function statement and expression units retain explicit semantic evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let longType = SemanticTypes.longType()
+        let literal = BoundLiteralExpression(fixture.range(1, 2), intType, "1")
+        let reference = BoundReferenceExpression(
+            fixture.range(2, 3), longType, "value", fixture.symbol("local", "value", 2)
+        )
+        let conversion = TypeConversions.classify(intType, longType)
+        let converted = BoundConversionExpression(
+            fixture.range(1, 2), longType, literal, conversion
+        )
+        let assignment = BoundAssignmentStatement(
+            fixture.range(1, 3), reference, literal, conversion
+        )
+        let returned = BoundReturnStatement(
+            fixture.range(3, 4), longType, converted,
+            TypeConversions.classify(longType, longType)
+        )
+        let functionIdentity = fixture.declaration("function", "run", 3)
+        let function = BoundFunctionUnit(
+            functionIdentity, "run", longType, [assignment, returned], fixture.range(1, 4)
+        )
+        let typeIdentity = fixture.declaration("class", "Example", 0)
+        let type = BoundTypeUnit(
+            typeIdentity,
+            UserClassSemanticType(typeIdentity),
+            [function],
+            fixture.range(0, 5)
+        )
+        let program = BoundProgram([type], BoundFunctionUnit[])
+
+        expect(literal.expressionKind()).toBe("literal")
+        expect(converted.conversion).toBe(conversion)
+        expect(assignment.unitKind()).toBe("assignment")
+        expect(returned.unitKind()).toBe("return")
+        expect(function.statements()).toBe([assignment, returned])
+        expect(type.functionUnits()).toBe([function])
+        expect(program.typeUnits()).toBe([type])
+    }
+
+    test `bound calls retain selected target arguments and conversions`() {
+        let fixture = BoundIR_TestFixture()
+        let parameter = SemanticTypes.longType()
+        let target = CallableSignature(
+            fixture.symbol("function", "convert", 1),
+            "convert",
+            CallableKind("function"),
+            [parameter],
+            SemanticTypes.stringType()
+        )
+        let argument = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")
+        let conversion = TypeConversions.classify(argument.semanticType, parameter)
+        let call = BoundCallExpression(
+            fixture.range(), SemanticTypes.stringType(), target, [argument], [conversion]
+        )
+
+        expect(call.expressionKind()).toBe("call")
+        expect(call.target).toBe(target)
+        expect(call.argumentValues()).toBe([argument])
+        expect(call.argumentConversions()).toBe([conversion])
+    }
+
+    test `published arrays are defensively copied`() {
+        let fixture = BoundIR_TestFixture()
+        let statement = BoundExpressionStatement(
+            fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")
+        )
+        let source = BoundStatement[]:add(statement)
+        let function = BoundFunctionUnit(
+            fixture.declaration("function", "run", 1),
+            "run", SemanticTypes.unitType(), source, fixture.range()
+        )
+        source.add(BoundReturnStatement(fixture.range(), SemanticTypes.unitType()))
+        let returned = function.statements()
+        returned.add(statement)
+
+        expect(function.statements()).toBe([statement])
+    }
+
+    test `inconsistent conversion call return and snapshot evidence is rejected`() {
+        let fixture = BoundIR_TestFixture()
+        let literal = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")
+        let target = BoundReferenceExpression(
+            fixture.range(), SemanticTypes.intType(), "value", fixture.symbol("local", "value", 2)
+        )
+        var Int rejected
+        try {
+            BoundAssignmentStatement(
+                fixture.range(), target, literal,
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.longType())
+            )
+        } catch (Exception error) { rejected++ }
+        try {
+            BoundReturnStatement(
+                fixture.range(), SemanticTypes.longType(), literal,
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType())
+            )
+        } catch (Exception error) { rejected++ }
+        let otherSnapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:Other.flat"), "revision:other"
+        )
+        try {
+            BoundFunctionUnit(
+                fixture.declaration("function", "run", 1), "run", SemanticTypes.unitType(),
+                BoundStatement[],
+                SourceRange(
+                    otherSnapshot, 0, 1,
+                    Location(lineNumber: 1, column: 1),
+                    Location(lineNumber: 1, column: 2)
+                )
+            )
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+    }
+}

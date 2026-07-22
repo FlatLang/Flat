@@ -1,0 +1,15 @@
+package flat/parser
+
+import flat/compiler/models/Token
+
+/** Exact token recovery boundary for parser operations whose grammar opts in. */
+class extends ParseRecoveryPolicy {
+    public construct(
+        visible Int tokenType,
+        visible String tokenValue = null
+    ) {}
+
+    override public shouldResume(Token token, Int tokenIndex) -> Bool {
+        return token && token.type == tokenType && (!tokenValue || token.value == tokenValue)
+    }
+}

@@ -1,0 +1,26 @@
+package flat/project
+
+import flat/test/TestResult
+import flat/time/Timer
+import flat/io/FancyOutputStream
+
+[TestSuite [ProjectLoading_Test]]
+class {
+    public static async main(String[] args) {
+        let suite = ProjectLoading_TestSuite()
+        let results = TestResult[]
+        let timer = Timer().start()
+        suite.runTests({ results.add(_) })
+        timer.stop()
+        let unsuccessful = results.filter({ !_.success })
+        let fancy = FancyOutputStream(headerPattern: "/\\")
+        if (unsuccessful.isNotEmpty) {
+            fancy.writeHeader("#unsuccessful.count Failures out of #results.count tests", pattern: ":'( ", symmetrical: true)
+            unsuccessful.forEach({ Console.log("#_") })
+        } else {
+            fancy.writeHeader("All #results.count Successful", pattern: ":) ", symmetrical: true)
+        }
+        Console.writeLine("Took #{timer.duration}ms")
+        if (unsuccessful.isNotEmpty) System.exit(1)
+    }
+}

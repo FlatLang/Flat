@@ -1,0 +1,47 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Immutable graph for one independently analyzed function body. */
+data class {
+    var ControlFlowNode[] graphNodes
+    var String[] parameters
+
+    public construct(
+        visible DeclarationIdentity functionIdentity,
+        ControlFlowNode[] nodes,
+        String[] parameterNames = String[]
+    ) {
+        if (!functionIdentity || !nodes || nodes.isEmpty || nodes.any({ !_ }) ||
+            !parameterNames || parameterNames.any((name) => !name || name.trim().count == 0)) {
+            throw Exception("Function control-flow graph requires function, nodes, and parameters")
+        }
+        let ordered = nodes.sort({ _a.ordinal - _b.ordinal })
+        var Int index
+        while (index < ordered.count) {
+            if (ordered[index].ordinal != index) {
+                throw Exception("Control-flow node ordinals must be contiguous from zero")
+            }
+            ordered[index].successorOrdinals().forEach((successor) => {
+                if (successor >= ordered.count) throw Exception("Control-flow successor is outside the function graph")
+            })
+            index++
+        }
+        graphNodes = ControlFlowNode[]
+        graphNodes.addAll(ordered)
+        parameters = String[]
+        parameters.addAll(parameterNames)
+    }
+
+    public nodes() -> ControlFlowNode[] {
+        let result = ControlFlowNode[]
+        result.addAll(graphNodes)
+        return result
+    }
+
+    public parameterNames() -> String[] {
+        let result = String[]
+        result.addAll(parameters)
+        return result
+    }
+}

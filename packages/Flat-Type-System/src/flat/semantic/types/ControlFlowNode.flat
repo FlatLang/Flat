@@ -1,0 +1,36 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Immutable statement node in one function-local control-flow graph. */
+data class {
+    var Int[] successors
+
+    public construct(
+        visible Int ordinal,
+        visible String statementKind,
+        visible SourceRange range,
+        Int[] successorOrdinals,
+        visible String declaredLocal = null,
+        visible String assignedLocal = null,
+        visible String readLocal = null
+    ) {
+        if (ordinal < 0 || !statementKind || statementKind.trim().count == 0 ||
+            !range || !successorOrdinals || successorOrdinals.any({ _ < 0 })) {
+            throw Exception("Control-flow node requires ordinal, kind, range, and successors")
+        }
+        if (statementKind != "entry" && statementKind != "statement" &&
+            statementKind != "condition" && statementKind != "return" &&
+            statementKind != "exit") {
+            throw Exception("Invalid control-flow statement kind '#statementKind'")
+        }
+        successors = Int[]
+        successors.addAll(successorOrdinals)
+    }
+
+    public successorOrdinals() -> Int[] {
+        let result = Int[]
+        result.addAll(successors)
+        return result
+    }
+}

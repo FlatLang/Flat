@@ -1,0 +1,15 @@
+package flat/semantic/declarations
+
+class {
+    visible var PendingDeclarationLookup[] lookups = PendingDeclarationLookup[]
+    visible Int count => lookups.count
+
+    public add(PendingDeclarationLookup lookup) {
+        lookups.add(lookup)
+    }
+
+    public complete(DeclarationLookupResult result) {
+        for (lookup in lookups) lookup.complete(result)
+        lookups = PendingDeclarationLookup[]
+    }
+}

@@ -1,0 +1,23 @@
+package flat/semantic/types
+
+/** Deterministic nearest-member result in one stabilized hierarchy component. */
+data class {
+    var TypeMember[] memberValues
+
+    public construct(visible String name, TypeMember[] members, visible Int distance) {
+        if (!name || name.trim().count == 0 || !members || distance < -1) {
+            throw Exception("Inherited member lookup requires name, members, and distance")
+        }
+        memberValues = TypeMember[]
+        memberValues.addAll(members)
+    }
+
+    public members() -> TypeMember[] {
+        let result = TypeMember[]
+        result.addAll(memberValues)
+        return result
+    }
+
+    visible Bool found => memberValues.isNotEmpty
+    visible Bool ambiguous => memberValues.count > 1
+}

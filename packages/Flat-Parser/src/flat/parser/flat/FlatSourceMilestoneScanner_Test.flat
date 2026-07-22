@@ -1,0 +1,145 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+import flat/lexer/Lexer
+
+testable class {
+    async test `coordinates stable source ordered milestones`() {
+        let source = "|
+            package flat/test
+            import flat/Value
+            data class First { one() {} }
+            interface Second {}
+        |"
+        let tokens = lex(source)
+        let scanner = scanner()
+        let islands = SyntaxIsland[]
+        var Int index
+
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+        islands.addAll(scanner.end())
+
+        expect(islands.count).toBe(8)
+        var Int ordinal
+        for (island in islands) {
+            expect(island.identity.ordinal).toBe(ordinal)
+            expect(island.identity.snapshot).toBe(scanner.snapshot)
+            ordinal++
+        }
+        expect(islands[0].class).toBe(PackageSyntaxIsland.class)
+        expect(islands[1].class).toBe(ImportSyntaxIsland.class)
+        expect(islands[2].class).toBe(TopLevelTypeHeaderSyntaxIsland.class)
+        expect(islands[3].class).toBe(BracedMemberHeaderSyntaxIsland.class)
+        expect(islands[4].class).toBe(BracedMemberBodySyntaxIsland.class)
+        expect(islands[5].class).toBe(TopLevelTypeBodySyntaxIsland.class)
+        expect(islands[6].class).toBe(TopLevelTypeHeaderSyntaxIsland.class)
+        expect(islands[7].class).toBe(TopLevelTypeBodySyntaxIsland.class)
+        expect(scanner.finished).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async test `coordinates mixed members after braced lambda expressions`() {
+        let source = "class Example { run() => (Int x) => { x } next() { work() } }"
+        let tokens = lex(source)
+        let scanner = scanner()
+        let islands = SyntaxIsland[]
+        var Int index
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+        islands.addAll(scanner.end())
+
+        expect(islands.count).toBe(6)
+        expect(islands[0].class).toBe(TopLevelTypeHeaderSyntaxIsland.class)
+        expect(islands[1].class).toBe(NonBracedMemberHeaderSyntaxIsland.class)
+        expect(islands[2].class).toBe(ExpressionMemberBodySyntaxIsland.class)
+        expect(islands[3].class).toBe(BracedMemberHeaderSyntaxIsland.class)
+        expect(islands[4].class).toBe(BracedMemberBodySyntaxIsland.class)
+        expect(islands[5].class).toBe(TopLevelTypeBodySyntaxIsland.class)
+    }
+
+    async test `publishes nested accessor milestones in the source ordinal stream`() {
+        let tokens = lex("class Example { String value { get { read() } } }")
+        let scanner = scanner()
+        let islands = SyntaxIsland[]
+        var Int index
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+        islands.addAll(scanner.end())
+
+        expect(islands.count).toBe(6)
+        expect(islands[0].class).toBe(TopLevelTypeHeaderSyntaxIsland.class)
+        expect(islands[1].class).toBe(BracedMemberHeaderSyntaxIsland.class)
+        expect(islands[2].class).toBe(AccessorHeaderSyntaxIsland.class)
+        expect(islands[3].class).toBe(AccessorBodySyntaxIsland.class)
+        expect(islands[4].class).toBe(BracedMemberBodySyntaxIsland.class)
+        expect(islands[5].class).toBe(TopLevelTypeBodySyntaxIsland.class)
+        var Int ordinal
+        for (island in islands) {
+            expect(island.identity.ordinal).toBe(ordinal)
+            ordinal++
+        }
+    }
+
+    async test `publishes a type header while its body remains delayed`() {
+        let tokens = lex("package flat/test class Delayed { one() {")
+        let scanner = scanner()
+        let islands = SyntaxIsland[]
+        var Int index
+
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+
+        expect(islands.count).toBe(3)
+        expect(islands[0].class).toBe(PackageSyntaxIsland.class)
+        expect(islands[1].class).toBe(TopLevelTypeHeaderSyntaxIsland.class)
+        expect(islands[2].class).toBe(BracedMemberHeaderSyntaxIsland.class)
+        expect(scanner.retainedTokenCount).toBe(0)
+        expect(scanner.finished).toBe(false)
+
+        scanner.cancel()
+        expect(scanner.finished).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async test `rejects a source that ends in a partial type`() {
+        let tokens = lex("package flat/test class Partial {")
+        let scanner = scanner()
+        var Int index
+
+        for (token in tokens) {
+            scanner.accept(token, index)
+            index++
+        }
+
+        var Bool rejected
+        try { scanner.end() } catch (Exception error) { rejected = true }
+
+        expect(rejected).toBe(true)
+        expect(scanner.finished).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async lex(String source) -> Token[] {
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        return stream.consumeAll<Token>("data")
+    }
+
+    scanner() -> FlatSourceMilestoneScanner {
+        return FlatSourceMilestoneScanner(
+            SourceSnapshotIdentity(SourceIdentity("memory:source"), "content:abc"),
+            maxFrontMatterTokens: 8,
+            maxTypeHeaderTokens: 16
+        )
+    }
+}

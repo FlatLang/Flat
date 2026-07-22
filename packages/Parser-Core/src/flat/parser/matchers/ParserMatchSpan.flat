@@ -1,0 +1,7 @@
+package flat/parser/matchers
+
+/** Immutable snapshot of one direct parser match and its consumed token count. */
+data class {
+    visible String parserName
+    visible Int tokenCount
+}

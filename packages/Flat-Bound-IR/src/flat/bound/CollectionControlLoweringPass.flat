@@ -1,0 +1,76 @@
+package flat/bound
+
+/** Lowers arrays/ranges/foreach/safe access/match to canonical expressions and CFG primitives. */
+class extends BoundFunctionLoweringPass {
+    override public name() => "collection-control-forms"
+    override public inputInvariant() => "typed-rich-collection-control"
+    override public outputInvariant() => "canonical-expressions-and-control-flow"
+
+    override public lower(BoundFunctionUnit input) -> BoundFunctionUnit {
+        let output = BoundStatement[]
+        for (statement in input.statements()) lowerStatement(statement, output)
+        return BoundFunctionUnit(
+            input.identity, input.name, input.returnType, output, input.range,
+            input.parameterValues(), input.staticFunction, input.mainFunction
+        )
+    }
+
+    lowerStatement(BoundStatement statement, BoundStatement[] output) {
+        if (statement.class.isOfType(BoundForEachStatement.class)) {
+            let loop = (BoundForEachStatement)statement
+            for (initialization in loop.initialization()) lowerStatement(initialization, output)
+            output.add(BoundLabelStatement(loop.range, loop.loopLabel))
+            output.add(BoundConditionalBranchStatement(
+                loop.range,
+                lowerExpression(loop.condition),
+                loop.exitLabel
+            ))
+            for (body in loop.body()) lowerStatement(body, output)
+            for (advance in loop.advance()) lowerStatement(advance, output)
+            output.add(BoundBranchStatement(loop.range, loop.loopLabel))
+            output.add(BoundLabelStatement(loop.range, loop.exitLabel))
+        } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
+            let value = (BoundExpressionStatement)statement
+            output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
+        } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            let value = (BoundAssignmentStatement)statement
+            output.add(BoundAssignmentStatement(
+                value.range, value.target, lowerExpression(value.value), value.conversion
+            ))
+        } else if (statement.class.isOfType(BoundReturnStatement.class)) {
+            let value = (BoundReturnStatement)statement
+            output.add(BoundReturnStatement(
+                value.range, value.requiredType, lowerExpression(value.value), value.conversion
+            ))
+        } else {
+            output.add(statement)
+        }
+    }
+
+    lowerExpression(BoundExpression expression) -> BoundExpression {
+        if (!expression) return null
+        if (expression.class.isOfType(BoundRichCollectionExpression.class)) {
+            return lowerExpression(((BoundRichCollectionExpression)expression).canonicalExpression)
+        }
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            let call = (BoundCallExpression)expression
+            return BoundCallExpression(
+                call.range,
+                call.semanticType,
+                call.target,
+                call.argumentValues().map({ lowerExpression(_) }),
+                call.argumentConversions()
+            )
+        }
+        if (expression.class.isOfType(BoundConversionExpression.class)) {
+            let conversion = (BoundConversionExpression)expression
+            return BoundConversionExpression(
+                conversion.range,
+                conversion.semanticType,
+                lowerExpression(conversion.value),
+                conversion.conversion
+            )
+        }
+        return expression
+    }
+}

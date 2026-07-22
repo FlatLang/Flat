@@ -1,7 +1,7 @@
 package flat/parser
 
 import flat/parser/flat/PackageParser
-import flat/compiler/models/Token
+import flat/compiler/models
 import flat/eventstream
 import flat/future
 
@@ -106,6 +106,201 @@ testable class {
         expect(operation.inputBufferedCount).toBe(0)
         expect(operation.inputPendingSendCount).toBe(0)
         expect(operation.outputPendingSendCount).toBe(0)
+        expect(operation.retainedParserTokenCount).toBe(0)
+    }
+
+    async test `invalid syntax publishes an immutable source ranged diagnostic`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid"), "content:invalid")
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            snapshot,
+            inputCapacity: 1,
+            outputCapacity: 2
+        )
+        operation.submit(Token(
+            value: "wrong",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 3, column: 5)
+        ))
+
+        while (true) {
+            let received = operation.output.receive()
+            if (received.completed) break
+            if (received.failed) throw received.error
+        }
+        let diagnostic = operation.diagnostics.receive()
+        operation.completion.get()
+
+        expect(diagnostic.received).toBe(true)
+        expect(diagnostic.value.code).toBe("parser.invalid-token")
+        expect(diagnostic.value.snapshot).toBe(snapshot)
+        expect(diagnostic.value.range.startTokenIndex).toBe(0)
+        expect(diagnostic.value.range.endTokenIndex).toBe(1)
+        expect(diagnostic.value.range.start).toBe(Location(lineNumber: 3, column: 5))
+        expect(diagnostic.value.range.end).toBe(Location(lineNumber: 3, column: 10))
+    }
+
+    async test `trailing tokens receive a distinct source ranged diagnostic`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trailing"), "content:trailing")
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            snapshot,
+            inputCapacity: 3,
+            outputCapacity: 4
+        )
+        operation.submit(Token(
+            value: "package",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 1, column: 1)
+        ))
+        operation.submit(Token(
+            value: "flat",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 1, column: 9)
+        ))
+        operation.submit(Token(
+            value: ";",
+            type: Token.Type.SYMBOL,
+            location: Location(lineNumber: 1, column: 13)
+        ))
+
+        while (true) {
+            let received = operation.output.receive()
+            if (received.completed) break
+            if (received.failed) throw received.error
+        }
+        let diagnostic = operation.diagnostics.receive()
+        operation.completion.get()
+
+        expect(diagnostic.received).toBe(true)
+        expect(diagnostic.value.code).toBe("parser.trailing-token")
+        expect(diagnostic.value.range.startTokenIndex).toBe(2)
+        expect(diagnostic.value.range.endTokenIndex).toBe(3)
+    }
+
+    async test `incomplete EOF publishes a source ranged diagnostic without a node`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:eof"), "content:eof")
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            snapshot,
+            inputCapacity: 2,
+            outputCapacity: 3
+        )
+        operation.submit(Token(
+            value: "package",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 1, column: 1)
+        ))
+        operation.close()
+
+        var Bool sawNode
+        var InvalidSyntaxEvent invalid
+        while (true) {
+            let received = operation.output.receive()
+            if (received.received) {
+                if (received.value.class.isOfType(ParsedNodeEvent.class)) sawNode = true
+                if (received.value.class.isOfType(InvalidSyntaxEvent.class)) {
+                    invalid = (InvalidSyntaxEvent)received.value
+                }
+            } else if (received.completed) break
+            else if (received.failed) throw received.error
+        }
+        let diagnostic = operation.diagnostics.receive()
+        operation.completion.get()
+
+        expect(sawNode).toBe(false)
+        expect(invalid).toNotBe(null)
+        expect(invalid.diagnostic).toBe(diagnostic.value)
+        expect(diagnostic.value.code).toBe("parser.incomplete-eof")
+        expect(diagnostic.value.range.startTokenIndex).toBe(0)
+        expect(diagnostic.value.range.endTokenIndex).toBe(1)
+        expect(operation.invalid).toBe(true)
+    }
+
+    async test `explicit recovery boundary resumes parsing without blocking later valid syntax`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:recovery"), "content:recovery")
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            snapshot,
+            ExactTokenRecoveryPolicy(Token.Type.IDENTIFIER, "package"),
+            inputCapacity: 5,
+            outputCapacity: 8,
+            diagnosticCapacity: 2
+        )
+        operation.submit(Token(
+            value: "wrong",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 1, column: 1)
+        ))
+        operation.submit(Token(
+            value: "ignored",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 1, column: 7)
+        ))
+        operation.submit(Token(
+            value: "package",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 2, column: 1)
+        ))
+        operation.submit(Token(
+            value: "flat",
+            type: Token.Type.IDENTIFIER,
+            location: Location(lineNumber: 2, column: 9)
+        ))
+        operation.close()
+
+        var Int nodes
+        var Int invalidEvents
+        while (true) {
+            let received = operation.output.receive()
+            if (received.received) {
+                if (received.value.class.isOfType(ParsedNodeEvent.class)) nodes++
+                if (received.value.class.isOfType(InvalidSyntaxEvent.class)) invalidEvents++
+            } else if (received.completed) break
+            else if (received.failed) throw received.error
+        }
+        let diagnostic = operation.diagnostics.receive()
+        let diagnosticsEnd = operation.diagnostics.receive()
+        operation.completion.get()
+
+        expect(nodes).toBe(1)
+        expect(invalidEvents).toBe(1)
+        expect(diagnostic.received).toBe(true)
+        expect(diagnostic.value.code).toBe("parser.invalid-token")
+        expect(diagnosticsEnd.completed).toBe(true)
+        expect(operation.finished).toBe(true)
+        expect(operation.retainedParserTokenCount).toBe(0)
+    }
+
+    async test `recovery EOF reports the unsealed recovery region`() {
+        let operation = Parser().operation(
+            PackageParser(),
+            ParseContext(),
+            recoveryPolicy: ExactTokenRecoveryPolicy(Token.Type.IDENTIFIER, "package"),
+            inputCapacity: 2,
+            outputCapacity: 4,
+            diagnosticCapacity: 2
+        )
+        operation.submit(Token(value: "wrong", type: Token.Type.IDENTIFIER))
+        operation.submit(Token(value: "ignored", type: Token.Type.IDENTIFIER))
+        operation.close()
+
+        while (true) {
+            let received = operation.output.receive()
+            if (received.completed) break
+            if (received.failed) throw received.error
+        }
+        let invalid = operation.diagnostics.receive()
+        let recoveryEof = operation.diagnostics.receive()
+        operation.completion.get()
+
+        expect(invalid.value.code).toBe("parser.invalid-token")
+        expect(recoveryEof.value.code).toBe("parser.recovery-eof")
+        expect(operation.retainedParserTokenCount).toBe(0)
     }
 
     async test `parse operation propagates input failure and cancellation`() {
@@ -130,13 +325,18 @@ testable class {
         )
         cancelled.submit(Token(value: "package", type: Token.Type.IDENTIFIER))
         cancelled.cancel()
+        let cancellationDiagnostic = cancelled.diagnostics.receive()
         cancelled.completion.get()
 
+        expect(cancellationDiagnostic.received).toBe(true)
+        expect(cancellationDiagnostic.value.code).toBe("parser.cancelled")
+        expect(cancellationDiagnostic.value.snapshot.source.value).toBe("memory:parser-operation")
         expect(cancelled.cancelled).toBe(true)
         expect(cancelled.finished).toBe(true)
         expect(cancelled.inputBufferedCount).toBe(0)
         expect(cancelled.inputPendingSendCount).toBe(0)
         expect(cancelled.outputPendingSendCount).toBe(0)
+        expect(cancelled.retainedParserTokenCount).toBe(0)
     }
 
     async test `legacy parser adapter subscribes before returning`() {

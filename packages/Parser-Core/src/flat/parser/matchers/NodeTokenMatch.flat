@@ -13,5 +13,9 @@ data class extends TokenMatch<NodeTokenPattern> {
 
     visible ParserBase parser => childMatches.last.parser
 
+    override public appendDirectParserSpans(ParserMatchSpan[] spans) {
+        if (childMatches.isNotEmpty) spans.add(childMatches.last.snapshot(tokens.count))
+    }
+
     public traverseNodes(func(Node, ParseContext, TokenPattern)) => childMatches.forEach({ _.traverseNodes(func) })
 }

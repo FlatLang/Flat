@@ -1,0 +1,34 @@
+package flat/semantic/binding
+
+/** Complete immutable result for one independently bound work item. */
+data class {
+    visible BinderWorkItem work
+    var BoundReference[] boundValues
+    var BindingDiagnostic[] diagnosticValues
+
+    public construct(
+        BinderWorkItem work,
+        BoundReference[] boundReferences,
+        BindingDiagnostic[] diagnostics
+    ) {
+        if (!work || !boundReferences || !diagnostics) {
+            throw Exception("Binding work result requires work, references, and diagnostics")
+        }
+        boundValues = BoundReference[]
+        boundValues.addAll(boundReferences)
+        diagnosticValues = BindingDiagnostic[]
+        diagnosticValues.addAll(BindingDiagnostics.ordered(diagnostics))
+    }
+
+    public boundReferences() -> BoundReference[] {
+        let result = BoundReference[]
+        result.addAll(boundValues)
+        return result
+    }
+
+    public diagnostics() -> BindingDiagnostic[] {
+        let result = BindingDiagnostic[]
+        result.addAll(diagnosticValues)
+        return result
+    }
+}

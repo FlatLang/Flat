@@ -1,0 +1,21 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundExpression value,
+        visible TypeConversion conversion
+    ) {
+        if (!range || !semanticType || !value || !conversion || !conversion.applicable ||
+            conversion.toType.value() != semanticType.value() ||
+            conversion.fromType.value() != value.semanticType.value()) {
+            throw Exception("Bound conversion requires consistent typed conversion evidence")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "conversion"
+}

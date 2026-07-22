@@ -1,0 +1,42 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/parser/matchers
+import flat/compiler/models/Token
+import flat/datastruct/list/Stack
+
+/** Internal grammar probe used to locate proven class-body member boundaries. */
+class {
+    public inspect(Token[] tokens) -> FlatClassBodyMatch {
+        if (tokens.isEmpty) return FlatClassBodyMatch()
+
+        let pattern = NodeGroupTokenPattern(ClassParser().classBodyParsers)
+        let matcher = pattern.getMatcher()
+        let classParser = ClassParser()
+        let match = matcher.matchAll(
+            tokens,
+            ParseContext(
+                parserStack: Stack():push(classParser),
+                currentBaseParser: classParser
+            )
+        ).lastWhere({ _ != null })
+        if (!match) return FlatClassBodyMatch()
+
+        let group = (NodeGroupTokenMatch)match
+        let counts = Int[]
+        var Int pendingMetadataTokenCount
+        for (span in group.directSpans) {
+            pendingMetadataTokenCount += span.tokenCount
+            if (span.parserName != AnnotationParser.class.name) {
+                counts.add(pendingMetadataTokenCount)
+                pendingMetadataTokenCount = 0
+            }
+        }
+
+        return FlatClassBodyMatch(
+            match.tokens.count,
+            counts,
+            match.tokens.count == tokens.count
+        )
+    }
+}

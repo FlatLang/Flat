@@ -1,0 +1,40 @@
+name: Flat-Bound-IR / Test Flat-Bound-IR
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["master"]
+  schedule:
+    - cron: "0 8 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.8.0
+        with:
+          java-version: 8
+      - uses: actions/checkout@v4
+      - name: Download latest Airship
+        uses: ./.github/actions/download-airship
+        with:
+          repo: ${{ github.repository }}
+          includePrerelease: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
+        with:
+          prebuild-targets: es6
+      - name: Build Flat-Bound-IR Test
+        run: node airship.js --use-links -f packages/Flat-Bound-IR install test -t es6
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: flat-bound-ir-test.js
+          path: packages/Flat-Bound-IR/dist/es6/test.js
+      - name: Run Flat-Bound-IR Test
+        run: node airship.js --use-links -f packages/Flat-Bound-IR run test

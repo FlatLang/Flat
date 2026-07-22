@@ -1,0 +1,12 @@
+package flat/semantic/declarations
+
+import flat/future
+
+/** Domain-specific pending declaration readiness handle. */
+class {
+    var Future.CompletableFuture<DeclarationLookupResult> completion = Future.create<DeclarationLookupResult>()
+    visible Bool completed => completion.completed
+
+    public async get() -> DeclarationLookupResult => completion.get()
+    public complete(DeclarationLookupResult result) => completion.complete(result)
+}

@@ -1,0 +1,137 @@
+package flat/semantic/types
+
+/** Complete target-independent conversion classification for foundational types. */
+class {
+    public static classify(
+        SemanticType fromType,
+        SemanticType toType,
+        Bool explicit = false,
+        TypeHierarchyComponent hierarchy = null
+    ) -> TypeConversion {
+        if (!fromType || !toType) throw Exception("Type conversion requires source and target types")
+        if (fromType.kind() == "error" || toType.kind() == "error") {
+            return TypeConversion(fromType, toType, "error-recovery", true, true, true, 0)
+        }
+        if (fromType.kind() == "unknown" || toType.kind() == "unknown") {
+            return TypeConversion(fromType, toType, "unknown", false, false, true, 1000)
+        }
+        if (fromType.value() == toType.value()) {
+            return TypeConversion(fromType, toType, "identity", true, true, false, 0)
+        }
+        if (toType.kind() == "nullable") {
+            let nullable = (NullableSemanticType)toType
+            if (fromType.kind() == "null") {
+                return TypeConversion(fromType, toType, "null", true, true, false, 1)
+            }
+            let underlying = classify(fromType, nullable.underlyingType, explicit, hierarchy)
+            if (underlying.applicable) {
+                return TypeConversion(
+                    fromType,
+                    toType,
+                    "nullable-lift",
+                    true,
+                    underlying.implicit,
+                    underlying.suppressesCascade,
+                    underlying.cost + 1
+                )
+            }
+        }
+        if (fromType.kind() == "nullable") {
+            let nullable = (NullableSemanticType)fromType
+            if (explicit) {
+                let underlying = classify(nullable.underlyingType, toType, true, hierarchy)
+                if (underlying.applicable) {
+                    return TypeConversion(fromType, toType, "nullable-unwrap", true, false, false, underlying.cost + 20)
+                }
+            }
+            return none(fromType, toType)
+        }
+        if (fromType.kind() == "null") {
+            return none(fromType, toType)
+        }
+        if (fromType.kind() == "primitive" && toType.kind() == "primitive") {
+            return primitive(fromType, toType, explicit)
+        }
+        if (fromType.kind() == "user-class" && toType.kind() == "user-class" && hierarchy) {
+            let distance = hierarchy.distance(
+                (UserClassSemanticType)fromType,
+                (UserClassSemanticType)toType
+            )
+            if (distance > 0) {
+                return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10 + distance)
+            }
+            if (explicit && hierarchy.distance(
+                (UserClassSemanticType)toType,
+                (UserClassSemanticType)fromType
+            ) > 0) {
+                return TypeConversion(fromType, toType, "reference-cast", true, false, false, 20)
+            }
+        }
+        if (isReference(fromType) && toType.kind() == "object") {
+            return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10)
+        }
+        if (explicit && fromType.kind() == "object" && isReference(toType)) {
+            return TypeConversion(fromType, toType, "reference-cast", true, false, false, 20)
+        }
+        return none(fromType, toType)
+    }
+
+    static primitive(SemanticType fromType, SemanticType toType, Bool explicit) -> TypeConversion {
+        if (fromType.value() == "primitive:Bool" || toType.value() == "primitive:Bool") {
+            return none(fromType, toType)
+        }
+        let fromRank = rank(fromType)
+        let toRank = rank(toType)
+        if (fromRank < 0 || toRank < 0) return none(fromType, toType)
+        if (compatibleNumericFamily(fromType, toType) && toRank >= fromRank) {
+            return TypeConversion(fromType, toType, "numeric-widening", true, true, false, toRank - fromRank + 1)
+        }
+        if (explicit) {
+            return TypeConversion(fromType, toType, "numeric-cast", true, false, false, 20 + Math.abs(toRank - fromRank))
+        }
+        return none(fromType, toType)
+    }
+
+    static compatibleNumericFamily(SemanticType fromType, SemanticType toType) -> Bool {
+        if (isFloating(toType)) return isIntegral(fromType) || isFloating(fromType)
+        if (isFloating(fromType)) return false
+        let fromUnsigned = isUnsigned(fromType)
+        let toUnsigned = isUnsigned(toType)
+        if (fromType.value() == "primitive:Char") return true
+        return fromUnsigned == toUnsigned
+    }
+
+    public static isIntegral(SemanticType type) -> Bool {
+        if (!type || type.kind() != "primitive") return false
+        return type.value() != "primitive:Bool" && type.value() != "primitive:Float" &&
+            type.value() != "primitive:Double"
+    }
+
+    public static isFloating(SemanticType type) -> Bool {
+        return type && (type.value() == "primitive:Float" || type.value() == "primitive:Double")
+    }
+
+    static isUnsigned(SemanticType type) -> Bool {
+        return type.value() == "primitive:UByte" || type.value() == "primitive:UShort" ||
+            type.value() == "primitive:UInt" || type.value() == "primitive:ULong"
+    }
+
+    static isReference(SemanticType type) -> Bool {
+        return type.kind() == "string" || type.kind() == "object" || type.kind() == "array" ||
+            type.kind() == "user-class" || type.kind() == "function"
+    }
+
+    static rank(SemanticType type) => -1 {
+        let value = type.value()
+        if (value == "primitive:Byte" || value == "primitive:UByte" || value == "primitive:Char") return 1
+        if (value == "primitive:Short" || value == "primitive:UShort") return 2
+        if (value == "primitive:Int" || value == "primitive:UInt") return 3
+        if (value == "primitive:Long" || value == "primitive:ULong") return 4
+        if (value == "primitive:Float") return 5
+        if (value == "primitive:Double") return 6
+    }
+
+    static none(SemanticType fromType, SemanticType toType) -> TypeConversion {
+        return TypeConversion(fromType, toType, "none", false, false, false, 1000)
+    }
+}

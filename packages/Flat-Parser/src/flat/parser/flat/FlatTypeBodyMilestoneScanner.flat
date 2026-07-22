@@ -1,0 +1,223 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/**
+ * Bounded coordinator for mixed braced and non-braced members in one Flat type
+ * body. Significant tokens before a member's opening brace are retained only
+ * until the existing braced scanner validates and publishes its signature.
+ * Non-braced boundaries remain owned by the class-body grammar probe.
+ *
+ * The containing type's outer braces are not part of this scanner's input.
+ */
+class {
+    var FlatNonBracedMemberMilestoneScanner nonBraced
+    var FlatBracedMemberMilestoneScanner braced
+    var Token[] pendingHeaderTokens = Token[]
+    var Int[] pendingHeaderIndexes = Int[]
+    var Int lastTokenIndex = -1
+
+    visible var Int nextOrdinal
+    visible var Bool finished
+    visible Int retainedTokenCount =>
+        pendingHeaderTokens.count + (braced?.retainedHeaderTokenCount ?: 0)
+    visible var Int peakRetainedTokenCount
+
+    public construct(
+        visible SourceSnapshotIdentity snapshot,
+        visible SyntaxIslandIdentity containingTypeIdentity,
+        visible Int maxRetainedHeaderTokens,
+        Int startOrdinal = 0
+    ) {
+        if (!snapshot || !containingTypeIdentity) {
+            throw Exception("Type-body member scanner requires source and containing type identities")
+        }
+        if (containingTypeIdentity.snapshot != snapshot) {
+            throw Exception("Type-body member scanner identities must belong to one source snapshot")
+        }
+        if (maxRetainedHeaderTokens <= 0) {
+            throw Exception("Type-body member header capacity must be positive")
+        }
+        if (startOrdinal < 0) throw Exception("Type-body member starting ordinal cannot be negative")
+
+        nextOrdinal = startOrdinal
+        startNonBraced()
+    }
+
+    public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+        if (tokenIndex < 0 || tokenIndex <= lastTokenIndex) {
+            reject("Type-body member token indexes must be non-negative and strictly increasing")
+        }
+        lastTokenIndex = tokenIndex
+
+        try {
+            if (braced) return acceptBraced(token, tokenIndex)
+            return acceptUndecided(token, tokenIndex)
+        } catch (Exception error) {
+            rejectState()
+            throw error
+        }
+    }
+
+    acceptUndecided(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (isSymbol(token, "}")) {
+            if (nonBraced.expressionBodyOpen) {
+                retainPending(token, tokenIndex)
+                let islands = nonBraced.accept(token, tokenIndex)
+                nextOrdinal = nonBraced.nextOrdinal
+                releasePublishedPrefix(islands)
+                updatePeak()
+                return islands
+            }
+            reject("Type-body member scanner does not accept the containing type closing brace")
+        }
+
+        if (pendingHeaderTokens.count >= maxRetainedHeaderTokens) {
+            reject("Type-body member opening brace requires one bounded lookahead token beyond configured header capacity")
+        }
+
+        if (isSymbol(token, "{")) {
+            if (nonBraced.canOpenExpressionBrace) {
+                retainPending(token, tokenIndex)
+                let islands = nonBraced.accept(token, tokenIndex)
+                nextOrdinal = nonBraced.nextOrdinal
+                releasePublishedPrefix(islands)
+                updatePeak()
+                return islands
+            }
+
+            let islands = nonBraced.finishBeforeBracedMember()
+            nextOrdinal = nonBraced.nextOrdinal
+            releasePublishedPrefix(islands)
+
+            braced = FlatBracedMemberMilestoneScanner(
+                snapshot,
+                containingTypeIdentity,
+                maxRetainedHeaderTokens,
+                nextOrdinal
+            )
+            nonBraced.cancel()
+            nonBraced = null
+
+            var Int index
+            while (index < pendingHeaderTokens.count) {
+                islands.addAll(braced.accept(pendingHeaderTokens[index], pendingHeaderIndexes[index]))
+                index++
+            }
+            clearPending()
+            islands.addAll(braced.accept(token, tokenIndex))
+            nextOrdinal = braced.nextOrdinal
+            updatePeak()
+            return islands
+        }
+
+        if (token.type != Token.Type.COMMENT && token.type != Token.Type.WS) {
+            retainPending(token, tokenIndex)
+        }
+
+        let islands = nonBraced.accept(token, tokenIndex)
+        nextOrdinal = nonBraced.nextOrdinal
+        releasePublishedPrefix(islands)
+        updatePeak()
+        return islands
+    }
+
+    acceptBraced(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        let islands = braced.accept(token, tokenIndex)
+        nextOrdinal = braced.nextOrdinal
+        updatePeak()
+
+        if (islands.any({ _.class.isOfType(BracedMemberBodySyntaxIsland.class) })) {
+            islands.addAll(braced.end())
+            nextOrdinal = braced.nextOrdinal
+            braced = null
+            startNonBraced()
+        }
+
+        return islands
+    }
+
+    public end() -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+
+        try {
+            let islands = braced ? braced.end() : nonBraced.end()
+            nextOrdinal = braced ? braced.nextOrdinal : nonBraced.nextOrdinal
+            finished = true
+            clearState()
+            return islands
+        } catch (Exception error) {
+            rejectState()
+            throw error
+        }
+    }
+
+    public cancel() {
+        if (finished) return
+        finished = true
+        clearState()
+    }
+
+    startNonBraced() {
+        nonBraced = FlatNonBracedMemberMilestoneScanner(
+            snapshot,
+            containingTypeIdentity,
+            maxRetainedHeaderTokens,
+            nextOrdinal
+        )
+    }
+
+    retainPending(Token token, Int tokenIndex) {
+        if (!token.location) reject("Type-body member tokens require source locations")
+        if (pendingHeaderTokens.count >= maxRetainedHeaderTokens) {
+            reject("Type-body member header exceeds configured token capacity")
+        }
+        pendingHeaderTokens.add(token)
+        pendingHeaderIndexes.add(tokenIndex)
+    }
+
+    releasePublishedPrefix(SyntaxIsland[] islands) {
+        if (islands.isEmpty) return
+
+        var Int publishedEnd = -1
+        for (island in islands) {
+            publishedEnd = Math.max(publishedEnd, island.range.endTokenIndex)
+        }
+
+        var Int count
+        while (count < pendingHeaderIndexes.count && pendingHeaderIndexes[count] < publishedEnd) count++
+        pendingHeaderTokens = pendingHeaderTokens.skip(count)
+        pendingHeaderIndexes = pendingHeaderIndexes.skip(count)
+    }
+
+    updatePeak() {
+        peakRetainedTokenCount = Math.max(peakRetainedTokenCount, retainedTokenCount)
+    }
+
+    clearPending() {
+        pendingHeaderTokens = Token[]
+        pendingHeaderIndexes = Int[]
+    }
+
+    clearState() {
+        nonBraced?.cancel()
+        braced?.cancel()
+        nonBraced = null
+        braced = null
+        clearPending()
+    }
+
+    reject(String message) {
+        rejectState()
+        throw Exception(message)
+    }
+
+    rejectState() {
+        finished = true
+        clearState()
+    }
+
+    isSymbol(Token token, String value) => token.type == Token.Type.SYMBOL && token.value == value
+}

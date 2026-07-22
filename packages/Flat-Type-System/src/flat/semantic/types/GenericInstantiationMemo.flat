@@ -1,0 +1,64 @@
+package flat/semantic/types
+
+/** Bounded per-session memo of immutable generic instantiation work. */
+class {
+    var GenericInstantiationWork[] workValues = GenericInstantiationWork[]
+
+    public construct(visible Int capacity) {
+        if (capacity <= 0) throw Exception("Generic instantiation memo capacity must be positive")
+    }
+
+    public instantiate(
+        GenericDeclaration declaration,
+        SemanticType[] typeArguments,
+        TypeHierarchyComponent hierarchy = null
+    ) -> GenericInstantiationWork {
+        if (!declaration || !typeArguments || typeArguments.any({ !_ })) {
+            throw Exception("Generic instantiation requires declaration and arguments")
+        }
+        let parameters = declaration.genericParameters()
+        if (parameters.count != typeArguments.count) {
+            throw Exception("Generic instantiation argument count does not match declaration")
+        }
+        let substitution = GenericSubstitution(parameters, typeArguments)
+        var Int index
+        while (index < parameters.count) {
+            if (parameters[index].constraint) {
+                let required = substitution.apply(parameters[index].constraint)
+                if (!TypeConversions.classify(typeArguments[index], required, hierarchy: hierarchy).applicable) {
+                    throw Exception("Generic instantiation argument violates its constraint")
+                }
+            }
+            index++
+        }
+        let key = keyFor(declaration, typeArguments)
+        let existing = workValues.firstOrNull({ _.key == key })
+        if (existing) return existing
+        if (workValues.count >= capacity) {
+            throw Exception("Generic instantiation memo capacity exceeded")
+        }
+        let work = GenericInstantiationWork(
+            key,
+            declaration,
+            substitution,
+            substitution.apply(declaration.templateType)
+        )
+        workValues.add(work)
+        workValues = workValues.sort({ _a.key.compareTo(_b.key) })
+        return work
+    }
+
+    keyFor(GenericDeclaration declaration, SemanticType[] typeArguments) -> String {
+        var String result = declaration.identity.value
+        for (argument in typeArguments) result += ":#{argument.value()}"
+        return result
+    }
+
+    public work() -> GenericInstantiationWork[] {
+        let result = GenericInstantiationWork[]
+        result.addAll(workValues)
+        return result
+    }
+
+    visible Int count => workValues.count
+}

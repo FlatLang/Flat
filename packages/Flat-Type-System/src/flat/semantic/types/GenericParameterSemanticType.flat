@@ -1,0 +1,20 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Stable generic parameter type owned by one generic declaration. */
+data class extends SemanticType {
+    public construct(
+        visible DeclarationIdentity ownerIdentity,
+        visible String name,
+        visible Int ordinal,
+        visible SemanticType constraint = null
+    ) {
+        if (!ownerIdentity || !name || name.trim().count == 0 || ordinal < 0) {
+            throw Exception("Generic parameter requires owner, name, and ordinal")
+        }
+    }
+
+    override public value() => "generic-parameter:#{ownerIdentity.value}:#ordinal:#name"
+    override public kind() => "generic-parameter"
+}

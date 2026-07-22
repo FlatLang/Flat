@@ -1,0 +1,25 @@
+package flat/semantic/declarations
+
+/** Ordered explicit/default import lookup over independently sealed packages. */
+class {
+    public construct(visible PackageDeclarationPartition[] imports) {
+        if (!imports || imports.isEmpty) throw Exception("Imported declaration scope requires packages")
+    }
+
+    public lookup(String name) -> PendingDeclarationLookup {
+        let completion = PendingDeclarationLookup()
+        resolve(name, completion)$
+        return completion
+    }
+
+    async resolve(String name, PendingDeclarationLookup completion) {
+        for (partition in imports) {
+            let result = await partition.lookup(name).get()
+            if (result.class.isOfType(FoundDeclaration.class)) {
+                completion.complete(result)
+                return
+            }
+        }
+        completion.complete(MissingDeclaration(name, imports.last.scope.identity))
+    }
+}

@@ -1,0 +1,20 @@
+package flat/semantic/types
+
+/** Complete result of checking one expression or statement contract. */
+data class {
+    visible SemanticType semanticType
+    visible TypeConversion conversion
+    visible TypeDiagnostic diagnostic
+    visible Bool valid => diagnostic == null
+
+    public construct(
+        SemanticType semanticType,
+        TypeConversion conversion = null,
+        TypeDiagnostic diagnostic = null
+    ) {
+        if (!semanticType) throw Exception("Typed operation result requires a semantic type")
+        this.semanticType = semanticType
+        this.conversion = conversion
+        this.diagnostic = diagnostic
+    }
+}

@@ -1,0 +1,126 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+import flat/semantic/declarations
+import flat/eventstream
+
+testable class {
+    test `binder resolves or diagnoses every reference in stable source order`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("function", "run", 20)
+        let work = FunctionBodyBindingWorkItem(
+            fixture.island("function-body", 21),
+            owner,
+            fixture.scope(owner, "function-body"),
+            fixture.range(10, 30)
+        )
+        let context = BindingLookupContext(fixture.packageIdentity, null)
+        let foundCandidate = fixture.candidate("found", 1, "local")
+        let lookup = QualifiedBindingLookup(
+            fixture.lookup(locals: [fixture.layer([foundCandidate])]),
+            QualifiedBindingMembers[]
+        )
+        let found = BindingReference(["found"], fixture.range(15, 16))
+        let missing = BindingReference(["missing"], fixture.range(12, 13))
+        let result = NameBinder(lookup).bind(work, [found, missing], context)
+
+        expect(result.boundReferences().count).toBe(1)
+        expect(result.boundReferences().first.reference).toBe(found)
+        expect(result.boundReferences().first.candidate).toBe(foundCandidate)
+        expect(result.diagnostics().count).toBe(1)
+        expect(result.diagnostics().first.name).toBe("missing")
+        expect(result.diagnostics().first.range).toBe(missing.range)
+    }
+
+    test `unresolved and ambiguous diagnostics are stable and source ranged`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("function", "run", 20)
+        let work = FunctionBodyBindingWorkItem(
+            fixture.island("function-body", 21),
+            owner,
+            fixture.scope(owner, "function-body"),
+            fixture.range(10, 30)
+        )
+        let context = BindingLookupContext(fixture.packageIdentity, null)
+        let later = fixture.candidate("value", 9, "type")
+        let earlier = fixture.candidate("value", 1, "type")
+        let ambiguous = fixture.lookup(types: fixture.layer([later, earlier]))
+            .lookup("value", context)
+        let missing = fixture.lookup().lookup("missing", context)
+        let ambiguousDiagnostic = BindingDiagnostics.fromLookup(
+            work,
+            fixture.range(15, 16),
+            ambiguous
+        )
+        let missingDiagnostic = BindingDiagnostics.fromLookup(
+            work,
+            fixture.range(12, 13),
+            missing
+        )
+
+        expect(ambiguousDiagnostic.code).toBe("binding.ambiguous")
+        expect(ambiguousDiagnostic.candidateValues).toBe([
+            earlier.symbol.identity.value,
+            later.symbol.identity.value
+        ])
+        expect(missingDiagnostic.code).toBe("binding.unresolved")
+        expect(missingDiagnostic.candidateValues).toBe(String[])
+        expect(BindingDiagnostics.ordered([ambiguousDiagnostic, missingDiagnostic]))
+            .toBe([missingDiagnostic, ambiguousDiagnostic])
+        expect(BindingDiagnostics.ordered([missingDiagnostic, ambiguousDiagnostic]))
+            .toBe([missingDiagnostic, ambiguousDiagnostic])
+    }
+
+    async test `one failed binding task does not stop unrelated binding work`() {
+        let executor = ControlledExecutor(2)
+        var Bool unrelatedCompleted
+
+        let invalid = executor.submit({ throw Exception("invalid body") })$
+        let unrelated = executor.submit({ unrelatedCompleted = true })$
+
+        let invalidResult = executor.runNext()
+        let unrelatedResult = executor.runNext()
+
+        expect(invalidResult.failed).toBe(true)
+        expect(invalidResult.error.message).toBe("invalid body")
+        expect(invalid.get().failed).toBe(true)
+        expect(unrelatedResult.completed).toBe(true)
+        expect(unrelated.get().completed).toBe(true)
+        expect(unrelatedCompleted).toBe(true)
+    }
+
+    async test `pending binding work causes no unrelated head of line blocking`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let blockedScope = DeclarationScope(ScopeIdentity(fixture.packageIdentity, "package"))
+        let readyScope = DeclarationScope(ScopeIdentity(fixture.packageIdentity, "package", ordinal: 1))
+        let blockedReadiness = blockedScope.lookup("Blocked")
+        let readyReadiness = readyScope.lookup("Ready")
+        readyScope.declare(fixture.symbol("Ready", 1, readyScope.identity, declarationKind: "class"))
+        readyScope.seal()
+        let executor = ControlledExecutor(2)
+        let scheduler = BindingWorkScheduler(executor)
+        var Bool blockedRan
+        var Bool readyRan
+
+        scheduler.schedule(blockedReadiness, { blockedRan = true })$
+        scheduler.schedule(readyReadiness, { readyRan = true })$
+        readyReadiness.get()
+
+        expect(executor.queuedCount).toBe(1)
+        let readyResult = executor.runNext()
+        expect(readyResult.completed).toBe(true)
+        expect(readyRan).toBe(true)
+        expect(blockedRan).toBe(false)
+
+        blockedScope.declare(
+            fixture.symbol("Blocked", 2, blockedScope.identity, declarationKind: "class")
+        )
+        blockedScope.seal()
+        blockedReadiness.get()
+
+        expect(executor.queuedCount).toBe(1)
+        let blockedResult = executor.runNext()
+        expect(blockedResult.completed).toBe(true)
+        expect(blockedRan).toBe(true)
+    }
+}

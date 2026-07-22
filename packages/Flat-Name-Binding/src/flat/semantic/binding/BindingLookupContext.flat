@@ -1,0 +1,27 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+
+/** Immutable access context for one independently bound work item. */
+data class {
+    visible PackageIdentity packageIdentity
+    visible DeclarationIdentity ownerType
+    visible Bool staticContext
+    visible DeclarationIdentity[] visibleProtectedOwners
+
+    public construct(
+        PackageIdentity packageIdentity,
+        DeclarationIdentity ownerType,
+        Bool staticContext = false,
+        DeclarationIdentity[] visibleProtectedOwners = DeclarationIdentity[]
+    ) {
+        if (!packageIdentity) throw Exception("Binding lookup context requires a package")
+        if (!visibleProtectedOwners) {
+            throw Exception("Binding lookup context requires protected-owner visibility")
+        }
+        this.packageIdentity = packageIdentity
+        this.ownerType = ownerType
+        this.staticContext = staticContext
+        this.visibleProtectedOwners = visibleProtectedOwners
+    }
+}

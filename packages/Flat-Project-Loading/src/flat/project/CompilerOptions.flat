@@ -1,0 +1,38 @@
+package flat/project
+
+import flat/datastruct/HashMap
+
+data class {
+    visible String target
+    visible String runtime
+    visible String mainClass
+    visible Bool library
+    visible String outputFile
+    visible String outputDirectory
+    visible Int maxConcurrency
+    visible HashMap<String, String> applicationProperties
+
+    public construct(
+        String target,
+        String runtime = null,
+        String mainClass = null,
+        Bool library = false,
+        String outputFile = null,
+        String outputDirectory = null,
+        Int maxConcurrency = 1,
+        HashMap<String, String> applicationProperties = HashMap()
+    ) {
+        if (!target || target.trim().count == 0) throw Exception("Compiler target cannot be empty")
+        if (library && mainClass) throw Exception("Library compilation cannot define a main class")
+        if (!library && !mainClass) throw Exception("Executable compilation requires a main class")
+        if (maxConcurrency <= 0) throw Exception("Compiler concurrency must be positive")
+        this.target = target
+        this.runtime = runtime
+        this.mainClass = mainClass
+        this.library = library
+        this.outputFile = outputFile
+        this.outputDirectory = outputDirectory
+        this.maxConcurrency = maxConcurrency
+        this.applicationProperties = HashMap(applicationProperties)
+    }
+}

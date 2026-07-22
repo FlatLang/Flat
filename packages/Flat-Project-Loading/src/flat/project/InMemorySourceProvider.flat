@@ -1,0 +1,19 @@
+package flat/project
+
+import flat/compiler/models
+import flat/datastruct/HashMap
+
+class extends SourceProvider {
+    var HashMap<String, LoadedSource> sources = HashMap()
+    var SourceIdentity[] sourceIdentities = SourceIdentity[]
+
+    public add(SourceIdentity identity, String revision, String contents) {
+        if (sources[identity.value]) throw Exception("In-memory source identity is already registered")
+        sources[identity.value] = LoadedSource(SourceSnapshotIdentity(identity, revision), contents)
+        sourceIdentities.add(identity)
+    }
+
+    override public identities() -> SourceIdentity[] => sourceIdentities.copy()
+
+    override public load(SourceIdentity identity) -> LoadedSource => sources[identity.value]
+}

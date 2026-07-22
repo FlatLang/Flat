@@ -1,0 +1,10 @@
+package flat/semantic/types
+
+class {
+    public construct(visible String value) {
+        if (value != "function" && value != "instance-method" &&
+            value != "static-method" && value != "constructor") {
+            throw Exception("Invalid callable kind '#value'")
+        }
+    }
+}

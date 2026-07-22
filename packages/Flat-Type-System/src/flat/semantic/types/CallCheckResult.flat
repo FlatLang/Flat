@@ -1,0 +1,27 @@
+package flat/semantic/types
+
+/** Explicit result of checking one non-overloaded call. */
+data class {
+    var TypeConversion[] conversions
+
+    public construct(
+        visible CallableSignature target,
+        TypeConversion[] argumentConversions,
+        visible SemanticType semanticType,
+        visible TypeDiagnostic diagnostic = null
+    ) {
+        if (!target || !argumentConversions || !semanticType) {
+            throw Exception("Call check result requires target, conversions, and type")
+        }
+        conversions = TypeConversion[]
+        conversions.addAll(argumentConversions)
+    }
+
+    public argumentConversions() -> TypeConversion[] {
+        let result = TypeConversion[]
+        result.addAll(conversions)
+        return result
+    }
+
+    visible Bool valid => diagnostic == null
+}

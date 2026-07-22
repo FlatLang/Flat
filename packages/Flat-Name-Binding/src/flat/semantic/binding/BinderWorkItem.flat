@@ -1,0 +1,40 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+
+/** Immutable, independently schedulable name-binding unit. */
+abstract data class {
+    visible SyntaxIslandIdentity identity
+    visible DeclarationIdentity ownerIdentity
+    visible ScopeIdentity scopeIdentity
+    visible SourceRange range
+    visible String workKind
+
+    public construct(
+        SyntaxIslandIdentity identity,
+        DeclarationIdentity ownerIdentity,
+        ScopeIdentity scopeIdentity,
+        SourceRange range,
+        String workKind
+    ) {
+        if (!identity || !ownerIdentity || !scopeIdentity || !range) {
+            throw Exception("Binder work requires identity, owner, scope, and source range")
+        }
+        if (!workKind || workKind.trim().count == 0) {
+            throw Exception("Binder work kind cannot be empty")
+        }
+        if (identity.kind != workKind) {
+            throw Exception("Binder work identity kind must match its work kind")
+        }
+        let snapshot = identity.snapshot
+        if (ownerIdentity.syntaxIdentity.snapshot != snapshot ||
+            scopeIdentity.snapshot != snapshot || range.snapshot != snapshot) {
+            throw Exception("Binder work identity, owner, scope, and range must share one snapshot")
+        }
+        this.identity = identity
+        this.ownerIdentity = ownerIdentity
+        this.scopeIdentity = scopeIdentity
+        this.range = range
+        this.workKind = workKind
+    }
+}

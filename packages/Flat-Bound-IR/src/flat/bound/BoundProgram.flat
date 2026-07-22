@@ -1,0 +1,27 @@
+package flat/bound
+
+data class {
+    var BoundTypeUnit[] types
+    var BoundFunctionUnit[] functions
+
+    public construct(BoundTypeUnit[] typeUnits, BoundFunctionUnit[] topLevelFunctions) {
+        if (!typeUnits || typeUnits.any({ !_ }) || !topLevelFunctions || topLevelFunctions.any({ !_ })) {
+            throw Exception("Bound program requires type and top-level function units")
+        }
+        types = BoundTypeUnit[]
+        types.addAll(typeUnits)
+        functions = BoundFunctionUnit[]
+        functions.addAll(topLevelFunctions)
+    }
+
+    public typeUnits() -> BoundTypeUnit[] {
+        let result = BoundTypeUnit[]
+        result.addAll(types)
+        return result
+    }
+    public topLevelFunctions() -> BoundFunctionUnit[] {
+        let result = BoundFunctionUnit[]
+        result.addAll(functions)
+        return result
+    }
+}

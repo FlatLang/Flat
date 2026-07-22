@@ -1,0 +1,129 @@
+package flat/semantic/types
+
+testable class {
+    test `assignment and return checking apply explicit conversion semantics`() {
+        let fixture = TypeSystem_TestFixture()
+        let range = fixture.range()
+        let assignment = TypeOperations.assignment(
+            SemanticTypes.longType(), SemanticTypes.intType(), range
+        )
+        let invalidAssignment = TypeOperations.assignment(
+            SemanticTypes.intType(), SemanticTypes.longType(), range
+        )
+        let returned = TypeOperations.returnValue(
+            SemanticTypes.doubleType(), SemanticTypes.floatType(), range
+        )
+        let missing = TypeOperations.returnValue(SemanticTypes.intType(), null, range)
+        let voidReturn = TypeOperations.returnValue(SemanticTypes.voidType(), null, range)
+        let invalidVoid = TypeOperations.returnValue(
+            SemanticTypes.voidType(), SemanticTypes.intType(), range
+        )
+
+        expect(assignment.valid).toBe(true)
+        expect(assignment.conversion.conversionKind).toBe("numeric-widening")
+        expect(invalidAssignment.diagnostic.code).toBe("type.assignment")
+        expect(returned.valid).toBe(true)
+        expect(missing.diagnostic.code).toBe("type.return-missing")
+        expect(voidReturn.valid).toBe(true)
+        expect(invalidVoid.diagnostic.code).toBe("type.return-value")
+    }
+
+    test `unary and binary operators produce target independent result types`() {
+        let range = TypeSystem_TestFixture().range()
+        expect(TypeOperations.unary("!", SemanticTypes.boolType(), range).semanticType.value())
+            .toBe("primitive:Bool")
+        expect(TypeOperations.unary("-", SemanticTypes.intType(), range).semanticType.value())
+            .toBe("primitive:Int")
+        expect(TypeOperations.unary("~", SemanticTypes.longType(), range).semanticType.value())
+            .toBe("primitive:Long")
+        expect(TypeOperations.unary("!", SemanticTypes.intType(), range).diagnostic.code)
+            .toBe("type.unary")
+        expect(TypeOperations.binary(
+            "+", SemanticTypes.intType(), SemanticTypes.longType(), range
+        ).semanticType.value()).toBe("primitive:Long")
+        expect(TypeOperations.binary(
+            "<", SemanticTypes.floatType(), SemanticTypes.doubleType(), range
+        ).semanticType.value()).toBe("primitive:Bool")
+        expect(TypeOperations.binary(
+            "&&", SemanticTypes.boolType(), SemanticTypes.boolType(), range
+        ).semanticType.value()).toBe("primitive:Bool")
+        expect(TypeOperations.binary(
+            "+", SemanticTypes.stringType(), SemanticTypes.intType(), range
+        ).semanticType.value()).toBe("builtin:String")
+        expect(TypeOperations.binary(
+            "%", SemanticTypes.floatType(), SemanticTypes.floatType(), range
+        ).diagnostic.code).toBe("type.binary")
+        expect(TypeOperations.binary(
+            "+", SemanticTypes.intType(), SemanticTypes.unsignedIntType(), range
+        ).diagnostic.code).toBe("type.binary")
+    }
+
+    test `casts arrays and nullable access enforce explicit safety`() {
+        let fixture = TypeSystem_TestFixture()
+        let range = fixture.range()
+        let cast = TypeOperations.cast(
+            SemanticTypes.longType(), SemanticTypes.byteType(), range
+        )
+        let invalidCast = TypeOperations.cast(
+            SemanticTypes.boolType(), SemanticTypes.intType(), range
+        )
+        let array = ArraySemanticType(SemanticTypes.stringType(), 2)
+        let innerArray = TypeOperations.arrayAccess(array, SemanticTypes.intType(), range)
+        let element = TypeOperations.arrayAccess(
+            (ArraySemanticType)innerArray.semanticType,
+            SemanticTypes.shortType(),
+            range
+        )
+        let invalidIndex = TypeOperations.arrayAccess(
+            array, SemanticTypes.floatType(), range
+        )
+        let validInitializer = TypeOperations.arrayInitializer(
+            ArraySemanticType(SemanticTypes.longType()),
+            [SemanticTypes.intType(), SemanticTypes.longType()],
+            range
+        )
+        let invalidInitializer = TypeOperations.arrayInitializer(
+            ArraySemanticType(SemanticTypes.intType()),
+            [SemanticTypes.longType()],
+            range
+        )
+        let nullableReceiver = NullableSemanticType(fixture.userType("Example"))
+        let unsafeAccess = TypeOperations.memberAccess(
+            nullableReceiver, SemanticTypes.stringType(), false, range
+        )
+        let safeAccess = TypeOperations.memberAccess(
+            nullableReceiver, SemanticTypes.stringType(), true, range
+        )
+        let redundantSafe = TypeOperations.memberAccess(
+            fixture.userType("Example", 2), SemanticTypes.stringType(), true, range
+        )
+
+        expect(cast.conversion.conversionKind).toBe("numeric-cast")
+        expect(invalidCast.diagnostic.code).toBe("type.cast")
+        expect(innerArray.semanticType.value()).toBe("array:1:builtin:String")
+        expect(element.semanticType.value()).toBe("builtin:String")
+        expect(invalidIndex.diagnostic.code).toBe("type.array-index")
+        expect(validInitializer.valid).toBe(true)
+        expect(invalidInitializer.diagnostic.code).toBe("type.array-element")
+        expect(unsafeAccess.diagnostic.code).toBe("type.nullable-access")
+        expect(safeAccess.semanticType.value()).toBe("nullable:builtin:String")
+        expect(redundantSafe.diagnostic.code).toBe("type.redundant-safe-access")
+    }
+
+    test `equality requires a conversion path including explicit nullability`() {
+        let fixture = TypeSystem_TestFixture()
+        let range = fixture.range()
+        let userType = fixture.userType("Example")
+        let nullable = NullableSemanticType(userType)
+
+        expect(TypeOperations.binary(
+            "==", nullable, SemanticTypes.nullType(), range
+        ).valid).toBe(true)
+        expect(TypeOperations.binary(
+            "==", userType, SemanticTypes.nullType(), range
+        ).valid).toBe(false)
+        expect(TypeOperations.binary(
+            "==", SemanticTypes.intType(), SemanticTypes.stringType(), range
+        ).valid).toBe(false)
+    }
+}

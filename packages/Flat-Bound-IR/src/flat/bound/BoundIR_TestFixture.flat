@@ -1,0 +1,20 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+class BoundIR_TestFixture {
+    visible SourceSnapshotIdentity snapshot = SourceSnapshotIdentity(
+        SourceIdentity("memory:Bound.flat"), "revision:bound"
+    )
+    public range(Int start = 0, Int end = 1) => SourceRange(
+        snapshot, start, end,
+        Location(lineNumber: 1, column: start + 1),
+        Location(lineNumber: 1, column: end + 1)
+    )
+    public declaration(String kind, String name, Int ordinal) => DeclarationIdentity(
+        SyntaxIslandIdentity(snapshot, "#kind-header", ordinal), kind, name
+    )
+    public symbol(String kind, String name, Int ordinal) =>
+        SymbolIdentity(declaration(kind, name, ordinal), kind)
+}

@@ -1,0 +1,23 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class extends BoundStatement {
+    public construct(
+        SourceRange range,
+        visible BoundReferenceExpression local,
+        visible BoundExpression initializer = null,
+        visible TypeConversion conversion = null
+    ) {
+        if (!range || !local ||
+            (initializer && (!conversion || !conversion.applicable ||
+                conversion.fromType.value() != initializer.semanticType.value() ||
+                conversion.toType.value() != local.semanticType.value())) ||
+            (!initializer && conversion)) {
+            throw Exception("Bound local declaration requires local and consistent initializer")
+        }
+        super(range)
+    }
+    override public unitKind() => "local-declaration"
+}

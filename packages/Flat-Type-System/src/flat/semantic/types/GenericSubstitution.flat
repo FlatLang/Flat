@@ -1,0 +1,65 @@
+package flat/semantic/types
+
+data class {
+    var GenericParameterSemanticType[] parameters
+    var SemanticType[] arguments
+
+    public construct(
+        GenericParameterSemanticType[] genericParameters,
+        SemanticType[] typeArguments
+    ) {
+        if (!genericParameters || !typeArguments ||
+            genericParameters.count != typeArguments.count ||
+            genericParameters.any({ !_ }) || typeArguments.any({ !_ })) {
+            throw Exception("Generic substitution requires aligned parameters and arguments")
+        }
+        parameters = GenericParameterSemanticType[]
+        parameters.addAll(genericParameters)
+        arguments = SemanticType[]
+        arguments.addAll(typeArguments)
+    }
+
+    public argumentFor(GenericParameterSemanticType parameter) -> SemanticType {
+        var Int index
+        while (index < parameters.count) {
+            if (parameters[index].value() == parameter.value()) return arguments[index]
+            index++
+        }
+        return null
+    }
+
+    public apply(SemanticType type) -> SemanticType {
+        if (!type) return null
+        if (type.kind() == "generic-parameter") {
+            return argumentFor((GenericParameterSemanticType)type) ?: type
+        }
+        if (type.kind() == "array") {
+            let array = (ArraySemanticType)type
+            return ArraySemanticType(apply(array.elementType), array.dimensions)
+        }
+        if (type.kind() == "nullable") {
+            return NullableSemanticType(apply(((NullableSemanticType)type).underlyingType))
+        }
+        if (type.kind() == "function") {
+            let functionType = (FunctionSemanticType)type
+            return FunctionSemanticType(
+                functionType.parameterTypes().map({ apply(_) }),
+                apply(functionType.returnType)
+            )
+        }
+        if (type.kind() == "generic-instance") {
+            let instance = (GenericInstanceSemanticType)type
+            return GenericInstanceSemanticType(
+                instance.declarationType,
+                instance.typeArguments().map({ apply(_) })
+            )
+        }
+        return type
+    }
+
+    public typeArguments() -> SemanticType[] {
+        let result = SemanticType[]
+        result.addAll(arguments)
+        return result
+    }
+}

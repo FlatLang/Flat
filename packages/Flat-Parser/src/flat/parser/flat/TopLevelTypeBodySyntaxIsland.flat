@@ -1,0 +1,11 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/** Immutable source range for a completed top-level type body, excluding braces. */
+data class extends SyntaxIsland {
+    visible SyntaxIslandIdentity headerIdentity
+    visible String declarationKind
+    visible String name
+}

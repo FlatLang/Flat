@@ -1,0 +1,101 @@
+package flat/semantic/types
+
+testable class {
+    test `non-overloaded function calls retain argument conversions and result type`() {
+        let fixture = TypeSystem_TestFixture()
+        let target = fixture.signature(
+            "convert",
+            "function",
+            [SemanticTypes.longType(), SemanticTypes.stringType()],
+            SemanticTypes.boolType()
+        )
+        let result = CallTypeChecker.check(
+            target,
+            null,
+            [SemanticTypes.intType(), SemanticTypes.stringType()],
+            fixture.range()
+        )
+
+        expect(result.valid).toBe(true)
+        expect(result.target).toBe(target)
+        expect(result.semanticType.value()).toBe("primitive:Bool")
+        expect(result.argumentConversions().count).toBe(2)
+        expect(result.argumentConversions().first.conversionKind).toBe("numeric-widening")
+        expect(result.argumentConversions().last.conversionKind).toBe("identity")
+    }
+
+    test `instance and static method calls enforce receiver semantics`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Example")
+        let instance = fixture.signature(
+            "read", "instance-method", SemanticType[], SemanticTypes.stringType(), owner
+        )
+        let staticMethod = fixture.signature(
+            "create", "static-method", SemanticType[], owner, owner, ordinal: 2
+        )
+        let validInstance = CallTypeChecker.check(
+            instance, owner, SemanticType[], fixture.range()
+        )
+        let missingReceiver = CallTypeChecker.check(
+            instance, null, SemanticType[], fixture.range()
+        )
+        let staticWithReceiver = CallTypeChecker.check(
+            staticMethod, owner, SemanticType[], fixture.range()
+        )
+        let validStatic = CallTypeChecker.check(
+            staticMethod, null, SemanticType[], fixture.range()
+        )
+
+        expect(validInstance.valid).toBe(true)
+        expect(missingReceiver.diagnostic.code).toBe("type.call-receiver-missing")
+        expect(staticWithReceiver.diagnostic.code).toBe("type.call-receiver-unexpected")
+        expect(validStatic.valid).toBe(true)
+    }
+
+    test `constructors return their owner and validate arguments`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Example")
+        let constructor = fixture.signature(
+            "Example", "constructor", [SemanticTypes.longType()], owner, owner
+        )
+        let valid = CallTypeChecker.check(
+            constructor, null, [SemanticTypes.intType()], fixture.range()
+        )
+        let invalidArgument = CallTypeChecker.check(
+            constructor, null, [SemanticTypes.stringType()], fixture.range()
+        )
+        let invalidArity = CallTypeChecker.check(
+            constructor, null, SemanticType[], fixture.range()
+        )
+
+        expect(valid.valid).toBe(true)
+        expect(valid.semanticType).toBe(owner)
+        expect(invalidArgument.diagnostic.code).toBe("type.call-argument")
+        expect(invalidArity.diagnostic.code).toBe("type.call-arity")
+    }
+
+    test `call signatures defensively copy parameters and reject invalid ownership`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Example")
+        let source = SemanticType[]:add(SemanticTypes.intType())
+        let target = fixture.signature(
+            "run", "instance-method", source, SemanticTypes.unitType(), owner
+        )
+        source.add(SemanticTypes.stringType())
+        let returned = target.parameterTypes()
+        returned.add(SemanticTypes.objectType())
+        var Int rejected
+        try {
+            fixture.signature("bad", "function", SemanticType[], SemanticTypes.unitType(), owner)
+        } catch (Exception error) { rejected++ }
+        try {
+            fixture.signature("bad", "instance-method", SemanticType[], SemanticTypes.unitType())
+        } catch (Exception error) { rejected++ }
+        try {
+            fixture.signature("bad", "constructor", SemanticType[], SemanticTypes.unitType(), owner)
+        } catch (Exception error) { rejected++ }
+
+        expect(target.parameterTypes().count).toBe(1)
+        expect(rejected).toBe(3)
+    }
+}

@@ -1,0 +1,39 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Immutable target-independent callable contract. */
+data class {
+    var SemanticType[] parameters
+
+    public construct(
+        visible SymbolIdentity identity,
+        visible String name,
+        visible CallableKind callableKind,
+        SemanticType[] parameterTypes,
+        visible SemanticType returnType,
+        visible UserClassSemanticType ownerType = null
+    ) {
+        if (!identity || !name || name.trim().count == 0 || !callableKind ||
+            !parameterTypes || parameterTypes.any({ !_ }) || !returnType) {
+            throw Exception("Callable signature requires identity, name, kind, parameters, and return type")
+        }
+        if (callableKind.value == "function" && ownerType) {
+            throw Exception("Function callable cannot have an owning type")
+        }
+        if (callableKind.value != "function" && !ownerType) {
+            throw Exception("Method and constructor callables require an owning type")
+        }
+        if (callableKind.value == "constructor" && returnType.value() != ownerType.value()) {
+            throw Exception("Constructor return type must be its owning type")
+        }
+        parameters = SemanticType[]
+        parameters.addAll(parameterTypes)
+    }
+
+    public parameterTypes() -> SemanticType[] {
+        let result = SemanticType[]
+        result.addAll(parameters)
+        return result
+    }
+}

@@ -1,0 +1,11 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/** Immutable top-level Flat type header published when its opening body brace arrives. */
+data class extends SyntaxIsland {
+    visible String declarationKind
+    visible String name
+    visible String headerText
+}

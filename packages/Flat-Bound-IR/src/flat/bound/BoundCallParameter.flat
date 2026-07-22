@@ -1,0 +1,20 @@
+package flat/bound
+
+import flat/semantic/types
+
+data class {
+    public construct(
+        visible String name,
+        visible SemanticType semanticType,
+        visible BoundExpression defaultValue = null,
+        visible TypeConversion defaultConversion = null
+    ) {
+        if (!name || name.trim().count == 0 || !semanticType ||
+            (defaultValue && (!defaultConversion || !defaultConversion.applicable ||
+                defaultConversion.fromType.value() != defaultValue.semanticType.value() ||
+                defaultConversion.toType.value() != semanticType.value())) ||
+            (!defaultValue && defaultConversion)) {
+            throw Exception("Bound call parameter requires name, type, and consistent default")
+        }
+    }
+}

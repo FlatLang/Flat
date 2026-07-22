@@ -1,0 +1,24 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Rich collection/control expression with fully typed canonical replacement. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible String featureKind,
+        visible BoundExpression canonicalExpression
+    ) {
+        if (!range || !semanticType || !canonicalExpression ||
+            (featureKind != "array" && featureKind != "array-access" &&
+             featureKind != "range" && featureKind != "safe-access" &&
+             featureKind != "match") ||
+            canonicalExpression.semanticType.value() != semanticType.value()) {
+            throw Exception("Rich collection expression requires kind and consistent canonical expression")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => featureKind
+}

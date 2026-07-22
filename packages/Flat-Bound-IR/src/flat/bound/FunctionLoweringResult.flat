@@ -1,0 +1,26 @@
+package flat/bound
+
+data class {
+    var LoweringPassTelemetry[] telemetryValues
+
+    public construct(
+        visible BoundFunctionUnit loweredFunction,
+        LoweringPassTelemetry[] telemetry,
+        visible Exception failure = null,
+        visible String failedPassName = null
+    ) {
+        if (!loweredFunction || !telemetry || (failure && !failedPassName) || (!failure && failedPassName)) {
+            throw Exception("Lowering result requires function, telemetry, and consistent failure state")
+        }
+        telemetryValues = LoweringPassTelemetry[]
+        telemetryValues.addAll(telemetry)
+    }
+
+    public telemetry() -> LoweringPassTelemetry[] {
+        let result = LoweringPassTelemetry[]
+        result.addAll(telemetryValues)
+        return result
+    }
+
+    visible Bool succeeded => failure == null
+}

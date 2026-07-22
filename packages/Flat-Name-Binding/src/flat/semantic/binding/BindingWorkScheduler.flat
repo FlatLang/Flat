@@ -1,0 +1,23 @@
+package flat/semantic/binding
+
+import flat/semantic/declarations
+import flat/eventstream
+
+/**
+ * Admits binding work only after its declaration dependency is terminal.
+ * Readiness suspension occurs before executor submission, so it owns no worker.
+ */
+class {
+    public construct(visible Executor executor) {
+        if (!executor) throw Exception("Binding work scheduler requires an executor")
+    }
+
+    public async schedule(
+        PendingDeclarationLookup readiness,
+        async action()
+    ) {
+        if (!readiness) throw Exception("Binding work scheduler requires declaration readiness")
+        readiness.get()
+        executor.submit(action)
+    }
+}

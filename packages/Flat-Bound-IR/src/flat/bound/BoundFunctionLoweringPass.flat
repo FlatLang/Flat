@@ -1,0 +1,9 @@
+package flat/bound
+
+/** One function-local lowering pass with explicit invariants. */
+abstract class {
+    public abstract name() -> String
+    public abstract inputInvariant() -> String
+    public abstract outputInvariant() -> String
+    public abstract lower(BoundFunctionUnit input) -> BoundFunctionUnit
+}

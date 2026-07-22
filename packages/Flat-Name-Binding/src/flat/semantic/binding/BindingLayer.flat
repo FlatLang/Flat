@@ -1,0 +1,34 @@
+package flat/semantic/binding
+
+/** One lexical or declaration layer; insertion order is never observable. */
+class {
+    var BindingCandidate[] candidates = BindingCandidate[]
+
+    public add(BindingCandidate candidate) {
+        if (!candidate) throw Exception("Binding layer candidate cannot be null")
+        candidates.add(candidate)
+    }
+
+    public find(String name, BindingLookupContext context) -> BindingCandidate[] {
+        if (!name || name.trim().count == 0) throw Exception("Binding lookup name cannot be empty")
+        if (!context) throw Exception("Binding lookup requires a context")
+
+        let result = candidates.filter((candidate) =>
+            candidate.name == name && accessible(candidate, context)
+        )
+        return result.sort({ _a.symbol.identity.value.compareTo(_b.symbol.identity.value) })
+    }
+
+    accessible(BindingCandidate candidate, BindingLookupContext context) -> Bool {
+        if (context.staticContext && candidate.receiverRequirement.value == "instance") return false
+        if (candidate.visibility.value == "public") return true
+        if (candidate.visibility.value == "package") {
+            return candidate.packageIdentity == context.packageIdentity
+        }
+        if (candidate.visibility.value == "private") {
+            return candidate.ownerType == context.ownerType
+        }
+        return candidate.packageIdentity == context.packageIdentity ||
+            context.visibleProtectedOwners.contains(candidate.ownerType)
+    }
+}

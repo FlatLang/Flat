@@ -1,6 +1,6 @@
 package flat/parser
 
-import flat/compiler/models/Token
+import flat/compiler/models
 import flat/log/Logger
 import flat/eventstream
 
@@ -10,16 +10,25 @@ class {
     public operation(
         ParserBase rootParser,
         ParseContext parseContext,
+        SourceSnapshotIdentity snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:parser-operation"),
+            "unspecified"
+        ),
+        ParseRecoveryPolicy recoveryPolicy = null,
         Int inputCapacity = 1,
         Int maxPendingInputSends = 1,
-        Int outputCapacity = 1
+        Int outputCapacity = 1,
+        Int diagnosticCapacity = 1
     ) -> ParseOperation {
         return ParseOperation(
             rootParser,
             parseContext,
+            snapshot,
+            recoveryPolicy,
             inputCapacity,
             maxPendingInputSends,
-            outputCapacity
+            outputCapacity,
+            diagnosticCapacity
         )
     }
 
@@ -48,6 +57,7 @@ class {
 
             if (engine.invalid) {
                 terminal = true
+                engine.release()
                 stream.emit("quit")
                 stream.emit("close")
             }
@@ -57,6 +67,7 @@ class {
             if (stream.closed || terminal) return
 
             terminal = true
+            engine.release()
 
             log.trace("Received error from Token EventStream: #{error}")
             stream.emit("error", error)

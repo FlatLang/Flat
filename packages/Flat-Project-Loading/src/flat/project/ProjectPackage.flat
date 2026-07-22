@@ -1,0 +1,28 @@
+package flat/project
+
+data class {
+    visible String name
+    visible SourceRoot[] sourceRoots
+    visible ProjectDependency[] dependencies
+    visible ProjectImport[] imports
+    visible DefaultImport[] defaultImports
+    visible SourceExclusion[] exclusions
+
+    public construct(
+        String name,
+        SourceRoot[] sourceRoots,
+        ProjectDependency[] dependencies = ProjectDependency[],
+        ProjectImport[] imports = ProjectImport[],
+        DefaultImport[] defaultImports = DefaultImport[],
+        SourceExclusion[] exclusions = SourceExclusion[]
+    ) {
+        if (!name || name.trim().count == 0) throw Exception("Project package name cannot be empty")
+        if (!sourceRoots || sourceRoots.isEmpty) throw Exception("Project package requires a source root")
+        this.name = name
+        this.sourceRoots = sourceRoots.copy()
+        this.dependencies = dependencies.copy()
+        this.imports = imports.copy()
+        this.defaultImports = defaultImports.copy()
+        this.exclusions = exclusions.copy()
+    }
+}

@@ -1,0 +1,193 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Target-independent typing rules for the foundational expression subset. */
+class {
+    public static assignment(
+        SemanticType targetType,
+        SemanticType valueType,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (errorType(targetType) || errorType(valueType)) return recovered()
+        let conversion = TypeConversions.classify(valueType, targetType)
+        if (conversion.applicable) return TypedOperationResult(targetType, conversion)
+        return invalid("type.assignment", "Cannot assign '#{valueType.value()}' to '#{targetType.value()}'", range)
+    }
+
+    public static returnValue(
+        SemanticType requiredType,
+        SemanticType valueType,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (errorType(requiredType) || errorType(valueType)) return recovered()
+        if (requiredType.kind() == "void" || requiredType.kind() == "unit") {
+            if (!valueType || valueType.kind() == requiredType.kind()) return TypedOperationResult(requiredType)
+            return invalid("type.return-value", "Return value is not allowed for '#{requiredType.value()}'", range)
+        }
+        if (!valueType) {
+            return invalid("type.return-missing", "Return value of '#{requiredType.value()}' is required", range)
+        }
+        let conversion = TypeConversions.classify(valueType, requiredType)
+        if (conversion.applicable) return TypedOperationResult(requiredType, conversion)
+        return invalid("type.return", "Cannot return '#{valueType.value()}' as '#{requiredType.value()}'", range)
+    }
+
+    public static unary(
+        String operator,
+        SemanticType operandType,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (errorType(operandType)) return recovered()
+        if (operator == "!" && operandType.value() == "primitive:Bool") {
+            return TypedOperationResult(SemanticTypes.boolType())
+        }
+        if ((operator == "+" || operator == "-") && numeric(operandType)) {
+            return TypedOperationResult(operandType)
+        }
+        if (operator == "~" && TypeConversions.isIntegral(operandType)) {
+            return TypedOperationResult(operandType)
+        }
+        return invalid("type.unary", "Operator '#operator' is invalid for '#{operandType.value()}'", range)
+    }
+
+    public static binary(
+        String operator,
+        SemanticType leftType,
+        SemanticType rightType,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (errorType(leftType) || errorType(rightType)) return recovered()
+        if ((operator == "&&" || operator == "||") &&
+            leftType.value() == "primitive:Bool" && rightType.value() == "primitive:Bool") {
+            return TypedOperationResult(SemanticTypes.boolType())
+        }
+        if ((operator == "+" || operator == "-" || operator == "*" ||
+            operator == "/" || operator == "%") && numeric(leftType) && numeric(rightType)) {
+            if (operator == "%" &&
+                (!TypeConversions.isIntegral(leftType) || !TypeConversions.isIntegral(rightType))) {
+                return invalid("type.binary", "Operator '%' requires integral operands", range)
+            }
+            let common = commonNumeric(leftType, rightType)
+            if (common) return TypedOperationResult(common)
+        }
+        if ((operator == "<" || operator == "<=" || operator == ">" || operator == ">=") &&
+            commonNumeric(leftType, rightType)) {
+            return TypedOperationResult(SemanticTypes.boolType())
+        }
+        if (operator == "==" || operator == "!=") {
+            let forward = TypeConversions.classify(leftType, rightType)
+            let reverse = TypeConversions.classify(rightType, leftType)
+            if (forward.applicable || reverse.applicable) {
+                return TypedOperationResult(SemanticTypes.boolType())
+            }
+        }
+        if (operator == "+" &&
+            (leftType.kind() == "string" || rightType.kind() == "string")) {
+            return TypedOperationResult(SemanticTypes.stringType())
+        }
+        return invalid(
+            "type.binary",
+            "Operator '#operator' is invalid for '#{leftType.value()}' and '#{rightType.value()}'",
+            range
+        )
+    }
+
+    public static cast(
+        SemanticType fromType,
+        SemanticType toType,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (errorType(fromType) || errorType(toType)) return recovered()
+        let conversion = TypeConversions.classify(fromType, toType, explicit: true)
+        if (conversion.applicable) return TypedOperationResult(toType, conversion)
+        return invalid("type.cast", "Cannot cast '#{fromType.value()}' to '#{toType.value()}'", range)
+    }
+
+    public static arrayAccess(
+        SemanticType arrayType,
+        SemanticType indexType,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (errorType(arrayType) || errorType(indexType)) return recovered()
+        if (arrayType.kind() != "array") {
+            return invalid("type.array-access", "Type '#{arrayType.value()}' is not an array", range)
+        }
+        if (!TypeConversions.isIntegral(indexType)) {
+            return invalid("type.array-index", "Array index '#{indexType.value()}' is not integral", range)
+        }
+        let array = (ArraySemanticType)arrayType
+        if (array.dimensions == 1) return TypedOperationResult(array.elementType)
+        return TypedOperationResult(ArraySemanticType(array.elementType, array.dimensions - 1))
+    }
+
+    public static arrayInitializer(
+        ArraySemanticType targetType,
+        SemanticType[] elementTypes,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (!targetType || !elementTypes) throw Exception("Array initializer requires target and elements")
+        let required = targetType.dimensions == 1 ?
+            targetType.elementType : ArraySemanticType(targetType.elementType, targetType.dimensions - 1)
+        for (elementType in elementTypes) {
+            if (errorType(elementType)) return recovered()
+            if (!elementType || !TypeConversions.classify(elementType, required).applicable) {
+                return invalid("type.array-element", "Array element is incompatible with '#{required.value()}'", range)
+            }
+        }
+        return TypedOperationResult(targetType)
+    }
+
+    public static memberAccess(
+        SemanticType receiverType,
+        SemanticType memberType,
+        Bool safe,
+        SourceRange range
+    ) -> TypedOperationResult {
+        if (errorType(receiverType) || errorType(memberType)) return recovered()
+        if (receiverType.kind() == "nullable") {
+            if (!safe) return invalid("type.nullable-access", "Nullable receiver requires safe access", range)
+            if (memberType.kind() == "nullable") return TypedOperationResult(memberType)
+            return TypedOperationResult(NullableSemanticType(memberType))
+        }
+        if (safe) return invalid("type.redundant-safe-access", "Safe access requires a nullable receiver", range)
+        return TypedOperationResult(memberType)
+    }
+
+    static commonNumeric(SemanticType leftType, SemanticType rightType) -> SemanticType {
+        if (!numeric(leftType) || !numeric(rightType)) return null
+        let rightToLeft = TypeConversions.classify(rightType, leftType)
+        let leftToRight = TypeConversions.classify(leftType, rightType)
+        if (rightToLeft.applicable && leftToRight.applicable) return leftType
+        if (rightToLeft.applicable) return leftType
+        if (leftToRight.applicable) return rightType
+        return null
+    }
+
+    static numeric(SemanticType type) -> Bool {
+        return TypeConversions.isIntegral(type) || TypeConversions.isFloating(type)
+    }
+
+    static errorType(SemanticType type) -> Bool {
+        return type && type.kind() == "error"
+    }
+
+    static recovered() -> TypedOperationResult {
+        return TypedOperationResult(
+            SemanticTypes.errorType(),
+            TypeConversion(
+                SemanticTypes.errorType(),
+                SemanticTypes.errorType(),
+                "error-recovery",
+                true,
+                true,
+                true,
+                0
+            )
+        )
+    }
+
+    static invalid(String code, String message, SourceRange range) -> TypedOperationResult {
+        return TypedOperationResult(SemanticTypes.errorType(), diagnostic: TypeDiagnostic(code, message, range))
+    }
+}

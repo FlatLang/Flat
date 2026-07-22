@@ -1,0 +1,84 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** Conversion-vector partial ordering with deterministic candidate publication. */
+class {
+    public static resolve(
+        String name,
+        CallableSignature[] candidates,
+        SemanticType receiverType,
+        SemanticType[] argumentTypes,
+        SourceRange range
+    ) -> OverloadResolution {
+        if (!name || name.trim().count == 0 || !candidates ||
+            candidates.any({ !_ }) || !argumentTypes || !range) {
+            throw Exception("Overload resolution requires name, candidates, arguments, and range")
+        }
+        let collected = candidates
+            .filter({ _.name == name })
+            .sort({ _a.identity.value.compareTo(_b.identity.value) })
+        if ((receiverType && receiverType.kind() == "error") ||
+            argumentTypes.any({ _.kind() == "error" })) {
+            return OverloadResolution(collected, CallCheckResult[], null, null)
+        }
+        let applicable = CallCheckResult[]
+        for (candidate in collected) {
+            let result = CallTypeChecker.check(candidate, receiverType, argumentTypes, range)
+            if (result.valid) applicable.add(result)
+        }
+        if (applicable.isEmpty) {
+            return OverloadResolution(
+                collected,
+                applicable,
+                null,
+                TypeDiagnostic(
+                    "type.call-no-match",
+                    "No overload of '#name' accepts the supplied receiver and arguments",
+                    range
+                )
+            )
+        }
+        let best = CallCheckResult[]
+        for (candidate in applicable) {
+            if (!applicable.any((other) =>
+                !Object.referenceEquals(candidate, other) && dominates(other, candidate)
+            )) {
+                best.add(candidate)
+            }
+        }
+        if (best.count == 1) {
+            return OverloadResolution(collected, applicable, best.first.target, null)
+        }
+        let identities = best
+            .map({ _.target.identity.value })
+            .sort({ _a.compareTo(_b) })
+        var String message = "Call to '#name' is ambiguous between "
+        var Int index
+        while (index < identities.count) {
+            if (index > 0) message += ", "
+            message += identities[index]
+            index++
+        }
+        return OverloadResolution(
+            collected,
+            applicable,
+            null,
+            TypeDiagnostic("type.call-ambiguous", message, range)
+        )
+    }
+
+    static dominates(CallCheckResult left, CallCheckResult right) -> Bool {
+        let leftConversions = left.argumentConversions()
+        let rightConversions = right.argumentConversions()
+        if (leftConversions.count != rightConversions.count) return false
+        var Bool better
+        var Int index
+        while (index < leftConversions.count) {
+            if (leftConversions[index].cost > rightConversions[index].cost) return false
+            if (leftConversions[index].cost < rightConversions[index].cost) better = true
+            index++
+        }
+        return better
+    }
+}

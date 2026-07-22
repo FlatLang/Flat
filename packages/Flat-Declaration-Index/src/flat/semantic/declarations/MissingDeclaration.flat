@@ -1,0 +1,8 @@
+package flat/semantic/declarations
+
+import flat/compiler/models/ScopeIdentity
+
+data class extends DeclarationLookupResult {
+    visible String name
+    visible ScopeIdentity sealedScope
+}

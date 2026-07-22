@@ -1,0 +1,61 @@
+package flat/compiler/models
+
+testable class {
+    test `declaration symbol and scope identities are stable source derived values`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("workspace:Example.flat"),
+            "sha256:abc"
+        )
+        let syntax = SyntaxIslandIdentity(snapshot, "type-header", 3)
+        let declaration = DeclarationIdentity(syntax, "class", "Example")
+        let symbol = SymbolIdentity(declaration, "type")
+        let scope = ScopeIdentity(snapshot, "type-members", owner: declaration)
+
+        let packageIdentity = PackageIdentity("workspace:project", "flat/test")
+        let packageScope = ScopeIdentity(packageIdentity, "package")
+
+        expect(declaration).toBe(DeclarationIdentity(syntax, "class", "Example"))
+        expect(packageIdentity.value).toBe("workspace:project:package:flat/test")
+        expect(packageScope.value).toBe("workspace:project:package:flat/test:scope:package:0")
+        expect(declaration.value).toBe(
+            "workspace:Example.flat@sha256:abc:type-header:3:declaration:class:Example"
+        )
+        expect(symbol.value).toBe(
+            "workspace:Example.flat@sha256:abc:type-header:3:declaration:class:Example:symbol:type:0"
+        )
+        expect(scope.value).toBe(
+            "workspace:Example.flat@sha256:abc:type-header:3:declaration:class:Example:scope:type-members:0"
+        )
+    }
+
+    test `source scope identity does not require a declaration`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:source"), "revision:1")
+        let scope = ScopeIdentity(snapshot, "source")
+        expect(scope.value).toBe("memory:source@revision:1:scope:source:0")
+    }
+
+    test `semantic identities reject invalid ownership and components`() {
+        let first = SourceSnapshotIdentity(SourceIdentity("memory:first"), "revision:1")
+        let second = SourceSnapshotIdentity(SourceIdentity("memory:second"), "revision:1")
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(first, "member-header", 2),
+            "function",
+            "run"
+        )
+        var Int rejected
+
+        try { DeclarationIdentity(null, "function", "run") } catch (Exception error) { rejected++ }
+        try { DeclarationIdentity(declaration.syntaxIdentity, "", "run") } catch (Exception error) { rejected++ }
+        try { DeclarationIdentity(declaration.syntaxIdentity, "function", "") } catch (Exception error) { rejected++ }
+        try { SymbolIdentity(null, "function") } catch (Exception error) { rejected++ }
+        try { SymbolIdentity(declaration, "", 0) } catch (Exception error) { rejected++ }
+        try { SymbolIdentity(declaration, "function", -1) } catch (Exception error) { rejected++ }
+        try { ScopeIdentity(second, "function", owner: declaration) } catch (Exception error) { rejected++ }
+        try { ScopeIdentity(first, "", owner: declaration) } catch (Exception error) { rejected++ }
+        try { ScopeIdentity(first, "function", -1, declaration) } catch (Exception error) { rejected++ }
+        try { PackageIdentity("", "flat/test") } catch (Exception error) { rejected++ }
+        try { PackageIdentity("workspace:project", "") } catch (Exception error) { rejected++ }
+
+        expect(rejected).toBe(11)
+    }
+}

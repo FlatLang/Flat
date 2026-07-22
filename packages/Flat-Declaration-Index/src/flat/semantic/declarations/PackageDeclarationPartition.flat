@@ -1,0 +1,39 @@
+package flat/semantic/declarations
+
+import flat/compiler/models
+import flat/datastruct/HashMap
+
+/** Package partition with one package-owned declaration scope. */
+class {
+    var HashMap<String, SourceDeclarationPartition> sources = HashMap()
+    visible DeclarationScope scope
+    visible String packageName => identity.name
+
+    public construct(visible PackageIdentity identity) {
+        if (!identity) throw Exception("Package declaration partition requires an identity")
+        scope = DeclarationScope(ScopeIdentity(identity, "package"))
+    }
+
+    public source(SourceSnapshotIdentity snapshot) -> SourceDeclarationPartition {
+        var partition = sources[snapshot.value]
+        if (!partition) {
+            partition = SourceDeclarationPartition(snapshot)
+            sources[snapshot.value] = partition
+        }
+        return partition
+    }
+
+    public declare(DeclarationSymbol symbol) -> DeclarationPublishResult {
+        let snapshotValue = symbol.range.snapshot.value
+        let sourcePartition = sources[snapshotValue]
+        if (!sourcePartition) {
+            throw Exception("Declaration source must be registered with its package partition")
+        }
+        return scope.declare(symbol)
+    }
+
+    public lookup(String name) -> PendingDeclarationLookup => scope.lookup(name)
+    public seal() => scope.seal()
+
+    visible Int sourceCount => sources.count
+}

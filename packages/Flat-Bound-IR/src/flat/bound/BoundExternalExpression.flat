@@ -1,0 +1,22 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Rich external block/call with explicit reduced native contract. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible String featureKind,
+        visible BoundNativeCallExpression nativeCall
+    ) {
+        if (!range || !semanticType ||
+            (featureKind != "external" && featureKind != "native") || !nativeCall ||
+            nativeCall.semanticType.value() != semanticType.value()) {
+            throw Exception("External/native expression requires consistent native call")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => featureKind
+}

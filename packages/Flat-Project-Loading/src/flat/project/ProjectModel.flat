@@ -1,0 +1,16 @@
+package flat/project
+
+data class {
+    visible String identity
+    visible ProjectPackage[] packages
+    visible CompilerOptions options
+
+    public construct(String identity, ProjectPackage[] packages, CompilerOptions options) {
+        if (!identity || identity.trim().count == 0) throw Exception("Project identity cannot be empty")
+        if (!packages || packages.isEmpty) throw Exception("Project requires a package")
+        if (!options) throw Exception("Project requires compiler options")
+        this.identity = identity
+        this.packages = packages.copy()
+        this.options = options
+    }
+}

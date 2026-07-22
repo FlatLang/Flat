@@ -20,6 +20,8 @@ abstract data class<TokenPatternType extends TokenPattern> {
 
     public inflateNode<NodeType extends Node>(NodeType node) => node
 
+    public appendDirectParserSpans(ParserMatchSpan[] spans) {}
+
     public traverseNodes(func(Node, ParseContext, TokenPattern)) {
         if (Object.referenceEquals(pattern.getNodeType(), Node.class)) return
 

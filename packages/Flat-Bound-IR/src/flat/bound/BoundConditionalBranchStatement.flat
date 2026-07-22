@@ -1,0 +1,18 @@
+package flat/bound
+
+import flat/compiler/models
+
+data class extends BoundStatement {
+    public construct(
+        SourceRange range,
+        visible BoundExpression condition,
+        visible String falseLabel
+    ) {
+        if (!range || !condition || condition.semanticType.value() != "primitive:Bool" ||
+            !falseLabel || falseLabel.trim().count == 0) {
+            throw Exception("Conditional branch requires Bool condition and false target")
+        }
+        super(range)
+    }
+    override public unitKind() => "conditional-branch"
+}

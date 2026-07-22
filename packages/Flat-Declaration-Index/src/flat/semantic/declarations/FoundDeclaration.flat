@@ -1,0 +1,5 @@
+package flat/semantic/declarations
+
+data class extends DeclarationLookupResult {
+    visible DeclarationSymbol symbol
+}

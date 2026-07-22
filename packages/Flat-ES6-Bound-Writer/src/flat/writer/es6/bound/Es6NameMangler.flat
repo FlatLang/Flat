@@ -1,0 +1,18 @@
+package flat/writer/es6/bound
+
+/** Injective ES6 identifier mangling derived only from stable semantic identity text. */
+class {
+    public static mangle(String stableValue) -> String {
+        if (!stableValue || stableValue.trim().count == 0) {
+            throw Exception("ES6 name mangling requires a stable identity")
+        }
+        var String result = "flat"
+        var Int index
+        while (index < stableValue.count) {
+            let value = stableValue.chars[index]
+            result += "_#{(Int)value}"
+            index++
+        }
+        return result
+    }
+}

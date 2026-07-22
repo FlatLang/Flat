@@ -7,7 +7,8 @@ import flat/io/FancyOutputStream
 
 [TestSuite [
     Models_Test,
-    SourceIdentity_Test
+    SourceIdentity_Test,
+    SemanticIdentity_Test
 ]]
 class {
     public static async main(String[] args) {

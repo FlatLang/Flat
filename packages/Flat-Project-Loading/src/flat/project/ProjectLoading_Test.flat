@@ -1,0 +1,108 @@
+package flat/project
+
+import flat/compiler/models
+import flat/datastruct/HashMap
+
+testable class {
+    test `project model owns immutable package dependency import and target options`() {
+        let properties = HashMap<String, String>():add("name", "Example")
+        let options = CompilerOptions(
+            "es6",
+            runtime: "node",
+            mainClass: "flat/example/Main",
+            outputFile: "example.js",
+            outputDirectory: "dist/es6",
+            maxConcurrency: 4,
+            applicationProperties: properties
+        )
+        let package = ProjectPackage(
+            "flat/example",
+            [SourceRoot("src")],
+            dependencies: [ProjectDependency("flat/system", "packages/System", local: true)],
+            imports: [ProjectImport("flat/example/Value", alias: "Value")],
+            defaultImports: [DefaultImport("flat/core/Object")],
+            exclusions: [SourceExclusion("src/generated")]
+        )
+        let project = ProjectModel("workspace:example", [package], options)
+        properties["name"] = "Changed"
+
+        expect(project.packages.first.name).toBe("flat/example")
+        expect(project.packages.first.dependencies.first.local).toBe(true)
+        expect(project.packages.first.imports.first.alias).toBe("Value")
+        expect(project.packages.first.defaultImports.first.location).toBe("flat/core/Object")
+        expect(project.packages.first.exclusions.first.location).toBe("src/generated")
+        expect(project.options.target).toBe("es6")
+        expect(project.options.runtime).toBe("node")
+        expect(project.options.maxConcurrency).toBe(4)
+        expect(project.options.applicationProperties["name"]).toBe("Example")
+    }
+
+    test `project model rejects invalid target mode and ownership`() {
+        var Int rejected
+        try { CompilerOptions("", mainClass: "Main") } catch (Exception error) { rejected++ }
+        try { CompilerOptions("es6", library: true, mainClass: "Main") } catch (Exception error) { rejected++ }
+        try { CompilerOptions("es6") } catch (Exception error) { rejected++ }
+        try { CompilerOptions("es6", mainClass: "Main", maxConcurrency: 0) } catch (Exception error) { rejected++ }
+        try { ProjectPackage("flat/example", SourceRoot[]) } catch (Exception error) { rejected++ }
+        try { ProjectModel("", [ProjectPackage("flat/example", [SourceRoot("src")])], CompilerOptions("es6", library: true)) } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(6)
+    }
+
+    test `Airship compiler arguments map every required build option`() {
+        let project = AirshipCompilerArguments().fromArguments([
+            "src", "-l", "packages/System", "-x", "src/generated",
+            "-main", "flat/example/Main", "-o", "example.js", "-d", "dist/es6",
+            "-target", "es6", "-target-runtime", "node",
+            "-default-import", "flat/core/Object",
+            "-default-static-import", "flat/core/Console",
+            "-app-props", "name=Example,version=1.0.0",
+            "-threads", "4", "-parallel"
+        ])
+        let package = project.packages.first
+        expect(package.sourceRoots.first.location).toBe("src")
+        expect(package.dependencies.first.sourceLocation).toBe("packages/System")
+        expect(package.exclusions.first.location).toBe("src/generated")
+        expect(package.defaultImports.count).toBe(2)
+        expect(package.defaultImports.last.staticImport).toBe(true)
+        expect(project.options.mainClass).toBe("flat/example/Main")
+        expect(project.options.outputFile).toBe("example.js")
+        expect(project.options.outputDirectory).toBe("dist/es6")
+        expect(project.options.target).toBe("es6")
+        expect(project.options.runtime).toBe("node")
+        expect(project.options.maxConcurrency).toBe(4)
+        expect(project.options.applicationProperties["version"]).toBe("1.0.0")
+    }
+
+    test `Airship library arguments map library mode and reject unsupported options`() {
+        let library = AirshipCompilerArguments().fromArguments([
+            "src", "-library", "-target", "es6"
+        ])
+        expect(library.options.library).toBe(true)
+        expect(library.options.mainClass).toBe(null)
+
+        var Bool rejected
+        try { AirshipCompilerArguments().fromArguments(["src", "-unknown"]) } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `in memory provider publishes immutable snapshots`() {
+        let provider = InMemorySourceProvider()
+        let identity = SourceIdentity("memory:Example.flat")
+        provider.add(identity, "sha256:abc", "class Example {}")
+        let loaded = provider.load(identity)
+
+        expect(provider.identities()).toBe([identity])
+        expect(loaded.snapshot.value).toBe("memory:Example.flat@sha256:abc")
+        expect(loaded.contents).toBe("class Example {}")
+    }
+
+    test `filesystem provider enumerates and loads source snapshots deterministically`() {
+        let provider = FilesystemSourceProvider("res/sources")
+        let identities = provider.identities()
+        expect(identities.count).toBe(1)
+        expect(identities.first.value.endsWith("res/sources/Example.flat")).toBe(true)
+        let loaded = provider.load(identities.first)
+        expect(loaded.contents).toBe("class Example {}\n")
+        expect(loaded.snapshot.revision.startsWith("filesystem:17:")).toBe(true)
+    }
+}

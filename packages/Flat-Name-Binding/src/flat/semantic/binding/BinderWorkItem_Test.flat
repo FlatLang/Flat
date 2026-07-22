@@ -1,0 +1,132 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+import flat/semantic/declarations
+import flat/eventstream
+
+testable class {
+    test `defines immutable source-ranged work for every independently bindable body kind`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let functionOwner = fixture.declaration("function", "run", 1)
+        let fieldOwner = fixture.declaration("field", "count", 2)
+        let typeOwner = fixture.declaration("class", "Example", 0)
+        let functionBody = FunctionBodyBindingWorkItem(
+            fixture.island("function-body", 3),
+            functionOwner,
+            fixture.scope(functionOwner, "function-body"),
+            fixture.range(10, 20)
+        )
+        let fieldInitializer = FieldInitializerBindingWorkItem(
+            fixture.island("field-initializer", 4),
+            fieldOwner,
+            fixture.scope(typeOwner, "type-body"),
+            fixture.range(25, 29)
+        )
+        let staticBlock = StaticBlockBindingWorkItem(
+            fixture.island("static-block", 5),
+            typeOwner,
+            fixture.scope(typeOwner, "static-block"),
+            fixture.range(30, 42)
+        )
+
+        expect(functionBody.workKind).toBe("function-body")
+        expect(functionBody.ownerIdentity).toBe(functionOwner)
+        expect(functionBody.range.startTokenIndex).toBe(10)
+        expect(fieldInitializer.workKind).toBe("field-initializer")
+        expect(fieldInitializer.scopeIdentity.owner).toBe(typeOwner)
+        expect(staticBlock.workKind).toBe("static-block")
+        expect(staticBlock.identity.value).toBe("#{fixture.snapshot.value}:static-block:5")
+    }
+
+    test `rejects mismatched work identity scope and range ownership`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let owner = fixture.declaration("function", "run", 1)
+        let otherSnapshot = SourceSnapshotIdentity(
+            SourceIdentity("workspace:Other.flat"),
+            "sha256:other"
+        )
+        let otherRange = SourceRange(
+            otherSnapshot,
+            0,
+            1,
+            Location(lineNumber: 1, column: 1),
+            Location(lineNumber: 1, column: 2)
+        )
+        var Int rejected
+
+        try {
+            FunctionBodyBindingWorkItem(
+                fixture.island("function-body", 2),
+                owner,
+                fixture.scope(owner, "function-body"),
+                otherRange
+            )
+        } catch (Exception error) {
+            rejected++
+        }
+
+        try {
+            FunctionBodyBindingWorkItem(
+                fixture.island("function-body", 2),
+                owner,
+                ScopeIdentity(PackageIdentity("workspace", "flat/test"), "package"),
+                fixture.range(0, 1)
+            )
+        } catch (Exception error) {
+            rejected++
+        }
+
+        try {
+            FunctionBodyBindingWorkItem(
+                fixture.island("static-block", 2),
+                owner,
+                fixture.scope(owner, "function-body"),
+                fixture.range(0, 1)
+            )
+        } catch (Exception error) {
+            rejected++
+        }
+
+        expect(rejected).toBe(3)
+    }
+
+    async test `pending symbol readiness does not occupy a controlled executor worker`() {
+        let fixture = BinderWorkItem_TestFixture()
+        let declarationScope = DeclarationScope(ScopeIdentity(fixture.packageIdentity, "package"))
+        let pending = declarationScope.lookup("Later")
+        let executor = ControlledExecutor(2)
+        let BindingWorkScheduler scheduler = BindingWorkScheduler(executor)
+        var Bool bindingStarted
+        var Bool unrelatedStarted
+
+        scheduler.schedule(pending, { bindingStarted = true })$
+
+        expect(executor.queuedCount).toBe(0)
+        expect(bindingStarted).toBe(false)
+
+        let unrelated = executor.submit({ unrelatedStarted = true })$
+
+        expect(executor.queuedCount).toBe(1)
+        let unrelatedResult = executor.runNext()
+        expect(unrelatedResult.completed).toBe(true)
+        expect(unrelated.get().completed).toBe(true)
+        expect(unrelatedStarted).toBe(true)
+        expect(bindingStarted).toBe(false)
+
+        declarationScope.declare(
+            fixture.symbol("Later", 5, declarationScope.identity, declarationKind: "class")
+        )
+        declarationScope.seal()
+        let resolved = pending.get()
+
+        expect(resolved.class).toBe(FoundDeclaration.class)
+        expect(executor.queuedCount).toBe(1)
+        expect(bindingStarted).toBe(false)
+
+        let bindingResult = executor.runNext()
+
+        expect(bindingResult.completed).toBe(true)
+        expect(bindingStarted).toBe(true)
+        expect(executor.queuedCount).toBe(0)
+    }
+}

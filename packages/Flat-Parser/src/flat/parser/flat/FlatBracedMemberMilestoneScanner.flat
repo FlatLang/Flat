@@ -1,0 +1,449 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/compiler/models
+
+/**
+ * Publishes signatures and body ranges for validated braced class-body members.
+ * Bodyless and expression-bodied members are deliberately rejected by `end`;
+ * this scanner never guesses a newline-sensitive boundary.
+ */
+class {
+    static Int HEADER = 0
+    static Int BODY = 1
+
+    var Int state
+    var Token[] headerTokens = Token[]
+    var Int[] headerTokenIndexes = Int[]
+    var Int parenthesisDepth
+    var Int bracketDepth
+    var Int nestedHeaderBraceDepth
+    var Int bodyDepth
+    var Token[] accessorHeaderTokens = Token[]
+    var Int[] accessorHeaderTokenIndexes = Int[]
+    var Int accessorParenthesisDepth
+    var SyntaxIslandIdentity activeAccessorHeaderIdentity
+    var String activeAccessorKind
+    var Int accessorBodyStartTokenIndex
+    var Location accessorBodyStart
+    var Int lastTokenIndex = -1
+    visible var Int nextOrdinal
+    var SyntaxIslandIdentity activeHeaderIdentity
+    var String activeKind
+    var String activeName
+    var Int bodyStartTokenIndex
+    var Location bodyStart
+
+    visible var Bool finished
+    visible Int retainedHeaderTokenCount => headerTokens.count + accessorHeaderTokens.count
+    visible var Int peakRetainedHeaderTokenCount
+
+    public construct(
+        visible SourceSnapshotIdentity snapshot,
+        visible SyntaxIslandIdentity containingTypeIdentity,
+        visible Int maxRetainedHeaderTokens,
+        Int startOrdinal = 0
+    ) {
+        if (!snapshot || !containingTypeIdentity) {
+            throw Exception("Braced member scanner requires source and containing type identities")
+        }
+        if (containingTypeIdentity.snapshot != snapshot) {
+            throw Exception("Braced member scanner identities must belong to one source snapshot")
+        }
+        if (maxRetainedHeaderTokens <= 0) {
+            throw Exception("Braced member header token capacity must be positive")
+        }
+        if (startOrdinal < 0) throw Exception("Braced member starting ordinal cannot be negative")
+        nextOrdinal = startOrdinal
+    }
+
+    public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+        if (tokenIndex < 0 || tokenIndex <= lastTokenIndex) {
+            reject("Braced member token indexes must be non-negative and strictly increasing")
+        }
+        lastTokenIndex = tokenIndex
+
+        if (state == BODY) return acceptBody(token, tokenIndex)
+        return acceptHeader(token, tokenIndex)
+    }
+
+    public end() -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+        if (state == BODY) reject("Flat type body ended inside an incomplete braced member body")
+        if (headerTokens.isNotEmpty) {
+            reject("Flat type body ended with an unsupported or incomplete non-braced member")
+        }
+
+        finished = true
+        return SyntaxIsland[]
+    }
+
+    public cancel() {
+        if (finished) return
+        finished = true
+        clearHeader()
+        clearBody()
+    }
+
+    acceptHeader(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+            return SyntaxIsland[]
+        }
+
+        retainHeader(token, tokenIndex)
+
+        if (isSymbol(token, "(")) parenthesisDepth++
+        else if (isSymbol(token, ")")) {
+            parenthesisDepth--
+            if (parenthesisDepth < 0) reject("Braced member header contains an unmatched closing parenthesis")
+        } else if (isSymbol(token, "[")) bracketDepth++
+        else if (isSymbol(token, "]")) {
+            bracketDepth--
+            if (bracketDepth < 0) reject("Braced member header contains an unmatched closing bracket")
+        } else if (isSymbol(token, "{") && (parenthesisDepth > 0 || bracketDepth > 0 || nestedHeaderBraceDepth > 0)) {
+            nestedHeaderBraceDepth++
+        } else if (isSymbol(token, "}") && nestedHeaderBraceDepth > 0) {
+            nestedHeaderBraceDepth--
+        } else if (isSymbol(token, "{") && parenthesisDepth == 0 && bracketDepth == 0) {
+            activeKind = classifyMember()
+            validateHeader(activeKind)
+            activeName = findMemberName(activeKind)
+            activeHeaderIdentity = identity("member-signature")
+
+            let memberHeader = BracedMemberHeaderSyntaxIsland(
+                activeHeaderIdentity,
+                headerRange(tokenIndex, token.location),
+                containingTypeIdentity,
+                activeKind,
+                activeName,
+                headerTokens.skipLast(1).map({ _.value }).join(" ")
+            )
+
+            state = BODY
+            bodyDepth = 1
+            bodyStartTokenIndex = tokenIndex + 1
+            bodyStart = endLocation(token)
+            clearHeader()
+            return [memberHeader]
+        } else if (isSymbol(token, "}") && parenthesisDepth == 0 && bracketDepth == 0) {
+            reject("Braced member header contains an unmatched closing brace")
+        }
+
+        return SyntaxIsland[]
+    }
+
+    acceptBody(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (supportsAccessors() && bodyDepth == 1 && !activeAccessorHeaderIdentity &&
+            (!isSymbol(token, "}") || accessorHeaderTokens.isNotEmpty)) {
+            return acceptAccessorHeader(token, tokenIndex)
+        }
+
+        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+            return SyntaxIsland[]
+        }
+
+        if (isSymbol(token, "{")) bodyDepth++
+        else if (isSymbol(token, "}")) {
+            bodyDepth--
+            if (bodyDepth < 0) reject("Braced member body contains an unmatched closing brace")
+
+            if (activeAccessorHeaderIdentity && bodyDepth == 1) {
+                let body = AccessorBodySyntaxIsland(
+                    identity("accessor-body"),
+                    SourceRange(
+                        snapshot,
+                        accessorBodyStartTokenIndex,
+                        tokenIndex,
+                        accessorBodyStart,
+                        token.location
+                    ),
+                    containingTypeIdentity,
+                    activeHeaderIdentity,
+                    activeAccessorHeaderIdentity,
+                    activeAccessorKind
+                )
+                clearAccessor()
+                return [body]
+            }
+
+            if (bodyDepth == 0) {
+                let body = BracedMemberBodySyntaxIsland(
+                    identity("member-body"),
+                    SourceRange(
+                        snapshot,
+                        bodyStartTokenIndex,
+                        tokenIndex,
+                        bodyStart,
+                        token.location
+                    ),
+                    containingTypeIdentity,
+                    activeHeaderIdentity,
+                    activeKind,
+                    activeName
+                )
+
+                state = HEADER
+                clearBody()
+                return [body]
+            }
+        }
+
+        return SyntaxIsland[]
+    }
+
+    acceptAccessorHeader(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+            return SyntaxIsland[]
+        }
+        if (isAccessorStart(token) && accessorHeaderTokens.isNotEmpty &&
+            accessorParenthesisDepth == 0 && FlatAccessorMatcher().matches(accessorHeaderTokens)) {
+            let header = publishBodylessAccessorHeader()
+            retainAccessorHeader(token, tokenIndex)
+            return [header]
+        }
+        if (isSymbol(token, "}")) {
+            if (accessorHeaderTokens.isEmpty) return acceptBody(token, tokenIndex)
+            if (!FlatAccessorMatcher().matches(accessorHeaderTokens)) reject("Incomplete Flat accessor header")
+            let islands = SyntaxIsland[]
+            islands.add(publishBodylessAccessorHeader())
+            islands.addAll(acceptBody(token, tokenIndex))
+            return islands
+        }
+
+        retainAccessorHeader(token, tokenIndex)
+        if (isSymbol(token, "(")) accessorParenthesisDepth++
+        else if (isSymbol(token, ")")) {
+            accessorParenthesisDepth--
+            if (accessorParenthesisDepth < 0) reject("Accessor header contains an unmatched closing parenthesis")
+        } else if (isSymbol(token, "{") && accessorParenthesisDepth == 0) {
+            let validationTokens = accessorHeaderTokens.skipLast(1)
+            if (!FlatAccessorMatcher().matches(validationTokens)) reject("Invalid Flat accessor header")
+
+            activeAccessorKind = accessorHeaderTokens.first.value
+            activeAccessorHeaderIdentity = identity("accessor-signature")
+            let header = AccessorHeaderSyntaxIsland(
+                activeAccessorHeaderIdentity,
+                SourceRange(
+                    snapshot,
+                    accessorHeaderTokenIndexes.first,
+                    tokenIndex,
+                    accessorHeaderTokens.first.location,
+                    token.location
+                ),
+                containingTypeIdentity,
+                activeHeaderIdentity,
+                activeAccessorKind,
+                accessorHeaderTokens.skipLast(1).map({ _.value }).join(" ")
+            )
+
+            bodyDepth++
+            accessorBodyStartTokenIndex = tokenIndex + 1
+            accessorBodyStart = endLocation(token)
+            accessorHeaderTokens = Token[]
+            accessorHeaderTokenIndexes = Int[]
+            accessorParenthesisDepth = 0
+            return [header]
+        }
+
+        return SyntaxIsland[]
+    }
+
+    validateHeader(String kind) {
+        let tokens = Token[]
+        let location = headerTokens.first.location
+        tokens.add(Token(value: "class", type: Token.Type.IDENTIFIER, location: location))
+        tokens.add(Token(value: "{", type: Token.Type.SYMBOL, location: location))
+        tokens.addAll(headerTokens)
+        if (kind == "field" || kind == "array-override") {
+            tokens.add(Token(value: "get", type: Token.Type.IDENTIFIER, location: endLocation(headerTokens.last)))
+        }
+        tokens.add(Token(value: "}", type: Token.Type.SYMBOL, location: endLocation(headerTokens.last)))
+        tokens.add(Token(value: "}", type: Token.Type.SYMBOL, location: endLocation(headerTokens.last)))
+
+        let engine = ParseEngine(FileParser(), ParseContext())
+        for (token in tokens) engine.consume(token)
+
+        if (engine.invalid || engine.end().isEmpty) reject("Invalid Flat braced member header")
+    }
+
+    classifyMember() -> String {
+        var Int metadataDepth
+        var Int index
+
+        while (index < headerTokens.count - 1) {
+            let token = headerTokens[index]
+            if (isSymbol(token, "[")) metadataDepth++
+            else if (isSymbol(token, "]")) metadataDepth--
+            else if (metadataDepth == 0 && isTypeKeyword(token)) return "nested-type"
+            index++
+        }
+
+        let values = headerTokens.skipLast(1).map({ _.value })
+        if (values.isNotEmpty && values.last == "static") return "static-block"
+        if (values.contains("this") && values.contains("[")) return "array-override"
+        if (values.contains("(")) return "function"
+        return "field"
+    }
+
+    findMemberName(String kind) -> String => null {
+        if (kind == "static-block") return null
+        if (kind == "array-override") return "this"
+
+        if (kind == "nested-type") {
+            var Int index
+            while (index < headerTokens.count - 1) {
+                if (isTypeKeyword(headerTokens[index])) {
+                    let next = index + 1
+                    if (next < headerTokens.count - 1 && headerTokens[next].type == Token.Type.IDENTIFIER &&
+                        headerTokens[next].value != "extends" && headerTokens[next].value != "implements") {
+                        return headerTokens[next].value
+                    }
+                    return null
+                }
+                index++
+            }
+        }
+
+        if (kind == "function") {
+            var Int index
+            while (index < headerTokens.count - 1) {
+                if (isSymbol(headerTokens[index], "(")) {
+                    var Int previous = index - 1
+                    if (previous >= 0 && isSymbol(headerTokens[previous], ">")) {
+                        var Int angleDepth = 1
+                        previous--
+                        while (previous >= 0 && angleDepth > 0) {
+                            if (isSymbol(headerTokens[previous], ">")) angleDepth++
+                            else if (isSymbol(headerTokens[previous], "<")) angleDepth--
+                            previous--
+                        }
+                    }
+                    while (previous >= 0) {
+                        if (headerTokens[previous].type == Token.Type.IDENTIFIER) {
+                            return headerTokens[previous].value
+                        }
+                        previous--
+                    }
+                }
+                index++
+            }
+        }
+
+        var Int index = headerTokens.count - 2
+        while (index >= 0) {
+            if (headerTokens[index].type == Token.Type.IDENTIFIER) return headerTokens[index].value
+            index--
+        }
+    }
+
+    retainHeader(Token token, Int tokenIndex) {
+        if (!token.location) reject("Braced member tokens require source locations")
+        if (headerTokens.count >= maxRetainedHeaderTokens) {
+            reject("Braced member header exceeds configured token capacity")
+        }
+
+        headerTokens.add(token)
+        headerTokenIndexes.add(tokenIndex)
+        peakRetainedHeaderTokenCount = Math.max(peakRetainedHeaderTokenCount, headerTokens.count)
+    }
+
+    headerRange(Int openingBraceIndex, Location openingBraceLocation) -> SourceRange {
+        return SourceRange(
+            snapshot,
+            headerTokenIndexes.first,
+            openingBraceIndex,
+            headerTokens.first.location,
+            openingBraceLocation
+        )
+    }
+
+    identity(String kind) -> SyntaxIslandIdentity {
+        let scopedKind = "#{containingTypeIdentity.kind}:#{containingTypeIdentity.ordinal}/#kind"
+        let value = SyntaxIslandIdentity(snapshot, scopedKind, nextOrdinal)
+        nextOrdinal++
+        return value
+    }
+
+    endLocation(Token token) -> Location {
+        return Location(lineNumber: token.endLineNumber, column: token.endColumn)
+    }
+
+    clearHeader() {
+        headerTokens = Token[]
+        headerTokenIndexes = Int[]
+        parenthesisDepth = 0
+        bracketDepth = 0
+        nestedHeaderBraceDepth = 0
+    }
+
+    publishBodylessAccessorHeader() -> AccessorHeaderSyntaxIsland {
+        let kind = accessorHeaderTokens.first.value
+        let header = AccessorHeaderSyntaxIsland(
+            identity("accessor-signature"),
+            SourceRange(
+                snapshot,
+                accessorHeaderTokenIndexes.first,
+                accessorHeaderTokenIndexes.last + 1,
+                accessorHeaderTokens.first.location,
+                endLocation(accessorHeaderTokens.last)
+            ),
+            containingTypeIdentity,
+            activeHeaderIdentity,
+            kind,
+            accessorHeaderTokens.map({ _.value }).join(" ")
+        )
+        accessorHeaderTokens = Token[]
+        accessorHeaderTokenIndexes = Int[]
+        accessorParenthesisDepth = 0
+        return header
+    }
+
+    retainAccessorHeader(Token token, Int tokenIndex) {
+        if (!token.location) reject("Accessor tokens require source locations")
+        if (accessorHeaderTokens.count >= maxRetainedHeaderTokens) {
+            reject("Accessor header exceeds configured token capacity")
+        }
+        accessorHeaderTokens.add(token)
+        accessorHeaderTokenIndexes.add(tokenIndex)
+        peakRetainedHeaderTokenCount = Math.max(
+            peakRetainedHeaderTokenCount,
+            retainedHeaderTokenCount
+        )
+    }
+
+    supportsAccessors() => activeKind == "field" || activeKind == "array-override"
+
+    clearAccessor() {
+        accessorHeaderTokens = Token[]
+        accessorHeaderTokenIndexes = Int[]
+        accessorParenthesisDepth = 0
+        activeAccessorHeaderIdentity = null
+        activeAccessorKind = null
+        accessorBodyStartTokenIndex = 0
+        accessorBodyStart = null
+    }
+
+    clearBody() {
+        clearAccessor()
+        bodyDepth = 0
+        activeHeaderIdentity = null
+        activeKind = null
+        activeName = null
+        bodyStartTokenIndex = 0
+        bodyStart = null
+    }
+
+    reject(String message) {
+        finished = true
+        clearHeader()
+        clearBody()
+        throw Exception(message)
+    }
+
+    isAccessorStart(Token token) => token.type == Token.Type.IDENTIFIER &&
+        (token.value == "get" || token.value == "set")
+    isTypeKeyword(Token token) => token.type == Token.Type.IDENTIFIER &&
+        (token.value == "class" || token.value == "trait" || token.value == "interface")
+    isSymbol(Token token, String value) => token.type == Token.Type.SYMBOL && token.value == value
+}

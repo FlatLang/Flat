@@ -1,0 +1,173 @@
+package flat/semantic/types
+
+/** Independently sealed class/interface inheritance component. */
+class {
+    var TypeHierarchyDeclaration[] declarations = TypeHierarchyDeclaration[]
+    var TypeHierarchyDiagnostic[] diagnosticValues = TypeHierarchyDiagnostic[]
+
+    visible var Bool sealed
+    visible Bool valid => sealed && diagnosticValues.isEmpty
+    visible Int declarationCount => declarations.count
+
+    public add(TypeHierarchyDeclaration declaration) {
+        if (sealed) throw Exception("Cannot add a declaration to a sealed hierarchy component")
+        if (!declaration) throw Exception("Hierarchy declaration cannot be null")
+        if (declarations.any({ _.semanticType.value() == declaration.semanticType.value() })) {
+            throw Exception("Hierarchy type is already declared in this component")
+        }
+        declarations.add(declaration)
+    }
+
+    public seal() {
+        if (sealed) return
+        declarations = declarations.sort({ _a.semanticType.value().compareTo(_b.semanticType.value()) })
+        for (declaration in declarations) {
+            for (parent in declaration.directParents()) {
+                if (!find(parent)) {
+                    diagnosticValues.add(TypeHierarchyDiagnostic(
+                        "type.hierarchy-missing-parent",
+                        declaration.semanticType,
+                        "Parent '#{parent.value()}' is not declared in this component"
+                    ))
+                }
+            }
+        }
+        for (declaration in declarations) {
+            if (inCycle(declaration.semanticType)) {
+                diagnosticValues.add(TypeHierarchyDiagnostic(
+                    "type.hierarchy-cycle",
+                    declaration.semanticType,
+                    "Inheritance cycle contains '#{declaration.semanticType.value()}'"
+                ))
+            }
+        }
+        diagnosticValues = diagnosticValues.sort((left, right) => {
+            let typeOrder = left.semanticType.value().compareTo(right.semanticType.value())
+            return typeOrder != 0 ? typeOrder : left.code.compareTo(right.code)
+        })
+        sealed = true
+    }
+
+    public diagnostics() -> TypeHierarchyDiagnostic[] {
+        let result = TypeHierarchyDiagnostic[]
+        result.addAll(diagnosticValues)
+        return result
+    }
+
+    public distance(
+        UserClassSemanticType fromType,
+        UserClassSemanticType toType
+    ) -> Int {
+        requireValid()
+        if (!find(fromType) || !find(toType)) return -1
+        return findDistance(fromType, toType, String[])
+    }
+
+    public lookup(
+        UserClassSemanticType receiverType,
+        String name
+    ) -> InheritedMemberLookup {
+        requireValid()
+        if (!receiverType || !name || name.trim().count == 0) {
+            throw Exception("Inherited member lookup requires receiver and name")
+        }
+        if (!find(receiverType)) return InheritedMemberLookup(name, TypeMember[], -1)
+        let local = find(receiverType).members().filter({ _.name == name })
+        if (local.isNotEmpty) {
+            return InheritedMemberLookup(
+                name,
+                unique(local.sort({ _a.identity.value.compareTo(_b.identity.value) })),
+                0
+            )
+        }
+        var Int bestDistance = -1
+        let candidates = TypeMember[]
+        for (declaration in declarations) {
+            if (declaration.semanticType.value() == receiverType.value()) continue
+            let currentDistance = distance(receiverType, declaration.semanticType)
+            if (currentDistance <= 0) continue
+            let current = declaration.members().filter({ _.name == name })
+            if (current.isEmpty) continue
+            if (bestDistance < 0 || currentDistance < bestDistance) {
+                candidates.clear()
+                candidates.addAll(current)
+                bestDistance = currentDistance
+            } else if (currentDistance == bestDistance) {
+                candidates.addAll(current)
+            }
+        }
+        return InheritedMemberLookup(
+            name,
+            unique(candidates.sort({ _a.identity.value.compareTo(_b.identity.value) })),
+            bestDistance
+        )
+    }
+
+    find(UserClassSemanticType type) -> TypeHierarchyDeclaration {
+        if (!type) return null
+        return declarations.firstOrNull({ _.semanticType.value() == type.value() })
+    }
+
+    inCycle(UserClassSemanticType type) -> Bool {
+        let declaration = find(type)
+        if (!declaration) return false
+        for (parent in declaration.directParents()) {
+            if (reaches(parent, type, String[])) return true
+        }
+        return false
+    }
+
+    reaches(
+        UserClassSemanticType current,
+        UserClassSemanticType target,
+        String[] path
+    ) -> Bool {
+        if (current.value() == target.value()) return true
+        if (path.contains(current.value())) return false
+        let nextPath = copy(path)
+        nextPath.add(current.value())
+        let declaration = find(current)
+        if (!declaration) return false
+        return declaration.directParents().any({ reaches(_, target, nextPath) })
+    }
+
+    findDistance(
+        UserClassSemanticType current,
+        UserClassSemanticType target,
+        String[] path
+    ) -> Int {
+        if (current.value() == target.value()) return 0
+        if (path.contains(current.value())) return -1
+        let declaration = find(current)
+        if (!declaration) return -1
+        let nextPath = copy(path)
+        nextPath.add(current.value())
+        var Int best = -1
+        for (parent in declaration.directParents()) {
+            let parentDistance = findDistance(parent, target, nextPath)
+            if (parentDistance >= 0 && (best < 0 || parentDistance + 1 < best)) {
+                best = parentDistance + 1
+            }
+        }
+        return best
+    }
+
+    unique(TypeMember[] values) -> TypeMember[] {
+        let result = TypeMember[]
+        for (value in values) {
+            if (!result.any({ _.identity.value == value.identity.value })) result.add(value)
+        }
+        return result
+    }
+
+    copy(String[] values) -> String[] {
+        let result = String[]
+        result.addAll(values)
+        return result
+    }
+
+    requireValid() {
+        if (!sealed) throw Exception("Hierarchy component must be sealed before lookup")
+        if (!valid) throw Exception("Invalid hierarchy component cannot be queried")
+    }
+}

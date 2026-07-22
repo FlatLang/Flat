@@ -1,0 +1,146 @@
+package flat/semantic/types
+
+testable class {
+    test `generic declarations and substitutions preserve nested structure`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("map", 30)
+        let input = GenericParameterSemanticType(identity, "In", 0)
+        let output = GenericParameterSemanticType(identity, "Out", 1)
+        let template = FunctionSemanticType(
+            [ArraySemanticType(input), NullableSemanticType(output)],
+            ArraySemanticType(output)
+        )
+        let declaration = GenericDeclaration(identity, [input, output], template)
+        let substitution = GenericSubstitution(
+            declaration.genericParameters(),
+            [SemanticTypes.intType(), SemanticTypes.stringType()]
+        )
+        let applied = (FunctionSemanticType)substitution.apply(template)
+
+        expect(applied.value()).toBe(
+            "function:(array:1:primitive:Int,nullable:builtin:String)->array:1:builtin:String"
+        )
+        expect(substitution.argumentFor(input).value()).toBe("primitive:Int")
+        expect(declaration.genericParameters().count).toBe(2)
+    }
+
+    test `structural inference resolves repeated array function and generic instance parameters`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("select", 30)
+        let parameter = GenericParameterSemanticType(identity, "T", 0)
+        let declaration = GenericDeclaration(identity, [parameter], parameter)
+        let box = fixture.userType("Box", 31)
+        let result = GenericInference.infer(
+            declaration,
+            [
+                ArraySemanticType(parameter),
+                FunctionSemanticType([parameter], parameter),
+                GenericInstanceSemanticType(box, [parameter])
+            ],
+            [
+                ArraySemanticType(SemanticTypes.stringType()),
+                FunctionSemanticType([SemanticTypes.stringType()], SemanticTypes.stringType()),
+                GenericInstanceSemanticType(box, [SemanticTypes.stringType()])
+            ],
+            fixture.range()
+        )
+
+        expect(result.inferred).toBe(true)
+        expect(result.substitution.argumentFor(parameter).value()).toBe("builtin:String")
+    }
+
+    test `inference diagnoses conflicting unresolved and constrained parameters`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("use", 30)
+        let object = fixture.userType("Object", 31)
+        let base = fixture.userType("Base", 32)
+        let child = fixture.userType("Child", 33)
+        let unrelated = fixture.userType("Unrelated", 34)
+        let component = TypeHierarchyComponent()
+        component.add(fixture.hierarchyDeclaration(object))
+        component.add(fixture.hierarchyDeclaration(base, parents: [object]))
+        component.add(fixture.hierarchyDeclaration(child, parents: [base]))
+        component.add(fixture.hierarchyDeclaration(unrelated, parents: [object]))
+        component.seal()
+        let constrained = GenericParameterSemanticType(identity, "T", 0, base)
+        let unresolved = GenericParameterSemanticType(identity, "U", 1)
+        let declaration = GenericDeclaration(identity, [constrained, unresolved], constrained)
+
+        let conflict = GenericInference.infer(
+            GenericDeclaration(identity, [constrained], constrained),
+            [constrained, constrained],
+            [child, base],
+            fixture.range(),
+            component
+        )
+        let missing = GenericInference.infer(
+            declaration,
+            [constrained],
+            [child],
+            fixture.range(),
+            component
+        )
+        let invalidConstraint = GenericInference.infer(
+            GenericDeclaration(identity, [constrained], constrained),
+            [constrained],
+            [unrelated],
+            fixture.range(),
+            component
+        )
+
+        expect(conflict.diagnostic.code).toBe("type.generic-inference")
+        expect(missing.diagnostic.code).toBe("type.generic-unresolved")
+        expect(invalidConstraint.diagnostic.code).toBe("type.generic-constraint")
+    }
+
+    test `bounded memo coalesces duplicate instantiation and uses stable key order`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("identity", 30)
+        let parameter = GenericParameterSemanticType(identity, "T", 0)
+        let declaration = GenericDeclaration(
+            identity,
+            [parameter],
+            FunctionSemanticType([parameter], parameter)
+        )
+        let memo = GenericInstantiationMemo(2)
+        let stringWork = memo.instantiate(declaration, [SemanticTypes.stringType()])
+        let duplicate = memo.instantiate(declaration, [SemanticTypes.stringType()])
+        let intWork = memo.instantiate(declaration, [SemanticTypes.intType()])
+        var Bool capacityRejected
+        try { memo.instantiate(declaration, [SemanticTypes.longType()]) } catch (Exception error) {
+            capacityRejected = true
+        }
+
+        expect(duplicate).toBe(stringWork)
+        expect(stringWork.instantiatedType.value())
+            .toBe("function:(builtin:String)->builtin:String")
+        expect(intWork.instantiatedType.value()).toBe("function:(primitive:Int)->primitive:Int")
+        expect(memo.count).toBe(2)
+        expect(memo.work().first.key.compareTo(memo.work().last.key) < 0).toBe(true)
+        expect(capacityRejected).toBe(true)
+    }
+
+    test `generic instance types defensively copy arguments and declaration ownership is validated`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("value", 30)
+        let parameter = GenericParameterSemanticType(identity, "T", 0)
+        let box = fixture.userType("Box", 31)
+        let source = SemanticType[]:add(SemanticTypes.intType())
+        let instance = GenericInstanceSemanticType(box, source)
+        source.add(SemanticTypes.stringType())
+        let returned = instance.typeArguments()
+        returned.add(SemanticTypes.longType())
+        var Int rejected
+        try {
+            GenericDeclaration(
+                identity,
+                [GenericParameterSemanticType(fixture.functionIdentity("other", 32), "T", 0)],
+                parameter
+            )
+        } catch (Exception error) { rejected++ }
+        try { GenericInstantiationMemo(0) } catch (Exception error) { rejected++ }
+
+        expect(instance.typeArguments().count).toBe(1)
+        expect(rejected).toBe(2)
+    }
+}

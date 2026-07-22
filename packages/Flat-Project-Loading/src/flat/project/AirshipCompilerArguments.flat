@@ -1,0 +1,103 @@
+package flat/project
+
+import flat/datastruct/HashMap
+
+/** Adapter for the compiler arguments Airship emits after CLI tokenization. */
+class {
+    public fromArguments(String[] arguments) -> ProjectModel {
+        let sourceRoots = SourceRoot[]
+        let dependencies = ProjectDependency[]
+        let exclusions = SourceExclusion[]
+        let defaults = DefaultImport[]
+        let properties = HashMap<String, String>()
+        var String target = "flat"
+        var String runtime
+        var String mainClass
+        var Bool library
+        var String outputFile
+        var String outputDirectory
+        var Int concurrency = 1
+        var Int index
+
+        while (index < arguments.count) {
+            let argument = arguments[index]
+            if (argument == "-l") {
+                index++
+                dependencies.add(ProjectDependency("library-#{dependencies.count}", requireValue(arguments, index)))
+            } else if (argument == "-x") {
+                index++
+                exclusions.add(SourceExclusion(requireValue(arguments, index)))
+            } else if (argument == "-main") {
+                index++
+                mainClass = requireValue(arguments, index)
+            } else if (argument == "-library") {
+                library = true
+            } else if (argument == "-o") {
+                index++
+                outputFile = requireValue(arguments, index)
+            } else if (argument == "-d") {
+                index++
+                outputDirectory = requireValue(arguments, index)
+            } else if (argument == "-target") {
+                index++
+                target = requireValue(arguments, index)
+            } else if (argument == "-target-runtime") {
+                index++
+                runtime = requireValue(arguments, index)
+            } else if (argument == "-default-import") {
+                index++
+                defaults.add(DefaultImport(requireValue(arguments, index)))
+            } else if (argument == "-default-static-import") {
+                index++
+                defaults.add(DefaultImport(requireValue(arguments, index), true))
+            } else if (argument == "-app-props") {
+                index++
+                parseProperties(requireValue(arguments, index), properties)
+            } else if (argument == "-threads") {
+                index++
+                concurrency = Int.parseInt(requireValue(arguments, index))
+            } else if (argument == "-parallel") {
+                concurrency = Math.max(2, concurrency)
+            } else if (argument.startsWith("-")) {
+                throw Exception("Unsupported compiler argument '#argument'")
+            } else {
+                sourceRoots.add(SourceRoot(argument))
+            }
+            index++
+        }
+
+        let options = CompilerOptions(
+            target,
+            runtime: runtime,
+            mainClass: mainClass,
+            library: library,
+            outputFile: outputFile,
+            outputDirectory: outputDirectory,
+            maxConcurrency: concurrency,
+            applicationProperties: properties
+        )
+        let package = ProjectPackage(
+            properties["name"] ?: "application",
+            sourceRoots,
+            dependencies: dependencies,
+            defaultImports: defaults,
+            exclusions: exclusions
+        )
+        return ProjectModel("airship:arguments", [package], options)
+    }
+
+    requireValue(String[] arguments, Int index) -> String {
+        if (index >= arguments.count || arguments[index].startsWith("-")) {
+            throw Exception("Compiler argument requires a value")
+        }
+        return arguments[index]
+    }
+
+    parseProperties(String value, HashMap<String, String> properties) {
+        for (entry in value.split(',')) {
+            let separator = entry.indexOf("=")
+            if (separator <= 0) throw Exception("Application properties must use key=value entries")
+            properties[entry.substring(end: separator).trim()] = entry.substring(separator + 1).trim()
+        }
+    }
+}

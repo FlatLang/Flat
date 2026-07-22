@@ -1,0 +1,76 @@
+package flat/bound
+
+/** Ordered pass pipeline scoped to exactly one independently lowerable function. */
+class {
+    var RegisteredLoweringPass[] orderedPasses
+
+    public construct(RegisteredLoweringPass[] passes) {
+        if (!passes || passes.any({ !_ })) throw Exception("Lowering pipeline requires passes")
+        orderedPasses = passes.sort({ _a.ordinal - _b.ordinal })
+        var Int index
+        while (index < orderedPasses.count) {
+            if (orderedPasses[index].ordinal != index) {
+                throw Exception("Lowering pass ordinals must be contiguous from zero")
+            }
+            index++
+        }
+    }
+
+    public lower(BoundFunctionUnit input) -> FunctionLoweringResult {
+        if (!input) throw Exception("Lowering pipeline requires a function")
+        var BoundFunctionUnit current = input
+        let telemetry = LoweringPassTelemetry[]
+        for (registered in orderedPasses) {
+            let inputCount = current.statements().count
+            var BoundFunctionUnit output
+            try {
+                output = registered.pass.lower(current)
+                validateOutput(input, output, registered.pass)
+            } catch (Exception error) {
+                return FunctionLoweringResult(current, telemetry, error, registered.pass.name())
+            }
+            telemetry.add(LoweringPassTelemetry(
+                registered.pass.name(),
+                registered.ordinal,
+                inputCount,
+                output.statements().count,
+                registered.pass.inputInvariant(),
+                registered.pass.outputInvariant()
+            ))
+            current = output
+        }
+        return FunctionLoweringResult(current, telemetry)
+    }
+
+    validateOutput(
+        BoundFunctionUnit original,
+        BoundFunctionUnit output,
+        BoundFunctionLoweringPass pass
+    ) {
+        if (!output) throw Exception("Lowering pass '#{pass.name()}' returned no function")
+        if (output.identity != original.identity || output.range.snapshot != original.range.snapshot ||
+            output.returnType.value() != original.returnType.value() ||
+            output.staticFunction != original.staticFunction ||
+            output.mainFunction != original.mainFunction ||
+            !sameParameters(output.parameterValues(), original.parameterValues())) {
+            throw Exception("Lowering pass '#{pass.name()}' violated function identity/type ownership")
+        }
+    }
+
+    sameParameters(BoundFunctionParameter[] left, BoundFunctionParameter[] right) -> Bool {
+        if (left.count != right.count) return false
+        var Int index
+        while (index < left.count) {
+            if (left[index].identity != right[index].identity ||
+                left[index].semanticType.value() != right[index].semanticType.value()) return false
+            index++
+        }
+        return true
+    }
+
+    public passes() -> RegisteredLoweringPass[] {
+        let result = RegisteredLoweringPass[]
+        result.addAll(orderedPasses)
+        return result
+    }
+}

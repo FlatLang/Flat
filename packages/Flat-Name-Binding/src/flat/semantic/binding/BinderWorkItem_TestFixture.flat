@@ -1,0 +1,97 @@
+package flat/semantic/binding
+
+import flat/compiler/models
+import flat/semantic/declarations
+import flat/eventstream
+import flat/future
+
+class BinderWorkItem_TestFixture {
+    visible SourceSnapshotIdentity snapshot = SourceSnapshotIdentity(
+        SourceIdentity("workspace:Binding.flat"),
+        "sha256:binding"
+    )
+    visible PackageIdentity packageIdentity = PackageIdentity("workspace", "flat/test")
+
+    public island(String kind, Int ordinal) -> SyntaxIslandIdentity {
+        return SyntaxIslandIdentity(snapshot, kind, ordinal)
+    }
+
+    public declaration(String kind, String name, Int ordinal) -> DeclarationIdentity {
+        return DeclarationIdentity(island("#kind-header", ordinal), kind, name)
+    }
+
+    public scope(DeclarationIdentity owner, String kind) -> ScopeIdentity {
+        return ScopeIdentity(snapshot, kind, owner: owner)
+    }
+
+    public range(Int startTokenIndex, Int endTokenIndex) -> SourceRange {
+        return SourceRange(
+            snapshot,
+            startTokenIndex,
+            endTokenIndex,
+            Location(lineNumber: 1, column: startTokenIndex + 1),
+            Location(lineNumber: 1, column: endTokenIndex + 1)
+        )
+    }
+
+    public candidate(
+        String name,
+        Int ordinal,
+        String origin,
+        String visibility = "public",
+        String receiver = "none",
+        PackageIdentity packageIdentity = null,
+        DeclarationIdentity ownerType = null
+    ) -> BindingCandidate {
+        let packageValue = packageIdentity ?: this.packageIdentity
+        let symbolScope = ScopeIdentity(packageValue, "package")
+        return BindingCandidate(
+            symbol(name, ordinal, symbolScope, declarationKind: origin),
+            BindingOrigin(origin),
+            BindingVisibility(visibility),
+            BindingReceiverRequirement(receiver),
+            packageValue,
+            ownerType
+        )
+    }
+
+    public layer(BindingCandidate[] candidates = BindingCandidate[]) -> BindingLayer {
+        let layer = BindingLayer()
+        candidates.forEach({ layer.add(_) })
+        return layer
+    }
+
+    public lookup(
+        BindingLayer[] locals = BindingLayer[],
+        BindingLayer parameters = null,
+        BindingLayer members = null,
+        BindingLayer types = null,
+        BindingLayer packageDeclarations = null,
+        BindingLayer[] imports = BindingLayer[]
+    ) -> LayeredBindingLookup {
+        return LayeredBindingLookup(
+            locals,
+            parameters ?: layer(),
+            members ?: layer(),
+            types ?: layer(),
+            packageDeclarations ?: layer(),
+            imports
+        )
+    }
+
+    public symbol(
+        String name,
+        Int ordinal,
+        ScopeIdentity scopeIdentity,
+        String declarationKind = "local"
+    ) -> DeclarationSymbol {
+        let declarationIdentity = declaration(declarationKind, name, ordinal)
+        return DeclarationSymbol(
+            SymbolIdentity(declarationIdentity, declarationKind),
+            scopeIdentity,
+            name,
+            declarationKind,
+            range(ordinal, ordinal + 1)
+        )
+    }
+}

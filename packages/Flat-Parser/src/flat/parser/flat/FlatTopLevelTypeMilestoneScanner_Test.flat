@@ -1,0 +1,216 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+import flat/lexer/Lexer
+
+testable class {
+    async test `publishes complex top level header before body completion`() {
+        let source = "class Example implements Comparable<String>, PlusOperator<String>, EqualsOperator, MultiplyOperator<Int, String> { value() { nested() } }"
+        let tokens = lex(source)
+        let scanner = scanner(32)
+        var TopLevelTypeHeaderSyntaxIsland header
+        var TopLevelTypeBodySyntaxIsland body
+        var Int index
+
+        for (token in tokens) {
+            let islands = scanner.accept(token, index)
+            for (island in islands) {
+                if (island.class.isOfType(TopLevelTypeHeaderSyntaxIsland.class)) {
+                    header = (TopLevelTypeHeaderSyntaxIsland)island
+                    expect(body).toBe(null)
+                    expect(scanner.retainedHeaderTokenCount).toBe(0)
+                } else if (island.class.isOfType(TopLevelTypeBodySyntaxIsland.class)) {
+                    body = (TopLevelTypeBodySyntaxIsland)island
+                }
+            }
+            index++
+        }
+        scanner.end()
+
+        expect(header).toNotBe(null)
+        expect(header.declarationKind).toBe("class")
+        expect(header.name).toBe("Example")
+        expect(header.headerText).toBe("class Example implements Comparable < String > , PlusOperator < String > , EqualsOperator , MultiplyOperator < Int , String >")
+        expect(body).toNotBe(null)
+        expect(body.headerIdentity).toBe(header.identity)
+        expect(body.declarationKind).toBe("class")
+        expect(body.name).toBe("Example")
+        expect(body.identity.ordinal).toBe(3)
+    }
+
+    async test `records an exact end exclusive top level body range`() {
+        let tokens = lex("class Example { one() { two() } }")
+        let scanner = scanner(12)
+        var TopLevelTypeHeaderSyntaxIsland header
+        var TopLevelTypeBodySyntaxIsland body
+        var Int opening = -1
+        var Int closing = -1
+        var Int depth
+        var Int index
+
+        for (token in tokens) {
+            if (token.value == "{") {
+                if (opening < 0) opening = index
+                depth++
+            } else if (token.value == "}") {
+                depth--
+                if (depth == 0) closing = index
+            }
+
+            for (island in scanner.accept(token, index)) {
+                if (island.class.isOfType(TopLevelTypeHeaderSyntaxIsland.class)) {
+                    header = (TopLevelTypeHeaderSyntaxIsland)island
+                } else if (island.class.isOfType(TopLevelTypeBodySyntaxIsland.class)) {
+                    body = (TopLevelTypeBodySyntaxIsland)island
+                }
+            }
+            index++
+        }
+
+        expect(header.range.endTokenIndex).toBe(opening)
+        expect(body.range.startTokenIndex).toBe(opening + 1)
+        expect(body.range.endTokenIndex).toBe(closing)
+        expect(body.range.start).toBe(Location(lineNumber: 1, column: 16))
+        expect(body.range.end).toBe(Location(lineNumber: 1, column: 33))
+    }
+
+    async test `supports top level metadata and generic headers`() {
+        let sources = [
+            "data class DataThing {}",
+            "testable class {}",
+            "class Generic<reified Object> {}",
+            "[TestSuite [Suite]] class {}"
+        ]
+
+        for (source in sources) {
+            let tokens = lex(source)
+            let scanner = scanner(16)
+            var Int headers
+            var Int index
+
+            try {
+                for (token in tokens) {
+                    for (island in scanner.accept(token, index)) {
+                        if (island.class.isOfType(TopLevelTypeHeaderSyntaxIsland.class)) headers++
+                    }
+                    index++
+                }
+                scanner.end()
+            } catch (Exception error) {
+                throw Exception("Failed top-level header '#source': #{error.message}")
+            }
+
+            expect(headers).toBe(1)
+        }
+    }
+
+    async test `supports multiple top level types and implicit names`() {
+        let tokens = lex("class {} trait Named {} interface Other {}")
+        let scanner = scanner(8)
+        let islands = SyntaxIsland[]
+        var Int index
+
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+        scanner.end()
+
+        expect(islands.count).toBe(6)
+        expect(((TopLevelTypeHeaderSyntaxIsland)islands[0]).name).toBe(null)
+        expect(((TopLevelTypeHeaderSyntaxIsland)islands[2]).declarationKind).toBe("trait")
+        expect(((TopLevelTypeHeaderSyntaxIsland)islands[2]).name).toBe("Named")
+        expect(((TopLevelTypeHeaderSyntaxIsland)islands[4]).declarationKind).toBe("interface")
+        expect(((TopLevelTypeHeaderSyntaxIsland)islands[4]).name).toBe("Other")
+        expect(islands[5].identity.ordinal).toBe(5)
+    }
+
+    async test `bounds retained member headers while ranging top level bodies`() {
+        let tokens = lex("class Example { one() { two() { three() } } four() { five() } }")
+        let scanner = scanner(8)
+        var Int index
+
+        for (token in tokens) {
+            scanner.accept(token, index)
+            if (token.value == "two" || token.value == "three" || token.value == "five") {
+                expect(scanner.retainedHeaderTokenCount).toBe(0)
+            }
+            index++
+        }
+
+        expect(scanner.peakRetainedHeaderTokenCount <= 8).toBe(true)
+    }
+
+    async test `rejects invalid and incomplete top level types with cleanup`() {
+        let invalidTokens = lex("nonsense class Example {")
+        let invalid = scanner(8)
+        var Bool invalidRejected
+        var Int index
+
+        try {
+            for (token in invalidTokens) {
+                invalid.accept(token, index)
+                index++
+            }
+        } catch (Exception error) {
+            invalidRejected = true
+        }
+
+        expect(invalidRejected).toBe(true)
+        expect(invalid.finished).toBe(true)
+        expect(invalid.retainedHeaderTokenCount).toBe(0)
+
+        let incomplete = scanner(8)
+        incomplete.accept(token("class", Token.Type.IDENTIFIER, 1), 0)
+        incomplete.accept(token("Example", Token.Type.IDENTIFIER, 7), 1)
+        incomplete.accept(token("{", Token.Type.SYMBOL, 15), 2)
+        var Bool eofRejected
+
+        try { incomplete.end() } catch (Exception error) { eofRejected = true }
+
+        expect(eofRejected).toBe(true)
+        expect(incomplete.finished).toBe(true)
+        expect(incomplete.retainedHeaderTokenCount).toBe(0)
+    }
+
+    async test `bounds top level type header retention and cancellation`() {
+        let bounded = scanner(2)
+        bounded.accept(token("data", Token.Type.IDENTIFIER, 1), 0)
+        bounded.accept(token("class", Token.Type.IDENTIFIER, 6), 1)
+        var Bool rejected
+
+        try { bounded.accept(token("Example", Token.Type.IDENTIFIER, 12), 2) } catch (Exception error) { rejected = true }
+
+        expect(rejected).toBe(true)
+        expect(bounded.peakRetainedHeaderTokenCount).toBe(2)
+        expect(bounded.retainedHeaderTokenCount).toBe(0)
+
+        let cancelled = scanner(8)
+        cancelled.accept(token("data", Token.Type.IDENTIFIER, 1), 0)
+        cancelled.cancel()
+        expect(cancelled.finished).toBe(true)
+        expect(cancelled.retainedHeaderTokenCount).toBe(0)
+    }
+
+    async lex(String source) -> Token[] {
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        return stream.consumeAll<Token>("data")
+    }
+
+    scanner(Int capacity) -> FlatTopLevelTypeMilestoneScanner {
+        return FlatTopLevelTypeMilestoneScanner(
+            SourceSnapshotIdentity(SourceIdentity("memory:type-test"), "content:abc"),
+            capacity
+        )
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(
+            value: value,
+            type: type,
+            location: Location(lineNumber: 1, column: column)
+        )
+    }
+}

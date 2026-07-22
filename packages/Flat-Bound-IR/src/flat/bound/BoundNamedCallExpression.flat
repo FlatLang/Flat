@@ -1,0 +1,59 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Rich named/default argument call awaiting canonical positional lowering. */
+data class extends BoundExpression {
+    var BoundCallParameter[] parameters
+    var BoundNamedArgument[] supplied
+
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible CallableSignature target,
+        BoundCallParameter[] callParameters,
+        BoundNamedArgument[] suppliedArguments
+    ) {
+        if (!range || !semanticType || !target || !callParameters || !suppliedArguments ||
+            callParameters.count != target.parameterTypes().count ||
+            target.returnType.value() != semanticType.value() ||
+            callParameters.any({ !_ }) || suppliedArguments.any({ !_ })) {
+            throw Exception("Named call requires target and complete parameter metadata")
+        }
+        var Int index
+        while (index < callParameters.count) {
+            if (callParameters[index].semanticType.value() != target.parameterTypes()[index].value()) {
+                throw Exception("Named call parameter type does not match target signature")
+            }
+            if (callParameters.filter({ _.name == callParameters[index].name }).count != 1) {
+                throw Exception("Named call parameter names must be unique")
+            }
+            index++
+        }
+        for (argument in suppliedArguments) {
+            let parameter = callParameters.firstOrNull({ _.name == argument.name })
+            if (!parameter || suppliedArguments.filter({ _.name == argument.name }).count != 1 ||
+                argument.conversion.toType.value() != parameter.semanticType.value()) {
+                throw Exception("Supplied named argument must uniquely match a parameter")
+            }
+        }
+        parameters = BoundCallParameter[]
+        parameters.addAll(callParameters)
+        supplied = BoundNamedArgument[]
+        supplied.addAll(suppliedArguments)
+        super(range, semanticType)
+    }
+
+    public callParameters() -> BoundCallParameter[] {
+        let result = BoundCallParameter[]
+        result.addAll(parameters)
+        return result
+    }
+    public suppliedArguments() -> BoundNamedArgument[] {
+        let result = BoundNamedArgument[]
+        result.addAll(supplied)
+        return result
+    }
+    override public expressionKind() => "named-call"
+}

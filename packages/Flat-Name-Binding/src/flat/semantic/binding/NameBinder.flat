@@ -1,0 +1,30 @@
+package flat/semantic/binding
+
+/** Binds every supplied identifier path or publishes one stable diagnostic. */
+class {
+    public construct(visible QualifiedBindingLookup lookup) {
+        if (!lookup) throw Exception("Name binder requires qualified lookup")
+    }
+
+    public bind(
+        BinderWorkItem work,
+        BindingReference[] references,
+        BindingLookupContext context
+    ) -> BindingWorkResult {
+        if (!work || !references || !context) {
+            throw Exception("Name binding requires work, references, and context")
+        }
+        let bound = BoundReference[]
+        let diagnostics = BindingDiagnostic[]
+        for (reference in references) {
+            if (!reference || reference.range.snapshot != work.identity.snapshot) {
+                throw Exception("Every binding reference must belong to its work snapshot")
+            }
+            let result = lookup.lookup(reference.segments(), context)
+            let diagnostic = BindingDiagnostics.fromLookup(work, reference.range, result)
+            if (diagnostic) diagnostics.add(diagnostic)
+            else bound.add(BoundReference(reference, result.candidate))
+        }
+        return BindingWorkResult(work, bound, diagnostics)
+    }
+}

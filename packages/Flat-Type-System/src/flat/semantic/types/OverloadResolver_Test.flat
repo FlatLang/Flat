@@ -1,0 +1,111 @@
+package flat/semantic/types
+
+testable class {
+    test `overload ranking prefers exact then lower conversion vectors`() {
+        let fixture = TypeSystem_TestFixture()
+        let exact = fixture.signature(
+            "pick", "function", [SemanticTypes.intType()], SemanticTypes.intType(), ordinal: 2
+        )
+        let wide = fixture.signature(
+            "pick", "function", [SemanticTypes.longType()], SemanticTypes.longType(), ordinal: 1
+        )
+        let resolution = OverloadResolver.resolve(
+            "pick",
+            [wide, exact],
+            null,
+            [SemanticTypes.intType()],
+            fixture.range()
+        )
+        let wideningResolution = OverloadResolver.resolve(
+            "pick",
+            [exact, wide],
+            null,
+            [SemanticTypes.shortType()],
+            fixture.range()
+        )
+
+        expect(resolution.resolved).toBe(true)
+        expect(resolution.selected).toBe(exact)
+        expect(resolution.applicableCandidates().count).toBe(2)
+        expect(wideningResolution.selected).toBe(exact)
+    }
+
+    test `incomparable conversion vectors produce deterministic ambiguity`() {
+        let fixture = TypeSystem_TestFixture()
+        let first = fixture.signature(
+            "mix",
+            "function",
+            [SemanticTypes.intType(), SemanticTypes.longType()],
+            SemanticTypes.unitType(),
+            ordinal: 9
+        )
+        let second = fixture.signature(
+            "mix",
+            "function",
+            [SemanticTypes.longType(), SemanticTypes.intType()],
+            SemanticTypes.unitType(),
+            ordinal: 1
+        )
+        let forward = OverloadResolver.resolve(
+            "mix",
+            [first, second],
+            null,
+            [SemanticTypes.shortType(), SemanticTypes.shortType()],
+            fixture.range()
+        )
+        let reverse = OverloadResolver.resolve(
+            "mix",
+            [second, first],
+            null,
+            [SemanticTypes.shortType(), SemanticTypes.shortType()],
+            fixture.range()
+        )
+
+        expect(forward.diagnostic.code).toBe("type.call-ambiguous")
+        expect(reverse.diagnostic.message).toBe(forward.diagnostic.message)
+        expect(forward.candidates()).toBe(reverse.candidates())
+        expect(forward.candidates().first).toBe(second)
+        expect(forward.candidates().last).toBe(first)
+    }
+
+    test `no match diagnostics and candidate collection are stable`() {
+        let fixture = TypeSystem_TestFixture()
+        let later = fixture.signature(
+            "read", "function", [SemanticTypes.intType()], SemanticTypes.unitType(), ordinal: 8
+        )
+        let earlier = fixture.signature(
+            "read", "function", [SemanticTypes.stringType()], SemanticTypes.unitType(), ordinal: 2
+        )
+        let unrelated = fixture.signature(
+            "other", "function", SemanticType[], SemanticTypes.unitType(), ordinal: 1
+        )
+        let resolution = OverloadResolver.resolve(
+            "read",
+            [later, unrelated, earlier],
+            null,
+            [SemanticTypes.boolType()],
+            fixture.range()
+        )
+
+        expect(resolution.resolved).toBe(false)
+        expect(resolution.diagnostic.code).toBe("type.call-no-match")
+        expect(resolution.candidates()).toBe([earlier, later])
+        expect(resolution.applicableCandidates().isEmpty).toBe(true)
+    }
+
+    test `overload applicability includes receiver semantics`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Example")
+        let other = fixture.userType("Other", 2)
+        let instance = fixture.signature(
+            "run", "instance-method", SemanticType[], SemanticTypes.unitType(), owner
+        )
+
+        expect(OverloadResolver.resolve(
+            "run", [instance], owner, SemanticType[], fixture.range()
+        ).selected).toBe(instance)
+        expect(OverloadResolver.resolve(
+            "run", [instance], other, SemanticType[], fixture.range()
+        ).diagnostic.code).toBe("type.call-no-match")
+    }
+}

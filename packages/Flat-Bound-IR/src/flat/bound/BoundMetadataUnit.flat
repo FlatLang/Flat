@@ -1,0 +1,16 @@
+package flat/bound
+
+/** Immutable target-independent metadata consumed by capable backends/runtime assembly. */
+data class {
+    public construct(
+        visible String metadataKind,
+        visible String name,
+        visible String value
+    ) {
+        if ((metadataKind != "data-class" && metadataKind != "generic" &&
+             metadataKind != "reified" && metadataKind != "annotation") ||
+            !name || name.trim().count == 0 || !value) {
+            throw Exception("Bound metadata requires supported kind, name, and value")
+        }
+    }
+}

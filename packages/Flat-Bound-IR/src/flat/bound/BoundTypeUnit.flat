@@ -1,0 +1,39 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class {
+    var BoundFunctionUnit[] functions
+    var BoundMetadataUnit[] metadataUnits
+
+    public construct(
+        visible DeclarationIdentity identity,
+        visible UserClassSemanticType semanticType,
+        BoundFunctionUnit[] functionUnits,
+        visible SourceRange range,
+        BoundMetadataUnit[] metadataValues = BoundMetadataUnit[]
+    ) {
+        if (!identity || !semanticType || !functionUnits || functionUnits.any({ !_ }) || !range ||
+            !metadataValues || metadataValues.any({ !_ }) ||
+            identity.syntaxIdentity.snapshot != range.snapshot) {
+            throw Exception("Bound type requires identity, semantic type, functions, and range")
+        }
+        functions = BoundFunctionUnit[]
+        functions.addAll(functionUnits)
+        metadataUnits = BoundMetadataUnit[]
+        metadataUnits.addAll(metadataValues)
+    }
+
+    public functionUnits() -> BoundFunctionUnit[] {
+        let result = BoundFunctionUnit[]
+        result.addAll(functions)
+        return result
+    }
+
+    public metadata() -> BoundMetadataUnit[] {
+        let result = BoundMetadataUnit[]
+        result.addAll(metadataUnits)
+        return result
+    }
+}

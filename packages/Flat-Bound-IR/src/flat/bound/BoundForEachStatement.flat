@@ -1,0 +1,50 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Rich foreach loop with single-evaluation canonical loop mechanics. */
+data class extends BoundStatement {
+    var BoundStatement[] initializationValues
+    var BoundStatement[] bodyValues
+    var BoundStatement[] advanceValues
+
+    public construct(
+        SourceRange range,
+        BoundStatement[] initialization,
+        visible BoundExpression condition,
+        BoundStatement[] body,
+        BoundStatement[] advance,
+        visible String loopLabel,
+        visible String exitLabel
+    ) {
+        if (!range || !initialization || initialization.any({ !_ }) || !condition ||
+            condition.semanticType.value() != "primitive:Bool" || !body || body.any({ !_ }) ||
+            !advance || advance.any({ !_ }) || !loopLabel || !exitLabel || loopLabel == exitLabel) {
+            throw Exception("Foreach requires typed loop mechanics, body, and distinct labels")
+        }
+        initializationValues = BoundStatement[]
+        initializationValues.addAll(initialization)
+        bodyValues = BoundStatement[]
+        bodyValues.addAll(body)
+        advanceValues = BoundStatement[]
+        advanceValues.addAll(advance)
+        super(range)
+    }
+
+    public initialization() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(initializationValues)
+        return result
+    }
+    public body() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(bodyValues)
+        return result
+    }
+    public advance() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(advanceValues)
+        return result
+    }
+    override public unitKind() => "foreach"
+}

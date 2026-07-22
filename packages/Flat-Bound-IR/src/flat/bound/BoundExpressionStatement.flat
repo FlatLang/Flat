@@ -1,0 +1,11 @@
+package flat/bound
+
+import flat/compiler/models
+
+data class extends BoundStatement {
+    public construct(SourceRange range, visible BoundExpression expression) {
+        if (!range || !expression) throw Exception("Bound expression statement requires range and expression")
+        super(range)
+    }
+    override public unitKind() => "expression"
+}

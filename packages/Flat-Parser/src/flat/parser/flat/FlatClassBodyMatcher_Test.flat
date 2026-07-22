@@ -1,0 +1,86 @@
+package flat/parser/flat
+
+import flat/compiler/models/Token
+import flat/lexer/Lexer
+
+testable class {
+    async test `class body grammar probe counts complete adjacent members`() {
+        let cases = [
+            "run() next()",
+            "String value Int other",
+            "run() => value next()",
+            "String value => initial Int other",
+            "run() { work() } next()",
+            "String value { get } Int other"
+        ]
+        let expected = [2, 2, 2, 2, 2, 2]
+        var Int index
+
+        while (index < cases.count) {
+            let tokens = lex(cases[index])
+            let result = FlatClassBodyMatcher().inspect(significant(tokens))
+            expect(result.matchedAll).toBe(true)
+            expect(result.memberTokenCounts.count).toBe(expected[index])
+            index++
+        }
+    }
+
+    async test `class body grammar probe exposes direct member spans`() {
+        let bodyless = FlatClassBodyMatcher().inspect(significant(lex("run() next()")))
+        expect(bodyless.memberTokenCounts).toBe([3, 3])
+
+        let expression = FlatClassBodyMatcher().inspect(significant(lex("run() => value next()")))
+        expect(expression.memberTokenCounts).toBe([5, 3])
+
+        let initialized = FlatClassBodyMatcher().inspect(significant(lex("String value => initial Int other")))
+        expect(initialized.memberTokenCounts).toBe([4, 2])
+
+    }
+
+    async test `class body grammar probe attaches metadata spans to following members`() {
+        let modified = FlatClassBodyMatcher().inspect(significant(lex("public run() private next()")))
+        expect(modified.matchedAll).toBe(true)
+        expect(modified.memberTokenCounts).toBe([4, 4])
+
+        let annotated = FlatClassBodyMatcher().inspect(significant(lex(
+            "[Target js] run() [Target not c] String value => initial"
+        )))
+        expect(annotated.matchedAll).toBe(true)
+        expect(annotated.memberTokenCounts).toBe([7, 9])
+    }
+
+    async test `class body grammar probe does not expose unattached metadata as a member`() {
+        let result = FlatClassBodyMatcher().inspect(significant(lex("[Target js]")))
+        expect(result.matchedAll).toBe(true)
+        expect(result.memberTokenCounts.count).toBe(0)
+    }
+
+    async test `class body grammar probe matches braced lambda expression bodies`() {
+        let result = FlatClassBodyMatcher().inspect(significant(lex(
+            "run() => (Int x) => { x }"
+        )))
+        expect(result.matchedAll).toBe(true)
+        expect(result.memberTokenCounts.count).toBe(1)
+    }
+
+    async test `class body grammar probe rejects an incomplete member`() {
+        let tokens = significant(lex("run("))
+        let result = FlatClassBodyMatcher().inspect(tokens)
+
+        expect(result.matchedAll).toBe(false)
+    }
+
+    async lex(String source) -> Token[] {
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        return stream.consumeAll<Token>("data")
+    }
+
+    significant(Token[] tokens) -> Token[] {
+        let values = Token[]
+        for (token in tokens) {
+            if (token.type != Token.Type.COMMENT && token.type != Token.Type.WS) values.add(token)
+        }
+        return values
+    }
+}

@@ -10,6 +10,10 @@ class {
 
     var Int lastLineNumber = 0
     visible var Bool invalid
+    visible var Bool trailing
+    visible var Bool released
+    visible Bool incomplete => !released && !invalid && context.tokens.isNotEmpty && rootParser.matcher.partial
+    visible Int retainedTokenCount => context?.tokens.count ?: 0
 
     public construct(
         private ParserBase rootParser,
@@ -45,6 +49,7 @@ class {
             })
         }
 
+        release()
         return results
     }
 
@@ -56,6 +61,7 @@ class {
         } else if (rootParser.matcher.partial) {
             log.debug("Partial match: #{rootParser.class.name}")
         } else {
+            trailing = rootParser.lastMatch != null
             invalidTokens()
         }
     }
@@ -77,5 +83,13 @@ class {
         }
 
         invalid = true
+    }
+
+    public release() {
+        if (released) return
+        released = true
+        context.tokens = Token[]
+        rootParser.release()
+        context = null
     }
 }

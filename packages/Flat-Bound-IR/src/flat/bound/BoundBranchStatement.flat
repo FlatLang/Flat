@@ -1,0 +1,13 @@
+package flat/bound
+
+import flat/compiler/models
+
+data class extends BoundStatement {
+    public construct(SourceRange range, visible String targetLabel) {
+        if (!range || !targetLabel || targetLabel.trim().count == 0) {
+            throw Exception("Bound branch requires range and target")
+        }
+        super(range)
+    }
+    override public unitKind() => "branch"
+}

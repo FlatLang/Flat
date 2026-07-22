@@ -1,0 +1,55 @@
+name: Flat-Name-Binding / Test Flat-Name-Binding
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["master"]
+  schedule:
+    - cron: "0 8 * * *"
+
+env:
+  LOGGING_DEFAULT_SHOW_PREFIX: true
+  LOGGING_DEFAULT_LOGGING_LEVEL: DEBUG
+  LOGGING_DEFAULT_SHOW_FORMATTING: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.8.0
+        with:
+          java-version: 8
+
+      - uses: actions/checkout@v4
+
+      - name: Download latest Airship
+        uses: ./.github/actions/download-airship
+        with:
+          repo: ${{ github.repository }}
+          includePrerelease: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Link monorepo packages for Airship
+        uses: ./.github/actions/setup-flat-monorepo
+        with:
+          prebuild-targets: es6
+
+      - name: Build Flat-Name-Binding Test
+        run: |
+          node airship.js --use-links -f packages/Flat-Name-Binding install test -t es6
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: flat-name-binding-test.js
+          path: packages/Flat-Name-Binding/dist/es6/test.js
+
+      - name: Run Flat-Name-Binding Test
+        run: |
+          node airship.js --use-links -f packages/Flat-Name-Binding run test

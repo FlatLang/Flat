@@ -1,0 +1,19 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** A source-declared type annotation resolved to one semantic type. */
+data class {
+    visible String sourceName
+    visible SemanticType semanticType
+    visible SourceRange range
+
+    public construct(String sourceName, SemanticType semanticType, SourceRange range) {
+        if (!sourceName || sourceName.trim().count == 0 || !semanticType || !range) {
+            throw Exception("Declared type requires source name, semantic type, and range")
+        }
+        this.sourceName = sourceName
+        this.semanticType = semanticType
+        this.range = range
+    }
+}

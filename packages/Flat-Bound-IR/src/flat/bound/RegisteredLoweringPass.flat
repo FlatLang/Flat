@@ -1,0 +1,9 @@
+package flat/bound
+
+data class {
+    public construct(visible Int ordinal, visible BoundFunctionLoweringPass pass) {
+        if (ordinal < 0 || !pass || !pass.name() || !pass.inputInvariant() || !pass.outputInvariant()) {
+            throw Exception("Registered lowering pass requires ordinal, pass, and invariants")
+        }
+    }
+}

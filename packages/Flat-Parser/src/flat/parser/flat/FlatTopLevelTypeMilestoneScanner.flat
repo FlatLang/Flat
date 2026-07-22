@@ -1,0 +1,259 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/compiler/models
+
+/**
+ * Scans the top-level declaration stream after package/import front matter.
+ *
+ * Header metadata and grammar are validated by the existing Flat `FileParser`.
+ * The header is retained only until its opening brace. Body tokens are never
+ * retained: nested braces are counted and only the completed body range is
+ * published. Nested/member declarations deliberately remain outside this
+ * top-level-only contract.
+ */
+class {
+    static Int HEADER = 0
+    static Int BODY = 1
+
+    var Int state
+    var Token[] headerTokens = Token[]
+    var Int[] headerTokenIndexes = Int[]
+    var Int typeKeywordOffset = -1
+    var Int metadataBracketDepth
+    var Int bodyDepth
+    var FlatTypeBodyMilestoneScanner activeMembers
+    visible var Int nextOrdinal
+    var Int lastTokenIndex = -1
+    var SyntaxIslandIdentity activeHeaderIdentity
+    var String activeKind
+    var String activeName
+    var Int bodyStartTokenIndex
+    var Location bodyStart
+
+    visible var Bool finished
+    visible Int retainedHeaderTokenCount =>
+        headerTokens.count + (activeMembers?.retainedTokenCount ?: 0)
+    visible var Int peakRetainedHeaderTokenCount
+
+    public construct(
+        visible SourceSnapshotIdentity snapshot,
+        visible Int maxRetainedHeaderTokens,
+        Int startOrdinal = 0
+    ) {
+        if (!snapshot) throw Exception("Top-level type milestone scanner requires a source snapshot")
+        if (maxRetainedHeaderTokens <= 0) {
+            throw Exception("Top-level type header token capacity must be positive")
+        }
+        if (startOrdinal < 0) throw Exception("Top-level type milestone starting ordinal cannot be negative")
+        nextOrdinal = startOrdinal
+    }
+
+    public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+        if (tokenIndex < 0 || tokenIndex <= lastTokenIndex) {
+            reject("Top-level type milestone token indexes must be non-negative and strictly increasing")
+        }
+        lastTokenIndex = tokenIndex
+
+        if (state == BODY) return acceptBody(token, tokenIndex)
+        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+            return SyntaxIsland[]
+        }
+
+        retainHeader(token, tokenIndex)
+
+        if (isSymbol(token, "[")) metadataBracketDepth++
+        else if (isSymbol(token, "]")) {
+            metadataBracketDepth--
+            if (metadataBracketDepth < 0) reject("Top-level type header contains an unmatched closing bracket")
+        } else if (typeKeywordOffset < 0 && metadataBracketDepth == 0 && isTypeKeyword(token)) {
+            typeKeywordOffset = headerTokens.count - 1
+        }
+
+        if (isSymbol(token, "{")) {
+            if (typeKeywordOffset < 0) {
+                reject("Top-level type header reached a body without class, trait, or interface")
+            }
+
+            validateHeader()
+            let keyword = headerTokens[typeKeywordOffset]
+            activeKind = keyword.value
+            activeName = findTypeName()
+            activeHeaderIdentity = identity("type-header")
+
+            let header = TopLevelTypeHeaderSyntaxIsland(
+                activeHeaderIdentity,
+                headerRange(tokenIndex, token.location),
+                activeKind,
+                activeName,
+                headerTokens.skipLast(1).map({ _.value }).join(" ")
+            )
+
+            state = BODY
+            bodyDepth = 1
+            bodyStartTokenIndex = tokenIndex + 1
+            bodyStart = endLocation(token)
+            activeMembers = FlatTypeBodyMilestoneScanner(
+                snapshot,
+                activeHeaderIdentity,
+                maxRetainedHeaderTokens,
+                nextOrdinal
+            )
+            clearHeader()
+            return [header]
+        }
+
+        return SyntaxIsland[]
+    }
+
+    public end() -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+
+        if (state == BODY) reject("Flat source ended inside an incomplete top-level type body")
+        if (headerTokens.isNotEmpty) reject("Flat source ended inside an incomplete top-level type header")
+
+        finished = true
+        return SyntaxIsland[]
+    }
+
+    public cancel() {
+        if (finished) return
+
+        finished = true
+        clearHeader()
+        clearBody()
+    }
+
+    acceptBody(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+            return activeMembers.accept(token, tokenIndex)
+        }
+
+        if (isSymbol(token, "{")) {
+            bodyDepth++
+        } else if (isSymbol(token, "}")) {
+            bodyDepth--
+
+            if (bodyDepth < 0) reject("Top-level type body contains an unmatched closing brace")
+            if (bodyDepth == 0) {
+                let islands = activeMembers.end()
+                nextOrdinal = activeMembers.nextOrdinal
+                activeMembers = null
+
+                let body = TopLevelTypeBodySyntaxIsland(
+                    identity("type-body"),
+                    SourceRange(
+                        snapshot,
+                        bodyStartTokenIndex,
+                        tokenIndex,
+                        bodyStart,
+                        token.location
+                    ),
+                    activeHeaderIdentity,
+                    activeKind,
+                    activeName
+                )
+
+                islands.add(body)
+                state = HEADER
+                clearBody()
+                return islands
+            }
+        }
+
+        let islands = activeMembers.accept(token, tokenIndex)
+        nextOrdinal = activeMembers.nextOrdinal
+        peakRetainedHeaderTokenCount = Math.max(
+            peakRetainedHeaderTokenCount,
+            retainedHeaderTokenCount
+        )
+        return islands
+    }
+
+    retainHeader(Token token, Int tokenIndex) {
+        if (!token.location) reject("Top-level type milestone tokens require source locations")
+        if (headerTokens.count >= maxRetainedHeaderTokens) {
+            reject("Top-level type header exceeds configured token capacity")
+        }
+
+        headerTokens.add(token)
+        headerTokenIndexes.add(tokenIndex)
+        peakRetainedHeaderTokenCount = Math.max(
+            peakRetainedHeaderTokenCount,
+            headerTokens.count
+        )
+    }
+
+    validateHeader() {
+        let tokens = headerTokens.copy()
+        tokens.add(Token(
+            value: "}",
+            type: Token.Type.SYMBOL,
+            location: endLocation(headerTokens.last)
+        ))
+        let engine = ParseEngine(FileParser(), ParseContext())
+        for (token in tokens) engine.consume(token)
+
+        if (engine.invalid || engine.end().isEmpty) {
+            reject("Invalid Flat top-level type header")
+        }
+    }
+
+    findTypeName() -> String => null {
+        let next = typeKeywordOffset + 1
+        if (next < headerTokens.count && headerTokens[next].type == Token.Type.IDENTIFIER &&
+            headerTokens[next].value != "extends" && headerTokens[next].value != "implements") {
+            return headerTokens[next].value
+        }
+    }
+
+    headerRange(Int openingBraceIndex, Location openingBraceLocation) -> SourceRange {
+        return SourceRange(
+            snapshot,
+            headerTokenIndexes.first,
+            openingBraceIndex,
+            headerTokens.first.location,
+            openingBraceLocation
+        )
+    }
+
+    identity(String kind) -> SyntaxIslandIdentity {
+        let value = SyntaxIslandIdentity(snapshot, kind, nextOrdinal)
+        nextOrdinal++
+        return value
+    }
+
+    endLocation(Token token) -> Location {
+        return Location(lineNumber: token.endLineNumber, column: token.endColumn)
+    }
+
+    clearHeader() {
+        headerTokens = Token[]
+        headerTokenIndexes = Int[]
+        typeKeywordOffset = -1
+        metadataBracketDepth = 0
+    }
+
+    clearBody() {
+        activeMembers?.cancel()
+        activeMembers = null
+        bodyDepth = 0
+        activeHeaderIdentity = null
+        activeKind = null
+        activeName = null
+        bodyStartTokenIndex = 0
+        bodyStart = null
+    }
+
+    reject(String message) {
+        finished = true
+        clearHeader()
+        clearBody()
+        throw Exception(message)
+    }
+
+    isTypeKeyword(Token token) => token.type == Token.Type.IDENTIFIER &&
+        (token.value == "class" || token.value == "trait" || token.value == "interface")
+    isSymbol(Token token, String value) => token.type == Token.Type.SYMBOL && token.value == value
+}

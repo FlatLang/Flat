@@ -1,0 +1,53 @@
+package flat/writer/es6/bound
+
+testable class {
+    test `runtime ABI specifies modules objects metadata values and interop`() {
+        let abi = Es6RuntimeAbi()
+
+        expect(abi.version).toBe("flat-es6-abi-1")
+        expect(abi.moduleStrategy).toBe("commonjs")
+        expect(abi.objectRepresentation).toBe("es6-class")
+        expect(abi.virtualDispatch).toBe("prototype-method")
+        expect(abi.typeMetadataProperty).toBe("__flatType")
+        expect(abi.arrayRepresentation).toBe("native-array")
+        expect(abi.stringRepresentation).toBe("native-string")
+        expect(abi.exceptionRepresentation).toBe("error-subclass")
+        expect(abi.closureRepresentation).toBe("function-environment")
+        expect(abi.staticInitialization).toBe("module-source-order")
+        expect(abi.nativeInterop).toBe("explicit-native-call")
+    }
+
+    test `mangling is deterministic injective and valid for arbitrary stable identities`() {
+        let first = Es6NameMangler.mangle("workspace:type-A")
+        let same = Es6NameMangler.mangle("workspace:type-A")
+        let punctuation = Es6NameMangler.mangle("workspace:type_A")
+        let multibyte = Es6NameMangler.mangle("workspace:π")
+
+        expect(first).toBe(same)
+        expect(first.startsWith("flat_")).toBe(true)
+        expect(first).toNotBe(punctuation)
+        expect(first).toNotBe(multibyte)
+        expect(punctuation).toNotBe(multibyte)
+    }
+
+    test `capabilities accept the documented reduced subset and diagnose unsupported input`() {
+        expect(Es6TargetCapabilities.supportsStatement("local-declaration")).toBe(true)
+        expect(Es6TargetCapabilities.supportsStatement("conditional-branch")).toBe(false)
+        expect(Es6TargetCapabilities.supportsExpression("member-access")).toBe(true)
+        expect(Es6TargetCapabilities.supportsExpression("native-call")).toBe(true)
+        expect(Es6TargetCapabilities.diagnoseMetadata("reified")).toBe(null)
+        expect(Es6TargetCapabilities.diagnoseStatement("foreach").code)
+            .toBe("es6.unsupported-statement")
+        expect(Es6TargetCapabilities.diagnoseExpression("lambda").code)
+            .toBe("es6.unsupported-expression")
+        expect(Es6TargetCapabilities.diagnoseMetadata("target-specific").code)
+            .toBe("es6.unsupported-metadata")
+    }
+
+    test `fragment identity and canonical position are explicit`() {
+        let fragment = Es6ArtifactFragment("function:stable", 4, "function stable() {}")
+        expect(fragment.identity).toBe("function:stable")
+        expect(fragment.ordinal).toBe(4)
+        expect(fragment.code).toBe("function stable() {}")
+    }
+}

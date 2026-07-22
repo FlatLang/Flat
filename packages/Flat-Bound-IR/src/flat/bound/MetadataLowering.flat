@@ -1,0 +1,20 @@
+package flat/bound
+
+class {
+    public static lower(BoundRichMetadata[] richValues) -> BoundMetadataUnit[] {
+        if (!richValues || richValues.any({ !_ })) {
+            throw Exception("Metadata lowering requires rich metadata")
+        }
+        let result = BoundMetadataUnit[]
+        for (rich in richValues) {
+            result.add(BoundMetadataUnit(rich.featureKind, rich.name, rich.value))
+        }
+        return result.sort((left, right) => compare(left, right))
+    }
+
+    static compare(BoundMetadataUnit left, BoundMetadataUnit right) -> Int {
+        let kindOrder = left.metadataKind.compareTo(right.metadataKind)
+        if (kindOrder != 0) return kindOrder
+        return left.name.compareTo(right.name)
+    }
+}

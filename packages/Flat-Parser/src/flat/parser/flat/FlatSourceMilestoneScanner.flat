@@ -1,0 +1,101 @@
+package flat/parser/flat
+
+import flat/parser/SyntaxIsland
+import flat/compiler/models
+
+/**
+ * Source-local coordinator for currently supported Flat syntax milestones.
+ * It preserves one stable source-order identity sequence across front matter and
+ * top-level type headers/bodies without retaining completed phases.
+ */
+class {
+    var FlatSyntaxMilestoneScanner frontMatter
+    var FlatTopLevelTypeMilestoneScanner topLevelTypes
+    var Bool frontMatterComplete
+    visible var Bool finished
+
+    visible Int retainedTokenCount =>
+        (frontMatter?.retainedTokenCount ?: 0) +
+        (topLevelTypes?.retainedHeaderTokenCount ?: 0)
+
+    public construct(
+        visible SourceSnapshotIdentity snapshot,
+        visible Int maxFrontMatterTokens,
+        visible Int maxTypeHeaderTokens
+    ) {
+        if (!snapshot) throw Exception("Flat source milestone scanner requires a source snapshot")
+        frontMatter = FlatSyntaxMilestoneScanner(snapshot, maxFrontMatterTokens)
+    }
+
+    public accept(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+
+        try {
+            return acceptToken(token, tokenIndex)
+        } catch (Exception error) {
+            cancel()
+            throw error
+        }
+    }
+
+    acceptToken(Token token, Int tokenIndex) -> SyntaxIsland[] {
+        if (!frontMatterComplete) {
+            let islands = frontMatter.accept(token, tokenIndex)
+
+            if (frontMatter.finished) {
+                frontMatterComplete = true
+                topLevelTypes = FlatTopLevelTypeMilestoneScanner(
+                    snapshot,
+                    maxTypeHeaderTokens,
+                    frontMatter.nextOrdinal
+                )
+                islands.addAll(topLevelTypes.accept(token, tokenIndex))
+                frontMatter = null
+            }
+
+            return islands
+        }
+
+        return topLevelTypes.accept(token, tokenIndex)
+    }
+
+    public end() -> SyntaxIsland[] {
+        if (finished) return SyntaxIsland[]
+
+        try {
+            return finishSource()
+        } catch (Exception error) {
+            cancel()
+            throw error
+        }
+    }
+
+    finishSource() -> SyntaxIsland[] {
+        let islands = SyntaxIsland[]
+
+        if (!frontMatterComplete) {
+            islands.addAll(frontMatter.end())
+            frontMatterComplete = true
+            topLevelTypes = FlatTopLevelTypeMilestoneScanner(
+                snapshot,
+                maxTypeHeaderTokens,
+                frontMatter.nextOrdinal
+            )
+            frontMatter = null
+        }
+
+        islands.addAll(topLevelTypes.end())
+        finished = true
+        return islands
+    }
+
+    public cancel() {
+        if (finished) return
+
+        frontMatter?.cancel()
+        topLevelTypes?.cancel()
+        frontMatter = null
+        topLevelTypes = null
+        finished = true
+    }
+}

@@ -1,0 +1,44 @@
+package flat/semantic/types
+
+import flat/compiler/models
+
+/** A source literal and the exact semantic type assigned by literal typing. */
+data class {
+    visible String literalKind
+    visible String sourceValue
+    visible SemanticType semanticType
+    visible SourceRange range
+
+    public construct(
+        String literalKind,
+        String sourceValue,
+        SemanticType semanticType,
+        SourceRange range
+    ) {
+        if (!literalKind || !sourceValue || !semanticType || !range) {
+            throw Exception("Literal type requires kind, source value, semantic type, and range")
+        }
+        let expectedKind = semanticKind(literalKind)
+        if (!expectedKind) throw Exception("Invalid literal kind '#literalKind'")
+        if (semanticType.kind() != expectedKind) {
+            throw Exception("Literal kind '#literalKind' is incompatible with '#{semanticType.value()}'")
+        }
+        if (literalKind == "integer" && !TypeConversions.isIntegral(semanticType)) {
+            throw Exception("Integer literal requires an integral type")
+        }
+        if (literalKind == "float" && !TypeConversions.isFloating(semanticType)) {
+            throw Exception("Float literal requires a floating type")
+        }
+        this.literalKind = literalKind
+        this.sourceValue = sourceValue
+        this.semanticType = semanticType
+        this.range = range
+    }
+
+    static semanticKind(String literalKind) => null {
+        if (literalKind == "bool" || literalKind == "char") return "primitive"
+        if (literalKind == "integer" || literalKind == "float") return "primitive"
+        if (literalKind == "string") return "string"
+        if (literalKind == "null") return "null"
+    }
+}
