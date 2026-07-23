@@ -11,5 +11,7 @@ testable class {
             .toBe(name + "('first', 'second')")
         expect(emitter.emitNativeCall("flatPrint", arguments))
             .toBe("globalThis['flatPrint']('first', 'second')")
+        expect(emitter.emitNativeCall("console.log", "'Hello, Flat'"))
+            .toBe("globalThis['console']['log']('Hello, Flat')")
     }
 }

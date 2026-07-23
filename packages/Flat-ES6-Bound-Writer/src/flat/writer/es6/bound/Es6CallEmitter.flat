@@ -19,7 +19,13 @@ class {
     }
 
     public emitNativeCall(String nativeName, String argumentText) -> String {
-        return "globalThis['" + nativeName + "'](" + argumentText + ")"
+        let components = nativeName.split(".")
+        if (components.any({ !_.trim() })) {
+            throw Exception("ES6 native call path cannot contain empty components")
+        }
+        var String target = "globalThis"
+        for (component in components) target += "['" + component + "']"
+        return target + "(" + argumentText + ")"
     }
 
     public joinArguments(String[] values) -> String {

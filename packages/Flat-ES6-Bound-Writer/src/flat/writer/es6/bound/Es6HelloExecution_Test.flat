@@ -15,7 +15,7 @@ testable class {
         let units = Es6UnitEmitter()
         let typeIdentity = "hello:type"
         let mainIdentity = "hello:main"
-        let print = "console.log('Hello, Flat')"
+        let print = Es6CallEmitter().emitNativeCall("console.log", "'Hello, Flat'")
         let method = units.emitMethod(
             mainIdentity,
             ["args"],
