@@ -1,0 +1,15 @@
+package flat/writer/es6/bound
+
+testable class {
+    test `emits function and native calls in supplied argument order`() {
+        let emitter = Es6CallEmitter()
+        let identity = "stable:function:join"
+        let name = Es6NameMangler.mangle(identity)
+        let arguments = emitter.joinArguments(["'first'", "'second'"])
+
+        expect(emitter.emitFunctionCall(name, arguments))
+            .toBe(name + "('first', 'second')")
+        expect(emitter.emitNativeCall("flatPrint", arguments))
+            .toBe("globalThis['flatPrint']('first', 'second')")
+    }
+}

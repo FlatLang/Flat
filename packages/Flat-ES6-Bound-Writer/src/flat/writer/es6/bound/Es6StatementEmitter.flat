@@ -1,0 +1,69 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Emits reduced statements from already-emitted child expressions. */
+class {
+    public emitExpression(
+        BoundExpressionStatement statement,
+        Es6CodeResult expression
+    ) -> Es6CodeResult {
+        if (!statement || !expression) {
+            throw Exception("ES6 expression statement requires statement and expression")
+        }
+        if (!expression.emitted) return expression
+        return Es6CodeResult(code: expression.code + ";\n")
+    }
+
+    public emitInitializedLocal(
+        BoundLocalDeclarationStatement statement,
+        Es6CodeResult initializer
+    ) -> Es6CodeResult {
+        if (!statement || !statement.initializer || !initializer) {
+            throw Exception("ES6 initialized local requires statement and initializer")
+        }
+        if (!initializer.emitted) return initializer
+        let name = Es6NameMangler.mangle(statement.local.symbolIdentity.value)
+        return Es6CodeResult(code: "let " + name + " = " + initializer.code + ";\n")
+    }
+
+    public emitUninitializedLocal(
+        BoundLocalDeclarationStatement statement
+    ) -> Es6CodeResult {
+        if (!statement || statement.initializer) {
+            throw Exception("ES6 uninitialized local requires a local without initializer")
+        }
+        let name = Es6NameMangler.mangle(statement.local.symbolIdentity.value)
+        return Es6CodeResult(code: "let " + name + ";\n")
+    }
+
+    public emitAssignment(
+        BoundAssignmentStatement statement,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!statement || !value) {
+            throw Exception("ES6 assignment requires statement and value")
+        }
+        if (!value.emitted) return value
+        let name = Es6NameMangler.mangle(statement.target.symbolIdentity.value)
+        return Es6CodeResult(code: name + " = " + value.code + ";\n")
+    }
+
+    public emitReturn(
+        BoundReturnStatement statement,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!statement || !statement.value || !value) {
+            throw Exception("ES6 value return requires statement and value")
+        }
+        if (!value.emitted) return value
+        return Es6CodeResult(code: "return " + value.code + ";\n")
+    }
+
+    public emitVoidReturn(BoundReturnStatement statement) -> Es6CodeResult {
+        if (!statement || statement.value) {
+            throw Exception("ES6 void return requires a value-less return")
+        }
+        return Es6CodeResult(code: "return;\n")
+    }
+}

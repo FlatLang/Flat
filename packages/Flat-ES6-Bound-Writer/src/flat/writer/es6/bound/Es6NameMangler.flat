@@ -9,8 +9,7 @@ class {
         var String result = "flat"
         var Int index
         while (index < stableValue.count) {
-            let value = stableValue.chars[index]
-            result += "_#{(Int)value}"
+            result += "_" + index.toString()
             index++
         }
         return result

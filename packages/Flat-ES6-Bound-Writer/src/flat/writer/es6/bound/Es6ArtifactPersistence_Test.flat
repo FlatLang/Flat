@@ -1,0 +1,68 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/time/Time
+
+testable class {
+    test `spools reversed fragments assembles canonically and cleans temporary storage`() {
+        let root = temporaryRoot("spool")
+        let parts = File(root, "parts")
+        Es6ArtifactFiles.ensureDirectory(parts)
+        let spool = Es6FragmentSpool(parts, 3)
+        let first = Es6ArtifactFragment("first", 0, "first\n")
+        let second = Es6ArtifactFragment("second", 1, "second\n")
+        let third = Es6ArtifactFragment("third", 2, "third\n")
+
+        expect(spool.accept(third)).toBe(null)
+        expect(spool.accept(first)).toBe(null)
+        expect(spool.accept(second)).toBe(null)
+        let result = spool.assembleAndCleanup()
+
+        expect(result.assembled).toBe(true)
+        expect(result.code).toBe("first\nsecond\nthird\n")
+        expect(File(root, "parts").exists).toBe(false)
+        Es6ArtifactFiles.remove(root)
+    }
+
+    test `spool rejects bounded capacity and duplicate ordinals and cleanup removes files`() {
+        let root = temporaryRoot("limits")
+        let parts = File(root, "parts")
+        Es6ArtifactFiles.ensureDirectory(parts)
+        let spool = Es6FragmentSpool(parts, 1)
+        let first = Es6ArtifactFragment("first", 0, "first")
+        let duplicate = Es6ArtifactFragment("duplicate", 0, "duplicate")
+        let second = Es6ArtifactFragment("second", 1, "second")
+
+        expect(spool.accept(first)).toBe(null)
+        expect(spool.accept(duplicate).code).toBe("es6.spool-capacity")
+        spool.cleanup()
+        let duplicateParts = File(root, "duplicate")
+        Es6ArtifactFiles.ensureDirectory(duplicateParts)
+        let duplicateSpool = Es6FragmentSpool(duplicateParts, 2)
+        expect(duplicateSpool.accept(first)).toBe(null)
+        expect(duplicateSpool.accept(duplicate).code).toBe("es6.fragment-order")
+        expect(duplicateSpool.accept(second)).toBe(null)
+        duplicateSpool.cleanup()
+        expect(root.exists).toBe(true)
+        Es6ArtifactFiles.remove(root)
+        expect(root.exists).toBe(false)
+    }
+
+    test `atomic commit replaces destination and leaves no temporary file`() {
+        let root = temporaryRoot("commit")
+        let output = File(root, "output")
+        Es6ArtifactFiles.ensureDirectory(output)
+        let destination = File(output, "hello.js")
+        Es6ArtifactCommitter().commit(destination, "console.log('Hello, Flat');\n")
+
+        expect(destination.exists).toBe(true)
+        expect(Es6ArtifactFiles.read(destination))
+            .toBe("console.log('Hello, Flat');\n")
+        expect(File(destination.normalizedLocation + ".flat-tmp").exists).toBe(false)
+        Es6ArtifactFiles.remove(root)
+    }
+
+    temporaryRoot(String name) -> File {
+        return File(".flat-es6-bound-writer-test-#name-#{Time.currentTimeMillis}")
+    }
+}

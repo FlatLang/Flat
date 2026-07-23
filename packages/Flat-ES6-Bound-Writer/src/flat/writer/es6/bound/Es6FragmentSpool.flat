@@ -1,0 +1,64 @@
+package flat/writer/es6/bound
+
+import flat/io
+
+/** Bounded disk spool: fragment code leaves memory immediately after acceptance. */
+class {
+    var Int[] acceptedOrdinals
+
+    public construct(
+        visible File directory,
+        visible Int maxFragments
+    ) {
+        if (!directory || maxFragments <= 0) {
+            throw Exception("ES6 fragment spool requires directory and positive capacity")
+        }
+        acceptedOrdinals = Int[]
+        if (!directory.exists) throw Exception("ES6 fragment spool directory must exist")
+    }
+
+    public accept(Es6ArtifactFragment fragment) -> Es6BackendDiagnostic {
+        if (!fragment) throw Exception("ES6 fragment spool cannot accept null")
+        if (acceptedOrdinals.count >= maxFragments) {
+            return Es6BackendDiagnostic(
+                "es6.spool-capacity",
+                "ES6 fragment spool exceeds configured capacity"
+            )
+        }
+        if (acceptedOrdinals.contains(fragment.ordinal)) {
+            return Es6BackendDiagnostic(
+                "es6.fragment-order",
+                "ES6 fragment spool received a duplicate ordinal"
+            )
+        }
+        Es6ArtifactFiles.write(fragmentFile(fragment.ordinal), fragment.code)
+        acceptedOrdinals.add(fragment.ordinal)
+        return null
+    }
+
+    public assembleAndCleanup() -> Es6AssemblyResult {
+        let count = acceptedOrdinals.count
+        var Int ordinal
+        var String code = ""
+        while (ordinal < count) {
+            if (!acceptedOrdinals.contains(ordinal)) {
+                cleanup()
+                return Es6AssemblyResult(diagnostic: Es6BackendDiagnostic(
+                    "es6.fragment-order",
+                    "ES6 fragment spool requires contiguous ordinals from zero"
+                ))
+            }
+            code += Es6ArtifactFiles.read(fragmentFile(ordinal))
+            ordinal++
+        }
+        cleanup()
+        return Es6AssemblyResult(code: code)
+    }
+
+    public cleanup() {
+        Es6ArtifactFiles.remove(directory)
+        acceptedOrdinals.clear()
+    }
+
+    fragmentFile(Int ordinal) -> File => File(directory, "fragment-" + ordinal.toString() + ".es6")
+}

@@ -1,0 +1,39 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Emits literal/reference/member/conversion expressions for the first vertical slice. */
+class {
+    public emitLiteral(BoundLiteralExpression expression) -> Es6CodeResult {
+        if (!expression) throw Exception("ES6 literal emission requires an expression")
+        return Es6CodeResult(code: expression.sourceValue)
+    }
+
+    public emitReference(BoundReferenceExpression expression) -> Es6CodeResult {
+        if (!expression) throw Exception("ES6 reference emission requires an expression")
+        return Es6CodeResult(code: Es6NameMangler.mangle(expression.symbolIdentity.value))
+    }
+
+    public emitMemberAccess(
+        BoundMemberAccessExpression expression,
+        Es6CodeResult receiver
+    ) -> Es6CodeResult {
+        if (!expression || !receiver) {
+            throw Exception("ES6 member emission requires expression and receiver")
+        }
+        if (!receiver.emitted) return receiver
+        let String receiverCode = receiver.code
+        let member = Es6NameMangler.mangle(expression.memberIdentity.value)
+        return Es6CodeResult(code: receiverCode + "." + member)
+    }
+
+    public emitConversion(
+        BoundConversionExpression expression,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!expression || !value) {
+            throw Exception("ES6 conversion emission requires expression and value")
+        }
+        return value
+    }
+}

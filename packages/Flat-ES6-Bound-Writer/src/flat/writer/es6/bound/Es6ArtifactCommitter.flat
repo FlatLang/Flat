@@ -1,0 +1,21 @@
+package flat/writer/es6/bound
+
+import flat/io
+
+/** Atomic single-artifact commit with same-directory temporary replacement. */
+class {
+    public commit(File destination, String code) {
+        if (!destination || code == null) {
+            throw Exception("ES6 artifact commit requires destination and code")
+        }
+        let temporary = File(destination.normalizedLocation + ".flat-tmp")
+        Es6ArtifactFiles.remove(temporary)
+        try {
+            Es6ArtifactFiles.write(temporary, code)
+            Es6ArtifactFiles.replace(temporary, destination)
+        } catch (Exception error) {
+            Es6ArtifactFiles.remove(temporary)
+            throw error
+        }
+    }
+}

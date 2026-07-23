@@ -1,0 +1,20 @@
+package flat/writer/es6/bound
+
+/** ES6 runtime implementation uses UTF-16 code units for injective valid identifiers. */
+class {
+    public static mangle(String stableValue) -> String {
+        if (!stableValue || stableValue.trim().count == 0) {
+            throw Exception("ES6 name mangling requires a stable identity")
+        }
+        native_array native var Char[] data
+        external {
+            let value = #{stableValue.chars.data};
+            let result = 'flat';
+            for (let index = 0; index < value.length; index++) {
+                result += '_' + value.charCodeAt(index);
+            }
+            #{data} = result;
+        }
+        return String(data)
+    }
+}

@@ -1,0 +1,61 @@
+package flat/writer/es6/bound
+
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    test `emits expression local assignment and return statements`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let emitter = Es6StatementEmitter()
+        let stringType = SemanticTypes.stringType()
+        let local = fixture.reference("local", "message", 1, stringType)
+        let literal = BoundLiteralExpression(
+            fixture.range(), stringType, "'Hello, Flat'"
+        )
+        let literalCode = Es6CodeResult(code: literal.sourceValue)
+        let conversion = TypeConversions.classify(stringType, stringType)
+        let declaration = BoundLocalDeclarationStatement(
+            fixture.range(), local, literal, conversion
+        )
+        let assignment = BoundAssignmentStatement(
+            fixture.range(), local, literal, conversion
+        )
+        let expression = BoundExpressionStatement(fixture.range(), literal)
+        let returned = BoundReturnStatement(
+            fixture.range(), stringType, literal, conversion
+        )
+        let noValue = BoundReturnStatement(
+            fixture.range(), SemanticTypes.unitType()
+        )
+        let name = Es6NameMangler.mangle(local.symbolIdentity.value)
+
+        expect(emitter.emitExpression(expression, literalCode).code)
+            .toBe("'Hello, Flat';\n")
+        expect(emitter.emitInitializedLocal(declaration, literalCode).code)
+            .toBe("let " + name + " = 'Hello, Flat';\n")
+        expect(emitter.emitAssignment(assignment, literalCode).code)
+            .toBe(name + " = 'Hello, Flat';\n")
+        expect(emitter.emitReturn(returned, literalCode).code)
+            .toBe("return 'Hello, Flat';\n")
+        expect(emitter.emitVoidReturn(noValue).code).toBe("return;\n")
+    }
+
+    test `emits an uninitialized local and propagates child diagnostics`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let stringType = SemanticTypes.stringType()
+        let local = fixture.reference("local", "message", 1, stringType)
+        let declaration = BoundLocalDeclarationStatement(fixture.range(), local)
+        let diagnostic = Es6BackendDiagnostic("es6.value", "value failed")
+        let failure = Es6CodeResult(diagnostic: diagnostic)
+        let expression = BoundExpressionStatement(
+            fixture.range(),
+            BoundLiteralExpression(fixture.range(), stringType, "'unused'")
+        )
+        let emitter = Es6StatementEmitter()
+
+        expect(emitter.emitUninitializedLocal(declaration).code).toBe(
+            "let " + Es6NameMangler.mangle(local.symbolIdentity.value) + ";\n"
+        )
+        expect(emitter.emitExpression(expression, failure).diagnostic).toBe(diagnostic)
+    }
+}

@@ -1,0 +1,60 @@
+package flat/writer/es6/bound
+
+import flat/io
+
+/** ES6/Node file primitives used by spooling and atomic artifact commit. */
+class {
+    public static ensureDirectory(File directory) {
+        if (!directory) throw Exception("ES6 artifact directory is required")
+        external {
+            #{File.FileGlobal.fs}.mkdirSync(
+                #{directory.location.chars.data},
+                {recursive: true}
+            );
+        }
+    }
+
+    public static write(File file, String value) {
+        if (!file || value == null) throw Exception("ES6 artifact write requires file and value")
+        external {
+            #{File.FileGlobal.fs}.writeFileSync(
+                #{file.location.chars.data},
+                #{value.chars.data}
+            );
+        }
+    }
+
+    public static read(File file) -> String {
+        if (!file || !file.exists || file.isDirectory) {
+            throw Exception("ES6 artifact read requires an existing file")
+        }
+        return FileReader(file).readAllContents()
+    }
+
+    public static remove(File file) {
+        if (file && file.exists) {
+            external {
+                #{File.FileGlobal.fs}.rmSync(
+                    #{file.location.chars.data},
+                    {recursive: true, force: true}
+                );
+            }
+        }
+    }
+
+    public static replace(File temporary, File destination) {
+        if (!temporary || !temporary.exists || !destination) {
+            throw Exception("ES6 atomic replace requires temporary and destination files")
+        }
+        let parent = destination.getParent()
+        if (!parent || !parent.exists) {
+            throw Exception("ES6 atomic replace destination parent must exist")
+        }
+        external {
+            #{File.FileGlobal.fs}.renameSync(
+                #{temporary.location.chars.data},
+                #{destination.location.chars.data}
+            );
+        }
+    }
+}

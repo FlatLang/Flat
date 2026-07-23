@@ -1,0 +1,83 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/project
+import flat/datastruct/HashMap
+import flat/time/Time
+
+testable class {
+    test `maps executable and library output options deterministically`() {
+        let executable = CompilerOptions(
+            "es6",
+            mainClass: "example/Main",
+            outputFile: "example.js",
+            outputDirectory: "dist/es6"
+        )
+        let library = CompilerOptions(
+            "es6",
+            library: true,
+            outputDirectory: "dist/library"
+        )
+        let explicit = CompilerOptions(
+            "es6",
+            mainClass: "example/Main",
+            outputFile: "build/custom.js",
+            outputDirectory: "dist/ignored"
+        )
+
+        expect(Es6ArtifactOutput.from(executable).destination.normalizedLocation)
+            .toBe("dist/es6/example.js")
+        expect(Es6ArtifactOutput.from(executable).library).toBe(false)
+        expect(Es6ArtifactOutput.from(library).destination.normalizedLocation)
+            .toBe("dist/library/library.js")
+        expect(Es6ArtifactOutput.from(library).library).toBe(true)
+        expect(Es6ArtifactOutput.from(explicit).destination.normalizedLocation)
+            .toBe("build/custom.js")
+    }
+
+    test `rejects non es6 and missing output policy`() {
+        var Int rejected
+        try {
+            Es6ArtifactOutput.from(CompilerOptions(
+                "java", mainClass: "example/Main", outputFile: "example.js"
+            ))
+        } catch (Exception error) {
+            rejected++
+        }
+        try {
+            Es6ArtifactOutput.from(CompilerOptions("es6", mainClass: "example/Main"))
+        } catch (Exception error) {
+            rejected++
+        }
+        expect(rejected).toBe(2)
+    }
+
+    test `commits assembled executable and library artifacts to mapped destinations`() {
+        let root = File(".flat-es6-output-test-#{Time.currentTimeMillis}")
+        let executableDirectory = File(root, "executable")
+        let libraryDirectory = File(root, "library")
+        Es6ArtifactFiles.ensureDirectory(executableDirectory)
+        Es6ArtifactFiles.ensureDirectory(libraryDirectory)
+        let executableOptions = CompilerOptions(
+            "es6",
+            mainClass: "example/Main",
+            outputFile: "main.js",
+            outputDirectory: executableDirectory.normalizedLocation
+        )
+        let libraryOptions = CompilerOptions(
+            "es6",
+            library: true,
+            outputDirectory: libraryDirectory.normalizedLocation
+        )
+        let executable = Es6ArtifactOutput.from(executableOptions)
+        let library = Es6ArtifactOutput.from(libraryOptions)
+        let committer = Es6ArtifactCommitter()
+
+        committer.commit(executable.destination, "executable\n")
+        committer.commit(library.destination, "library\n")
+
+        expect(Es6ArtifactFiles.read(executable.destination)).toBe("executable\n")
+        expect(Es6ArtifactFiles.read(library.destination)).toBe("library\n")
+        Es6ArtifactFiles.remove(root)
+    }
+}

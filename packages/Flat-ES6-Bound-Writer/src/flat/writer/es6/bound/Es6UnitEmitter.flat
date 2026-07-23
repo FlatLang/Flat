@@ -1,0 +1,50 @@
+package flat/writer/es6/bound
+
+/** Deterministic function/class/bootstrap rendering from independently emitted bodies. */
+class {
+    public emitFunction(
+        String stableIdentity,
+        String[] parameterNames,
+        String body
+    ) -> String {
+        let name = Es6NameMangler.mangle(stableIdentity)
+        return "function " + name + "(" + parameterNames.join(", ") + ") {\n" +
+            indent(body, "  ") + "}\n"
+    }
+
+    public emitMethod(
+        String stableIdentity,
+        String[] parameterNames,
+        String body,
+        Bool staticMethod = false
+    ) -> String {
+        let name = Es6NameMangler.mangle(stableIdentity)
+        let prefix = staticMethod ? "static " : ""
+        return prefix + name + "(" + parameterNames.join(", ") + ") {\n" +
+            indent(body, "  ") + "}\n"
+    }
+
+    public emitClass(String stableIdentity, String[] methods) -> String {
+        let name = Es6NameMangler.mangle(stableIdentity)
+        return "class " + name + " {\n" + indent(methods.join(""), "  ") + "}\n"
+    }
+
+    public emitBootstrap(String ownerIdentity, String mainIdentity) -> String {
+        let owner = Es6NameMangler.mangle(ownerIdentity)
+        let main = Es6NameMangler.mangle(mainIdentity)
+        return "if (require.main === module) {\n  " + owner + "." + main + "([]);\n}\n"
+    }
+
+    indent(String value, String prefix) -> String {
+        if (!value || value.count == 0) return ""
+        let lines = value.split("\n")
+        var String result = ""
+        var Int index
+        while (index < lines.count) {
+            if (index == lines.count - 1 && lines[index].count == 0) break
+            result += prefix + lines[index] + "\n"
+            index++
+        }
+        return result
+    }
+}

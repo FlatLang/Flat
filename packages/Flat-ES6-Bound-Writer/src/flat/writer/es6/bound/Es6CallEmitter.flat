@@ -1,0 +1,16 @@
+package flat/writer/es6/bound
+
+/** Pure ES6 call syntax rendering from validated names and argument text. */
+class {
+    public emitFunctionCall(String mangledName, String argumentText) -> String {
+        return mangledName + "(" + argumentText + ")"
+    }
+
+    public emitNativeCall(String nativeName, String argumentText) -> String {
+        return "globalThis['" + nativeName + "'](" + argumentText + ")"
+    }
+
+    public joinArguments(String[] values) -> String {
+        return values.join(", ")
+    }
+}

@@ -1,0 +1,36 @@
+package flat/writer/es6/bound
+
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    test `emits literals references member access and conversions structurally`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let emitter = Es6ExpressionEmitter()
+        let stringType = SemanticTypes.stringType()
+        let literal = BoundLiteralExpression(
+            fixture.range(), stringType, "'Hello, Flat'"
+        )
+        let receiver = fixture.reference(
+            "local", "console", 1, SemanticTypes.objectType()
+        )
+        let memberIdentity = fixture.symbol("member", "log", 2)
+        let member = BoundMemberAccessExpression(
+            fixture.range(), stringType, receiver, "log", memberIdentity
+        )
+        let conversion = BoundConversionExpression(
+            fixture.range(), stringType, literal,
+            TypeConversions.classify(stringType, stringType)
+        )
+
+        expect(emitter.emitLiteral(literal).code).toBe("'Hello, Flat'")
+        let receiverResult = emitter.emitReference(receiver)
+        expect(receiverResult.code)
+            .toBe(Es6NameMangler.mangle(receiver.symbolIdentity.value))
+        expect(emitter.emitMemberAccess(member, receiverResult).code).toBe(
+            "#{Es6NameMangler.mangle(receiver.symbolIdentity.value)}.#{Es6NameMangler.mangle(memberIdentity.value)}"
+        )
+        let literalResult = emitter.emitLiteral(literal)
+        expect(emitter.emitConversion(conversion, literalResult).code).toBe("'Hello, Flat'")
+    }
+}

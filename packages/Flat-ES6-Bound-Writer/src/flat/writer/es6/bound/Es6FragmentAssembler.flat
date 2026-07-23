@@ -1,0 +1,38 @@
+package flat/writer/es6/bound
+
+/** Bounded canonical assembly for one explicitly finite artifact partition. */
+class {
+    public construct(visible Int maxFragments) {
+        if (maxFragments <= 0) throw Exception("ES6 assembly capacity must be positive")
+    }
+
+    public assemble(Es6ArtifactFragment[] fragments) -> Es6AssemblyResult {
+        if (!fragments || fragments.any({ !_ })) {
+            throw Exception("ES6 assembly requires non-null fragments")
+        }
+        if (fragments.count > maxFragments) {
+            return failure(
+                "es6.assembly-capacity",
+                "ES6 artifact partition exceeds bounded fragment capacity"
+            )
+        }
+        let ordered = fragments.sort({ _a.ordinal - _b.ordinal })
+        var Int index
+        var String code = ""
+        while (index < ordered.count) {
+            if (ordered[index].ordinal != index) {
+                return failure(
+                    "es6.fragment-order",
+                    "ES6 artifact fragments require unique contiguous ordinals from zero"
+                )
+            }
+            code += ordered[index].code
+            index++
+        }
+        return Es6AssemblyResult(code: code)
+    }
+
+    failure(String code, String message) -> Es6AssemblyResult {
+        return Es6AssemblyResult(diagnostic: Es6BackendDiagnostic(code, message))
+    }
+}

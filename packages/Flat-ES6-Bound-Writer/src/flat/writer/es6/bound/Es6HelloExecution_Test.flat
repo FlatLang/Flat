@@ -1,0 +1,54 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/project
+import flat/system
+import flat/time/Time
+
+testable class {
+    async test `assembles commits and executes minimal Hello Flat artifact under Node`() {
+        let root = File(".flat-es6-hello-test-#{Time.currentTimeMillis}")
+        let spoolDirectory = File(root, "spool")
+        let outputDirectory = File(root, "dist")
+        Es6ArtifactFiles.ensureDirectory(spoolDirectory)
+        Es6ArtifactFiles.ensureDirectory(outputDirectory)
+        let units = Es6UnitEmitter()
+        let typeIdentity = "hello:type"
+        let mainIdentity = "hello:main"
+        let print = "console.log('Hello, Flat')"
+        let method = units.emitMethod(
+            mainIdentity,
+            ["args"],
+            print + ";\nreturn;\n",
+            staticMethod: true
+        )
+        let fragments = [
+            Es6ArtifactFragment("type", 0, units.emitClass(typeIdentity, [method])),
+            Es6ArtifactFragment("bootstrap", 1, units.emitBootstrap(typeIdentity, mainIdentity))
+        ]
+        let spool = Es6FragmentSpool(spoolDirectory, 2)
+        expect(spool.accept(fragments[1])).toBe(null)
+        expect(spool.accept(fragments[0])).toBe(null)
+        let assembly = spool.assembleAndCleanup()
+        let options = CompilerOptions(
+            "es6",
+            mainClass: "hello/Main",
+            outputFile: "hello.js",
+            outputDirectory: outputDirectory.normalizedLocation
+        )
+        let output = Es6ArtifactOutput.from(options)
+        Es6ArtifactCommitter().commit(output.destination, assembly.code)
+        let response = System.execute(
+            ["node", output.destination.normalizedLocation],
+            silent: true,
+            shell: false
+        )
+
+        expect(assembly.assembled).toBe(true)
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("Hello, Flat\n")
+        expect(spoolDirectory.exists).toBe(false)
+        expect(output.destination.exists).toBe(true)
+        Es6ArtifactFiles.remove(root)
+    }
+}

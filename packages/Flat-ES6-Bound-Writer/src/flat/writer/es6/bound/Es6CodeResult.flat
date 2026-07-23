@@ -1,0 +1,15 @@
+package flat/writer/es6/bound
+
+/** Immutable result of emitting one reduced Bound IR node. */
+data class {
+    public construct(
+        visible String code = null,
+        visible Es6BackendDiagnostic diagnostic = null
+    ) {
+        if ((code == null && !diagnostic) || (code != null && diagnostic)) {
+            throw Exception("ES6 code result requires exactly one code or diagnostic value")
+        }
+    }
+
+    visible Bool emitted => code != null
+}

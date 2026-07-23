@@ -1,0 +1,29 @@
+package flat/writer/es6/bound
+
+testable class {
+    test `assembles reversed fragments into identical canonical output`() {
+        let first = Es6ArtifactFragment("first", 0, "first\n")
+        let second = Es6ArtifactFragment("second", 1, "second\n")
+        let third = Es6ArtifactFragment("third", 2, "third\n")
+        let assembler = Es6FragmentAssembler(3)
+        let forward = assembler.assemble([first, second, third])
+        let reverse = assembler.assemble([third, second, first])
+
+        expect(forward.assembled).toBe(true)
+        expect(forward.code).toBe("first\nsecond\nthird\n")
+        expect(reverse.code).toBe(forward.code)
+    }
+
+    test `rejects capacity duplicate and missing ordinal violations`() {
+        let zero = Es6ArtifactFragment("zero", 0, "zero")
+        let duplicate = Es6ArtifactFragment("duplicate", 0, "duplicate")
+        let gap = Es6ArtifactFragment("gap", 2, "gap")
+
+        expect(Es6FragmentAssembler(1).assemble([zero, gap]).diagnostic.code)
+            .toBe("es6.assembly-capacity")
+        expect(Es6FragmentAssembler(2).assemble([zero, duplicate]).diagnostic.code)
+            .toBe("es6.fragment-order")
+        expect(Es6FragmentAssembler(2).assemble([zero, gap]).diagnostic.code)
+            .toBe("es6.fragment-order")
+    }
+}

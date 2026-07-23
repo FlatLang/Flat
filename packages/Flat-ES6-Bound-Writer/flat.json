@@ -14,7 +14,9 @@
         "https://github.com/FlatLang/IO.git": "master",
         "https://github.com/FlatLang/Flat-Compiler-Models.git": "master",
         "https://github.com/FlatLang/Flat-Type-System.git": "master",
-        "https://github.com/FlatLang/Flat-Bound-IR.git": "master"
+        "https://github.com/FlatLang/Flat-Bound-IR.git": "master",
+        "https://github.com/FlatLang/Flat-Project-Loading.git": "master",
+        "https://github.com/FlatLang/Time.git": "master"
       }
     },
     "test": {

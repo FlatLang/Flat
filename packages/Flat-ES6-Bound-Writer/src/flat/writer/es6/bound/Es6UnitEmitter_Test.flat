@@ -1,0 +1,39 @@
+package flat/writer/es6/bound
+
+testable class {
+    test `emits deterministic units and bootstrap`() {
+        let emitter = Es6UnitEmitter()
+        let functionIdentity = "stable:function:message"
+        let typeIdentity = "stable:type:Hello"
+        let mainIdentity = "stable:static-method:main"
+        let functionCode = emitter.emitFunction(
+            functionIdentity, String[], "return 'Hello, Flat';\n"
+        )
+        let mainCode = emitter.emitMethod(
+            mainIdentity,
+            ["args"],
+            Es6NameMangler.mangle(functionIdentity) + "();\nreturn;\n",
+            staticMethod: true
+        )
+        let classCode = emitter.emitClass(typeIdentity, [mainCode])
+        let bootstrap = emitter.emitBootstrap(typeIdentity, mainIdentity)
+
+        expect(functionCode).toBe(
+            "function " + Es6NameMangler.mangle(functionIdentity) + "() {\n" +
+            "  return 'Hello, Flat';\n}\n"
+        )
+        expect(classCode).toBe(
+            "class " + Es6NameMangler.mangle(typeIdentity) + " {\n" +
+            "  static " + Es6NameMangler.mangle(mainIdentity) + "(args) {\n" +
+            "    " + Es6NameMangler.mangle(functionIdentity) + "();\n" +
+            "    return;\n" +
+            "  }\n" +
+            "}\n"
+        )
+        expect(bootstrap).toBe(
+            "if (require.main === module) {\n  " +
+            Es6NameMangler.mangle(typeIdentity) + "." +
+            Es6NameMangler.mangle(mainIdentity) + "([]);\n}\n"
+        )
+    }
+}

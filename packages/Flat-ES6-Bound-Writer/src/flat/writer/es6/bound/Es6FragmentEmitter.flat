@@ -1,0 +1,49 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Maps immutable Bound unit identities to independently publishable fragments. */
+class {
+    public construct(visible Es6UnitEmitter units = Es6UnitEmitter()) {
+        if (!units) throw Exception("ES6 fragment emitter requires a unit emitter")
+    }
+
+    public emitFunction(
+        BoundFunctionUnit functionUnit,
+        String body,
+        Int ordinal
+    ) -> Es6ArtifactFragment {
+        if (!functionUnit || body == null) {
+            throw Exception("ES6 function fragment requires function and body")
+        }
+        let parameterNames = functionUnit.parameterValues()
+            .map({ Es6NameMangler.mangle(_.identity.value) })
+        let code = units.emitFunction(functionUnit.identity.value, parameterNames, body)
+        return Es6ArtifactFragment(functionUnit.identity.value, ordinal, code)
+    }
+
+    public emitClass(
+        BoundTypeUnit typeUnit,
+        String[] methods,
+        Int ordinal
+    ) -> Es6ArtifactFragment {
+        if (!typeUnit || !methods) {
+            throw Exception("ES6 class fragment requires type and methods")
+        }
+        let code = units.emitClass(typeUnit.identity.value, methods)
+        return Es6ArtifactFragment(typeUnit.identity.value, ordinal, code)
+    }
+
+    public emitBootstrap(
+        BoundTypeUnit owner,
+        BoundFunctionUnit mainFunction,
+        Int ordinal
+    ) -> Es6ArtifactFragment {
+        if (!owner || !mainFunction || !mainFunction.mainFunction) {
+            throw Exception("ES6 bootstrap fragment requires a designated main function")
+        }
+        let identity = "bootstrap:" + mainFunction.identity.value
+        let code = units.emitBootstrap(owner.identity.value, mainFunction.identity.value)
+        return Es6ArtifactFragment(identity, ordinal, code)
+    }
+}

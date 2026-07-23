@@ -1,0 +1,55 @@
+package flat/writer/es6/bound
+
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    test `emits independent fragments from stable bound unit identities`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let unitType = SemanticTypes.unitType()
+        let parameterIdentity = fixture.symbol("parameter", "args", 1)
+        let parameter = BoundFunctionParameter(
+            "args", parameterIdentity, SemanticTypes.objectType()
+        )
+        let mainIdentity = fixture.declaration("static-method", "main", 2)
+        let mainFunction = BoundFunctionUnit(
+            mainIdentity,
+            "main",
+            unitType,
+            [BoundReturnStatement(fixture.range(), unitType)],
+            fixture.range(),
+            [parameter],
+            staticFunction: true,
+            mainFunction: true
+        )
+        let typeIdentity = fixture.declaration("class", "Hello", 3)
+        let typeUnit = BoundTypeUnit(
+            typeIdentity,
+            UserClassSemanticType(typeIdentity),
+            [mainFunction],
+            fixture.range()
+        )
+        let fragments = Es6FragmentEmitter()
+        let functionFragment = fragments.emitFunction(
+            mainFunction, "return;\n", 4
+        )
+        let method = Es6UnitEmitter().emitMethod(
+            mainIdentity.value,
+            [Es6NameMangler.mangle(parameterIdentity.value)],
+            "return;\n",
+            staticMethod: true
+        )
+        let classFragment = fragments.emitClass(typeUnit, [method], 2)
+        let bootstrap = fragments.emitBootstrap(typeUnit, mainFunction, 5)
+
+        expect(functionFragment.identity).toBe(mainIdentity.value)
+        expect(functionFragment.ordinal).toBe(4)
+        expect(functionFragment.code.contains(
+            Es6NameMangler.mangle(parameterIdentity.value)
+        )).toBe(true)
+        expect(classFragment.identity).toBe(typeIdentity.value)
+        expect(classFragment.ordinal).toBe(2)
+        expect(bootstrap.identity).toBe("bootstrap:" + mainIdentity.value)
+        expect(bootstrap.ordinal).toBe(5)
+    }
+}

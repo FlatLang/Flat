@@ -1,0 +1,36 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/project
+
+/** Immutable output policy derived from compiler options. */
+data class {
+    public construct(
+        visible File destination,
+        visible Bool library
+    ) {
+        if (!destination) throw Exception("ES6 artifact output requires a destination")
+    }
+
+    public static from(CompilerOptions options) -> Es6ArtifactOutput {
+        if (!options || options.target.toLowerCase() != "es6") {
+            throw Exception("ES6 artifact output requires ES6 compiler options")
+        }
+        if (!options.outputFile && !options.outputDirectory) {
+            throw Exception("ES6 artifact output requires -o or -d")
+        }
+        var File destination
+        if (options.outputFile) {
+            let output = File(options.outputFile)
+            if (options.outputDirectory && !output.normalizedLocation.contains("/")) {
+                destination = File(options.outputDirectory + "/" + options.outputFile)
+            } else {
+                destination = output
+            }
+        } else {
+            let defaultName = options.library ? "library.js" : "main.js"
+            destination = File(options.outputDirectory + "/" + defaultName)
+        }
+        return Es6ArtifactOutput(destination, options.library)
+    }
+}

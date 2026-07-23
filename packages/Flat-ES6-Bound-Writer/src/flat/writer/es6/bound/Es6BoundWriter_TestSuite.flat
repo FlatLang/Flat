@@ -4,7 +4,18 @@ import flat/test/TestResult
 import flat/time/Timer
 import flat/io/FancyOutputStream
 
-[TestSuite [Es6BoundAbi_Test]]
+[TestSuite [
+    Es6BoundAbi_Test,
+    Es6ExpressionEmitter_Test,
+    Es6CallEmitter_Test,
+    Es6StatementEmitter_Test,
+    Es6UnitEmitter_Test,
+    Es6FragmentEmitter_Test,
+    Es6FragmentAssembler_Test,
+    Es6ArtifactPersistence_Test,
+    Es6ArtifactOutput_Test,
+    Es6HelloExecution_Test
+]]
 class {
     public static async main(String[] args) {
         let test = Es6BoundWriter_TestSuite()

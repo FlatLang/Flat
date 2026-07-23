@@ -1,0 +1,14 @@
+package flat/writer/es6/bound
+
+/** Result of bounded deterministic fragment assembly. */
+data class {
+    public construct(
+        visible String code = null,
+        visible Es6BackendDiagnostic diagnostic = null
+    ) {
+        if ((code == null && !diagnostic) || (code != null && diagnostic)) {
+            throw Exception("ES6 assembly requires exactly one code or diagnostic value")
+        }
+    }
+    visible Bool assembled => code != null
+}
