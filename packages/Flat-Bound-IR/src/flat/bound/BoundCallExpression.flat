@@ -3,6 +3,7 @@ package flat/bound
 import flat/compiler/models
 import flat/semantic/types
 
+/** Explicit selected call with optional typed instance receiver. */
 data class extends BoundExpression {
     var BoundExpression[] arguments
     var TypeConversion[] conversions
@@ -11,6 +12,7 @@ data class extends BoundExpression {
         SourceRange range,
         SemanticType semanticType,
         visible CallableSignature target,
+        visible BoundExpression receiver,
         BoundExpression[] argumentValues,
         TypeConversion[] argumentConversions
     ) {
@@ -18,6 +20,14 @@ data class extends BoundExpression {
             argumentValues.count != argumentConversions.count ||
             target.returnType.value() != semanticType.value()) {
             throw Exception("Bound call requires target, result type, and aligned arguments/conversions")
+        }
+        let instanceCall = target.callableKind.value == "instance-method"
+        if (instanceCall != (receiver != null)) {
+            throw Exception("Bound instance calls require exactly one receiver")
+        }
+        if (receiver && (!target.ownerType ||
+            !TypeConversions.classify(receiver.semanticType, target.ownerType).applicable)) {
+            throw Exception("Bound call receiver is incompatible with selected target")
         }
         var Int index
         while (index < argumentValues.count) {
@@ -33,6 +43,14 @@ data class extends BoundExpression {
         conversions = TypeConversion[]
         conversions.addAll(argumentConversions)
     }
+
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        CallableSignature target,
+        BoundExpression[] argumentValues,
+        TypeConversion[] argumentConversions
+    ) => this(range, semanticType, target, null, argumentValues, argumentConversions)
 
     public argumentValues() -> BoundExpression[] {
         let result = BoundExpression[]

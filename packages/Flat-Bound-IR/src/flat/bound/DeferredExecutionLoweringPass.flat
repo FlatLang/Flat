@@ -71,6 +71,7 @@ class extends BoundFunctionLoweringPass {
                     call.range,
                     call.semanticType,
                     call.target,
+                    call.receiver,
                     arguments,
                     call.argumentConversions()
                 )

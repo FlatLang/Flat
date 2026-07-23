@@ -1,0 +1,27 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Reduced target-independent binary operation with an already-proven result type. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible String operator,
+        visible BoundExpression left,
+        visible BoundExpression right
+    ) {
+        if (!range || !semanticType || !operator || !left || !right) {
+            throw Exception("Bound binary operation requires operator, operands, and type")
+        }
+        let typed = TypeOperations.binary(
+            operator, left.semanticType, right.semanticType, range
+        )
+        if (!typed.valid || typed.semanticType.value() != semanticType.value()) {
+            throw Exception("Bound binary operation requires consistent type evidence")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "binary"
+}

@@ -1,0 +1,74 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/eventstream
+import flat/future
+
+/** Schedules independently owned unit emission without waiting inside executor workers. */
+class {
+    public construct(
+        visible Executor executor,
+        visible Es6UnitOrchestrator units = Es6UnitOrchestrator()
+    ) {
+        if (!executor || !units) throw Exception("ES6 emission coordinator requires executor and units")
+    }
+
+    public submitFunction(
+        BoundFunctionUnit functionUnit,
+        Int ordinal,
+        Future<Bool> readiness = null
+    ) -> Future<Es6EmissionResult> {
+        if (!functionUnit) throw Exception("ES6 coordinated function requires a unit")
+        let Future.CompletableFuture<Es6EmissionResult> completion = Future.create<Es6EmissionResult>()
+        if (readiness && !readiness.completed) waitForReadiness(functionUnit, ordinal, readiness, completion)$
+        else submitReadyFunction(functionUnit, ordinal, completion)
+        return completion
+    }
+
+    async waitForReadiness(
+        BoundFunctionUnit functionUnit,
+        Int ordinal,
+        Future<Bool> readiness,
+        Future.CompletableFuture<Es6EmissionResult> completion
+    ) {
+        try {
+            readiness.get()
+            if (!completion.cancelled) submitReadyFunction(functionUnit, ordinal, completion)
+        } catch (Exception error) {
+            if (!completion.cancelled) completion.error(error)
+        }
+    }
+
+    submitReadyFunction(
+        BoundFunctionUnit functionUnit,
+        Int ordinal,
+        Future.CompletableFuture<Es6EmissionResult> completion
+    ) {
+        let task = executor.submit({
+            if (!completion.cancelled) completion.complete(units.emitFunction(functionUnit, ordinal))
+        })$
+        observeTask(task, functionUnit, completion)$
+        completion.onCancel({ task.cancel() })
+    }
+
+    async observeTask(
+        Future<ExecutorTaskResult> task,
+        BoundFunctionUnit functionUnit,
+        Future.CompletableFuture<Es6EmissionResult> completion
+    ) {
+        try {
+            let result = task.get()
+            if (result.capacityExceeded && !completion.completed) {
+                completion.complete(Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
+                    "es6.emission-capacity",
+                    "ES6 emission executor capacity exceeded",
+                    functionUnit.range
+                )))
+            } else if (result.failed && !completion.completed) {
+                completion.error(result.error)
+            }
+        } catch (Exception error) {
+            if (!completion.cancelled && !completion.completed) completion.error(error)
+        }
+    }
+}

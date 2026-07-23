@@ -1,0 +1,54 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Emits complete first-slice function/type units or one diagnostic without partial fragments. */
+class {
+    public construct(
+        visible Es6StatementOrchestrator statements = Es6StatementOrchestrator(),
+        visible Es6UnitEmitter units = Es6UnitEmitter()
+    ) {
+        if (!statements || !units) throw Exception("ES6 unit orchestration requires emitters")
+    }
+
+    public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
+        if (!functionUnit) throw Exception("ES6 function unit is required")
+        let body = statements.emitAll(functionUnit.statements())
+        if (!body.emitted) return Es6EmissionResult(diagnostic: body.diagnostic)
+        let parameters = functionUnit.parameterValues()
+            .map({ Es6NameMangler.mangle(_.identity.value) })
+        let code = units.emitFunction(functionUnit.identity.value, parameters, body.code)
+        return Es6EmissionResult(
+            fragment: Es6ArtifactFragment(functionUnit.identity.value, ordinal, code)
+        )
+    }
+
+    public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
+        if (!functionUnit) throw Exception("ES6 method unit is required")
+        let body = statements.emitAll(functionUnit.statements())
+        if (!body.emitted) return body
+        let parameters = functionUnit.parameterValues()
+            .map({ Es6NameMangler.mangle(_.identity.value) })
+        return Es6CodeResult(code: units.emitMethod(
+            functionUnit.identity.value,
+            parameters,
+            body.code,
+            functionUnit.staticFunction
+        ))
+    }
+
+    public emitType(BoundTypeUnit typeUnit, Int ordinal) -> Es6EmissionResult {
+        if (!typeUnit) throw Exception("ES6 type unit is required")
+        let methods = String[]
+        for (functionUnit in typeUnit.functionUnits()) {
+            let method = emitMethod(functionUnit)
+            if (!method.emitted) return Es6EmissionResult(diagnostic: method.diagnostic)
+            methods.add(method.code)
+        }
+        return Es6EmissionResult(fragment: Es6ArtifactFragment(
+            typeUnit.identity.value,
+            ordinal,
+            units.emitClass(typeUnit.identity.value, methods)
+        ))
+    }
+}

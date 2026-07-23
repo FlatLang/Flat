@@ -9,7 +9,8 @@ class {
 
     public static supportsExpression(String kind) -> Bool {
         return kind == "literal" || kind == "reference" || kind == "member-access" ||
-            kind == "conversion" || kind == "call" || kind == "native-call"
+            kind == "unary" || kind == "binary" || kind == "conversion" ||
+            kind == "call" || kind == "native-call"
     }
 
     public static diagnoseStatement(String kind) -> Es6BackendDiagnostic {

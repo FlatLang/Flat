@@ -1,0 +1,53 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Recursive reduced-statement orchestration for one independently emitted function. */
+class {
+    public construct(
+        visible Es6ExpressionOrchestrator expressions = Es6ExpressionOrchestrator(),
+        visible Es6StatementEmitter statements = Es6StatementEmitter()
+    ) {
+        if (!expressions || !statements) throw Exception("ES6 statement orchestration requires emitters")
+    }
+
+    public emit(BoundStatement statement) -> Es6CodeResult {
+        if (!statement) throw Exception("ES6 statement orchestration requires statement")
+        let capability = Es6TargetCapabilities.diagnoseStatement(statement.unitKind())
+        if (capability) return Es6CodeResult(diagnostic: capability)
+        if (statement.class.isOfType(BoundExpressionStatement.class)) {
+            let value = (BoundExpressionStatement)statement
+            return statements.emitExpression(value, expressions.emit(value.expression))
+        }
+        if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
+            let value = (BoundLocalDeclarationStatement)statement
+            if (!value.initializer) return statements.emitUninitializedLocal(value)
+            return statements.emitInitializedLocal(value, expressions.emit(value.initializer))
+        }
+        if (statement.class.isOfType(BoundAssignmentStatement.class)) {
+            let value = (BoundAssignmentStatement)statement
+            return statements.emitAssignment(value, expressions.emit(value.value))
+        }
+        if (statement.class.isOfType(BoundReturnStatement.class)) {
+            let value = (BoundReturnStatement)statement
+            if (!value.value) return statements.emitVoidReturn(value)
+            return statements.emitReturn(value, expressions.emit(value.value))
+        }
+        return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+            "es6.unsupported-statement",
+            "ES6 backend cannot orchestrate reduced statement '#{statement.unitKind()}'",
+            statement.range
+        ))
+    }
+
+    public emitAll(BoundStatement[] values) -> Es6CodeResult {
+        if (!values) throw Exception("ES6 statement list is required")
+        var String code = ""
+        for (value in values) {
+            let emitted = emit(value)
+            if (!emitted.emitted) return emitted
+            code += emitted.code
+        }
+        return Es6CodeResult(code: code)
+    }
+}

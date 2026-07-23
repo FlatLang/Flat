@@ -119,5 +119,12 @@ testable class {
             )
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(3)
+        let one = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")
+        expect(BoundUnaryExpression(
+            fixture.range(), SemanticTypes.intType(), "-", one
+        ).expressionKind()).toBe("unary")
+        expect(BoundBinaryExpression(
+            fixture.range(), SemanticTypes.intType(), "+", one, one
+        ).expressionKind()).toBe("binary")
     }
 }

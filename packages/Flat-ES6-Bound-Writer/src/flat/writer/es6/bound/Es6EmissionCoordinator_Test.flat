@@ -1,0 +1,64 @@
+package flat/writer/es6/bound
+
+import flat/semantic/types
+import flat/bound
+import flat/eventstream
+import flat/future
+import flat/thread/Thread
+
+testable class {
+    async test `gated function does not occupy worker or block unrelated emission`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let gated = functionUnit(fixture, "gated", 1)
+        let ready = functionUnit(fixture, "ready", 2)
+        let Future.CompletableFuture<Bool> gate = Future.create<Bool>()
+        let executor = ControlledExecutor(2)
+        let coordinator = Es6EmissionCoordinator(executor)
+
+        let gatedResult = coordinator.submitFunction(gated, 1, gate)$
+        let readyResult = coordinator.submitFunction(ready, 0)$
+
+        expect(executor.queuedCount).toBe(1)
+        expect(gatedResult.completed).toBe(false)
+        executor.runNext()
+        let readyEmission = readyResult.get()
+        expect(readyEmission.fragment.ordinal).toBe(0)
+        expect(gatedResult.completed).toBe(false)
+
+        gate.complete(true)
+        var Int turns
+        while (executor.queuedCount == 0 && turns < 10) {
+            Thread.sleep(1)
+            turns++
+        }
+        expect(executor.queuedCount).toBe(1)
+        executor.runNext()
+        let gatedEmission = gatedResult.get()
+        expect(gatedEmission.fragment.ordinal).toBe(1)
+    }
+
+    async test `executor capacity rejection is a stable diagnostic`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let executor = ControlledExecutor(0)
+        let future = Es6EmissionCoordinator(executor)
+            .submitFunction(functionUnit(fixture, "rejected", 1), 0)$
+        let result = future.get()
+
+        expect(result.emitted).toBe(false)
+        expect(result.diagnostic.code).toBe("es6.emission-capacity")
+    }
+
+    functionUnit(
+        Es6BoundWriter_TestFixture fixture,
+        String name,
+        Int ordinal
+    ) -> BoundFunctionUnit {
+        return BoundFunctionUnit(
+            fixture.declaration("function", name, ordinal),
+            name,
+            SemanticTypes.unitType(),
+            [BoundReturnStatement(fixture.range(), SemanticTypes.unitType())],
+            fixture.range()
+        )
+    }
+}

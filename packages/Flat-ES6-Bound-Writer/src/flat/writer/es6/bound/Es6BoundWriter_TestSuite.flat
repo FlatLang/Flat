@@ -14,7 +14,9 @@ import flat/io/FancyOutputStream
     Es6FragmentAssembler_Test,
     Es6ArtifactPersistence_Test,
     Es6ArtifactOutput_Test,
-    Es6HelloExecution_Test
+    Es6HelloExecution_Test,
+    Es6UnitOrchestrator_Test,
+    Es6EmissionCoordinator_Test
 ]]
 class {
     public static async main(String[] args) {

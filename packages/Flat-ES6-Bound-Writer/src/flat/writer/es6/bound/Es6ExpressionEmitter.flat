@@ -14,6 +14,28 @@ class {
         return Es6CodeResult(code: Es6NameMangler.mangle(expression.symbolIdentity.value))
     }
 
+    public emitUnary(
+        BoundUnaryExpression expression,
+        Es6CodeResult operand
+    ) -> Es6CodeResult {
+        if (!expression || !operand) throw Exception("ES6 unary emission requires expression and operand")
+        if (!operand.emitted) return operand
+        return Es6CodeResult(code: expression.operator + operand.code)
+    }
+
+    public emitBinary(
+        BoundBinaryExpression expression,
+        Es6CodeResult left,
+        Es6CodeResult right
+    ) -> Es6CodeResult {
+        if (!expression || !left || !right) {
+            throw Exception("ES6 binary emission requires expression and operands")
+        }
+        if (!left.emitted) return left
+        if (!right.emitted) return right
+        return Es6CodeResult(code: "(" + left.code + " " + expression.operator + " " + right.code + ")")
+    }
+
     public emitMemberAccess(
         BoundMemberAccessExpression expression,
         Es6CodeResult receiver

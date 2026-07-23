@@ -1,0 +1,14 @@
+package flat/writer/es6/bound
+
+/** Result of emitting one independently owned Bound unit. */
+data class {
+    public construct(
+        visible Es6ArtifactFragment fragment = null,
+        visible Es6BackendDiagnostic diagnostic = null
+    ) {
+        if ((!fragment && !diagnostic) || (fragment && diagnostic)) {
+            throw Exception("ES6 emission requires exactly one fragment or diagnostic")
+        }
+    }
+    visible Bool emitted => fragment != null
+}

@@ -34,6 +34,8 @@ testable class {
         expect(Es6TargetCapabilities.supportsStatement("local-declaration")).toBe(true)
         expect(Es6TargetCapabilities.supportsStatement("conditional-branch")).toBe(false)
         expect(Es6TargetCapabilities.supportsExpression("member-access")).toBe(true)
+        expect(Es6TargetCapabilities.supportsExpression("unary")).toBe(true)
+        expect(Es6TargetCapabilities.supportsExpression("binary")).toBe(true)
         expect(Es6TargetCapabilities.supportsExpression("native-call")).toBe(true)
         expect(Es6TargetCapabilities.diagnoseMetadata("reified")).toBe(null)
         expect(Es6TargetCapabilities.diagnoseStatement("foreach").code)

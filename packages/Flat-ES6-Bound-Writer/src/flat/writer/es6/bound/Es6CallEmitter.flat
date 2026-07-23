@@ -6,6 +6,18 @@ class {
         return mangledName + "(" + argumentText + ")"
     }
 
+    public emitInstanceCall(String receiver, String methodName, String argumentText) -> String {
+        return receiver + "." + methodName + "(" + argumentText + ")"
+    }
+
+    public emitStaticCall(String ownerName, String methodName, String argumentText) -> String {
+        return ownerName + "." + methodName + "(" + argumentText + ")"
+    }
+
+    public emitConstructorCall(String ownerName, String argumentText) -> String {
+        return "new " + ownerName + "(" + argumentText + ")"
+    }
+
     public emitNativeCall(String nativeName, String argumentText) -> String {
         return "globalThis['" + nativeName + "'](" + argumentText + ")"
     }

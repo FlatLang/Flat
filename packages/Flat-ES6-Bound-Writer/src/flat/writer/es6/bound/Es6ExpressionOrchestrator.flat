@@ -1,0 +1,108 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Recursive reduced-expression orchestration with diagnostic propagation. */
+class {
+    public construct(
+        visible Es6ExpressionEmitter expressions = Es6ExpressionEmitter(),
+        visible Es6CallEmitter calls = Es6CallEmitter()
+    ) {
+        if (!expressions || !calls) throw Exception("ES6 expression orchestration requires emitters")
+    }
+
+    public emit(BoundExpression expression) -> Es6CodeResult {
+        if (!expression) throw Exception("ES6 expression orchestration requires expression")
+        let capability = Es6TargetCapabilities.diagnoseExpression(expression.expressionKind())
+        if (capability) return Es6CodeResult(diagnostic: capability)
+        if (expression.class.isOfType(BoundLiteralExpression.class)) {
+            let value = (BoundLiteralExpression)expression
+            return expressions.emitLiteral(value)
+        }
+        if (expression.class.isOfType(BoundReferenceExpression.class)) {
+            let value = (BoundReferenceExpression)expression
+            return expressions.emitReference(value)
+        }
+        if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
+            let value = (BoundMemberAccessExpression)expression
+            return expressions.emitMemberAccess(value, emit(value.receiver))
+        }
+        if (expression.class.isOfType(BoundUnaryExpression.class)) {
+            let value = (BoundUnaryExpression)expression
+            return expressions.emitUnary(value, emit(value.operand))
+        }
+        if (expression.class.isOfType(BoundBinaryExpression.class)) {
+            let value = (BoundBinaryExpression)expression
+            return expressions.emitBinary(value, emit(value.left), emit(value.right))
+        }
+        if (expression.class.isOfType(BoundConversionExpression.class)) {
+            let value = (BoundConversionExpression)expression
+            return expressions.emitConversion(value, emit(value.value))
+        }
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            let value = (BoundCallExpression)expression
+            return emitCall(value)
+        }
+        if (expression.class.isOfType(BoundNativeCallExpression.class)) {
+            let value = (BoundNativeCallExpression)expression
+            return emitNativeCall(value)
+        }
+        return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+            "es6.unsupported-expression",
+            "ES6 backend cannot orchestrate reduced expression '#{expression.expressionKind()}'",
+            expression.range
+        ))
+    }
+
+    emitCall(BoundCallExpression expression) -> Es6CodeResult {
+        let arguments = emitArguments(expression.argumentValues())
+        if (!arguments.emitted) return arguments
+        let kind = expression.target.callableKind.value
+        let name = Es6NameMangler.mangle(expression.target.identity.value)
+        let String argumentText = arguments.code
+        if (kind == "function") {
+            return Es6CodeResult(code: calls.emitFunctionCall(name, argumentText))
+        }
+        if (kind == "static-method") {
+            let owner = Es6NameMangler.mangle(expression.target.ownerType.declarationIdentity.value)
+            return Es6CodeResult(code: calls.emitStaticCall(owner, name, argumentText))
+        }
+        if (kind == "constructor") {
+            let owner = Es6NameMangler.mangle(expression.target.ownerType.declarationIdentity.value)
+            return Es6CodeResult(code: calls.emitConstructorCall(owner, argumentText))
+        }
+        if (kind == "instance-method") {
+            if (!expression.receiver) {
+                return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                    "es6.call-receiver-missing",
+                    "ES6 instance call requires a bound receiver",
+                    expression.range
+                ))
+            }
+            let receiver = emit(expression.receiver)
+            if (!receiver.emitted) return receiver
+            return Es6CodeResult(code: calls.emitInstanceCall(receiver.code, name, argumentText))
+        }
+        return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+            "es6.unsupported-call-kind",
+            "ES6 backend does not yet support call kind '#kind'",
+            expression.range
+        ))
+    }
+
+    emitNativeCall(BoundNativeCallExpression expression) -> Es6CodeResult {
+        let arguments = emitArguments(expression.argumentValues())
+        if (!arguments.emitted) return arguments
+        return Es6CodeResult(code: calls.emitNativeCall(expression.nativeName, arguments.code))
+    }
+
+    emitArguments(BoundExpression[] values) -> Es6CodeResult {
+        let arguments = String[]
+        for (value in values) {
+            let emitted = emit(value)
+            if (!emitted.emitted) return emitted
+            arguments.add(emitted.code)
+        }
+        return Es6CodeResult(code: calls.joinArguments(arguments))
+    }
+}

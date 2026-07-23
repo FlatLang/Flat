@@ -32,5 +32,20 @@ testable class {
         )
         let literalResult = emitter.emitLiteral(literal)
         expect(emitter.emitConversion(conversion, literalResult).code).toBe("'Hello, Flat'")
+        let one = BoundLiteralExpression(
+            fixture.range(), SemanticTypes.intType(), "1"
+        )
+        let two = BoundLiteralExpression(
+            fixture.range(), SemanticTypes.intType(), "2"
+        )
+        let unary = BoundUnaryExpression(
+            fixture.range(), SemanticTypes.intType(), "-", one
+        )
+        let binary = BoundBinaryExpression(
+            fixture.range(), SemanticTypes.intType(), "+", one, two
+        )
+        let orchestrator = Es6ExpressionOrchestrator()
+        expect(orchestrator.emit(unary).code).toBe("-1")
+        expect(orchestrator.emit(binary).code).toBe("(1 + 2)")
     }
 }

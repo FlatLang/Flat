@@ -1,0 +1,131 @@
+package flat/writer/es6/bound
+
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    test `recursively emits complete slice units`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let stringType = SemanticTypes.stringType()
+        let unitType = SemanticTypes.unitType()
+        let helperIdentity = fixture.declaration("function", "message", 1)
+        let helperSymbol = SymbolIdentity(helperIdentity, "function")
+        let helperTarget = CallableSignature(
+            helperSymbol, "message", CallableKind("function"), SemanticType[], stringType
+        )
+        let helper = BoundFunctionUnit(
+            helperIdentity,
+            "message",
+            stringType,
+            [BoundReturnStatement(
+                fixture.range(), stringType,
+                BoundLiteralExpression(fixture.range(), stringType, "'Hello, Flat'"),
+                TypeConversions.classify(stringType, stringType)
+            )],
+            fixture.range()
+        )
+        let local = fixture.reference("local", "message", 2, stringType)
+        let call = BoundCallExpression(
+            fixture.range(), stringType, helperTarget,
+            BoundExpression[], TypeConversion[]
+        )
+        let declaration = BoundLocalDeclarationStatement(
+            fixture.range(), local, call, TypeConversions.classify(stringType, stringType)
+        )
+        let assignment = BoundAssignmentStatement(
+            fixture.range(), local,
+            BoundLiteralExpression(fixture.range(), stringType, "'Hello, Flat'"),
+            TypeConversions.classify(stringType, stringType)
+        )
+        let mainIdentity = fixture.declaration("static-method", "main", 3)
+        let main = BoundFunctionUnit(
+            mainIdentity,
+            "main",
+            unitType,
+            [declaration, assignment, BoundReturnStatement(fixture.range(), unitType)],
+            fixture.range(),
+            staticFunction: true,
+            mainFunction: true
+        )
+        let typeIdentity = fixture.declaration("class", "Hello", 4)
+        let typeUnit = BoundTypeUnit(
+            typeIdentity, UserClassSemanticType(typeIdentity), [main], fixture.range()
+        )
+        let emitter = Es6UnitOrchestrator()
+        let helperResult = emitter.emitFunction(helper, 0)
+        let typeResult = emitter.emitType(typeUnit, 1)
+
+        expect(helperResult.emitted).toBe(true)
+        expect(helperResult.fragment.code.contains("return 'Hello, Flat';")).toBe(true)
+        expect(typeResult.emitted).toBe(true)
+        expect(typeResult.fragment.code.contains(
+            Es6NameMangler.mangle(helperSymbol.value) + "()"
+        )).toBe(true)
+        expect(typeResult.fragment.code.contains(
+            "let " + Es6NameMangler.mangle(local.symbolIdentity.value)
+        )).toBe(true)
+        expect(typeResult.fragment.code.contains(" = 'Hello, Flat';")).toBe(true)
+    }
+
+    test `emits selected static and constructor calls`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let ownerIdentity = fixture.declaration("class", "Owner", 1)
+        let ownerType = UserClassSemanticType(ownerIdentity)
+        let staticIdentity = fixture.symbol("static-method", "create", 2)
+        let staticTarget = CallableSignature(
+            staticIdentity, "create", CallableKind("static-method"),
+            SemanticType[], ownerType, ownerType
+        )
+        let constructorIdentity = fixture.symbol("constructor", "Owner", 3)
+        let constructorTarget = CallableSignature(
+            constructorIdentity, "Owner", CallableKind("constructor"),
+            SemanticType[], ownerType, ownerType
+        )
+        let emitter = Es6ExpressionOrchestrator()
+        let staticCall = emitter.emit(BoundCallExpression(
+            fixture.range(), ownerType, staticTarget,
+            BoundExpression[], TypeConversion[]
+        ))
+        let constructorCall = emitter.emit(BoundCallExpression(
+            fixture.range(), ownerType, constructorTarget,
+            BoundExpression[], TypeConversion[]
+        ))
+        let receiver = fixture.reference("local", "owner", 4, ownerType)
+        let instanceIdentity = fixture.symbol("instance-method", "read", 5)
+        let instanceTarget = CallableSignature(
+            instanceIdentity, "read", CallableKind("instance-method"),
+            SemanticType[], ownerType, ownerType
+        )
+        let instanceCall = emitter.emit(BoundCallExpression(
+            fixture.range(), ownerType, instanceTarget, receiver,
+            BoundExpression[], TypeConversion[]
+        ))
+        let owner = Es6NameMangler.mangle(ownerIdentity.value)
+
+        expect(staticCall.code).toBe(
+            owner + "." + Es6NameMangler.mangle(staticIdentity.value) + "()"
+        )
+        expect(constructorCall.code).toBe("new " + owner + "()")
+        expect(instanceCall.code).toBe(
+            Es6NameMangler.mangle(receiver.symbolIdentity.value) + "." +
+            Es6NameMangler.mangle(instanceIdentity.value) + "()"
+        )
+    }
+
+    test `unsupported reduced input produces a diagnostic and no partial fragment`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let functionUnit = BoundFunctionUnit(
+            fixture.declaration("function", "branch", 1),
+            "branch",
+            SemanticTypes.unitType(),
+            [BoundBranchStatement(fixture.range(), "target")],
+            fixture.range()
+        )
+        let result = Es6UnitOrchestrator().emitFunction(functionUnit, 0)
+
+        expect(result.emitted).toBe(false)
+        expect(result.fragment).toBe(null)
+        expect(result.diagnostic.code).toBe("es6.unsupported-statement")
+    }
+}

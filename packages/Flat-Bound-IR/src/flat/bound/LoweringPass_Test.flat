@@ -269,8 +269,13 @@ testable class {
             intType,
             constructorOwner
         )
+        let receiver = BoundReferenceExpression(
+            fixture.range(2, 3), constructorOwner, "example",
+            fixture.symbol("local", "example", 18)
+        )
         let propertyCall = BoundCallExpression(
-            fixture.range(3, 4), intType, propertyTarget, BoundExpression[], TypeConversion[]
+            fixture.range(3, 4), intType, propertyTarget, receiver,
+            BoundExpression[], TypeConversion[]
         )
         let richProperty = BoundRichCallExpression(
             fixture.range(3, 4), intType, "property-get", propertyCall
@@ -300,7 +305,7 @@ testable class {
             constructorOwner
         )
         let mutatorCall = BoundCallExpression(
-            fixture.range(4, 6), unitType, mutatorTarget, [literal], [identity]
+            fixture.range(4, 6), unitType, mutatorTarget, receiver, [literal], [identity]
         )
         let richMutator = BoundRichCallExpression(
             fixture.range(4, 6), unitType, "mutator", mutatorCall
