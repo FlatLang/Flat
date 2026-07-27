@@ -1,0 +1,111 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+
+testable class {
+    test `binds parameters forward calls recursion and explicit call evidence`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:function-bind"), "revision:one"
+        )
+        let syntax = PrimitiveFunctionParser().parse([
+            token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token(")", Token.Type.SYMBOL, 5), token("->", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 10), token("{", Token.Type.SYMBOL, 14),
+            token("return", Token.Type.IDENTIFIER, 16), token("double", Token.Type.IDENTIFIER, 23),
+            token("(", Token.Type.SYMBOL, 29), token("2", Token.Type.INTEGER, 30),
+            token(")", Token.Type.SYMBOL, 31), token(";", Token.Type.SYMBOL, 32),
+            token("}", Token.Type.SYMBOL, 34),
+            token("double", Token.Type.IDENTIFIER, 36), token("(", Token.Type.SYMBOL, 42),
+            token("Int", Token.Type.IDENTIFIER, 43), token("value", Token.Type.IDENTIFIER, 47),
+            token(")", Token.Type.SYMBOL, 52), token("->", Token.Type.SYMBOL, 54),
+            token("Int", Token.Type.IDENTIFIER, 57), token("{", Token.Type.SYMBOL, 61),
+            token("return", Token.Type.IDENTIFIER, 63), token("value", Token.Type.IDENTIFIER, 70),
+            token("+", Token.Type.SYMBOL, 76), token("value", Token.Type.IDENTIFIER, 78),
+            token(";", Token.Type.SYMBOL, 83), token("}", Token.Type.SYMBOL, 85)
+        ], snapshot)
+        let functions = PrimitiveFunctionBinder().bind(syntax, snapshot).functionValues()
+        let runStatements = functions.first.statements()
+        let returnedObject = (Object)runStatements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+
+        expect(functions.count).toBe(2)
+        expect(functions.last.parameterValues().first.name).toBe("value")
+        expect(call.target.name).toBe("double")
+        expect(call.argumentConversions().count).toBe(1)
+        expect(call.semanticType.value()).toBe("primitive:Int")
+    }
+
+    test `rejects duplicate functions parameters unknown calls arity and return types`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:function-bind-invalid"), "revision:one"
+        )
+        var Int rejected
+        try { bind("run", "run", snapshot) } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveFunctionBinder().bind(PrimitiveFunctionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("Int", Token.Type.IDENTIFIER, 5), token("x", Token.Type.IDENTIFIER, 9),
+                token(",", Token.Type.SYMBOL, 10), token("Int", Token.Type.IDENTIFIER, 12),
+                token("x", Token.Type.IDENTIFIER, 16), token(")", Token.Type.SYMBOL, 17),
+                token("->", Token.Type.SYMBOL, 19), token("Int", Token.Type.IDENTIFIER, 22),
+                token("{", Token.Type.SYMBOL, 26), token("return", Token.Type.IDENTIFIER, 28),
+                token("x", Token.Type.IDENTIFIER, 35), token(";", Token.Type.SYMBOL, 36),
+                token("}", Token.Type.SYMBOL, 38)
+            ], snapshot), snapshot)
+        } catch (Exception error) { rejected++ }
+        try { invalidCall("missing", false, snapshot) } catch (Exception error) { rejected++ }
+        try { invalidCall("run", true, snapshot) } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveFunctionBinder().bind(PrimitiveFunctionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token(")", Token.Type.SYMBOL, 5), token("->", Token.Type.SYMBOL, 7),
+                token("Bool", Token.Type.IDENTIFIER, 10), token("{", Token.Type.SYMBOL, 15),
+                token("return", Token.Type.IDENTIFIER, 17), token("1", Token.Type.INTEGER, 24),
+                token(";", Token.Type.SYMBOL, 25), token("}", Token.Type.SYMBOL, 27)
+            ], snapshot), snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(5)
+    }
+
+    bind(String firstName, String secondName, SourceSnapshotIdentity snapshot) {
+        PrimitiveFunctionBinder().bind(PrimitiveFunctionParser().parse([
+            token(firstName, Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token(")", Token.Type.SYMBOL, 5), token("->", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 10), token("{", Token.Type.SYMBOL, 14),
+            token("return", Token.Type.IDENTIFIER, 16), token("1", Token.Type.INTEGER, 23),
+            token(";", Token.Type.SYMBOL, 24), token("}", Token.Type.SYMBOL, 26),
+            token(secondName, Token.Type.IDENTIFIER, 28), token("(", Token.Type.SYMBOL, 31),
+            token(")", Token.Type.SYMBOL, 32), token("->", Token.Type.SYMBOL, 34),
+            token("Int", Token.Type.IDENTIFIER, 37), token("{", Token.Type.SYMBOL, 41),
+            token("return", Token.Type.IDENTIFIER, 43), token("1", Token.Type.INTEGER, 50),
+            token(";", Token.Type.SYMBOL, 51), token("}", Token.Type.SYMBOL, 53)
+        ], snapshot), snapshot)
+    }
+
+    invalidCall(String called, Bool argument, SourceSnapshotIdentity snapshot) {
+        let values = [
+            token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token(")", Token.Type.SYMBOL, 5), token("->", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 10), token("{", Token.Type.SYMBOL, 14),
+            token("return", Token.Type.IDENTIFIER, 16), token(called, Token.Type.IDENTIFIER, 23),
+            token("(", Token.Type.SYMBOL, 30)
+        ]
+        if (argument) values.add(token("1", Token.Type.INTEGER, 31))
+        values.addAll([
+            token(")", Token.Type.SYMBOL, 32), token(";", Token.Type.SYMBOL, 33),
+            token("}", Token.Type.SYMBOL, 35)
+        ])
+        PrimitiveFunctionBinder().bind(
+            PrimitiveFunctionParser().parse(values, snapshot), snapshot
+        )
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}

@@ -4,6 +4,44 @@ import flat/bound
 
 /** Emits reduced statements from already-emitted child expressions. */
 class {
+    public emitThrow(
+        BoundThrowStatement statement,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!statement || !value) throw Exception("ES6 throw requires statement and value")
+        if (!value.emitted) return value
+        return Es6CodeResult(code: "throw " + value.code + ";\n")
+    }
+
+    public emitCatch(
+        BoundCatchClause clause,
+        Es6CodeResult body
+    ) -> Es6CodeResult {
+        if (!clause || !body) throw Exception("ES6 catch requires clause and body")
+        if (!body.emitted) return body
+        let name = Es6NameMangler.mangle(clause.local.symbolIdentity.value)
+        return Es6CodeResult(code: "catch (" + name + ") {\n" + indent(body.code) + "}")
+    }
+
+    public emitTry(
+        BoundTryStatement statement,
+        Es6CodeResult tryBody,
+        String[] catches,
+        Es6CodeResult finallyBody
+    ) -> Es6CodeResult {
+        if (!statement || !tryBody || !catches || !finallyBody) {
+            throw Exception("ES6 try requires bodies and catches")
+        }
+        if (!tryBody.emitted) return tryBody
+        if (!finallyBody.emitted) return finallyBody
+        var String code = "try {\n" + indent(tryBody.code) + "}"
+        if (catches.isNotEmpty) code += " " + catches.first
+        if (statement.finallyValues().isNotEmpty) {
+            code += " finally {\n" + indent(finallyBody.code) + "}"
+        }
+        return Es6CodeResult(code: code + "\n")
+    }
+
     public emitIf(
         BoundIfStatement statement,
         Es6CodeResult condition,
@@ -87,6 +125,19 @@ class {
         if (!value.emitted) return value
         let name = Es6NameMangler.mangle(statement.target.symbolIdentity.value)
         return Es6CodeResult(code: name + " = " + value.code + ";\n")
+    }
+
+    public emitMemberAssignment(
+        BoundMemberAssignmentStatement statement,
+        Es6CodeResult target,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!statement || !target || !value) {
+            throw Exception("ES6 member assignment requires statement target and value")
+        }
+        if (!target.emitted) return target
+        if (!value.emitted) return value
+        return Es6CodeResult(code: target.code + " = " + value.code + ";\n")
     }
 
     public emitReturn(

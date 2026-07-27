@@ -1,0 +1,22 @@
+package flat/compiler
+
+import flat/eventstream
+import flat/future
+
+/** Observable bounded compilation lifecycle independent of CLI presentation. */
+class {
+    visible BoundedTopic<String> diagnostics = BoundedTopic<String>(4)
+    visible BoundedTopic<String> progress = BoundedTopic<String>(4)
+    visible BoundedChannel<CompilerArtifact> artifacts = BoundedChannel<CompilerArtifact>(4)
+    visible Future.CompletableFuture<CompilationSummary> completion = Future.create<CompilationSummary>()
+    visible var Bool cancelled
+
+    public cancel() {
+        if (cancelled || completion.completed) return
+        cancelled = true
+        diagnostics.close()
+        progress.close()
+        artifacts.close()
+        completion.complete(CompilationSummary(0, 0, 0, true))
+    }
+}

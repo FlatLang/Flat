@@ -42,8 +42,8 @@ testable class {
         expect(Es6TargetCapabilities.diagnoseMetadata("reified")).toBe(null)
         expect(Es6TargetCapabilities.diagnoseStatement("foreach").code)
             .toBe("es6.unsupported-statement")
-        expect(Es6TargetCapabilities.diagnoseExpression("lambda").code)
-            .toBe("es6.unsupported-expression")
+        expect(Es6TargetCapabilities.supportsExpression("lambda")).toBe(true)
+        expect(Es6TargetCapabilities.supportsExpression("function-reference")).toBe(true)
         expect(Es6TargetCapabilities.diagnoseMetadata("target-specific").code)
             .toBe("es6.unsupported-metadata")
     }

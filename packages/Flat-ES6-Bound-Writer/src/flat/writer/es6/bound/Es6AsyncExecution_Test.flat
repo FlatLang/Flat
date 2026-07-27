@@ -1,0 +1,45 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    async test `async form lowers to deterministic Promise runtime execution`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:async-execute"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("async", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token("7", Token.Type.INTEGER, 7), token(")", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let bound = PrimitiveExpressionBinder().bind(syntax).expression
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "run"
+        )
+        let rich = BoundFunctionUnit(identity, "run", SemanticTypes.intType(), [
+            BoundReturnStatement(syntax.range, SemanticTypes.intType(), bound,
+                TypeConversions.classify(bound.semanticType, SemanticTypes.intType()))
+        ], syntax.range)
+        let lowered = DeferredExecutionLoweringPass().lower(rich)
+        let emitted = Es6UnitOrchestrator().emitFunction(lowered, 0)
+        let root = File(".flat-es6-async-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "async.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "Promise.resolve(" + Es6NameMangler.mangle(identity.value) + "()).then(value => console.log(value));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token => Token(
+        value: value, type: type, location: Location(lineNumber: 1, column: column)
+    )
+}

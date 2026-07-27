@@ -1,0 +1,33 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only structured try/catch/finally statement. */
+data class extends PrimitiveStatementSyntax {
+    var PrimitiveStatementSyntax[] tryBody
+    var PrimitiveCatchSyntax[] catches
+    var PrimitiveStatementSyntax[] finallyBody
+    public construct(
+        SourceRange range,
+        PrimitiveStatementSyntax[] tryValues,
+        PrimitiveCatchSyntax[] catchValues,
+        PrimitiveStatementSyntax[] finallyValues = PrimitiveStatementSyntax[]
+    ) {
+        if (!range || !tryValues || tryValues.any({ !_ }) || !catchValues ||
+            catchValues.any({ !_ }) || !finallyValues || finallyValues.any({ !_ }) ||
+            (catchValues.isEmpty && finallyValues.isEmpty)) {
+            throw Exception("Try syntax requires body and catch or finally")
+        }
+        super(range)
+        tryBody = PrimitiveStatementSyntax[]
+        tryBody.addAll(tryValues)
+        catches = PrimitiveCatchSyntax[]
+        catches.addAll(catchValues)
+        finallyBody = PrimitiveStatementSyntax[]
+        finallyBody.addAll(finallyValues)
+    }
+    public tryValues() -> PrimitiveStatementSyntax[] => PrimitiveStatementSyntax[]:addAll(tryBody)
+    public catchValues() -> PrimitiveCatchSyntax[] => PrimitiveCatchSyntax[]:addAll(catches)
+    public finallyValues() -> PrimitiveStatementSyntax[] => PrimitiveStatementSyntax[]:addAll(finallyBody)
+    override public statementKind() => "try"
+}

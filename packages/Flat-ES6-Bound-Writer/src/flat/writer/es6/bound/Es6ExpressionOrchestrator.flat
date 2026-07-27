@@ -21,6 +21,9 @@ class {
         }
         if (expression.class.isOfType(BoundReferenceExpression.class)) {
             let value = (BoundReferenceExpression)expression
+            if (value.name == "this" && value.symbolIdentity.symbolKind == "receiver") {
+                return Es6CodeResult(code: "this")
+            }
             return expressions.emitReference(value)
         }
         if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
@@ -38,6 +41,33 @@ class {
         if (expression.class.isOfType(BoundConversionExpression.class)) {
             let value = (BoundConversionExpression)expression
             return expressions.emitConversion(value, emit(value.value))
+        }
+        if (expression.class.isOfType(BoundLambdaExpression.class)) {
+            let value = (BoundLambdaExpression)expression
+            let parameters = value.parameterValues().map({
+                Es6NameMangler.mangle(_.identity.value)
+            })
+            let body = emit(value.body)
+            if (!body.emitted) return body
+            return Es6CodeResult(code: "(" + parameters.join(", ") + ") => " + body.code)
+        }
+        if (expression.class.isOfType(BoundFunctionValue.class)) {
+            let value = (BoundFunctionValue)expression
+            return Es6CodeResult(code: Es6NameMangler.mangle(value.target.identity.declaration.value))
+        }
+        if (expression.class.isOfType(BoundArrayExpression.class)) {
+            let value = (BoundArrayExpression)expression
+            let elements = emitArguments(value.elementValues())
+            if (!elements.emitted) return elements
+            return Es6CodeResult(code: "[" + elements.code + "]")
+        }
+        if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
+            let value = (BoundArrayAccessExpression)expression
+            let receiver = emit(value.receiver)
+            if (!receiver.emitted) return receiver
+            let index = emit(value.index)
+            if (!index.emitted) return index
+            return Es6CodeResult(code: receiver.code + "[" + index.code + "]")
         }
         if (expression.class.isOfType(BoundCallExpression.class)) {
             let value = (BoundCallExpression)expression
@@ -58,7 +88,9 @@ class {
         let arguments = emitArguments(expression.argumentValues())
         if (!arguments.emitted) return arguments
         let kind = expression.target.callableKind.value
-        let name = Es6NameMangler.mangle(expression.target.identity.value)
+        let identity = expression.target.callableKind.value == "function" ?
+            expression.target.identity.declaration.value : expression.target.identity.value
+        let name = Es6NameMangler.mangle(identity)
         let String argumentText = arguments.code
         if (kind == "function") {
             return Es6CodeResult(code: calls.emitFunctionCall(name, argumentText))

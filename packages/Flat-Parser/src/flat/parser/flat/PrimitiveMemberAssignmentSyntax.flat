@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only assignment to a selected receiver member. */
+data class extends PrimitiveStatementSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveMemberAccessSyntax target,
+        visible PrimitiveExpressionSyntax value
+    ) {
+        if (!range || !target || !value) {
+            throw Exception("Primitive member assignment requires target and value")
+        }
+        super(range)
+    }
+    override public statementKind() => "member-assignment"
+}

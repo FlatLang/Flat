@@ -1,0 +1,22 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+
+/** Immutable result for a finite source-ordered function partition. */
+data class {
+    var BoundFunctionUnit[] functions
+
+    public construct(BoundFunctionUnit[] values) {
+        if (!values || values.any({ !_ })) {
+            throw Exception("Primitive function binding requires functions")
+        }
+        functions = BoundFunctionUnit[]
+        functions.addAll(values)
+    }
+
+    public functionValues() -> BoundFunctionUnit[] {
+        let result = BoundFunctionUnit[]
+        result.addAll(functions)
+        return result
+    }
+}

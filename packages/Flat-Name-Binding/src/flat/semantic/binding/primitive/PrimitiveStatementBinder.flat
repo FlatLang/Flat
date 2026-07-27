@@ -8,17 +8,21 @@ import flat/semantic/types
 /** Binds syntax-only function statements into typed reduced Bound statements. */
 class {
     var LocalBinding[] locals
+    var CallableSignature[] callables
 
     public bind(
         PrimitiveStatementSyntaxResult syntax,
         SourceSnapshotIdentity snapshot,
-        LocalBinding[] localValues = LocalBinding[]
+        LocalBinding[] localValues = LocalBinding[],
+        CallableSignature[] callableValues = CallableSignature[]
     ) -> PrimitiveStatementBindingResult {
-        if (!syntax || !snapshot || !localValues) {
-            throw Exception("Primitive statement binding requires syntax snapshot and locals")
+        if (!syntax || !snapshot || !localValues || !callableValues) {
+            throw Exception("Primitive statement binding requires syntax snapshot, locals, and callables")
         }
         locals = LocalBinding[]
         locals.addAll(localValues)
+        callables = CallableSignature[]
+        callables.addAll(callableValues)
         let statements = BoundStatement[]
         for (statement in syntax.statements()) statements.add(bindStatement(statement, snapshot))
         return PrimitiveStatementBindingResult(statements, locals)
@@ -84,7 +88,9 @@ class {
     }
 
     expression(PrimitiveExpressionSyntax syntax) -> BoundExpression {
-        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+        let result = PrimitiveExpressionBinder().bind(
+            syntax, locals: locals, callables: callables
+        )
         if (!result.succeeded) throw Exception(result.diagnostic.message)
         return result.expression
     }

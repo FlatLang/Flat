@@ -1,0 +1,15 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Explicit typed thrown value. */
+data class extends BoundStatement {
+    public construct(SourceRange range, visible BoundExpression value) {
+        if (!range || !value || (value.semanticType.kind() != "string" &&
+            value.semanticType.kind() != "object" && value.semanticType.kind() != "user-class")) {
+            throw Exception("Bound throw requires a throwable reference value")
+        }
+        super(range)
+    }
+    override public unitKind() => "throw"
+}

@@ -1,0 +1,13 @@
+package flat/compiler
+
+data class {
+    var CompilerArtifact[] values
+    public construct(visible CompilerSession session, CompilerArtifact[] artifacts) {
+        if (!session || !artifacts || artifacts.any({ !_ })) {
+            throw Exception("Compiler test result requires session and artifacts")
+        }
+        values = CompilerArtifact[]
+        values.addAll(artifacts)
+    }
+    public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(values)
+}

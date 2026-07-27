@@ -60,7 +60,7 @@ testable class {
         expect(helperResult.fragment.code.contains("return 'Hello, Flat';")).toBe(true)
         expect(typeResult.emitted).toBe(true)
         expect(typeResult.fragment.code.contains(
-            Es6NameMangler.mangle(helperSymbol.value) + "()"
+            Es6NameMangler.mangle(helperIdentity.value) + "()"
         )).toBe(true)
         expect(typeResult.fragment.code.contains(
             "let " + Es6NameMangler.mangle(local.symbolIdentity.value)

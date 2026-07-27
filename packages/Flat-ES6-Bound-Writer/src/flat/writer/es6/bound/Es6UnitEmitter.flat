@@ -24,9 +24,31 @@ class {
             indent(body, "  ") + "}\n"
     }
 
-    public emitClass(String stableIdentity, String[] methods) -> String {
+    public emitConstructor(
+        String[] parameterNames,
+        String body
+    ) -> String {
+        return "constructor(" + parameterNames.join(", ") + ") {\n" +
+            indent(body, "  ") + "}\n"
+    }
+
+    public emitClass(
+        String stableIdentity,
+        String parentIdentity,
+        String[] fields,
+        String[] methods
+    ) -> String {
         let name = Es6NameMangler.mangle(stableIdentity)
-        return "class " + name + " {\n" + indent(methods.join(""), "  ") + "}\n"
+        let extension = parentIdentity ? " extends " + Es6NameMangler.mangle(parentIdentity) : ""
+        return "class " + name + extension + " {\n" + indent(fields.join("") + methods.join(""), "  ") + "}\n"
+    }
+
+    public emitClass(String stableIdentity, String[] fields, String[] methods) -> String {
+        return emitClass(stableIdentity, null, fields, methods)
+    }
+
+    public emitClass(String stableIdentity, String[] methods) -> String {
+        return emitClass(stableIdentity, String[], methods)
     }
 
     public emitBootstrap(String ownerIdentity, String mainIdentity) -> String {

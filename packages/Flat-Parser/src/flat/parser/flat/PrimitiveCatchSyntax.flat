@@ -1,0 +1,21 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only catch clause with one typed local. */
+data class {
+    var PrimitiveStatementSyntax[] body
+    public construct(
+        visible SourceRange range,
+        visible String typeName,
+        visible String name,
+        PrimitiveStatementSyntax[] statements
+    ) {
+        if (!range || !typeName || !name || !statements || statements.any({ !_ })) {
+            throw Exception("Catch syntax requires range parameter and body")
+        }
+        body = PrimitiveStatementSyntax[]
+        body.addAll(statements)
+    }
+    public statements() -> PrimitiveStatementSyntax[] => PrimitiveStatementSyntax[]:addAll(body)
+}

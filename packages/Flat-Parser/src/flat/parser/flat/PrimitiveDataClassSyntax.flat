@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only data-class marker around one reduced class declaration. */
+data class {
+    public construct(visible SourceRange range, visible PrimitiveClassSyntax classSyntax) {
+        if (!range || !classSyntax || range.snapshot != classSyntax.range.snapshot) {
+            throw Exception("Data class syntax requires class syntax in the same snapshot")
+        }
+    }
+}

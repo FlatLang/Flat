@@ -20,6 +20,8 @@ import flat/parser/matchers
     PrimitiveExpressionParser_Test,
     PrimitiveStatementParser_Test,
     PrimitiveControlStatementParser_Test,
+    PrimitiveFunctionParser_Test,
+    PrimitiveClassParser_Test,
     VariableDeclarationParser_Test,
     FieldParser_Test,
     ClassParser_Test,

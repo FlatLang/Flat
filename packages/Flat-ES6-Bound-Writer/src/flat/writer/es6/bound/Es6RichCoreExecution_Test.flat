@@ -1,0 +1,68 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    async test `property named default and operator forms lower and execute`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:rich-core-execute"), "revision:one"
+        )
+        let range = SourceRange(snapshot, 0, 8,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 9))
+        let sumIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "sum"
+        )
+        let target = CallableSignature(SymbolIdentity(sumIdentity, "function"), "sum",
+            CallableKind("function"), [SemanticTypes.intType(), SemanticTypes.intType()],
+            SemanticTypes.intType())
+        let syntax = PrimitiveExpressionParser().parse([
+            token("named", Token.Type.IDENTIFIER, 1), token("sum", Token.Type.IDENTIFIER, 7),
+            token("(", Token.Type.SYMBOL, 10), token("right", Token.Type.IDENTIFIER, 11),
+            token(":", Token.Type.SYMBOL, 16), token("2", Token.Type.INTEGER, 18),
+            token(")", Token.Type.SYMBOL, 19)
+        ], snapshot)
+        let rich = PrimitiveExpressionBinder().bind(syntax, callables: [target]).expression
+        let runIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 2), "function", "run"
+        )
+        let richUnit = BoundFunctionUnit(runIdentity, "run", SemanticTypes.intType(), [
+            BoundReturnStatement(range, SemanticTypes.intType(), rich,
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))
+        ], range)
+        let run = CoreLanguageLoweringPass().lower(richUnit)
+        let parameters = [
+            BoundFunctionParameter("left", SymbolIdentity(sumIdentity, "parameter", 0), SemanticTypes.intType()),
+            BoundFunctionParameter("right", SymbolIdentity(sumIdentity, "parameter", 1), SemanticTypes.intType())
+        ]
+        let sum = BoundFunctionUnit(sumIdentity, "sum", SemanticTypes.intType(), [
+            BoundReturnStatement(range, SemanticTypes.intType(), BoundBinaryExpression(
+                range, SemanticTypes.intType(), "+",
+                BoundReferenceExpression(range, SemanticTypes.intType(), "left", parameters.first.identity),
+                BoundReferenceExpression(range, SemanticTypes.intType(), "right", parameters.last.identity)
+            ), TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))
+        ], range, parameters)
+        let first = Es6UnitOrchestrator().emitFunction(sum, 0)
+        let second = Es6UnitOrchestrator().emitFunction(run, 1)
+        let code = Es6FragmentAssembler(2).assemble([second.fragment, first.fragment]).code
+        let root = File(".flat-es6-rich-core-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "rich.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(runIdentity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("3\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token => Token(
+        value: value, type: type, location: Location(lineNumber: 1, column: column)
+    )
+}

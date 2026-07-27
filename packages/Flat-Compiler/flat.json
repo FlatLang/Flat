@@ -27,11 +27,15 @@
         "https://github.com/FlatLang/Regex.git": "master",
         "https://github.com/FlatLang/Progress-Bar.git": "master",
         "https://github.com/FlatLang/Console-Escape-Codes.git": "master",
-        "https://github.com/FlatLang/TerminalSize.git": "master"
+        "https://github.com/FlatLang/TerminalSize.git": "master",
+        "https://github.com/FlatLang/Future.git": "master",
+        "https://github.com/FlatLang/Event-Stream.git": "master",
+        "https://github.com/FlatLang/Flat-Name-Binding.git": "master",
+        "https://github.com/FlatLang/Flat-ES6-Bound-Writer.git": "master"
       }
     },
     "flatc": {
-      "mainClass": "flat/compiler/Compiler",
+      "mainClass": "flat/compiler/CompilerCli",
       "bin": "flatc",
       "dependencies": {}
     },

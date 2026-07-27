@@ -1,0 +1,9 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+
+data class {
+    public construct(visible BoundTypeUnit typeUnit) {
+        if (!typeUnit) throw Exception("Primitive class binding requires type unit")
+    }
+}

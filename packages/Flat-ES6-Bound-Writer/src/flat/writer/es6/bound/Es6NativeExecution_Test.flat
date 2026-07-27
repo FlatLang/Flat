@@ -1,0 +1,49 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    async test `target annotated native call lowers and executes under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-execute"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("native", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 7),
+            token("es6", Token.Type.IDENTIFIER, 8), token("]", Token.Type.SYMBOL, 11),
+            token("Math", Token.Type.IDENTIFIER, 13), token(".", Token.Type.SYMBOL, 17),
+            token("max", Token.Type.IDENTIFIER, 18), token("(", Token.Type.SYMBOL, 21),
+            token("2", Token.Type.INTEGER, 22), token(",", Token.Type.SYMBOL, 23),
+            token("5", Token.Type.INTEGER, 25), token(")", Token.Type.SYMBOL, 26)
+        ], snapshot)
+        let rich = PrimitiveNativeBinder().bind((PrimitiveNativeSyntax)syntax, "es6")
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "run"
+        )
+        let unit = BoundFunctionUnit(identity, "run", SemanticTypes.intType(), [
+            BoundReturnStatement(syntax.range, SemanticTypes.intType(), rich,
+                TypeConversions.classify(rich.semanticType, SemanticTypes.intType()))
+        ], syntax.range)
+        let lowered = ExternalNativeLoweringPass().lower(unit)
+        let emitted = Es6UnitOrchestrator().emitFunction(lowered, 0)
+        let root = File(".flat-es6-native-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "native.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(" + Es6NameMangler.mangle(identity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("5\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token => Token(
+        value: value, type: type, location: Location(lineNumber: 1, column: column)
+    )
+}

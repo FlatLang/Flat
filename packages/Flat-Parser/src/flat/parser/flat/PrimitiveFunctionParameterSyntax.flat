@@ -1,0 +1,17 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only function parameter. */
+data class {
+    public construct(
+        visible SourceRange range,
+        visible String typeName,
+        visible String name
+    ) {
+        if (!range || !typeName || typeName.trim().count == 0 ||
+            !name || name.trim().count == 0) {
+            throw Exception("Primitive function parameter requires range, type, and name")
+        }
+    }
+}

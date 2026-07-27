@@ -1,0 +1,69 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    async test `capturing lambda and function reference execute under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:lambda-execute"), "revision:one"
+        )
+        let range = SourceRange(snapshot, 0, 10,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 11))
+        let capturedIdentity = SymbolIdentity(
+            DeclarationIdentity(SyntaxIslandIdentity(snapshot, "local", 1), "local", "captured"),
+            "local"
+        )
+        let captured = LocalBinding("captured", capturedIdentity, SemanticTypes.intType())
+        let lambdaSyntax = PrimitiveExpressionParser().parse([
+            token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 8), token("value", Token.Type.IDENTIFIER, 12),
+            token(")", Token.Type.SYMBOL, 17), token("=>", Token.Type.SYMBOL, 19),
+            token("value", Token.Type.IDENTIFIER, 22), token("+", Token.Type.SYMBOL, 28),
+            token("captured", Token.Type.IDENTIFIER, 30)
+        ], snapshot)
+        let lambda = PrimitiveExpressionBinder().bind(lambdaSyntax, locals: [captured]).expression
+        let targetIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 2), "function", "identity"
+        )
+        let target = CallableSignature(
+            SymbolIdentity(targetIdentity, "function"), "identity", CallableKind("function"),
+            [SemanticTypes.intType()], SemanticTypes.intType()
+        )
+        let reference = PrimitiveExpressionBinder().bind(
+            PrimitiveFunctionReferenceSyntax(range, "identity"), callables: [target]
+        ).expression
+        let lambdaCode = Es6ExpressionOrchestrator().emit(lambda).code
+        let referenceCode = Es6ExpressionOrchestrator().emit(reference).code
+        let parameter = BoundFunctionParameter(
+            "value", SymbolIdentity(targetIdentity, "parameter"), SemanticTypes.intType()
+        )
+        let identity = BoundFunctionUnit(targetIdentity, "identity", SemanticTypes.intType(), [
+            BoundReturnStatement(range, SemanticTypes.intType(),
+                BoundReferenceExpression(range, SemanticTypes.intType(), "value", parameter.identity),
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))
+        ], range, [parameter])
+        let emitted = Es6UnitOrchestrator().emitFunction(identity, 0)
+        let capturedName = Es6NameMangler.mangle(capturedIdentity.value)
+        let root = File(".flat-es6-lambda-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "lambda.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "let " + capturedName + " = 3;\n" +
+            "console.log((" + lambdaCode + ")(4) + " + referenceCode + "(1));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("8\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token => Token(
+        value: value, type: type, location: Location(lineNumber: 1, column: column)
+    )
+}

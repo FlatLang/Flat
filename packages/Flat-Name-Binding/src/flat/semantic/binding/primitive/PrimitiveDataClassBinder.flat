@@ -1,0 +1,22 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/compiler/models
+import flat/bound
+
+/** Marks one reduced class as a data class with immutable metadata. */
+class {
+    public bind(
+        PrimitiveDataClassSyntax syntax,
+        SourceSnapshotIdentity snapshot
+    ) -> BoundTypeUnit {
+        if (!syntax || !snapshot) throw Exception("Data class binding requires syntax and snapshot")
+        let bound = PrimitiveClassBinder().bind(syntax.classSyntax, snapshot).typeUnit
+        let metadata = bound.metadata()
+        metadata.add(BoundMetadataUnit("data-class", bound.identity.name, "structural"))
+        return BoundTypeUnit(
+            bound.identity, bound.semanticType, bound.functionUnits(), bound.range,
+            metadataValues: metadata, fieldValues: bound.fieldUnits(), parentType: bound.parentType
+        )
+    }
+}

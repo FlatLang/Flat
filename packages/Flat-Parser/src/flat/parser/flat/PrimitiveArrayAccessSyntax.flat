@@ -1,0 +1,16 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only array element access. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax receiver,
+        visible PrimitiveExpressionSyntax index
+    ) {
+        if (!range || !receiver || !index) throw Exception("Array access syntax requires receiver and index")
+        super(range)
+    }
+    override public expressionKind() => "array-access"
+}

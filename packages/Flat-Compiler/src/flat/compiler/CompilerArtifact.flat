@@ -1,0 +1,7 @@
+package flat/compiler
+
+data class {
+    public construct(visible String identity, visible String code) {
+        if (!identity || code == null) throw Exception("Compiler artifact requires identity and code")
+    }
+}

@@ -1,0 +1,51 @@
+package flat/compiler
+
+import flat/eventstream
+
+/** In-process deterministic compiler execution separated from CLI parsing. */
+class {
+    public construct(
+        visible Executor executor = InlineExecutor(),
+        visible FlatEs6SourceCompiler sourceCompiler = FlatEs6SourceCompiler()
+    ) {
+        if (!executor || !sourceCompiler) throw Exception("Compiler engine requires executor and source compiler")
+    }
+
+    public async compile(
+        CompilerSourceProvider sources,
+        CompilerArtifactSink sink
+    ) -> CompilerSession {
+        if (!sources || !sink) throw Exception("Compiler engine requires source provider and artifact sink")
+        let session = CompilerSession()
+        let identities = sources.identities()
+        var Int artifacts
+        var Int diagnostics
+        for (identity in identities) {
+            if (session.cancelled) break
+            let source = sources.load(identity)
+            if (!source) {
+                diagnostics++
+                session.diagnostics.publish("Missing source '#identity'")$
+            } else {
+                try {
+                    let code = sourceCompiler.compile(source)
+                    let artifact = CompilerArtifact(identity + ".js", code)
+                    sink.write(artifact)
+                    session.artifacts.send(artifact)
+                    session.progress.publish("Compiled #identity")$
+                    artifacts++
+                } catch (Exception error) {
+                    diagnostics++
+                    session.diagnostics.publish("Failed to compile '#identity': #{error.message}")$
+                }
+            }
+        }
+        session.diagnostics.close()
+        session.progress.close()
+        session.artifacts.close()
+        session.completion.complete(CompilationSummary(
+            identities.count, artifacts, diagnostics, session.cancelled
+        ))
+        return session
+    }
+}

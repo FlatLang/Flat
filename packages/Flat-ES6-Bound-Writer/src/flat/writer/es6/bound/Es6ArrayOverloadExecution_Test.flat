@@ -1,0 +1,78 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    async test `array access and selected overload execute under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-overload-execute"), "revision:one"
+        )
+        let range = SourceRange(snapshot, 0, 8,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 9))
+        let intIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "pick-int"
+        )
+        let longIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 2), "function", "pick-long"
+        )
+        let intTarget = CallableSignature(SymbolIdentity(intIdentity, "function"), "pick",
+            CallableKind("function"), [SemanticTypes.intType()], SemanticTypes.intType())
+        let longTarget = CallableSignature(SymbolIdentity(longIdentity, "function"), "pick",
+            CallableKind("function"), [SemanticTypes.longType()], SemanticTypes.longType())
+        let array = PrimitiveExpressionParser().parse([
+            token("[", Token.Type.SYMBOL, 1), token("4", Token.Type.INTEGER, 2),
+            token(",", Token.Type.SYMBOL, 3), token("9", Token.Type.INTEGER, 5),
+            token("]", Token.Type.SYMBOL, 6)
+        ], snapshot)
+        let index = PrimitiveExpressionParser().parse([
+            token("1", Token.Type.INTEGER, 8)
+        ], snapshot)
+        let syntax = PrimitiveCallSyntax(
+            range, "pick", [PrimitiveArrayAccessSyntax(range, array, index)]
+        )
+        let bound = PrimitiveExpressionBinder().bind(
+            syntax, callables: [longTarget, intTarget]
+        )
+        let returned = BoundReturnStatement(
+            range, SemanticTypes.intType(), bound.expression,
+            TypeConversions.classify(bound.expression.semanticType, SemanticTypes.intType())
+        )
+        let pickParameter = BoundFunctionParameter(
+            "value", SymbolIdentity(intIdentity, "parameter"), SemanticTypes.intType()
+        )
+        let pickReference = BoundReferenceExpression(
+            range, SemanticTypes.intType(), "value", pickParameter.identity
+        )
+        let pick = BoundFunctionUnit(intIdentity, "pick-int", SemanticTypes.intType(), [
+            BoundReturnStatement(range, SemanticTypes.intType(), pickReference,
+                TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()))
+        ], range, [pickParameter])
+        let runIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 3), "function", "run"
+        )
+        let run = BoundFunctionUnit(runIdentity, "run", SemanticTypes.intType(), [returned], range)
+        let first = Es6UnitOrchestrator().emitFunction(pick, 0)
+        let second = Es6UnitOrchestrator().emitFunction(run, 1)
+        let code = Es6FragmentAssembler(2).assemble([second.fragment, first.fragment]).code
+        let root = File(".flat-es6-array-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "array.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(runIdentity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("9\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token => Token(
+        value: value, type: type, location: Location(lineNumber: 1, column: column)
+    )
+}

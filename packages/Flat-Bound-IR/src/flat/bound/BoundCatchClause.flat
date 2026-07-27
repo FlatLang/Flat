@@ -1,0 +1,23 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Immutable typed catch clause with one stable local. */
+data class {
+    var BoundStatement[] body
+    public construct(
+        visible SourceRange range,
+        visible BoundReferenceExpression local,
+        BoundStatement[] statements
+    ) {
+        if (!range || !local || !statements || statements.any({ !_ }) ||
+            (local.semanticType.kind() != "string" && local.semanticType.kind() != "object" &&
+                local.semanticType.kind() != "user-class")) {
+            throw Exception("Bound catch requires throwable local and body")
+        }
+        body = BoundStatement[]
+        body.addAll(statements)
+    }
+    public statements() -> BoundStatement[] => BoundStatement[]:addAll(body)
+}

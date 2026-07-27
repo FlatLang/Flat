@@ -32,6 +32,28 @@ testable class {
             fixture.range(), condition, [assignment], [returned]
         )
         let loop = BoundWhileStatement(fixture.range(), condition, [assignment])
+        let field = BoundFieldUnit(
+            "value", fixture.symbol("field", "value", 5), intType, fixture.range(1, 2)
+        )
+        let memberTarget = BoundMemberAccessExpression(
+            fixture.range(), intType,
+            BoundReferenceExpression(
+                fixture.range(), UserClassSemanticType(fixture.declaration("class", "Owner", 6)),
+                "this", fixture.symbol("receiver", "this", 7)
+            ),
+            "value", field.identity
+        )
+        let memberAssignment = BoundMemberAssignmentStatement(
+            fixture.range(), memberTarget, literal,
+            TypeConversions.classify(intType, intType)
+        )
+        let ownerIdentity = fixture.declaration("class", "Record", 8)
+        let typeUnit = BoundTypeUnit(
+            ownerIdentity, UserClassSemanticType(ownerIdentity), [function], fixture.range(),
+            fieldValues: [field]
+        )
+        expect(typeUnit.fieldUnits().count).toBe(1)
+        expect(memberAssignment.unitKind()).toBe("member-assignment")
         expect(branch.thenValues().count).toBe(1)
         expect(branch.elseValues().count).toBe(1)
         expect(loop.bodyValues().count).toBe(1)

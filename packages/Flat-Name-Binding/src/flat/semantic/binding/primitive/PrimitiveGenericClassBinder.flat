@@ -1,0 +1,36 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/semantic/types
+import flat/bound
+
+/** Instantiates one reduced reified generic class through bounded memoized work. */
+class {
+    public instantiate(
+        PrimitiveClassSyntax syntax,
+        SourceSnapshotIdentity snapshot,
+        SemanticType argument,
+        GenericInstantiationMemo memo
+    ) -> BoundTypeUnit {
+        if (!syntax || !snapshot || !argument || !memo || !syntax.genericParameterName) {
+            throw Exception("Generic class instantiation requires generic syntax argument and memo")
+        }
+        let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let parameter = GenericParameterSemanticType(
+            bound.identity, syntax.genericParameterName, 0
+        )
+        let declaration = GenericDeclaration(
+            bound.identity, [parameter],
+            GenericInstanceSemanticType(bound.semanticType, [parameter])
+        )
+        let work = memo.instantiate(declaration, [argument])
+        let metadata = bound.metadata()
+        metadata.add(BoundMetadataUnit("reified", "type-argument", argument.value()))
+        metadata.add(BoundMetadataUnit("generic", "instantiation-key", work.key))
+        return BoundTypeUnit(
+            bound.identity, bound.semanticType, bound.functionUnits(), bound.range,
+            metadataValues: metadata, fieldValues: bound.fieldUnits(), parentType: bound.parentType
+        )
+    }
+}

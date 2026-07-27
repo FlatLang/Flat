@@ -1,0 +1,19 @@
+package flat/parser/flat
+
+data class {
+    var PrimitiveFunctionSyntax[] functions
+
+    public construct(PrimitiveFunctionSyntax[] values) {
+        if (!values || values.any({ !_ })) {
+            throw Exception("Primitive function syntax result requires functions")
+        }
+        functions = PrimitiveFunctionSyntax[]
+        functions.addAll(values)
+    }
+
+    public functionValues() -> PrimitiveFunctionSyntax[] {
+        let result = PrimitiveFunctionSyntax[]
+        result.addAll(functions)
+        return result
+    }
+}

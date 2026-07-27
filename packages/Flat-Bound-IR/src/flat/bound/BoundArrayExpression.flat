@@ -1,0 +1,23 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Typed immutable array literal. */
+data class extends BoundExpression {
+    var BoundExpression[] elements
+    public construct(
+        SourceRange range,
+        ArraySemanticType semanticType,
+        BoundExpression[] values
+    ) {
+        if (!range || !semanticType || !values || values.any({ !_ })) {
+            throw Exception("Bound array requires type and elements")
+        }
+        super(range, semanticType)
+        elements = BoundExpression[]
+        elements.addAll(values)
+    }
+    public elementValues() -> BoundExpression[] => BoundExpression[]:addAll(elements)
+    override public expressionKind() => "array"
+}

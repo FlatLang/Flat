@@ -18,7 +18,19 @@ import flat/io/FancyOutputStream
     Es6UnitOrchestrator_Test,
     Es6EmissionCoordinator_Test,
     Es6PrimitiveExecution_Test,
-    Es6StatementExecution_Test
+    Es6StatementExecution_Test,
+    Es6FunctionExecution_Test,
+    Es6ClassExecution_Test,
+    Es6ArrayOverloadExecution_Test,
+    Es6ExceptionExecution_Test,
+    Es6InheritanceExecution_Test,
+    Es6LambdaExecution_Test,
+    Es6GenericExecution_Test,
+    Es6RichCoreExecution_Test,
+    Es6CollectionExecution_Test,
+    Es6AsyncExecution_Test,
+    Es6NativeExecution_Test,
+    Es6RuntimeExecution_Test
 ]]
 class {
     public static async main(String[] args) {

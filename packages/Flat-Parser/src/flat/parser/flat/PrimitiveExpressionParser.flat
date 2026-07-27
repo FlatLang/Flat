@@ -74,10 +74,71 @@ class {
 
     parsePrimary() -> PrimitiveExpressionSyntax {
         if (index >= tokens.count) syntax("Expected primitive expression", index)
+        if (tokens[index].value == "[") return parseArray()
         let tokenIndex = index
         let token = tokens[index++]
+        if (token.value == "native") return parseNative(tokenIndex)
+        if (token.value == "async") {
+            if (index >= tokens.count || tokens[index].value != "(") syntax("Expected async expression", index)
+            index++
+            let canonical = parseLevel(0)
+            if (index >= tokens.count || tokens[index].value != ")") syntax("Expected closing async parenthesis", index)
+            index++
+            return PrimitiveRichCollectionSyntax(range(tokenIndex, index), "async", canonical)
+        }
+        if (token.value == "range" || token.value == "safe" || token.value == "match") {
+            let kind = token.value == "safe" ? "safe-access" : token.value
+            if (index >= tokens.count || tokens[index].value != "(") syntax("Expected rich form expression", index)
+            index++
+            let canonical = parseLevel(0)
+            if (index >= tokens.count || tokens[index].value != ")") syntax("Expected closing rich form parenthesis", index)
+            index++
+            return PrimitiveRichCollectionSyntax(range(tokenIndex, index), kind, canonical)
+        }
+        if (token.value == "named") return parseNamedCall(tokenIndex)
+        if (token.value == "lambda") return parseLambda(tokenIndex)
+        if (token.value == "ref") return parseFunctionReference(tokenIndex)
+        if (token.value == "new") {
+            if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+                syntax("Expected constructed type name", index)
+            }
+            let typeName = tokens[index++].value
+            if (index >= tokens.count || tokens[index].value != "(") {
+                syntax("Expected constructor arguments", index)
+            }
+            let call = (PrimitiveCallSyntax)parseCall(start: tokenIndex, name: typeName)
+            return PrimitiveConstructionSyntax(call.range, typeName, call.argumentValues())
+        }
         if (token.type == Token.Type.IDENTIFIER) {
-            return PrimitiveReferenceSyntax(range(tokenIndex, tokenIndex + 1), token.value)
+            var PrimitiveExpressionSyntax expression
+            if (index < tokens.count && tokens[index].value == "(") {
+                expression = parseCall(tokenIndex, token.value)
+            } else expression = PrimitiveReferenceSyntax(
+                range(tokenIndex, tokenIndex + 1), token.value
+            )
+            while (index < tokens.count && (tokens[index].value == "." || tokens[index].value == "[")) {
+                if (tokens[index].value == "[") {
+                    index++
+                    let accessIndex = parseLevel(0)
+                    if (index >= tokens.count || tokens[index].value != "]") {
+                        syntax("Expected closing array bracket", index)
+                    }
+                    index++
+                    expression = PrimitiveArrayAccessSyntax(
+                        range(tokenIndex, index), expression, accessIndex
+                    )
+                    continue
+                }
+                index++
+                if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+                    syntax("Expected member name after '.'", index)
+                }
+                let member = tokens[index++].value
+                expression = PrimitiveMemberAccessSyntax(
+                    range(tokenIndex, index), expression, member
+                )
+            }
+            return expression
         }
         if (token.type != Token.Type.INTEGER && token.type != Token.Type.BOOL &&
             token.type != Token.Type.STRING && token.type != Token.Type.CHAR &&
@@ -87,6 +148,129 @@ class {
         return PrimitiveLiteralSyntax(
             range(tokenIndex, tokenIndex + 1), token.type, token.value
         )
+    }
+
+    parseNative(Int start) -> PrimitiveExpressionSyntax {
+        if (index >= tokens.count || tokens[index].value != "[") syntax("Expected native target annotation", index)
+        index++
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected native target", index)
+        let target = tokens[index++].value
+        if (index >= tokens.count || tokens[index].value != "]") syntax("Expected closing native target annotation", index)
+        index++
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected native name", index)
+        var String name = tokens[index++].value
+        while (index < tokens.count && tokens[index].value == ".") {
+            index++
+            if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected qualified native component", index)
+            name += "." + tokens[index++].value
+        }
+        if (index >= tokens.count || tokens[index].value != "(") syntax("Expected native arguments", index)
+        let call = (PrimitiveCallSyntax)parseCall(start: start, name: name)
+        return PrimitiveNativeSyntax(call.range, target, name, call.argumentValues())
+    }
+
+    parseNamedCall(Int start) -> PrimitiveExpressionSyntax {
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+            syntax("Expected named call target", index)
+        }
+        let name = tokens[index++].value
+        if (index >= tokens.count || tokens[index].value != "(") syntax("Expected named arguments", index)
+        index++
+        let values = PrimitiveNamedArgumentSyntax[]
+        while (index < tokens.count && tokens[index].value != ")") {
+            let argumentStart = index
+            if (tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected named argument name", index)
+            let argumentName = tokens[index++].value
+            if (values.any({ _.name == argumentName })) syntax("Duplicate named argument", argumentStart)
+            if (index >= tokens.count || tokens[index].value != ":") syntax("Expected ':' after named argument", index)
+            index++
+            let value = parseLevel(0)
+            values.add(PrimitiveNamedArgumentSyntax(range(argumentStart, value.range.endTokenIndex - tokenIndexOffset), argumentName, value))
+            if (index >= tokens.count || tokens[index].value != ",") break
+            index++
+        }
+        if (index >= tokens.count || tokens[index].value != ")") syntax("Expected closing named call parenthesis", index)
+        index++
+        return PrimitiveNamedCallSyntax(range(start, index), name, values)
+    }
+
+    parseLambda(Int start) -> PrimitiveExpressionSyntax {
+        if (index >= tokens.count || tokens[index].value != "(") syntax("Expected lambda parameters", index)
+        index++
+        let parameters = PrimitiveFunctionParameterSyntax[]
+        if (index < tokens.count && tokens[index].value != ")") {
+            while (true) {
+                let parameterStart = index
+                if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected lambda parameter type", index)
+                let typeName = tokens[index++].value
+                if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected lambda parameter name", index)
+                let name = tokens[index++].value
+                if (parameters.any({ _.name == name })) syntax("Duplicate lambda parameter", parameterStart)
+                parameters.add(PrimitiveFunctionParameterSyntax(range(parameterStart, index), typeName, name))
+                if (index >= tokens.count || tokens[index].value != ",") break
+                index++
+            }
+        }
+        if (index >= tokens.count || tokens[index].value != ")") syntax("Expected closing lambda parenthesis", index)
+        index++
+        if (index >= tokens.count || tokens[index].value != "=>") syntax("Expected lambda arrow", index)
+        index++
+        let body = parseLevel(0)
+        return PrimitiveLambdaSyntax(range(start, body.range.endTokenIndex - tokenIndexOffset), parameters, body)
+    }
+
+    parseFunctionReference(Int start) -> PrimitiveExpressionSyntax {
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+            syntax("Expected referenced function name", index)
+        }
+        let name = tokens[index++].value
+        return PrimitiveFunctionReferenceSyntax(range(start, index), name)
+    }
+
+    parseArray() -> PrimitiveExpressionSyntax {
+        let start = index++
+        let values = PrimitiveExpressionSyntax[]
+        if (index < tokens.count && tokens[index].value == "]") {
+            syntax("Array literal requires at least one element", index)
+        }
+        while (true) {
+            values.add(parseLevel(0))
+            if (index >= tokens.count) syntax("Expected closing array bracket", index)
+            if (tokens[index].value == "]") {
+                index++
+                return PrimitiveArraySyntax(range(start, index), values)
+            }
+            if (tokens[index].value != ",") syntax("Expected array element separator", index)
+            index++
+            if (index >= tokens.count || tokens[index].value == "]") {
+                syntax("Expected array element after ','", index)
+            }
+        }
+    }
+
+    parseCall(Int start, String name) -> PrimitiveExpressionSyntax {
+        index++
+        let arguments = PrimitiveExpressionSyntax[]
+        if (index < tokens.count && tokens[index].value == ")") {
+            index++
+            return PrimitiveCallSyntax(range(start, index), name, arguments)
+        }
+        while (true) {
+            if (index >= tokens.count) syntax("Expected closing call parenthesis", index)
+            arguments.add(parseLevel(0))
+            if (index >= tokens.count) syntax("Expected closing call parenthesis", index)
+            if (tokens[index].value == ")") {
+                index++
+                return PrimitiveCallSyntax(range(start, index), name, arguments)
+            }
+            if (tokens[index].value != ",") {
+                syntax("Expected ',' or ')' after call argument", index)
+            }
+            index++
+            if (index >= tokens.count || tokens[index].value == ")") {
+                syntax("Expected call argument after ','", index)
+            }
+        }
     }
 
     range(Int startIndex, Int endIndex) -> SourceRange {

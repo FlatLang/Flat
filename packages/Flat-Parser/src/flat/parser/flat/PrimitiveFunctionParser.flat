@@ -1,0 +1,106 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Balanced syntax-only parser for a finite independently owned function list. */
+class {
+    var Token[] tokens
+    var Int index
+    var Int tokenIndexOffset
+    var SourceSnapshotIdentity snapshot
+
+    public parse(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0
+    ) -> PrimitiveFunctionSyntaxResult {
+        if (!tokenValues || !sourceSnapshot) {
+            throw Exception("Primitive function parsing requires tokens and snapshot")
+        }
+        tokens = tokenValues.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        snapshot = sourceSnapshot
+        tokenIndexOffset = sourceTokenIndexOffset
+        index = 0
+        let functions = PrimitiveFunctionSyntax[]
+        while (index < tokens.count) functions.add(parseFunction())
+        return PrimitiveFunctionSyntaxResult(functions)
+    }
+
+    parseFunction() -> PrimitiveFunctionSyntax {
+        let start = index
+        let name = requireIdentifier("Expected function name")
+        require("(", "Expected function parameter list")
+        let parameters = parseParameters()
+        require(")", "Expected closing parameter parenthesis")
+        require("->", "Expected function return type arrow")
+        let returnType = requireIdentifier("Expected function return type")
+        require("{", "Expected opening function brace")
+        let bodyStart = index
+        var Int depth = 1
+        while (index < tokens.count && depth > 0) {
+            if (tokens[index].value == "{") depth++
+            else if (tokens[index].value == "}") depth--
+            index++
+        }
+        if (depth != 0) syntax("Expected closing function brace", index)
+        let bodyEnd = index - 1
+        let statements = PrimitiveControlStatementParser().parse(
+            tokens.skip(bodyStart).take(bodyEnd - bodyStart),
+            snapshot,
+            bodyStart + tokenIndexOffset
+        ).statements()
+        return PrimitiveFunctionSyntax(
+            range(start, index), name, parameters, returnType, statements
+        )
+    }
+
+    parseParameters() -> PrimitiveFunctionParameterSyntax[] {
+        let parameters = PrimitiveFunctionParameterSyntax[]
+        if (index < tokens.count && tokens[index].value == ")") return parameters
+        while (true) {
+            let start = index
+            let typeName = requireIdentifier("Expected parameter type")
+            let name = requireIdentifier("Expected parameter name")
+            parameters.add(PrimitiveFunctionParameterSyntax(
+                range(start, index), typeName, name
+            ))
+            if (index >= tokens.count || tokens[index].value != ",") break
+            index++
+            if (index >= tokens.count || tokens[index].value == ")") {
+                syntax("Expected parameter after ','", index)
+            }
+        }
+        return parameters
+    }
+
+    requireIdentifier(String message) -> String {
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+            syntax(message, index)
+        }
+        return tokens[index++].value
+    }
+
+    require(String value, String message) {
+        if (index >= tokens.count || tokens[index].value != value) syntax(message, index)
+        index++
+    }
+
+    range(Int start, Int end) -> SourceRange {
+        let first = tokens[start]
+        let last = tokens[end - 1]
+        return SourceRange(
+            snapshot,
+            start + tokenIndexOffset,
+            end + tokenIndexOffset,
+            first.location,
+            Location(lineNumber: last.endLineNumber, column: last.endColumn)
+        )
+    }
+
+    syntax(String message, Int tokenIndex) {
+        throw Exception("Primitive function syntax error at token #tokenIndex: #message")
+    }
+}

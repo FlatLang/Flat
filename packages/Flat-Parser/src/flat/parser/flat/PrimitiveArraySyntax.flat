@@ -1,0 +1,16 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only array literal. */
+data class extends PrimitiveExpressionSyntax {
+    var PrimitiveExpressionSyntax[] elements
+    public construct(SourceRange range, PrimitiveExpressionSyntax[] values) {
+        if (!range || !values || values.any({ !_ })) throw Exception("Array syntax requires values")
+        super(range)
+        elements = PrimitiveExpressionSyntax[]
+        elements.addAll(values)
+    }
+    public elementValues() -> PrimitiveExpressionSyntax[] => PrimitiveExpressionSyntax[]:addAll(elements)
+    override public expressionKind() => "array"
+}

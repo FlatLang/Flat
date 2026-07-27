@@ -1,0 +1,39 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only independently bindable function declaration. */
+data class {
+    var PrimitiveFunctionParameterSyntax[] parameters
+    var PrimitiveStatementSyntax[] body
+
+    public construct(
+        visible SourceRange range,
+        visible String name,
+        PrimitiveFunctionParameterSyntax[] parameterValues,
+        visible String returnTypeName,
+        PrimitiveStatementSyntax[] statements
+    ) {
+        if (!range || !name || name.trim().count == 0 || !parameterValues ||
+            parameterValues.any({ !_ }) || !returnTypeName ||
+            returnTypeName.trim().count == 0 || !statements || statements.any({ !_ })) {
+            throw Exception("Primitive function syntax requires range, signature, and body")
+        }
+        parameters = PrimitiveFunctionParameterSyntax[]
+        parameters.addAll(parameterValues)
+        body = PrimitiveStatementSyntax[]
+        body.addAll(statements)
+    }
+
+    public parameterValues() -> PrimitiveFunctionParameterSyntax[] {
+        let result = PrimitiveFunctionParameterSyntax[]
+        result.addAll(parameters)
+        return result
+    }
+
+    public statements() -> PrimitiveStatementSyntax[] {
+        let result = PrimitiveStatementSyntax[]
+        result.addAll(body)
+        return result
+    }
+}

@@ -39,6 +39,7 @@ class {
         let first = tokens[start].value
         if (first == "let" || first == "var") return parseLocal(start, end)
         if (first == "return") return parseReturn(start, end)
+        if (first == "throw") return parseThrow(start, end)
         return parseAssignment(start, end)
     }
 
@@ -58,6 +59,17 @@ class {
     }
 
     parseAssignment(Int start, Int end) -> PrimitiveStatementSyntax {
+        if (end - start >= 5 && tokens[start].type == Token.Type.IDENTIFIER &&
+            tokens[start + 1].value == "." && tokens[start + 2].type == Token.Type.IDENTIFIER &&
+            tokens[start + 3].value == "=") {
+            let receiver = PrimitiveReferenceSyntax(range(start, start + 1), tokens[start].value)
+            let target = PrimitiveMemberAccessSyntax(
+                range(start, start + 3), receiver, tokens[start + 2].value
+            )
+            return PrimitiveMemberAssignmentSyntax(
+                range(start, end), target, expression(start + 4, end)
+            )
+        }
         if (end - start < 3 || tokens[start].type != Token.Type.IDENTIFIER ||
             tokens[start + 1].value != "=") {
             syntax("Assignment requires 'name = expression'", start, end)
@@ -65,6 +77,11 @@ class {
         return PrimitiveAssignmentSyntax(
             range(start, end), tokens[start].value, expression(start + 2, end)
         )
+    }
+
+    parseThrow(Int start, Int end) -> PrimitiveStatementSyntax {
+        if (end - start == 1) syntax("Throw requires a value", start, end)
+        return PrimitiveThrowSyntax(range(start, end), expression(start + 1, end))
     }
 
     parseReturn(Int start, Int end) -> PrimitiveStatementSyntax {

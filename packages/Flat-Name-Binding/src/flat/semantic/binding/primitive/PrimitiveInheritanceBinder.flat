@@ -1,0 +1,96 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Binds and validates one sealed parent/child inheritance component. */
+class {
+    public bind(
+        PrimitiveClassSyntax parentSyntax,
+        PrimitiveClassSyntax childSyntax,
+        SourceSnapshotIdentity snapshot
+    ) -> PrimitiveInheritanceBindingResult {
+        if (!parentSyntax || !childSyntax || !snapshot ||
+            childSyntax.parentName != parentSyntax.name || parentSyntax.parentName) {
+            throw Exception("Reduced inheritance requires one declared root parent and matching child")
+        }
+        let parent = PrimitiveClassBinder().bind(parentSyntax, snapshot).typeUnit
+        let child = PrimitiveClassBinder().bind(childSyntax, snapshot).typeUnit
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(
+            parent.semanticType, "class", UserClassSemanticType[]
+        ))
+        hierarchy.add(TypeHierarchyDeclaration(
+            child.semanticType, "class", [parent.semanticType]
+        ))
+        hierarchy.seal()
+        if (!hierarchy.valid || hierarchy.distance(child.semanticType, parent.semanticType) != 1) {
+            throw Exception("Invalid reduced inheritance component")
+        }
+        let parentFunctions = normalizeParent(parent.functionUnits())
+        let childFunctions = normalizeChild(child.functionUnits(), parentFunctions)
+        return PrimitiveInheritanceBindingResult(
+            BoundTypeUnit(
+                parent.identity, parent.semanticType, parentFunctions, parent.range,
+                fieldValues: parent.fieldUnits()
+            ),
+            BoundTypeUnit(
+                child.identity, child.semanticType, childFunctions, child.range,
+                fieldValues: child.fieldUnits(), parentType: parent.semanticType
+            )
+        )
+    }
+
+    normalizeParent(BoundFunctionUnit[] functions) -> BoundFunctionUnit[] {
+        let result = BoundFunctionUnit[]
+        for (function in functions) {
+            result.add(copy(function,
+                function.constructorFunction ? null : function.identity.value
+            ))
+        }
+        return result
+    }
+
+    normalizeChild(
+        BoundFunctionUnit[] functions,
+        BoundFunctionUnit[] parentFunctions
+    ) -> BoundFunctionUnit[] {
+        let result = BoundFunctionUnit[]
+        for (function in functions) {
+            if (function.constructorFunction) {
+                result.add(copy(function, null))
+                continue
+            }
+            let parent = parentFunctions.firstOrNull({ _.name == function.name })
+            if (!parent) throw Exception("Child method '#{function.name}' must override a parent method")
+            if (parent.returnType.value() != function.returnType.value() ||
+                !sameParameters(parent.parameterValues(), function.parameterValues())) {
+                throw Exception("Invalid override '#{function.name}'")
+            }
+            result.add(copy(function, parent.dispatchIdentity))
+        }
+        return result
+    }
+
+    sameParameters(
+        BoundFunctionParameter[] left,
+        BoundFunctionParameter[] right
+    ) -> Bool {
+        if (left.count != right.count) return false
+        var Int index
+        while (index < left.count) {
+            if (left[index].semanticType.value() != right[index].semanticType.value()) return false
+            index++
+        }
+        return true
+    }
+
+    copy(BoundFunctionUnit value, String dispatchIdentity) -> BoundFunctionUnit =>
+        BoundFunctionUnit(
+            value.identity, value.name, value.returnType, value.statements(), value.range,
+            value.parameterValues(), value.staticFunction, value.mainFunction,
+            value.constructorFunction, dispatchIdentity
+        )
+}

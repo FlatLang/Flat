@@ -1,0 +1,7 @@
+package flat/compiler
+
+data class {
+    public construct(visible String identity, visible String text) {
+        if (!identity || !text) throw Exception("Compiler source requires identity and text")
+    }
+}

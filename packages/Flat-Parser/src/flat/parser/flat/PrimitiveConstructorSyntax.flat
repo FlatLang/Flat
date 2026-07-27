@@ -1,0 +1,29 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only constructor declaration. */
+data class {
+    var PrimitiveFunctionParameterSyntax[] parameters
+    var PrimitiveStatementSyntax[] body
+
+    public construct(
+        visible SourceRange range,
+        PrimitiveFunctionParameterSyntax[] parameterValues,
+        PrimitiveStatementSyntax[] statements
+    ) {
+        if (!range || !parameterValues || parameterValues.any({ !_ }) ||
+            !statements || statements.any({ !_ })) {
+            throw Exception("Primitive constructor syntax requires range signature and body")
+        }
+        parameters = PrimitiveFunctionParameterSyntax[]
+        parameters.addAll(parameterValues)
+        body = PrimitiveStatementSyntax[]
+        body.addAll(statements)
+    }
+
+    public parameterValues() -> PrimitiveFunctionParameterSyntax[] =>
+        PrimitiveFunctionParameterSyntax[]:addAll(parameters)
+    public statements() -> PrimitiveStatementSyntax[] =>
+        PrimitiveStatementSyntax[]:addAll(body)
+}

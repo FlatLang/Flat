@@ -1,0 +1,197 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Binds one reduced class with fields, constructor, and instance methods. */
+class {
+    var GenericParameterSemanticType genericParameter
+
+    public bind(
+        PrimitiveClassSyntax syntax,
+        SourceSnapshotIdentity snapshot
+    ) -> PrimitiveClassBindingResult {
+        if (!syntax || !snapshot) throw Exception("Primitive class binding requires syntax and snapshot")
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", syntax.name
+        )
+        let type = UserClassSemanticType(typeIdentity)
+        genericParameter = syntax.genericParameterName ? GenericParameterSemanticType(
+            typeIdentity, syntax.genericParameterName, 0
+        ) : null
+        let fields = BoundFieldUnit[]
+        var Int fieldIndex
+        while (fieldIndex < syntax.fieldValues().count) {
+            let field = syntax.fieldValues()[fieldIndex]
+            let identity = SymbolIdentity(typeIdentity, "field", fieldIndex)
+            fields.add(BoundFieldUnit(field.name, identity, typeOf(field.typeName), field.range))
+            fieldIndex++
+        }
+        let functions = BoundFunctionUnit[]
+        functions.add(bindConstructor(syntax, typeIdentity, type, fields))
+        var Int methodIndex
+        while (methodIndex < syntax.methodValues().count) {
+            functions.add(bindMethod(
+                syntax.methodValues()[methodIndex], typeIdentity, type, fields, methodIndex
+            ))
+            methodIndex++
+        }
+        let metadata = BoundMetadataUnit[]
+        if (genericParameter) {
+            metadata.add(BoundMetadataUnit("generic", genericParameter.name, genericParameter.value()))
+            metadata.add(BoundMetadataUnit("reified", genericParameter.name, genericParameter.value()))
+        }
+        return PrimitiveClassBindingResult(BoundTypeUnit(
+            typeIdentity, type, functions, syntax.range,
+            metadataValues: metadata, fieldValues: fields
+        ))
+    }
+
+    bindConstructor(
+        PrimitiveClassSyntax owner,
+        DeclarationIdentity typeIdentity,
+        UserClassSemanticType type,
+        BoundFieldUnit[] fields
+    ) -> BoundFunctionUnit {
+        let syntax = owner.constructorValue
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(syntax.range.snapshot, "constructor", syntax.range.startTokenIndex),
+            "constructor", owner.name
+        )
+        let parameters = parameters(syntax.parameterValues(), identity)
+        let locals = localBindings(parameters)
+        let receiver = receiver(syntax.range, typeIdentity, type)
+        let statements = BoundStatement[]
+        for (statement in syntax.statements()) {
+            if (!statement.class.isOfType(PrimitiveMemberAssignmentSyntax.class)) {
+                throw Exception("Constructor '#{owner.name}' supports only field assignments")
+            }
+            let assignment = (PrimitiveMemberAssignmentSyntax)statement
+            let target = member(assignment.target, receiver, fields)
+            let value = expression(assignment.value, receiver, fields, locals)
+            let conversion = TypeConversions.classify(value.semanticType, target.semanticType)
+            if (!conversion.applicable) throw Exception("Constructor field assignment type mismatch")
+            statements.add(BoundMemberAssignmentStatement(
+                assignment.range, target, value, conversion
+            ))
+        }
+        return BoundFunctionUnit(
+            identity, owner.name, SemanticTypes.unitType(), statements,
+            syntax.range, parameters, constructorFunction: true
+        )
+    }
+
+    bindMethod(
+        PrimitiveFunctionSyntax syntax,
+        DeclarationIdentity typeIdentity,
+        UserClassSemanticType type,
+        BoundFieldUnit[] fields,
+        Int ordinal
+    ) -> BoundFunctionUnit {
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(syntax.range.snapshot, "instance-method", syntax.range.startTokenIndex),
+            "instance-method", syntax.name
+        )
+        let parameters = parameters(syntax.parameterValues(), identity)
+        let locals = localBindings(parameters)
+        let receiver = receiver(syntax.range, typeIdentity, type)
+        let returnType = typeOf(syntax.returnTypeName)
+        let statements = BoundStatement[]
+        for (statement in syntax.statements()) {
+            if (!statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                throw Exception("Reduced method '#{syntax.name}' supports return statements")
+            }
+            let returned = (PrimitiveReturnSyntax)statement
+            if (!returned.value) throw Exception("Reduced method requires return value")
+            let value = expression(returned.value, receiver, fields, locals)
+            let conversion = TypeConversions.classify(value.semanticType, returnType)
+            if (!conversion.applicable) throw Exception("Method return type mismatch")
+            statements.add(BoundReturnStatement(returned.range, returnType, value, conversion))
+        }
+        return BoundFunctionUnit(
+            identity, syntax.name, returnType, statements, syntax.range, parameters
+        )
+    }
+
+    localBindings(BoundFunctionParameter[] parameters) -> LocalBinding[] {
+        let result = LocalBinding[]
+        for (parameter in parameters) {
+            result.add(LocalBinding(parameter.name, parameter.identity, parameter.semanticType))
+        }
+        return result
+    }
+
+    parameters(
+        PrimitiveFunctionParameterSyntax[] values,
+        DeclarationIdentity owner
+    ) -> BoundFunctionParameter[] {
+        let result = BoundFunctionParameter[]
+        var Int index
+        while (index < values.count) {
+            result.add(BoundFunctionParameter(
+                values[index].name, SymbolIdentity(owner, "parameter", index),
+                typeOf(values[index].typeName)
+            ))
+            index++
+        }
+        return result
+    }
+
+    receiver(
+        SourceRange range,
+        DeclarationIdentity typeIdentity,
+        UserClassSemanticType type
+    ) -> BoundReferenceExpression => BoundReferenceExpression(
+        range, type, "this", SymbolIdentity(typeIdentity, "receiver")
+    )
+
+    expression(
+        PrimitiveExpressionSyntax syntax,
+        BoundReferenceExpression receiver,
+        BoundFieldUnit[] fields,
+        LocalBinding[] locals
+    ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
+            let value = (PrimitiveReferenceSyntax)syntax
+            if (value.name == "this") return receiver
+            let local = locals.firstOrNull({ _.name == value.name })
+            if (!local) throw Exception("Unknown constructor/method name '#{value.name}'")
+            return BoundReferenceExpression(value.range, local.semanticType, local.name, local.identity)
+        }
+        if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+            return member((PrimitiveMemberAccessSyntax)syntax, receiver, fields)
+        }
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+        if (!result.succeeded) throw Exception(result.diagnostic.message)
+        return result.expression
+    }
+
+    member(
+        PrimitiveMemberAccessSyntax syntax,
+        BoundReferenceExpression receiver,
+        BoundFieldUnit[] fields
+    ) -> BoundMemberAccessExpression {
+        if (!syntax.receiver.class.isOfType(PrimitiveReferenceSyntax.class) ||
+            ((PrimitiveReferenceSyntax)syntax.receiver).name != "this") {
+            throw Exception("Reduced field access requires 'this'")
+        }
+        let field = fields.firstOrNull({ _.name == syntax.memberName })
+        if (!field) throw Exception("Unknown field '#{syntax.memberName}'")
+        return BoundMemberAccessExpression(
+            syntax.range, field.semanticType, receiver, field.name, field.identity
+        )
+    }
+
+    typeOf(String name) -> SemanticType {
+        if (genericParameter && name == genericParameter.name) return genericParameter
+        if (name == "Bool") return SemanticTypes.boolType()
+        if (name == "Int") return SemanticTypes.intType()
+        if (name == "Long") return SemanticTypes.longType()
+        if (name == "String") return SemanticTypes.stringType()
+        if (name == "Unit") return SemanticTypes.unitType()
+        throw Exception("Unknown reduced class type '#name'")
+    }
+}

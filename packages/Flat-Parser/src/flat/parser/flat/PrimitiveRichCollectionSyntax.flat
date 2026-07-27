@@ -1,0 +1,20 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only rich collection/control form with explicit canonical expression. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible String featureKind,
+        visible PrimitiveExpressionSyntax canonicalExpression
+    ) {
+        if (!range || !canonicalExpression ||
+            (featureKind != "range" && featureKind != "safe-access" &&
+             featureKind != "match" && featureKind != "async")) {
+            throw Exception("Rich collection syntax requires supported kind and canonical expression")
+        }
+        super(range)
+    }
+    override public expressionKind() => featureKind
+}

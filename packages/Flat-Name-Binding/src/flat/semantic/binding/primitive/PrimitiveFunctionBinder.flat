@@ -1,0 +1,164 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Two-pass signature/body binder enabling deterministic forward and recursive calls. */
+class {
+    public bind(
+        PrimitiveFunctionSyntaxResult syntax,
+        SourceSnapshotIdentity snapshot
+    ) -> PrimitiveFunctionBindingResult {
+        if (!syntax || !snapshot) {
+            throw Exception("Primitive function binding requires syntax and snapshot")
+        }
+        let functions = syntax.functionValues()
+        let identities = DeclarationIdentity[]
+        let signatures = CallableSignature[]
+        var Int index
+        while (index < functions.count) {
+            let function = functions[index]
+            if (functions.take(index).any((previous) =>
+                previous.name == function.name && sameParameterTypes(previous, function)
+            )) {
+                throw Exception("Duplicate function '#{function.name}'")
+            }
+            let identity = DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "function", function.range.startTokenIndex),
+                "function",
+                function.name
+            )
+            identities.add(identity)
+            signatures.add(CallableSignature(
+                SymbolIdentity(identity, "function"),
+                function.name,
+                CallableKind("function"),
+                function.parameterValues().map({ typeOf(_.typeName) }),
+                typeOf(function.returnTypeName)
+            ))
+            index++
+        }
+
+        let bound = BoundFunctionUnit[]
+        index = 0
+        while (index < functions.count) {
+            let function = functions[index]
+            let signature = signatures[index]
+            let parameters = BoundFunctionParameter[]
+            let locals = LocalBinding[]
+            var Int parameterIndex
+            while (parameterIndex < function.parameterValues().count) {
+                let parameter = function.parameterValues()[parameterIndex]
+                if (function.parameterValues().take(parameterIndex).any({ _.name == parameter.name })) {
+                    throw Exception("Duplicate parameter '#{parameter.name}' in '#{function.name}'")
+                }
+                let identity = SymbolIdentity(identities[index], "parameter", parameterIndex)
+                let parameterType = signature.parameterTypes()[parameterIndex]
+                parameters.add(BoundFunctionParameter(parameter.name, identity, parameterType))
+                locals.add(LocalBinding(parameter.name, identity, parameterType))
+                parameterIndex++
+            }
+            let statements = PrimitiveControlStatementBinder().bind(
+                PrimitiveStatementSyntaxResult(function.statements()),
+                snapshot,
+                locals,
+                signatures
+            ).statements()
+            let checkedStatements = validateReturns(
+                statements, signature.returnType, function.name
+            )
+            bound.add(BoundFunctionUnit(
+                identities[index],
+                function.name,
+                signature.returnType,
+                checkedStatements,
+                function.range,
+                parameters
+            ))
+            index++
+        }
+        return PrimitiveFunctionBindingResult(bound)
+    }
+
+    sameParameterTypes(
+        PrimitiveFunctionSyntax left,
+        PrimitiveFunctionSyntax right
+    ) -> Bool {
+        let leftValues = left.parameterValues()
+        let rightValues = right.parameterValues()
+        if (leftValues.count != rightValues.count) return false
+        var Int index
+        while (index < leftValues.count) {
+            if (leftValues[index].typeName != rightValues[index].typeName) return false
+            index++
+        }
+        return true
+    }
+
+    validateReturns(
+        BoundStatement[] statements,
+        SemanticType returnType,
+        String functionName
+    ) -> BoundStatement[] {
+        let result = BoundStatement[]
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundReturnStatement.class)) {
+                let value = (BoundReturnStatement)statement
+                if (!value.value) {
+                    if (returnType.value() != SemanticTypes.unitType().value() &&
+                        returnType.value() != SemanticTypes.voidType().value()) {
+                        throw Exception("Function '#functionName' must return '#{returnType.value()}'")
+                    }
+                    result.add(BoundReturnStatement(value.range, returnType))
+                } else {
+                    let conversion = TypeConversions.classify(
+                        value.value.semanticType, returnType
+                    )
+                    if (!conversion.applicable) {
+                        throw Exception("Function '#functionName' cannot return '#{value.value.semanticType.value()}' as '#{returnType.value()}'")
+                    }
+                    result.add(BoundReturnStatement(
+                        value.range, returnType, value.value, conversion
+                    ))
+                }
+            } else if (statement.class.isOfType(BoundIfStatement.class)) {
+                let value = (BoundIfStatement)statement
+                result.add(BoundIfStatement(
+                    value.range,
+                    value.condition,
+                    validateReturns(value.thenValues(), returnType, functionName),
+                    validateReturns(value.elseValues(), returnType, functionName)
+                ))
+            } else if (statement.class.isOfType(BoundWhileStatement.class)) {
+                let value = (BoundWhileStatement)statement
+                result.add(BoundWhileStatement(
+                    value.range,
+                    value.condition,
+                    validateReturns(value.bodyValues(), returnType, functionName)
+                ))
+            } else result.add(statement)
+        }
+        return result
+    }
+
+    typeOf(String name) -> SemanticType {
+        if (name.endsWith("[]")) {
+            return ArraySemanticType(typeOf(name.substring(0, name.count - 2)))
+        }
+        if (name == "Bool") return SemanticTypes.boolType()
+        if (name == "Byte") return SemanticTypes.byteType()
+        if (name == "Short") return SemanticTypes.shortType()
+        if (name == "Int") return SemanticTypes.intType()
+        if (name == "Long") return SemanticTypes.longType()
+        if (name == "Float") return SemanticTypes.floatType()
+        if (name == "Double") return SemanticTypes.doubleType()
+        if (name == "Char") return SemanticTypes.charType()
+        if (name == "String") return SemanticTypes.stringType()
+        if (name == "Object") return SemanticTypes.objectType()
+        if (name == "Void") return SemanticTypes.voidType()
+        if (name == "Unit") return SemanticTypes.unitType()
+        throw Exception("Unknown function type '#name'")
+    }
+}

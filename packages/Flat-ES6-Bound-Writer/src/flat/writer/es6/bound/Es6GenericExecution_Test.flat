@@ -1,0 +1,54 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+
+testable class {
+    async test `reified generic instantiation emits deterministic runtime metadata`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(tokens(), snapshot)
+        let typeUnit = PrimitiveGenericClassBinder().instantiate(
+            syntax, snapshot, SemanticTypes.intType(), GenericInstantiationMemo(2)
+        )
+        let emitted = Es6UnitOrchestrator().emitType(typeUnit, 0)
+        let owner = Es6NameMangler.mangle(typeUnit.identity.value)
+        let root = File(".flat-es6-generic-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "generic.js")
+        let reified = typeUnit.metadata().filter({ _.metadataKind == "reified" })
+        let reifiedIndex = reified.count - 1
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(" + owner + ".__flatReified[" +
+            reifiedIndex.toString() + "]);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("primitive:Int\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    tokens() -> Token[] {
+        return [
+            token("class", false), token("Box", false), token("<", true), token("T", false),
+            token(">", true), token("{", true), token("T", false), token("value", false),
+            token(";", true), token("constructor", false), token("(", true), token("T", false),
+            token("value", false), token(")", true), token("{", true), token("this", false),
+            token(".", true), token("value", false), token("=", true), token("value", false),
+            token(";", true), token("}", true), token("get", false), token("(", true),
+            token(")", true), token("->", true), token("T", false), token("{", true),
+            token("return", false), token("this", false), token(".", true), token("value", false),
+            token(";", true), token("}", true), token("}", true)
+        ]
+    }
+
+    token(String value, Bool symbol) -> Token => Token(
+        value: value, type: symbol ? Token.Type.SYMBOL : Token.Type.IDENTIFIER,
+        location: Location(lineNumber: 1, column: 1)
+    )
+}

@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only selected member access. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax receiver,
+        visible String memberName
+    ) {
+        if (!range || !receiver || !memberName || memberName.trim().count == 0) {
+            throw Exception("Primitive member syntax requires receiver range and name")
+        }
+        super(range)
+    }
+    override public expressionKind() => "member-access"
+}

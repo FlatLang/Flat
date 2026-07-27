@@ -1,0 +1,34 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only reduced class declaration. */
+data class {
+    var PrimitiveFieldSyntax[] fields
+    var PrimitiveFunctionSyntax[] methods
+
+    public construct(
+        visible SourceRange range,
+        visible String name,
+        visible String genericParameterName,
+        visible String parentName,
+        PrimitiveFieldSyntax[] fieldValues,
+        visible PrimitiveConstructorSyntax constructorValue,
+        PrimitiveFunctionSyntax[] methodValues
+    ) {
+        if (!range || !name || name.trim().count == 0 ||
+            (genericParameterName && genericParameterName.trim().count == 0) ||
+            (parentName && parentName.trim().count == 0) || !fieldValues ||
+            fieldValues.any({ !_ }) || !constructorValue || !methodValues ||
+            methodValues.any({ !_ })) {
+            throw Exception("Primitive class syntax requires range name fields constructor and methods")
+        }
+        fields = PrimitiveFieldSyntax[]
+        fields.addAll(fieldValues)
+        methods = PrimitiveFunctionSyntax[]
+        methods.addAll(methodValues)
+    }
+
+    public fieldValues() -> PrimitiveFieldSyntax[] => PrimitiveFieldSyntax[]:addAll(fields)
+    public methodValues() -> PrimitiveFunctionSyntax[] => PrimitiveFunctionSyntax[]:addAll(methods)
+}

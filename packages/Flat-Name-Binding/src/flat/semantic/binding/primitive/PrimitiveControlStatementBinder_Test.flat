@@ -59,6 +59,65 @@ testable class {
         expect(rejected).toBe(2)
     }
 
+    test `binds typed throw catch scopes and finally control`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-exception-bind"), "revision:one"
+        )
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("try", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 5),
+            token("throw", Token.Type.IDENTIFIER, 7), token("'failure'", Token.Type.STRING, 13),
+            token(";", Token.Type.SYMBOL, 22), token("}", Token.Type.SYMBOL, 24),
+            token("catch", Token.Type.IDENTIFIER, 26), token("(", Token.Type.SYMBOL, 32),
+            token("String", Token.Type.IDENTIFIER, 33), token("error", Token.Type.IDENTIFIER, 40),
+            token(")", Token.Type.SYMBOL, 45), token("{", Token.Type.SYMBOL, 47),
+            token("return", Token.Type.IDENTIFIER, 49), token("error", Token.Type.IDENTIFIER, 56),
+            token(";", Token.Type.SYMBOL, 61), token("}", Token.Type.SYMBOL, 63),
+            token("finally", Token.Type.IDENTIFIER, 65), token("{", Token.Type.SYMBOL, 73),
+            token("return", Token.Type.IDENTIFIER, 75), token(";", Token.Type.SYMBOL, 81),
+            token("}", Token.Type.SYMBOL, 83)
+        ], snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let statements = result.statements()
+        let statementObject = (Object)statements.first
+        let value = (BoundTryStatement)statementObject
+        let tryValues = value.tryValues()
+        let catches = value.catchValues()
+        expect(tryValues.first.unitKind()).toBe("throw")
+        expect(catches.first.local.semanticType.value()).toBe("builtin:String")
+        expect(value.finallyValues().count).toBe(1)
+    }
+
+    test `rejects non throwable values and catch types`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-exception-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            let syntax = PrimitiveControlStatementParser().parse([
+                token("try", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 5),
+                token("throw", Token.Type.IDENTIFIER, 7), token("1", Token.Type.INTEGER, 13),
+                token(";", Token.Type.SYMBOL, 14), token("}", Token.Type.SYMBOL, 16),
+                token("finally", Token.Type.IDENTIFIER, 18), token("{", Token.Type.SYMBOL, 26),
+                token("return", Token.Type.IDENTIFIER, 28), token(";", Token.Type.SYMBOL, 34),
+                token("}", Token.Type.SYMBOL, 36)
+            ], snapshot)
+            PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            let syntax = PrimitiveControlStatementParser().parse([
+                token("try", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 5),
+                token("return", Token.Type.IDENTIFIER, 7), token(";", Token.Type.SYMBOL, 13),
+                token("}", Token.Type.SYMBOL, 15), token("catch", Token.Type.IDENTIFIER, 17),
+                token("(", Token.Type.SYMBOL, 23), token("Int", Token.Type.IDENTIFIER, 24),
+                token("error", Token.Type.IDENTIFIER, 28), token(")", Token.Type.SYMBOL, 33),
+                token("{", Token.Type.SYMBOL, 35), token("return", Token.Type.IDENTIFIER, 37),
+                token(";", Token.Type.SYMBOL, 43), token("}", Token.Type.SYMBOL, 45)
+            ], snapshot)
+            PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
     token(String value, Int type, Int column) -> Token {
         return Token(value: value, type: type,
             location: Location(lineNumber: 1, column: column))

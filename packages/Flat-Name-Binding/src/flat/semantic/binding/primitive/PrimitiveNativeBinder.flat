@@ -1,0 +1,29 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Binds capability-gated target annotation to target-independent native evidence. */
+class {
+    public bind(
+        PrimitiveNativeSyntax syntax,
+        String selectedTarget,
+        LocalBinding[] locals = LocalBinding[]
+    ) -> BoundExternalExpression {
+        if (!syntax || !selectedTarget || syntax.target != selectedTarget) {
+            throw Exception("Native form is unavailable for selected target")
+        }
+        if (selectedTarget != "es6") throw Exception("Reduced native slice supports es6 target")
+        let arguments = BoundExpression[]
+        for (argument in syntax.argumentValues()) {
+            let result = PrimitiveExpressionBinder().bind(argument, locals: locals)
+            if (!result.succeeded) throw Exception(result.diagnostic.message)
+            arguments.add(result.expression)
+        }
+        let call = BoundNativeCallExpression(
+            syntax.range, SemanticTypes.intType(), syntax.nativeName, arguments
+        )
+        return BoundExternalExpression(syntax.range, call.semanticType, "native", call)
+    }
+}

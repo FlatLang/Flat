@@ -3,6 +3,7 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/parser/flat
 import flat/semantic/types
+import flat/bound
 
 testable class {
     test `binds typed primitive expressions references and conversions`() {
@@ -43,6 +44,219 @@ testable class {
         expect(reference.expression.semanticType.value()).toBe("primitive:Int")
     }
 
+    test `binds arrays accesses and deterministic overload selection`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-overload-bind"), "revision:one"
+        )
+        let range = SourceRange(snapshot, 0, 8,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 9))
+        let intIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "pick-int"
+        )
+        let longIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 2), "function", "pick-long"
+        )
+        let callables = [
+            CallableSignature(SymbolIdentity(intIdentity, "function"), "pick",
+                CallableKind("function"), [SemanticTypes.intType()], SemanticTypes.intType()),
+            CallableSignature(SymbolIdentity(longIdentity, "function"), "pick",
+                CallableKind("function"), [SemanticTypes.longType()], SemanticTypes.longType())
+        ]
+        let array = PrimitiveExpressionParser().parse([
+            token("[", Token.Type.SYMBOL, 6), token("1", Token.Type.INTEGER, 7),
+            token(",", Token.Type.SYMBOL, 8), token("2", Token.Type.INTEGER, 9),
+            token("]", Token.Type.SYMBOL, 10)
+        ], snapshot)
+        let index = PrimitiveExpressionParser().parse([
+            token("0", Token.Type.INTEGER, 12)
+        ], snapshot)
+        let access = PrimitiveArrayAccessSyntax(range, array, index)
+        let syntax = PrimitiveCallSyntax(range, "pick", [access])
+        let result = PrimitiveExpressionBinder().bind(syntax, callables: callables)
+        let call = (BoundCallExpression)result.expression
+        expect(result.succeeded).toBe(true)
+        expect(call.target.identity.value).toBe(intIdentity.value + ":symbol:function:0")
+        expect(call.argumentValues().first.expressionKind()).toBe("array-access")
+    }
+
+    test `binds lambdas explicit captures and function references`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:lambda-bind"), "revision:one"
+        )
+        let captured = LocalBinding(
+            "captured",
+            SymbolIdentity(DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "local", 1), "local", "captured"
+            ), "local"),
+            SemanticTypes.intType()
+        )
+        let targetIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 2), "function", "double"
+        )
+        let target = CallableSignature(
+            SymbolIdentity(targetIdentity, "function"), "double", CallableKind("function"),
+            [SemanticTypes.intType()], SemanticTypes.intType()
+        )
+        let lambdaSyntax = PrimitiveExpressionParser().parse([
+            token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 8), token("value", Token.Type.IDENTIFIER, 12),
+            token(")", Token.Type.SYMBOL, 17), token("=>", Token.Type.SYMBOL, 19),
+            token("value", Token.Type.IDENTIFIER, 22), token("+", Token.Type.SYMBOL, 28),
+            token("captured", Token.Type.IDENTIFIER, 30)
+        ], snapshot)
+        let lambdaResult = PrimitiveExpressionBinder().bind(lambdaSyntax, locals: [captured])
+        let lambda = (BoundLambdaExpression)lambdaResult.expression
+        let referenceSyntax = PrimitiveFunctionReferenceSyntax(lambdaSyntax.range, "double")
+        let reference = PrimitiveExpressionBinder().bind(
+            referenceSyntax, callables: [target]
+        )
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.semanticType.kind()).toBe("function")
+        expect(reference.expression.expressionKind()).toBe("function-reference")
+    }
+
+    test `rejects ambiguous function references and unknown lambda captures`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:lambda-invalid"), "revision:one"
+        )
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        var Int rejected
+        try {
+            let syntax = PrimitiveExpressionParser().parse([
+                token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+                token(")", Token.Type.SYMBOL, 8), token("=>", Token.Type.SYMBOL, 10),
+                token("missing", Token.Type.IDENTIFIER, 13)
+            ], snapshot)
+            let result = PrimitiveExpressionBinder().bind(syntax)
+            if (!result.succeeded) throw Exception(result.diagnostic.message)
+        } catch (Exception error) { rejected++ }
+        try {
+            let identity = DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "function", 1), "function", "run"
+            )
+            let one = CallableSignature(SymbolIdentity(identity, "function"), "run",
+                CallableKind("function"), SemanticType[], SemanticTypes.intType())
+            let two = CallableSignature(SymbolIdentity(identity, "function", 1), "run",
+                CallableKind("function"), [SemanticTypes.intType()], SemanticTypes.intType())
+            let result = PrimitiveExpressionBinder().bind(
+                PrimitiveFunctionReferenceSyntax(range, "run"), callables: [one, two]
+            )
+            if (!result.succeeded) throw Exception(result.diagnostic.message)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `binds named arguments defaults and operator rich lowering`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:rich-core-bind"), "revision:one"
+        )
+        let range = SourceRange(snapshot, 0, 8,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 9))
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "sum"
+        )
+        let target = CallableSignature(
+            SymbolIdentity(identity, "function"), "sum", CallableKind("function"),
+            [SemanticTypes.intType(), SemanticTypes.intType()], SemanticTypes.intType()
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("named", Token.Type.IDENTIFIER, 1), token("sum", Token.Type.IDENTIFIER, 7),
+            token("(", Token.Type.SYMBOL, 10), token("right", Token.Type.IDENTIFIER, 11),
+            token(":", Token.Type.SYMBOL, 16), token("2", Token.Type.INTEGER, 18),
+            token(")", Token.Type.SYMBOL, 19)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax, callables: [target])
+        let lowered = lower(result.expression, range)
+        let call = (BoundCallExpression)lowered
+        let operatorCall = BoundCallExpression(
+            range, SemanticTypes.intType(), target,
+            [BoundLiteralExpression(range, SemanticTypes.intType(), "3"),
+             BoundLiteralExpression(range, SemanticTypes.intType(), "4")],
+            [TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType()),
+             TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.intType())]
+        )
+        let operator = BoundRichCallExpression(
+            range, SemanticTypes.intType(), "operator", operatorCall
+        )
+        let arguments = call.argumentValues()
+        expect(((BoundLiteralExpression)arguments.first).sourceValue).toBe("1")
+        expect(((BoundLiteralExpression)arguments.last).sourceValue).toBe("2")
+        expect(lower(operator, range).expressionKind()).toBe("call")
+    }
+
+    test `rejects unknown named argument and missing required argument`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:rich-core-invalid"), "revision:one"
+        )
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "sum"
+        )
+        let target = CallableSignature(SymbolIdentity(identity, "function"), "sum",
+            CallableKind("function"), [SemanticTypes.intType(), SemanticTypes.intType()],
+            SemanticTypes.intType())
+        var Int rejected
+        try {
+            let syntax = PrimitiveNamedCallSyntax(range, "sum", [
+                PrimitiveNamedArgumentSyntax(range, "missing",
+                    PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "2"))
+            ])
+            let result = PrimitiveExpressionBinder().bind(syntax, callables: [target])
+            if (!result.succeeded) throw Exception(result.diagnostic.message)
+        } catch (Exception error) { rejected++ }
+        try {
+            let named = BoundNamedCallExpression(range, SemanticTypes.intType(), target, [
+                BoundCallParameter("left", SemanticTypes.intType()),
+                BoundCallParameter("right", SemanticTypes.intType())
+            ], BoundNamedArgument[])
+            lower(named, range)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `binds async deferred work and lowers without target semantics`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:async-bind"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("async", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token("7", Token.Type.INTEGER, 7), token(")", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax)
+        expect(result.expression.expressionKind()).toBe("async")
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "async-lower"
+        )
+        let unit = BoundFunctionUnit(identity, "async-lower", result.expression.semanticType, [
+            BoundExpressionStatement(syntax.range, result.expression)
+        ], syntax.range)
+        let lowered = DeferredExecutionLoweringPass().lower(unit).statements()
+        expect(((BoundExpressionStatement)lowered.first).expression.expressionKind()).toBe("literal")
+    }
+
+    test `binds target gated native evidence and rejects unsupported target`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-bind"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("native", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 7),
+            token("es6", Token.Type.IDENTIFIER, 8), token("]", Token.Type.SYMBOL, 11),
+            token("Math", Token.Type.IDENTIFIER, 13), token(".", Token.Type.SYMBOL, 17),
+            token("max", Token.Type.IDENTIFIER, 18), token("(", Token.Type.SYMBOL, 21),
+            token("2", Token.Type.INTEGER, 22), token(",", Token.Type.SYMBOL, 23),
+            token("5", Token.Type.INTEGER, 25), token(")", Token.Type.SYMBOL, 26)
+        ], snapshot)
+        let native = PrimitiveNativeBinder().bind((PrimitiveNativeSyntax)syntax, "es6")
+        expect(native.nativeCall.nativeName).toBe("Math.max")
+        expect(native.nativeCall.argumentValues().count).toBe(2)
+        var rejected = false
+        try { PrimitiveNativeBinder().bind((PrimitiveNativeSyntax)syntax, "jvm") }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `reports stable source ranged semantic diagnostics`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-diagnostic"), "revision:one"
@@ -64,6 +278,57 @@ testable class {
         expect(incompatible.diagnostic.range.snapshot).toBe(snapshot)
         expect(unknown.succeeded).toBe(false)
         expect(unknown.diagnostic.code).toBe("semantic.primitive-expression")
+    }
+
+    test `binds and lowers rich collection forms`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:rich-collection-bind"), "revision:one"
+        )
+        let range = PrimitiveExpressionParser().parse([
+            token("range", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token("1", Token.Type.INTEGER, 7), token(")", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let safe = PrimitiveExpressionParser().parse([
+            token("safe", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token("1", Token.Type.INTEGER, 7), token(")", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let match = PrimitiveExpressionParser().parse([
+            token("match", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token("1", Token.Type.INTEGER, 7), token(")", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let forms = PrimitiveExpressionSyntax[]
+        forms.add(range)
+        forms.add(safe)
+        forms.add(match)
+        for (syntax in forms) {
+            let bound = PrimitiveExpressionBinder().bind(syntax)
+            let lowered = lowerCollection(bound.expression, syntax.range)
+            expect(lowered.expressionKind()).toBe("literal")
+        }
+    }
+
+    lowerCollection(BoundExpression expression, SourceRange range) -> BoundExpression {
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(range.snapshot, "function", range.startTokenIndex),
+            "function", "lower-collection"
+        )
+        let unit = BoundFunctionUnit(identity, "lower-collection", expression.semanticType, [
+            BoundExpressionStatement(range, expression)
+        ], range)
+        let lowered = CollectionControlLoweringPass().lower(unit).statements()
+        return ((BoundExpressionStatement)lowered.first).expression
+    }
+
+    lower(BoundExpression expression, SourceRange range) -> BoundExpression {
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(range.snapshot, "function", range.startTokenIndex),
+            "function", "lower"
+        )
+        let unit = BoundFunctionUnit(identity, "lower", expression.semanticType, [
+            BoundExpressionStatement(range, expression)
+        ], range)
+        let lowered = CoreLanguageLoweringPass().lower(unit).statements()
+        return ((BoundExpressionStatement)lowered.first).expression
     }
 
     token(String value, Int type, Int column) -> Token {

@@ -1,0 +1,22 @@
+package flat/compiler
+
+import flat/io
+import flat/writer/es6/bound
+
+/** Filesystem sink using same-directory atomic artifact commits. */
+class extends CompilerArtifactSink {
+    var CompilerArtifact[] values = CompilerArtifact[]
+    public construct(visible File root) {
+        if (!root) throw Exception("Filesystem artifact sink requires root")
+        Es6ArtifactFiles.ensureDirectory(root)
+    }
+    override public write(CompilerArtifact artifact) {
+        if (!artifact || values.any({ _.identity == artifact.identity })) {
+            throw Exception("Filesystem artifact sink requires unique artifact")
+        }
+        Es6ArtifactCommitter().commit(File(root, artifact.identity), artifact.code)
+        values.add(artifact)
+        values = values.sort({ _a.identity.compareTo(_b.identity) })
+    }
+    override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(values)
+}

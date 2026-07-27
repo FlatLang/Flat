@@ -1,0 +1,33 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Structured immutable try/catch/finally control. */
+data class extends BoundStatement {
+    var BoundStatement[] tryBody
+    var BoundCatchClause[] catches
+    var BoundStatement[] finallyBody
+    public construct(
+        SourceRange range,
+        BoundStatement[] tryValues,
+        BoundCatchClause[] catchValues,
+        BoundStatement[] finallyValues = BoundStatement[]
+    ) {
+        if (!range || !tryValues || tryValues.any({ !_ }) || !catchValues ||
+            catchValues.any({ !_ }) || !finallyValues || finallyValues.any({ !_ }) ||
+            (catchValues.isEmpty && finallyValues.isEmpty)) {
+            throw Exception("Bound try requires body and catch or finally")
+        }
+        super(range)
+        tryBody = BoundStatement[]
+        tryBody.addAll(tryValues)
+        catches = BoundCatchClause[]
+        catches.addAll(catchValues)
+        finallyBody = BoundStatement[]
+        finallyBody.addAll(finallyValues)
+    }
+    public tryValues() -> BoundStatement[] => BoundStatement[]:addAll(tryBody)
+    public catchValues() -> BoundCatchClause[] => BoundCatchClause[]:addAll(catches)
+    public finallyValues() -> BoundStatement[] => BoundStatement[]:addAll(finallyBody)
+    override public unitKind() => "try"
+}

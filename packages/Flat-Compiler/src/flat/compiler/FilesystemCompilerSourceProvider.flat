@@ -1,0 +1,23 @@
+package flat/compiler
+
+import flat/io
+
+class extends CompilerSourceProvider {
+    var File[] files
+    public construct(File[] values) {
+        if (!values || values.any((value) => !value || !value.isFile)) {
+            throw Exception("Filesystem source provider requires existing files")
+        }
+        files = File[]
+        files.addAll(values)
+    }
+    override public identities() -> String[] => files.map({ _.normalizedLocation }).sort({ _a.compareTo(_b) })
+    override public load(String identity) -> CompilerSource {
+        let file = files.firstOrNull({ _.normalizedLocation == identity })
+        if (!file) return null
+        let reader = FileReader(file)
+        let text = reader.readString()
+        reader.close()
+        return CompilerSource(identity, text)
+    }
+}

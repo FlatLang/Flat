@@ -1,0 +1,56 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+
+testable class {
+    test `binds sealed parent child component and shared virtual slot`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-bind"), "revision:one"
+        )
+        let parent = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), snapshot)
+        let child = PrimitiveClassParser().parse(typeTokens("Child", "Parent", "2"), snapshot)
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let parentMethod = result.parentType.functionUnits().last
+        let childMethod = result.childType.functionUnits().last
+        expect(result.childType.parentType.value()).toBe(result.parentType.semanticType.value())
+        expect(childMethod.dispatchIdentity).toBe(parentMethod.dispatchIdentity)
+    }
+
+    test `rejects missing parent and invalid override`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            let parent = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), snapshot)
+            let child = PrimitiveClassParser().parse(typeTokens("Child", "Missing", "2"), snapshot)
+            PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            let parent = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), snapshot)
+            let child = PrimitiveClassParser().parse(typeTokens("Child", "Parent", "true"), snapshot)
+            PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    typeTokens(String name, String parent, String returned) -> Token[] {
+        let values = [token("class", false), token(name, false)]
+        if (parent) values.addAll([token("extends", false), token(parent, false)])
+        values.addAll([
+            token("{", true), token("constructor", false), token("(", true), token(")", true),
+            token("{", true), token("}", true), token("value", false), token("(", true),
+            token(")", true), token("->", true), token(returned == "true" ? "Bool" : "Int", false),
+            token("{", true), token("return", false),
+            token(returned, false, returned == "true" ? Token.Type.BOOL : Token.Type.INTEGER),
+            token(";", true), token("}", true), token("}", true)
+        ])
+        return values
+    }
+
+    token(String value, Bool symbol, Int type = Token.Type.IDENTIFIER) -> Token {
+        return Token(value: value, type: symbol ? Token.Type.SYMBOL : type,
+            location: Location(lineNumber: 1, column: 1))
+    }
+}

@@ -1,0 +1,124 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+testable class {
+    test `binds reduced type slice`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(tokens(), snapshot)
+        let bound = PrimitiveClassBinder().bind(syntax, snapshot)
+        let result = bound.typeUnit
+        let functions = result.functionUnits()
+        let constructor = functions.first
+        let statements = constructor.statements()
+        let assignmentObject = (Object)statements.first
+        let assignment = (BoundMemberAssignmentStatement)assignmentObject
+
+        expect(result.fieldUnits().first.name).toBe("value")
+        expect(constructor.constructorFunction).toBe(true)
+        expect(assignment.target.memberName).toBe("value")
+        expect(result.functionUnits().last.returnType.value()).toBe("primitive:Int")
+    }
+
+    test `binds generic parameter metadata and memoizes reified instantiation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(genericTokens(), snapshot)
+        let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let memo = GenericInstantiationMemo(2)
+        let first = PrimitiveGenericClassBinder().instantiate(
+            syntax, snapshot, SemanticTypes.intType(), memo
+        )
+        let second = PrimitiveGenericClassBinder().instantiate(
+            syntax, snapshot, SemanticTypes.intType(), memo
+        )
+        expect(bound.fieldUnits().first.semanticType.kind()).toBe("generic-parameter")
+        let reified = first.metadata().firstOrNull((metadata) =>
+            metadata.metadataKind == "reified" && metadata.value.equals("primitive:Int")
+        )
+        expect(reified != null).toBe(true)
+        expect(second.metadata().last.value).toBe(first.metadata().last.value)
+        expect(memo.count).toBe(1)
+    }
+
+    test `rejects non generic instantiation and bounded memo overflow`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveGenericClassBinder().instantiate(
+                PrimitiveClassParser().parse(tokens(), snapshot), snapshot,
+                SemanticTypes.intType(), GenericInstantiationMemo(1)
+            )
+        } catch (Exception error) { rejected++ }
+        try {
+            let syntax = PrimitiveClassParser().parse(genericTokens(), snapshot)
+            let memo = GenericInstantiationMemo(1)
+            PrimitiveGenericClassBinder().instantiate(syntax, snapshot, SemanticTypes.intType(), memo)
+            PrimitiveGenericClassBinder().instantiate(syntax, snapshot, SemanticTypes.stringType(), memo)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    genericTokens() -> Token[] {
+        return [
+            token("class", false, 1), token("Box", false, 7), token("<", true, 10),
+            token("T", false, 11), token(">", true, 12), token("{", true, 14),
+            token("T", false, 16), token("value", false, 18), token(";", true, 23),
+            token("constructor", false, 25), token("(", true, 36), token("T", false, 37),
+            token("value", false, 39), token(")", true, 44), token("{", true, 46),
+            token("this", false, 48), token(".", true, 52), token("value", false, 53),
+            token("=", true, 59), token("value", false, 61), token(";", true, 66),
+            token("}", true, 68), token("get", false, 70), token("(", true, 73),
+            token(")", true, 74), token("->", true, 76), token("T", false, 79),
+            token("{", true, 81), token("return", false, 83), token("this", false, 90),
+            token(".", true, 94), token("value", false, 95), token(";", true, 100),
+            token("}", true, 102), token("}", true, 104)
+        ]
+    }
+
+    test `rejects invalid reduced type bindings`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-bind-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            let values = tokens()
+            values[14] = token("missing", false, 54)
+            PrimitiveClassBinder().bind(PrimitiveClassParser().parse(values, snapshot), snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            let values = tokens()
+            values[8] = token("String", false, 36)
+            PrimitiveClassBinder().bind(PrimitiveClassParser().parse(values, snapshot), snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    tokens() -> Token[] {
+        return [
+            token("class", false, 1), token("Box", false, 7), token("{", true, 11),
+            token("Int", false, 13), token("value", false, 17), token(";", true, 22),
+            token("constructor", false, 24), token("(", true, 35), token("Int", false, 36), token("value", false, 40),
+            token(")", true, 45), token("{", true, 47), token("this", false, 49), token(".", true, 53),
+            token("value", false, 54), token("=", true, 60), token("value", false, 62), token(";", true, 67),
+            token("}", true, 69), token("get", false, 71), token("(", true, 74), token(")", true, 75),
+            token("->", true, 77), token("Int", false, 80), token("{", true, 84), token("return", false, 86),
+            token("this", false, 93), token(".", true, 97), token("value", false, 98), token(";", true, 103),
+            token("}", true, 105), token("}", true, 107)
+        ]
+    }
+
+    token(String value, Bool symbol, Int column) -> Token {
+        let type = symbol ? Token.Type.SYMBOL : Token.Type.IDENTIFIER
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}

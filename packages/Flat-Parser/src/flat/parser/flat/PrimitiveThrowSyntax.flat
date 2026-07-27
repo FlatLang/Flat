@@ -1,0 +1,12 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only throw statement. */
+data class extends PrimitiveStatementSyntax {
+    public construct(SourceRange range, visible PrimitiveExpressionSyntax value) {
+        if (!range || !value) throw Exception("Throw syntax requires a value")
+        super(range)
+    }
+    override public statementKind() => "throw"
+}

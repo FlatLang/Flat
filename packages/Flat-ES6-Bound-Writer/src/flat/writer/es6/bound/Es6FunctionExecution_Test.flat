@@ -1,0 +1,73 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/bound
+
+testable class {
+    async test `parsed functions parameters forward calls and recursion execute under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:function-execute"), "revision:one"
+        )
+        let syntax = PrimitiveFunctionParser().parse([
+            token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token(")", Token.Type.SYMBOL, 5), token("->", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 10), token("{", Token.Type.SYMBOL, 14),
+            token("return", Token.Type.IDENTIFIER, 16), token("sum", Token.Type.IDENTIFIER, 23),
+            token("(", Token.Type.SYMBOL, 26), token("3", Token.Type.INTEGER, 27),
+            token(")", Token.Type.SYMBOL, 28), token(";", Token.Type.SYMBOL, 29),
+            token("}", Token.Type.SYMBOL, 31),
+            token("sum", Token.Type.IDENTIFIER, 33), token("(", Token.Type.SYMBOL, 36),
+            token("Int", Token.Type.IDENTIFIER, 37), token("value", Token.Type.IDENTIFIER, 41),
+            token(")", Token.Type.SYMBOL, 46), token("->", Token.Type.SYMBOL, 48),
+            token("Int", Token.Type.IDENTIFIER, 51), token("{", Token.Type.SYMBOL, 55),
+            token("if", Token.Type.IDENTIFIER, 57), token("(", Token.Type.SYMBOL, 60),
+            token("value", Token.Type.IDENTIFIER, 61), token("==", Token.Type.SYMBOL, 67),
+            token("0", Token.Type.INTEGER, 70), token(")", Token.Type.SYMBOL, 71),
+            token("{", Token.Type.SYMBOL, 73), token("return", Token.Type.IDENTIFIER, 75),
+            token("0", Token.Type.INTEGER, 82), token(";", Token.Type.SYMBOL, 83),
+            token("}", Token.Type.SYMBOL, 85), token("return", Token.Type.IDENTIFIER, 87),
+            token("value", Token.Type.IDENTIFIER, 94), token("+", Token.Type.SYMBOL, 100),
+            token("sum", Token.Type.IDENTIFIER, 102), token("(", Token.Type.SYMBOL, 105),
+            token("value", Token.Type.IDENTIFIER, 106), token("-", Token.Type.SYMBOL, 112),
+            token("1", Token.Type.INTEGER, 114), token(")", Token.Type.SYMBOL, 115),
+            token(";", Token.Type.SYMBOL, 116), token("}", Token.Type.SYMBOL, 118)
+        ], snapshot)
+        let functions = PrimitiveFunctionBinder().bind(syntax, snapshot).functionValues()
+        let fragments = Es6ArtifactFragment[]
+        var Int index
+        while (index < functions.count) {
+            let emitted = Es6UnitOrchestrator().emitFunction(functions[index], index)
+            expect(emitted.emitted).toBe(true)
+            fragments.add(emitted.fragment)
+            index++
+        }
+        let assembled = Es6FragmentAssembler(functions.count).assemble(fragments.reverse())
+        let invocation = Es6NameMangler.mangle(functions.first.identity.value) + "()"
+        let root = File(".flat-es6-function-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "functions.js")
+        Es6ArtifactCommitter().commit(
+            destination, assembled.code + "console.log(" + invocation + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+
+        expect(assembled.assembled).toBe(true)
+        if (response.exitCode != 0) {
+            throw Exception(response.stderr.join(""))
+        }
+        expect(response.stdout.join("")).toBe("6\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}

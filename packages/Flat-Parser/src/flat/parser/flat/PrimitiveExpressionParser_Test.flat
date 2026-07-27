@@ -50,6 +50,224 @@ testable class {
         expect(reference.expressionKind()).toBe("reference")
     }
 
+    test `parses calls nested arguments and source ranges`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-call"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("sum", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token("1", Token.Type.INTEGER, 5), token(",", Token.Type.SYMBOL, 6),
+            token("double", Token.Type.IDENTIFIER, 8), token("(", Token.Type.SYMBOL, 14),
+            token("2", Token.Type.INTEGER, 15), token(")", Token.Type.SYMBOL, 16),
+            token(")", Token.Type.SYMBOL, 17)
+        ], snapshot, 10)
+        let call = (PrimitiveCallSyntax)expression
+        let arguments = call.argumentValues()
+        let nestedObject = (Object)arguments[1]
+        let nested = (PrimitiveCallSyntax)nestedObject
+
+        expect(call.name).toBe("sum")
+        expect(call.argumentValues().count).toBe(2)
+        expect(nested.name).toBe("double")
+        expect(call.range.startTokenIndex).toBe(10)
+        expect(call.range.endTokenIndex).toBe(19)
+        expect(call.range.start.column).toBe(1)
+        expect(call.range.end.column).toBe(18)
+    }
+
+    test `rejects malformed and incomplete calls`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-call-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveExpressionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("1", Token.Type.INTEGER, 5)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveExpressionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("1", Token.Type.INTEGER, 5), token(",", Token.Type.SYMBOL, 6),
+                token(")", Token.Type.SYMBOL, 7)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveExpressionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("1", Token.Type.INTEGER, 5), token("2", Token.Type.INTEGER, 7),
+                token(")", Token.Type.SYMBOL, 8)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+    }
+
+    test `parses arrays accesses and rejects malformed arrays`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-array"), "revision:one"
+        )
+        let literal = PrimitiveExpressionParser().parse([
+            token("[", Token.Type.SYMBOL, 1), token("1", Token.Type.INTEGER, 2),
+            token(",", Token.Type.SYMBOL, 3), token("2", Token.Type.INTEGER, 5),
+            token("]", Token.Type.SYMBOL, 6)
+        ], snapshot)
+        let access = PrimitiveExpressionParser().parse([
+            token("values", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 7),
+            token("0", Token.Type.INTEGER, 8), token("]", Token.Type.SYMBOL, 9)
+        ], snapshot)
+        expect(literal.expressionKind()).toBe("array")
+        expect(((PrimitiveArraySyntax)literal).elementValues().count).toBe(2)
+        expect(access.expressionKind()).toBe("array-access")
+        var Int rejected
+        try {
+            PrimitiveExpressionParser().parse([
+                token("[", Token.Type.SYMBOL, 1), token("]", Token.Type.SYMBOL, 2)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveExpressionParser().parse([
+                token("[", Token.Type.SYMBOL, 1), token("1", Token.Type.INTEGER, 2),
+                token(",", Token.Type.SYMBOL, 3), token("]", Token.Type.SYMBOL, 4)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `parses lambdas function references captures and invalid forms`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-lambda"), "revision:one"
+        )
+        let lambda = PrimitiveExpressionParser().parse([
+            token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 8), token("value", Token.Type.IDENTIFIER, 12),
+            token(")", Token.Type.SYMBOL, 17), token("=>", Token.Type.SYMBOL, 19),
+            token("value", Token.Type.IDENTIFIER, 22), token("+", Token.Type.SYMBOL, 28),
+            token("captured", Token.Type.IDENTIFIER, 30)
+        ], snapshot)
+        let reference = PrimitiveExpressionParser().parse([
+            token("ref", Token.Type.IDENTIFIER, 1), token("run", Token.Type.IDENTIFIER, 5)
+        ], snapshot)
+        expect(lambda.expressionKind()).toBe("lambda")
+        expect(((PrimitiveLambdaSyntax)lambda).parameterValues().count).toBe(1)
+        expect(reference.expressionKind()).toBe("function-reference")
+        var Int rejected
+        try {
+            PrimitiveExpressionParser().parse([
+                token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+                token("Int", Token.Type.IDENTIFIER, 8), token("value", Token.Type.IDENTIFIER, 12),
+                token(")", Token.Type.SYMBOL, 17), token("value", Token.Type.IDENTIFIER, 19)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveExpressionParser().parse([
+                token("ref", Token.Type.IDENTIFIER, 1)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `parses named calls and rejects duplicate or malformed names`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:named-call"), "revision:one"
+        )
+        let value = PrimitiveExpressionParser().parse([
+            token("named", Token.Type.IDENTIFIER, 1), token("sum", Token.Type.IDENTIFIER, 7),
+            token("(", Token.Type.SYMBOL, 10), token("right", Token.Type.IDENTIFIER, 11),
+            token(":", Token.Type.SYMBOL, 16), token("2", Token.Type.INTEGER, 18),
+            token(")", Token.Type.SYMBOL, 19)
+        ], snapshot)
+        expect(((PrimitiveNamedCallSyntax)value).argumentValues().first.name).toBe("right")
+        var Int rejected
+        try {
+            PrimitiveExpressionParser().parse([
+                token("named", Token.Type.IDENTIFIER, 1), token("sum", Token.Type.IDENTIFIER, 7),
+                token("(", Token.Type.SYMBOL, 10), token("right", Token.Type.IDENTIFIER, 11),
+                token(":", Token.Type.SYMBOL, 16), token("1", Token.Type.INTEGER, 18),
+                token(",", Token.Type.SYMBOL, 19), token("right", Token.Type.IDENTIFIER, 21),
+                token(":", Token.Type.SYMBOL, 26), token("2", Token.Type.INTEGER, 28),
+                token(")", Token.Type.SYMBOL, 29)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveExpressionParser().parse([
+                token("named", Token.Type.IDENTIFIER, 1), token("sum", Token.Type.IDENTIFIER, 7),
+                token("(", Token.Type.SYMBOL, 10), token("right", Token.Type.IDENTIFIER, 11),
+                token("2", Token.Type.INTEGER, 18), token(")", Token.Type.SYMBOL, 19)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `parses range safe access and match canonical forms`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:rich-collection"), "revision:one"
+        )
+        let names = ["range", "safe", "match"]
+        for (name in names) {
+            let tokens = [
+                token(name, Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+                token("1", Token.Type.INTEGER, 7), token(")", Token.Type.SYMBOL, 8)
+            ]
+            let value = PrimitiveExpressionParser().parse(tokens, snapshot)
+            var String expected = name
+            if (name == "safe") expected = "safe-access"
+            expect(value.expressionKind()).toBe(expected)
+        }
+        var rejected = false
+        try {
+            PrimitiveExpressionParser().parse([
+                token("match", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+                token("1", Token.Type.INTEGER, 7)
+            ], snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `parses async form and rejects incomplete runtime expression`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:async"), "revision:one"
+        )
+        let value = PrimitiveExpressionParser().parse([
+            token("async", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token("1", Token.Type.INTEGER, 7), token(")", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        expect(value.expressionKind()).toBe("async")
+        var rejected = false
+        try {
+            PrimitiveExpressionParser().parse([
+                token("async", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+                token("1", Token.Type.INTEGER, 7)
+            ], snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `parses target annotated qualified native calls`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native"), "revision:one"
+        )
+        let value = PrimitiveExpressionParser().parse([
+            token("native", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 7),
+            token("es6", Token.Type.IDENTIFIER, 8), token("]", Token.Type.SYMBOL, 11),
+            token("Math", Token.Type.IDENTIFIER, 13), token(".", Token.Type.SYMBOL, 17),
+            token("max", Token.Type.IDENTIFIER, 18), token("(", Token.Type.SYMBOL, 21),
+            token("2", Token.Type.INTEGER, 22), token(",", Token.Type.SYMBOL, 23),
+            token("5", Token.Type.INTEGER, 25), token(")", Token.Type.SYMBOL, 26)
+        ], snapshot)
+        let native = (PrimitiveNativeSyntax)value
+        expect(native.target).toBe("es6")
+        expect(native.nativeName).toBe("Math.max")
+        var rejected = false
+        try {
+            PrimitiveExpressionParser().parse([
+                token("native", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 7),
+                token("es6", Token.Type.IDENTIFIER, 8), token("Math", Token.Type.IDENTIFIER, 12)
+            ], snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `rejects incomplete and trailing primitive expressions`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-invalid"), "revision:one"

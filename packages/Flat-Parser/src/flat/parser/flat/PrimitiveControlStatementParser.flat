@@ -34,6 +34,7 @@ class {
         while (index < tokens.count && (!insideBody || tokens[index].value != "}")) {
             if (tokens[index].value == "if") statements.add(parseIf())
             else if (tokens[index].value == "while") statements.add(parseWhile())
+            else if (tokens[index].value == "try") statements.add(parseTry())
             else statements.add(parseSimple())
         }
         if (insideBody) {
@@ -62,6 +63,32 @@ class {
         let condition = parseCondition()
         let body = parseBody()
         return PrimitiveWhileSyntax(range(start, index), condition, body)
+    }
+
+    parseTry() -> PrimitiveStatementSyntax {
+        let start = index++
+        let tryValues = parseBody()
+        let catches = PrimitiveCatchSyntax[]
+        while (index < tokens.count && tokens[index].value == "catch") {
+            let catchStart = index++
+            if (index >= tokens.count || tokens[index].value != "(") syntax("Expected catch parameter", index)
+            index++
+            if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected catch type", index)
+            let typeName = tokens[index++].value
+            if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected catch name", index)
+            let name = tokens[index++].value
+            if (index >= tokens.count || tokens[index].value != ")") syntax("Expected closing catch parenthesis", index)
+            index++
+            let body = parseBody()
+            catches.add(PrimitiveCatchSyntax(range(catchStart, index), typeName, name, body))
+        }
+        let finallyValues = PrimitiveStatementSyntax[]
+        if (index < tokens.count && tokens[index].value == "finally") {
+            index++
+            finallyValues.addAll(parseBody())
+        }
+        if (catches.isEmpty && finallyValues.isEmpty) syntax("Try requires catch or finally", start)
+        return PrimitiveTrySyntax(range(start, index), tryValues, catches, finallyValues)
     }
 
     parseCondition() -> PrimitiveExpressionSyntax {

@@ -1,0 +1,22 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Explicit assignment to a selected field on a typed receiver. */
+data class extends BoundStatement {
+    public construct(
+        SourceRange range,
+        visible BoundMemberAccessExpression target,
+        visible BoundExpression value,
+        visible TypeConversion conversion
+    ) {
+        if (!range || !target || !value || !conversion || !conversion.applicable ||
+            conversion.fromType.value() != value.semanticType.value() ||
+            conversion.toType.value() != target.semanticType.value()) {
+            throw Exception("Bound member assignment requires consistent target and conversion")
+        }
+        super(range)
+    }
+    override public unitKind() => "member-assignment"
+}

@@ -17,7 +17,9 @@ class {
         if (!body.emitted) return Es6EmissionResult(diagnostic: body.diagnostic)
         let parameters = functionUnit.parameterValues()
             .map({ Es6NameMangler.mangle(_.identity.value) })
-        let code = units.emitFunction(functionUnit.identity.value, parameters, body.code)
+        let code = functionUnit.constructorFunction ?
+            units.emitConstructor(parameters, body.code) :
+            units.emitFunction(functionUnit.identity.value, parameters, body.code)
         return Es6EmissionResult(
             fragment: Es6ArtifactFragment(functionUnit.identity.value, ordinal, code)
         )
@@ -25,30 +27,59 @@ class {
 
     public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         if (!functionUnit) throw Exception("ES6 method unit is required")
-        let body = statements.emitAll(functionUnit.statements())
+        var Es6CodeResult body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
         let parameters = functionUnit.parameterValues()
             .map({ Es6NameMangler.mangle(_.identity.value) })
+        if (functionUnit.constructorFunction) {
+            return Es6CodeResult(code: units.emitConstructor(parameters, body.code))
+        }
+        let name = functionUnit.dispatchIdentity ?: functionUnit.identity.value
         return Es6CodeResult(code: units.emitMethod(
-            functionUnit.identity.value,
+            name,
             parameters,
             body.code,
             functionUnit.staticFunction
         ))
     }
 
+    emitTypeMethod(
+        BoundFunctionUnit functionUnit,
+        BoundTypeUnit typeUnit
+    ) -> Es6CodeResult {
+        if (!functionUnit.constructorFunction || !typeUnit.parentType) return emitMethod(functionUnit)
+        let body = statements.emitAll(functionUnit.statements())
+        if (!body.emitted) return body
+        let parameters = functionUnit.parameterValues()
+            .map({ Es6NameMangler.mangle(_.identity.value) })
+        return Es6CodeResult(code: units.emitConstructor(parameters, "super();\n" + body.code))
+    }
+
+    emitMetadata(BoundTypeUnit typeUnit) -> String {
+        let reified = typeUnit.metadata().filter({ _.metadataKind == "reified" })
+        if (reified.isEmpty) return ""
+        let owner = Es6NameMangler.mangle(typeUnit.identity.value)
+        let values = reified.map({ "'" + _.value + "'" })
+        return owner + ".__flatReified = [" + values.join(", ") + "];\n"
+    }
+
     public emitType(BoundTypeUnit typeUnit, Int ordinal) -> Es6EmissionResult {
         if (!typeUnit) throw Exception("ES6 type unit is required")
         let methods = String[]
         for (functionUnit in typeUnit.functionUnits()) {
-            let method = emitMethod(functionUnit)
+            let method = emitTypeMethod(functionUnit, typeUnit)
             if (!method.emitted) return Es6EmissionResult(diagnostic: method.diagnostic)
             methods.add(method.code)
         }
         return Es6EmissionResult(fragment: Es6ArtifactFragment(
             typeUnit.identity.value,
             ordinal,
-            units.emitClass(typeUnit.identity.value, methods)
+            units.emitClass(
+                typeUnit.identity.value,
+                typeUnit.parentType ? typeUnit.parentType.declarationIdentity.value : null,
+                String[],
+                methods
+            ) + emitMetadata(typeUnit)
         ))
     }
 }

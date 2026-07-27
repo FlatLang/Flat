@@ -1,0 +1,6 @@
+package flat/compiler
+
+abstract class {
+    public identities() -> String[] => String[]
+    public load(String identity) -> CompilerSource => null
+}

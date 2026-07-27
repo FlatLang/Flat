@@ -6,6 +6,9 @@ import flat/io/FancyOutputStream
 import flat/semantic/binding/primitive/PrimitiveExpressionBinder_Test
 import flat/semantic/binding/primitive/PrimitiveStatementBinder_Test
 import flat/semantic/binding/primitive/PrimitiveControlStatementBinder_Test
+import flat/semantic/binding/primitive/PrimitiveFunctionBinder_Test
+import flat/semantic/binding/primitive/PrimitiveClassBinder_Test
+import flat/semantic/binding/primitive/PrimitiveInheritanceBinder_Test
 
 [TestSuite [
     BinderWorkItem_Test,
@@ -13,7 +16,10 @@ import flat/semantic/binding/primitive/PrimitiveControlStatementBinder_Test
     BindingDiagnostics_Test,
     PrimitiveExpressionBinder_Test,
     PrimitiveStatementBinder_Test,
-    PrimitiveControlStatementBinder_Test
+    PrimitiveControlStatementBinder_Test,
+    PrimitiveFunctionBinder_Test,
+    PrimitiveClassBinder_Test,
+    PrimitiveInheritanceBinder_Test
 ]]
 class {
     public static async main(String[] args) {

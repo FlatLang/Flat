@@ -1,0 +1,19 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Immutable typed field declaration owned by one bound type. */
+data class {
+    public construct(
+        visible String name,
+        visible SymbolIdentity identity,
+        visible SemanticType semanticType,
+        visible SourceRange range
+    ) {
+        if (!name || !identity || !semanticType || !range ||
+            identity.declaration.syntaxIdentity.snapshot != range.snapshot) {
+            throw Exception("Bound field requires name identity type and range")
+        }
+    }
+}

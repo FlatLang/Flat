@@ -1,0 +1,31 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Immutable typed expression lambda with explicit captures. */
+data class extends BoundExpression {
+    var BoundFunctionParameter[] parameters
+    var BoundReferenceExpression[] captures
+    public construct(
+        SourceRange range,
+        FunctionSemanticType semanticType,
+        BoundFunctionParameter[] parameterValues,
+        BoundReferenceExpression[] captureValues,
+        visible BoundExpression body
+    ) {
+        if (!range || !semanticType || !parameterValues || parameterValues.any({ !_ }) ||
+            !captureValues || captureValues.any({ !_ }) || !body ||
+            body.semanticType.value() != semanticType.returnType.value()) {
+            throw Exception("Bound lambda requires type parameters captures and body")
+        }
+        super(range, semanticType)
+        parameters = BoundFunctionParameter[]
+        parameters.addAll(parameterValues)
+        captures = BoundReferenceExpression[]
+        captures.addAll(captureValues)
+    }
+    public parameterValues() -> BoundFunctionParameter[] => BoundFunctionParameter[]:addAll(parameters)
+    public captureValues() -> BoundReferenceExpression[] => BoundReferenceExpression[]:addAll(captures)
+    override public expressionKind() => "lambda"
+}

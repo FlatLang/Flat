@@ -1,0 +1,12 @@
+package flat/compiler
+
+class extends CompilerSourceProvider {
+    var CompilerSource[] sources
+    public construct(CompilerSource[] values) {
+        if (!values || values.any({ !_ })) throw Exception("Memory source provider requires sources")
+        sources = CompilerSource[]
+        sources.addAll(values)
+    }
+    override public identities() -> String[] => sources.map({ _.identity }).sort({ _a.compareTo(_b) })
+    override public load(String identity) -> CompilerSource => sources.firstOrNull({ _.identity == identity })
+}

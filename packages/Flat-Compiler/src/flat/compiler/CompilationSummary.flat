@@ -1,0 +1,14 @@
+package flat/compiler
+
+data class {
+    public construct(
+        visible Int sourceCount,
+        visible Int artifactCount,
+        visible Int diagnosticCount,
+        visible Bool cancelled
+    ) {
+        if (sourceCount < 0 || artifactCount < 0 || diagnosticCount < 0) {
+            throw Exception("Compilation summary counts cannot be negative")
+        }
+    }
+}

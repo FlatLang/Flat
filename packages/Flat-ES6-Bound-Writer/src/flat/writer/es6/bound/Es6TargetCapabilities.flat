@@ -4,14 +4,15 @@ package flat/writer/es6/bound
 class {
     public static supportsStatement(String kind) -> Bool {
         return kind == "expression" || kind == "local-declaration" ||
-            kind == "assignment" || kind == "return" || kind == "if" ||
-            kind == "while"
+            kind == "assignment" || kind == "member-assignment" || kind == "return" || kind == "if" ||
+            kind == "while" || kind == "throw" || kind == "try"
     }
 
     public static supportsExpression(String kind) -> Bool {
         return kind == "literal" || kind == "reference" || kind == "member-access" ||
             kind == "unary" || kind == "binary" || kind == "conversion" ||
-            kind == "call" || kind == "native-call"
+            kind == "call" || kind == "native-call" || kind == "array" ||
+            kind == "array-access" || kind == "lambda" || kind == "function-reference"
     }
 
     public static diagnoseStatement(String kind) -> Es6BackendDiagnostic {

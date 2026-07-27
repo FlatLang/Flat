@@ -1,0 +1,13 @@
+package flat/compiler
+
+class extends CompilerArtifactSink {
+    var CompilerArtifact[] values = CompilerArtifact[]
+    override public write(CompilerArtifact artifact) {
+        if (!artifact || values.any({ _.identity == artifact.identity })) {
+            throw Exception("Memory artifact sink requires unique artifact")
+        }
+        values.add(artifact)
+        values = values.sort({ _a.identity.compareTo(_b.identity) })
+    }
+    override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(values)
+}

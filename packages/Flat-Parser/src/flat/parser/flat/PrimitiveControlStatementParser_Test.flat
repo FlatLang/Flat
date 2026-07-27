@@ -73,6 +73,45 @@ testable class {
         expect(rejected).toBe(3)
     }
 
+    test `parses try catch finally throw and rejects incomplete exception control`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-exception"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("try", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 5),
+            token("throw", Token.Type.IDENTIFIER, 7), token("'failure'", Token.Type.STRING, 13),
+            token(";", Token.Type.SYMBOL, 22), token("}", Token.Type.SYMBOL, 24),
+            token("catch", Token.Type.IDENTIFIER, 26), token("(", Token.Type.SYMBOL, 32),
+            token("String", Token.Type.IDENTIFIER, 33), token("error", Token.Type.IDENTIFIER, 40),
+            token(")", Token.Type.SYMBOL, 45), token("{", Token.Type.SYMBOL, 47),
+            token("return", Token.Type.IDENTIFIER, 49), token("error", Token.Type.IDENTIFIER, 56),
+            token(";", Token.Type.SYMBOL, 61), token("}", Token.Type.SYMBOL, 63),
+            token("finally", Token.Type.IDENTIFIER, 65), token("{", Token.Type.SYMBOL, 73),
+            token("return", Token.Type.IDENTIFIER, 75), token(";", Token.Type.SYMBOL, 81),
+            token("}", Token.Type.SYMBOL, 83)
+        ], snapshot)
+        let statements = parsed.statements()
+        let valueObject = (Object)statements.first
+        let value = (PrimitiveTrySyntax)valueObject
+        let catches = value.catchValues()
+        expect(catches.first.name).toBe("error")
+        expect(value.finallyValues().count).toBe(1)
+        var Int rejected
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("try", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 5),
+                token("return", Token.Type.IDENTIFIER, 7), token(";", Token.Type.SYMBOL, 13),
+                token("}", Token.Type.SYMBOL, 15)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveStatementParser().parse([
+                token("throw", Token.Type.IDENTIFIER, 1)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
     token(String value, Int type, Int column) -> Token {
         return Token(value: value, type: type,
             location: Location(lineNumber: 1, column: column))

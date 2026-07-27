@@ -1,0 +1,31 @@
+package flat/writer/es6/bound
+
+/** Consolidated emitted-per-program versus host-runtime ownership contract. */
+data class {
+    var String[] emittedValues
+    var String[] hostValues
+
+    public construct(String[] emittedResponsibilities, String[] hostResponsibilities) {
+        if (!emittedResponsibilities || !hostResponsibilities ||
+            emittedResponsibilities.any({ !_ }) || hostResponsibilities.any({ !_ }) ||
+            emittedResponsibilities.any({ hostResponsibilities.contains(_) })) {
+            throw Exception("ES6 runtime ownership requires disjoint responsibilities")
+        }
+        emittedValues = String[]
+        emittedValues.addAll(emittedResponsibilities)
+        hostValues = String[]
+        hostValues.addAll(hostResponsibilities)
+    }
+
+    public static standard() -> Es6RuntimeOwnership {
+        return Es6RuntimeOwnership([
+            "class-declarations", "virtual-method-slots", "type-metadata",
+            "reified-arguments", "static-initializers", "bootstrap"
+        ], [
+            "arrays", "strings", "exceptions", "closures", "promises", "native-globals"
+        ])
+    }
+
+    public emitted() -> String[] => String[]:addAll(emittedValues)
+    public hostRuntime() -> String[] => String[]:addAll(hostValues)
+}

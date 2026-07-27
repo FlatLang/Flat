@@ -1,0 +1,16 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only named call argument. */
+data class {
+    public construct(
+        visible SourceRange range,
+        visible String name,
+        visible PrimitiveExpressionSyntax value
+    ) {
+        if (!range || !name || name.trim().count == 0 || !value) {
+            throw Exception("Named argument syntax requires range name and value")
+        }
+    }
+}

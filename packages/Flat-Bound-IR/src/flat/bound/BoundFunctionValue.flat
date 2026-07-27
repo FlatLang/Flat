@@ -1,0 +1,20 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Immutable selected free-function value. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible CallableSignature target
+    ) {
+        if (!range || !semanticType || semanticType.kind() != "function" || !target ||
+            target.callableKind.value != "function") {
+            throw Exception("Bound function value requires selected free function target")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "function-reference"
+}

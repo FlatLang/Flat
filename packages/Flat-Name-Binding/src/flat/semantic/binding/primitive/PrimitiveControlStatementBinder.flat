@@ -10,19 +10,21 @@ class {
     public bind(
         PrimitiveStatementSyntaxResult syntax,
         SourceSnapshotIdentity snapshot,
-        LocalBinding[] locals = LocalBinding[]
+        LocalBinding[] locals = LocalBinding[],
+        CallableSignature[] callables = CallableSignature[]
     ) -> PrimitiveStatementBindingResult {
-        if (!syntax || !snapshot || !locals) {
-            throw Exception("Primitive control binding requires syntax snapshot and locals")
+        if (!syntax || !snapshot || !locals || !callables) {
+            throw Exception("Primitive control binding requires syntax snapshot, locals, and callables")
         }
-        let bound = bindStatements(syntax.statements(), snapshot, locals)
+        let bound = bindStatements(syntax.statements(), snapshot, locals, callables)
         return PrimitiveStatementBindingResult(bound, locals)
     }
 
     bindStatements(
         PrimitiveStatementSyntax[] statements,
         SourceSnapshotIdentity snapshot,
-        LocalBinding[] parentLocals
+        LocalBinding[] parentLocals,
+        CallableSignature[] callables
     ) -> BoundStatement[] {
         let result = BoundStatement[]
         var LocalBinding[] scopeLocals = LocalBinding[]
@@ -30,25 +32,67 @@ class {
         for (statement in statements) {
             if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
                 let value = (PrimitiveIfSyntax)statement
-                let condition = bindCondition(value.condition, scopeLocals)
+                let condition = bindCondition(value.condition, scopeLocals, callables)
                 result.add(BoundIfStatement(
                     value.range,
                     condition,
-                    bindStatements(value.thenValues(), snapshot, scopeLocals),
-                    bindStatements(value.elseValues(), snapshot, scopeLocals)
+                    bindStatements(value.thenValues(), snapshot, scopeLocals, callables),
+                    bindStatements(value.elseValues(), snapshot, scopeLocals, callables)
                 ))
             } else if (statement.class.isOfType(PrimitiveWhileSyntax.class)) {
                 let value = (PrimitiveWhileSyntax)statement
-                let condition = bindCondition(value.condition, scopeLocals)
+                let condition = bindCondition(value.condition, scopeLocals, callables)
                 result.add(BoundWhileStatement(
                     value.range,
                     condition,
-                    bindStatements(value.bodyValues(), snapshot, scopeLocals)
+                    bindStatements(value.bodyValues(), snapshot, scopeLocals, callables)
                 ))
+            } else if (statement.class.isOfType(PrimitiveTrySyntax.class)) {
+                let value = (PrimitiveTrySyntax)statement
+                if (value.catchValues().count > 1) {
+                    throw Exception("Reduced exception binding supports one catch clause")
+                }
+                let catches = BoundCatchClause[]
+                var Int catchIndex
+                while (catchIndex < value.catchValues().count) {
+                    let caught = value.catchValues()[catchIndex]
+                    let catchType = exceptionType(caught.typeName)
+                    let identity = SymbolIdentity(
+                        DeclarationIdentity(
+                            SyntaxIslandIdentity(snapshot, "catch", caught.range.startTokenIndex),
+                            "catch", caught.name
+                        ),
+                        "catch"
+                    )
+                    let local = BoundReferenceExpression(
+                        caught.range, catchType, caught.name, identity
+                    )
+                    let catchLocals = LocalBinding[]
+                    catchLocals.addAll(scopeLocals)
+                    catchLocals.add(LocalBinding(caught.name, identity, catchType))
+                    catches.add(BoundCatchClause(
+                        caught.range, local,
+                        bindStatements(caught.statements(), snapshot, catchLocals, callables)
+                    ))
+                    catchIndex++
+                }
+                result.add(BoundTryStatement(
+                    value.range,
+                    bindStatements(value.tryValues(), snapshot, scopeLocals, callables),
+                    catches,
+                    bindStatements(value.finallyValues(), snapshot, scopeLocals, callables)
+                ))
+            } else if (statement.class.isOfType(PrimitiveThrowSyntax.class)) {
+                let value = (PrimitiveThrowSyntax)statement
+                let expression = PrimitiveExpressionBinder().bind(
+                    value.value, locals: scopeLocals, callables: callables
+                )
+                if (!expression.succeeded) throw Exception(expression.diagnostic.message)
+                result.add(BoundThrowStatement(value.range, expression.expression))
             } else {
                 let simple = PrimitiveStatementSyntaxResult([statement])
                 let bound = PrimitiveStatementBinder().bind(
-                    simple, snapshot, scopeLocals
+                    simple, snapshot, scopeLocals, callables
                 )
                 result.addAll(bound.statements())
                 scopeLocals = bound.locals()
@@ -57,12 +101,19 @@ class {
         return result
     }
 
+    exceptionType(String name) -> SemanticType {
+        if (name == "String") return SemanticTypes.stringType()
+        if (name == "Object" || name == "Exception") return SemanticTypes.objectType()
+        throw Exception("Catch type '#name' is not throwable")
+    }
+
     bindCondition(
         PrimitiveExpressionSyntax syntax,
-        LocalBinding[] locals
+        LocalBinding[] locals,
+        CallableSignature[] callables
     ) -> BoundExpression {
         let result = PrimitiveExpressionBinder().bind(
-            syntax, SemanticTypes.boolType(), locals
+            syntax, SemanticTypes.boolType(), locals, callables
         )
         if (!result.succeeded) throw Exception(result.diagnostic.message)
         return result.expression

@@ -1,0 +1,148 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Balanced syntax-only parser for one reduced class/field/constructor partition. */
+class {
+    var Token[] tokens
+    var SourceSnapshotIdentity snapshot
+    var Int tokenIndexOffset
+    var Int index
+
+    public parse(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0
+    ) -> PrimitiveClassSyntax {
+        if (!tokenValues || !sourceSnapshot) throw Exception("Primitive class parsing requires tokens and snapshot")
+        tokens = tokenValues.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        snapshot = sourceSnapshot
+        tokenIndexOffset = sourceTokenIndexOffset
+        index = 0
+        let start = index
+        require("class")
+        let name = identifier("Expected class name")
+        var String genericParameterName
+        if (index < tokens.count && tokens[index].value == "<") {
+            index++
+            genericParameterName = identifier("Expected generic parameter name")
+            require(">")
+        }
+        var String parentName
+        if (index < tokens.count && tokens[index].value == "extends") {
+            index++
+            parentName = identifier("Expected parent class name")
+        }
+        require("{")
+        let fields = PrimitiveFieldSyntax[]
+        var PrimitiveConstructorSyntax constructorValue
+        let methods = PrimitiveFunctionSyntax[]
+        while (index < tokens.count && tokens[index].value != "}") {
+            if (tokens[index].value == "constructor") {
+                if (constructorValue) syntax("Duplicate constructor", index)
+                constructorValue = parseConstructor()
+            } else if (index + 2 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
+                tokens[index + 1].type == Token.Type.IDENTIFIER && tokens[index + 2].value == ";") {
+                let fieldStart = index
+                let typeName = tokens[index++].value
+                let fieldName = tokens[index++].value
+                index++
+                if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
+                fields.add(PrimitiveFieldSyntax(range(fieldStart, index), typeName, fieldName))
+            } else {
+                let end = declarationEnd(index)
+                let parsed = PrimitiveFunctionParser().parse(
+                    tokens.skip(index).take(end - index), snapshot, index + tokenIndexOffset
+                ).functionValues()
+                if (parsed.count != 1) syntax("Expected one method", index)
+                methods.add(parsed.first)
+                index = end
+            }
+        }
+        require("}")
+        if (index != tokens.count) syntax("Unexpected trailing class token", index)
+        if (!constructorValue) syntax("Class requires constructor", index)
+        return PrimitiveClassSyntax(
+            range(start, index), name, genericParameterName, parentName,
+            fields, constructorValue, methods
+        )
+    }
+
+    parseConstructor() -> PrimitiveConstructorSyntax {
+        let start = index++
+        require("(")
+        let parameters = parameters()
+        require(")")
+        require("{")
+        let bodyStart = index
+        var Int depth = 1
+        while (index < tokens.count && depth > 0) {
+            if (tokens[index].value == "{") depth++
+            else if (tokens[index].value == "}") depth--
+            index++
+        }
+        if (depth != 0) syntax("Unterminated constructor", index)
+        let bodyEnd = index - 1
+        return PrimitiveConstructorSyntax(
+            range(start, index), parameters,
+            PrimitiveControlStatementParser().parse(
+                tokens.skip(bodyStart).take(bodyEnd - bodyStart), snapshot,
+                bodyStart + tokenIndexOffset
+            ).statements()
+        )
+    }
+
+    parameters() -> PrimitiveFunctionParameterSyntax[] {
+        let result = PrimitiveFunctionParameterSyntax[]
+        if (index < tokens.count && tokens[index].value == ")") return result
+        while (true) {
+            let start = index
+            let typeName = identifier("Expected parameter type")
+            let name = identifier("Expected parameter name")
+            if (result.any({ _.name == name })) syntax("Duplicate parameter '#name'", start)
+            result.add(PrimitiveFunctionParameterSyntax(range(start, index), typeName, name))
+            if (index >= tokens.count || tokens[index].value != ",") break
+            index++
+        }
+        return result
+    }
+
+    declarationEnd(Int start) -> Int {
+        var Int cursor = start
+        while (cursor < tokens.count && tokens[cursor].value != "{") cursor++
+        if (cursor >= tokens.count) syntax("Expected method body", start)
+        var Int depth = 1
+        cursor++
+        while (cursor < tokens.count && depth > 0) {
+            if (tokens[cursor].value == "{") depth++
+            else if (tokens[cursor].value == "}") depth--
+            cursor++
+        }
+        if (depth != 0) syntax("Unterminated method", start)
+        return cursor
+    }
+
+    identifier(String message) -> String {
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax(message, index)
+        return tokens[index++].value
+    }
+
+    require(String value) {
+        if (index >= tokens.count || tokens[index].value != value) syntax("Expected '#value'", index)
+        index++
+    }
+
+    range(Int start, Int end) -> SourceRange {
+        let first = tokens[start]
+        let last = tokens[end - 1]
+        return SourceRange(snapshot, start + tokenIndexOffset, end + tokenIndexOffset,
+            first.location, Location(lineNumber: last.endLineNumber, column: last.endColumn))
+    }
+
+    syntax(String message, Int tokenIndex) {
+        throw Exception("Primitive class syntax error at token #tokenIndex: #message")
+    }
+}

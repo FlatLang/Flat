@@ -1,0 +1,23 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only named argument call. */
+data class extends PrimitiveExpressionSyntax {
+    var PrimitiveNamedArgumentSyntax[] arguments
+    public construct(
+        SourceRange range,
+        visible String name,
+        PrimitiveNamedArgumentSyntax[] values
+    ) {
+        if (!range || !name || !values || values.any({ !_ })) {
+            throw Exception("Named call syntax requires range target and arguments")
+        }
+        arguments = PrimitiveNamedArgumentSyntax[]
+        arguments.addAll(values)
+        super(range)
+    }
+    public argumentValues() -> PrimitiveNamedArgumentSyntax[] =>
+        PrimitiveNamedArgumentSyntax[]:addAll(arguments)
+    override public expressionKind() => "named-call"
+}

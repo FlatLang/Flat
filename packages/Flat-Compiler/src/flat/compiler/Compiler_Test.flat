@@ -1,8 +1,139 @@
 package flat/compiler
 
 import flat/compiler/Compiler
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/compiler/models
+import flat/writer/es6/bound
 
 testable class {
+    async test `in process session composes Flat source through binding into runnable ES6`() {
+        let result = CompilerTest().compile([
+            CompilerSource("z", "value() -> Int { return 2; }"),
+            CompilerSource("a", "value() -> Int { return 1; }")
+        ])
+        expect(result.artifacts().count).toBe(2)
+        expect(result.artifacts().first.identity).toBe("a.js")
+        expect(result.session.completion.completed).toBe(true)
+        let summary = result.session.completion.get()
+        expect(summary.artifactCount).toBe(2)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(result.session.artifacts.closed).toBe(true)
+        expect(result.session.diagnostics.closed).toBe(true)
+        expect(result.session.progress.closed).toBe(true)
+
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(
+                SourceSnapshotIdentity(SourceIdentity("a"), "compiler-input"),
+                "function", 0
+            ),
+            "function", "value"
+        )
+        let root = File(".flat-compiler-execution-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            result.artifacts().first.code +
+                "console.log(" + Es6NameMangler.mangle(identity.value) + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("1\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `in process compiler emits and executes a reduced Flat Core type fixture`() {
+        let fixture = File("test-fixtures/reduced-flat-core-class.flat")
+        let source = CompilerSource("flat-core/Box.flat", Es6ArtifactFiles.read(fixture))
+        let result = CompilerTest().compile([source])
+        expect(result.artifacts().count).toBe(1)
+        let summary = result.session.completion.get()
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.diagnosticCount).toBe(0)
+
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("flat-core/Box.flat"), "compiler-input"
+        )
+        let classIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box"
+        )
+        let className = Es6NameMangler.mangle(classIdentity.value)
+        let root = File(".flat-compiler-core-class-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            result.artifacts().first.code +
+                "console.log(typeof new " + className + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("object\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `source scoped compilation failure is diagnostic and unrelated source completes`() {
+        let result = CompilerTest().compile([
+            CompilerSource("bad", "not valid Flat"),
+            CompilerSource("good", "value() -> Int { return 3; }")
+        ])
+        expect(result.artifacts().count).toBe(1)
+        expect(result.artifacts().first.identity).toBe("good.js")
+        let summary = result.session.completion.get()
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.diagnosticCount).toBe(1)
+    }
+
+    test `session cancellation closes resources and is idempotent`() {
+        let session = CompilerSession()
+        session.cancel()
+        session.cancel()
+        expect(session.cancelled).toBe(true)
+        expect(session.completion.completed).toBe(true)
+        expect(session.artifacts.closed).toBe(true)
+    }
+
+    test `filesystem source and atomic spooled artifact sinks preserve deterministic content`() {
+        let root = File(".flat-compiler-provider-test-#{Time.currentTimeMillis}")
+        let sourceRoot = File(root, "sources")
+        let outputRoot = File(root, "output")
+        let spoolRoot = File(root, "spool")
+        Es6ArtifactFiles.ensureDirectory(sourceRoot)
+        let first = File(sourceRoot, "b.flat")
+        let second = File(sourceRoot, "a.flat")
+        Es6ArtifactFiles.write(first, "B")
+        Es6ArtifactFiles.write(second, "A")
+        let provider = FilesystemCompilerSourceProvider([first, second])
+        expect(provider.identities().first).toBe(second.normalizedLocation)
+        expect(provider.load(first.normalizedLocation).text).toBe("B")
+        let destination = FilesystemCompilerArtifactSink(outputRoot)
+        let spool = SpooledCompilerArtifactSink(spoolRoot, 2)
+        spool.write(CompilerArtifact("b.js", "B"))
+        spool.write(CompilerArtifact("a.js", "A"))
+        spool.commitTo(destination)
+        expect(Es6ArtifactFiles.read(File(outputRoot, "a.js"))).toBe("A")
+        expect(File(spoolRoot, "a.js.spool").exists).toBe(false)
+        expect(destination.artifacts().first.identity).toBe("a.js")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    test `filesystem and spool sinks reject invalid capacity and duplicate artifacts`() {
+        let root = File(".flat-compiler-provider-invalid-#{Time.currentTimeMillis}")
+        let spool = SpooledCompilerArtifactSink(root, 1)
+        spool.write(CompilerArtifact("a.js", "A"))
+        var Int rejected
+        try { spool.write(CompilerArtifact("b.js", "B")) } catch (Exception error) { rejected++ }
+        try { FilesystemCompilerSourceProvider([File(root, "missing.flat")]) } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+        Es6ArtifactFiles.remove(root)
+    }
+
     test `can create`() {
         let value = Compiler()
 

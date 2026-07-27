@@ -1,0 +1,12 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+
+data class {
+    public construct(
+        visible BoundTypeUnit parentType,
+        visible BoundTypeUnit childType
+    ) {
+        if (!parentType || !childType) throw Exception("Inheritance binding requires parent and child")
+    }
+}

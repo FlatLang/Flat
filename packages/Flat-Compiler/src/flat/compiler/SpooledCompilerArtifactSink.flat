@@ -1,0 +1,30 @@
+package flat/compiler
+
+import flat/io
+import flat/time/Time
+import flat/writer/es6/bound
+
+/** Bounded disk spool that atomically promotes artifacts to a filesystem sink. */
+class extends CompilerArtifactSink {
+    var CompilerArtifact[] pending = CompilerArtifact[]
+    public construct(visible File root, visible Int capacity) {
+        if (!root || capacity <= 0) throw Exception("Spooled sink requires root and capacity")
+        Es6ArtifactFiles.ensureDirectory(root)
+    }
+    override public write(CompilerArtifact artifact) {
+        if (!artifact || pending.count >= capacity || pending.any({ _.identity == artifact.identity })) {
+            throw Exception("Spooled artifact sink capacity or identity violation")
+        }
+        pending.add(artifact)
+        Es6ArtifactFiles.write(File(root, artifact.identity + ".spool"), artifact.code)
+    }
+    public commitTo(FilesystemCompilerArtifactSink destination) {
+        if (!destination) throw Exception("Spooled sink requires destination")
+        for (artifact in pending.sort({ _a.identity.compareTo(_b.identity) })) {
+            destination.write(artifact)
+            Es6ArtifactFiles.remove(File(root, artifact.identity + ".spool"))
+        }
+        pending.clear()
+    }
+    override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(pending)
+}

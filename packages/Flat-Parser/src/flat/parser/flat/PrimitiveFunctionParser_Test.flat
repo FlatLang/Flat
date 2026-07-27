@@ -1,0 +1,81 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+testable class {
+    test `parses multiple functions parameters calls recursion and ranges`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-functions"), "revision:one"
+        )
+        let result = PrimitiveFunctionParser().parse([
+            token("double", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 8), token("value", Token.Type.IDENTIFIER, 12),
+            token(")", Token.Type.SYMBOL, 17), token("->", Token.Type.SYMBOL, 19),
+            token("Int", Token.Type.IDENTIFIER, 22), token("{", Token.Type.SYMBOL, 26),
+            token("return", Token.Type.IDENTIFIER, 28), token("value", Token.Type.IDENTIFIER, 35),
+            token("+", Token.Type.SYMBOL, 41), token("value", Token.Type.IDENTIFIER, 43),
+            token(";", Token.Type.SYMBOL, 48), token("}", Token.Type.SYMBOL, 50),
+            token("run", Token.Type.IDENTIFIER, 52), token("(", Token.Type.SYMBOL, 55),
+            token(")", Token.Type.SYMBOL, 56), token("->", Token.Type.SYMBOL, 58),
+            token("Int", Token.Type.IDENTIFIER, 61), token("{", Token.Type.SYMBOL, 65),
+            token("return", Token.Type.IDENTIFIER, 67), token("double", Token.Type.IDENTIFIER, 74),
+            token("(", Token.Type.SYMBOL, 80), token("2", Token.Type.INTEGER, 81),
+            token(")", Token.Type.SYMBOL, 82), token(";", Token.Type.SYMBOL, 83),
+            token("}", Token.Type.SYMBOL, 85)
+        ], snapshot, 5)
+        let functions = result.functionValues()
+        let first = functions.first
+        let second = functions.last
+        let secondStatements = second.statements()
+        let returnedObject = (Object)secondStatements.first
+        let returned = (PrimitiveReturnSyntax)returnedObject
+        let callObject = (Object)returned.value
+        let call = (PrimitiveCallSyntax)callObject
+
+        expect(functions.count).toBe(2)
+        expect(first.parameterValues().first.typeName).toBe("Int")
+        expect(first.parameterValues().first.name).toBe("value")
+        expect(first.range.startTokenIndex).toBe(5)
+        expect(first.range.endTokenIndex).toBe(19)
+        expect(call.name).toBe("double")
+        expect(call.argumentValues().count).toBe(1)
+    }
+
+    test `rejects duplicate delimiters and incomplete signatures or bodies`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-functions-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveFunctionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token(")", Token.Type.SYMBOL, 5), token("Int", Token.Type.IDENTIFIER, 7),
+                token("{", Token.Type.SYMBOL, 11), token("}", Token.Type.SYMBOL, 12)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveFunctionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("Int", Token.Type.IDENTIFIER, 5), token("value", Token.Type.IDENTIFIER, 9),
+                token(",", Token.Type.SYMBOL, 14), token(")", Token.Type.SYMBOL, 15),
+                token("->", Token.Type.SYMBOL, 17), token("Int", Token.Type.IDENTIFIER, 20),
+                token("{", Token.Type.SYMBOL, 24), token("}", Token.Type.SYMBOL, 25)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveFunctionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token(")", Token.Type.SYMBOL, 5), token("->", Token.Type.SYMBOL, 7),
+                token("Int", Token.Type.IDENTIFIER, 10), token("{", Token.Type.SYMBOL, 14),
+                token("return", Token.Type.IDENTIFIER, 16), token("1", Token.Type.INTEGER, 23),
+                token(";", Token.Type.SYMBOL, 24)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}

@@ -5,6 +5,7 @@ import flat/semantic/types
 
 data class {
     var BoundFunctionUnit[] functions
+    var BoundFieldUnit[] fields
     var BoundMetadataUnit[] metadataUnits
 
     public construct(
@@ -12,15 +13,20 @@ data class {
         visible UserClassSemanticType semanticType,
         BoundFunctionUnit[] functionUnits,
         visible SourceRange range,
-        BoundMetadataUnit[] metadataValues = BoundMetadataUnit[]
+        BoundMetadataUnit[] metadataValues = BoundMetadataUnit[],
+        BoundFieldUnit[] fieldValues = BoundFieldUnit[],
+        visible UserClassSemanticType parentType = null
     ) {
         if (!identity || !semanticType || !functionUnits || functionUnits.any({ !_ }) || !range ||
             !metadataValues || metadataValues.any({ !_ }) ||
+            !fieldValues || fieldValues.any({ !_ }) ||
             identity.syntaxIdentity.snapshot != range.snapshot) {
             throw Exception("Bound type requires identity, semantic type, functions, and range")
         }
         functions = BoundFunctionUnit[]
         functions.addAll(functionUnits)
+        fields = BoundFieldUnit[]
+        fields.addAll(fieldValues)
         metadataUnits = BoundMetadataUnit[]
         metadataUnits.addAll(metadataValues)
     }
@@ -28,6 +34,12 @@ data class {
     public functionUnits() -> BoundFunctionUnit[] {
         let result = BoundFunctionUnit[]
         result.addAll(functions)
+        return result
+    }
+
+    public fieldUnits() -> BoundFieldUnit[] {
+        let result = BoundFieldUnit[]
+        result.addAll(fields)
         return result
     }
 

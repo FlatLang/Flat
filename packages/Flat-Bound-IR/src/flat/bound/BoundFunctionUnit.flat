@@ -15,12 +15,20 @@ data class {
         visible SourceRange range,
         BoundFunctionParameter[] parameterValues = BoundFunctionParameter[],
         visible Bool staticFunction = false,
-        visible Bool mainFunction = false
+        visible Bool mainFunction = false,
+        visible Bool constructorFunction = false,
+        visible String dispatchIdentity = null
     ) {
         if (!identity || !name || !returnType || !statements || statements.any({ !_ }) || !range ||
             !parameterValues || parameterValues.any({ !_ }) ||
             identity.syntaxIdentity.snapshot != range.snapshot) {
             throw Exception("Bound function requires identity, name, return type, statements, and range")
+        }
+        if (constructorFunction && (staticFunction || mainFunction || returnType.value() != "unit")) {
+            throw Exception("Bound constructor must be an instance unit-returning function")
+        }
+        if (dispatchIdentity && (constructorFunction || staticFunction)) {
+            throw Exception("Only instance methods can carry virtual dispatch identity")
         }
         body = BoundStatement[]
         body.addAll(statements)

@@ -1,0 +1,14 @@
+package flat/compiler
+
+/** Reusable in-process compiler harness that never parses terminal output. */
+class {
+    public construct(visible CompilerEngine engine = CompilerEngine()) {
+        if (!engine) throw Exception("Compiler test harness requires engine")
+    }
+
+    public async compile(CompilerSource[] sources) -> CompilerTestResult {
+        let sink = MemoryCompilerArtifactSink()
+        let session = engine.compile(MemoryCompilerSourceProvider(sources), sink)
+        return CompilerTestResult(session, sink.artifacts())
+    }
+}

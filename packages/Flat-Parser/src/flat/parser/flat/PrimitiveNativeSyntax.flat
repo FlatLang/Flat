@@ -1,0 +1,23 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only target-annotated native invocation. */
+data class extends PrimitiveExpressionSyntax {
+    var PrimitiveExpressionSyntax[] arguments
+    public construct(
+        SourceRange range,
+        visible String target,
+        visible String nativeName,
+        PrimitiveExpressionSyntax[] values
+    ) {
+        if (!range || !target || !nativeName || !values || values.any({ !_ })) {
+            throw Exception("Native syntax requires target name and arguments")
+        }
+        arguments = PrimitiveExpressionSyntax[]
+        arguments.addAll(values)
+        super(range)
+    }
+    public argumentValues() -> PrimitiveExpressionSyntax[] => PrimitiveExpressionSyntax[]:addAll(arguments)
+    override public expressionKind() => "native"
+}

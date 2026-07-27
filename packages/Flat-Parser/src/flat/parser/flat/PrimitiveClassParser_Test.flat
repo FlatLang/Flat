@@ -1,0 +1,117 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+testable class {
+    test `parses reduced type slice`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse(tokens(), snapshot, 4)
+        let methods = parsed.methodValues()
+        let method = methods.first
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (PrimitiveReturnSyntax)returnedObject
+        let accessObject = (Object)returned.value
+        let access = (PrimitiveMemberAccessSyntax)accessObject
+
+        expect(parsed.name).toBe("Box")
+        expect(parsed.parentName).toBe(null)
+        expect(parsed.genericParameterName).toBe(null)
+        expect(parsed.fieldValues().first.name).toBe("value")
+        expect(parsed.constructorValue.parameterValues().first.name).toBe("value")
+        expect(parsed.range.startTokenIndex).toBe(4)
+        expect(access.memberName).toBe("value")
+    }
+
+    test `parses parent declaration and rejects missing parent name`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Child", false, 7),
+            token("extends", false, 13), token("Parent", false, 21),
+            token("{", true, 28), token("constructor", false, 30),
+            token("(", true, 41), token(")", true, 42), token("{", true, 44),
+            token("}", true, 45), token("}", true, 47)
+        ], snapshot)
+        expect(parsed.parentName).toBe("Parent")
+        var rejected = false
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Child", false, 7),
+                token("extends", false, 13), token("{", true, 21)
+            ], snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `parses generic parameter and rejects incomplete generic declaration`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-class"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Box", false, 7), token("<", true, 10),
+            token("T", false, 11), token(">", true, 12), token("{", true, 14),
+            token("constructor", false, 16), token("(", true, 27), token(")", true, 28),
+            token("{", true, 30), token("}", true, 31), token("}", true, 33)
+        ], snapshot)
+        expect(parsed.genericParameterName).toBe("T")
+        var rejected = false
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Box", false, 7), token("<", true, 10),
+                token(">", true, 11)
+            ], snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `rejects invalid reduced types`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Box", false, 7), token("{", true, 11),
+                token("Int", false, 13), token("value", false, 17), token(";", true, 22), token("}", true, 24)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Box", false, 7), token("{", true, 11),
+                token("Int", false, 13), token("value", false, 17), token(";", true, 22),
+                token("Int", false, 24), token("value", false, 28), token(";", true, 33),
+                token("constructor", false, 35), token("(", true, 46), token(")", true, 47),
+                token("{", true, 49), token("}", true, 50), token("}", true, 52)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            let values = tokens()
+            PrimitiveClassParser().parse(values.take(values.count - 1), snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+    }
+
+    tokens() -> Token[] {
+        return [
+        token("class", false, 1), token("Box", false, 7), token("{", true, 11),
+        token("Int", false, 13), token("value", false, 17), token(";", true, 22),
+        token("constructor", false, 24), token("(", true, 35), token("Int", false, 36), token("value", false, 40),
+        token(")", true, 45), token("{", true, 47), token("this", false, 49), token(".", true, 53),
+        token("value", false, 54), token("=", true, 60), token("value", false, 62), token(";", true, 67),
+        token("}", true, 69), token("get", false, 71), token("(", true, 74), token(")", true, 75),
+        token("->", true, 77), token("Int", false, 80), token("{", true, 84), token("return", false, 86),
+        token("this", false, 93), token(".", true, 97), token("value", false, 98), token(";", true, 103),
+        token("}", true, 105), token("}", true, 107)
+        ]
+    }
+
+    token(String value, Bool symbol, Int column) -> Token {
+        let type = symbol ? Token.Type.SYMBOL : Token.Type.IDENTIFIER
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}

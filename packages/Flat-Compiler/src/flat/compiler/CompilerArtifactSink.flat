@@ -1,0 +1,6 @@
+package flat/compiler
+
+abstract class {
+    public write(CompilerArtifact artifact) {}
+    public artifacts() -> CompilerArtifact[] => CompilerArtifact[]
+}

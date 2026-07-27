@@ -1,0 +1,48 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+
+testable class {
+    async test `runtime contract executes object metadata values exceptions closures promises and native interop`() {
+        let abi = Es6RuntimeAbi()
+        let ownership = Es6RuntimeOwnership.standard()
+        expect(ownership.emitted().contains("type-metadata")).toBe(true)
+        expect(ownership.hostRuntime().contains("arrays")).toBe(true)
+        expect(ownership.hostRuntime().contains("closures")).toBe(true)
+        expect(ownership.hostRuntime().contains("native-globals")).toBe(true)
+
+        let code = "class Base { value() { return 1; } }\n" +
+            "class Child extends Base { value() { return 2; } }\n" +
+            "Child." + abi.typeMetadataProperty + " = { name: 'Child', generic: ['Int'] };\n" +
+            "const values = [new Child().value(), 'flat'.toUpperCase()];\n" +
+            "const captured = 3; const closure = value => value + captured;\n" +
+            "let caught = 0; try { throw new Error('x'); } catch (error) { caught = 1; }\n" +
+            "const native = globalThis['Math']['max'](4, 5);\n" +
+            "Promise.resolve(closure(values[0]) + caught + native).then(value => " +
+            "console.log(value + ':' + Child." + abi.typeMetadataProperty + ".generic[0]));\n"
+        let root = File(".flat-es6-runtime-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "runtime.js")
+        Es6ArtifactCommitter().commit(destination, code)
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("11:Int\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    test `runtime ownership rejects overlap and defensively copies`() {
+        let emitted = ["classes"]
+        let host = ["arrays"]
+        let ownership = Es6RuntimeOwnership(emitted, host)
+        emitted.add("arrays")
+        host.add("classes")
+        expect(ownership.emitted().count).toBe(1)
+        expect(ownership.hostRuntime().count).toBe(1)
+        var rejected = false
+        try { Es6RuntimeOwnership(["arrays"], ["arrays"]) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+}

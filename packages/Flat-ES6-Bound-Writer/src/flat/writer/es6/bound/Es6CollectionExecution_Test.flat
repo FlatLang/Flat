@@ -1,0 +1,48 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    async test `match safe range data metadata lower and execute`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:collection-execute"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("match", Token.Type.IDENTIFIER), token("(", Token.Type.SYMBOL),
+            token("safe", Token.Type.IDENTIFIER), token("(", Token.Type.SYMBOL),
+            token("range", Token.Type.IDENTIFIER), token("(", Token.Type.SYMBOL),
+            token("5", Token.Type.INTEGER), token(")", Token.Type.SYMBOL),
+            token(")", Token.Type.SYMBOL), token(")", Token.Type.SYMBOL)
+        ], snapshot)
+        let bound = PrimitiveExpressionBinder().bind(syntax).expression
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "run"
+        )
+        let rich = BoundFunctionUnit(identity, "run", bound.semanticType, [
+            BoundReturnStatement(syntax.range, bound.semanticType, bound,
+                TypeConversions.classify(bound.semanticType, bound.semanticType))
+        ], syntax.range)
+        let lowered = CollectionControlLoweringPass().lower(rich)
+        let emitted = Es6UnitOrchestrator().emitFunction(lowered, 0)
+        let root = File(".flat-es6-collection-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "collection.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(" + Es6NameMangler.mangle(identity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("5\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type) -> Token => Token(
+        value: value, type: type, location: Location(lineNumber: 1, column: 1)
+    )
+}

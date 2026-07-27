@@ -1,0 +1,17 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only class field declaration. */
+data class {
+    public construct(
+        visible SourceRange range,
+        visible String typeName,
+        visible String name
+    ) {
+        if (!range || !typeName || typeName.trim().count == 0 ||
+            !name || name.trim().count == 0) {
+            throw Exception("Primitive field syntax requires range type and name")
+        }
+    }
+}

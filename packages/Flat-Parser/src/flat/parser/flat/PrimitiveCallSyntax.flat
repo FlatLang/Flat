@@ -1,0 +1,30 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only call expression with source-ordered arguments. */
+data class extends PrimitiveExpressionSyntax {
+    var PrimitiveExpressionSyntax[] arguments
+
+    public construct(
+        SourceRange range,
+        visible String name,
+        PrimitiveExpressionSyntax[] argumentValues
+    ) {
+        if (!range || !name || name.trim().count == 0 || !argumentValues ||
+            argumentValues.any({ !_ })) {
+            throw Exception("Primitive call syntax requires range, name, and arguments")
+        }
+        super(range)
+        arguments = PrimitiveExpressionSyntax[]
+        arguments.addAll(argumentValues)
+    }
+
+    public argumentValues() -> PrimitiveExpressionSyntax[] {
+        let result = PrimitiveExpressionSyntax[]
+        result.addAll(arguments)
+        return result
+    }
+
+    override public expressionKind() => "call"
+}

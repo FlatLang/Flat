@@ -1,0 +1,53 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+
+testable class {
+    async test `child override dispatches virtually through parent method slot`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-execute"), "revision:one"
+        )
+        let parentSyntax = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), snapshot)
+        let childSyntax = PrimitiveClassParser().parse(typeTokens("Child", "Parent", "2"), snapshot)
+        let binding = PrimitiveInheritanceBinder().bind(parentSyntax, childSyntax, snapshot)
+        let parent = Es6UnitOrchestrator().emitType(binding.parentType, 0)
+        let child = Es6UnitOrchestrator().emitType(binding.childType, 1)
+        let code = Es6FragmentAssembler(2).assemble([child.fragment, parent.fragment]).code
+        let childName = Es6NameMangler.mangle(binding.childType.identity.value)
+        let slot = Es6NameMangler.mangle(
+            binding.parentType.functionUnits().last.dispatchIdentity
+        )
+        let root = File(".flat-es6-inheritance-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "inheritance.js")
+        Es6ArtifactCommitter().commit(destination, code +
+            "console.log(new " + childName + "()." + slot + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("2\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    typeTokens(String name, String parent, String returned) -> Token[] {
+        let values = [token("class", false), token(name, false)]
+        if (parent) values.addAll([token("extends", false), token(parent, false)])
+        values.addAll([
+            token("{", true), token("constructor", false), token("(", true), token(")", true),
+            token("{", true), token("}", true), token("value", false), token("(", true),
+            token(")", true), token("->", true), token("Int", false), token("{", true),
+            token("return", false), token(returned, false, Token.Type.INTEGER),
+            token(";", true), token("}", true), token("}", true)
+        ])
+        return values
+    }
+
+    token(String value, Bool symbol, Int type = Token.Type.IDENTIFIER) -> Token => Token(
+        value: value, type: symbol ? Token.Type.SYMBOL : type,
+        location: Location(lineNumber: 1, column: 1)
+    )
+}
