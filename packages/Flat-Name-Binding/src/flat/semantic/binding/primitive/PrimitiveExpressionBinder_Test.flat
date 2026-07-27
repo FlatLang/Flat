@@ -1,0 +1,76 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/semantic/types
+
+testable class {
+    test `binds typed primitive expressions references and conversions`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-bind"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("1", Token.Type.INTEGER, 1),
+            token("+", Token.Type.SYMBOL, 3),
+            token("2", Token.Type.INTEGER, 5)
+        ], snapshot)
+        let direct = PrimitiveExpressionBinder().bind(syntax)
+        let widened = PrimitiveExpressionBinder().bind(
+            syntax, SemanticTypes.longType()
+        )
+        let local = LocalBinding(
+            "value",
+            SymbolIdentity(
+                DeclarationIdentity(
+                    SyntaxIslandIdentity(snapshot, "local", 7), "local", "value"
+                ),
+                "local"
+            ),
+            SemanticTypes.intType()
+        )
+        let reference = PrimitiveExpressionBinder().bind(
+            PrimitiveExpressionParser().parse([
+                token("value", Token.Type.IDENTIFIER, 1)
+            ], snapshot),
+            locals: [local]
+        )
+
+        expect(direct.succeeded).toBe(true)
+        expect(direct.expression.semanticType.value()).toBe("primitive:Int")
+        expect(widened.succeeded).toBe(true)
+        expect(widened.expression.semanticType.value()).toBe("primitive:Long")
+        expect(reference.succeeded).toBe(true)
+        expect(reference.expression.semanticType.value()).toBe("primitive:Int")
+    }
+
+    test `reports stable source ranged semantic diagnostics`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-diagnostic"), "revision:one"
+        )
+        let incompatible = PrimitiveExpressionBinder().bind(
+            PrimitiveExpressionParser().parse([
+                token("true", Token.Type.BOOL, 1)
+            ], snapshot),
+            SemanticTypes.intType()
+        )
+        let unknown = PrimitiveExpressionBinder().bind(
+            PrimitiveExpressionParser().parse([
+                token("missing", Token.Type.IDENTIFIER, 1)
+            ], snapshot)
+        )
+
+        expect(incompatible.succeeded).toBe(false)
+        expect(incompatible.diagnostic.code).toBe("type.primitive-conversion")
+        expect(incompatible.diagnostic.range.snapshot).toBe(snapshot)
+        expect(unknown.succeeded).toBe(false)
+        expect(unknown.diagnostic.code).toBe("semantic.primitive-expression")
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(
+            value: value,
+            type: type,
+            location: Location(lineNumber: 1, column: column)
+        )
+    }
+}

@@ -1,7 +1,7 @@
 {
   "name": "Flat-Name-Binding",
   "version": "0.1.0",
-  "description": "Dependency-driven Flat name binding work and lookup semantics",
+  "description": "Dependency-driven Flat name binding and independently schedulable syntax-to-Bound construction",
   "author": "Braden Steffaniak",
   "license": "ISC",
   "defaultTarget": "es6",
@@ -17,7 +17,10 @@
         "https://github.com/FlatLang/Future.git": "master",
         "https://github.com/FlatLang/Event-Stream.git": "master",
         "https://github.com/FlatLang/Flat-Compiler-Models.git": "master",
-        "https://github.com/FlatLang/Flat-Declaration-Index.git": "master"
+        "https://github.com/FlatLang/Flat-Declaration-Index.git": "master",
+        "https://github.com/FlatLang/Flat-Parser.git": "master",
+        "https://github.com/FlatLang/Flat-Type-System.git": "master",
+        "https://github.com/FlatLang/Flat-Bound-IR.git": "master"
       }
     },
     "test": {

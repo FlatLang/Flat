@@ -4,6 +4,46 @@ import flat/bound
 
 /** Emits reduced statements from already-emitted child expressions. */
 class {
+    public emitIf(
+        BoundIfStatement statement,
+        Es6CodeResult condition,
+        Es6CodeResult thenBody,
+        Es6CodeResult elseBody
+    ) -> Es6CodeResult {
+        if (!statement || !condition || !thenBody || !elseBody) {
+            throw Exception("ES6 if emission requires statement condition and branches")
+        }
+        if (!condition.emitted) return condition
+        if (!thenBody.emitted) return thenBody
+        if (!elseBody.emitted) return elseBody
+        var String code = "if (" + condition.code + ") {\n" + indent(thenBody.code) + "}"
+        if (statement.elseValues().isNotEmpty) {
+            code += " else {\n" + indent(elseBody.code) + "}"
+        }
+        return Es6CodeResult(code: code + "\n")
+    }
+
+    public emitWhile(
+        BoundWhileStatement statement,
+        Es6CodeResult condition,
+        Es6CodeResult body
+    ) -> Es6CodeResult {
+        if (!statement || !condition || !body) {
+            throw Exception("ES6 while emission requires statement condition and body")
+        }
+        if (!condition.emitted) return condition
+        if (!body.emitted) return body
+        return Es6CodeResult(code:
+            "while (" + condition.code + ") {\n" + indent(body.code) + "}\n"
+        )
+    }
+
+    indent(String code) -> String {
+        if (!code) return ""
+        return code.split("\n").filter({ _.count > 0 })
+            .map({ "    " + _ + "\n" }).join("")
+    }
+
     public emitExpression(
         BoundExpressionStatement statement,
         Es6CodeResult expression

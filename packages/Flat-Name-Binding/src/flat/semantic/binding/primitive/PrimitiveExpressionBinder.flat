@@ -1,0 +1,88 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Types immutable primitive syntax into reduced Bound expressions. */
+class {
+    public bind(
+        PrimitiveExpressionSyntax syntax,
+        SemanticType requiredType = null,
+        LocalBinding[] locals = LocalBinding[]
+    ) -> PrimitiveExpressionBindingResult {
+        if (!syntax || !locals) throw Exception("Primitive binding requires syntax and locals")
+        try {
+            let expression = bindSyntax(syntax, locals)
+            if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
+            let conversion = TypeConversions.classify(expression.semanticType, requiredType)
+            if (!conversion.applicable) {
+                return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                    "type.primitive-conversion",
+                    "Primitive expression '#{expression.semanticType.value()}' cannot convert to '#{requiredType.value()}'",
+                    expression.range
+                ))
+            }
+            if (conversion.conversionKind == "identity") {
+                return PrimitiveExpressionBindingResult(expression: expression)
+            }
+            return PrimitiveExpressionBindingResult(expression: BoundConversionExpression(
+                expression.range, requiredType, expression, conversion
+            ))
+        } catch (Exception error) {
+            return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                "semantic.primitive-expression",
+                error.message ?: "Invalid primitive expression",
+                syntax.range
+            ))
+        }
+    }
+
+    bindSyntax(
+        PrimitiveExpressionSyntax syntax,
+        LocalBinding[] locals
+    ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveLiteralSyntax.class)) {
+            let value = (PrimitiveLiteralSyntax)syntax
+            var SemanticType type
+            if (value.tokenType == Token.Type.INTEGER) type = SemanticTypes.intType()
+            else if (value.tokenType == Token.Type.BOOL) type = SemanticTypes.boolType()
+            else if (value.tokenType == Token.Type.STRING) type = SemanticTypes.stringType()
+            else if (value.tokenType == Token.Type.CHAR) type = SemanticTypes.charType()
+            else if (value.tokenType == Token.Type.NULL) type = SemanticTypes.nullType()
+            else throw Exception("Unsupported primitive literal '#{value.sourceValue}'")
+            return BoundLiteralExpression(value.range, type, value.sourceValue)
+        }
+        if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
+            let value = (PrimitiveReferenceSyntax)syntax
+            let local = locals.reverse().firstOrNull({ _.name == value.name })
+            if (!local) throw Exception("Unknown local '#{value.name}'")
+            return BoundReferenceExpression(
+                value.range, local.semanticType, local.name, local.identity
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
+            let value = (PrimitiveUnarySyntax)syntax
+            let operand = bindSyntax(value.operand, locals)
+            let typed = TypeOperations.unary(value.operator, operand.semanticType, value.range)
+            if (!typed.valid) throw Exception(typed.diagnostic.message)
+            return BoundUnaryExpression(
+                value.range, typed.semanticType, value.operator, operand
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let value = (PrimitiveBinarySyntax)syntax
+            let left = bindSyntax(value.left, locals)
+            let right = bindSyntax(value.right, locals)
+            let typed = TypeOperations.binary(
+                value.operator, left.semanticType, right.semanticType, value.range
+            )
+            if (!typed.valid) throw Exception(typed.diagnostic.message)
+            return BoundBinaryExpression(
+                value.range, typed.semanticType, value.operator, left, right
+            )
+        }
+        throw Exception("Unsupported primitive expression syntax '#{syntax.expressionKind()}'")
+    }
+}

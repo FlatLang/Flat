@@ -1,0 +1,17 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible String operator,
+        visible PrimitiveExpressionSyntax operand
+    ) {
+        if (!range || !operator || !operand) {
+            throw Exception("Primitive unary syntax requires operator and operand")
+        }
+        super(range)
+    }
+    override public expressionKind() => "unary"
+}

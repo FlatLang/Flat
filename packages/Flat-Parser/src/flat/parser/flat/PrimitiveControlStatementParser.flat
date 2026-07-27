@@ -1,0 +1,129 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Balanced recursive syntax parser for primitive statements, if/else, and while. */
+class {
+    var Token[] tokens
+    var Int index
+    var Int tokenIndexOffset
+    var SourceSnapshotIdentity snapshot
+
+    public parse(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0
+    ) -> PrimitiveStatementSyntaxResult {
+        if (!tokenValues || !sourceSnapshot) {
+            throw Exception("Primitive control parsing requires tokens and snapshot")
+        }
+        tokens = tokenValues.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        snapshot = sourceSnapshot
+        tokenIndexOffset = sourceTokenIndexOffset
+        index = 0
+        let statements = parseStatements(false)
+        if (index != tokens.count) syntax("Unexpected trailing token", index)
+        return PrimitiveStatementSyntaxResult(statements)
+    }
+
+    parseStatements(Bool insideBody) -> PrimitiveStatementSyntax[] {
+        let statements = PrimitiveStatementSyntax[]
+        while (index < tokens.count && (!insideBody || tokens[index].value != "}")) {
+            if (tokens[index].value == "if") statements.add(parseIf())
+            else if (tokens[index].value == "while") statements.add(parseWhile())
+            else statements.add(parseSimple())
+        }
+        if (insideBody) {
+            if (index >= tokens.count || tokens[index].value != "}") {
+                syntax("Expected closing brace", index)
+            }
+            index++
+        }
+        return statements
+    }
+
+    parseIf() -> PrimitiveStatementSyntax {
+        let start = index++
+        let condition = parseCondition()
+        let thenValues = parseBody()
+        let elseValues = PrimitiveStatementSyntax[]
+        if (index < tokens.count && tokens[index].value == "else") {
+            index++
+            elseValues.addAll(parseBody())
+        }
+        return PrimitiveIfSyntax(range(start, index), condition, thenValues, elseValues)
+    }
+
+    parseWhile() -> PrimitiveStatementSyntax {
+        let start = index++
+        let condition = parseCondition()
+        let body = parseBody()
+        return PrimitiveWhileSyntax(range(start, index), condition, body)
+    }
+
+    parseCondition() -> PrimitiveExpressionSyntax {
+        if (index >= tokens.count || tokens[index].value != "(") {
+            syntax("Expected opening parenthesis", index)
+        }
+        let open = index++
+        let start = index
+        var Int depth = 1
+        while (index < tokens.count && depth > 0) {
+            if (tokens[index].value == "(") depth++
+            else if (tokens[index].value == ")") depth--
+            if (depth > 0) index++
+        }
+        if (index >= tokens.count || depth != 0 || index == start) {
+            syntax("Expected complete non-empty condition", open)
+        }
+        let end = index++
+        return PrimitiveExpressionParser().parse(
+            tokens.skip(start).take(end - start),
+            snapshot,
+            start + tokenIndexOffset
+        )
+    }
+
+    parseBody() -> PrimitiveStatementSyntax[] {
+        if (index >= tokens.count || tokens[index].value != "{") {
+            syntax("Expected opening brace", index)
+        }
+        index++
+        return parseStatements(true)
+    }
+
+    parseSimple() -> PrimitiveStatementSyntax {
+        let start = index
+        while (index < tokens.count && tokens[index].value != ";" &&
+            tokens[index].value != "}") index++
+        if (index == start || index >= tokens.count || tokens[index].value != ";") {
+            syntax("Expected semicolon-terminated statement", start)
+        }
+        let result = PrimitiveStatementParser().parse(
+            tokens.skip(start).take(index - start),
+            snapshot,
+            start + tokenIndexOffset
+        )
+        index++
+        return result.statements().first
+    }
+
+    range(Int start, Int end) -> SourceRange {
+        let first = tokens[start]
+        let last = tokens[end - 1]
+        return SourceRange(
+            snapshot,
+            start + tokenIndexOffset,
+            end + tokenIndexOffset,
+            first.location,
+            Location(lineNumber: last.endLineNumber, column: last.endColumn)
+        )
+    }
+
+    syntax(String message, Int tokenIndex) {
+        throw Exception("Primitive control syntax error at token #tokenIndex: #message")
+    }
+}

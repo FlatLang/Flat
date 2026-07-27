@@ -1,0 +1,9 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only expression node produced by Flat grammar parsing. */
+abstract data class {
+    visible SourceRange range
+    public abstract expressionKind() -> String
+}

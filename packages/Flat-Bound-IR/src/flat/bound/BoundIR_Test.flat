@@ -27,6 +27,14 @@ testable class {
         let function = BoundFunctionUnit(
             functionIdentity, "run", longType, [assignment, returned], fixture.range(1, 4)
         )
+        let condition = BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true")
+        let branch = BoundIfStatement(
+            fixture.range(), condition, [assignment], [returned]
+        )
+        let loop = BoundWhileStatement(fixture.range(), condition, [assignment])
+        expect(branch.thenValues().count).toBe(1)
+        expect(branch.elseValues().count).toBe(1)
+        expect(loop.bodyValues().count).toBe(1)
         let typeIdentity = fixture.declaration("class", "Example", 0)
         let type = BoundTypeUnit(
             typeIdentity,

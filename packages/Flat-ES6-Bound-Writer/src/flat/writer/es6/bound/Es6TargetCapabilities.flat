@@ -4,7 +4,8 @@ package flat/writer/es6/bound
 class {
     public static supportsStatement(String kind) -> Bool {
         return kind == "expression" || kind == "local-declaration" ||
-            kind == "assignment" || kind == "return"
+            kind == "assignment" || kind == "return" || kind == "if" ||
+            kind == "while"
     }
 
     public static supportsExpression(String kind) -> Bool {

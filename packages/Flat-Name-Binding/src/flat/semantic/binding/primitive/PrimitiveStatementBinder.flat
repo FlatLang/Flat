@@ -1,0 +1,91 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Binds syntax-only function statements into typed reduced Bound statements. */
+class {
+    var LocalBinding[] locals
+
+    public bind(
+        PrimitiveStatementSyntaxResult syntax,
+        SourceSnapshotIdentity snapshot,
+        LocalBinding[] localValues = LocalBinding[]
+    ) -> PrimitiveStatementBindingResult {
+        if (!syntax || !snapshot || !localValues) {
+            throw Exception("Primitive statement binding requires syntax snapshot and locals")
+        }
+        locals = LocalBinding[]
+        locals.addAll(localValues)
+        let statements = BoundStatement[]
+        for (statement in syntax.statements()) statements.add(bindStatement(statement, snapshot))
+        return PrimitiveStatementBindingResult(statements, locals)
+    }
+
+    bindStatement(
+        PrimitiveStatementSyntax statement,
+        SourceSnapshotIdentity snapshot
+    ) -> BoundStatement {
+        if (statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class)) {
+            let value = (PrimitiveLocalDeclarationSyntax)statement
+            if (locals.any({ _.name == value.name })) {
+                throw Exception("Duplicate local '#{value.name}'")
+            }
+            let expression = expression(value.initializer)
+            let identity = SymbolIdentity(
+                DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        snapshot, "local", statement.range.startTokenIndex
+                    ),
+                    "local",
+                    value.name
+                ),
+                "local"
+            )
+            let reference = BoundReferenceExpression(
+                value.range, expression.semanticType, value.name, identity
+            )
+            locals.add(LocalBinding(value.name, identity, expression.semanticType))
+            return BoundLocalDeclarationStatement(
+                value.range, reference, expression,
+                TypeConversions.classify(expression.semanticType, expression.semanticType)
+            )
+        }
+        if (statement.class.isOfType(PrimitiveAssignmentSyntax.class)) {
+            let value = (PrimitiveAssignmentSyntax)statement
+            let local = locals.reverse().firstOrNull({ _.name == value.name })
+            if (!local) throw Exception("Unknown local '#{value.name}'")
+            let expression = expression(value.value)
+            let conversion = TypeConversions.classify(
+                expression.semanticType, local.semanticType
+            )
+            if (!conversion.applicable) {
+                throw Exception("Cannot assign '#{expression.semanticType.value()}' to '#{local.semanticType.value()}'")
+            }
+            let target = BoundReferenceExpression(
+                value.range, local.semanticType, local.name, local.identity
+            )
+            return BoundAssignmentStatement(value.range, target, expression, conversion)
+        }
+        if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+            let value = (PrimitiveReturnSyntax)statement
+            if (!value.value) {
+                return BoundReturnStatement(value.range, SemanticTypes.unitType())
+            }
+            let expression = expression(value.value)
+            return BoundReturnStatement(
+                value.range, expression.semanticType, expression,
+                TypeConversions.classify(expression.semanticType, expression.semanticType)
+            )
+        }
+        throw Exception("Unsupported primitive statement syntax '#{statement.statementKind()}'")
+    }
+
+    expression(PrimitiveExpressionSyntax syntax) -> BoundExpression {
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+        if (!result.succeeded) throw Exception(result.diagnostic.message)
+        return result.expression
+    }
+}

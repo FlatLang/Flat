@@ -1,0 +1,30 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Structured pre-test loop with immutable body statements. */
+data class extends BoundStatement {
+    var BoundStatement[] bodyStatements
+
+    public construct(
+        SourceRange range,
+        visible BoundExpression condition,
+        BoundStatement[] bodyValues
+    ) {
+        if (!range || !condition || condition.semanticType.value() != "primitive:Bool" ||
+            !bodyValues || bodyValues.any({ !_ })) {
+            throw Exception("Bound while requires Bool condition and valid body")
+        }
+        bodyStatements = BoundStatement[]
+        bodyStatements.addAll(bodyValues)
+        super(range)
+    }
+
+    public bodyValues() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(bodyStatements)
+        return result
+    }
+
+    override public unitKind() => "while"
+}

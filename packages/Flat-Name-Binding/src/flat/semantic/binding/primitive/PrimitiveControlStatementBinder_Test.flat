@@ -1,0 +1,66 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+
+testable class {
+    test `binds Bool conditions and isolates nested local scopes`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-control-bind"), "revision:one"
+        )
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("if", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token("true", Token.Type.BOOL, 5), token(")", Token.Type.SYMBOL, 9),
+            token("{", Token.Type.SYMBOL, 11), token("let", Token.Type.IDENTIFIER, 13),
+            token("inside", Token.Type.IDENTIFIER, 17), token("=", Token.Type.SYMBOL, 24),
+            token("1", Token.Type.INTEGER, 26), token(";", Token.Type.SYMBOL, 27),
+            token("}", Token.Type.SYMBOL, 29), token("else", Token.Type.IDENTIFIER, 31),
+            token("{", Token.Type.SYMBOL, 36), token("return", Token.Type.IDENTIFIER, 38),
+            token(";", Token.Type.SYMBOL, 44), token("}", Token.Type.SYMBOL, 46),
+            token("return", Token.Type.IDENTIFIER, 48), token(";", Token.Type.SYMBOL, 54)
+        ], snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let boundStatements = result.statements()
+        let conditionalObject = (Object)boundStatements.first
+        let conditional = (BoundIfStatement)conditionalObject
+        let condition = conditional.condition
+        let thenStatements = conditional.thenValues()
+
+        expect(condition.semanticType.value()).toBe("primitive:Bool")
+        expect(thenStatements.first.unitKind()).toBe("local-declaration")
+        expect(result.locals().count).toBe(0)
+        expect(result.statements().count).toBe(2)
+    }
+
+    test `rejects non Bool and unknown-reference conditions`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-control-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            let integer = PrimitiveControlStatementParser().parse([
+                token("if", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("1", Token.Type.INTEGER, 5), token(")", Token.Type.SYMBOL, 6),
+                token("{", Token.Type.SYMBOL, 8), token("return", Token.Type.IDENTIFIER, 10),
+                token(";", Token.Type.SYMBOL, 16), token("}", Token.Type.SYMBOL, 18)
+            ], snapshot)
+            PrimitiveControlStatementBinder().bind(integer, snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            let unknown = PrimitiveControlStatementParser().parse([
+                token("while", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+                token("missing", Token.Type.IDENTIFIER, 8), token(")", Token.Type.SYMBOL, 15),
+                token("{", Token.Type.SYMBOL, 17), token("return", Token.Type.IDENTIFIER, 19),
+                token(";", Token.Type.SYMBOL, 25), token("}", Token.Type.SYMBOL, 27)
+            ], snapshot)
+            PrimitiveControlStatementBinder().bind(unknown, snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}

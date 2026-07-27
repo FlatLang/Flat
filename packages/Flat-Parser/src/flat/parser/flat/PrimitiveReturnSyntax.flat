@@ -1,0 +1,14 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+data class extends PrimitiveStatementSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax value = null
+    ) {
+        if (!range) throw Exception("Primitive return syntax requires range")
+        super(range)
+    }
+    override public statementKind() => "return"
+}

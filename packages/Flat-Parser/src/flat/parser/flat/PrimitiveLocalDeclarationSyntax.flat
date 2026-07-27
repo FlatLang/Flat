@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+data class extends PrimitiveStatementSyntax {
+    public construct(
+        SourceRange range,
+        visible Bool mutable,
+        visible String name,
+        visible PrimitiveExpressionSyntax initializer
+    ) {
+        if (!range || !name || !initializer) {
+            throw Exception("Primitive local syntax requires name and initializer")
+        }
+        super(range)
+    }
+    override public statementKind() => "local-declaration"
+}

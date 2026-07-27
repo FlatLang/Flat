@@ -1,0 +1,47 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+
+testable class {
+    async test `parsed bound primitive expression emits and executes under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-execute"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("1", Token.Type.INTEGER, 1),
+            token("+", Token.Type.SYMBOL, 3),
+            token("2", Token.Type.INTEGER, 5),
+            token("*", Token.Type.SYMBOL, 7),
+            token("3", Token.Type.INTEGER, 9)
+        ], snapshot)
+        let bound = PrimitiveExpressionBinder().bind(syntax)
+        let emitted = Es6ExpressionOrchestrator().emit(bound.expression)
+        let print = Es6CallEmitter().emitNativeCall("console.log", emitted.code)
+        let root = File(".flat-es6-primitive-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "primitive.js")
+        Es6ArtifactCommitter().commit(destination, print + ";\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+
+        expect(bound.succeeded).toBe(true)
+        expect(emitted.emitted).toBe(true)
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(
+            value: value,
+            type: type,
+            location: Location(lineNumber: 1, column: column)
+        )
+    }
+}

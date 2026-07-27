@@ -1,0 +1,98 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only parser for delimited primitive local, assignment, and return statements. */
+class {
+    var Token[] tokens
+    var SourceSnapshotIdentity snapshot
+    var Int tokenIndexOffset
+
+    public parse(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0
+    ) -> PrimitiveStatementSyntaxResult {
+        if (!tokenValues || !sourceSnapshot) {
+            throw Exception("Primitive statement parsing requires tokens and snapshot")
+        }
+        tokens = tokenValues.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        snapshot = sourceSnapshot
+        tokenIndexOffset = sourceTokenIndexOffset
+        let statements = PrimitiveStatementSyntax[]
+        var Int start
+        var Int index
+        while (index <= tokens.count) {
+            if (index == tokens.count || tokens[index].value == ";") {
+                if (index > start) statements.add(parseStatement(start, index))
+                start = index + 1
+            }
+            index++
+        }
+        return PrimitiveStatementSyntaxResult(statements)
+    }
+
+    parseStatement(Int start, Int end) -> PrimitiveStatementSyntax {
+        let first = tokens[start].value
+        if (first == "let" || first == "var") return parseLocal(start, end)
+        if (first == "return") return parseReturn(start, end)
+        return parseAssignment(start, end)
+    }
+
+    parseLocal(Int start, Int end) -> PrimitiveStatementSyntax {
+        if (end - start < 2 || tokens[start + 1].type != Token.Type.IDENTIFIER) {
+            syntax("Local declaration requires a name", start, end)
+        }
+        if (end - start < 4 || tokens[start + 2].value != "=") {
+            syntax("Primitive local requires an initializer", start, end)
+        }
+        return PrimitiveLocalDeclarationSyntax(
+            range(start, end),
+            tokens[start].value == "var",
+            tokens[start + 1].value,
+            expression(start + 3, end)
+        )
+    }
+
+    parseAssignment(Int start, Int end) -> PrimitiveStatementSyntax {
+        if (end - start < 3 || tokens[start].type != Token.Type.IDENTIFIER ||
+            tokens[start + 1].value != "=") {
+            syntax("Assignment requires 'name = expression'", start, end)
+        }
+        return PrimitiveAssignmentSyntax(
+            range(start, end), tokens[start].value, expression(start + 2, end)
+        )
+    }
+
+    parseReturn(Int start, Int end) -> PrimitiveStatementSyntax {
+        if (end - start == 1) return PrimitiveReturnSyntax(range(start, end))
+        return PrimitiveReturnSyntax(range(start, end), expression(start + 1, end))
+    }
+
+    expression(Int start, Int end) -> PrimitiveExpressionSyntax {
+        let values = tokens.skip(start).take(end - start)
+        return PrimitiveExpressionParser().parse(
+            values, snapshot, start + tokenIndexOffset
+        )
+    }
+
+    range(Int start, Int end) -> SourceRange {
+        let first = tokens[start]
+        let last = tokens[end - 1]
+        return SourceRange(
+            snapshot,
+            start + tokenIndexOffset,
+            end + tokenIndexOffset,
+            first.location,
+            Location(lineNumber: last.endLineNumber, column: last.endColumn)
+        )
+    }
+
+    syntax(String message, Int start, Int end) {
+        throw Exception("Primitive statement syntax error at " + start.toString() +
+            ".." + end.toString() + ": " + message)
+    }
+}

@@ -1,0 +1,19 @@
+package flat/parser/flat
+
+data class {
+    var PrimitiveStatementSyntax[] statementValues
+
+    public construct(PrimitiveStatementSyntax[] statements) {
+        if (!statements || statements.any({ !_ })) {
+            throw Exception("Primitive statement syntax result requires statements")
+        }
+        statementValues = PrimitiveStatementSyntax[]
+        statementValues.addAll(statements)
+    }
+
+    public statements() -> PrimitiveStatementSyntax[] {
+        let result = PrimitiveStatementSyntax[]
+        result.addAll(statementValues)
+        return result
+    }
+}

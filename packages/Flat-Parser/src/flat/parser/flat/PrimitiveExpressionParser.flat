@@ -1,0 +1,109 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Source-ranged syntax-only parser for the first primitive expression slice. */
+class {
+    var Token[] tokens
+    var Int index
+    var Int tokenIndexOffset
+    var SourceSnapshotIdentity snapshot
+
+    public parse(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0
+    ) -> PrimitiveExpressionSyntax {
+        if (!tokenValues || tokenValues.isEmpty || !sourceSnapshot) {
+            throw Exception("Primitive expression parsing requires tokens and snapshot")
+        }
+        tokens = tokenValues.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        snapshot = sourceSnapshot
+        tokenIndexOffset = sourceTokenIndexOffset
+        index = 0
+        let expression = parseLevel(0)
+        if (index != tokens.count) syntax("Unexpected token '#{tokens[index].value}'", index)
+        return expression
+    }
+
+    parseLevel(Int level) -> PrimitiveExpressionSyntax {
+        if (level >= 6) return parseUnary()
+        var PrimitiveExpressionSyntax left = parseLevel(level + 1)
+        let operators = operatorsFor(level)
+        while (index < tokens.count && operators.contains(tokens[index].value)) {
+            let operator = tokens[index++].value
+            let right = parseLevel(level + 1)
+            let expressionRange = range(left.range.startTokenIndex - tokenIndexOffset,
+                right.range.endTokenIndex - tokenIndexOffset)
+            left = PrimitiveBinarySyntax(expressionRange, operator, left, right)
+        }
+        return left
+    }
+
+    operatorsFor(Int level) -> String[] {
+        match level {
+            0 => return ["||"]
+            1 => return ["&&"]
+            2 => return ["==", "!="]
+            3 => return ["<", "<=", ">", ">="]
+            4 => return ["+", "-"]
+            5 => return ["*", "/", "%"]
+        }
+        return String[]
+    }
+
+    parseUnary() -> PrimitiveExpressionSyntax {
+        if (index < tokens.count) {
+            let unaryOperators = ["!", "+", "-", "~"]
+            if (unaryOperators.contains(tokens[index].value)) {
+                let start = index
+                let operator = tokens[index++].value
+                let operand = parseUnary()
+                return PrimitiveUnarySyntax(
+                    range(start, operand.range.endTokenIndex - tokenIndexOffset),
+                    operator,
+                    operand
+                )
+            }
+        }
+        return parsePrimary()
+    }
+
+    parsePrimary() -> PrimitiveExpressionSyntax {
+        if (index >= tokens.count) syntax("Expected primitive expression", index)
+        let tokenIndex = index
+        let token = tokens[index++]
+        if (token.type == Token.Type.IDENTIFIER) {
+            return PrimitiveReferenceSyntax(range(tokenIndex, tokenIndex + 1), token.value)
+        }
+        if (token.type != Token.Type.INTEGER && token.type != Token.Type.BOOL &&
+            token.type != Token.Type.STRING && token.type != Token.Type.CHAR &&
+            token.type != Token.Type.NULL) {
+            syntax("Expected primitive literal or identifier but received '#{token.value}'", tokenIndex)
+        }
+        return PrimitiveLiteralSyntax(
+            range(tokenIndex, tokenIndex + 1), token.type, token.value
+        )
+    }
+
+    range(Int startIndex, Int endIndex) -> SourceRange {
+        let start = tokens[startIndex].location
+        let last = tokens[endIndex - 1]
+        let sourceStartIndex = startIndex + tokenIndexOffset
+        let sourceEndIndex = endIndex + tokenIndexOffset
+        return SourceRange(
+            snapshot,
+            sourceStartIndex,
+            sourceEndIndex,
+            start,
+            Location(lineNumber: last.endLineNumber, column: last.endColumn)
+        )
+    }
+
+    syntax(String message, Int tokenIndex) {
+        throw Exception("Primitive expression syntax error at token #tokenIndex: #message")
+    }
+}

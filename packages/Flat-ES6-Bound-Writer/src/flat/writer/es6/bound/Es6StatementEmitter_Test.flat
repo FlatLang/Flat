@@ -38,6 +38,27 @@ testable class {
         expect(emitter.emitReturn(returned, literalCode).code)
             .toBe("return 'Hello, Flat';\n")
         expect(emitter.emitVoidReturn(noValue).code).toBe("return;\n")
+
+        let boolType = SemanticTypes.boolType()
+        let condition = BoundLiteralExpression(fixture.range(), boolType, "true")
+        let branch = BoundExpressionStatement(fixture.range(), literal)
+        let ifStatement = BoundIfStatement(
+            fixture.range(), condition, [branch], [branch]
+        )
+        let whileStatement = BoundWhileStatement(
+            fixture.range(), condition, [branch]
+        )
+        expect(emitter.emitIf(
+            ifStatement,
+            Es6CodeResult(code: "true"),
+            Es6CodeResult(code: "then;\n"),
+            Es6CodeResult(code: "else;\n")
+        ).code).toBe("if (true) {\n    then;\n} else {\n    else;\n}\n")
+        expect(emitter.emitWhile(
+            whileStatement,
+            Es6CodeResult(code: "true"),
+            Es6CodeResult(code: "body;\n")
+        ).code).toBe("while (true) {\n    body;\n}\n")
     }
 
     test `emits an uninitialized local and propagates child diagnostics`() {

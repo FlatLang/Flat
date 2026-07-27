@@ -1,0 +1,15 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+
+data class {
+    public construct(
+        visible String code,
+        visible String message,
+        visible SourceRange range
+    ) {
+        if (!code || !message || !range) {
+            throw Exception("Primitive expression diagnostic requires code message and range")
+        }
+    }
+}

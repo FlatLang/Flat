@@ -1,0 +1,16 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/semantic/types
+
+data class {
+    public construct(
+        visible String name,
+        visible SymbolIdentity identity,
+        visible SemanticType semanticType
+    ) {
+        if (!name || !identity || !semanticType) {
+            throw Exception("Local binding requires name identity and type")
+        }
+    }
+}

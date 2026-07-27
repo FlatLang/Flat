@@ -1,0 +1,15 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+
+data class {
+    public construct(
+        visible BoundExpression expression = null,
+        visible PrimitiveExpressionDiagnostic diagnostic = null
+    ) {
+        if ((!expression && !diagnostic) || (expression && diagnostic)) {
+            throw Exception("Primitive expression binding requires exactly one expression or diagnostic")
+        }
+    }
+    visible Bool succeeded => expression != null
+}

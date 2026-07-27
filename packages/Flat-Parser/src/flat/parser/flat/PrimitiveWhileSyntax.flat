@@ -1,0 +1,22 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+data class extends PrimitiveStatementSyntax {
+    var PrimitiveStatementSyntax[] bodyStatements
+
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax condition,
+        PrimitiveStatementSyntax[] bodyValues
+    ) {
+        if (!range || !condition || !bodyValues || bodyValues.any({ !_ })) {
+            throw Exception("Primitive while syntax requires condition and valid body")
+        }
+        bodyStatements = PrimitiveStatementSyntax[]
+        bodyStatements.addAll(bodyValues)
+        super(range)
+    }
+    public bodyValues() -> PrimitiveStatementSyntax[] => PrimitiveStatementSyntax[]:addAll(bodyStatements)
+    override public statementKind() => "while"
+}

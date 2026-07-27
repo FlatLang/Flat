@@ -3,11 +3,17 @@ package flat/semantic/binding
 import flat/test/TestResult
 import flat/time/Timer
 import flat/io/FancyOutputStream
+import flat/semantic/binding/primitive/PrimitiveExpressionBinder_Test
+import flat/semantic/binding/primitive/PrimitiveStatementBinder_Test
+import flat/semantic/binding/primitive/PrimitiveControlStatementBinder_Test
 
 [TestSuite [
     BinderWorkItem_Test,
     LayeredBindingLookup_Test,
-    BindingDiagnostics_Test
+    BindingDiagnostics_Test,
+    PrimitiveExpressionBinder_Test,
+    PrimitiveStatementBinder_Test,
+    PrimitiveControlStatementBinder_Test
 ]]
 class {
     public static async main(String[] args) {

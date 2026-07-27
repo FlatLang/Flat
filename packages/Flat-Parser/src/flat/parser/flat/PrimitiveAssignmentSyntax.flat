@@ -1,0 +1,17 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+data class extends PrimitiveStatementSyntax {
+    public construct(
+        SourceRange range,
+        visible String name,
+        visible PrimitiveExpressionSyntax value
+    ) {
+        if (!range || !name || !value) {
+            throw Exception("Primitive assignment syntax requires name and value")
+        }
+        super(range)
+    }
+    override public statementKind() => "assignment"
+}

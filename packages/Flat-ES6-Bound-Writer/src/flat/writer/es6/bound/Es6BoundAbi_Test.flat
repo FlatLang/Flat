@@ -32,6 +32,8 @@ testable class {
 
     test `capabilities accept the documented reduced subset and diagnose unsupported input`() {
         expect(Es6TargetCapabilities.supportsStatement("local-declaration")).toBe(true)
+        expect(Es6TargetCapabilities.supportsStatement("if")).toBe(true)
+        expect(Es6TargetCapabilities.supportsStatement("while")).toBe(true)
         expect(Es6TargetCapabilities.supportsStatement("conditional-branch")).toBe(false)
         expect(Es6TargetCapabilities.supportsExpression("member-access")).toBe(true)
         expect(Es6TargetCapabilities.supportsExpression("unary")).toBe(true)

@@ -1,0 +1,70 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Recursively binds structured control syntax with branch-local lexical scopes. */
+class {
+    public bind(
+        PrimitiveStatementSyntaxResult syntax,
+        SourceSnapshotIdentity snapshot,
+        LocalBinding[] locals = LocalBinding[]
+    ) -> PrimitiveStatementBindingResult {
+        if (!syntax || !snapshot || !locals) {
+            throw Exception("Primitive control binding requires syntax snapshot and locals")
+        }
+        let bound = bindStatements(syntax.statements(), snapshot, locals)
+        return PrimitiveStatementBindingResult(bound, locals)
+    }
+
+    bindStatements(
+        PrimitiveStatementSyntax[] statements,
+        SourceSnapshotIdentity snapshot,
+        LocalBinding[] parentLocals
+    ) -> BoundStatement[] {
+        let result = BoundStatement[]
+        var LocalBinding[] scopeLocals = LocalBinding[]
+        scopeLocals.addAll(parentLocals)
+        for (statement in statements) {
+            if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
+                let value = (PrimitiveIfSyntax)statement
+                let condition = bindCondition(value.condition, scopeLocals)
+                result.add(BoundIfStatement(
+                    value.range,
+                    condition,
+                    bindStatements(value.thenValues(), snapshot, scopeLocals),
+                    bindStatements(value.elseValues(), snapshot, scopeLocals)
+                ))
+            } else if (statement.class.isOfType(PrimitiveWhileSyntax.class)) {
+                let value = (PrimitiveWhileSyntax)statement
+                let condition = bindCondition(value.condition, scopeLocals)
+                result.add(BoundWhileStatement(
+                    value.range,
+                    condition,
+                    bindStatements(value.bodyValues(), snapshot, scopeLocals)
+                ))
+            } else {
+                let simple = PrimitiveStatementSyntaxResult([statement])
+                let bound = PrimitiveStatementBinder().bind(
+                    simple, snapshot, scopeLocals
+                )
+                result.addAll(bound.statements())
+                scopeLocals = bound.locals()
+            }
+        }
+        return result
+    }
+
+    bindCondition(
+        PrimitiveExpressionSyntax syntax,
+        LocalBinding[] locals
+    ) -> BoundExpression {
+        let result = PrimitiveExpressionBinder().bind(
+            syntax, SemanticTypes.boolType(), locals
+        )
+        if (!result.succeeded) throw Exception(result.diagnostic.message)
+        return result.expression
+    }
+}

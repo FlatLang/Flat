@@ -1,0 +1,30 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+
+data class {
+    var BoundStatement[] statementValues
+    var LocalBinding[] localValues
+
+    public construct(BoundStatement[] statements, LocalBinding[] locals) {
+        if (!statements || statements.any({ !_ }) || !locals || locals.any({ !_ })) {
+            throw Exception("Primitive statement result requires statements and locals")
+        }
+        statementValues = BoundStatement[]
+        statementValues.addAll(statements)
+        localValues = LocalBinding[]
+        localValues.addAll(locals)
+    }
+
+    public statements() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(statementValues)
+        return result
+    }
+
+    public locals() -> LocalBinding[] {
+        let result = LocalBinding[]
+        result.addAll(localValues)
+        return result
+    }
+}

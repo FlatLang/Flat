@@ -1,0 +1,62 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+testable class {
+    test `parses syntax only locals assignments and returns`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-statements"), "revision:one"
+        )
+        let result = PrimitiveStatementParser().parse([
+            token("let", Token.Type.IDENTIFIER, 1),
+            token("value", Token.Type.IDENTIFIER, 5),
+            token("=", Token.Type.SYMBOL, 11),
+            token("1", Token.Type.INTEGER, 13),
+            token(";", Token.Type.SYMBOL, 14),
+            token("value", Token.Type.IDENTIFIER, 16),
+            token("=", Token.Type.SYMBOL, 22),
+            token("2", Token.Type.INTEGER, 24),
+            token(";", Token.Type.SYMBOL, 25),
+            token("return", Token.Type.IDENTIFIER, 27),
+            token("value", Token.Type.IDENTIFIER, 34),
+            token(";", Token.Type.SYMBOL, 39)
+        ], snapshot)
+        let statements = result.statements()
+        let declaration = (PrimitiveLocalDeclarationSyntax)statements[0]
+        let assignment = (PrimitiveAssignmentSyntax)statements[1]
+
+        expect(statements.map({ _.statementKind() })).toBe([
+            "local-declaration", "assignment", "return"
+        ])
+        expect(declaration.range.start.column).toBe(1)
+        expect(declaration.range.end.column).toBe(14)
+    }
+
+    test `rejects incomplete declarations and malformed assignments`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-statement-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveStatementParser().parse([
+                token("let", Token.Type.IDENTIFIER, 1),
+                token("value", Token.Type.IDENTIFIER, 5)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveStatementParser().parse([
+                token("value", Token.Type.IDENTIFIER, 1),
+                token("1", Token.Type.INTEGER, 7)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(
+            value: value,
+            type: type,
+            location: Location(lineNumber: 1, column: column)
+        )
+    }
+}

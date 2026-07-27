@@ -1,0 +1,80 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+testable class {
+    test `parses nested if else and while with absolute ranges`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-control"), "revision:one"
+        )
+        let result = PrimitiveControlStatementParser().parse([
+            token("if", Token.Type.IDENTIFIER, 1),
+            token("(", Token.Type.SYMBOL, 4),
+            token("true", Token.Type.BOOL, 5),
+            token(")", Token.Type.SYMBOL, 9),
+            token("{", Token.Type.SYMBOL, 11),
+            token("while", Token.Type.IDENTIFIER, 13),
+            token("(", Token.Type.SYMBOL, 19),
+            token("false", Token.Type.BOOL, 20),
+            token(")", Token.Type.SYMBOL, 25),
+            token("{", Token.Type.SYMBOL, 27),
+            token("return", Token.Type.IDENTIFIER, 29),
+            token(";", Token.Type.SYMBOL, 35),
+            token("}", Token.Type.SYMBOL, 37),
+            token("}", Token.Type.SYMBOL, 39),
+            token("else", Token.Type.IDENTIFIER, 41),
+            token("{", Token.Type.SYMBOL, 46),
+            token("return", Token.Type.IDENTIFIER, 48),
+            token(";", Token.Type.SYMBOL, 54),
+            token("}", Token.Type.SYMBOL, 56)
+        ], snapshot, 10)
+        let statements = result.statements()
+        let conditionalObject = (Object)statements.first
+        let conditional = (PrimitiveIfSyntax)conditionalObject
+        let thenStatements = conditional.thenValues()
+        let loopObject = (Object)thenStatements.first
+        let loop = (PrimitiveWhileSyntax)loopObject
+        let conditionalRange = conditional.range
+        let loopCondition = loop.condition
+        let loopConditionRange = loopCondition.range
+
+        expect(statements.first.statementKind()).toBe("if")
+        expect(thenStatements.first.statementKind()).toBe("while")
+        expect(conditional.elseValues().count).toBe(1)
+        expect(conditionalRange.startTokenIndex).toBe(10)
+        expect(conditionalRange.endTokenIndex).toBe(29)
+        expect(loopConditionRange.startTokenIndex).toBe(17)
+    }
+
+    test `rejects missing delimiters empty conditions and unterminated bodies`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-control-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("if", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 4)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("while", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+                token(")", Token.Type.SYMBOL, 8), token("{", Token.Type.SYMBOL, 10),
+                token("}", Token.Type.SYMBOL, 11)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("if", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("true", Token.Type.BOOL, 5), token(")", Token.Type.SYMBOL, 9),
+                token("{", Token.Type.SYMBOL, 11)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}

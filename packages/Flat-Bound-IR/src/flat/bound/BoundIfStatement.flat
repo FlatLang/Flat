@@ -1,0 +1,40 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Structured conditional statement with immutable branch-local statement lists. */
+data class extends BoundStatement {
+    var BoundStatement[] thenStatements
+    var BoundStatement[] elseStatements
+
+    public construct(
+        SourceRange range,
+        visible BoundExpression condition,
+        BoundStatement[] thenValues,
+        BoundStatement[] elseValues = BoundStatement[]
+    ) {
+        if (!range || !condition || condition.semanticType.value() != "primitive:Bool" ||
+            !thenValues || thenValues.any({ !_ }) || !elseValues || elseValues.any({ !_ })) {
+            throw Exception("Bound if requires Bool condition and valid branches")
+        }
+        thenStatements = BoundStatement[]
+        thenStatements.addAll(thenValues)
+        elseStatements = BoundStatement[]
+        elseStatements.addAll(elseValues)
+        super(range)
+    }
+
+    public thenValues() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(thenStatements)
+        return result
+    }
+
+    public elseValues() -> BoundStatement[] {
+        let result = BoundStatement[]
+        result.addAll(elseStatements)
+        return result
+    }
+
+    override public unitKind() => "if"
+}

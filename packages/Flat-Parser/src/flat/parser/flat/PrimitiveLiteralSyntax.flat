@@ -1,0 +1,17 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible Int tokenType,
+        visible String sourceValue
+    ) {
+        if (!range || !sourceValue) {
+            throw Exception("Primitive literal syntax requires range and source value")
+        }
+        super(range)
+    }
+    override public expressionKind() => "literal"
+}

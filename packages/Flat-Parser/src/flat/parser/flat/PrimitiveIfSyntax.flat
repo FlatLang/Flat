@@ -1,0 +1,28 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+data class extends PrimitiveStatementSyntax {
+    var PrimitiveStatementSyntax[] thenStatements
+    var PrimitiveStatementSyntax[] elseStatements
+
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax condition,
+        PrimitiveStatementSyntax[] thenValues,
+        PrimitiveStatementSyntax[] elseValues = PrimitiveStatementSyntax[]
+    ) {
+        if (!range || !condition || !thenValues || thenValues.any({ !_ }) ||
+            !elseValues || elseValues.any({ !_ })) {
+            throw Exception("Primitive if syntax requires condition and valid branches")
+        }
+        thenStatements = PrimitiveStatementSyntax[]
+        thenStatements.addAll(thenValues)
+        elseStatements = PrimitiveStatementSyntax[]
+        elseStatements.addAll(elseValues)
+        super(range)
+    }
+    public thenValues() -> PrimitiveStatementSyntax[] => PrimitiveStatementSyntax[]:addAll(thenStatements)
+    public elseValues() -> PrimitiveStatementSyntax[] => PrimitiveStatementSyntax[]:addAll(elseStatements)
+    override public statementKind() => "if"
+}

@@ -1,0 +1,8 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+abstract data class {
+    visible SourceRange range
+    public abstract statementKind() -> String
+}

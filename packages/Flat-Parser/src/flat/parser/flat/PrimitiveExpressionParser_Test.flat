@@ -1,0 +1,78 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+testable class {
+    test `parses primitive literal unary binary precedence and absolute ranges`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-expression"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("-", Token.Type.SYMBOL, 1),
+            token("1", Token.Type.INTEGER, 2),
+            token("+", Token.Type.SYMBOL, 4),
+            token("2", Token.Type.INTEGER, 6),
+            token("*", Token.Type.SYMBOL, 8),
+            token("3", Token.Type.INTEGER, 10)
+        ], snapshot)
+        let binary = (PrimitiveBinarySyntax)expression
+        let left = (PrimitiveUnarySyntax)binary.left
+        let right = (PrimitiveBinarySyntax)binary.right
+
+        expect(binary.operator).toBe("+")
+        expect(left.operator).toBe("-")
+        expect(right.operator).toBe("*")
+        expect(binary.range.snapshot).toBe(snapshot)
+        expect(binary.range.startTokenIndex).toBe(0)
+        expect(binary.range.endTokenIndex).toBe(6)
+        expect(binary.range.start.column).toBe(1)
+        expect(binary.range.end.column).toBe(11)
+
+        let offsetExpression = PrimitiveExpressionParser().parse([
+            token("1", Token.Type.INTEGER, 20)
+        ], snapshot, 12)
+        expect(offsetExpression.range.startTokenIndex).toBe(12)
+        expect(offsetExpression.range.endTokenIndex).toBe(13)
+    }
+
+    test `parses literals and references without semantic dependencies`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-syntax"), "revision:one"
+        )
+        let literal = PrimitiveExpressionParser().parse([
+            token("null", Token.Type.NULL, 1)
+        ], snapshot)
+        let reference = PrimitiveExpressionParser().parse([
+            token("value", Token.Type.IDENTIFIER, 1)
+        ], snapshot)
+
+        expect(literal.expressionKind()).toBe("literal")
+        expect(reference.expressionKind()).toBe("reference")
+    }
+
+    test `rejects incomplete and trailing primitive expressions`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveExpressionParser().parse([
+                token("1", Token.Type.INTEGER, 1), token("+", Token.Type.SYMBOL, 3)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveExpressionParser().parse([
+                token("1", Token.Type.INTEGER, 1), token("2", Token.Type.INTEGER, 3)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(
+            value: value,
+            type: type,
+            location: Location(lineNumber: 1, column: column)
+        )
+    }
+}

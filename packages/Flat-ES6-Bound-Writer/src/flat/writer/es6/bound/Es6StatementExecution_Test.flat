@@ -1,0 +1,78 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+testable class {
+    async test `parsed locals conditionals loops and returns emit and execute under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:statement-execute"), "revision:one"
+        )
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("let", Token.Type.IDENTIFIER, 1), token("value", Token.Type.IDENTIFIER, 5),
+            token("=", Token.Type.SYMBOL, 11), token("1", Token.Type.INTEGER, 13),
+            token(";", Token.Type.SYMBOL, 14),
+            token("if", Token.Type.IDENTIFIER, 16), token("(", Token.Type.SYMBOL, 19),
+            token("true", Token.Type.BOOL, 20), token(")", Token.Type.SYMBOL, 24),
+            token("{", Token.Type.SYMBOL, 26), token("value", Token.Type.IDENTIFIER, 28),
+            token("=", Token.Type.SYMBOL, 34), token("2", Token.Type.INTEGER, 36),
+            token(";", Token.Type.SYMBOL, 37), token("}", Token.Type.SYMBOL, 39),
+            token("else", Token.Type.IDENTIFIER, 41), token("{", Token.Type.SYMBOL, 46),
+            token("value", Token.Type.IDENTIFIER, 48), token("=", Token.Type.SYMBOL, 54),
+            token("1", Token.Type.INTEGER, 56), token(";", Token.Type.SYMBOL, 57),
+            token("}", Token.Type.SYMBOL, 59),
+            token("while", Token.Type.IDENTIFIER, 61), token("(", Token.Type.SYMBOL, 67),
+            token("value", Token.Type.IDENTIFIER, 68), token("<", Token.Type.SYMBOL, 74),
+            token("3", Token.Type.INTEGER, 76), token(")", Token.Type.SYMBOL, 77),
+            token("{", Token.Type.SYMBOL, 79), token("value", Token.Type.IDENTIFIER, 81),
+            token("=", Token.Type.SYMBOL, 87), token("3", Token.Type.INTEGER, 89),
+            token(";", Token.Type.SYMBOL, 90), token("}", Token.Type.SYMBOL, 92),
+            token("return", Token.Type.IDENTIFIER, 94), token("value", Token.Type.IDENTIFIER, 101),
+            token(";", Token.Type.SYMBOL, 106)
+        ], snapshot)
+        let parsed = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let statements = parsed.statements()
+        let returned = (BoundReturnStatement)statements.last
+        let range = returned.range
+        statements.add(BoundReturnStatement(range, SemanticTypes.unitType()))
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 40), "function", "run"
+        )
+        let functionUnit = BoundFunctionUnit(
+            identity, "run", SemanticTypes.intType(), statements,
+            SourceRange(
+                snapshot, 0, 40,
+                Location(lineNumber: 1, column: 1),
+                Location(lineNumber: 1, column: 107)
+            )
+        )
+        let emitted = Es6UnitOrchestrator().emitFunction(functionUnit, 0)
+        let invocation = Es6NameMangler.mangle(identity.value) + "()"
+        let root = File(".flat-es6-statement-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "statement.js")
+        Es6ArtifactCommitter().commit(
+            destination, emitted.fragment.code +
+                "console.log(" + invocation + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+
+        expect(emitted.emitted).toBe(true)
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("3\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    token(String value, Int type, Int column) -> Token {
+        return Token(value: value, type: type,
+            location: Location(lineNumber: 1, column: column))
+    }
+}
