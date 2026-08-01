@@ -120,6 +120,7 @@ class {
                     cliArgs.noReplaceLogLineArg,
                     cliArgs.quietArg,
                     cliArgs.flatcRuntimeArg,
+                    cliArgs.flatcJarArg,
                     cliArgs.gitProtocolArg,
                     cliArgs.publishCommand,
                     cliArgs.useLinksArg,

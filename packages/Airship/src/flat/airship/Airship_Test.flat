@@ -110,6 +110,20 @@ testable class {
         expect(cmdOutput.contains("flat/airship/Airship")).toBe(true)
     }
 
+    test async `uses an explicit Flat compiler jar`() {
+        let airship = Airship([
+            "install", "--debug", "-q", "-t", "js",
+            "--flatc-jar", "custom/flatc.jar"
+        ])
+
+        let output = Console.out.captureOutput({ airship.installService.install() })[0]
+        let command = output.splitOnTopLevel(' ')
+
+        expect(command[0]).toBe("java")
+        expect(command[1]).toBe("-jar")
+        expect(command[2]).toBe("custom/flatc.jar")
+    }
+
     test `fails on invalid -f arg (only arg given, with no value)`() {
         expect({ Airship(["-f"]) }).toThrow(RequiredCliArgumentException.class)
     }

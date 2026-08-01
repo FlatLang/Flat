@@ -105,6 +105,10 @@ class {
     }
 
     getFlatcExecutableCommand(Dependency[] dependencies) -> String[] {
+        if (let jar = cliArgs.flatcJarValueArg.value) {
+            return ["java", "-jar", jar]
+        }
+
         let flat = dependencies.firstWhere({ _.name == "Flat" })
         let runtime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() ?: "java"
 

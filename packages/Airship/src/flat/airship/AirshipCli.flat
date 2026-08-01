@@ -101,6 +101,20 @@ class {
         args: [flatcRuntimeValueArg]
     )
 
+    visible CliArg flatcJarValueArg = CliArg(
+        name: "jar",
+        description: "The Flat compiler jar to execute",
+        count: 1,
+        wildcard: true,
+        required: true
+    )
+
+    visible CliArg flatcJarArg = CliArg(
+        name: "--flatc-jar",
+        description: "Use an explicit Flat compiler jar",
+        args: [flatcJarValueArg]
+    )
+
     visible CliArg gitProtocolValueArg = CliArg(
         name: "protocol",
         description: "The Git protocol to use: auto, ssh, or https",
