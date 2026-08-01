@@ -8,18 +8,18 @@ import flat/writer/es6/bound
 
 /**
  * Source-scoped composition of package-owned Flat frontend, binding, and ES6 APIs.
- *
- * The finite token and fragment materializations are explicit source/artifact
- * barriers. Their configured limits keep this bootstrap path bounded while the
- * owning packages retain all grammar, semantic, and target decisions.
+ * Finite token/type/fragment materializations are explicit bounded source and
+ * artifact partition barriers.
  */
 class {
     public construct(
         visible Int maxSourceCharacters = 65536,
         visible Int maxTokens = 8192,
-        visible Int maxFragments = 1024
+        visible Int maxFragments = 1024,
+        visible Int maxTypes = 256
     ) {
-        if (maxSourceCharacters <= 0 || maxTokens <= 0 || maxFragments <= 0) {
+        if (maxSourceCharacters <= 0 || maxTokens <= 0 ||
+            maxFragments <= 0 || maxTypes <= 0) {
             throw Exception("Flat ES6 source compiler capacities must be positive")
         }
     }
@@ -42,20 +42,59 @@ class {
         })
         if (significant.count == 0) throw Exception("Flat source contains no declarations")
 
-        let snapshot = SourceSnapshotIdentity(
-            SourceIdentity(source.identity),
-            "compiler-input"
-        )
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
+        if (significant.first.value == "package" || significant.first.value == "import" ||
+            hasMultipleTypes(significant)) {
+            return compileTypeSource(significant, snapshot)
+        }
         let fragments = significant.first.value == "class"
-            ? compileClass(significant, snapshot)
+            ? compileClass(significant, snapshot, 0, 0)
             : compileFunctions(significant, snapshot)
         return assemble(fragments)
     }
 
-    compileFunctions(
+    hasMultipleTypes(Token[] tokens) -> Bool {
+        var Int depth
+        var Int count
+        for (token in tokens) {
+            if (token.value == "{") depth++
+            else if (token.value == "}") depth--
+            else if (depth == 0 && token.value == "class") count++
+        }
+        return count > 1
+    }
+
+    compileTypeSource(
         Token[] tokens,
         SourceSnapshotIdentity snapshot
-    ) -> Es6ArtifactFragment[] {
+    ) -> String {
+        let partitions = FlatSourceTypePartitioner(
+            maxTypeTokens: maxTokens,
+            maxTypes: maxTypes
+        ).partition(tokens, snapshot)
+        let syntaxes = PrimitiveClassSyntax[]
+        for (partition in partitions) {
+            if (partition.declarationKind != "class") {
+                throw Exception("Reduced ES6 source compilation supports class type partitions")
+            }
+            syntaxes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex
+            ))
+        }
+        let types = PrimitiveClassPartitionBinder().bind(
+            syntaxes, snapshot, maxTypes
+        ).typeUnits()
+        requireFragmentCapacity(types.count)
+        let fragments = Es6ArtifactFragment[]
+        var Int index
+        while (index < types.count) {
+            fragments.add(requireEmission(Es6UnitOrchestrator().emitType(types[index], index)))
+            index++
+        }
+        return assemble(fragments)
+    }
+
+    compileFunctions(Token[] tokens, SourceSnapshotIdentity snapshot) -> Es6ArtifactFragment[] {
         let functions = PrimitiveFunctionBinder().bind(
             PrimitiveFunctionParser().parse(tokens, snapshot), snapshot
         ).functionValues()
@@ -63,8 +102,7 @@ class {
         let fragments = Es6ArtifactFragment[]
         var Int index
         while (index < functions.count) {
-            let emitted = Es6UnitOrchestrator().emitFunction(functions[index], index)
-            fragments.add(requireEmission(emitted))
+            fragments.add(requireEmission(Es6UnitOrchestrator().emitFunction(functions[index], index)))
             index++
         }
         return fragments
@@ -72,12 +110,13 @@ class {
 
     compileClass(
         Token[] tokens,
-        SourceSnapshotIdentity snapshot
+        SourceSnapshotIdentity snapshot,
+        Int sourceTokenIndexOffset,
+        Int ordinal
     ) -> Es6ArtifactFragment[] {
-        let syntax = PrimitiveClassParser().parse(tokens, snapshot)
+        let syntax = PrimitiveClassParser().parse(tokens, snapshot, sourceTokenIndexOffset)
         let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
-        requireFragmentCapacity(1)
-        return [requireEmission(Es6UnitOrchestrator().emitType(type, 0))]
+        return [requireEmission(Es6UnitOrchestrator().emitType(type, ordinal))]
     }
 
     requireEmission(Es6EmissionResult emitted) -> Es6ArtifactFragment {

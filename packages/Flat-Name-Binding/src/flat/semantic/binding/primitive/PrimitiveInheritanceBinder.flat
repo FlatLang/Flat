@@ -10,14 +10,19 @@ class {
     public bind(
         PrimitiveClassSyntax parentSyntax,
         PrimitiveClassSyntax childSyntax,
-        SourceSnapshotIdentity snapshot
+        SourceSnapshotIdentity snapshot = null
     ) -> PrimitiveInheritanceBindingResult {
-        if (!parentSyntax || !childSyntax || !snapshot ||
+        if (!parentSyntax || !childSyntax ||
             childSyntax.parentName != parentSyntax.name || parentSyntax.parentName) {
             throw Exception("Reduced inheritance requires one declared root parent and matching child")
         }
-        let parent = PrimitiveClassBinder().bind(parentSyntax, snapshot).typeUnit
-        let child = PrimitiveClassBinder().bind(childSyntax, snapshot).typeUnit
+        let parentSnapshot = snapshot ?: parentSyntax.range.snapshot
+        let childSnapshot = snapshot ?: childSyntax.range.snapshot
+        let parent = PrimitiveClassBinder().bind(parentSyntax, parentSnapshot).typeUnit
+        let parentConstructor = constructorSignature(parent)
+        let child = PrimitiveClassBinder().bind(
+            childSyntax, childSnapshot, parentConstructor, parent.fieldUnits()
+        ).typeUnit
         let hierarchy = TypeHierarchyComponent()
         hierarchy.add(TypeHierarchyDeclaration(
             parent.semanticType, "class", UserClassSemanticType[]
@@ -40,6 +45,29 @@ class {
                 child.identity, child.semanticType, childFunctions, child.range,
                 fieldValues: child.fieldUnits(), parentType: parent.semanticType
             )
+        )
+    }
+
+    constructorSignature(BoundTypeUnit typeUnit) -> CallableSignature {
+        let constructor = typeUnit.functionUnits().firstOrNull({ _.constructorFunction })
+        if (!constructor) throw Exception("Reduced parent requires a constructor")
+        let parameterTypes = constructor.parameterValues().map({ _.semanticType })
+        let optionalCount = constructor.parameterValues().filter({ _.defaultValue != null }).count
+        var Int index = constructor.parameterValues().count - optionalCount
+        while (index < constructor.parameterValues().count) {
+            if (!constructor.parameterValues()[index].defaultValue) {
+                throw Exception("Reduced parent constructor defaults must be trailing")
+            }
+            index++
+        }
+        return CallableSignature(
+            SymbolIdentity(constructor.identity, "constructor"),
+            typeUnit.identity.name,
+            CallableKind("constructor"),
+            parameterTypes,
+            typeUnit.semanticType,
+            typeUnit.semanticType,
+            optionalCount
         )
     }
 
@@ -91,6 +119,6 @@ class {
         BoundFunctionUnit(
             value.identity, value.name, value.returnType, value.statements(), value.range,
             value.parameterValues(), value.staticFunction, value.mainFunction,
-            value.constructorFunction, dispatchIdentity
+            value.constructorFunction, dispatchIdentity, value.parentConstructorCall
         )
 }

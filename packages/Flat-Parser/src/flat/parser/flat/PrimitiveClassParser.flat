@@ -12,7 +12,8 @@ class {
     public parse(
         Token[] tokenValues,
         SourceSnapshotIdentity sourceSnapshot,
-        Int sourceTokenIndexOffset = 0
+        Int sourceTokenIndexOffset = 0,
+        String implicitName = null
     ) -> PrimitiveClassSyntax {
         if (!tokenValues || !sourceSnapshot) throw Exception("Primitive class parsing requires tokens and snapshot")
         tokens = tokenValues.filter({
@@ -24,7 +25,9 @@ class {
         index = 0
         let start = index
         require("class")
-        let name = identifier("Expected class name")
+        let name = index < tokens.count && tokens[index].value == "{" && implicitName
+            ? implicitName
+            : identifier("Expected class name")
         var String genericParameterName
         if (index < tokens.count && tokens[index].value == "<") {
             index++
@@ -36,22 +39,48 @@ class {
             index++
             parentName = identifier("Expected parent class name")
         }
+        if (index < tokens.count && tokens[index].value == "implements") {
+            index++
+            identifier("Expected implemented type name")
+            while (index < tokens.count && tokens[index].value != "{") index++
+        }
         require("{")
         let fields = PrimitiveFieldSyntax[]
         var PrimitiveConstructorSyntax constructorValue
         let methods = PrimitiveFunctionSyntax[]
+        var Bool visibleField
         while (index < tokens.count && tokens[index].value != "}") {
-            if (tokens[index].value == "constructor") {
+            if (tokens[index].value == "public" || tokens[index].value == "private" ||
+                tokens[index].value == "protected") {
+                index++
+            } else if (tokens[index].value == "visible") {
+                visibleField = true
+                index++
+            } else if (tokens[index].value == "constructor" || tokens[index].value == "construct") {
                 if (constructorValue) syntax("Duplicate constructor", index)
                 constructorValue = parseConstructor()
-            } else if (index + 2 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
-                tokens[index + 1].type == Token.Type.IDENTIFIER && tokens[index + 2].value == ";") {
+            } else if (index + 1 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
+                tokens[index + 1].type == Token.Type.IDENTIFIER) {
                 let fieldStart = index
                 let typeName = tokens[index++].value
                 let fieldName = tokens[index++].value
-                index++
+                var PrimitiveExpressionSyntax initializer
+                if (index < tokens.count && tokens[index].value == "=") {
+                    index++
+                    let initializerStart = index
+                    while (index < tokens.count && tokens[index].value != ";") index++
+                    if (initializerStart == index) syntax("Field initializer requires a value", index)
+                    initializer = PrimitiveExpressionParser().parse(
+                        tokens.skip(initializerStart).take(index - initializerStart),
+                        snapshot, initializerStart + tokenIndexOffset
+                    )
+                }
+                require(";")
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
-                fields.add(PrimitiveFieldSyntax(range(fieldStart, index), typeName, fieldName))
+                fields.add(PrimitiveFieldSyntax(
+                    range(fieldStart, index), typeName, fieldName, visibleField, initializer
+                ))
+                visibleField = false
             } else {
                 let end = declarationEnd(index)
                 let parsed = PrimitiveFunctionParser().parse(
@@ -62,9 +91,14 @@ class {
                 index = end
             }
         }
+        if (visibleField) syntax("Expected visible field declaration", index)
         require("}")
         if (index != tokens.count) syntax("Unexpected trailing class token", index)
-        if (!constructorValue) syntax("Class requires constructor", index)
+        if (!constructorValue) {
+            constructorValue = PrimitiveConstructorSyntax(
+                range(start, index), PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[]
+            )
+        }
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
             fields, constructorValue, methods
@@ -76,6 +110,41 @@ class {
         require("(")
         let parameters = parameters()
         require(")")
+        if (index < tokens.count && tokens[index].value == "=>") {
+            index++
+            require("super")
+            require("(")
+            let arguments = PrimitiveExpressionSyntax[]
+            if (index < tokens.count && tokens[index].value != ")") {
+                while (true) {
+                    let argumentStart = index
+                    var Int parenthesisDepth
+                    while (index < tokens.count) {
+                        let value = tokens[index].value
+                        if (value == "(") parenthesisDepth++
+                        else if (value == ")") {
+                            if (parenthesisDepth == 0) break
+                            parenthesisDepth--
+                        } else if (value == "," && parenthesisDepth == 0) break
+                        index++
+                    }
+                    if (argumentStart == index) syntax("Expected parent constructor argument", index)
+                    arguments.add(PrimitiveExpressionParser().parse(
+                        tokens.skip(argumentStart).take(index - argumentStart), snapshot,
+                        argumentStart + tokenIndexOffset
+                    ))
+                    if (index >= tokens.count || tokens[index].value == ")") break
+                    require(",")
+                    if (index >= tokens.count || tokens[index].value == ")") {
+                        syntax("Expected parent constructor argument", index)
+                    }
+                }
+            }
+            require(")")
+            return PrimitiveConstructorSyntax(
+                range(start, index), parameters, PrimitiveStatementSyntax[], arguments
+            )
+        }
         require("{")
         let bodyStart = index
         var Int depth = 1
@@ -103,7 +172,30 @@ class {
             let typeName = identifier("Expected parameter type")
             let name = identifier("Expected parameter name")
             if (result.any({ _.name == name })) syntax("Duplicate parameter '#name'", start)
-            result.add(PrimitiveFunctionParameterSyntax(range(start, index), typeName, name))
+            var PrimitiveExpressionSyntax defaultValue
+            if (index < tokens.count && tokens[index].value == "=") {
+                index++
+                let defaultStart = index
+                var Int depth
+                while (index < tokens.count) {
+                    let value = tokens[index].value
+                    if (value == "(" || value == "[") depth++
+                    else if (value == ")" || value == "]") {
+                        if (depth == 0 && value == ")") break
+                        depth--
+                    }
+                    if (depth == 0 && (value == "," || value == ")")) break
+                    index++
+                }
+                if (defaultStart == index) syntax("Default parameter requires a value", index)
+                defaultValue = PrimitiveExpressionParser().parse(
+                    tokens.skip(defaultStart).take(index - defaultStart), snapshot,
+                    defaultStart + tokenIndexOffset
+                )
+            }
+            result.add(PrimitiveFunctionParameterSyntax(
+                range(start, index), typeName, name, defaultValue
+            ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++
         }

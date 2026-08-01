@@ -1,0 +1,47 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/**
+ * Explicit target-independent invocation of the selected direct-parent
+ * constructor. Ordered arguments and conversions are semantic evidence
+ * produced before backend emission.
+ */
+data class {
+    var BoundExpression[] arguments
+    var TypeConversion[] conversions
+
+    public construct(
+        visible CallableSignature target,
+        BoundExpression[] argumentValues,
+        TypeConversion[] argumentConversions,
+        visible SourceRange range
+    ) {
+        if (!target || target.callableKind.value != "constructor" ||
+            !argumentValues || !argumentConversions || !range ||
+            argumentValues.count != argumentConversions.count ||
+            argumentValues.count < target.parameterTypes().count - target.optionalParameterCount ||
+            argumentValues.count > target.parameterTypes().count) {
+            throw Exception("Bound parent constructor call requires a selected constructor and aligned arguments")
+        }
+        var Int index
+        while (index < argumentValues.count) {
+            let argument = argumentValues[index]
+            let conversion = argumentConversions[index]
+            if (!argument || !conversion || !conversion.applicable ||
+                conversion.fromType.value() != argument.semanticType.value() ||
+                conversion.toType.value() != target.parameterTypes()[index].value()) {
+                throw Exception("Bound parent constructor argument conversion is invalid")
+            }
+            index++
+        }
+        arguments = BoundExpression[]
+        arguments.addAll(argumentValues)
+        conversions = TypeConversion[]
+        conversions.addAll(argumentConversions)
+    }
+
+    public argumentValues() -> BoundExpression[] => BoundExpression[]:addAll(arguments)
+    public argumentConversions() -> TypeConversion[] => TypeConversion[]:addAll(conversions)
+}

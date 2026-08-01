@@ -6,24 +6,31 @@ import flat/compiler/models
 data class {
     var PrimitiveFunctionParameterSyntax[] parameters
     var PrimitiveStatementSyntax[] body
+    var PrimitiveExpressionSyntax[] parentArguments
 
     public construct(
         visible SourceRange range,
         PrimitiveFunctionParameterSyntax[] parameterValues,
-        PrimitiveStatementSyntax[] statements
+        PrimitiveStatementSyntax[] statements,
+        PrimitiveExpressionSyntax[] parentArgumentValues = PrimitiveExpressionSyntax[]
     ) {
         if (!range || !parameterValues || parameterValues.any({ !_ }) ||
-            !statements || statements.any({ !_ })) {
+            !statements || statements.any({ !_ }) || !parentArgumentValues ||
+            parentArgumentValues.any({ !_ })) {
             throw Exception("Primitive constructor syntax requires range signature and body")
         }
         parameters = PrimitiveFunctionParameterSyntax[]
         parameters.addAll(parameterValues)
         body = PrimitiveStatementSyntax[]
         body.addAll(statements)
+        parentArguments = PrimitiveExpressionSyntax[]
+        parentArguments.addAll(parentArgumentValues)
     }
 
     public parameterValues() -> PrimitiveFunctionParameterSyntax[] =>
         PrimitiveFunctionParameterSyntax[]:addAll(parameters)
     public statements() -> PrimitiveStatementSyntax[] =>
         PrimitiveStatementSyntax[]:addAll(body)
+    public parentArgumentValues() -> PrimitiveExpressionSyntax[] =>
+        PrimitiveExpressionSyntax[]:addAll(parentArguments)
 }

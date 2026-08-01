@@ -1,0 +1,18 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+
+/** Immutable source-ordered result after a finite class signature partition seals. */
+data class {
+    var BoundTypeUnit[] types
+
+    public construct(BoundTypeUnit[] values) {
+        if (!values || values.any({ !_ })) {
+            throw Exception("Primitive class partition binding requires types")
+        }
+        types = BoundTypeUnit[]
+        types.addAll(values)
+    }
+
+    public typeUnits() -> BoundTypeUnit[] => BoundTypeUnit[]:addAll(types)
+}

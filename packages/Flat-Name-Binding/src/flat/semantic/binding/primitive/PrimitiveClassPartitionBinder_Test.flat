@@ -1,0 +1,85 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+
+testable class {
+    test `binds child before parent input`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-bind"), "one")
+        let child = PrimitiveClassParser().parse(typeTokens("Child", "Parent", "2"), snapshot)
+        let parent = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), snapshot)
+        let types = PrimitiveClassPartitionBinder().bind([child, parent], snapshot).typeUnits()
+
+        expect(types.count).toBe(2)
+        expect(types.first.identity.name).toBe("Parent")
+        expect(types.last.identity.name).toBe("Child")
+        expect(types.last.parentType.value()).toBe(types.first.semanticType.value())
+        expect(types.last.functionUnits().last.dispatchIdentity)
+            .toBe(types.first.functionUnits().last.dispatchIdentity)
+    }
+
+    test `binds child and parent from distinct source snapshots`() {
+        let parentSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:parent"), "one")
+        let childSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:child"), "one")
+        let child = PrimitiveClassParser().parse(typeTokens("Child", "Parent", "2"), childSnapshot)
+        let parent = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), parentSnapshot)
+        let types = PrimitiveClassPartitionBinder().bind([child, parent]).typeUnits()
+
+        expect(types.first.range.snapshot).toBe(parentSnapshot)
+        expect(types.last.range.snapshot).toBe(childSnapshot)
+        expect(types.last.parentType.value()).toBe(types.first.semanticType.value())
+    }
+
+    test `missing parent fails`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-invalid"), "one")
+        var Int rejected
+        try {
+            PrimitiveClassPartitionBinder().bind([
+                PrimitiveClassParser().parse(typeTokens("Child", "Missing", "2"), snapshot)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(1)
+    }
+
+    test `duplicate type fails`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-duplicate"), "one")
+        var Int rejected
+        try {
+            PrimitiveClassPartitionBinder().bind([
+                PrimitiveClassParser().parse(typeTokens("Same", null, "1"), snapshot),
+                PrimitiveClassParser().parse(typeTokens("Same", null, "2"), snapshot)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(1)
+    }
+
+    test `cycle fails`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-cycle"), "one")
+        var Int rejected
+        try {
+            PrimitiveClassPartitionBinder().bind([
+                PrimitiveClassParser().parse(typeTokens("One", "Two", "1"), snapshot),
+                PrimitiveClassParser().parse(typeTokens("Two", "One", "2"), snapshot)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(1)
+    }
+
+    typeTokens(String name, String parent, String returned) -> Token[] {
+        let values = [token("class", false), token(name, false)]
+        if (parent) values.addAll([token("extends", false), token(parent, false)])
+        values.addAll([
+            token("{", true), token("constructor", false), token("(", true), token(")", true),
+            token("{", true), token("}", true), token("value", false), token("(", true),
+            token(")", true), token("->", true), token("Int", false), token("{", true),
+            token("return", false), token(returned, false, Token.Type.INTEGER),
+            token(";", true), token("}", true), token("}", true)
+        ])
+        return values
+    }
+
+    token(String value, Bool symbol, Int type = Token.Type.IDENTIFIER) -> Token => Token(
+        value: value, type: symbol ? Token.Type.SYMBOL : type,
+        location: Location(lineNumber: 1, column: 1)
+    )
+}

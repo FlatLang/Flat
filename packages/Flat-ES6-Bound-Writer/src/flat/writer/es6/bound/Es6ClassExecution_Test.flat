@@ -37,6 +37,48 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `executes initialized field default parameter and target native constructor`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:exception-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(exceptionTokens(), snapshot)
+        let typeUnit = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let emitted = Es6UnitOrchestrator().emitType(typeUnit, 0)
+        let className = Es6NameMangler.mangle(typeUnit.identity.value)
+        let fieldName = Es6NameMangler.mangle(typeUnit.fieldUnits().first.identity.value)
+        let root = File(".flat-es6-exception-constructor-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "exception.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(new " + className + "()." + fieldName + ");\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+
+        expect(response.stdout.join("")).toBe("\n")
+        expect(emitted.fragment.code.indexOf("globalThis['Math']['max'](1, 2)") >= 0)
+            .toBe(true)
+        Es6ArtifactFiles.remove(root)
+    }
+
+    exceptionTokens() -> Token[] {
+        return [
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("visible", false, 19), token("String", false, 27), token("message", false, 34),
+            token("=", true, 42), stringToken("''", 44), token(";", true, 46),
+            token("construct", false, 48), token("(", true, 57), token("String", false, 58),
+            token("message", false, 65), token("=", true, 73), stringToken("''", 75),
+            token(")", true, 77), token("{", true, 79), token("native", false, 81),
+            token("[", true, 87), token("es6", false, 88), token("]", true, 91),
+            token("Math", false, 93), token(".", true, 97), token("max", false, 98),
+            token("(", true, 101), token("1", false, 102, Token.Type.INTEGER),
+            token(",", true, 103), token("2", false, 105, Token.Type.INTEGER),
+            token(")", true, 106), token(";", true, 107), token("}", true, 109),
+            token("}", true, 111)
+        ]
+    }
+
     tokens() -> Token[] {
         return [
             token("class", false, 1), token("Box", false, 7), token("{", true, 11),
@@ -51,8 +93,18 @@ testable class {
         ]
     }
 
-    token(String value, Bool symbol, Int column) -> Token {
-        let type = symbol ? Token.Type.SYMBOL : Token.Type.IDENTIFIER
+    stringToken(String value, Int column) -> Token => Token(
+        value: value, type: Token.Type.STRING,
+        location: Location(lineNumber: 1, column: column)
+    )
+
+    token(
+        String value,
+        Bool symbol,
+        Int column,
+        Int explicitType = Token.Type.IDENTIFIER
+    ) -> Token {
+        let type = symbol ? Token.Type.SYMBOL : explicitType
         return Token(value: value, type: type,
             location: Location(lineNumber: 1, column: column))
     }

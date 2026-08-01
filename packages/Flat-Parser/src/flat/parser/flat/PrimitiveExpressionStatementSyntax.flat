@@ -1,0 +1,14 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only expression statement. */
+data class extends PrimitiveStatementSyntax {
+    public construct(SourceRange range, visible PrimitiveExpressionSyntax expression) {
+        if (!range || !expression) {
+            throw Exception("Primitive expression statement requires range and expression")
+        }
+        super(range)
+    }
+    override public statementKind() => "expression"
+}

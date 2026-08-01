@@ -1,0 +1,5 @@
+package flat/core
+
+import flat/core/Parent
+
+class Child extends Parent { constructor() {} }

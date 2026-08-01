@@ -74,6 +74,34 @@ testable class {
         expect(invalidArity.diagnostic.code).toBe("type.call-arity")
     }
 
+    test `optional trailing parameters permit bounded omitted arguments`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Example")
+        let base = fixture.signature(
+            "Example", "constructor", [SemanticTypes.stringType()], owner, owner
+        )
+        let target = CallableSignature(
+            base.identity, base.name, base.callableKind, base.parameterTypes(),
+            base.returnType, base.ownerType, 1
+        )
+        let omitted = CallTypeChecker.check(target, null, SemanticType[], fixture.range())
+        let supplied = CallTypeChecker.check(
+            target, null, [SemanticTypes.stringType()], fixture.range()
+        )
+
+        expect(omitted.valid).toBe(true)
+        expect(omitted.argumentConversions().count).toBe(0)
+        expect(supplied.valid).toBe(true)
+        var rejected = false
+        try {
+            CallableSignature(
+                base.identity, base.name, base.callableKind, base.parameterTypes(),
+                base.returnType, base.ownerType, 2
+            )
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `call signatures defensively copy parameters and reject invalid ownership`() {
         let fixture = TypeSystem_TestFixture()
         let owner = fixture.userType("Example")

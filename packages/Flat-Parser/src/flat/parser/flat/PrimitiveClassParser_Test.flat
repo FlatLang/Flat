@@ -25,6 +25,116 @@ testable class {
         expect(access.memberName).toBe("value")
     }
 
+    test `parses delegated legacy constructor arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:delegated-construct"), "one")
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Child", false, 7), token("extends", false, 13),
+            token("Parent", false, 21), token("{", true, 28), token("construct", false, 30),
+            token("(", true, 39), token("String", false, 40), token("message", false, 47),
+            token(")", true, 54), token("=>", true, 56), token("super", false, 59),
+            token("(", true, 64), token("message", false, 65), token(")", true, 72),
+            token("}", true, 74)
+        ], snapshot)
+        expect(parsed.constructorValue.statements().count).toBe(0)
+        expect(parsed.constructorValue.parentArgumentValues().count).toBe(1)
+        expect(parsed.constructorValue.parentArgumentValues().first.expressionKind()).toBe("reference")
+    }
+
+    test `rejects malformed delegated constructor arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:delegated-invalid"), "one")
+        var Int rejected
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Child", false, 7), token("extends", false, 13),
+                token("Parent", false, 21), token("{", true, 28), token("construct", false, 30),
+                token("(", true, 39), token(")", true, 40), token("=>", true, 42),
+                token("super", false, 45), token("(", true, 50), token("1", false, 51),
+                token(",", true, 52), token(")", true, 53), token("}", true, 55)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Child", false, 7), token("extends", false, 13),
+                token("Parent", false, 21), token("{", true, 28), token("construct", false, 30),
+                token("(", true, 39), token(")", true, 40), token("=>", true, 42),
+                token("super", false, 45), token("(", true, 50)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `parses visible initialized field and default constructor parameter`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:exception-subset"), "one")
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("visible", false, 19), token("String", false, 27),
+            token("message", false, 34), token("=", true, 42), token("''", false, 44),
+            token(";", true, 46), token("construct", false, 48), token("(", true, 57),
+            token("String", false, 58), token("message", false, 65), token("=", true, 73),
+            token("''", false, 75), token(")", true, 77), token("{", true, 79),
+            token("}", true, 80), token("}", true, 82)
+        ], snapshot)
+        let field = parsed.fieldValues().first
+        let parameter = parsed.constructorValue.parameterValues().first
+
+        expect(field.visibleField).toBe(true)
+        expect(field.initializer.expressionKind()).toBe("literal")
+        expect(parameter.defaultValue.expressionKind()).toBe("literal")
+    }
+
+    test `rejects incomplete field initializer and parameter default`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:exception-invalid"), "one")
+        var Int rejected
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+                token("String", false, 19), token("message", false, 26), token("=", true, 34),
+                token(";", true, 35), token("}", true, 37)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+                token("construct", false, 19), token("(", true, 28), token("String", false, 29),
+                token("message", false, 36), token("=", true, 44), token(")", true, 45),
+                token("{", true, 47), token("}", true, 48), token("}", true, 50)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `accepts implemented type list as validated reduced metadata`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:implements"), "one")
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7),
+            token("implements", false, 13), token("Comparable", false, 24),
+            token("<", true, 34), token("Value", false, 35), token(">", true, 40),
+            token("{", true, 42), token("}", true, 43)
+        ], snapshot)
+        expect(parsed.name).toBe("Value")
+    }
+
+    test `parses legacy construct spelling`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:construct"), "one")
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7), token("{", true, 13),
+            token("construct", false, 15), token("(", true, 24), token(")", true, 25),
+            token("{", true, 27), token("}", true, 28), token("}", true, 30)
+        ], snapshot)
+        expect(parsed.constructorValue).toNotBe(null)
+    }
+
+    test `synthesizes an empty constructor when omitted`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:implicit-constructor"), "one")
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Empty", false, 7),
+            token("{", true, 13), token("}", true, 14)
+        ], snapshot)
+        expect(parsed.constructorValue).toNotBe(null)
+        expect(parsed.constructorValue.parameterValues().count).toBe(0)
+        expect(parsed.constructorValue.statements().count).toBe(0)
+    }
+
     test `parses parent declaration and rejects missing parent name`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:inheritance"), "revision:one"
@@ -76,7 +186,7 @@ testable class {
         try {
             PrimitiveClassParser().parse([
                 token("class", false, 1), token("Box", false, 7), token("{", true, 11),
-                token("Int", false, 13), token("value", false, 17), token(";", true, 22), token("}", true, 24)
+                token("Int", false, 13), token("value", false, 17), token(";", true, 22)
             ], snapshot)
         } catch (Exception error) { rejected++ }
         try {
@@ -110,7 +220,8 @@ testable class {
     }
 
     token(String value, Bool symbol, Int column) -> Token {
-        let type = symbol ? Token.Type.SYMBOL : Token.Type.IDENTIFIER
+        let type = symbol ? Token.Type.SYMBOL :
+            value == "''" ? Token.Type.STRING : Token.Type.IDENTIFIER
         return Token(value: value, type: type,
             location: Location(lineNumber: 1, column: column))
     }

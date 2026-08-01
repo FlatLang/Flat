@@ -17,7 +17,8 @@ data class {
         visible Bool staticFunction = false,
         visible Bool mainFunction = false,
         visible Bool constructorFunction = false,
-        visible String dispatchIdentity = null
+        visible String dispatchIdentity = null,
+        visible BoundParentConstructorCall parentConstructorCall = null
     ) {
         if (!identity || !name || !returnType || !statements || statements.any({ !_ }) || !range ||
             !parameterValues || parameterValues.any({ !_ }) ||
@@ -29,6 +30,10 @@ data class {
         }
         if (dispatchIdentity && (constructorFunction || staticFunction)) {
             throw Exception("Only instance methods can carry virtual dispatch identity")
+        }
+        if (parentConstructorCall && (!constructorFunction ||
+            parentConstructorCall.range.snapshot != range.snapshot)) {
+            throw Exception("Only a same-source constructor can invoke its direct parent")
         }
         body = BoundStatement[]
         body.addAll(statements)

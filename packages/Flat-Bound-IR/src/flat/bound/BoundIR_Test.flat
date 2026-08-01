@@ -115,6 +115,74 @@ testable class {
         expect(function.statements()).toBe([statement])
     }
 
+    test `parent constructor call retains selected target and immutable conversion evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let parentIdentity = fixture.declaration("class", "Parent", 1)
+        let parentType = UserClassSemanticType(parentIdentity)
+        let constructorIdentity = fixture.declaration("constructor", "Parent", 2)
+        let target = CallableSignature(
+            SymbolIdentity(constructorIdentity, "constructor"),
+            "Parent", CallableKind("constructor"), [SemanticTypes.stringType()],
+            parentType, parentType
+        )
+        let argument = BoundLiteralExpression(
+            fixture.range(), SemanticTypes.stringType(), "'message'"
+        )
+        let call = BoundParentConstructorCall(
+            target, [argument],
+            [TypeConversions.classify(SemanticTypes.stringType(), SemanticTypes.stringType())],
+            fixture.range()
+        )
+        let childConstructor = BoundFunctionUnit(
+            fixture.declaration("constructor", "Child", 3),
+            "Child", SemanticTypes.unitType(), BoundStatement[], fixture.range(),
+            constructorFunction: true, parentConstructorCall: call
+        )
+
+        expect(childConstructor.parentConstructorCall.target.ownerType.value()).toBe(parentType.value())
+        let retainedArguments = childConstructor.parentConstructorCall.argumentValues()
+        let argumentObject = (Object)retainedArguments.first
+        let retainedArgument = (BoundLiteralExpression)argumentObject
+        expect(retainedArgument.sourceValue).toBe("'message'")
+        let copied = childConstructor.parentConstructorCall.argumentValues()
+        copied.clear()
+        expect(childConstructor.parentConstructorCall.argumentValues().count).toBe(1)
+    }
+
+    test `rejects invalid parent constructor evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let parentIdentity = fixture.declaration("class", "Parent", 1)
+        let parentType = UserClassSemanticType(parentIdentity)
+        let target = CallableSignature(
+            SymbolIdentity(fixture.declaration("constructor", "Parent", 2), "constructor"),
+            "Parent", CallableKind("constructor"), [SemanticTypes.stringType()],
+            parentType, parentType
+        )
+        let intArgument = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")
+        var Int rejected
+        try {
+            BoundParentConstructorCall(
+                target, [intArgument],
+                [TypeConversions.classify(SemanticTypes.intType(), SemanticTypes.longType())],
+                fixture.range()
+            )
+        } catch (Exception error) { rejected++ }
+        try {
+            let call = BoundParentConstructorCall(
+                target,
+                [BoundLiteralExpression(fixture.range(), SemanticTypes.stringType(), "'ok'")],
+                [TypeConversions.classify(SemanticTypes.stringType(), SemanticTypes.stringType())],
+                fixture.range()
+            )
+            BoundFunctionUnit(
+                fixture.declaration("function", "not-constructor", 3),
+                "not-constructor", SemanticTypes.unitType(), BoundStatement[], fixture.range(),
+                parentConstructorCall: call
+            )
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
     test `inconsistent conversion call return and snapshot evidence is rejected`() {
         let fixture = BoundIR_TestFixture()
         let literal = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1")

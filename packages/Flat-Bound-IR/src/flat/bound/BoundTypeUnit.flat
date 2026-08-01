@@ -23,6 +23,11 @@ data class {
             identity.syntaxIdentity.snapshot != range.snapshot) {
             throw Exception("Bound type requires identity, semantic type, functions, and range")
         }
+        let constructors = functionUnits.filter({ _.constructorFunction })
+        if (parentType && (constructors.isEmpty ||
+            constructors.first.parentConstructorCall == null)) {
+            throw Exception("Bound derived type requires explicit parent constructor evidence")
+        }
         functions = BoundFunctionUnit[]
         functions.addAll(functionUnits)
         fields = BoundFieldUnit[]

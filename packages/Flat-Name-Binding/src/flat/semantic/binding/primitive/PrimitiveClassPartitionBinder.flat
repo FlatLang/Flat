@@ -1,0 +1,73 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/compiler/models
+import flat/bound
+
+/**
+ * Binds a finite source/package class partition after all class signatures are
+ * known. Root classes bind independently; reduced parent/child components bind
+ * only after their named parent is available.
+ */
+class {
+    public bind(
+        PrimitiveClassSyntax[] syntaxValues,
+        SourceSnapshotIdentity snapshot = null,
+        Int maxTypes = 256
+    ) -> PrimitiveClassPartitionBindingResult {
+        if (!syntaxValues || syntaxValues.any({ !_ }) || maxTypes <= 0) {
+            throw Exception("Primitive class partition binding requires syntax snapshot and capacity")
+        }
+        if (syntaxValues.count > maxTypes) {
+            throw Exception("Primitive class partition exceeds configured type capacity")
+        }
+        var Int index
+        while (index < syntaxValues.count) {
+            let syntax = syntaxValues[index]
+            if (syntaxValues.take(index).any({ _.name == syntax.name })) {
+                throw Exception("Duplicate reduced class '#{syntax.name}'")
+            }
+            index++
+        }
+
+        let result = BoundTypeUnit[]
+        let boundNames = String[]
+        while (result.count < syntaxValues.count) {
+            var Bool progressed
+            index = 0
+            while (index < syntaxValues.count) {
+                let syntax = syntaxValues[index]
+                if (boundNames.contains(syntax.name)) {
+                    index++
+                    continue
+                }
+                if (!syntax.parentName) {
+                    let syntaxSnapshot = snapshot ?: syntax.range.snapshot
+                    result.add(PrimitiveClassBinder().bind(syntax, syntaxSnapshot).typeUnit)
+                    boundNames.add(syntax.name)
+                    progressed = true
+                } else if (boundNames.contains(syntax.parentName)) {
+                    let parentSyntax = syntaxValues.firstOrNull({ _.name == syntax.parentName })
+                    if (!parentSyntax) throw Exception("Missing reduced parent '#{syntax.parentName}'")
+                    if (parentSyntax.parentName) {
+                        throw Exception("Reduced class partition supports one inheritance level")
+                    }
+                    let inherited = PrimitiveInheritanceBinder().bind(
+                        parentSyntax, syntax, snapshot
+                    )
+                    var Int parentIndex
+                    while (result[parentIndex].identity.name != parentSyntax.name) parentIndex++
+                    result[parentIndex] = inherited.parentType
+                    result.add(inherited.childType)
+                    boundNames.add(syntax.name)
+                    progressed = true
+                }
+                index++
+            }
+            if (!progressed) {
+                throw Exception("Missing or cyclic reduced parent")
+            }
+        }
+        return PrimitiveClassPartitionBindingResult(result)
+    }
+}

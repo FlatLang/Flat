@@ -8,6 +8,7 @@ import flat/semantic/binding/primitive/PrimitiveStatementBinder_Test
 import flat/semantic/binding/primitive/PrimitiveControlStatementBinder_Test
 import flat/semantic/binding/primitive/PrimitiveFunctionBinder_Test
 import flat/semantic/binding/primitive/PrimitiveClassBinder_Test
+import flat/semantic/binding/primitive/PrimitiveClassPartitionBinder_Test
 import flat/semantic/binding/primitive/PrimitiveInheritanceBinder_Test
 
 [TestSuite [
@@ -19,6 +20,7 @@ import flat/semantic/binding/primitive/PrimitiveInheritanceBinder_Test
     PrimitiveControlStatementBinder_Test,
     PrimitiveFunctionBinder_Test,
     PrimitiveClassBinder_Test,
+    PrimitiveClassPartitionBinder_Test,
     PrimitiveInheritanceBinder_Test
 ]]
 class {

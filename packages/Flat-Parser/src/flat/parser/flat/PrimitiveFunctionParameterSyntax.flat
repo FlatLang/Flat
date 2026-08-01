@@ -7,7 +7,8 @@ data class {
     public construct(
         visible SourceRange range,
         visible String typeName,
-        visible String name
+        visible String name,
+        visible PrimitiveExpressionSyntax defaultValue = null
     ) {
         if (!range || !typeName || typeName.trim().count == 0 ||
             !name || name.trim().count == 0) {

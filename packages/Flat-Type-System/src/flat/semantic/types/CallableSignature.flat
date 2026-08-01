@@ -12,10 +12,12 @@ data class {
         visible CallableKind callableKind,
         SemanticType[] parameterTypes,
         visible SemanticType returnType,
-        visible UserClassSemanticType ownerType = null
+        visible UserClassSemanticType ownerType = null,
+        visible Int optionalParameterCount = 0
     ) {
         if (!identity || !name || name.trim().count == 0 || !callableKind ||
-            !parameterTypes || parameterTypes.any({ !_ }) || !returnType) {
+            !parameterTypes || parameterTypes.any({ !_ }) || !returnType ||
+            optionalParameterCount < 0 || optionalParameterCount > parameterTypes.count) {
             throw Exception("Callable signature requires identity, name, kind, parameters, and return type")
         }
         if (callableKind.value == "function" && ownerType) {

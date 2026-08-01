@@ -9,7 +9,8 @@ class {
     public bind(
         PrimitiveNativeSyntax syntax,
         String selectedTarget,
-        LocalBinding[] locals = LocalBinding[]
+        LocalBinding[] locals = LocalBinding[],
+        SemanticType resultType = null
     ) -> BoundExternalExpression {
         if (!syntax || !selectedTarget || syntax.target != selectedTarget) {
             throw Exception("Native form is unavailable for selected target")
@@ -21,8 +22,9 @@ class {
             if (!result.succeeded) throw Exception(result.diagnostic.message)
             arguments.add(result.expression)
         }
+        let semanticType = resultType ?: SemanticTypes.intType()
         let call = BoundNativeCallExpression(
-            syntax.range, SemanticTypes.intType(), syntax.nativeName, arguments
+            syntax.range, semanticType, syntax.nativeName, arguments
         )
         return BoundExternalExpression(syntax.range, call.semanticType, "native", call)
     }

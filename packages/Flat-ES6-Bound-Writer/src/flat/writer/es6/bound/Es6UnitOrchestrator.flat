@@ -11,12 +11,21 @@ class {
         if (!statements || !units) throw Exception("ES6 unit orchestration requires emitters")
     }
 
+    parameterNames(BoundFunctionUnit functionUnit) -> String[] {
+        return functionUnit.parameterValues().map((parameter) => {
+            let name = Es6NameMangler.mangle(parameter.identity.value)
+            if (!parameter.defaultValue) return name
+            let value = statements.expressions.emit(parameter.defaultValue)
+            if (!value.emitted) throw Exception(value.diagnostic.message)
+            return name + " = " + value.code
+        })
+    }
+
     public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
         if (!functionUnit) throw Exception("ES6 function unit is required")
         let body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return Es6EmissionResult(diagnostic: body.diagnostic)
-        let parameters = functionUnit.parameterValues()
-            .map({ Es6NameMangler.mangle(_.identity.value) })
+        let parameters = parameterNames(functionUnit)
         let code = functionUnit.constructorFunction ?
             units.emitConstructor(parameters, body.code) :
             units.emitFunction(functionUnit.identity.value, parameters, body.code)
@@ -29,8 +38,7 @@ class {
         if (!functionUnit) throw Exception("ES6 method unit is required")
         var Es6CodeResult body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
-        let parameters = functionUnit.parameterValues()
-            .map({ Es6NameMangler.mangle(_.identity.value) })
+        let parameters = parameterNames(functionUnit)
         if (functionUnit.constructorFunction) {
             return Es6CodeResult(code: units.emitConstructor(parameters, body.code))
         }
@@ -50,9 +58,14 @@ class {
         if (!functionUnit.constructorFunction || !typeUnit.parentType) return emitMethod(functionUnit)
         let body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
-        let parameters = functionUnit.parameterValues()
-            .map({ Es6NameMangler.mangle(_.identity.value) })
-        return Es6CodeResult(code: units.emitConstructor(parameters, "super();\n" + body.code))
+        let parentCall = functionUnit.parentConstructorCall
+        let parentArgumentValues = parentCall.argumentValues()
+        let parentArguments = statements.expressions.emitArguments(parentArgumentValues)
+        if (!parentArguments.emitted) return parentArguments
+        let parameters = parameterNames(functionUnit)
+        return Es6CodeResult(code: units.emitConstructor(
+            parameters, "super(" + parentArguments.code + ");\n" + body.code
+        ))
     }
 
     emitMetadata(BoundTypeUnit typeUnit) -> String {

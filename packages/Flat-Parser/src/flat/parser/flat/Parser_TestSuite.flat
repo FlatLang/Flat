@@ -13,6 +13,7 @@ import flat/parser/matchers
     FlatSyntaxMilestoneScanner_Test,
     FlatTopLevelTypeMilestoneScanner_Test,
     FlatSourceMilestoneScanner_Test,
+    FlatSourceTypePartitioner_Test,
     FlatBracedMemberMilestoneScanner_Test,
     FlatClassBodyMatcher_Test,
     FlatNonBracedMemberMilestoneScanner_Test,

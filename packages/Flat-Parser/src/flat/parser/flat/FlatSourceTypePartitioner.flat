@@ -1,0 +1,202 @@
+package flat/parser/flat
+
+import flat/parser
+import flat/compiler/models
+
+/**
+ * Validates package/import/type milestones and returns bounded complete type
+ * partitions for consumers whose current contracts require finite token arrays.
+ */
+class {
+    public construct(
+        visible Int maxFrontMatterTokens = 64,
+        visible Int maxTypeHeaderTokens = 128,
+        visible Int maxTypeTokens = 8192,
+        visible Int maxTypes = 256
+    ) {
+        if (maxFrontMatterTokens <= 0 || maxTypeHeaderTokens <= 0 ||
+            maxTypeTokens <= 0 || maxTypes <= 0) {
+            throw Exception("Flat source partition capacities must be positive")
+        }
+    }
+
+    normalizeDefaultParameters(Token[] tokens) -> Token[] {
+        let result = Token[]
+        result.addAll(tokens)
+        var Int index
+        while (index + 1 < result.count) {
+            if ((result[index].value == "constructor" || result[index].value == "construct") &&
+                result[index + 1].value == "(") {
+                var Int cursor = index + 2
+                var Int depth = 1
+                while (cursor < result.count && depth > 0) {
+                    if (result[cursor].value == "(") depth++
+                    else if (result[cursor].value == ")") depth--
+                    else if (depth == 1 && result[cursor].value == "=") {
+                        result[cursor] = Token(
+                            value: " ", type: Token.Type.WHITESPACE,
+                            location: result[cursor].location
+                        )
+                        cursor++
+                        var Int valueDepth
+                        while (cursor < result.count) {
+                            let value = result[cursor].value
+                            if (value == "(" || value == "[") valueDepth++
+                            else if (value == ")" || value == "]") {
+                                if (valueDepth == 0 && value == ")") break
+                                valueDepth--
+                            }
+                            if (valueDepth == 0 && (value == "," || value == ")")) break
+                            result[cursor] = Token(
+                                value: " ", type: Token.Type.WHITESPACE,
+                                location: result[cursor].location
+                            )
+                            cursor++
+                        }
+                        continue
+                    }
+                    cursor++
+                }
+                index = cursor
+            }
+            index++
+        }
+        return result
+    }
+
+    normalizeScannerTokens(Token[] tokens) -> Token[] {
+        let result = normalizeDefaultParameters(normalizeDelegatedConstructors(tokens))
+        var Int depth
+        var Int index
+        while (index < result.count) {
+            if (result[index].value == "{") depth++
+            else if (result[index].value == "}") depth--
+            else if (depth == 1 && result[index].value == "=" && index >= 2 &&
+                result[index - 1].type == Token.Type.IDENTIFIER &&
+                result[index - 2].type == Token.Type.IDENTIFIER) {
+                result[index] = Token(
+                    value: "=>", type: Token.Type.SYMBOL,
+                    location: result[index].location
+                )
+                var Int cursor = index + 1
+                var Int initializerDepth
+                while (cursor < result.count) {
+                    if (result[cursor].value == "(" || result[cursor].value == "[") {
+                        initializerDepth++
+                    } else if (result[cursor].value == ")" || result[cursor].value == "]") {
+                        initializerDepth--
+                    } else if (initializerDepth == 0 && result[cursor].value == ";") {
+                        result[cursor] = Token(
+                            value: " ", type: Token.Type.WHITESPACE,
+                            location: result[cursor].location
+                        )
+                        break
+                    }
+                    cursor++
+                }
+            }
+            index++
+        }
+        return result
+    }
+
+    normalizeDelegatedConstructors(Token[] tokens) -> Token[] {
+        let result = Token[]
+        result.addAll(tokens)
+        var Int index
+        while (index + 1 < result.count) {
+            if ((result[index].value == "constructor" || result[index].value == "construct") &&
+                result[index + 1].value == "(") {
+                var Int cursor = index + 2
+                var Int depth = 1
+                while (cursor < result.count && depth > 0) {
+                    if (result[cursor].value == "(") depth++
+                    else if (result[cursor].value == ")") depth--
+                    cursor++
+                }
+                if (depth == 0 && cursor < result.count && result[cursor].value == "=>") {
+                    result[cursor] = Token(
+                        value: "{", type: Token.Type.SYMBOL,
+                        location: result[cursor].location
+                    )
+                    var Int callDepth
+                    cursor++
+                    while (cursor < result.count) {
+                        if (result[cursor].value == "(") callDepth++
+                        else if (result[cursor].value == ")") {
+                            callDepth--
+                            if (callDepth == 0) {
+                                result[cursor] = Token(
+                                    value: "}", type: Token.Type.SYMBOL,
+                                    location: result[cursor].location
+                                )
+                                break
+                            }
+                        }
+                        cursor++
+                    }
+                }
+                index = cursor
+            }
+            index++
+        }
+        return result
+    }
+
+    public partition(
+        Token[] tokenValues,
+        SourceSnapshotIdentity snapshot
+    ) -> FlatSourceTypePartition[] {
+        if (!tokenValues || !snapshot || tokenValues.any({ !_ })) {
+            throw Exception("Flat source partitioning requires tokens and snapshot")
+        }
+        let tokens = tokenValues.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        let scanTokens = normalizeScannerTokens(tokens)
+        let scanner = FlatSourceMilestoneScanner(
+            snapshot, maxFrontMatterTokens, maxTypeHeaderTokens
+        )
+        let islands = SyntaxIsland[]
+        var Int index
+        while (index < scanTokens.count) {
+            islands.addAll(scanner.accept(scanTokens[index], index))
+            index++
+        }
+        islands.addAll(scanner.end())
+
+        var String packageName
+        let imports = String[]
+        let result = FlatSourceTypePartition[]
+        var TopLevelTypeHeaderSyntaxIsland header
+        for (island in islands) {
+            if (island.class.isOfType(PackageSyntaxIsland.class)) {
+                packageName = ((PackageSyntaxIsland)island).packageName
+            } else if (island.class.isOfType(ImportSyntaxIsland.class)) {
+                imports.add(((ImportSyntaxIsland)island).importedName)
+            } else if (island.class.isOfType(TopLevelTypeHeaderSyntaxIsland.class)) {
+                header = (TopLevelTypeHeaderSyntaxIsland)island
+            } else if (island.class.isOfType(TopLevelTypeBodySyntaxIsland.class)) {
+                let body = (TopLevelTypeBodySyntaxIsland)island
+                if (!header || body.headerIdentity != header.identity) {
+                    throw Exception("Flat source type body requires matching header")
+                }
+                let count = body.range.endTokenIndex - header.range.startTokenIndex + 1
+                if (count > maxTypeTokens) {
+                    throw Exception("Flat source type exceeds configured token capacity")
+                }
+                if (result.count >= maxTypes) {
+                    throw Exception("Flat source exceeds configured type capacity")
+                }
+                result.add(FlatSourceTypePartition(
+                    packageName, imports, header.declarationKind, header.name,
+                    header.range.startTokenIndex,
+                    tokens.skip(header.range.startTokenIndex).take(count)
+                ))
+                header = null
+            }
+        }
+        return result
+    }
+}

@@ -40,6 +40,9 @@ class {
         if (first == "let" || first == "var") return parseLocal(start, end)
         if (first == "return") return parseReturn(start, end)
         if (first == "throw") return parseThrow(start, end)
+        if (first == "native") return PrimitiveExpressionStatementSyntax(
+            range(start, end), expression(start, end)
+        )
         return parseAssignment(start, end)
     }
 

@@ -78,6 +78,183 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `in process compiler partitions package imports and multiple reduced types`() {
+        let fixture = File("test-fixtures/reduced-flat-core-types.flat")
+        let result = CompilerTest().compile([
+            CompilerSource("flat-core/types.flat", Es6ArtifactFiles.read(fixture))
+        ])
+        expect(result.artifacts().count).toBe(1)
+        let summary = result.session.completion.get()
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.diagnosticCount).toBe(0)
+        let code = result.artifacts().first.code
+        expect(code.indexOf("class ") >= 0).toBe(true)
+        expect(code.indexOf("class ", code.indexOf("class ") + 1) >= 0).toBe(true)
+    }
+
+    async test `in process compiler links dependency ordered inheritance partitions`() {
+        let fixture = File("test-fixtures/reduced-flat-core-inheritance.flat")
+        let code = FlatEs6SourceCompiler().compile(
+            CompilerSource("flat-core/inheritance.flat", Es6ArtifactFiles.read(fixture))
+        )
+        expect(code.indexOf("extends") >= 0).toBe(true)
+    }
+
+    async test `package linker resolves dependency ordered inheritance across sources`() {
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                "flat/core/Child.flat",
+                Es6ArtifactFiles.read(File("test-fixtures/reduced-flat-core-child.flat"))
+            ),
+            CompilerSource(
+                "flat/core/Parent.flat",
+                Es6ArtifactFiles.read(File("test-fixtures/reduced-flat-core-parent.flat"))
+            )
+        ])
+        expect(code.indexOf("extends") >= 0).toBe(true)
+    }
+
+    async test `package linker forwards parent constructor message in dependency slice`() {
+        let identity = "flat/exception/Exceptions.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                identity,
+                Es6ArtifactFiles.read(File("test-fixtures/reduced-flat-core-exception.flat"))
+            )
+        ])
+        expect(code.indexOf("super") >= 0).toBe(true)
+        expect(code.indexOf("extends ") >= 0).toBe(true)
+        let childNameStart = code.lastIndexOf("class ") + 6
+        let childNameEnd = code.indexOf(" ", start: childNameStart)
+        let childName = code.substring(childNameStart, childNameEnd)
+        let root = File(".flat-compiler-exception-slice-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + childName + "('forwarded');\n" +
+                "console.log(value[Object.keys(value)[0]]);\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("forwarded\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker uses default parent message when child omits delegated argument`() {
+        let identity = "flat/exception/DefaultExceptions.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity,
+                "package flat/exception " +
+                "class ParentException { visible String message = \"\"; " +
+                "constructor(String message = \"\") { this.message = message; } } " +
+                "class ChildException extends ParentException { constructor() => super() }")
+        ])
+        let childNameStart = code.lastIndexOf("class ") + 6
+        let childNameEnd = code.indexOf(" ", start: childNameStart)
+        let childName = code.substring(childNameStart, childNameEnd)
+        let root = File(".flat-compiler-default-exception-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + childName + "();\n" +
+                "console.log(value[Object.keys(value)[0]] === '');\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker reports real Exception source unsupported construct explicitly`() {
+        let identity = "flat/exception/Exception.flat"
+        var String message
+        try {
+            FlatEs6PackageLinker().link([
+                CompilerSource(
+                    identity,
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
+                )
+            ])
+        } catch (Exception error) { message = error.message }
+        expect(message).toNotBe(null)
+        expect(message.count > 0).toBe(true)
+    }
+
+    async test `package linker compiles and executes selected real Flat Core source`() {
+        let source = File("../Flat-Core/src/flat/primitive/Primitive.flat")
+        let identity = "flat/primitive/Primitive.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity, Es6ArtifactFiles.read(source))
+        ])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 4), "class", "Primitive"
+        )
+        let root = File(".flat-compiler-real-core-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(typeof new " +
+                Es6NameMangler.mangle(typeIdentity.value) + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("object\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker incrementally executes selected real Flat Core roots`() {
+        let primitiveIdentity = "flat/primitive/Primitive.flat"
+        let stackIdentity = "flat/exception/StackTrace.flat"
+        let linker = FlatEs6PackageLinker()
+        let primitiveCode = linker.link([
+            CompilerSource(
+                primitiveIdentity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+            )
+        ])
+        let stackCode = linker.link([
+            CompilerSource(
+                stackIdentity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
+            )
+        ])
+        let primitiveSnapshot = SourceSnapshotIdentity(
+            SourceIdentity(primitiveIdentity), "compiler-input"
+        )
+        let stackSnapshot = SourceSnapshotIdentity(SourceIdentity(stackIdentity), "compiler-input")
+        let primitiveType = DeclarationIdentity(
+            SyntaxIslandIdentity(primitiveSnapshot, "class", 4), "class", "Primitive"
+        )
+        let stackType = DeclarationIdentity(
+            SyntaxIslandIdentity(stackSnapshot, "class", 4), "class", "StackTrace"
+        )
+        let root = File(".flat-compiler-real-core-roots-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            primitiveCode + stackCode + "console.log(typeof new " +
+                Es6NameMangler.mangle(primitiveType.value) + "(), typeof new " +
+                Es6NameMangler.mangle(stackType.value) + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("object object\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `source scoped compilation failure is diagnostic and unrelated source completes`() {
         let result = CompilerTest().compile([
             CompilerSource("bad", "not valid Flat"),

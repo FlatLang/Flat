@@ -1,0 +1,30 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable package/import context and finite token partition for one top-level type. */
+data class {
+    var String[] imports
+    var Token[] tokens
+
+    public construct(
+        visible String packageName,
+        String[] importValues,
+        visible String declarationKind,
+        visible String name,
+        visible Int startTokenIndex,
+        Token[] tokenValues
+    ) {
+        if (!importValues || importValues.any({ !_ }) || !declarationKind ||
+            startTokenIndex < 0 || !tokenValues || tokenValues.count == 0 || tokenValues.any({ !_ })) {
+            throw Exception("Flat source type partition requires context and tokens")
+        }
+        imports = String[]
+        imports.addAll(importValues)
+        tokens = Token[]
+        tokens.addAll(tokenValues)
+    }
+
+    public importNames() -> String[] => String[]:addAll(imports)
+    public tokenValues() -> Token[] => Token[]:addAll(tokens)
+}

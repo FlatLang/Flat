@@ -28,17 +28,18 @@ class {
             return invalid(target, "type.call-receiver-unexpected", "Callable '#{target.name}' does not accept a value receiver", range)
         }
         let parameterTypes = target.parameterTypes()
-        if (parameterTypes.count != argumentTypes.count) {
+        let minimumArity = parameterTypes.count - target.optionalParameterCount
+        if (argumentTypes.count < minimumArity || argumentTypes.count > parameterTypes.count) {
             return invalid(
                 target,
                 "type.call-arity",
-                "Callable '#{target.name}' expects #parameterTypes.count arguments but received #argumentTypes.count",
+                "Callable '#{target.name}' expects between #minimumArity and #parameterTypes.count arguments but received #argumentTypes.count",
                 range
             )
         }
         let conversions = TypeConversion[]
         var Int index
-        while (index < parameterTypes.count) {
+        while (index < argumentTypes.count) {
             let conversion = TypeConversions.classify(argumentTypes[index], parameterTypes[index])
             if (!conversion.applicable) {
                 return invalid(

@@ -25,6 +25,39 @@ testable class {
         expect(result.functionUnits().last.returnType.value()).toBe("primitive:Int")
     }
 
+    test `binds initialized visible field default parameter and target native constructor`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:exception-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(exceptionTokens(), snapshot)
+        let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let field = bound.fieldUnits().first
+        let constructor = bound.functionUnits().first
+        let statements = constructor.statements()
+
+        expect(field.visibleField).toBe(true)
+        expect(field.initializer.expressionKind()).toBe("literal")
+        expect(constructor.parameterValues().first.defaultValue.expressionKind()).toBe("literal")
+        expect(statements.first.unitKind()).toBe("member-assignment")
+        expect(statements.last.unitKind()).toBe("expression")
+        let statementObject = (Object)statements.last
+        let nativeStatement = (BoundExpressionStatement)statementObject
+        expect(nativeStatement.expression.semanticType.value()).toBe("unit")
+    }
+
+    test `rejects non es6 target native constructor`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:exception-target-invalid"), "revision:one"
+        )
+        let values = exceptionTokens()
+        values[20] = token("c", false, 88)
+        var rejected = false
+        try {
+            PrimitiveClassBinder().bind(PrimitiveClassParser().parse(values, snapshot), snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `binds generic parameter metadata and memoizes reified instantiation`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:generic-bind"), "revision:one"
@@ -102,6 +135,23 @@ testable class {
         expect(rejected).toBe(2)
     }
 
+    exceptionTokens() -> Token[] {
+        return [
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("visible", false, 19), token("String", false, 27), token("message", false, 34),
+            token("=", true, 42), stringToken("''", 44), token(";", true, 46),
+            token("construct", false, 48), token("(", true, 57), token("String", false, 58),
+            token("message", false, 65), token("=", true, 73), stringToken("''", 75),
+            token(")", true, 77), token("{", true, 79), token("native", false, 81),
+            token("[", true, 87), token("es6", false, 88), token("]", true, 91),
+            token("Math", false, 93), token(".", true, 97), token("max", false, 98),
+            token("(", true, 101), token("1", false, 102, Token.Type.INTEGER),
+            token(",", true, 103), token("2", false, 105, Token.Type.INTEGER),
+            token(")", true, 106), token(";", true, 107), token("}", true, 109),
+            token("}", true, 111)
+        ]
+    }
+
     tokens() -> Token[] {
         return [
             token("class", false, 1), token("Box", false, 7), token("{", true, 11),
@@ -116,8 +166,18 @@ testable class {
         ]
     }
 
-    token(String value, Bool symbol, Int column) -> Token {
-        let type = symbol ? Token.Type.SYMBOL : Token.Type.IDENTIFIER
+    stringToken(String value, Int column) -> Token => Token(
+        value: value, type: Token.Type.STRING,
+        location: Location(lineNumber: 1, column: column)
+    )
+
+    token(
+        String value,
+        Bool symbol,
+        Int column,
+        Int explicitType = Token.Type.IDENTIFIER
+    ) -> Token {
+        let type = symbol ? Token.Type.SYMBOL : explicitType
         return Token(value: value, type: type,
             location: Location(lineNumber: 1, column: column))
     }

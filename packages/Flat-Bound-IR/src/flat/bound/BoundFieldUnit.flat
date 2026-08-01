@@ -9,9 +9,14 @@ data class {
         visible String name,
         visible SymbolIdentity identity,
         visible SemanticType semanticType,
-        visible SourceRange range
+        visible SourceRange range,
+        visible Bool visibleField = false,
+        visible BoundExpression initializer = null
     ) {
         if (!name || !identity || !semanticType || !range ||
+            (initializer && !TypeConversions.classify(
+                initializer.semanticType, semanticType
+            ).applicable) ||
             identity.declaration.syntaxIdentity.snapshot != range.snapshot) {
             throw Exception("Bound field requires name identity type and range")
         }

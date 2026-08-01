@@ -7,9 +7,13 @@ data class {
     public construct(
         visible String name,
         visible SymbolIdentity identity,
-        visible SemanticType semanticType
+        visible SemanticType semanticType,
+        visible BoundExpression defaultValue = null
     ) {
-        if (!name || !identity || !semanticType) {
+        if (!name || !identity || !semanticType ||
+            (defaultValue && !TypeConversions.classify(
+                defaultValue.semanticType, semanticType
+            ).applicable)) {
             throw Exception("Bound function parameter requires name, identity, and type")
         }
     }

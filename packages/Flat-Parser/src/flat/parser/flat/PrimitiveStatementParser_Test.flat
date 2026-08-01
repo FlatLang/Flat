@@ -32,6 +32,30 @@ testable class {
         expect(declaration.range.end.column).toBe(14)
     }
 
+    test `parses target native expression statement`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-statement"), "revision:one"
+        )
+        let result = PrimitiveStatementParser().parse([
+            token("native", Token.Type.IDENTIFIER, 1),
+            token("[", Token.Type.SYMBOL, 7), token("es6", Token.Type.IDENTIFIER, 8),
+            token("]", Token.Type.SYMBOL, 11), token("Math", Token.Type.IDENTIFIER, 13),
+            token(".", Token.Type.SYMBOL, 17), token("max", Token.Type.IDENTIFIER, 18),
+            token("(", Token.Type.SYMBOL, 21), token("1", Token.Type.INTEGER, 22),
+            token(",", Token.Type.SYMBOL, 23), token("2", Token.Type.INTEGER, 25),
+            token(")", Token.Type.SYMBOL, 26), token(";", Token.Type.SYMBOL, 27)
+        ], snapshot)
+        let statements = result.statements()
+        let statementObject = (Object)statements.first
+        let statement = (PrimitiveExpressionStatementSyntax)statementObject
+        let nativeObject = (Object)statement.expression
+        let native = (PrimitiveNativeSyntax)nativeObject
+
+        expect(statement.statementKind()).toBe("expression")
+        expect(native.target).toBe("es6")
+        expect(native.nativeName).toBe("Math.max")
+    }
+
     test `rejects incomplete declarations and malformed assignments`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-statement-invalid"), "revision:one"

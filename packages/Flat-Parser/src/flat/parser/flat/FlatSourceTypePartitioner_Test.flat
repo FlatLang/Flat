@@ -1,0 +1,80 @@
+package flat/parser/flat
+
+import flat/compiler/models
+import flat/lexer
+
+testable class {
+    async test `partitions package imports and multiple complete types`() {
+        let source = "package flat/test import flat/Value " +
+            "class First { constructor() {} } class Second { constructor() {} }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+
+        expect(partitions.count).toBe(2)
+        expect(partitions.first.packageName).toBe("flat/test")
+        expect(partitions.first.importNames().first).toBe("flat/Value")
+        expect(partitions.first.name).toBe("First")
+        expect(partitions.last.name).toBe("Second")
+        expect(partitions.first.tokenValues().first.value).toBe("class")
+        expect(partitions.first.tokenValues().last.value).toBe("}")
+    }
+
+    async test `partitions delegated constructor without changing original tokens`() {
+        let source = "package flat/test class Parent { constructor(String message) {} } " +
+            "class Child extends Parent { constructor(String message) => super(message) }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:delegated-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+
+        expect(partitions.count).toBe(2)
+        let child = partitions.last.tokenValues()
+        expect(child.filter({ _.value == "=>" }).count).toBe(1)
+        expect(child.filter({ _.value == "super" }).count).toBe(1)
+    }
+
+    async test `partitions initialized field without changing original tokens`() {
+        let source = "package flat/test class Value { visible String message = \"\"; constructor() {} }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:initialized-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+
+        expect(partitions.count).toBe(1)
+        expect(partitions.first.tokenValues().filter({ _.value == "=" }).count).toBe(1)
+        expect(partitions.first.tokenValues().filter({ _.value == "=>" }).count).toBe(0)
+    }
+
+    async test `partitions default constructor parameter without changing original tokens`() {
+        let source = "package flat/test class Value { constructor(String message = \"\") {} }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:default-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+
+        expect(partitions.count).toBe(1)
+        expect(partitions.first.tokenValues().filter({ _.value == "=" }).count).toBe(1)
+    }
+
+    async test `enforces type count and token capacities`() {
+        let source = "class First { constructor() {} } class Second { constructor() {} }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-bounds"), "one")
+        var Int rejected
+        try {
+            FlatSourceTypePartitioner(maxTypes: 1).partition(tokens, snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            FlatSourceTypePartitioner(maxTypeTokens: 3).partition(tokens, snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+}

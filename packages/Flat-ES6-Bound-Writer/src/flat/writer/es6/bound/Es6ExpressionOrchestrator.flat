@@ -128,7 +128,7 @@ class {
         return Es6CodeResult(code: calls.emitNativeCall(expression.nativeName, arguments.code))
     }
 
-    emitArguments(BoundExpression[] values) -> Es6CodeResult {
+    public emitArguments(BoundExpression[] values) -> Es6CodeResult {
         let arguments = String[]
         for (value in values) {
             let emitted = emit(value)

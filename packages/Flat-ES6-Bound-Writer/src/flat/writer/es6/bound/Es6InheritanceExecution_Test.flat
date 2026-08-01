@@ -33,6 +33,50 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `derived constructor forwards selected parent arguments`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-constructor-execute"), "revision:one"
+        )
+        let parentSyntax = PrimitiveClassParser().parse([
+            token("class", false), token("Parent", false), token("{", true),
+            token("String", false), token("message", false), token(";", true),
+            token("construct", false), token("(", true), token("String", false),
+            token("message", false), token(")", true), token("{", true),
+            token("this", false), token(".", true), token("message", false),
+            token("=", true), token("message", false), token(";", true), token("}", true),
+            token("read", false), token("(", true), token(")", true), token("->", true),
+            token("String", false), token("{", true), token("return", false),
+            token("this", false), token(".", true), token("message", false),
+            token(";", true), token("}", true), token("}", true)
+        ], snapshot)
+        let childSyntax = PrimitiveClassParser().parse([
+            token("class", false), token("Child", false), token("extends", false),
+            token("Parent", false), token("{", true), token("construct", false),
+            token("(", true), token("String", false), token("message", false),
+            token(")", true), token("=>", true), token("super", false),
+            token("(", true), token("message", false), token(")", true), token("}", true)
+        ], snapshot)
+        let binding = PrimitiveInheritanceBinder().bind(parentSyntax, childSyntax, snapshot)
+        let parent = Es6UnitOrchestrator().emitType(binding.parentType, 0)
+        let child = Es6UnitOrchestrator().emitType(binding.childType, 1)
+        let code = Es6FragmentAssembler(2).assemble([child.fragment, parent.fragment]).code
+        let childName = Es6NameMangler.mangle(binding.childType.identity.value)
+        let slot = Es6NameMangler.mangle(
+            binding.parentType.functionUnits().last.dispatchIdentity
+        )
+        let root = File(".flat-es6-parent-constructor-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "parent-constructor.js")
+        Es6ArtifactCommitter().commit(destination, code +
+            "console.log(new " + childName + "('forwarded')." + slot + "());\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("forwarded\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     typeTokens(String name, String parent, String returned) -> Token[] {
         let values = [token("class", false), token(name, false)]
         if (parent) values.addAll([token("extends", false), token(parent, false)])

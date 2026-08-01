@@ -1,0 +1,6 @@
+package flat/core
+
+import flat/Unused
+
+class First { constructor() {} }
+class Second { constructor() {} }

@@ -1,0 +1,91 @@
+package flat/compiler
+
+import flat/lexer
+import flat/compiler/models
+import flat/parser/flat
+import flat/semantic/binding/primitive
+import flat/writer/es6/bound
+
+/** Bounded package-scoped reduced class linker preserving source identities. */
+class {
+    public construct(
+        visible Int maxSources = 64,
+        visible Int maxSourceCharacters = 65536,
+        visible Int maxTokensPerSource = 8192,
+        visible Int maxTypes = 256,
+        visible Int maxFragments = 256
+    ) {
+        if (maxSources <= 0 || maxSourceCharacters <= 0 || maxTokensPerSource <= 0 ||
+            maxTypes <= 0 || maxFragments <= 0) {
+            throw Exception("Flat ES6 package linker capacities must be positive")
+        }
+    }
+
+    implicitName(String identity, String partitionName) -> String {
+        if (partitionName) return partitionName
+        let slash = identity.lastIndexOf("/", defaultReturnValue: -1)
+        let dot = identity.indexOf(".", start: slash + 1, defaultReturnValue: identity.count)
+        return identity.substring(slash + 1, dot)
+    }
+
+    public async link(CompilerSource[] sourceValues) -> String {
+        if (!sourceValues || sourceValues.any({ !_ }) || sourceValues.count > maxSources) {
+            throw Exception("Flat ES6 package linking requires bounded sources")
+        }
+        let sources = sourceValues.sort({ _a.identity.compareTo(_b.identity) })
+        let syntaxes = PrimitiveClassSyntax[]
+        var String packageName
+        for (source in sources) {
+            if (source.text.count > maxSourceCharacters) {
+                throw Exception("Flat package source exceeds configured character capacity")
+            }
+            let stream = Lexer().lex(source.text)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+            if (tokens.count > maxTokensPerSource) {
+                throw Exception("Flat package source exceeds configured token capacity")
+            }
+            let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
+            let partitions = FlatSourceTypePartitioner(
+                maxTypeTokens: maxTokensPerSource, maxTypes: maxTypes
+            ).partition(tokens, snapshot)
+            for (partition in partitions) {
+                if (packageName && partition.packageName != packageName) {
+                    throw Exception("Flat ES6 package linker requires one package partition")
+                }
+                packageName = partition.packageName
+                if (partition.declarationKind != "class") {
+                    throw Exception("Reduced Flat ES6 package linking supports classes")
+                }
+                if (syntaxes.count >= maxTypes) {
+                    throw Exception("Flat ES6 package exceeds configured type capacity")
+                }
+                syntaxes.add(PrimitiveClassParser().parse(
+                    partition.tokenValues(), snapshot, partition.startTokenIndex,
+                    implicitName(source.identity, partition.name)
+                ))
+            }
+        }
+        let types = PrimitiveClassPartitionBinder().bind(
+            syntaxes, maxTypes: maxTypes
+        ).typeUnits()
+        if (types.count > maxFragments) {
+            throw Exception("Flat ES6 package exceeds configured fragment capacity")
+        }
+        let fragments = Es6ArtifactFragment[]
+        var Int index
+        while (index < types.count) {
+            let emitted = Es6UnitOrchestrator().emitType(types[index], index)
+            if (!emitted.emitted) {
+                throw Exception("#{emitted.diagnostic.code}: #{emitted.diagnostic.message}")
+            }
+            fragments.add(emitted.fragment)
+            index++
+        }
+        let assembly = Es6FragmentAssembler(maxFragments).assemble(fragments)
+        if (!assembly.assembled) {
+            throw Exception("#{assembly.diagnostic.code}: #{assembly.diagnostic.message}")
+        }
+        return assembly.code
+    }
+}

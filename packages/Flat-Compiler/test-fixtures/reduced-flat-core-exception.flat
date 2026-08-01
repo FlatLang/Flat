@@ -1,0 +1,13 @@
+package flat/core
+
+class ParentException {
+    visible String message = "";
+    constructor(String message = "") {
+        this.message = message;
+        native[es6] Math.max(1, 2);
+    }
+}
+
+class ChildException extends ParentException {
+    constructor(String message) => super(message)
+}

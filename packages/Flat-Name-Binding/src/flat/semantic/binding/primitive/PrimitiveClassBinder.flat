@@ -11,9 +11,19 @@ class {
 
     public bind(
         PrimitiveClassSyntax syntax,
-        SourceSnapshotIdentity snapshot
+        SourceSnapshotIdentity snapshot,
+        CallableSignature parentConstructor = null,
+        BoundFieldUnit[] inheritedFields = BoundFieldUnit[]
     ) -> PrimitiveClassBindingResult {
-        if (!syntax || !snapshot) throw Exception("Primitive class binding requires syntax and snapshot")
+        if (!syntax || !snapshot || !inheritedFields || inheritedFields.any({ !_ })) {
+            throw Exception("Primitive class binding requires syntax snapshot and inherited fields")
+        }
+        if ((syntax.parentName != null) != (parentConstructor != null) ||
+            (!parentConstructor && inheritedFields.isNotEmpty) ||
+            (parentConstructor && (parentConstructor.callableKind.value != "constructor" ||
+                parentConstructor.ownerType.declarationIdentity.name != syntax.parentName))) {
+            throw Exception("Primitive class parent requires its selected constructor signature")
+        }
         let typeIdentity = DeclarationIdentity(
             SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
             "class", syntax.name
@@ -23,19 +33,34 @@ class {
             typeIdentity, syntax.genericParameterName, 0
         ) : null
         let fields = BoundFieldUnit[]
+        let fieldSyntaxValues = syntax.fieldValues()
         var Int fieldIndex
-        while (fieldIndex < syntax.fieldValues().count) {
-            let field = syntax.fieldValues()[fieldIndex]
+        while (fieldIndex < fieldSyntaxValues.count) {
+            let field = fieldSyntaxValues[fieldIndex]
             let identity = SymbolIdentity(typeIdentity, "field", fieldIndex)
-            fields.add(BoundFieldUnit(field.name, identity, typeOf(field.typeName), field.range))
+            var BoundExpression initializer
+            if (field.initializer) {
+                let bound = PrimitiveExpressionBinder().bind(
+                    field.initializer, requiredType: typeOf(field.typeName)
+                )
+                if (!bound.succeeded) throw Exception(bound.diagnostic.message)
+                initializer = bound.expression
+            }
+            fields.add(BoundFieldUnit(
+                field.name, identity, typeOf(field.typeName), field.range,
+                field.visibleField, initializer
+            ))
             fieldIndex++
         }
         let functions = BoundFunctionUnit[]
-        functions.add(bindConstructor(syntax, typeIdentity, type, fields))
+        functions.add(bindConstructor(
+            syntax, typeIdentity, type, fields, parentConstructor, inheritedFields
+        ))
         var Int methodIndex
         while (methodIndex < syntax.methodValues().count) {
             functions.add(bindMethod(
-                syntax.methodValues()[methodIndex], typeIdentity, type, fields, methodIndex
+                syntax.methodValues()[methodIndex], typeIdentity, type,
+                fields, inheritedFields, methodIndex
             ))
             methodIndex++
         }
@@ -54,7 +79,9 @@ class {
         PrimitiveClassSyntax owner,
         DeclarationIdentity typeIdentity,
         UserClassSemanticType type,
-        BoundFieldUnit[] fields
+        BoundFieldUnit[] fields,
+        CallableSignature parentConstructor,
+        BoundFieldUnit[] inheritedFields
     ) -> BoundFunctionUnit {
         let syntax = owner.constructorValue
         let identity = DeclarationIdentity(
@@ -63,24 +90,72 @@ class {
         )
         let parameters = parameters(syntax.parameterValues(), identity)
         let locals = localBindings(parameters)
+        locals.addAll(inheritedFieldBindings(inheritedFields))
         let receiver = receiver(syntax.range, typeIdentity, type)
         let statements = BoundStatement[]
+        for (field in fields) {
+            if (field.initializer) {
+                let target = BoundMemberAccessExpression(
+                    field.range, field.semanticType, receiver, field.name, field.identity
+                )
+                statements.add(BoundMemberAssignmentStatement(
+                    field.range, target, field.initializer,
+                    TypeConversions.classify(field.initializer.semanticType, field.semanticType)
+                ))
+            }
+        }
         for (statement in syntax.statements()) {
+            if (statement.class.isOfType(PrimitiveExpressionStatementSyntax.class)) {
+                let expressionSyntax = (PrimitiveExpressionStatementSyntax)statement
+                if (!expressionSyntax.expression.class.isOfType(PrimitiveNativeSyntax.class)) {
+                    throw Exception("Constructor expression statement requires target native syntax")
+                }
+                let external = PrimitiveNativeBinder().bind(
+                    (PrimitiveNativeSyntax)expressionSyntax.expression, "es6", locals,
+                    SemanticTypes.unitType()
+                )
+                statements.add(BoundExpressionStatement(
+                    expressionSyntax.range, external.nativeCall
+                ))
+                continue
+            }
             if (!statement.class.isOfType(PrimitiveMemberAssignmentSyntax.class)) {
                 throw Exception("Constructor '#{owner.name}' supports only field assignments")
             }
             let assignment = (PrimitiveMemberAssignmentSyntax)statement
-            let target = member(assignment.target, receiver, fields)
-            let value = expression(assignment.value, receiver, fields, locals)
+            let allFields = BoundFieldUnit[]
+            allFields.addAll(fields)
+            allFields.addAll(inheritedFields)
+            let target = member(assignment.target, receiver, allFields)
+            let value = expression(
+                assignment.value, receiver, allFields, locals
+            )
             let conversion = TypeConversions.classify(value.semanticType, target.semanticType)
             if (!conversion.applicable) throw Exception("Constructor field assignment type mismatch")
             statements.add(BoundMemberAssignmentStatement(
                 assignment.range, target, value, conversion
             ))
         }
+        var BoundParentConstructorCall parentCall
+        if (parentConstructor) {
+            let arguments = BoundExpression[]
+            for (argumentSyntax in syntax.parentArgumentValues()) {
+                arguments.add(expression(argumentSyntax, receiver, fields, locals))
+            }
+            let checked = CallTypeChecker.check(
+                parentConstructor, null, arguments.map({ _.semanticType }), syntax.range
+            )
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            parentCall = BoundParentConstructorCall(
+                parentConstructor, arguments, checked.argumentConversions(), syntax.range
+            )
+        } else if (syntax.parentArgumentValues().isNotEmpty) {
+            throw Exception("Root constructor cannot delegate to a parent")
+        }
         return BoundFunctionUnit(
             identity, owner.name, SemanticTypes.unitType(), statements,
-            syntax.range, parameters, constructorFunction: true
+            syntax.range, parameters, constructorFunction: true,
+            parentConstructorCall: parentCall
         )
     }
 
@@ -89,6 +164,7 @@ class {
         DeclarationIdentity typeIdentity,
         UserClassSemanticType type,
         BoundFieldUnit[] fields,
+        BoundFieldUnit[] inheritedFields,
         Int ordinal
     ) -> BoundFunctionUnit {
         let identity = DeclarationIdentity(
@@ -97,6 +173,7 @@ class {
         )
         let parameters = parameters(syntax.parameterValues(), identity)
         let locals = localBindings(parameters)
+        locals.addAll(inheritedFieldBindings(inheritedFields))
         let receiver = receiver(syntax.range, typeIdentity, type)
         let returnType = typeOf(syntax.returnTypeName)
         let statements = BoundStatement[]
@@ -106,7 +183,10 @@ class {
             }
             let returned = (PrimitiveReturnSyntax)statement
             if (!returned.value) throw Exception("Reduced method requires return value")
-            let value = expression(returned.value, receiver, fields, locals)
+            let allFields = BoundFieldUnit[]
+            allFields.addAll(fields)
+            allFields.addAll(inheritedFields)
+            let value = expression(returned.value, receiver, allFields, locals)
             let conversion = TypeConversions.classify(value.semanticType, returnType)
             if (!conversion.applicable) throw Exception("Method return type mismatch")
             statements.add(BoundReturnStatement(returned.range, returnType, value, conversion))
@@ -114,6 +194,14 @@ class {
         return BoundFunctionUnit(
             identity, syntax.name, returnType, statements, syntax.range, parameters
         )
+    }
+
+    inheritedFieldBindings(BoundFieldUnit[] fields) -> LocalBinding[] {
+        let result = LocalBinding[]
+        for (field in fields) {
+            result.add(LocalBinding(field.name, field.identity, field.semanticType))
+        }
+        return result
     }
 
     localBindings(BoundFunctionParameter[] parameters) -> LocalBinding[] {
@@ -131,9 +219,21 @@ class {
         let result = BoundFunctionParameter[]
         var Int index
         while (index < values.count) {
+            let value = values[index]
+            if (value.defaultValue && values.skip(index + 1).any({ _.defaultValue == null })) {
+                throw Exception("Default constructor parameters must be trailing")
+            }
+            let type = typeOf(value.typeName)
+            var BoundExpression defaultValue
+            if (value.defaultValue) {
+                let bound = PrimitiveExpressionBinder().bind(
+                    value.defaultValue, requiredType: type
+                )
+                if (!bound.succeeded) throw Exception(bound.diagnostic.message)
+                defaultValue = bound.expression
+            }
             result.add(BoundFunctionParameter(
-                values[index].name, SymbolIdentity(owner, "parameter", index),
-                typeOf(values[index].typeName)
+                value.name, SymbolIdentity(owner, "parameter", index), type, defaultValue
             ))
             index++
         }
@@ -162,7 +262,21 @@ class {
             return BoundReferenceExpression(value.range, local.semanticType, local.name, local.identity)
         }
         if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
-            return member((PrimitiveMemberAccessSyntax)syntax, receiver, fields)
+            let access = (PrimitiveMemberAccessSyntax)syntax
+            if (access.receiver.class.isOfType(PrimitiveReferenceSyntax.class) &&
+                ((PrimitiveReferenceSyntax)access.receiver).name == "this") {
+                return member(access, receiver, fields)
+            }
+            let inherited = locals.firstOrNull((field) =>
+                field.identity.symbolKind == "field" && field.name == access.memberName
+            )
+            if (inherited) {
+                return BoundMemberAccessExpression(
+                    access.range, inherited.semanticType, receiver,
+                    inherited.name, inherited.identity
+                )
+            }
+            return member(access, receiver, fields)
         }
         let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
         if (!result.succeeded) throw Exception(result.diagnostic.message)

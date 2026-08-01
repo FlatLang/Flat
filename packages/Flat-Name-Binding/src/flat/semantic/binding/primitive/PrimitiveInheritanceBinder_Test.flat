@@ -17,6 +17,48 @@ testable class {
         expect(childMethod.dispatchIdentity).toBe(parentMethod.dispatchIdentity)
     }
 
+    test `binds parent constructor arguments with explicit conversion evidence`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-constructor"), "revision:one"
+        )
+        let parent = PrimitiveClassParser().parse(parentWithConstructor("Parent"), snapshot)
+        let child = PrimitiveClassParser().parse(childWithDelegation("Child", "Parent"), snapshot)
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let constructor = result.childType.functionUnits().first
+        let parentCall = constructor.parentConstructorCall
+
+        expect(parentCall).toNotBe(null)
+        expect(parentCall.target.ownerType.value()).toBe(result.parentType.semanticType.value())
+        expect(parentCall.argumentValues().count).toBe(1)
+        expect(parentCall.argumentValues().first.semanticType.value()).toBe("builtin:String")
+        expect(parentCall.argumentConversions().first.conversionKind).toBe("identity")
+    }
+
+    test `rejects parent constructor arity and type mismatch`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-constructor-invalid"), "revision:one"
+        )
+        let parent = PrimitiveClassParser().parse(parentWithConstructor("Parent"), snapshot)
+        var Int rejected
+        try {
+            let child = PrimitiveClassParser().parse(
+                childWithDelegation("Missing", "Parent", false), snapshot
+            )
+            PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            let child = PrimitiveClassParser().parse([
+                token("class", false), token("Wrong", false), token("extends", false),
+                token("Parent", false), token("{", true), token("construct", false),
+                token("(", true), token("Int", false), token("value", false), token(")", true),
+                token("=>", true), token("super", false), token("(", true),
+                token("value", false), token(")", true), token("}", true)
+            ], snapshot)
+            PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
     test `rejects missing parent and invalid override`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:inheritance-invalid"), "revision:one"
@@ -33,6 +75,31 @@ testable class {
             PrimitiveInheritanceBinder().bind(parent, child, snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(2)
+    }
+
+    parentWithConstructor(String name) -> Token[] {
+        return [
+            token("class", false), token(name, false), token("{", true),
+            token("construct", false), token("(", true), token("String", false),
+            token("message", false), token(")", true), token("{", true), token("}", true),
+            token("}", true)
+        ]
+    }
+
+    childWithDelegation(
+        String name,
+        String parent,
+        Bool includeArgument = true
+    ) -> Token[] {
+        let values = [
+            token("class", false), token(name, false), token("extends", false),
+            token(parent, false), token("{", true), token("construct", false),
+            token("(", true), token("String", false), token("message", false),
+            token(")", true), token("=>", true), token("super", false), token("(", true)
+        ]
+        if (includeArgument) values.add(token("message", false))
+        values.addAll([token(")", true), token("}", true)])
+        return values
     }
 
     typeTokens(String name, String parent, String returned) -> Token[] {
