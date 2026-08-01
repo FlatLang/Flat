@@ -78,6 +78,11 @@ runs:
 
         if [ -n "$normalized_targets" ]; then
           mvn -f "$(maven_path "$package_root/Flat/[link]/pom.xml")" install
+
+          # Airship resolves the bootstrap compiler from the checked-out Flat
+          # package, while Maven builds it in the linked package directory.
+          mkdir -p "$repo_root/packages/Flat/target"
+          cp "$package_root/Flat/[link]/target/flatc.jar" "$repo_root/packages/Flat/target/flatc.jar"
         fi
 
         build_flatc=false
