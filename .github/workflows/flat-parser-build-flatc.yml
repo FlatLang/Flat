@@ -51,9 +51,13 @@ jobs:
         with:
           prebuild-targets: es6 flatc
 
+      - name: Build current Airship
+        run: |
+          node airship.js --use-links -f packages/Airship install -t es6
+
       - name: Build Flat-Parser with flatc
         env:
           LOGGING_DEFAULT_SHOW_PREFIX: false
           LOGGING_DEFAULT_LOGGING_LEVEL: INFO
         run: |
-          node airship.js --use-links -f packages/Flat-Parser install --flatc-runtime flat -t es6
+          node packages/Airship/dist/airship.js --use-links -f packages/Flat-Parser install --flatc-runtime flat -t es6
