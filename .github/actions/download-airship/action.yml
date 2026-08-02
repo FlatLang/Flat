@@ -44,8 +44,7 @@ runs:
             --limit 100 \
             --exclude-drafts \
             --json tagName,isPrerelease,publishedAt \
-            --jq "$jq_filter | .tagName" \
-            | head -n 1)"
+            --jq "[$jq_filter][0].tagName // empty")"
         fi
 
         if [[ -z "$tag" ]]; then

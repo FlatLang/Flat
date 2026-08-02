@@ -326,6 +326,14 @@ class {
 
         log.trace("Adding source locations: #{sourceLocations}")
         args.addAll(sourceLocations)
+
+        log.trace("Adding source exclusions: #{excludeSources}")
+        excludeSources.forEach({ args.addAll(["-x", _]) })
+
+        if (excludeSource) {
+            args.addAll(["-x", excludeSource])
+        }
+
         args.addAll(airship.cliArgs.propagationArgs.values)
 
         return args

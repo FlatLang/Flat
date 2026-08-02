@@ -49,6 +49,7 @@ jobs:
           token: ${{ secrets.WORKFLOW_MANAGEMENT_TOKEN }}
           tag: "${{github.ref_name}}"
           prerelease: true
+          allowUpdates: true
           body: |
             **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.stable_release.outputs.release }}...${{github.ref_name}}
             **Latest Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.latest_release.outputs.release }}...${{github.ref_name}}

@@ -19,7 +19,7 @@ testable class {
     }
 
     test async `can debug basic install`() {
-        let airship = Airship(["install", "--debug", "-q", "-t", "js"])
+        let airship = Airship(["install", "--debug", "--use-links", "-q", "-t", "js"])
 
         expect(airship.debug).toBe(true, "Expected debug flag to be true")
 
@@ -112,7 +112,7 @@ testable class {
 
     test async `uses an explicit Flat compiler jar`() {
         let airship = Airship([
-            "install", "--debug", "-q", "-t", "js",
+            "install", "--debug", "--use-links", "-q", "-t", "js",
             "--flatc-jar", "custom/flatc.jar"
         ])
 

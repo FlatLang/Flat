@@ -8,6 +8,15 @@ import flat/compiler/models
 import flat/writer/es6/bound
 
 testable class {
+    async test `compiler CLI matches glob source exclusions`() {
+        let excluded = File("#{System.workingDirectory}/packages/Flat-Parser/src/flat/example_Test.flat")
+        let included = File("#{System.workingDirectory}/packages/Flat-Parser/src/flat/example.flat")
+        let pattern = "#{System.workingDirectory}/packages/Flat-Parser/src/**/*_Test*.flat"
+
+        expect(CompilerCli.matchesExclusion(pattern, excluded)).toBe(true)
+        expect(CompilerCli.matchesExclusion(pattern, included)).toBe(false)
+    }
+
     async test `in process session composes Flat source through binding into runnable ES6`() {
         let result = CompilerTest().compile([
             CompilerSource("z", "value() -> Int { return 2; }"),

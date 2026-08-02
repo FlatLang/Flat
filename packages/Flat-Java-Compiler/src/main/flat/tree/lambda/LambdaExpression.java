@@ -388,6 +388,10 @@ public class LambdaExpression extends IIdentifier {
         return method;
     }
 
+    private static synchronized int nextId() {
+        return id++;
+    }
+
     public Closure generateClosure() {
         final StringBuilder builder = new StringBuilder();
         final HashSet<String> genericParameters = new HashSet<>();
@@ -479,7 +483,7 @@ public class LambdaExpression extends IIdentifier {
         }
 
         String methodDeclaration =
-            "static lambda" + id++ + genericParametersString + "(" + builder.toString() + ")";
+            "static lambda" + nextId() + genericParametersString + "(" + builder.toString() + ")";
 
         if (closure.getType() != null) {
             methodDeclaration += " -> " + closure.getFlatTypeValue(context).getFlatType(context);
