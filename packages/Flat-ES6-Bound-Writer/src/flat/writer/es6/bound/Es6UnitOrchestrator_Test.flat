@@ -101,6 +101,9 @@ testable class {
             fixture.range(), ownerType, instanceTarget, receiver,
             BoundExpression[], TypeConversion[]
         ))
+        let external = Es6StatementOrchestrator().emit(
+            BoundExternalStatement(fixture.range(), "es6", "code")
+        )
         let owner = Es6NameMangler.mangle(ownerIdentity.value)
 
         expect(staticCall.code).toBe(
@@ -111,6 +114,7 @@ testable class {
             Es6NameMangler.mangle(receiver.symbolIdentity.value) + "." +
             Es6NameMangler.mangle(instanceIdentity.value) + "()"
         )
+        expect(external.code).toBe("code\n")
     }
 
     test `unsupported reduced input produces a diagnostic and no partial fragment`() {

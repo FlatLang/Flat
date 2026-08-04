@@ -139,7 +139,8 @@ class {
             return acceptAccessorHeader(token, tokenIndex)
         }
 
-        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS) {
+        if (token.type == Token.Type.COMMENT || token.type == Token.Type.WS ||
+            token.type == Token.Type.CODE) {
             return SyntaxIsland[]
         }
 

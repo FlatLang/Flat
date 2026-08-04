@@ -25,6 +25,41 @@ testable class {
         expect(access.memberName).toBe("value")
     }
 
+    test `parses visible constructor parameter as field synthesis syntax`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-constructor-parameter"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("construct", false, 19), token("(", true, 28), token("visible", false, 29),
+            token("String", false, 37), token("message", false, 44), token("=", true, 52),
+            token("''", false, 54), token(")", true, 56), token("{", true, 58),
+            token("}", true, 59), token("}", true, 61)
+        ], snapshot)
+        let parameter = parsed.constructorValue.parameterValues().first
+
+        expect(parameter.visibleParameter).toBe(true)
+        expect(parameter.name).toBe("message")
+        expect(parameter.defaultValue.expressionKind()).toBe("literal")
+        expect(parameter.range.startTokenIndex).toBe(5)
+    }
+
+    test `rejects incomplete visible constructor parameter`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-constructor-parameter-invalid"), "revision:one"
+        )
+        var rejected = false
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+                token("construct", false, 19), token("(", true, 28), token("visible", false, 29),
+                token(")", true, 36), token("{", true, 38), token("}", true, 39),
+                token("}", true, 41)
+            ], snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `parses delegated legacy constructor arguments`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:delegated-construct"), "one")
         let parsed = PrimitiveClassParser().parse([

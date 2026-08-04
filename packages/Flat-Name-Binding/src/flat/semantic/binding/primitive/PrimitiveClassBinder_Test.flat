@@ -45,6 +45,43 @@ testable class {
         expect(nativeStatement.expression.semanticType.value()).toBe("unit")
     }
 
+    test `synthesizes visible constructor parameter field and initialization`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-constructor-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(visibleConstructorTokens(), snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let field = type.fieldUnits().first
+        let constructor = type.functionUnits().first
+        let statements = constructor.statements()
+        let statementObject = (Object)statements.first
+        let assignment = (BoundMemberAssignmentStatement)statementObject
+        let valueObject = (Object)assignment.value
+        let value = (BoundReferenceExpression)valueObject
+
+        expect(type.fieldUnits().count).toBe(1)
+        expect(field.name).toBe("message")
+        expect(field.visibleField).toBe(true)
+        expect(field.initializer).toBe(null)
+        expect(assignment.target.memberIdentity).toBe(field.identity)
+        expect(value.symbolIdentity).toBe(constructor.parameterValues().first.identity)
+        expect(constructor.parameterValues().first.defaultValue.expressionKind()).toBe("literal")
+    }
+
+    test `rejects visible constructor parameter that duplicates explicit field`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-constructor-duplicate"), "revision:one"
+        )
+        var rejected = false
+        try {
+            PrimitiveClassBinder().bind(
+                PrimitiveClassParser().parse(visibleConstructorDuplicateTokens(), snapshot),
+                snapshot
+            )
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `rejects non es6 target native constructor`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:exception-target-invalid"), "revision:one"
@@ -133,6 +170,26 @@ testable class {
             PrimitiveClassBinder().bind(PrimitiveClassParser().parse(values, snapshot), snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(2)
+    }
+
+    visibleConstructorTokens() -> Token[] {
+        return [
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("construct", false, 19), token("(", true, 28), token("visible", false, 29),
+            token("String", false, 37), token("message", false, 44), token("=", true, 52),
+            stringToken("''", 54), token(")", true, 56), token("{", true, 58),
+            token("}", true, 59), token("}", true, 61)
+        ]
+    }
+
+    visibleConstructorDuplicateTokens() -> Token[] {
+        return [
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("String", false, 19), token("message", false, 26), token(";", true, 33),
+            token("construct", false, 35), token("(", true, 44), token("visible", false, 45),
+            token("String", false, 53), token("message", false, 60), token(")", true, 67),
+            token("{", true, 69), token("}", true, 70), token("}", true, 72)
+        ]
     }
 
     exceptionTokens() -> Token[] {

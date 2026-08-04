@@ -180,7 +180,140 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
-    async test `package linker reports real Exception source unsupported construct explicitly`() {
+    async test `package linker executes visible constructor parameter field synthesis`() {
+        let identity = "flat/exception/VisibleException.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity,
+                "package flat/exception class VisibleException { " +
+                "construct(visible String message = \"\") {} }")
+        ])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 4), "class", "VisibleException"
+        )
+        let fieldIdentity = SymbolIdentity(typeIdentity, "field", 0)
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let fieldName = Es6NameMangler.mangle(fieldIdentity.value)
+        let root = File(".flat-compiler-visible-exception-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(new " + className + "('forwarded')." + fieldName + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("forwarded\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker executes package local construction field initializer`() {
+        let identity = "flat/exception/Construction.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity,
+                "package flat/exception " +
+                "class StackTrace {} " +
+                "class Exception { StackTrace stackTrace = StackTrace(); }")
+        ])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let exceptionIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 8), "class", "Exception"
+        )
+        let stackIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 4), "class", "StackTrace"
+        )
+        let fieldIdentity = SymbolIdentity(exceptionIdentity, "field", 0)
+        let exceptionName = Es6NameMangler.mangle(exceptionIdentity.value)
+        let stackName = Es6NameMangler.mangle(stackIdentity.value)
+        let fieldName = Es6NameMangler.mangle(fieldIdentity.value)
+        let root = File(".flat-compiler-construction-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + exceptionName + "()." + fieldName + ";\n" +
+                "console.log(value instanceof " + stackName + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker executes real StackTrace in reduced Exception field`() {
+        let stackIdentity = "flat/exception/StackTrace.flat"
+        let exceptionIdentity = "flat/exception/ReducedException.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                stackIdentity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
+            ),
+            CompilerSource(
+                exceptionIdentity,
+                "package flat/exception class Exception { " +
+                "StackTrace stackTrace = StackTrace(); " +
+                "construct(visible String message = \"\") {} }"
+            )
+        ])
+        let stackType = DeclarationIdentity(
+            SyntaxIslandIdentity(
+                SourceSnapshotIdentity(SourceIdentity(stackIdentity), "compiler-input"),
+                "class", 4
+            ),
+            "class", "StackTrace"
+        )
+        let exceptionType = DeclarationIdentity(
+            SyntaxIslandIdentity(
+                SourceSnapshotIdentity(SourceIdentity(exceptionIdentity), "compiler-input"),
+                "class", 4
+            ),
+            "class", "Exception"
+        )
+        let stackField = SymbolIdentity(exceptionType, "field", 0)
+        let messageField = SymbolIdentity(exceptionType, "field", 1)
+        let root = File(".flat-compiler-real-stack-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + Es6NameMangler.mangle(exceptionType.value) +
+                "('forwarded');\n" +
+                "console.log(value." + Es6NameMangler.mangle(stackField.value) +
+                " instanceof " + Es6NameMangler.mangle(stackType.value) + ");\n" +
+                "console.log(value." + Es6NameMangler.mangle(messageField.value) + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\nforwarded\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker rejects unknown construction and constructor arity`() {
+        var Int rejected
+        try {
+            FlatEs6PackageLinker().link([
+                CompilerSource("flat/test/Unknown.flat",
+                    "package flat/test class Owner { Missing value = Missing(); }")
+            ])
+        } catch (Exception error) { rejected++ }
+        try {
+            FlatEs6PackageLinker().link([
+                CompilerSource("flat/test/Arity.flat",
+                    "package flat/test " +
+                    "class Target { construct(Int value) {} } " +
+                    "class Owner { Target value = Target(); }")
+            ])
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    async test `package linker reports next real Exception unsupported construct`() {
         let identity = "flat/exception/Exception.flat"
         var String message
         try {
@@ -188,6 +321,10 @@ testable class {
                 CompilerSource(
                     identity,
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
+                ),
+                CompilerSource(
+                    "flat/exception/StackTrace.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
                 )
             ])
         } catch (Exception error) { message = error.message }

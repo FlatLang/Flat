@@ -50,6 +50,22 @@ testable class {
         expect(partitions.first.tokenValues().filter({ _.value == "=>" }).count).toBe(0)
     }
 
+    async test `partitions constructed field initializer without changing original tokens`() {
+        let source = "package flat/test class StackTrace {} " +
+            "class Value { StackTrace stackTrace = StackTrace(); }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:constructed-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+
+        expect(partitions.count).toBe(2)
+        let value = partitions.last.tokenValues()
+        expect(value.filter({ _.value == "=" }).count).toBe(1)
+        expect(value.filter({ _.value == "StackTrace" }).count).toBe(2)
+        expect(value.filter({ _.value == "(" }).count).toBe(1)
+    }
+
     async test `partitions default constructor parameter without changing original tokens`() {
         let source = "package flat/test class Value { constructor(String message = \"\") {} }"
         let stream = Lexer().lex(source)

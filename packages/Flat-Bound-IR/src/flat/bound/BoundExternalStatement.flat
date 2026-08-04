@@ -1,0 +1,18 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Immutable target-selected opaque external statement. */
+data class extends BoundStatement {
+    public construct(
+        SourceRange range,
+        visible String target,
+        visible String code
+    ) {
+        if (!range || !target || target.trim().count == 0 || code == null) {
+            throw Exception("Bound external statement requires range target and code")
+        }
+        super(range)
+    }
+    override public unitKind() => "external"
+}

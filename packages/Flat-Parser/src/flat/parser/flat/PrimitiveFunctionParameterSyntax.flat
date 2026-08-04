@@ -8,7 +8,8 @@ data class {
         visible SourceRange range,
         visible String typeName,
         visible String name,
-        visible PrimitiveExpressionSyntax defaultValue = null
+        visible PrimitiveExpressionSyntax defaultValue = null,
+        visible Bool visibleParameter = false
     ) {
         if (!range || !typeName || typeName.trim().count == 0 ||
             !name || name.trim().count == 0) {

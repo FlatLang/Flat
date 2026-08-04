@@ -169,6 +169,11 @@ class {
         if (index < tokens.count && tokens[index].value == ")") return result
         while (true) {
             let start = index
+            var Bool visibleParameter
+            if (index < tokens.count && tokens[index].value == "visible") {
+                visibleParameter = true
+                index++
+            }
             let typeName = identifier("Expected parameter type")
             let name = identifier("Expected parameter name")
             if (result.any({ _.name == name })) syntax("Duplicate parameter '#name'", start)
@@ -194,7 +199,7 @@ class {
                 )
             }
             result.add(PrimitiveFunctionParameterSyntax(
-                range(start, index), typeName, name, defaultValue
+                range(start, index), typeName, name, defaultValue, visibleParameter
             ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++

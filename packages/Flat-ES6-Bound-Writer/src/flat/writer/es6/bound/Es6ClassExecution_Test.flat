@@ -62,6 +62,40 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `executes visible constructor parameter field synthesis`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-constructor-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(visibleConstructorTokens(), snapshot)
+        let typeUnit = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let emitted = Es6UnitOrchestrator().emitType(typeUnit, 0)
+        let className = Es6NameMangler.mangle(typeUnit.identity.value)
+        let fieldName = Es6NameMangler.mangle(typeUnit.fieldUnits().first.identity.value)
+        let root = File(".flat-es6-visible-constructor-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "visible-constructor.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(new " + className + "('forwarded')." + fieldName + ");\n" +
+            "console.log(new " + className + "()." + fieldName + ");\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+
+        expect(response.stdout.join("")).toBe("forwarded\n\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    visibleConstructorTokens() -> Token[] {
+        return [
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("construct", false, 19), token("(", true, 28), token("visible", false, 29),
+            token("String", false, 37), token("message", false, 44), token("=", true, 52),
+            stringToken("''", 54), token(")", true, 56), token("{", true, 58),
+            token("}", true, 59), token("}", true, 61)
+        ]
+    }
+
     exceptionTokens() -> Token[] {
         return [
             token("class", false, 1), token("Exception", false, 7), token("{", true, 17),

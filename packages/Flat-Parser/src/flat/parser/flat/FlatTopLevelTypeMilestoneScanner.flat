@@ -130,6 +130,16 @@ class {
             return activeMembers.accept(token, tokenIndex)
         }
 
+        if (token.type == Token.Type.CODE) {
+            let islands = activeMembers.accept(token, tokenIndex)
+            nextOrdinal = activeMembers.nextOrdinal
+            peakRetainedHeaderTokenCount = Math.max(
+                peakRetainedHeaderTokenCount,
+                retainedHeaderTokenCount
+            )
+            return islands
+        }
+
         if (isSymbol(token, "{")) {
             bodyDepth++
         } else if (isSymbol(token, "}")) {

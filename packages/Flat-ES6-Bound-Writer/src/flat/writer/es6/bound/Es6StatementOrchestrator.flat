@@ -15,6 +15,10 @@ class {
         if (!statement) throw Exception("ES6 statement orchestration requires statement")
         let capability = Es6TargetCapabilities.diagnoseStatement(statement.unitKind())
         if (capability) return Es6CodeResult(diagnostic: capability)
+        if (statement.class.isOfType(BoundExternalStatement.class)) {
+            let value = (BoundExternalStatement)statement
+            return statements.emitExternal(value)
+        }
         if (statement.class.isOfType(BoundIfStatement.class)) {
             let value = (BoundIfStatement)statement
             return statements.emitIf(

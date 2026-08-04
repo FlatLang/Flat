@@ -35,6 +35,7 @@ class {
             if (tokens[index].value == "if") statements.add(parseIf())
             else if (tokens[index].value == "while") statements.add(parseWhile())
             else if (tokens[index].value == "try") statements.add(parseTry())
+            else if (tokens[index].value == "external") statements.add(parseExternal())
             else statements.add(parseSimple())
         }
         if (insideBody) {
@@ -89,6 +90,27 @@ class {
         }
         if (catches.isEmpty && finallyValues.isEmpty) syntax("Try requires catch or finally", start)
         return PrimitiveTrySyntax(range(start, index), tryValues, catches, finallyValues)
+    }
+
+    parseExternal() -> PrimitiveExternalStatementSyntax {
+        let start = index++
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+            syntax("External block requires a target", index)
+        }
+        let target = tokens[index++].value
+        if (index >= tokens.count || tokens[index].value != "{") {
+            syntax("External block requires an opening brace", index)
+        }
+        index++
+        if (index >= tokens.count || tokens[index].type != Token.Type.CODE) {
+            syntax("External block requires opaque code", index)
+        }
+        let code = tokens[index++].value
+        if (index >= tokens.count || tokens[index].value != "}") {
+            syntax("External block requires a closing brace", index)
+        }
+        index++
+        return PrimitiveExternalStatementSyntax(range(start, index), target, code)
     }
 
     parseCondition() -> PrimitiveExpressionSyntax {

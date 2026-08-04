@@ -81,6 +81,46 @@ class {
             else throw Exception("Unsupported primitive literal '#{value.sourceValue}'")
             return BoundLiteralExpression(value.range, type, value.sourceValue)
         }
+        if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
+            let value = (PrimitiveConstructionSyntax)syntax
+            let candidates = callables.filter((candidate) =>
+                candidate.callableKind.value == "constructor" &&
+                candidate.ownerType.declarationIdentity.name == value.typeName
+            )
+            if (candidates.isEmpty) throw Exception("Unknown constructed type '#{value.typeName}'")
+            let arguments = BoundExpression[]
+            for (argument in value.argumentValues()) {
+                arguments.add(bindSyntax(argument, locals, callables))
+            }
+            let resolution = OverloadResolver.resolve(
+                value.typeName,
+                candidates.map((candidate) => CallableSignature(
+                    candidate.identity,
+                    value.typeName,
+                    candidate.callableKind,
+                    candidate.parameterTypes(),
+                    candidate.returnType,
+                    candidate.ownerType,
+                    candidate.optionalParameterCount
+                )),
+                null,
+                arguments.map({ _.semanticType }),
+                value.range
+            )
+            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+            let target = resolution.selected
+            let checked = CallTypeChecker.check(
+                target, null, arguments.map({ _.semanticType }), value.range
+            )
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            return BoundCallExpression(
+                value.range,
+                checked.semanticType,
+                target,
+                arguments,
+                checked.argumentConversions()
+            )
+        }
         if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
             let value = (PrimitiveReferenceSyntax)syntax
             let local = locals.reverse().firstOrNull({ _.name == value.name })

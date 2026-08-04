@@ -97,6 +97,33 @@ testable class {
         expect(islands.count).toBe(3)
     }
 
+    async test `opaque code token is non structural inside braced member`() {
+        let tokens = [
+            token("construct", Token.Type.IDENTIFIER, 1),
+            token("(", Token.Type.SYMBOL, 10),
+            token(")", Token.Type.SYMBOL, 11),
+            token("{", Token.Type.SYMBOL, 13),
+            token("external", Token.Type.IDENTIFIER, 15),
+            token("js", Token.Type.IDENTIFIER, 24),
+            token("{", Token.Type.SYMBOL, 27),
+            token("code", Token.Type.CODE, 29),
+            token("}", Token.Type.SYMBOL, 33),
+            token("}", Token.Type.SYMBOL, 35)
+        ]
+        let scanner = scanner(64)
+        let islands = SyntaxIsland[]
+        var Int index
+        for (value in tokens) {
+            islands.addAll(scanner.accept(value, index))
+            index++
+        }
+        islands.addAll(scanner.end())
+
+        expect(islands.count).toBe(2)
+        expect(islands.first.class).toBe(BracedMemberHeaderSyntaxIsland.class)
+        expect(islands.last.class).toBe(BracedMemberBodySyntaxIsland.class)
+    }
+
     async test `rejects incomplete mixed members and clears retained state`() {
         let tokens = significant(lex("before() run() { work("))
         let scanner = scanner(16)

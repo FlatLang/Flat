@@ -10,18 +10,24 @@ class {
     public bind(
         PrimitiveClassSyntax parentSyntax,
         PrimitiveClassSyntax childSyntax,
-        SourceSnapshotIdentity snapshot = null
+        SourceSnapshotIdentity snapshot = null,
+        CallableSignature[] availableConstructors = CallableSignature[]
     ) -> PrimitiveInheritanceBindingResult {
-        if (!parentSyntax || !childSyntax ||
+        if (!parentSyntax || !childSyntax || !availableConstructors ||
+            availableConstructors.any({ !_ }) ||
             childSyntax.parentName != parentSyntax.name || parentSyntax.parentName) {
             throw Exception("Reduced inheritance requires one declared root parent and matching child")
         }
         let parentSnapshot = snapshot ?: parentSyntax.range.snapshot
         let childSnapshot = snapshot ?: childSyntax.range.snapshot
-        let parent = PrimitiveClassBinder().bind(parentSyntax, parentSnapshot).typeUnit
+        let parent = PrimitiveClassBinder().bind(
+            parentSyntax, parentSnapshot,
+            availableConstructors: availableConstructors
+        ).typeUnit
         let parentConstructor = constructorSignature(parent)
         let child = PrimitiveClassBinder().bind(
-            childSyntax, childSnapshot, parentConstructor, parent.fieldUnits()
+            childSyntax, childSnapshot, parentConstructor, parent.fieldUnits(),
+            availableConstructors
         ).typeUnit
         let hierarchy = TypeHierarchyComponent()
         hierarchy.add(TypeHierarchyDeclaration(

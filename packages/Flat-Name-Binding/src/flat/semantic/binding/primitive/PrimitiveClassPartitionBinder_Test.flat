@@ -30,6 +30,55 @@ testable class {
         expect(types.last.parentType.value()).toBe(types.first.semanticType.value())
     }
 
+    test `binds package local construction in ordinary field initializer`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:partition-construction"), "one"
+        )
+        let stack = PrimitiveClassParser().parse(emptyTypeTokens("StackTrace"), snapshot)
+        let exception = PrimitiveClassParser().parse([
+            token("class", false), token("Exception", false), token("{", true),
+            token("StackTrace", false), token("stackTrace", false), token("=", true),
+            token("StackTrace", false), token("(", true), token(")", true), token(";", true),
+            token("construct", false), token("(", true), token(")", true),
+            token("{", true), token("}", true), token("}", true)
+        ], snapshot)
+        let types = PrimitiveClassPartitionBinder().bind([exception, stack], snapshot).typeUnits()
+        let exceptionType = types.firstOrNull({ _.identity.name == "Exception" })
+        let initializer = exceptionType.fieldUnits().first.initializer
+        let object = (Object)initializer
+        let construction = (BoundCallExpression)object
+
+        let stackType = types.firstOrNull({ _.identity.name == "StackTrace" })
+        expect(stackType).toNotBe(null)
+    }
+
+    test `rejects unknown construction and constructor arity mismatch`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:partition-construction-invalid"), "one"
+        )
+        var Int rejected
+        try {
+            let unknown = PrimitiveClassParser().parse([
+                token("class", false), token("Owner", false), token("{", true),
+                token("Missing", false), token("value", false), token("=", true),
+                token("Missing", false), token("(", true), token(")", true), token(";", true),
+                token("}", true)
+            ], snapshot)
+            PrimitiveClassPartitionBinder().bind([unknown], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            let target = PrimitiveClassParser().parse(typeWithParameter("Target"), snapshot)
+            let owner = PrimitiveClassParser().parse([
+                token("class", false), token("Owner", false), token("{", true),
+                token("Target", false), token("value", false), token("=", true),
+                token("Target", false), token("(", true), token(")", true), token(";", true),
+                token("}", true)
+            ], snapshot)
+            PrimitiveClassPartitionBinder().bind([owner, target], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
     test `missing parent fails`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-invalid"), "one")
         var Int rejected
@@ -63,6 +112,22 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(1)
+    }
+
+    emptyTypeTokens(String name) -> Token[] {
+        return [
+            token("class", false), token(name, false), token("{", true),
+            token("}", true)
+        ]
+    }
+
+    typeWithParameter(String name) -> Token[] {
+        return [
+            token("class", false), token(name, false), token("{", true),
+            token("construct", false), token("(", true), token("Int", false),
+            token("value", false), token(")", true), token("{", true),
+            token("}", true), token("}", true)
+        ]
     }
 
     typeTokens(String name, String parent, String returned) -> Token[] {

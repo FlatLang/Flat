@@ -80,6 +80,7 @@ class {
                 )
                 var Int cursor = index + 1
                 var Int initializerDepth
+                var Bool retainedPlaceholder
                 while (cursor < result.count) {
                     if (result[cursor].value == "(" || result[cursor].value == "[") {
                         initializerDepth++
@@ -91,6 +92,18 @@ class {
                             location: result[cursor].location
                         )
                         break
+                    }
+                    if (!retainedPlaceholder) {
+                        result[cursor] = Token(
+                            value: "null", type: Token.Type.NULL,
+                            location: result[cursor].location
+                        )
+                        retainedPlaceholder = true
+                    } else {
+                        result[cursor] = Token(
+                            value: " ", type: Token.Type.WHITESPACE,
+                            location: result[cursor].location
+                        )
                     }
                     cursor++
                 }

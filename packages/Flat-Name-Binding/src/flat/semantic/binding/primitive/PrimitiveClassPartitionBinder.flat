@@ -3,6 +3,7 @@ package flat/semantic/binding/primitive
 import flat/parser/flat
 import flat/compiler/models
 import flat/bound
+import flat/semantic/types
 
 /**
  * Binds a finite source/package class partition after all class signatures are
@@ -30,6 +31,7 @@ class {
             index++
         }
 
+        let constructorSignatures = constructorSignatures(syntaxValues, snapshot)
         let result = BoundTypeUnit[]
         let boundNames = String[]
         while (result.count < syntaxValues.count) {
@@ -43,7 +45,10 @@ class {
                 }
                 if (!syntax.parentName) {
                     let syntaxSnapshot = snapshot ?: syntax.range.snapshot
-                    result.add(PrimitiveClassBinder().bind(syntax, syntaxSnapshot).typeUnit)
+                    result.add(PrimitiveClassBinder().bind(
+                        syntax, syntaxSnapshot,
+                        availableConstructors: constructorSignatures
+                    ).typeUnit)
                     boundNames.add(syntax.name)
                     progressed = true
                 } else if (boundNames.contains(syntax.parentName)) {
@@ -53,7 +58,7 @@ class {
                         throw Exception("Reduced class partition supports one inheritance level")
                     }
                     let inherited = PrimitiveInheritanceBinder().bind(
-                        parentSyntax, syntax, snapshot
+                        parentSyntax, syntax, snapshot, constructorSignatures
                     )
                     var Int parentIndex
                     while (result[parentIndex].identity.name != parentSyntax.name) parentIndex++
@@ -69,5 +74,74 @@ class {
             }
         }
         return PrimitiveClassPartitionBindingResult(result)
+    }
+
+    constructorSignatures(
+        PrimitiveClassSyntax[] syntaxes,
+        SourceSnapshotIdentity snapshot
+    ) -> CallableSignature[] {
+        let result = CallableSignature[]
+        for (syntax in syntaxes) {
+            let syntaxSnapshot = snapshot ?: syntax.range.snapshot
+            let typeIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(syntaxSnapshot, "class", syntax.range.startTokenIndex),
+                "class", syntax.name
+            )
+            let type = UserClassSemanticType(typeIdentity)
+            let constructor = syntax.constructorValue
+            let constructorIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(
+                    constructor.range.snapshot,
+                    "constructor",
+                    constructor.range.startTokenIndex
+                ),
+                "constructor",
+                syntax.name
+            )
+            let parameterTypes = SemanticType[]
+            var Int optionalCount
+            var Bool optionalStarted
+            for (parameter in constructor.parameterValues()) {
+                parameterTypes.add(signatureType(
+                    parameter.typeName, syntaxes, snapshot
+                ))
+                if (parameter.defaultValue) {
+                    optionalStarted = true
+                    optionalCount++
+                } else if (optionalStarted) {
+                    throw Exception("Default constructor parameters must be trailing")
+                }
+            }
+            result.add(CallableSignature(
+                SymbolIdentity(constructorIdentity, "constructor"),
+                syntax.name,
+                CallableKind("constructor"),
+                parameterTypes,
+                type,
+                type,
+                optionalCount
+            ))
+        }
+        return result
+    }
+
+    signatureType(
+        String name,
+        PrimitiveClassSyntax[] syntaxes,
+        SourceSnapshotIdentity snapshot
+    ) -> SemanticType {
+        if (name == "Bool") return SemanticTypes.boolType()
+        if (name == "Int") return SemanticTypes.intType()
+        if (name == "Long") return SemanticTypes.longType()
+        if (name == "String") return SemanticTypes.stringType()
+        if (name == "Unit") return SemanticTypes.unitType()
+        let target = syntaxes.firstOrNull({ _.name == name })
+        if (!target) throw Exception("Unknown reduced constructor parameter type '#name'")
+        let targetSnapshot = snapshot ?: target.range.snapshot
+        return UserClassSemanticType(DeclarationIdentity(
+            SyntaxIslandIdentity(targetSnapshot, "class", target.range.startTokenIndex),
+            "class",
+            name
+        ))
     }
 }

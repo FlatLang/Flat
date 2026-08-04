@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable source-ranged target-specific opaque external statement. */
+data class extends PrimitiveStatementSyntax {
+    public construct(
+        SourceRange range,
+        visible String target,
+        visible String code
+    ) {
+        if (!range || !target || target.trim().count == 0 || code == null) {
+            throw Exception("Primitive external block requires range target and code")
+        }
+        super(range)
+    }
+    override public statementKind() => "external"
+}

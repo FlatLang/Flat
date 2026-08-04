@@ -3,7 +3,7 @@ package flat/writer/es6/bound
 /** Backend capability contract; unsupported semantics become stable diagnostics. */
 class {
     public static supportsStatement(String kind) -> Bool {
-        return kind == "expression" || kind == "local-declaration" ||
+        return kind == "expression" || kind == "external" || kind == "local-declaration" ||
             kind == "assignment" || kind == "member-assignment" || kind == "return" || kind == "if" ||
             kind == "while" || kind == "throw" || kind == "try"
     }

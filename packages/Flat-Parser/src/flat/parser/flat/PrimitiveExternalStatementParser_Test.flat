@@ -1,0 +1,57 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Focused external-block syntax coverage isolated from ordinary Flat test syntax. */
+testable class {
+    test `parses target and source range`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-external"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("external", Token.Type.IDENTIFIER, 1),
+            token("js", Token.Type.IDENTIFIER, 10),
+            token("{", Token.Type.SYMBOL, 13),
+            token("code", Token.Type.CODE, 15),
+            token("}", Token.Type.SYMBOL, 19)
+        ], snapshot, 7)
+        let statements = parsed.statements()
+        let object = (Object)statements.first
+        let value = (PrimitiveExternalStatementSyntax)object
+
+        expect(value.target).toBe("js")
+        expect(value.range.startTokenIndex).toBe(7)
+        expect(value.range.endTokenIndex).toBe(12)
+    }
+
+    test `rejects missing target and non opaque code`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-external-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("external", Token.Type.IDENTIFIER, 1),
+                token("{", Token.Type.SYMBOL, 10),
+                token("code", Token.Type.CODE, 12),
+                token("}", Token.Type.SYMBOL, 16)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("external", Token.Type.IDENTIFIER, 1),
+                token("js", Token.Type.IDENTIFIER, 10),
+                token("{", Token.Type.SYMBOL, 13),
+                token("code", Token.Type.IDENTIFIER, 15),
+                token("}", Token.Type.SYMBOL, 19)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    token(String value, Int type, Int column) -> Token => Token(
+        value: value,
+        type: type,
+        location: Location(lineNumber: 1, column: column)
+    )
+}

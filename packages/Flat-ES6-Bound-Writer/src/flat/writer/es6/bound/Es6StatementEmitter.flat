@@ -4,6 +4,13 @@ import flat/bound
 
 /** Emits reduced statements from already-emitted child expressions. */
 class {
+    public emitExternal(BoundExternalStatement statement) -> Es6CodeResult {
+        if (!statement || statement.target != "es6") {
+            throw Exception("ES6 external statement requires selected es6 evidence")
+        }
+        return Es6CodeResult(code: statement.code + "\n")
+    }
+
     public emitThrow(
         BoundThrowStatement statement,
         Es6CodeResult value

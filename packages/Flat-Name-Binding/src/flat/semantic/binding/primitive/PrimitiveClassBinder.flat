@@ -8,14 +8,17 @@ import flat/semantic/types
 /** Binds one reduced class with fields, constructor, and instance methods. */
 class {
     var GenericParameterSemanticType genericParameter
+    var CallableSignature[] constructors
 
     public bind(
         PrimitiveClassSyntax syntax,
         SourceSnapshotIdentity snapshot,
         CallableSignature parentConstructor = null,
-        BoundFieldUnit[] inheritedFields = BoundFieldUnit[]
+        BoundFieldUnit[] inheritedFields = BoundFieldUnit[],
+        CallableSignature[] availableConstructors = CallableSignature[]
     ) -> PrimitiveClassBindingResult {
-        if (!syntax || !snapshot || !inheritedFields || inheritedFields.any({ !_ })) {
+        if (!syntax || !snapshot || !inheritedFields || inheritedFields.any({ !_ }) ||
+            !availableConstructors || availableConstructors.any({ !_ })) {
             throw Exception("Primitive class binding requires syntax snapshot and inherited fields")
         }
         if ((syntax.parentName != null) != (parentConstructor != null) ||
@@ -32,8 +35,16 @@ class {
         genericParameter = syntax.genericParameterName ? GenericParameterSemanticType(
             typeIdentity, syntax.genericParameterName, 0
         ) : null
+        constructors = CallableSignature[]
+        constructors.addAll(availableConstructors)
         let fields = BoundFieldUnit[]
         let fieldSyntaxValues = syntax.fieldValues()
+        let visibleParameters = syntax.constructorValue.parameterValues().filter({ _.visibleParameter })
+        for (parameter in visibleParameters) {
+            if (fieldSyntaxValues.any({ _.name == parameter.name })) {
+                throw Exception("Visible constructor parameter duplicates field '#{parameter.name}'")
+            }
+        }
         var Int fieldIndex
         while (fieldIndex < fieldSyntaxValues.count) {
             let field = fieldSyntaxValues[fieldIndex]
@@ -41,7 +52,8 @@ class {
             var BoundExpression initializer
             if (field.initializer) {
                 let bound = PrimitiveExpressionBinder().bind(
-                    field.initializer, requiredType: typeOf(field.typeName)
+                    field.initializer, requiredType: typeOf(field.typeName),
+                    callables: constructors
                 )
                 if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                 initializer = bound.expression
@@ -49,6 +61,13 @@ class {
             fields.add(BoundFieldUnit(
                 field.name, identity, typeOf(field.typeName), field.range,
                 field.visibleField, initializer
+            ))
+            fieldIndex++
+        }
+        for (parameter in visibleParameters) {
+            fields.add(BoundFieldUnit(
+                parameter.name, SymbolIdentity(typeIdentity, "field", fieldIndex),
+                typeOf(parameter.typeName), parameter.range, true
             ))
             fieldIndex++
         }
@@ -93,6 +112,29 @@ class {
         locals.addAll(inheritedFieldBindings(inheritedFields))
         let receiver = receiver(syntax.range, typeIdentity, type)
         let statements = BoundStatement[]
+        for (parameterSyntax in syntax.parameterValues().filter({ _.visibleParameter })) {
+            let parameter = parameters.firstOrNull({ _.name == parameterSyntax.name })
+            let field = fields.firstOrNull({ _.name == parameterSyntax.name })
+            let target = BoundMemberAccessExpression(
+                parameterSyntax.range,
+                field.semanticType,
+                receiver,
+                field.name,
+                field.identity
+            )
+            let value = BoundReferenceExpression(
+                parameterSyntax.range,
+                parameter.semanticType,
+                parameter.name,
+                parameter.identity
+            )
+            statements.add(BoundMemberAssignmentStatement(
+                parameterSyntax.range,
+                target,
+                value,
+                TypeConversions.classify(value.semanticType, field.semanticType)
+            ))
+        }
         for (field in fields) {
             if (field.initializer) {
                 let target = BoundMemberAccessExpression(
@@ -105,6 +147,16 @@ class {
             }
         }
         for (statement in syntax.statements()) {
+            if (statement.class.isOfType(PrimitiveExternalStatementSyntax.class)) {
+                let external = (PrimitiveExternalStatementSyntax)statement
+                if (external.target != "js") {
+                    throw Exception("External block is unavailable for selected target")
+                }
+                statements.add(BoundExternalStatement(
+                    external.range, "es6", external.code
+                ))
+                continue
+            }
             if (statement.class.isOfType(PrimitiveExpressionStatementSyntax.class)) {
                 let expressionSyntax = (PrimitiveExpressionStatementSyntax)statement
                 if (!expressionSyntax.expression.class.isOfType(PrimitiveNativeSyntax.class)) {
@@ -278,7 +330,9 @@ class {
             }
             return member(access, receiver, fields)
         }
-        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+        let result = PrimitiveExpressionBinder().bind(
+            syntax, locals: locals, callables: constructors
+        )
         if (!result.succeeded) throw Exception(result.diagnostic.message)
         return result.expression
     }
@@ -306,6 +360,11 @@ class {
         if (name == "Long") return SemanticTypes.longType()
         if (name == "String") return SemanticTypes.stringType()
         if (name == "Unit") return SemanticTypes.unitType()
+        let constructed = constructors.firstOrNull((candidate) =>
+            candidate.callableKind.value == "constructor" &&
+            candidate.ownerType.declarationIdentity.name == name
+        )
+        if (constructed) return constructed.ownerType
         throw Exception("Unknown reduced class type '#name'")
     }
 }
