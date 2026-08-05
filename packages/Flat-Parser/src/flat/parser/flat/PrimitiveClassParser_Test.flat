@@ -44,6 +44,21 @@ testable class {
         expect(parameter.range.startTokenIndex).toBe(5)
     }
 
+    test `parses public constructor parameter as field synthesis syntax`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:public-constructor-parameter"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Bool", false, 7), token("{", true, 12),
+            token("construct", false, 14), token("(", true, 23),
+            token("public", false, 24), token("Bool", false, 31),
+            token("value", false, 36), token(")", true, 41),
+            token("{", true, 43), token("}", true, 44), token("}", true, 46)
+        ], snapshot)
+
+        expect(parsed.constructorValue.parameterValues().first.visibleParameter).toBe(true)
+    }
+
     test `rejects incomplete visible constructor parameter`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:visible-constructor-parameter-invalid"), "revision:one"
@@ -147,6 +162,7 @@ testable class {
             token("{", true, 42), token("}", true, 43)
         ], snapshot)
         expect(parsed.name).toBe("Value")
+        expect(parsed.implementedTypeNames()).toBe(["Comparable<Value>"])
     }
 
     test `parses legacy construct spelling`() {
@@ -213,6 +229,94 @@ testable class {
         expect(rejected).toBe(true)
     }
 
+    test `parses semicolonless initialized field before visible constructor`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:semicolonless-field"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("visible", false, 19), token("StackTrace", false, 27),
+            token("stackTrace", false, 38), token("=", true, 49),
+            token("StackTrace", false, 51), token("(", true, 61), token(")", true, 62),
+            token("public", false, 64), token("construct", false, 71),
+            token("(", true, 80), token(")", true, 81), token("{", true, 83),
+            token("}", true, 84), token("}", true, 86)
+        ], snapshot)
+
+        expect(parsed.fieldValues().first.name).toBe("stackTrace")
+        expect(parsed.fieldValues().first.initializer.expressionKind()).toBe("call")
+    }
+
+    test `parses bodyless method with inferred return syntax`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:bodyless-class-method"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Exception", false, 7), token("{", true, 17),
+            token("public", false, 19), token("toString", false, 26),
+            token("(", true, 34), token(")", true, 35), token("=>", true, 37),
+            token("message", false, 40), token("}", true, 47)
+        ], snapshot)
+        let method = parsed.methodValues().first
+
+        expect(method.name).toBe("toString")
+        expect(method.returnTypeName).toBe("String")
+        expect(method.statements().count).toBe(1)
+    }
+
+    test `parses expression bodied property as parameterless method syntax`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:bodyless-property"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Bool", false, 7), token("{", true, 12),
+            token("Long", false, 14), token("hashCodeLong", false, 19),
+            token("=>", true, 32), token("0", false, 35), token("}", true, 37)
+        ], snapshot)
+        let property = parsed.methodValues().first
+
+        expect(property.name).toBe("hashCodeLong")
+        expect(property.returnTypeName).toBe("Long")
+        expect(property.parameterValues().count).toBe(0)
+    }
+
+    test `parses visible expression bodied property`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-bodyless-property"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Object", false, 7), token("{", true, 14),
+            token("visible", false, 16), token("Long", false, 24),
+            token("hashCodeLong", false, 29), token("=>", true, 42),
+            token("0", false, 45), token("}", true, 47)
+        ], snapshot)
+
+        expect(parsed.methodValues().first.name).toBe("hashCodeLong")
+        expect(parsed.methodValues().first.returnTypeName).toBe("Long")
+    }
+
+    test `merges same name method only overlay immutably`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-overlay"), "revision:one"
+        )
+        let canonical = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Object", false, 7), token("{", true, 14),
+            token("equals", false, 16), token("(", true, 22), token(")", true, 23),
+            token("=>", true, 25), token("true", false, 28), token("}", true, 33)
+        ], snapshot)
+        let overlay = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Object", false, 7), token("{", true, 14),
+            token("public", false, 16), token("static", false, 23),
+            token("referenceEquals", false, 30), token("(", true, 45),
+            token(")", true, 46), token("=>", true, 48),
+            token("true", false, 51), token("}", true, 56)
+        ], snapshot)
+        let merged = canonical.mergedWith(overlay)
+
+        expect(canonical.methodValues().count).toBe(1)
+        expect(merged.methodValues().map({ _.name })).toBe(["equals", "referenceEquals"])
+    }
+
     test `rejects invalid reduced types`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:class-invalid"), "revision:one"
@@ -254,7 +358,11 @@ testable class {
         ]
     }
 
-    token(String value, Bool symbol, Int column) -> Token {
+    token(
+        String value,
+        Bool symbol,
+        Int column
+    ) -> Token {
         let type = symbol ? Token.Type.SYMBOL :
             value == "''" ? Token.Type.STRING : Token.Type.IDENTIFIER
         return Token(value: value, type: type,

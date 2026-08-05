@@ -6,7 +6,7 @@ import flat/io/FancyOutputStream
 import flat/semantic/binding/primitive/PrimitiveExpressionBinder_Test
 import flat/semantic/binding/primitive/PrimitiveStatementBinder_Test
 import flat/semantic/binding/primitive/PrimitiveControlStatementBinder_Test
-import flat/semantic/binding/primitive/PrimitiveExternalStatementBinder_Test
+import flat/semantic/binding/primitive/PrimitiveOpaqueCodeBinder_Test
 import flat/semantic/binding/primitive/PrimitiveFunctionBinder_Test
 import flat/semantic/binding/primitive/PrimitiveClassBinder_Test
 import flat/semantic/binding/primitive/PrimitiveClassPartitionBinder_Test
@@ -19,7 +19,7 @@ import flat/semantic/binding/primitive/PrimitiveInheritanceBinder_Test
     PrimitiveExpressionBinder_Test,
     PrimitiveStatementBinder_Test,
     PrimitiveControlStatementBinder_Test,
-    PrimitiveExternalStatementBinder_Test,
+    PrimitiveOpaqueCodeBinder_Test,
     PrimitiveFunctionBinder_Test,
     PrimitiveClassBinder_Test,
     PrimitiveClassPartitionBinder_Test,

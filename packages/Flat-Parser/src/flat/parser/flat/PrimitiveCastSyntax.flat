@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Explicit source-ranged cast expression. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible String typeName,
+        visible PrimitiveExpressionSyntax value
+    ) {
+        if (!range || !typeName || typeName.trim().count == 0 || !value) {
+            throw Exception("Primitive cast syntax requires type and value")
+        }
+        super(range)
+    }
+    override public expressionKind() => "cast"
+}

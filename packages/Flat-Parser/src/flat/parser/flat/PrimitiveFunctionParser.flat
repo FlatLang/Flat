@@ -31,12 +31,47 @@ class {
 
     parseFunction() -> PrimitiveFunctionSyntax {
         let start = index
+        var Bool staticMethod
+        while (index < tokens.count && (tokens[index].value == "public" ||
+            tokens[index].value == "private" || tokens[index].value == "protected" ||
+            tokens[index].value == "static")) {
+            if (tokens[index].value == "static") staticMethod = true
+            index++
+        }
         let name = requireIdentifier("Expected function name")
         require("(", "Expected function parameter list")
         let parameters = parseParameters()
         require(")", "Expected closing parameter parenthesis")
+        if (index < tokens.count && tokens[index].value == "=>") {
+            index++
+            let expressionStart = index
+            if (expressionStart >= tokens.count) syntax("Expected method expression", index)
+            index = tokens.count
+            let expression = PrimitiveExpressionParser().parse(
+                tokens.skip(expressionStart), snapshot, expressionStart + tokenIndexOffset
+            )
+            return PrimitiveFunctionSyntax(
+                range(start, index), name, parameters, "String",
+                [PrimitiveReturnSyntax(range(expressionStart, index), expression)],
+                staticMethod, true
+            )
+        }
         require("->", "Expected function return type arrow")
         let returnType = requireIdentifier("Expected function return type")
+        if (index < tokens.count && tokens[index].value == "=>") {
+            index++
+            let expressionStart = index
+            if (expressionStart >= tokens.count) syntax("Expected method expression", index)
+            index = tokens.count
+            let expression = PrimitiveExpressionParser().parse(
+                tokens.skip(expressionStart), snapshot, expressionStart + tokenIndexOffset
+            )
+            return PrimitiveFunctionSyntax(
+                range(start, index), name, parameters, returnType,
+                [PrimitiveReturnSyntax(range(expressionStart, index), expression)],
+                staticMethod
+            )
+        }
         require("{", "Expected opening function brace")
         let bodyStart = index
         var Int depth = 1
@@ -53,7 +88,7 @@ class {
             bodyStart + tokenIndexOffset
         ).statements()
         return PrimitiveFunctionSyntax(
-            range(start, index), name, parameters, returnType, statements
+            range(start, index), name, parameters, returnType, statements, staticMethod
         )
     }
 
@@ -63,9 +98,22 @@ class {
         while (true) {
             let start = index
             let typeName = requireIdentifier("Expected parameter type")
+            if (index < tokens.count && tokens[index].value == ":") index++
             let name = requireIdentifier("Expected parameter name")
+            var PrimitiveExpressionSyntax defaultValue
+            if (index < tokens.count && tokens[index].value == "=") {
+                index++
+                let defaultStart = index
+                while (index < tokens.count && tokens[index].value != "," &&
+                    tokens[index].value != ")") index++
+                if (defaultStart == index) syntax("Expected default parameter value", index)
+                defaultValue = PrimitiveExpressionParser().parse(
+                    tokens.skip(defaultStart).take(index - defaultStart), snapshot,
+                    defaultStart + tokenIndexOffset
+                )
+            }
             parameters.add(PrimitiveFunctionParameterSyntax(
-                range(start, index), typeName, name
+                range(start, index), typeName, name, defaultValue
             ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++

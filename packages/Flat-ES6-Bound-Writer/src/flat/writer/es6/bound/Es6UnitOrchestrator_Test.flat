@@ -102,7 +102,9 @@ testable class {
             BoundExpression[], TypeConversion[]
         ))
         let external = Es6StatementOrchestrator().emit(
-            BoundExternalStatement(fixture.range(), "es6", "code")
+            BoundExternalStatement(fixture.range(), "es6", [
+                BoundExternalCodeSegment(fixture.range(), "code")
+            ])
         )
         let owner = Es6NameMangler.mangle(ownerIdentity.value)
 
@@ -115,6 +117,22 @@ testable class {
             Es6NameMangler.mangle(instanceIdentity.value) + "()"
         )
         expect(external.code).toBe("code\n")
+
+        let stringValue = fixture.reference(
+            "parameter", "message", 6, SemanticTypes.stringType()
+        )
+        let interpolated = Es6StatementOrchestrator().emit(
+            BoundExternalStatement(fixture.range(), "es6", [
+                BoundExternalCodeSegment(fixture.range(), "Error("),
+                BoundExternalCodeSegment(
+                    fixture.range(), "", stringValue, "es6-native-string"
+                ),
+                BoundExternalCodeSegment(fixture.range(), ");")
+            ])
+        )
+        expect(interpolated.code).toBe(
+            "Error(" + Es6NameMangler.mangle(stringValue.symbolIdentity.value) + ");\n"
+        )
     }
 
     test `unsupported reduced input produces a diagnostic and no partial fragment`() {

@@ -1,0 +1,20 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** One immutable literal or semantically resolved value segment in external code. */
+data class {
+    public construct(
+        visible SourceRange range,
+        visible String text,
+        visible BoundExpression value = null,
+        visible String rendering = null
+    ) {
+        if (!range || text == null || (text.count > 0 && value) ||
+            (text.count == 0 && !value) || (value && !rendering)) {
+            throw Exception("Bound external segment requires literal text or rendered value")
+        }
+    }
+
+    public interpolated() => value != null
+}

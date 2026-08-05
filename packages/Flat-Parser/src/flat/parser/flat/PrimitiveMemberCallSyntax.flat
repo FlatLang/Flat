@@ -1,0 +1,31 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable receiver-owned member call syntax. */
+data class extends PrimitiveExpressionSyntax {
+    var PrimitiveExpressionSyntax[] arguments
+
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax receiver,
+        visible String memberName,
+        PrimitiveExpressionSyntax[] argumentValues
+    ) {
+        if (!range || !receiver || !memberName || !argumentValues ||
+            argumentValues.any({ !_ })) {
+            throw Exception("Primitive member call requires receiver, name, and arguments")
+        }
+        arguments = PrimitiveExpressionSyntax[]
+        arguments.addAll(argumentValues)
+        super(range)
+    }
+
+    public argumentValues() -> PrimitiveExpressionSyntax[] {
+        let result = PrimitiveExpressionSyntax[]
+        result.addAll(arguments)
+        return result
+    }
+
+    override public expressionKind() => "member-call"
+}

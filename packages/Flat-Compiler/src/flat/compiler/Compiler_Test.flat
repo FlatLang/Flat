@@ -294,6 +294,20 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `package linker accepts dependency ordered cross package classes`() {
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                "flat/Object.flat", "package flat class Object { construct() {} }"
+            ),
+            CompilerSource(
+                "flat/primitive/Value.flat",
+                "package flat/primitive class Value extends Object { construct() => super() }"
+            )
+        ])
+
+        expect(code.indexOf("class ") >= 0).toBe(true)
+    }
+
     async test `package linker rejects unknown construction and constructor arity`() {
         var Int rejected
         try {
@@ -313,23 +327,77 @@ testable class {
         expect(rejected).toBe(2)
     }
 
-    async test `package linker reports next real Exception unsupported construct`() {
+    async test `package linker executes real Exception constructor and StackTrace under Node`() {
         let identity = "flat/exception/Exception.flat"
+        let stackIdentity = "flat/exception/StackTrace.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                identity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
+            ),
+            CompilerSource(
+                stackIdentity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
+            )
+        ])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let exceptionType = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 4), "class", "Exception"
+        )
+        let stackType = DeclarationIdentity(
+            SyntaxIslandIdentity(
+                SourceSnapshotIdentity(SourceIdentity(stackIdentity), "compiler-input"),
+                "class", 4
+            ),
+            "class", "StackTrace"
+        )
+        let stackField = SymbolIdentity(exceptionType, "field", 0)
+        let messageField = SymbolIdentity(exceptionType, "field", 1)
+        let root = File(".flat-compiler-real-exception-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + Es6NameMangler.mangle(exceptionType.value) +
+                "('forwarded');\nconsole.log(value." +
+                Es6NameMangler.mangle(stackField.value) + " instanceof " +
+                Es6NameMangler.mangle(stackType.value) + ");\nconsole.log(value." +
+                Es6NameMangler.mangle(messageField.value) + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\nforwarded\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker reports static overlay body as next real Bool unsupported construct`() {
+        let identity = "flat/primitive/Bool.flat"
         var String message
         try {
             FlatEs6PackageLinker().link([
                 CompilerSource(
                     identity,
-                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Bool.flat"))
                 ),
                 CompilerSource(
-                    "flat/exception/StackTrace.flat",
-                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
+                    "flat/primitive/Primitive.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/Object.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/Object.js.flat",
+                    "package flat/primitive class { " +
+                    "public static referenceEquals(Object one, Object two) -> Bool { " +
+                    "return true; } }"
                 )
             ])
         } catch (Exception error) { message = error.message }
-        expect(message).toNotBe(null)
-        expect(message.count > 0).toBe(true)
+        expect(message).toBe("Invalid Flat braced member header")
     }
 
     async test `package linker compiles and executes selected real Flat Core source`() {

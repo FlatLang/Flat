@@ -2,17 +2,27 @@ package flat/parser/flat
 
 import flat/compiler/models
 
-/** Immutable source-ranged target-specific opaque external statement. */
+/** Immutable source-ranged target-specific external statement with explicit interpolation segments. */
 data class extends PrimitiveStatementSyntax {
+    var PrimitiveExternalCodeSegmentSyntax[] segments
+
     public construct(
         SourceRange range,
         visible String target,
-        visible String code
+        visible String code,
+        PrimitiveExternalCodeSegmentSyntax[] segmentValues
     ) {
-        if (!range || !target || target.trim().count == 0 || code == null) {
-            throw Exception("Primitive external block requires range target and code")
+        if (!range || !target || target.trim().count == 0 || code == null ||
+            !segmentValues || segmentValues.isEmpty || segmentValues.any({ !_ })) {
+            throw Exception("Primitive external block requires range target code and segments")
         }
+        segments = PrimitiveExternalCodeSegmentSyntax[]
+        segments.addAll(segmentValues)
         super(range)
     }
+
+    public segmentValues() -> PrimitiveExternalCodeSegmentSyntax[] =>
+        PrimitiveExternalCodeSegmentSyntax[]:addAll(segments)
+
     override public statementKind() => "external"
 }

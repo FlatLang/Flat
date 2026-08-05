@@ -6,6 +6,7 @@ import flat/compiler/models
 data class {
     var PrimitiveFieldSyntax[] fields
     var PrimitiveFunctionSyntax[] methods
+    var String[] implementedTypes
 
     public construct(
         visible SourceRange range,
@@ -14,21 +15,41 @@ data class {
         visible String parentName,
         PrimitiveFieldSyntax[] fieldValues,
         visible PrimitiveConstructorSyntax constructorValue,
-        PrimitiveFunctionSyntax[] methodValues
+        PrimitiveFunctionSyntax[] methodValues,
+        String[] implementedTypeNames = String[]
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
             (parentName && parentName.trim().count == 0) || !fieldValues ||
             fieldValues.any({ !_ }) || !constructorValue || !methodValues ||
-            methodValues.any({ !_ })) {
+            methodValues.any({ !_ }) || !implementedTypeNames ||
+            implementedTypeNames.any((implementedType) =>
+                !implementedType || implementedType.trim().count == 0
+            )) {
             throw Exception("Primitive class syntax requires range name fields constructor and methods")
         }
         fields = PrimitiveFieldSyntax[]
         fields.addAll(fieldValues)
         methods = PrimitiveFunctionSyntax[]
         methods.addAll(methodValues)
+        implementedTypes = String[]
+        implementedTypes.addAll(implementedTypeNames)
+    }
+
+    public mergedWith(PrimitiveClassSyntax overlay) -> PrimitiveClassSyntax {
+        if (!overlay || overlay.name != name || overlay.parentName != null ||
+            overlay.fieldValues().isNotEmpty || overlay.implementedTypeNames().isNotEmpty) {
+            throw Exception("Class overlay merge requires same-name method-only syntax")
+        }
+        let mergedMethods = methodValues()
+        mergedMethods.addAll(overlay.methodValues())
+        return PrimitiveClassSyntax(
+            range, name, genericParameterName, parentName,
+            fieldValues(), constructorValue, mergedMethods, implementedTypeNames()
+        )
     }
 
     public fieldValues() -> PrimitiveFieldSyntax[] => PrimitiveFieldSyntax[]:addAll(fields)
     public methodValues() -> PrimitiveFunctionSyntax[] => PrimitiveFunctionSyntax[]:addAll(methods)
+    public implementedTypeNames() -> String[] => String[]:addAll(implementedTypes)
 }

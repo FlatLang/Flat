@@ -8,7 +8,20 @@ class {
         if (!statement || statement.target != "es6") {
             throw Exception("ES6 external statement requires selected es6 evidence")
         }
-        return Es6CodeResult(code: statement.code + "\n")
+        var String code = ""
+        for (segment in statement.segmentValues()) {
+            if (!segment.interpolated()) code += segment.text
+            else {
+                let emitted = Es6ExpressionOrchestrator().emit(segment.value)
+                if (!emitted.emitted) return emitted
+                if (segment.rendering != "identity" &&
+                    segment.rendering != "es6-native-string") {
+                    throw Exception("Unsupported ES6 external interpolation rendering")
+                }
+                code += emitted.code
+            }
+        }
+        return Es6CodeResult(code: code + "\n")
     }
 
     public emitThrow(

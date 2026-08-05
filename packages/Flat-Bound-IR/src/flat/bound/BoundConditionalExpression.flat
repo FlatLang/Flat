@@ -1,0 +1,24 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Target-independent typed conditional expression. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundExpression condition,
+        visible BoundExpression whenTrue,
+        visible BoundExpression whenFalse
+    ) {
+        if (!range || !semanticType || !condition || !whenTrue || !whenFalse ||
+            condition.semanticType.value() != SemanticTypes.boolType().value() ||
+            whenTrue.semanticType.value() != semanticType.value() ||
+            whenFalse.semanticType.value() != semanticType.value()) {
+            throw Exception("Bound conditional requires Bool condition and common branch type")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "conditional"
+}

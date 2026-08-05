@@ -1,0 +1,19 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only conditional expression with explicit branches. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax condition,
+        visible PrimitiveExpressionSyntax whenTrue,
+        visible PrimitiveExpressionSyntax whenFalse
+    ) {
+        if (!range || !condition || !whenTrue || !whenFalse) {
+            throw Exception("Primitive conditional syntax requires condition and branches")
+        }
+        super(range)
+    }
+    override public expressionKind() => "conditional"
+}

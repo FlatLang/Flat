@@ -78,6 +78,44 @@ testable class {
         expect(partitions.first.tokenValues().filter({ _.value == "=" }).count).toBe(1)
     }
 
+    async test `partitions target annotated members without changing original tokens`() {
+        var String source = "package flat/test class Exception { construct(String message) { external js { Error("
+        source += '#'
+        source += "{message.chars.data}); } } public toString() => message + \"!\" " +
+            "[Target js] public run() { external js { ignored } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:target-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+
+        expect(partitions.count).toBe(1)
+        expect(partitions.first.tokenValues().filter({ _.type == Token.Type.CODE }).count).toBe(1)
+        expect(partitions.first.tokenValues().any({ _.value == "Target" })).toBe(false)
+        expect(partitions.first.tokenValues().any({ _.value == "toString" })).toBe(true)
+        let syntax = PrimitiveClassParser().parse(
+            partitions.first.tokenValues(), snapshot, partitions.first.startTokenIndex,
+            "Exception"
+        )
+        expect(syntax.methodValues().first.name).toBe("toString")
+    }
+
+    async test `preserves adjacent bodyless member boundaries`() {
+        let source = "package flat/test class Bool { " +
+            "public compare(Bool other) => value == other ? 0 : -1 " +
+            "public toString() => value ? \"true\" : \"false\" }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:adjacent-bodyless"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Bool"
+        )
+
+        expect(syntax.methodValues().map({ _.name })).toBe(["compare", "toString"])
+    }
+
     async test `enforces type count and token capacities`() {
         let source = "class First { constructor() {} } class Second { constructor() {} }"
         let stream = Lexer().lex(source)

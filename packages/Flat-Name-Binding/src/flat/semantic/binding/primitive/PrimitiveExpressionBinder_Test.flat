@@ -44,6 +44,32 @@ testable class {
         expect(reference.expression.semanticType.value()).toBe("primitive:Int")
     }
 
+    test `binds conditional with Bool condition and common branch type`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:conditional-bind"), "revision:one"
+        )
+        let condition = LocalBinding(
+            "ready",
+            SymbolIdentity(
+                DeclarationIdentity(
+                    SyntaxIslandIdentity(snapshot, "local", 0), "local", "ready"
+                ),
+                "local"
+            ),
+            SemanticTypes.boolType()
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("ready", Token.Type.IDENTIFIER, 1), token("?", Token.Type.SYMBOL, 7),
+            token("1", Token.Type.INTEGER, 9), token(":", Token.Type.SYMBOL, 11),
+            token("2", Token.Type.INTEGER, 13)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [condition])
+
+        expect(result.succeeded).toBe(true)
+        expect(result.expression.expressionKind()).toBe("conditional")
+        expect(result.expression.semanticType.value()).toBe("primitive:Int")
+    }
+
     test `binds arrays accesses and deterministic overload selection`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:array-overload-bind"), "revision:one"

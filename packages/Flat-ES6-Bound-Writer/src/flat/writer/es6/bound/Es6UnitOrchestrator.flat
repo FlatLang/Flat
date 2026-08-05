@@ -69,11 +69,19 @@ class {
     }
 
     emitMetadata(BoundTypeUnit typeUnit) -> String {
-        let reified = typeUnit.metadata().filter({ _.metadataKind == "reified" })
-        if (reified.isEmpty) return ""
         let owner = Es6NameMangler.mangle(typeUnit.identity.value)
+        let typeName = typeUnit.identity.name
+        var String result = owner + "." + Es6RuntimeAbi().typeMetadataProperty +
+            " = { name: '" + typeName + "' };\n"
+        let implemented = typeUnit.metadata().filter({ _.metadataKind == "implements" })
+        if (implemented.isNotEmpty) {
+            let names = implemented.map({ "'" + _.value + "'" })
+            result += owner + ".__flatType.interfaces = [" + names.join(", ") + "];\n"
+        }
+        let reified = typeUnit.metadata().filter({ _.metadataKind == "reified" })
+        if (reified.isEmpty) return result
         let values = reified.map({ "'" + _.value + "'" })
-        return owner + ".__flatReified = [" + values.join(", ") + "];\n"
+        return result + owner + ".__flatReified = [" + values.join(", ") + "];\n"
     }
 
     public emitType(BoundTypeUnit typeUnit, Int ordinal) -> Es6EmissionResult {

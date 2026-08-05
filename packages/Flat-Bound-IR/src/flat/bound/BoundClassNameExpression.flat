@@ -1,0 +1,16 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Typed reflection operation returning the runtime class name of a receiver. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        visible BoundExpression receiver
+    ) {
+        if (!range || !receiver) throw Exception("Bound class name requires receiver")
+        super(range, SemanticTypes.stringType())
+    }
+    override public expressionKind() => "class-name"
+}

@@ -12,7 +12,9 @@ data class {
         visible String name,
         PrimitiveFunctionParameterSyntax[] parameterValues,
         visible String returnTypeName,
-        PrimitiveStatementSyntax[] statements
+        PrimitiveStatementSyntax[] statements,
+        visible Bool staticMethod = false,
+        visible Bool inferredReturnType = false
     ) {
         if (!range || !name || name.trim().count == 0 || !parameterValues ||
             parameterValues.any({ !_ }) || !returnTypeName ||

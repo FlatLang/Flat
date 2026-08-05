@@ -24,6 +24,79 @@ testable class {
         expect(value.range.endTokenIndex).toBe(12)
     }
 
+    test `parses immutable interpolation segments and source ranges`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-external-interpolation"), "revision:one"
+        )
+        var String code = ""
+        code += 'b'
+        code += 'e'
+        code += 'f'
+        code += 'o'
+        code += 'r'
+        code += 'e'
+        code += ' '
+        code += '#'
+        code += "{message.chars.data} after"
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("external", Token.Type.IDENTIFIER, 1),
+            token("js", Token.Type.IDENTIFIER, 10),
+            token("{", Token.Type.SYMBOL, 13),
+            token(code, Token.Type.CODE, 15),
+            token("}", Token.Type.SYMBOL, 49)
+        ], snapshot, 7)
+        let statements = parsed.statements()
+        let object = (Object)statements.first
+        let value = (PrimitiveExternalStatementSyntax)object
+        let segments = value.segmentValues()
+
+        expect(segments.count).toBe(3)
+        expect(segments.first.text).toBe("before ")
+        expect(segments[1].pathValues().join(".")).toBe("message.chars.data")
+        expect(segments[1].range.startTokenIndex).toBe(10)
+        expect(segments[1].range.start.column).toBe(22)
+        expect(segments[1].range.end.column).toBe(43)
+        expect(segments.last.text).toBe(" after")
+        segments.clear()
+        expect(value.segmentValues().count).toBe(3)
+    }
+
+    test `rejects malformed interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-external-interpolation-invalid"), "revision:one"
+        )
+        var Int rejected
+        let invalid = String[]
+        var String next
+        next += '#'
+        next += "{unterminated"
+        invalid.add(next)
+        next = ""
+        next += '#'
+        next += "{}"
+        invalid.add(next)
+        next = ""
+        next += '#'
+        next += "{message..data}"
+        invalid.add(next)
+        next = ""
+        next += '#'
+        next += "{message()}"
+        invalid.add(next)
+        for (code in invalid) {
+            try {
+                PrimitiveControlStatementParser().parse([
+                    token("external", Token.Type.IDENTIFIER, 1),
+                    token("js", Token.Type.IDENTIFIER, 10),
+                    token("{", Token.Type.SYMBOL, 13),
+                    token(code, Token.Type.CODE, 15),
+                    token("}", Token.Type.SYMBOL, 40)
+                ], snapshot)
+            } catch (Exception error) { rejected++ }
+        }
+        expect(rejected).toBe(4)
+    }
+
     test `rejects missing target and non opaque code`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-external-invalid"), "revision:one"

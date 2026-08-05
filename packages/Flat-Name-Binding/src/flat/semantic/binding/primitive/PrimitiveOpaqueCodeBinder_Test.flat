@@ -1,0 +1,132 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Focused binding coverage for selected opaque statements and interpolation. */
+testable class PrimitiveOpaqueCodeBinder_Test {
+    test `binds selected target and preserves literal source evidence`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-bind"), "revision:one"
+        )
+        let syntax = parse(snapshot, "code")
+        let bound = PrimitiveControlStatementBinder().bind(syntax, snapshot).statements()
+        let object = (Object)bound.first
+        let value = (BoundExternalStatement)object
+
+        expect(value.target).toBe("es6")
+        expect(value.segmentValues().first.text).toBe("code")
+        expect(value.range.snapshot).toBe(snapshot)
+    }
+
+    test `binds string data interpolation to typed reference evidence`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-bind-interpolation"), "revision:one"
+        )
+        var String code = ""
+        code += "Error("
+        code += '#'
+        code += "{message.chars.data})"
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "constructor", 0), "constructor", "Owner"
+        )
+        let local = LocalBinding(
+            "message", SymbolIdentity(declaration, "parameter"), SemanticTypes.stringType()
+        )
+        let range = SourceRange(
+            snapshot, 0, 5,
+            Location(lineNumber: 1, column: 1),
+            Location(lineNumber: 1, column: code.count + 20)
+        )
+        let syntaxSegments = PrimitiveExternalCodeSegmentSyntax[]
+        syntaxSegments.add(PrimitiveExternalCodeSegmentSyntax(range, "Error(", String[]))
+        syntaxSegments.add(PrimitiveExternalCodeSegmentSyntax(
+            range, "", ["message", "chars", "data"]
+        ))
+        syntaxSegments.add(PrimitiveExternalCodeSegmentSyntax(range, ")", String[]))
+        let syntax = result(syntaxSegments, range, code, "js")
+        let bound = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, [local]
+        ).statements()
+        let object = (Object)bound.first
+        let statement = (BoundExternalStatement)object
+        let segments = statement.segmentValues()
+
+        expect(segments.count).toBe(3)
+        expect(segments[1].value.semanticType.value()).toBe("builtin:String")
+        expect(segments[1].rendering).toBe("es6-native-string")
+        expect(((BoundReferenceExpression)segments[1].value).symbolIdentity).toBe(local.identity)
+    }
+
+    test `rejects mismatched target unknown root and unsupported projection`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-bind-invalid"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "constructor", 0), "constructor", "Owner"
+        )
+        let local = LocalBinding(
+            "message", SymbolIdentity(declaration, "parameter"), SemanticTypes.stringType()
+        )
+        var Int rejected
+        try { PrimitiveControlStatementBinder().bind(parse(snapshot, "code", "c"), snapshot) }
+        catch (Exception error) { rejected++ }
+        var String unknown = ""
+        unknown += '#'
+        unknown += "{missing.chars.data}"
+        try { PrimitiveControlStatementBinder().bind(parse(snapshot, unknown), snapshot, [local]) }
+        catch (Exception error) { rejected++ }
+        var String unsupported = ""
+        unsupported += '#'
+        unsupported += "{message.length}"
+        try { PrimitiveControlStatementBinder().bind(parse(snapshot, unsupported), snapshot, [local]) }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(3)
+    }
+
+    result(
+        PrimitiveExternalCodeSegmentSyntax[] segments,
+        SourceRange range,
+        String code,
+        String target
+    ) -> PrimitiveStatementSyntaxResult => PrimitiveStatementSyntaxResult([
+        PrimitiveExternalStatementSyntax(range, target, code, segments)
+    ])
+
+    parse(
+        SourceSnapshotIdentity snapshot,
+        String code,
+        String target = "js"
+    ) -> PrimitiveStatementSyntaxResult {
+        let range = SourceRange(
+            snapshot, 0, 5,
+            Location(lineNumber: 1, column: 1),
+            Location(lineNumber: 1, column: code.count + 20)
+        )
+        let segments = PrimitiveExternalCodeSegmentSyntax[]
+        if (code.contains("missing.chars.data")) {
+            segments.add(PrimitiveExternalCodeSegmentSyntax(
+                range, "", ["missing", "chars", "data"]
+            ))
+        } else if (code.contains("message.length")) {
+            segments.add(PrimitiveExternalCodeSegmentSyntax(
+                range, "", ["message", "length"]
+            ))
+        } else if (code.contains("message.chars.data")) {
+            segments.add(PrimitiveExternalCodeSegmentSyntax(range, "Error(", String[]))
+            segments.add(PrimitiveExternalCodeSegmentSyntax(
+                range, "", ["message", "chars", "data"]
+            ))
+            segments.add(PrimitiveExternalCodeSegmentSyntax(range, ")", String[]))
+        } else segments.add(PrimitiveExternalCodeSegmentSyntax(range, code, String[]))
+        return result(segments, range, code, target)
+    }
+
+    token(String value, Int type, Int column) -> Token => Token(
+        value: value,
+        type: type,
+        location: Location(lineNumber: 1, column: column)
+    )
+}

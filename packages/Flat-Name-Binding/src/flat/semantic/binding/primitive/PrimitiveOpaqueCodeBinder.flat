@@ -1,0 +1,58 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/bound
+import flat/semantic/types
+
+/** Resolves opaque-code interpolation roots and selected ES6 runtime projections. */
+class PrimitiveOpaqueCodeBinder {
+    public bind(
+        PrimitiveExternalStatementSyntax syntax,
+        LocalBinding[] locals
+    ) -> BoundExternalStatement {
+        if (!syntax || !locals) throw Exception("Opaque-code binding requires input")
+        if (syntax.target != "js") throw Exception("Opaque target is unavailable")
+        let pieces = BoundExternalCodeSegment[]
+        let syntaxPieces = syntax.segmentValues()
+        var Int pieceIndex
+        while (pieceIndex < syntaxPieces.count) {
+            let piece = syntaxPieces[pieceIndex]
+            if (!piece.interpolated()) {
+                pieces.add(BoundExternalCodeSegment(piece.range, piece.text))
+            } else {
+                let path = piece.pathValues()
+                var LocalBinding root
+                var Int candidateIndex = locals.count - 1
+                while (candidateIndex >= 0 && !root) {
+                    let candidate = locals[candidateIndex]
+                    if (candidate.name == path.first) root = candidate
+                    candidateIndex--
+                }
+                if (!root) throw Exception("Unknown interpolation root")
+                let value = BoundReferenceExpression(
+                    piece.range, root.semanticType, root.name, root.identity
+                )
+                let rendering = renderingFor(value, path)
+                pieces.add(BoundExternalCodeSegment(
+                    piece.range, "", value, rendering
+                ))
+            }
+            pieceIndex++
+        }
+        var String selectedTarget = ""
+        selectedTarget += "es"
+        selectedTarget += "6"
+        return BoundExternalStatement(syntax.range, selectedTarget, pieces)
+    }
+
+    renderingFor(BoundReferenceExpression value, String[] path) -> String {
+        var String rendering = "identity"
+        if (path.count == 3) {
+            if (path[1] == "chars" && path[2] == "data" &&
+                value.semanticType.value() == SemanticTypes.stringType().value()) {
+                rendering = "es6-native-string"
+            } else throw Exception("Unsupported interpolation path")
+        } else if (path.count != 1) throw Exception("Unsupported interpolation path")
+        return rendering
+    }
+}

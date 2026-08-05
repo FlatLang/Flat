@@ -24,9 +24,26 @@ class {
         snapshot = sourceSnapshot
         tokenIndexOffset = sourceTokenIndexOffset
         index = 0
-        let expression = parseLevel(0)
+        let expression = parseConditional()
         if (index != tokens.count) syntax("Unexpected token '#{tokens[index].value}'", index)
         return expression
+    }
+
+    parseConditional() -> PrimitiveExpressionSyntax {
+        let start = index
+        let condition = parseLevel(0)
+        if (index >= tokens.count || tokens[index].value != "?") return condition
+        index++
+        let whenTrue = parseLevel(0)
+        if (index >= tokens.count || tokens[index].value != ":") {
+            syntax("Expected ':' in conditional expression", index)
+        }
+        index++
+        let whenFalse = parseLevel(0)
+        return PrimitiveConditionalSyntax(
+            range(start, whenFalse.range.endTokenIndex - tokenIndexOffset),
+            condition, whenTrue, whenFalse
+        )
     }
 
     parseLevel(Int level) -> PrimitiveExpressionSyntax {
@@ -74,6 +91,31 @@ class {
 
     parsePrimary() -> PrimitiveExpressionSyntax {
         if (index >= tokens.count) syntax("Expected primitive expression", index)
+        if (tokens[index].value == "(") {
+            let start = index++
+            if (index + 1 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
+                tokens[index + 1].value == ")") {
+                let typeName = tokens[index++].value
+                index++
+                let value = parseUnary()
+                return PrimitiveCastSyntax(
+                    range(start, value.range.endTokenIndex - tokenIndexOffset), typeName, value
+                )
+            }
+            let expression = parseConditional()
+            if (index >= tokens.count || tokens[index].value != ")") {
+                syntax("Expected closing expression parenthesis", index)
+            }
+            index++
+            if (expression.class.isOfType(PrimitiveConditionalSyntax.class)) {
+                let conditional = (PrimitiveConditionalSyntax)expression
+                return PrimitiveConditionalSyntax(
+                    range(start, index), conditional.condition,
+                    conditional.whenTrue, conditional.whenFalse
+                )
+            }
+            return expression
+        }
         if (tokens[index].value == "[") return parseArray()
         let tokenIndex = index
         let token = tokens[index++]
@@ -134,12 +176,45 @@ class {
                     syntax("Expected member name after '.'", index)
                 }
                 let member = tokens[index++].value
-                expression = PrimitiveMemberAccessSyntax(
+                if (index < tokens.count && tokens[index].value == "(") {
+                    index++
+                    let arguments = PrimitiveExpressionSyntax[]
+                    if (index < tokens.count && tokens[index].value != ")") {
+                        while (true) {
+                            arguments.add(parseConditional())
+                            if (index >= tokens.count || tokens[index].value == ")") break
+                            if (tokens[index].value != ",") {
+                                syntax("Expected member call argument boundary", index)
+                            }
+                            index++
+                        }
+                    }
+                    if (index >= tokens.count || tokens[index].value != ")") {
+                        syntax("Expected closing member call parenthesis", index)
+                    }
+                    index++
+                    expression = PrimitiveMemberCallSyntax(
+                        range(tokenIndex, index), expression, member, arguments
+                    )
+                } else expression = PrimitiveMemberAccessSyntax(
                     range(tokenIndex, index), expression, member
                 )
             }
+            if (expression.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                let nameAccess = (PrimitiveMemberAccessSyntax)expression
+                if (nameAccess.memberName == "name" &&
+                    nameAccess.receiver.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                    let classAccess = (PrimitiveMemberAccessSyntax)nameAccess.receiver
+                    if (classAccess.memberName == "class") {
+                        return PrimitiveClassNameSyntax(expression.range, classAccess.receiver)
+                    }
+                }
+            }
             return expression
         }
+        if (token.type == Token.Type.STRING) return PrimitiveLiteralSyntax(
+            range(tokenIndex, tokenIndex + 1), token.type, token.value
+        )
         if (token.type != Token.Type.INTEGER && token.type != Token.Type.BOOL &&
             token.type != Token.Type.STRING && token.type != Token.Type.CHAR &&
             token.type != Token.Type.NULL) {

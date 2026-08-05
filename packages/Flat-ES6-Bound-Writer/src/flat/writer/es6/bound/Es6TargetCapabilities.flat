@@ -10,7 +10,8 @@ class {
 
     public static supportsExpression(String kind) -> Bool {
         return kind == "literal" || kind == "reference" || kind == "member-access" ||
-            kind == "unary" || kind == "binary" || kind == "conversion" ||
+            kind == "unary" || kind == "binary" || kind == "conditional" ||
+            kind == "class-name" || kind == "conversion" ||
             kind == "call" || kind == "native-call" || kind == "array" ||
             kind == "array-access" || kind == "lambda" || kind == "function-reference"
     }
@@ -33,7 +34,7 @@ class {
 
     public static diagnoseMetadata(String kind) -> Es6BackendDiagnostic {
         if (kind == "data-class" || kind == "generic" || kind == "reified" ||
-            kind == "annotation") return null
+            kind == "annotation" || kind == "implements") return null
         return Es6BackendDiagnostic(
             "es6.unsupported-metadata",
             "ES6 backend does not support metadata '#kind'"

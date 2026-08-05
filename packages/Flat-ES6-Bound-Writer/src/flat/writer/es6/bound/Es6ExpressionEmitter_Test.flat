@@ -44,8 +44,19 @@ testable class {
         let binary = BoundBinaryExpression(
             fixture.range(), SemanticTypes.intType(), "+", one, two
         )
+        let conditional = BoundConditionalExpression(
+            fixture.range(), SemanticTypes.intType(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true"),
+            one, two
+        )
         let orchestrator = Es6ExpressionOrchestrator()
         expect(orchestrator.emit(unary).code).toBe("-1")
         expect(orchestrator.emit(binary).code).toBe("(1 + 2)")
+        let className = BoundClassNameExpression(fixture.range(), receiver)
+        expect(orchestrator.emit(className).code).toBe(
+            Es6NameMangler.mangle(receiver.symbolIdentity.value) +
+            ".constructor.__flatType.name"
+        )
+        expect(orchestrator.emit(conditional).code).toBe("(true ? 1 : 2)")
     }
 }

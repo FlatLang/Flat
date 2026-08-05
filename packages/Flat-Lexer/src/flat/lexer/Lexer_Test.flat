@@ -81,6 +81,36 @@ testable class {
         expectTokens(value, expected, checkType: true)
     }
 
+    async test `publishes interpolated string as canonical expression tokens`() {
+        var String source = "\": "
+        source += '#'
+        source += "message\""
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+
+        expect(tokens.map({ _.value })).toBe(["\": \"", "+", "message"])
+        expect(tokens.map({ _.type })).toBe([
+            Token.Type.STRING, Token.Type.SYMBOL, Token.Type.IDENTIFIER
+        ])
+        expect(tokens.first.location.column).toBe(1)
+        expect(tokens.last.location.column).toBe(1)
+    }
+
+    async test `publishes braced interpolation as canonical expression tokens`() {
+        var String source = "\"Hello "
+        source += '#'
+        source += "{name}\""
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+
+        expect(tokens.map({ _.value })).toBe(["\"Hello \"", "+", "name"])
+        expect(tokens.map({ _.type })).toBe([
+            Token.Type.STRING, Token.Type.SYMBOL, Token.Type.IDENTIFIER
+        ])
+    }
+
     async test `can lex an exxternal block`() {
         let stream = Lexer().lex("|
             external {

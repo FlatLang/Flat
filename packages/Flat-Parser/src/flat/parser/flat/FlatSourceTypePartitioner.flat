@@ -64,8 +64,121 @@ class {
         return result
     }
 
+    normalizeExpressionBodiedMembers(Token[] tokens) {
+        var Int index
+        while (index < tokens.count) {
+            if (tokens[index].value == "=>") {
+                var Int cursor = index + 1
+                var Int parenthesisDepth
+                while (cursor < tokens.count) {
+                    if (tokens[cursor].value == "(") parenthesisDepth++
+                    else if (tokens[cursor].value == ")") parenthesisDepth--
+                    if (parenthesisDepth == 0 && (tokens[cursor].value == "[" ||
+                        tokens[cursor].value == "}")) break
+                    tokens[cursor] = Token(
+                        value: " ", type: Token.Type.WHITESPACE,
+                        location: tokens[cursor].location
+                    )
+                    cursor++
+                }
+                tokens[index] = Token(
+                    value: " ", type: Token.Type.WHITESPACE,
+                    location: tokens[index].location
+                )
+                index = cursor
+            } else index++
+        }
+    }
+
+    normalizeTargetAnnotatedMembers(Token[] tokens) -> Token[] {
+        let result = Token[]
+        result.addAll(tokens)
+        var Int index
+        while (index + 4 < result.count) {
+            if (result[index].value == "[" && result[index + 1].value == "Target") {
+                var Int annotationEnd = index + 2
+                while (annotationEnd < result.count && result[annotationEnd].value != "]") {
+                    annotationEnd++
+                }
+                if (annotationEnd >= result.count) break
+                var Int openingBrace = annotationEnd + 1
+                var Int parenthesisDepth
+                while (openingBrace < result.count) {
+                    if (result[openingBrace].value == "(") parenthesisDepth++
+                    else if (result[openingBrace].value == ")") parenthesisDepth--
+                    else if (parenthesisDepth == 0 && result[openingBrace].value == "{") break
+                    openingBrace++
+                }
+                if (openingBrace >= result.count) break
+                var Int closingBrace = openingBrace + 1
+                var Int braceDepth = 1
+                while (closingBrace < result.count && braceDepth > 0) {
+                    if (result[closingBrace].type != Token.Type.CODE) {
+                        if (result[closingBrace].value == "{") braceDepth++
+                        else if (result[closingBrace].value == "}") braceDepth--
+                    }
+                    closingBrace++
+                }
+                if (braceDepth != 0) break
+                var Int cursor = index
+                while (cursor < closingBrace) {
+                    result[cursor] = Token(
+                        value: " ", type: Token.Type.WHITESPACE,
+                        location: result[cursor].location
+                    )
+                    cursor++
+                }
+                index = closingBrace
+            } else index++
+        }
+        return result
+    }
+
+    maskTargetAnnotatedMembers(Token[] tokens) {
+        var Int index
+        while (index + 4 < tokens.count) {
+            if (tokens[index].value == "[" && tokens[index + 1].value == "Target") {
+                var Int annotationEnd = index + 2
+                while (annotationEnd < tokens.count && tokens[annotationEnd].value != "]") {
+                    annotationEnd++
+                }
+                if (annotationEnd >= tokens.count) return
+                var Int openingBrace = annotationEnd + 1
+                var Int parenthesisDepth
+                while (openingBrace < tokens.count) {
+                    if (tokens[openingBrace].value == "(") parenthesisDepth++
+                    else if (tokens[openingBrace].value == ")") parenthesisDepth--
+                    else if (parenthesisDepth == 0 && tokens[openingBrace].value == "{") break
+                    openingBrace++
+                }
+                if (openingBrace >= tokens.count) return
+                var Int closingBrace = openingBrace + 1
+                var Int braceDepth = 1
+                while (closingBrace < tokens.count && braceDepth > 0) {
+                    if (tokens[closingBrace].type != Token.Type.CODE) {
+                        if (tokens[closingBrace].value == "{") braceDepth++
+                        else if (tokens[closingBrace].value == "}") braceDepth--
+                    }
+                    closingBrace++
+                }
+                if (braceDepth != 0) return
+                var Int cursor = index
+                while (cursor < closingBrace) {
+                    tokens[cursor] = Token(
+                        value: " ", type: Token.Type.WHITESPACE,
+                        location: tokens[cursor].location
+                    )
+                    cursor++
+                }
+                index = closingBrace
+            } else index++
+        }
+    }
+
     normalizeScannerTokens(Token[] tokens) -> Token[] {
         let result = normalizeDefaultParameters(normalizeDelegatedConstructors(tokens))
+        maskTargetAnnotatedMembers(result)
+        normalizeExpressionBodiedMembers(result)
         var Int depth
         var Int index
         while (index < result.count) {
@@ -167,7 +280,19 @@ class {
             let type = _.type
             return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
         })
+        let partitionTokens = normalizeTargetAnnotatedMembers(tokens)
         let scanTokens = normalizeScannerTokens(tokens)
+        if (scanTokens.count != partitionTokens.count) {
+            throw Exception("Flat source scanner normalization must preserve token count")
+        }
+        var Int restored = scanTokens.count - 1
+        while (restored >= 0 && scanTokens[restored].type == Token.Type.WHITESPACE) {
+            if (partitionTokens[restored].value == "}") {
+                scanTokens[restored] = partitionTokens[restored]
+                break
+            }
+            restored--
+        }
         let scanner = FlatSourceMilestoneScanner(
             snapshot, maxFrontMatterTokens, maxTypeHeaderTokens
         )
@@ -205,7 +330,7 @@ class {
                 result.add(FlatSourceTypePartition(
                     packageName, imports, header.declarationKind, header.name,
                     header.range.startTokenIndex,
-                    tokens.skip(header.range.startTokenIndex).take(count)
+                    partitionTokens.skip(header.range.startTokenIndex).take(count)
                 ))
                 header = null
             }

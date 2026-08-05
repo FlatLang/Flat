@@ -1,0 +1,15 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Explicit source-ranged access to the runtime class name of a receiver. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax receiver
+    ) {
+        if (!range || !receiver) throw Exception("Class name syntax requires receiver")
+        super(range)
+    }
+    override public expressionKind() => "class-name"
+}

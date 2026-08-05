@@ -2,17 +2,26 @@ package flat/bound
 
 import flat/compiler/models
 
-/** Immutable target-selected opaque external statement. */
+/** Immutable target-selected external statement with explicit typed interpolation evidence. */
 data class extends BoundStatement {
+    var BoundExternalCodeSegment[] segments
+
     public construct(
         SourceRange range,
         visible String target,
-        visible String code
+        BoundExternalCodeSegment[] segmentValues
     ) {
-        if (!range || !target || target.trim().count == 0 || code == null) {
-            throw Exception("Bound external statement requires range target and code")
+        if (!range || !target || target.trim().count == 0 || !segmentValues ||
+            segmentValues.isEmpty || segmentValues.any({ !_ })) {
+            throw Exception("Bound external statement requires range target and segments")
         }
+        segments = BoundExternalCodeSegment[]
+        segments.addAll(segmentValues)
         super(range)
     }
+
+    public segmentValues() -> BoundExternalCodeSegment[] =>
+        BoundExternalCodeSegment[]:addAll(segments)
+
     override public unitKind() => "external"
 }

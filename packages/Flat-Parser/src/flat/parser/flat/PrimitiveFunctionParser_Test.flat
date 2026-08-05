@@ -41,6 +41,73 @@ testable class {
         expect(call.argumentValues().count).toBe(1)
     }
 
+    test `parses bodyless inferred return method`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:bodyless-function"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("toString", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 9),
+            token(")", Token.Type.SYMBOL, 10), token("=>", Token.Type.SYMBOL, 12),
+            token("message", Token.Type.IDENTIFIER, 15)
+        ], snapshot).functionValues().first
+
+        expect(parsed.name).toBe("toString")
+        expect(parsed.returnTypeName).toBe("String")
+        expect(parsed.inferredReturnType).toBe(true)
+        expect(parsed.statements().count).toBe(1)
+    }
+
+    test `parses visible static bodyless method modifiers`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:static-bodyless-function"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("public", Token.Type.IDENTIFIER, 1),
+            token("static", Token.Type.IDENTIFIER, 8),
+            token("toString", Token.Type.IDENTIFIER, 15), token("(", Token.Type.SYMBOL, 23),
+            token("Bool", Token.Type.IDENTIFIER, 24), token("value", Token.Type.IDENTIFIER, 29),
+            token(")", Token.Type.SYMBOL, 34), token("=>", Token.Type.SYMBOL, 36),
+            token("value", Token.Type.IDENTIFIER, 39)
+        ], snapshot).functionValues().first
+
+        expect(parsed.name).toBe("toString")
+        expect(parsed.staticMethod).toBe(true)
+    }
+
+    test `parses typed bodyless function return`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:typed-bodyless-function"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("toString", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 9),
+            token(")", Token.Type.SYMBOL, 10), token("->", Token.Type.SYMBOL, 12),
+            token("String", Token.Type.IDENTIFIER, 15), token("=>", Token.Type.SYMBOL, 22),
+            token("value", Token.Type.IDENTIFIER, 25)
+        ], snapshot).functionValues().first
+
+        expect(parsed.returnTypeName).toBe("String")
+        expect(parsed.inferredReturnType).toBe(false)
+        expect(parsed.statements().count).toBe(1)
+    }
+
+    test `parses named default function parameters`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:named-default-function"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("toJson", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+            token("Bool", Token.Type.IDENTIFIER, 8), token(":", Token.Type.SYMBOL, 12),
+            token("format", Token.Type.IDENTIFIER, 14), token("=", Token.Type.SYMBOL, 21),
+            token("false", Token.Type.BOOL, 23), token(")", Token.Type.SYMBOL, 28),
+            token("=>", Token.Type.SYMBOL, 30), token("format", Token.Type.IDENTIFIER, 33)
+        ], snapshot).functionValues().first
+        let parameter = parsed.parameterValues().first
+
+        expect(parameter.typeName).toBe("Bool")
+        expect(parameter.name).toBe("format")
+        expect(parameter.defaultValue.expressionKind()).toBe("literal")
+    }
+
     test `rejects duplicate delimiters and incomplete signatures or bodies`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-functions-invalid"), "revision:one"

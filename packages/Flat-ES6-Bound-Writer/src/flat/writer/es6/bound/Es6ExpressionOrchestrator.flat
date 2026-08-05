@@ -69,6 +69,24 @@ class {
             if (!index.emitted) return index
             return Es6CodeResult(code: receiver.code + "[" + index.code + "]")
         }
+        if (expression.class.isOfType(BoundClassNameExpression.class)) {
+            let value = (BoundClassNameExpression)expression
+            let receiver = emit(value.receiver)
+            if (!receiver.emitted) return receiver
+            return Es6CodeResult(code: receiver.code + ".constructor." +
+                Es6RuntimeAbi().typeMetadataProperty + ".name")
+        }
+        if (expression.class.isOfType(BoundConditionalExpression.class)) {
+            let value = (BoundConditionalExpression)expression
+            let condition = emit(value.condition)
+            if (!condition.emitted) return condition
+            let whenTrue = emit(value.whenTrue)
+            if (!whenTrue.emitted) return whenTrue
+            let whenFalse = emit(value.whenFalse)
+            if (!whenFalse.emitted) return whenFalse
+            return Es6CodeResult(code: "(" + condition.code + " ? " +
+                whenTrue.code + " : " + whenFalse.code + ")")
+        }
         if (expression.class.isOfType(BoundCallExpression.class)) {
             let value = (BoundCallExpression)expression
             return emitCall(value)

@@ -39,7 +39,7 @@ class {
             if (source.text.count > maxSourceCharacters) {
                 throw Exception("Flat package source exceeds configured character capacity")
             }
-            let stream = Lexer().lex(source.text)
+            let stream = Lexer().lexInterpolated(source.text)
             stream.emit("start")
             let tokens = stream.consumeAll<Token>("data")
             if (tokens.count > maxTokensPerSource) {
@@ -50,20 +50,27 @@ class {
                 maxTypeTokens: maxTokensPerSource, maxTypes: maxTypes
             ).partition(tokens, snapshot)
             for (partition in partitions) {
-                if (packageName && partition.packageName != packageName) {
-                    throw Exception("Flat ES6 package linker requires one package partition")
-                }
-                packageName = partition.packageName
+                if (!packageName) packageName = partition.packageName
                 if (partition.declarationKind != "class") {
                     throw Exception("Reduced Flat ES6 package linking supports classes")
                 }
                 if (syntaxes.count >= maxTypes) {
                     throw Exception("Flat ES6 package exceeds configured type capacity")
                 }
-                syntaxes.add(PrimitiveClassParser().parse(
+                let parsed = PrimitiveClassParser().parse(
                     partition.tokenValues(), snapshot, partition.startTokenIndex,
                     implicitName(source.identity, partition.name)
-                ))
+                )
+                var Int existingIndex = -1
+                var Int syntaxIndex
+                while (syntaxIndex < syntaxes.count && existingIndex < 0) {
+                    if (syntaxes[syntaxIndex].name == parsed.name) existingIndex = syntaxIndex
+                    syntaxIndex++
+                }
+                let overlay = source.identity.endsWith(".js.flat")
+                if (existingIndex >= 0 && overlay) {
+                    syntaxes[existingIndex] = syntaxes[existingIndex].mergedWith(parsed)
+                } else syntaxes.add(parsed)
             }
         }
         let types = PrimitiveClassPartitionBinder().bind(

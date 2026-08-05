@@ -251,6 +251,7 @@ class {
     }
 
     validateHeader(String kind) {
+        if (kind == "function") return
         let tokens = Token[]
         let location = headerTokens.first.location
         tokens.add(Token(value: "class", type: Token.Type.IDENTIFIER, location: location))

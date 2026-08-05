@@ -32,6 +32,7 @@ class {
         }
 
         let constructorSignatures = constructorSignatures(syntaxValues, snapshot)
+        constructorSignatures.addAll(methodSignatures(syntaxValues, snapshot))
         let result = BoundTypeUnit[]
         let boundNames = String[]
         while (result.count < syntaxValues.count) {
@@ -74,6 +75,44 @@ class {
             }
         }
         return PrimitiveClassPartitionBindingResult(result)
+    }
+
+    methodSignatures(
+        PrimitiveClassSyntax[] syntaxes,
+        SourceSnapshotIdentity snapshot
+    ) -> CallableSignature[] {
+        let result = CallableSignature[]
+        for (syntax in syntaxes) {
+            let syntaxSnapshot = snapshot ?: syntax.range.snapshot
+            let ownerIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(syntaxSnapshot, "class", syntax.range.startTokenIndex),
+                "class", syntax.name
+            )
+            let owner = UserClassSemanticType(ownerIdentity)
+            var Int ordinal
+            for (method in syntax.methodValues()) {
+                let parameterTypes = method.parameterValues().map({
+                    signatureType(_.typeName, syntaxes, snapshot)
+                })
+                let returnType = method.inferredReturnType ? SemanticTypes.unknownType() :
+                    signatureType(method.returnTypeName, syntaxes, snapshot)
+                let identity = DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        method.range.snapshot, "method-signature", method.range.startTokenIndex
+                    ),
+                    method.staticMethod ? "static-method" : "instance-method",
+                    method.name
+                )
+                result.add(CallableSignature(
+                    SymbolIdentity(identity, method.staticMethod ? "static-method" : "instance-method", ordinal),
+                    method.name,
+                    CallableKind(method.staticMethod ? "static-method" : "instance-method"),
+                    parameterTypes, returnType, owner
+                ))
+                ordinal++
+            }
+        }
+        return result
     }
 
     constructorSignatures(
@@ -130,6 +169,7 @@ class {
         PrimitiveClassSyntax[] syntaxes,
         SourceSnapshotIdentity snapshot
     ) -> SemanticType {
+        if (name == "Object") return SemanticTypes.objectType()
         if (name == "Bool") return SemanticTypes.boolType()
         if (name == "Int") return SemanticTypes.intType()
         if (name == "Long") return SemanticTypes.longType()

@@ -70,6 +70,40 @@ class {
         LocalBinding[] locals,
         CallableSignature[] callables
     ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+            let value = (PrimitiveMemberCallSyntax)syntax
+            let receiver = bindSyntax(value.receiver, locals, callables)
+            let candidates = callables.filter((candidate) =>
+                candidate.callableKind.value == "instance-method" &&
+                candidate.name == value.memberName
+            )
+            let arguments = BoundExpression[]
+            for (argument in value.argumentValues()) {
+                arguments.add(bindSyntax(argument, locals, callables))
+            }
+            let resolution = OverloadResolver.resolve(
+                value.memberName, candidates, receiver.semanticType,
+                arguments.map({ _.semanticType }), value.range
+            )
+            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+            let target = resolution.selected
+            let checked = CallTypeChecker.check(
+                target, receiver.semanticType, arguments.map({ _.semanticType }), value.range
+            )
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            return BoundCallExpression(
+                value.range, checked.semanticType, target, receiver,
+                arguments, checked.argumentConversions()
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveCastSyntax.class)) {
+            let value = (PrimitiveCastSyntax)syntax
+            let operand = bindSyntax(value.value, locals, callables)
+            let target = namedType(value.typeName)
+            let conversion = TypeConversions.classify(operand.semanticType, target)
+            if (!conversion.applicable) throw Exception("Explicit cast type mismatch")
+            return BoundConversionExpression(value.range, target, operand, conversion)
+        }
         if (syntax.class.isOfType(PrimitiveLiteralSyntax.class)) {
             let value = (PrimitiveLiteralSyntax)syntax
             var SemanticType type
@@ -80,6 +114,11 @@ class {
             else if (value.tokenType == Token.Type.NULL) type = SemanticTypes.nullType()
             else throw Exception("Unsupported primitive literal '#{value.sourceValue}'")
             return BoundLiteralExpression(value.range, type, value.sourceValue)
+        }
+        if (syntax.class.isOfType(PrimitiveClassNameSyntax.class)) {
+            let value = (PrimitiveClassNameSyntax)syntax
+            let receiver = bindSyntax(value.receiver, locals, callables)
+            return BoundClassNameExpression(value.range, receiver)
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
             let value = (PrimitiveConstructionSyntax)syntax
@@ -275,6 +314,21 @@ class {
                 target,
                 arguments,
                 checked.argumentConversions()
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
+            let value = (PrimitiveConditionalSyntax)syntax
+            let condition = bindSyntax(value.condition, locals, callables)
+            if (condition.semanticType.value() != SemanticTypes.boolType().value()) {
+                throw Exception("Conditional expression requires Bool condition")
+            }
+            let whenTrue = bindSyntax(value.whenTrue, locals, callables)
+            let whenFalse = bindSyntax(value.whenFalse, locals, callables)
+            if (whenTrue.semanticType.value() != whenFalse.semanticType.value()) {
+                throw Exception("Conditional expression branches require common type")
+            }
+            return BoundConditionalExpression(
+                value.range, whenTrue.semanticType, condition, whenTrue, whenFalse
             )
         }
         if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {

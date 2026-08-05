@@ -88,6 +88,9 @@ class {
             metadata.add(BoundMetadataUnit("generic", genericParameter.name, genericParameter.value()))
             metadata.add(BoundMetadataUnit("reified", genericParameter.name, genericParameter.value()))
         }
+        for (implementedType in syntax.implementedTypeNames()) {
+            metadata.add(BoundMetadataUnit("implements", implementedType, implementedType))
+        }
         return PrimitiveClassBindingResult(BoundTypeUnit(
             typeIdentity, type, functions, syntax.range,
             metadataValues: metadata, fieldValues: fields
@@ -148,13 +151,9 @@ class {
         }
         for (statement in syntax.statements()) {
             if (statement.class.isOfType(PrimitiveExternalStatementSyntax.class)) {
-                let external = (PrimitiveExternalStatementSyntax)statement
-                if (external.target != "js") {
-                    throw Exception("External block is unavailable for selected target")
-                }
-                statements.add(BoundExternalStatement(
-                    external.range, "es6", external.code
-                ))
+                let opaqueStatement = (PrimitiveExternalStatementSyntax)statement
+                let externalBinding = bindConstructorOpaqueCode(opaqueStatement, locals)
+                statements.add(externalBinding)
                 continue
             }
             if (statement.class.isOfType(PrimitiveExpressionStatementSyntax.class)) {
@@ -211,6 +210,13 @@ class {
         )
     }
 
+    bindConstructorOpaqueCode(
+        PrimitiveExternalStatementSyntax syntax,
+        LocalBinding[] locals
+    ) -> BoundExternalStatement {
+        return PrimitiveOpaqueCodeBinder().bind(syntax, locals)
+    }
+
     bindMethod(
         PrimitiveFunctionSyntax syntax,
         DeclarationIdentity typeIdentity,
@@ -227,7 +233,8 @@ class {
         let locals = localBindings(parameters)
         locals.addAll(inheritedFieldBindings(inheritedFields))
         let receiver = receiver(syntax.range, typeIdentity, type)
-        let returnType = typeOf(syntax.returnTypeName)
+        let declaredReturnType = typeOf(syntax.returnTypeName)
+        var SemanticType returnType = declaredReturnType
         let statements = BoundStatement[]
         for (statement in syntax.statements()) {
             if (!statement.class.isOfType(PrimitiveReturnSyntax.class)) {
@@ -239,12 +246,14 @@ class {
             allFields.addAll(fields)
             allFields.addAll(inheritedFields)
             let value = expression(returned.value, receiver, allFields, locals)
+            if (syntax.inferredReturnType) returnType = value.semanticType
             let conversion = TypeConversions.classify(value.semanticType, returnType)
             if (!conversion.applicable) throw Exception("Method return type mismatch")
             statements.add(BoundReturnStatement(returned.range, returnType, value, conversion))
         }
         return BoundFunctionUnit(
-            identity, syntax.name, returnType, statements, syntax.range, parameters
+            identity, syntax.name, returnType, statements, syntax.range, parameters,
+            staticFunction: syntax.staticMethod
         )
     }
 
@@ -306,12 +315,92 @@ class {
         BoundFieldUnit[] fields,
         LocalBinding[] locals
     ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+            let value = (PrimitiveMemberCallSyntax)syntax
+            let owner = expression(value.receiver, receiver, fields, locals)
+            let arguments = BoundExpression[]
+            for (argument in value.argumentValues()) {
+                arguments.add(expression(argument, receiver, fields, locals))
+            }
+            let target = constructors.firstOrNull((candidate) =>
+                candidate.callableKind.value == "instance-method" &&
+                candidate.name == value.memberName
+            )
+            if (!target) throw Exception("Unknown member call '#{value.memberName}'")
+            let checked = CallTypeChecker.check(
+                target, owner.semanticType, arguments.map({ _.semanticType }), value.range
+            )
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            return BoundCallExpression(
+                value.range, checked.semanticType, target, owner,
+                arguments, checked.argumentConversions()
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveCastSyntax.class)) {
+            let value = (PrimitiveCastSyntax)syntax
+            let operand = expression(value.value, receiver, fields, locals)
+            let target = typeOf(value.typeName)
+            return BoundConversionExpression(
+                value.range, target, operand,
+                TypeConversions.classify(operand.semanticType, target)
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveClassNameSyntax.class)) {
+            let value = (PrimitiveClassNameSyntax)syntax
+            let reflected = expression(value.receiver, receiver, fields, locals)
+            return BoundClassNameExpression(value.range, reflected)
+        }
+        if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
+            let value = (PrimitiveConditionalSyntax)syntax
+            var BoundExpression condition = expression(
+                value.condition, receiver, fields, locals
+            )
+            if (condition.semanticType.value() == SemanticTypes.stringType().value()) {
+                let empty = BoundLiteralExpression(
+                    value.condition.range, SemanticTypes.stringType(), "\"\""
+                )
+                condition = BoundBinaryExpression(
+                    value.condition.range, SemanticTypes.boolType(), "!=", condition, empty
+                )
+            }
+            let whenTrue = expression(value.whenTrue, receiver, fields, locals)
+            let whenFalse = expression(value.whenFalse, receiver, fields, locals)
+            if (condition.semanticType.value() != SemanticTypes.boolType().value() ||
+                whenTrue.semanticType.value() != whenFalse.semanticType.value()) {
+                throw Exception("Reduced conditional requires Bool and common branch type")
+            }
+            return BoundConditionalExpression(
+                value.range, whenTrue.semanticType, condition, whenTrue, whenFalse
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let value = (PrimitiveBinarySyntax)syntax
+            let left = expression(value.left, receiver, fields, locals)
+            let right = expression(value.right, receiver, fields, locals)
+            let typed = TypeOperations.binary(
+                value.operator, left.semanticType, right.semanticType, value.range
+            )
+            if (!typed.valid) throw Exception(typed.diagnostic.message)
+            return BoundBinaryExpression(
+                value.range, typed.semanticType, value.operator, left, right
+            )
+        }
         if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
             let value = (PrimitiveReferenceSyntax)syntax
             if (value.name == "this") return receiver
             let local = locals.firstOrNull({ _.name == value.name })
-            if (!local) throw Exception("Unknown constructor/method name '#{value.name}'")
-            return BoundReferenceExpression(value.range, local.semanticType, local.name, local.identity)
+            if (local) {
+                return BoundReferenceExpression(
+                    value.range, local.semanticType, local.name, local.identity
+                )
+            }
+            let field = fields.firstOrNull({ _.name == value.name })
+            if (field) {
+                return BoundMemberAccessExpression(
+                    value.range, field.semanticType, receiver, field.name, field.identity
+                )
+            }
+            throw Exception("Unknown constructor/method name '#{value.name}'")
         }
         if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
             let access = (PrimitiveMemberAccessSyntax)syntax

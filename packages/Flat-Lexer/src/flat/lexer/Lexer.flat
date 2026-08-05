@@ -14,8 +14,10 @@ class {
     public lex(File file) => lexemesToTokens(Tokenizer().tokenize(file):emit("start"))
     public lex(EventStream dataStream) => lexemesToTokens(Tokenizer().tokenize(dataStream):emit("start"))
     public lex(String contents) => lexemesToTokens(Tokenizer().tokenize(contents):emit("start"))
+    public lexInterpolated(String contents) =>
+        lexemesToTokens(Tokenizer().tokenize(contents):emit("start"), true)
 
-    public lexemesToTokens(EventStream lexemeStream) =>
+    public lexemesToTokens(EventStream lexemeStream, Bool expandInterpolation = false) =>
         EventStream(true).on("start", (_, stream) => {
             let engine = LexerEngine()
 
@@ -24,7 +26,41 @@ class {
                 let token = engine.createToken(lexeme)
                 log.trace("Created Token from Lexeme: #{token}")
 
-                stream.emit("data", token)
+                if (expandInterpolation && token.type == Token.Type.STRING) {
+                    var Int marker = -1
+                    var Int cursor
+                    let interpolationMarker = token.value.substring(0, 0)
+                    interpolationMarker += '#'
+                    while (cursor < token.value.count && marker < 0) {
+                        if (token.value.substring(cursor, cursor + 1) == interpolationMarker) marker = cursor
+                        cursor++
+                    }
+                    if (marker >= 0) {
+                        let literal = Token(
+                            value: token.value.substring(0, marker) + "\"",
+                            type: Token.Type.STRING,
+                            location: token.location
+                        )
+                        stream.emit("data", literal)
+                        let plus = Token(
+                            value: "+", type: Token.Type.SYMBOL,
+                            location: token.location
+                        )
+                        stream.emit("data", plus)
+                        var Int nameStart = marker + 1
+                        var Int nameEnd = token.value.count - 1
+                        if (token.value.substring(nameStart, nameStart + 1) == "{") {
+                            nameStart++
+                            nameEnd--
+                        }
+                        let reference = Token(
+                            value: token.value.substring(nameStart, nameEnd),
+                            type: Token.Type.IDENTIFIER,
+                            location: token.location
+                        )
+                        stream.emit("data", reference)
+                    } else stream.emit("data", token)
+                } else stream.emit("data", token)
             })
 
             lexemeStream.on<String>("error", (error) => {

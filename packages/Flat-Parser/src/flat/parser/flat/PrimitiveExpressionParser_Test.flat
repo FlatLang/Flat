@@ -35,6 +35,72 @@ testable class {
         expect(offsetExpression.range.endTokenIndex).toBe(13)
     }
 
+    test `parses metadata access explicitly`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-name-expression"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("this", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 5),
+            token("cla" + "ss", Token.Type.IDENTIFIER, 6), token(".", Token.Type.SYMBOL, 11),
+            token("name", Token.Type.IDENTIFIER, 12)
+        ], snapshot)
+
+        expect(expression.expressionKind()).toBe("class-name")
+        expect(expression.range.startTokenIndex).toBe(0)
+        expect(expression.range.endTokenIndex).toBe(5)
+    }
+
+    test `parses receiver owned member call`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:member-call"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("other", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 6),
+            token("equals", Token.Type.IDENTIFIER, 7), token("(", Token.Type.SYMBOL, 13),
+            token("value", Token.Type.IDENTIFIER, 14), token(")", Token.Type.SYMBOL, 19)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)expression
+
+        expect(call.expressionKind()).toBe("member-call")
+        expect(call.memberName).toBe("equals")
+        expect(call.argumentValues().count).toBe(1)
+    }
+
+    test `parses explicit cast expression with source range`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-cast"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("Bool", Token.Type.IDENTIFIER, 2),
+            token(")", Token.Type.SYMBOL, 6), token("other", Token.Type.IDENTIFIER, 7)
+        ], snapshot)
+        let cast = (PrimitiveCastSyntax)expression
+
+        expect(cast.expressionKind()).toBe("cast")
+        expect(cast.typeName).toBe("Bool")
+        expect(cast.range.startTokenIndex).toBe(0)
+        expect(cast.range.endTokenIndex).toBe(4)
+    }
+
+    test `parses parenthesized conditional expression with stable range`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-conditional"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("1", Token.Type.INTEGER, 1), token("+", Token.Type.SYMBOL, 3),
+            token("(", Token.Type.SYMBOL, 5), token("ready", Token.Type.IDENTIFIER, 6),
+            token("?", Token.Type.SYMBOL, 12), token("2", Token.Type.INTEGER, 14),
+            token(":", Token.Type.SYMBOL, 16), token("3", Token.Type.INTEGER, 18),
+            token(")", Token.Type.SYMBOL, 19)
+        ], snapshot)
+        let binary = (PrimitiveBinarySyntax)expression
+        let conditional = (PrimitiveConditionalSyntax)binary.right
+
+        expect(conditional.expressionKind()).toBe("conditional")
+        expect(conditional.range.startTokenIndex).toBe(2)
+        expect(conditional.range.endTokenIndex).toBe(9)
+    }
+
     test `parses literals and references without semantic dependencies`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-syntax"), "revision:one"

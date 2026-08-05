@@ -105,12 +105,19 @@ class {
         if (index >= tokens.count || tokens[index].type != Token.Type.CODE) {
             syntax("External block requires opaque code", index)
         }
-        let code = tokens[index++].value
+        let codeIndex = index
+        let codeToken = tokens[index++]
         if (index >= tokens.count || tokens[index].value != "}") {
             syntax("External block requires a closing brace", index)
         }
         index++
-        return PrimitiveExternalStatementSyntax(range(start, index), target, code)
+        let statementRange = range(start, index)
+        return PrimitiveExternalStatementSyntax(
+            statementRange, target, codeToken.value,
+            PrimitiveExternalCodeSegmentParser().parse(
+                codeToken, statementRange, codeIndex + tokenIndexOffset
+            )
+        )
     }
 
     parseCondition() -> PrimitiveExpressionSyntax {

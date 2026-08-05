@@ -12,6 +12,9 @@ testable class {
         let reference = BoundReferenceExpression(
             fixture.range(2, 3), longType, "value", fixture.symbol("local", "value", 2)
         )
+        let className = BoundClassNameExpression(fixture.range(), reference)
+        expect(className.semanticType.value()).toBe("builtin:String")
+        expect(className.expressionKind()).toBe("class-name")
         let conversion = TypeConversions.classify(intType, longType)
         let converted = BoundConversionExpression(
             fixture.range(1, 2), longType, literal, conversion
@@ -23,6 +26,24 @@ testable class {
             fixture.range(3, 4), longType, converted,
             TypeConversions.classify(longType, longType)
         )
+        let statement = BoundExternalStatement(
+            fixture.range(), "es6", [
+                BoundExternalCodeSegment(fixture.range(), "code")
+            ]
+        )
+        let copiedSegments = statement.segmentValues()
+        copiedSegments.clear()
+        expect(statement.segmentValues().count).toBe(1)
+        expect(statement.segmentValues().first.text).toBe("code")
+        var Int rejected
+        try { BoundExternalCodeSegment(fixture.range(), "", null, null) }
+        catch (Exception error) { rejected++ }
+        try {
+            BoundExternalCodeSegment(
+                fixture.range(), "literal", reference, "identity"
+            )
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
         let functionIdentity = fixture.declaration("function", "run", 3)
         let function = BoundFunctionUnit(
             functionIdentity, "run", longType, [assignment, returned], fixture.range(1, 4)
@@ -70,6 +91,7 @@ testable class {
         expect(converted.conversion).toBe(conversion)
         expect(assignment.unitKind()).toBe("assignment")
         expect(returned.unitKind()).toBe("return")
+        expect(statement.unitKind()).toBe("external")
         expect(function.statements()).toBe([assignment, returned])
         expect(type.functionUnits()).toBe([function])
         expect(program.typeUnits()).toBe([type])

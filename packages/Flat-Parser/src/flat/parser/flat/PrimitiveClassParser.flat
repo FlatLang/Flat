@@ -25,7 +25,9 @@ class {
         index = 0
         let start = index
         require("class")
-        let name = index < tokens.count && tokens[index].value == "{" && implicitName
+        let name = index < tokens.count && implicitName &&
+            (tokens[index].value == "{" || tokens[index].value == "extends" ||
+                tokens[index].value == "implements")
             ? implicitName
             : identifier("Expected class name")
         var String genericParameterName
@@ -39,10 +41,21 @@ class {
             index++
             parentName = identifier("Expected parent class name")
         }
+        let implementedTypeNames = String[]
         if (index < tokens.count && tokens[index].value == "implements") {
             index++
-            identifier("Expected implemented type name")
-            while (index < tokens.count && tokens[index].value != "{") index++
+            while (true) {
+                var String implemented = identifier("Expected implemented type name")
+                if (index < tokens.count && tokens[index].value == "<") {
+                    index++
+                    implemented += "<" + identifier("Expected implemented generic argument")
+                    require(">")
+                    implemented += ">"
+                }
+                implementedTypeNames.add(implemented)
+                if (index >= tokens.count || tokens[index].value != ",") break
+                index++
+            }
         }
         require("{")
         let fields = PrimitiveFieldSyntax[]
@@ -50,15 +63,64 @@ class {
         let methods = PrimitiveFunctionSyntax[]
         var Bool visibleField
         while (index < tokens.count && tokens[index].value != "}") {
-            if (tokens[index].value == "public" || tokens[index].value == "private" ||
+            if (tokens[index].value == "public" && index + 1 < tokens.count &&
+                tokens[index + 1].value == "static") {
+                let end = declarationEnd(index)
+                let parsed = PrimitiveFunctionParser().parse(
+                    tokens.skip(index).take(end - index), snapshot, index + tokenIndexOffset
+                ).functionValues()
+                if (parsed.count != 1) syntax("Expected one static method", index)
+                methods.add(parsed.first)
+                index = end
+            } else if (tokens[index].value == "public" || tokens[index].value == "private" ||
                 tokens[index].value == "protected") {
                 index++
+            } else if (tokens[index].value == "visible" && index + 3 < tokens.count &&
+                tokens[index + 1].type == Token.Type.IDENTIFIER &&
+                tokens[index + 2].type == Token.Type.IDENTIFIER &&
+                tokens[index + 3].value == "=>") {
+                let propertyStart = index++
+                let returnType = tokens[index++].value
+                let propertyName = tokens[index++].value
+                index++
+                let expressionStart = index
+                let end = declarationEnd(propertyStart)
+                let value = PrimitiveExpressionParser().parse(
+                    tokens.skip(expressionStart).take(end - expressionStart), snapshot,
+                    expressionStart + tokenIndexOffset
+                )
+                methods.add(PrimitiveFunctionSyntax(
+                    range(propertyStart, end), propertyName,
+                    PrimitiveFunctionParameterSyntax[], returnType,
+                    [PrimitiveReturnSyntax(range(expressionStart, end), value)]
+                ))
+                index = end
             } else if (tokens[index].value == "visible") {
                 visibleField = true
                 index++
             } else if (tokens[index].value == "constructor" || tokens[index].value == "construct") {
                 if (constructorValue) syntax("Duplicate constructor", index)
                 constructorValue = parseConstructor()
+            } else if (index + 2 < tokens.count &&
+                tokens[index].type == Token.Type.IDENTIFIER &&
+                tokens[index + 1].type == Token.Type.IDENTIFIER &&
+                tokens[index + 2].value == "=>") {
+                let propertyStart = index
+                let returnType = tokens[index++].value
+                let propertyName = tokens[index++].value
+                index++
+                let expressionStart = index
+                let end = declarationEnd(propertyStart)
+                let value = PrimitiveExpressionParser().parse(
+                    tokens.skip(expressionStart).take(end - expressionStart), snapshot,
+                    expressionStart + tokenIndexOffset
+                )
+                methods.add(PrimitiveFunctionSyntax(
+                    range(propertyStart, end), propertyName,
+                    PrimitiveFunctionParameterSyntax[], returnType,
+                    [PrimitiveReturnSyntax(range(expressionStart, end), value)]
+                ))
+                index = end
             } else if (index + 1 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
                 tokens[index + 1].type == Token.Type.IDENTIFIER) {
                 let fieldStart = index
@@ -68,14 +130,28 @@ class {
                 if (index < tokens.count && tokens[index].value == "=") {
                     index++
                     let initializerStart = index
-                    while (index < tokens.count && tokens[index].value != ";") index++
+                    var Int initializerDepth
+                    while (index < tokens.count) {
+                        let value = tokens[index].value
+                        if (value == "(" || value == "[") initializerDepth++
+                        else if (value == ")" || value == "]") initializerDepth--
+                        if (initializerDepth == 0 && (value == ";" ||
+                            value == "public" || value == "private" ||
+                            value == "protected" || value == "visible" ||
+                            value == "constructor" || value == "construct")) break
+                        index++
+                    }
                     if (initializerStart == index) syntax("Field initializer requires a value", index)
                     initializer = PrimitiveExpressionParser().parse(
                         tokens.skip(initializerStart).take(index - initializerStart),
                         snapshot, initializerStart + tokenIndexOffset
                     )
                 }
-                require(";")
+                if (index < tokens.count && tokens[index].value == ";") index++
+                else if (index >= tokens.count || (tokens[index].value != "public" &&
+                    tokens[index].value != "private" && tokens[index].value != "protected" &&
+                    tokens[index].value != "visible" && tokens[index].value != "constructor" &&
+                    tokens[index].value != "construct")) require(";")
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
                 fields.add(PrimitiveFieldSyntax(
                     range(fieldStart, index), typeName, fieldName, visibleField, initializer
@@ -101,7 +177,7 @@ class {
         }
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
-            fields, constructorValue, methods
+            fields, constructorValue, methods, implementedTypeNames
         )
     }
 
@@ -170,7 +246,8 @@ class {
         while (true) {
             let start = index
             var Bool visibleParameter
-            if (index < tokens.count && tokens[index].value == "visible") {
+            if (index < tokens.count &&
+                (tokens[index].value == "visible" || tokens[index].value == "public")) {
                 visibleParameter = true
                 index++
             }
@@ -209,7 +286,27 @@ class {
 
     declarationEnd(Int start) -> Int {
         var Int cursor = start
-        while (cursor < tokens.count && tokens[cursor].value != "{") cursor++
+        while (cursor < tokens.count && tokens[cursor].value != "{" &&
+            tokens[cursor].value != "=>") cursor++
+        if (cursor < tokens.count && tokens[cursor].value == "=>") {
+            cursor++
+            var Int parenthesisDepth
+            var Int bracketDepth
+            while (cursor < tokens.count) {
+                let value = tokens[cursor].value
+                if (value == "(") parenthesisDepth++
+                else if (value == ")") parenthesisDepth--
+                else if (value == "[") bracketDepth++
+                else if (value == "]") bracketDepth--
+                else if (parenthesisDepth == 0 && bracketDepth == 0 &&
+                    (value == "public" || value == "private" ||
+                        value == "protected" || value == "static" ||
+                        value == "visible" || value == "}")) break
+                cursor++
+            }
+            if (cursor >= tokens.count) syntax("Expected method expression boundary", start)
+            return cursor
+        }
         if (cursor >= tokens.count) syntax("Expected method body", start)
         var Int depth = 1
         cursor++

@@ -1,0 +1,119 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Parses one opaque CODE token into immutable literal and dotted-path segments. */
+class {
+    public parse(Token code, SourceRange statementRange, Int codeTokenIndex) -> PrimitiveExternalCodeSegmentSyntax[] {
+        if (!code || code.type != Token.Type.CODE || !statementRange || codeTokenIndex < 0) {
+            throw Exception("External code interpolation requires opaque code and source range")
+        }
+        let segments = PrimitiveExternalCodeSegmentSyntax[]
+        var Int cursor
+        var Int literalStart
+        while (cursor < code.value.count) {
+            var Bool beginsInterpolation
+            if (cursor + 1 < code.value.count) {
+                beginsInterpolation = code.value.chars[cursor] == '#' &&
+                    code.value.chars[cursor + 1] == '{'
+            }
+            if (beginsInterpolation) {
+                if (cursor > literalStart) {
+                    segments.add(PrimitiveExternalCodeSegmentSyntax(
+                        range(code, statementRange, codeTokenIndex, literalStart, cursor),
+                        code.value.substring(literalStart, cursor), String[]
+                    ))
+                }
+                let interpolationStart = cursor
+                cursor += 2
+                let pathStart = cursor
+                var Bool closing
+                while (cursor < code.value.count) {
+                    closing = code.value.substring(cursor, cursor + 1) == "}"
+                    if (closing) break
+                    cursor++
+                }
+                if (cursor >= code.value.count) invalid("Unterminated external interpolation")
+                let pathText = code.value.substring(pathStart, cursor).trim()
+                let path = parsePath(pathText)
+                cursor++
+                segments.add(PrimitiveExternalCodeSegmentSyntax(
+                    range(code, statementRange, codeTokenIndex, interpolationStart, cursor),
+                    "", path
+                ))
+                literalStart = cursor
+            } else cursor++
+        }
+        if (literalStart < code.value.count) {
+            segments.add(PrimitiveExternalCodeSegmentSyntax(
+                range(code, statementRange, codeTokenIndex, literalStart, code.value.count),
+                code.value.substring(literalStart), String[]
+            ))
+        }
+        if (segments.isEmpty) {
+            segments.add(PrimitiveExternalCodeSegmentSyntax(
+                range(code, statementRange, codeTokenIndex, 0, code.value.count), code.value,
+                String[]
+            ))
+        }
+        var PrimitiveExternalCodeSegmentSyntax[] result = PrimitiveExternalCodeSegmentSyntax[]
+        result.addAll(segments)
+        return result
+    }
+
+    parsePath(String value) -> String[] {
+        if (!value || value.count == 0) invalid("External interpolation requires a path")
+        let result = value.split(".")
+        for (part in result) {
+            if (!identifier(part)) invalid("External interpolation requires a dotted identifier path")
+        }
+        return result
+    }
+
+    identifier(String value) -> Bool {
+        if (!value || value.count == 0) return false
+        let validStart = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+        let validPart = validStart + "0123456789"
+        if (!validStart.contains(value.substring(0, 1))) return false
+        var Int index = 1
+        while (index < value.count) {
+            if (!validPart.contains(value.substring(index, index + 1))) return false
+            index++
+        }
+        return true
+    }
+
+    range(
+        Token code,
+        SourceRange statementRange,
+        Int codeTokenIndex,
+        Int startOffset,
+        Int endOffset
+    ) -> SourceRange {
+        return SourceRange(
+            statementRange.snapshot,
+            codeTokenIndex,
+            codeTokenIndex + 1,
+            location(code, startOffset),
+            location(code, endOffset)
+        )
+    }
+
+    location(Token code, Int offset) -> Location {
+        var Int line = code.location.lineNumber
+        var Int column = code.location.column
+        var Int index
+        while (index < offset) {
+            if (code.value.substring(index, index + 1) == "\n") {
+                line++
+                column = 1
+            } else column++
+            index++
+        }
+        return Location(lineNumber: line, column: column)
+    }
+
+    invalid(String message) {
+        throw Exception(message)
+    }
+}

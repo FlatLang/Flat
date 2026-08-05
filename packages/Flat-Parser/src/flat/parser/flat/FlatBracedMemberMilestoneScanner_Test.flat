@@ -63,6 +63,24 @@ testable class {
         expect(result[4].class).toBe(AccessorBodySyntaxIsland.class)
     }
 
+    async test `publishes static typed braced member header`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-member"), "one")
+        let memberScanner = scanner(64)
+        let tokens = lex(
+            "public static referenceEquals(Object one, Object two) -> Bool { return true; }"
+        ).filter((token) => token.type != Token.Type.WHITESPACE &&
+            token.type != Token.Type.COMMENT)
+        let islands = SyntaxIsland[]
+        var Int index
+        while (index < tokens.count) {
+            islands.addAll(memberScanner.accept(tokens[index], index))
+            index++
+        }
+        islands.addAll(memberScanner.end())
+
+        expect(islands.any({ _.class.isOfType(BracedMemberHeaderSyntaxIsland.class) })).toBe(true)
+    }
+
     async test `publishes bodyless accessor signatures`() {
         let result = collectResults("String value { get set(String next) }")
         expect(result.count).toBe(4)

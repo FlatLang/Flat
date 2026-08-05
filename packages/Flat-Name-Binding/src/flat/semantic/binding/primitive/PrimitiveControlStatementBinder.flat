@@ -32,10 +32,9 @@ class {
         for (statement in statements) {
             if (statement.class.isOfType(PrimitiveExternalStatementSyntax.class)) {
                 let value = (PrimitiveExternalStatementSyntax)statement
-                if (value.target != "js") {
-                    throw Exception("External block is unavailable for selected target")
-                }
-                result.add(BoundExternalStatement(value.range, "es6", value.code))
+                let binder = PrimitiveOpaqueCodeBinder()
+                let opaque = binder.bind(value, scopeLocals)
+                result.add(opaque)
             } else if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
                 let value = (PrimitiveIfSyntax)statement
                 let condition = bindCondition(value.condition, scopeLocals, callables)
