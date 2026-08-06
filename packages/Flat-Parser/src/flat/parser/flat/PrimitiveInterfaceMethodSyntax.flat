@@ -1,0 +1,24 @@
+package flat/parser/flat
+
+/** Immutable reduced interface method signature. */
+data class {
+    var String[] parameterTypes
+
+    public construct(
+        visible String name,
+        String[] parameterTypeNames,
+        visible String returnTypeName
+    ) {
+        if (!name || name.trim().isEmpty || !parameterTypeNames ||
+            parameterTypeNames.any((parameterTypeName) =>
+                !parameterTypeName || parameterTypeName.trim().isEmpty
+            ) ||
+            !returnTypeName || returnTypeName.trim().isEmpty) {
+            throw Exception("Reduced interface method requires a complete signature")
+        }
+        parameterTypes = String[]
+        parameterTypes.addAll(parameterTypeNames)
+    }
+
+    public parameterTypeNames() -> String[] => String[]:addAll(parameterTypes)
+}

@@ -14,9 +14,11 @@ class {
     public bind(
         PrimitiveClassSyntax[] syntaxValues,
         SourceSnapshotIdentity snapshot = null,
-        Int maxTypes = 256
+        Int maxTypes = 256,
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[]
     ) -> PrimitiveClassPartitionBindingResult {
-        if (!syntaxValues || syntaxValues.any({ !_ }) || maxTypes <= 0) {
+        if (!syntaxValues || syntaxValues.any({ !_ }) || maxTypes <= 0 ||
+            !interfaceSyntaxValues || interfaceSyntaxValues.any({ !_ })) {
             throw Exception("Primitive class partition binding requires syntax snapshot and capacity")
         }
         if (syntaxValues.count > maxTypes) {
@@ -55,11 +57,13 @@ class {
                 } else if (boundNames.contains(syntax.parentName)) {
                     let parentSyntax = syntaxValues.firstOrNull({ _.name == syntax.parentName })
                     if (!parentSyntax) throw Exception("Missing reduced parent '#{syntax.parentName}'")
-                    if (parentSyntax.parentName) {
-                        throw Exception("Reduced class partition supports one inheritance level")
-                    }
+                    let rootContract = result.firstOrNull({ _.identity.name == "Object" })
+                    let boundParent = result.firstOrNull({ _.identity.name == parentSyntax.name })
                     let inherited = PrimitiveInheritanceBinder().bind(
-                        parentSyntax, syntax, snapshot, constructorSignatures
+                        parentSyntax, syntax, snapshot, constructorSignatures,
+                        interfaceSyntaxValues,
+                        rootContract ? rootContract.functionUnits() : BoundFunctionUnit[],
+                        boundParent
                     )
                     var Int parentIndex
                     while (result[parentIndex].identity.name != parentSyntax.name) parentIndex++
@@ -95,16 +99,22 @@ class {
                     signatureType(_.typeName, syntaxes, snapshot)
                 })
                 let returnType = method.inferredReturnType ? SemanticTypes.unknownType() :
+                    method.returnTypeName == "this" ? owner :
                     signatureType(method.returnTypeName, syntaxes, snapshot)
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
-                        method.range.snapshot, "method-signature", method.range.startTokenIndex
+                        method.range.snapshot,
+                        method.staticMethod ? "static-method" : "instance-method",
+                        method.range.startTokenIndex
                     ),
                     method.staticMethod ? "static-method" : "instance-method",
                     method.name
                 )
                 result.add(CallableSignature(
-                    SymbolIdentity(identity, method.staticMethod ? "static-method" : "instance-method", ordinal),
+                    SymbolIdentity(
+                        identity,
+                        method.staticMethod ? "static-method" : "instance-method"
+                    ),
                     method.name,
                     CallableKind(method.staticMethod ? "static-method" : "instance-method"),
                     parameterTypes, returnType, owner
@@ -168,20 +178,7 @@ class {
         String name,
         PrimitiveClassSyntax[] syntaxes,
         SourceSnapshotIdentity snapshot
-    ) -> SemanticType {
-        if (name == "Object") return SemanticTypes.objectType()
-        if (name == "Bool") return SemanticTypes.boolType()
-        if (name == "Int") return SemanticTypes.intType()
-        if (name == "Long") return SemanticTypes.longType()
-        if (name == "String") return SemanticTypes.stringType()
-        if (name == "Unit") return SemanticTypes.unitType()
-        let target = syntaxes.firstOrNull({ _.name == name })
-        if (!target) throw Exception("Unknown reduced constructor parameter type '#name'")
-        let targetSnapshot = snapshot ?: target.range.snapshot
-        return UserClassSemanticType(DeclarationIdentity(
-            SyntaxIslandIdentity(targetSnapshot, "class", target.range.startTokenIndex),
-            "class",
-            name
-        ))
-    }
+    ) -> SemanticType => PrimitiveStructuralTypeResolver(
+        syntaxes: syntaxes, snapshot: snapshot
+    ).resolve(name)
 }

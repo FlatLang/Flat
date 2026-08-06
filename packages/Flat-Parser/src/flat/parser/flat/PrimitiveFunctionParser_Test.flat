@@ -41,6 +41,31 @@ testable class {
         expect(call.argumentValues().count).toBe(1)
     }
 
+    test `parses native declaration modifiers`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-function-modifiers"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("public", Token.Type.IDENTIFIER, 1),
+            token("native_array", Token.Type.IDENTIFIER, 8),
+            token("native", Token.Type.IDENTIFIER, 21),
+            token("static", Token.Type.IDENTIFIER, 28),
+            token("toCharArray", Token.Type.IDENTIFIER, 35),
+            token("(", Token.Type.SYMBOL, 46),
+            token("Double", Token.Type.IDENTIFIER, 47),
+            token("value", Token.Type.IDENTIFIER, 54),
+            token(")", Token.Type.SYMBOL, 59),
+            token("->", Token.Type.SYMBOL, 61),
+            token("Char", Token.Type.IDENTIFIER, 64),
+            token("[", Token.Type.SYMBOL, 68), token("]", Token.Type.SYMBOL, 69),
+            token("{", Token.Type.SYMBOL, 71), token("}", Token.Type.SYMBOL, 72)
+        ], snapshot).functionValues().first
+
+        expect(parsed.name).toBe("toCharArray")
+        expect(parsed.staticMethod).toBe(true)
+        expect(parsed.returnTypeName).toBe("Char[]")
+    }
+
     test `parses bodyless inferred return method`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:bodyless-function"), "revision:one"
@@ -106,6 +131,63 @@ testable class {
         expect(parameter.typeName).toBe("Bool")
         expect(parameter.name).toBe("format")
         expect(parameter.defaultValue.expressionKind()).toBe("literal")
+    }
+
+    test `parses expression fallback followed by braced body`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:function-fallback-body"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("isWhitespace", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 13),
+            token("Char", Token.Type.IDENTIFIER, 14), token("value", Token.Type.IDENTIFIER, 19),
+            token(")", Token.Type.SYMBOL, 24), token("=>", Token.Type.SYMBOL, 26),
+            token("false", Token.Type.BOOL, 29), token("{", Token.Type.SYMBOL, 35),
+            token("return", Token.Type.IDENTIFIER, 37),
+            token("true", Token.Type.BOOL, 44), token(";", Token.Type.SYMBOL, 48),
+            token("}", Token.Type.SYMBOL, 50)
+        ], snapshot).functionValues().first
+
+        expect(parsed.statements().count).toBe(2)
+    }
+
+    test `parses receiver compound expression body as member assignment`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:function-member-compound"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("plusEquals", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 11),
+            token("Int", Token.Type.IDENTIFIER, 12), token("other", Token.Type.IDENTIFIER, 16),
+            token(")", Token.Type.SYMBOL, 21), token("=>", Token.Type.SYMBOL, 23),
+            token("this", Token.Type.IDENTIFIER, 26), token(".", Token.Type.SYMBOL, 30),
+            token("value", Token.Type.IDENTIFIER, 31), token("+=", Token.Type.SYMBOL, 37),
+            token("other", Token.Type.IDENTIFIER, 40)
+        ], snapshot).functionValues().first
+
+        expect(parsed.statements().map({ _.statementKind() })).toBe(["member-assignment"])
+        expect(parsed.inferredReturnType).toBe(true)
+    }
+
+    test `parses structural parameters and implicit Unit body`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:structural-function"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token("func", Token.Type.IDENTIFIER, 5), token("(", Token.Type.SYMBOL, 9),
+            token(")", Token.Type.SYMBOL, 10), token("callback", Token.Type.IDENTIFIER, 12),
+            token(",", Token.Type.SYMBOL, 20), token("Object", Token.Type.IDENTIFIER, 22),
+            token("[", Token.Type.SYMBOL, 28), token("]", Token.Type.SYMBOL, 29),
+            token("args", Token.Type.IDENTIFIER, 31), token(")", Token.Type.SYMBOL, 35),
+            token("{", Token.Type.SYMBOL, 37), token("}", Token.Type.SYMBOL, 38)
+        ], snapshot).functionValues().first
+        let parameters = parsed.parameterValues()
+        let callback = parameters.first
+        let args = parameters.last
+
+        expect(callback.typeName).toBe("func()")
+        expect(args.typeName).toBe("Object[]")
+        expect(parsed.returnTypeName).toBe("Unit")
+        expect(parsed.statements().count).toBe(0)
     }
 
     test `rejects duplicate delimiters and incomplete signatures or bodies`() {

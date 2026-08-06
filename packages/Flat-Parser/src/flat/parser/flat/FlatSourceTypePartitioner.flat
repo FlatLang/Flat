@@ -25,8 +25,9 @@ class {
         result.addAll(tokens)
         var Int index
         while (index + 1 < result.count) {
-            if ((result[index].value == "constructor" || result[index].value == "construct") &&
-                result[index + 1].value == "(") {
+            if (result[index + 1].value == "(" &&
+                (result[index].type == Token.Type.IDENTIFIER ||
+                    result[index].value == "constructor" || result[index].value == "construct")) {
                 var Int cursor = index + 2
                 var Int depth = 1
                 while (cursor < result.count && depth > 0) {
@@ -64,21 +65,103 @@ class {
         return result
     }
 
+    fallbackBodyEnd(Token[] tokens, Int arrowIndex) -> Int => -1 {
+        var Int parenthesisDepth
+        var Int bracketDepth
+        var Int cursor = arrowIndex + 1
+        while (cursor < tokens.count) {
+            let value = tokens[cursor].value
+            if (value == "(") parenthesisDepth++
+            else if (value == ")") parenthesisDepth--
+            else if (value == "[") bracketDepth++
+            else if (value == "]") bracketDepth--
+            else if (value == "{" && parenthesisDepth == 0 && bracketDepth == 0) {
+                var Int bodyDepth = 1
+                cursor++
+                while (cursor < tokens.count && bodyDepth > 0) {
+                    if (tokens[cursor].value == "{") bodyDepth++
+                    else if (tokens[cursor].value == "}") bodyDepth--
+                    cursor++
+                }
+                if (bodyDepth == 0) return cursor
+                return -1
+            }
+            var Bool typeBoundary = value == "class" || value == "trait" ||
+                value == "interface"
+            if (typeBoundary && cursor > 0 && tokens[cursor - 1].value == ".") {
+                typeBoundary = false
+            }
+            if (parenthesisDepth == 0 && bracketDepth == 0 &&
+                (value == "}" || value == "public" || value == "private" ||
+                    value == "protected" || value == "visible" || value == "static" ||
+                    value == "async" || value == "compiler_visible" ||
+                    value == "external_name" || value == "constructor" ||
+                    value == "construct" || typeBoundary ||
+                    (value == "[" && cursor + 1 < tokens.count &&
+                        tokens[cursor + 1].value == "Target"))) return -1
+            cursor++
+        }
+    }
+
     normalizeExpressionBodiedMembers(Token[] tokens) {
         var Int index
         while (index < tokens.count) {
             if (tokens[index].value == "=>") {
+                let fallbackEnd = fallbackBodyEnd(tokens, index)
+                if (fallbackEnd >= 0) {
+                    index = fallbackEnd
+                    continue
+                }
+                if (index + 2 < tokens.count && tokens[index + 1].value == "this" &&
+                    tokens[index + 2].value == "{") {
+                    var Int receiverCursor = index
+                    var Int receiverBodyDepth
+                    var Bool receiverBodyStarted
+                    while (receiverCursor < tokens.count) {
+                        let value = tokens[receiverCursor].value
+                        if (value == "{") {
+                            receiverBodyDepth++
+                            receiverBodyStarted = true
+                        } else if (value == "}") receiverBodyDepth--
+                        tokens[receiverCursor] = Token(
+                            value: " ", type: Token.Type.WHITESPACE,
+                            location: tokens[receiverCursor].location
+                        )
+                        receiverCursor++
+                        if (receiverBodyStarted && receiverBodyDepth == 0) break
+                    }
+                    index = receiverCursor
+                    continue
+                }
                 var Int cursor = index + 1
                 var Int parenthesisDepth
+                var Int bracketDepth
+                var Int expressionBraceDepth
+                var String previousSourceValue
                 while (cursor < tokens.count) {
-                    if (tokens[cursor].value == "(") parenthesisDepth++
-                    else if (tokens[cursor].value == ")") parenthesisDepth--
-                    if (parenthesisDepth == 0 && (tokens[cursor].value == "[" ||
-                        tokens[cursor].value == "}")) break
+                    let value = tokens[cursor].value
+                    if (value == "(") parenthesisDepth++
+                    else if (value == ")") parenthesisDepth--
+                    else if (value == "[") bracketDepth++
+                    else if (value == "]") bracketDepth--
+                    else if (value == "{") expressionBraceDepth++
+                    else if (value == "}" && expressionBraceDepth > 0) expressionBraceDepth--
+                    var Bool typeBoundary = value == "class" || value == "trait" ||
+                        value == "interface"
+                    if (typeBoundary && previousSourceValue == ".") typeBoundary = false
+                    if (parenthesisDepth == 0 && bracketDepth == 0 && expressionBraceDepth == 0 &&
+                        (value == "}" || value == "public" || value == "private" ||
+                            value == "protected" || value == "visible" || value == "static" ||
+                            value == "async" || value == "compiler_visible" ||
+                            value == "external_name" ||
+                            value == "constructor" || value == "construct" ||
+                            typeBoundary || (value == "[" && cursor + 1 < tokens.count &&
+                                tokens[cursor + 1].value == "Target"))) break
                     tokens[cursor] = Token(
                         value: " ", type: Token.Type.WHITESPACE,
                         location: tokens[cursor].location
                     )
+                    previousSourceValue = value
                     cursor++
                 }
                 tokens[index] = Token(
@@ -91,6 +174,13 @@ class {
     }
 
     normalizeTargetAnnotatedMembers(Token[] tokens) -> Token[] {
+        return normalizeTargetAnnotatedMembers(tokens, preserveTarget: null)
+    }
+
+    normalizeTargetAnnotatedMembers(
+        Token[] tokens,
+        String preserveTarget
+    ) -> Token[] {
         let result = Token[]
         result.addAll(tokens)
         var Int index
@@ -101,6 +191,20 @@ class {
                     annotationEnd++
                 }
                 if (annotationEnd >= result.count) break
+                let targetMatches = preserveTarget && annotationEnd > index + 2 &&
+                    result[index + 2].value == preserveTarget
+                if (targetMatches) {
+                    var Int annotationCursor = index
+                    while (annotationCursor <= annotationEnd) {
+                        result[annotationCursor] = Token(
+                            value: " ", type: Token.Type.WHITESPACE,
+                            location: result[annotationCursor].location
+                        )
+                        annotationCursor++
+                    }
+                    index = annotationEnd + 1
+                    continue
+                }
                 var Int openingBrace = annotationEnd + 1
                 var Int parenthesisDepth
                 while (openingBrace < result.count) {
@@ -175,9 +279,13 @@ class {
         }
     }
 
-    normalizeScannerTokens(Token[] tokens) -> Token[] {
+    normalizeScannerTokens(Token[] tokens, String preserveTarget = null) -> Token[] {
         let result = normalizeDefaultParameters(normalizeDelegatedConstructors(tokens))
-        maskTargetAnnotatedMembers(result)
+        if (preserveTarget) {
+            let selected = normalizeTargetAnnotatedMembers(result, preserveTarget)
+            result.clear()
+            result.addAll(selected)
+        } else maskTargetAnnotatedMembers(result)
         normalizeExpressionBodiedMembers(result)
         var Int depth
         var Int index
@@ -192,14 +300,21 @@ class {
                     location: result[index].location
                 )
                 var Int cursor = index + 1
-                var Int initializerDepth
+                var Int parenthesisDepth
+                var Int bracketDepth
+                var Int initializerBraceDepth
                 var Bool retainedPlaceholder
                 while (cursor < result.count) {
-                    if (result[cursor].value == "(" || result[cursor].value == "[") {
-                        initializerDepth++
-                    } else if (result[cursor].value == ")" || result[cursor].value == "]") {
-                        initializerDepth--
-                    } else if (initializerDepth == 0 && result[cursor].value == ";") {
+                    if (result[cursor].value == "(") parenthesisDepth++
+                    else if (result[cursor].value == ")") parenthesisDepth--
+                    else if (result[cursor].value == "[") bracketDepth++
+                    else if (result[cursor].value == "]") bracketDepth--
+                    else if (result[cursor].value == "{") initializerBraceDepth++
+                    else if (result[cursor].value == "}") {
+                        if (initializerBraceDepth == 0) break
+                        initializerBraceDepth--
+                    } else if (parenthesisDepth == 0 && bracketDepth == 0 &&
+                        initializerBraceDepth == 0 && result[cursor].value == ";") {
                         result[cursor] = Token(
                             value: " ", type: Token.Type.WHITESPACE,
                             location: result[cursor].location
@@ -271,7 +386,8 @@ class {
 
     public partition(
         Token[] tokenValues,
-        SourceSnapshotIdentity snapshot
+        SourceSnapshotIdentity snapshot,
+        String preserveTarget = null
     ) -> FlatSourceTypePartition[] {
         if (!tokenValues || !snapshot || tokenValues.any({ !_ })) {
             throw Exception("Flat source partitioning requires tokens and snapshot")
@@ -280,8 +396,8 @@ class {
             let type = _.type
             return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
         })
-        let partitionTokens = normalizeTargetAnnotatedMembers(tokens)
-        let scanTokens = normalizeScannerTokens(tokens)
+        let partitionTokens = normalizeTargetAnnotatedMembers(tokens, preserveTarget)
+        let scanTokens = normalizeScannerTokens(tokens, preserveTarget)
         if (scanTokens.count != partitionTokens.count) {
             throw Exception("Flat source scanner normalization must preserve token count")
         }

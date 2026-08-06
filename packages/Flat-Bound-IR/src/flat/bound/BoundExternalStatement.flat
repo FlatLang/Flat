@@ -5,23 +5,33 @@ import flat/compiler/models
 /** Immutable target-selected external statement with explicit typed interpolation evidence. */
 data class extends BoundStatement {
     var BoundExternalCodeSegment[] segments
+    var BoundExternalNameBinding[] names
 
     public construct(
         SourceRange range,
         visible String target,
-        BoundExternalCodeSegment[] segmentValues
+        BoundExternalCodeSegment[] segmentValues,
+        BoundExternalNameBinding[] nameBindings = BoundExternalNameBinding[]
     ) {
         if (!range || !target || target.trim().count == 0 || !segmentValues ||
-            segmentValues.isEmpty || segmentValues.any({ !_ })) {
-            throw Exception("Bound external statement requires range target and segments")
+            segmentValues.isEmpty || segmentValues.any({ !_ }) || !nameBindings ||
+            nameBindings.any({ !_ }) || nameBindings.any((binding, index) =>
+                nameBindings.take(index).any({ _.sourceName == binding.sourceName })
+            )) {
+            throw Exception("Bound external statement requires range target segments and unique names")
         }
         segments = BoundExternalCodeSegment[]
         segments.addAll(segmentValues)
+        names = BoundExternalNameBinding[]
+        names.addAll(nameBindings)
         super(range)
     }
 
     public segmentValues() -> BoundExternalCodeSegment[] =>
         BoundExternalCodeSegment[]:addAll(segments)
+
+    public nameBindingValues() -> BoundExternalNameBinding[] =>
+        BoundExternalNameBinding[]:addAll(names)
 
     override public unitKind() => "external"
 }

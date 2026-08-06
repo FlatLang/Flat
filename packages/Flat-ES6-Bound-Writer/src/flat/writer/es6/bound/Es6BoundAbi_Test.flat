@@ -39,6 +39,7 @@ testable class {
         expect(Es6TargetCapabilities.supportsExpression("unary")).toBe(true)
         expect(Es6TargetCapabilities.supportsExpression("binary")).toBe(true)
         expect(Es6TargetCapabilities.supportsExpression("native-call")).toBe(true)
+        expect(Es6TargetCapabilities.supportsExpression("array-construction")).toBe(true)
         expect(Es6TargetCapabilities.diagnoseMetadata("reified")).toBe(null)
         expect(Es6TargetCapabilities.diagnoseStatement("foreach").code)
             .toBe("es6.unsupported-statement")

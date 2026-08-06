@@ -116,7 +116,8 @@ class {
 
     public static assertReducedSubset(BoundFunctionUnit function) {
         let allowed = [
-            "expression", "assignment", "local-declaration", "return", "label", "branch", "conditional-branch"
+            "expression", "assignment", "array-assignment", "local-declaration", "return", "while",
+            "label", "branch", "conditional-branch"
         ]
         for (kind in statementKinds(function)) {
             if (!allowed.contains(kind)) throw Exception("Statement '#kind' is outside the reduced backend subset")

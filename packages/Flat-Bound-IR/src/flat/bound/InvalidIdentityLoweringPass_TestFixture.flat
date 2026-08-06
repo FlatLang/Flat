@@ -15,7 +15,12 @@ class InvalidIdentityLoweringPass_TestFixture extends BoundFunctionLoweringPass 
             input.range,
             input.parameterValues(),
             input.staticFunction,
-            input.mainFunction
+            input.mainFunction,
+            input.constructorFunction,
+            input.dispatchIdentity,
+            input.parentConstructorCall,
+            input.asyncFunction,
+            input.externalName
         )
     }
 }

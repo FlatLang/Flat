@@ -1,0 +1,92 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Balanced parser for the reduced trait signatures consumed by class binding. */
+class {
+    var Token[] tokens
+    var Int index
+    var SourceSnapshotIdentity snapshot
+    var Int tokenIndexOffset
+
+    public parse(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset = 0,
+        String implicitName = null
+    ) -> PrimitiveInterfaceSyntax {
+        if (!tokenValues || !sourceSnapshot) {
+            throw Exception("Reduced interface parsing requires tokens and snapshot")
+        }
+        tokens = tokenValues.filter((token) => {
+            let type = token.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        snapshot = sourceSnapshot
+        tokenIndexOffset = sourceTokenIndexOffset
+        index = 0
+        let start = index
+        if (tokens[index].value != "trait" && tokens[index].value != "interface") {
+            syntax("Expected trait or interface")
+        }
+        index++
+        let name = index < tokens.count && implicitName &&
+            (tokens[index].value == "<" || tokens[index].value == "{")
+            ? implicitName
+            : identifier("Expected interface name")
+        var String genericParameterName
+        if (index < tokens.count && tokens[index].value == "<") {
+            index++
+            genericParameterName = identifier("Expected generic parameter")
+            require(">")
+        }
+        require("{")
+        let methods = PrimitiveInterfaceMethodSyntax[]
+        while (index < tokens.count && tokens[index].value != "}") {
+            while (index < tokens.count && modifier(tokens[index].value)) index++
+            let methodName = identifier("Expected interface method name")
+            require("(")
+            let parameterTypes = String[]
+            while (index < tokens.count && tokens[index].value != ")") {
+                let typeName = identifier("Expected interface parameter type")
+                identifier("Expected interface parameter name")
+                parameterTypes.add(typeName)
+                if (tokens[index].value != ",") break
+                index++
+            }
+            require(")")
+            require("->")
+            let returnType = identifier("Expected interface return type")
+            methods.add(PrimitiveInterfaceMethodSyntax(methodName, parameterTypes, returnType))
+        }
+        require("}")
+        if (index != tokens.count) syntax("Unexpected interface tokens")
+        return PrimitiveInterfaceSyntax(range(start, index), name, genericParameterName, methods)
+    }
+
+    modifier(String value) -> Bool =>
+        value == "public" || value == "private" || value == "protected"
+
+    identifier(String message) -> String {
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax(message)
+        return tokens[index++].value
+    }
+
+    require(String value) {
+        if (index >= tokens.count || tokens[index].value != value) syntax("Expected '#value'")
+        index++
+    }
+
+    range(Int start, Int end) -> SourceRange {
+        let first = tokens[start]
+        let last = tokens[end - 1]
+        return SourceRange(
+            snapshot, start + tokenIndexOffset, end + tokenIndexOffset,
+            first.location, Location(lineNumber: last.endLineNumber, column: last.endColumn)
+        )
+    }
+
+    syntax(String message) {
+        throw Exception("Primitive interface syntax error at token #index: #message")
+    }
+}

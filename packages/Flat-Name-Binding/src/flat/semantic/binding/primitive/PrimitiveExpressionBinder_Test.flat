@@ -6,6 +6,119 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `binds ordered interpolated string segments`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-interpolation-bind"), "revision:one"
+        )
+        var String source = "\"Hello "
+        source += '#'
+        source += "name, "
+        source += '#'
+        source += "other!\""
+        let syntax = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 1)
+        ], snapshot)
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "render"
+        )
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [
+            LocalBinding("name", SymbolIdentity(declaration, "parameter", 0), SemanticTypes.stringType()),
+            LocalBinding("other", SymbolIdentity(declaration, "parameter", 1), SemanticTypes.intType())
+        ])
+        var BoundInterpolatedStringExpression interpolation
+        interpolation = (BoundInterpolatedStringExpression)result.expression
+
+        expect(result.succeeded).toBe(true)
+        expect(interpolation.semanticType.value()).toBe("builtin:String")
+        expect(interpolation.segmentValues().count).toBe(5)
+        expect(interpolation.segmentValues().filter({ !_.literal() }).count).toBe(2)
+    }
+
+    test `binds floating point literal as Double`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-float-bind"), "revision:one"
+        )
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveExpressionParser().parse([
+                token("0.5", Token.Type.FLOAT, 1)
+            ], snapshot)
+        )
+        let expressionObject = (Object)result.expression
+        let literal = (BoundLiteralExpression)expressionObject
+
+        expect(result.succeeded).toBe(true)
+        expect(literal.semanticType.value()).toBe("primitive:Double")
+        expect(literal.sourceValue).toBe("0.5")
+    }
+
+    test `binds explicitly typed floating literal with numeric conversion`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-float-conversion"), "revision:one"
+        )
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveExpressionParser().parse([
+                token("0.5", Token.Type.FLOAT, 1)
+            ], snapshot),
+            requiredType: SemanticTypes.floatType(),
+            explicitConversion: true
+        )
+
+        expect(result.succeeded).toBe(true)
+        expect(result.expression.expressionKind()).toBe("conversion")
+        expect(result.expression.semanticType.value()).toBe("primitive:Float")
+    }
+
+    test `binds builtin String construction from Char array`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:builtin-string-construction"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "method", 0), "static-method", "render"
+        )
+        let data = LocalBinding(
+            "data", SymbolIdentity(declaration, "parameter"),
+            ArraySemanticType(SemanticTypes.charType())
+        )
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveExpressionParser().parse([
+                token("String", Token.Type.IDENTIFIER, 1),
+                token("(", Token.Type.SYMBOL, 7), token("data", Token.Type.IDENTIFIER, 8),
+                token(")", Token.Type.SYMBOL, 12)
+            ], snapshot),
+            locals: [data]
+        )
+
+        expect(result.expression.expressionKind()).toBe("native-call")
+        expect(result.expression.semanticType.value()).toBe("builtin:String")
+    }
+
+    test `binds fixed size array construction`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-construction-bind"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "allocate"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("new", Token.Type.IDENTIFIER, 1),
+            token("Char", Token.Type.IDENTIFIER, 5),
+            token("[", Token.Type.SYMBOL, 9),
+            token("count", Token.Type.IDENTIFIER, 10),
+            token("]", Token.Type.SYMBOL, 15)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [
+            LocalBinding(
+                "count", SymbolIdentity(declaration, "parameter", 0),
+                SemanticTypes.intType()
+            )
+        ])
+        let construction = (BoundArrayExpression)result.expression
+
+        expect(result.succeeded).toBe(true)
+        expect(construction.semanticType.value()).toBe("array:1:primitive:Char")
+        expect(construction.allocationSize.semanticType.value()).toBe("primitive:Int")
+    }
+
     test `binds typed primitive expressions references and conversions`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-bind"), "revision:one"

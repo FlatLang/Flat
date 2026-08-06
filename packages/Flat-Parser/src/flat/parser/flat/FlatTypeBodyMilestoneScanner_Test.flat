@@ -52,6 +52,24 @@ testable class {
         expect(((NonBracedMemberHeaderSyntaxIsland)islands[2]).name).toBe("next")
     }
 
+    async test `routes static typed function separately from static block`() {
+        let functionIslands = collect(
+            "public static referenceEquals(Object one, Object two) -> Bool { return true; }"
+        )
+        expect(functionIslands.count).toBe(2)
+        var BracedMemberHeaderSyntaxIsland functionHeader
+        functionHeader = (BracedMemberHeaderSyntaxIsland)functionIslands.first
+        expect(functionHeader.memberKind).toBe("function")
+        expect(functionHeader.name).toBe("referenceEquals")
+
+        let blockIslands = collect("static { boot() }")
+        expect(blockIslands.count).toBe(2)
+        var BracedMemberHeaderSyntaxIsland blockHeader
+        blockHeader = (BracedMemberHeaderSyntaxIsland)blockIslands.first
+        expect(blockHeader.memberKind).toBe("static-block")
+        expect(blockHeader.name).toBe(null)
+    }
+
     async test `publishes a braced signature before its delayed body completes`() {
         let tokens = significant(lex("run() { delayed("))
         let scanner = scanner(16)

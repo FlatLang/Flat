@@ -42,7 +42,18 @@ class PrimitiveOpaqueCodeBinder {
         var String selectedTarget = ""
         selectedTarget += "es"
         selectedTarget += "6"
-        return BoundExternalStatement(syntax.range, selectedTarget, pieces)
+        let nameBindings = BoundExternalNameBinding[]
+        for (local in locals) {
+            if (local.identity.symbolKind == "parameter") {
+                nameBindings.add(BoundExternalNameBinding(
+                    local.name,
+                    BoundReferenceExpression(
+                        syntax.range, local.semanticType, local.name, local.identity
+                    )
+                ))
+            }
+        }
+        return BoundExternalStatement(syntax.range, selectedTarget, pieces, nameBindings)
     }
 
     renderingFor(BoundReferenceExpression value, String[] path) -> String {

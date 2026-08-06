@@ -1,0 +1,26 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable reduced trait/interface declaration contract. */
+data class {
+    var PrimitiveInterfaceMethodSyntax[] methods
+
+    public construct(
+        visible SourceRange range,
+        visible String name,
+        visible String genericParameterName,
+        PrimitiveInterfaceMethodSyntax[] methodValues
+    ) {
+        if (!range || !name || name.trim().isEmpty ||
+            (genericParameterName && genericParameterName.trim().isEmpty) ||
+            !methodValues || methodValues.any({ !_ })) {
+            throw Exception("Reduced interface syntax requires range, name, and methods")
+        }
+        methods = PrimitiveInterfaceMethodSyntax[]
+        methods.addAll(methodValues)
+    }
+
+    public methodValues() -> PrimitiveInterfaceMethodSyntax[] =>
+        PrimitiveInterfaceMethodSyntax[]:addAll(methods)
+}

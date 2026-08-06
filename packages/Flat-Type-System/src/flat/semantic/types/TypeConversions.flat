@@ -70,6 +70,12 @@ class {
         if (isReference(fromType) && toType.kind() == "object") {
             return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10)
         }
+        if (explicit && fromType.kind() == "object" && toType.kind() == "primitive" &&
+            toType.value() != "primitive:Bool") {
+            return TypeConversion(
+                fromType, toType, "numeric-unboxing", true, false, false, 30
+            )
+        }
         if (explicit && fromType.kind() == "object" && isReference(toType)) {
             return TypeConversion(fromType, toType, "reference-cast", true, false, false, 20)
         }

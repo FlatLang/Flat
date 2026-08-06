@@ -32,6 +32,16 @@ testable class {
         )
         let literalResult = emitter.emitLiteral(literal)
         expect(emitter.emitConversion(conversion, literalResult).code).toBe("'Hello, Flat'")
+        let numericUnboxing = BoundConversionExpression(
+            fixture.range(), SemanticTypes.byteType(),
+            fixture.reference("local", "boxed", 3, SemanticTypes.objectType()),
+            TypeConversions.classify(
+                SemanticTypes.objectType(), SemanticTypes.byteType(), explicit: true
+            )
+        )
+        expect(emitter.emitConversion(
+            numericUnboxing, Es6CodeResult(code: "boxed")
+        ).code).toBe("Number(boxed)")
         let one = BoundLiteralExpression(
             fixture.range(), SemanticTypes.intType(), "1"
         )
@@ -52,10 +62,38 @@ testable class {
         let orchestrator = Es6ExpressionOrchestrator()
         expect(orchestrator.emit(unary).code).toBe("-1")
         expect(orchestrator.emit(binary).code).toBe("(1 + 2)")
+        let interpolation = BoundInterpolatedStringExpression(fixture.range(), [
+            BoundInterpolatedStringSegment(fixture.range(), "\"Hello \"", null),
+            BoundInterpolatedStringSegment(fixture.range(), null, receiver)
+        ])
+        expect(orchestrator.emit(interpolation).code).toBe(
+            "(\"Hello \" + #{Es6NameMangler.mangle(receiver.symbolIdentity.value)})"
+        )
         let className = BoundClassNameExpression(fixture.range(), receiver)
+        let referencedType = UserClassSemanticType(
+            fixture.declaration("class", "Value", 7)
+        )
+        let metadata = BoundTypeMetadataExpression(fixture.range(), referencedType)
+        let typeTest = BoundTypeTestExpression(fixture.range(), receiver, metadata)
+        expect(orchestrator.emit(metadata).code).toBe(
+            Es6NameMangler.mangle(referencedType.declarationIdentity.value)
+        )
+        expect(orchestrator.emit(typeTest).code).toBe(
+            "(" + Es6NameMangler.mangle(receiver.symbolIdentity.value) + " instanceof " +
+                Es6NameMangler.mangle(referencedType.declarationIdentity.value) + ")"
+        )
         expect(orchestrator.emit(className).code).toBe(
             Es6NameMangler.mangle(receiver.symbolIdentity.value) +
             ".constructor.__flatType.name"
+        )
+        let arrayConstruction = BoundArrayExpression(
+            fixture.range(), ArraySemanticType(SemanticTypes.charType()),
+            fixture.reference("local", "count", 8, SemanticTypes.intType())
+        )
+        let size = (BoundReferenceExpression)arrayConstruction.allocationSize
+        expect(orchestrator.emit(arrayConstruction).code).toBe(
+            "new Array(" + Es6NameMangler.mangle(size.symbolIdentity.value) +
+                ").fill(null)"
         )
         expect(orchestrator.emit(conditional).code).toBe("(true ? 1 : 2)")
     }

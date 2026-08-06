@@ -1,0 +1,31 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Member compound assignment whose stored value is consumed by an expression. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundMemberAccessExpression target,
+        visible String operator,
+        visible BoundExpression value,
+        visible TypeConversion storageConversion
+    ) {
+        if (!range || !semanticType || !target || !operator || !value ||
+            !storageConversion || !storageConversion.applicable ||
+            storageConversion.fromType.value() != semanticType.value() ||
+            storageConversion.toType.value() != target.semanticType.value()) {
+            throw Exception("Bound member assignment value requires typed storage conversion")
+        }
+        let typed = TypeOperations.binary(
+            operator, target.semanticType, value.semanticType, range
+        )
+        if (!typed.valid || typed.semanticType.value() != semanticType.value()) {
+            throw Exception("Bound member assignment value requires consistent operation evidence")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "member-assignment-value"
+}

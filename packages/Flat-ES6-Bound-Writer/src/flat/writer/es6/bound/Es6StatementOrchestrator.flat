@@ -28,6 +28,23 @@ class {
                 emitAll(value.elseValues())
             )
         }
+        if (statement.class.isOfType(BoundSwitchStatement.class)) {
+            let value = (BoundSwitchStatement)statement
+            let emittedCases = Es6CodeResult[]
+            for (caseValue in value.caseValues()) {
+                let label = caseValue.defaultCase ? Es6CodeResult(code: "") :
+                    expressions.emit(caseValue.label)
+                let body = emitAll(caseValue.statementValues())
+                if (!label.emitted) return label
+                if (!body.emitted) return body
+                emittedCases.add(statements.emitSwitchCase(
+                    caseValue, label, body
+                ))
+            }
+            return statements.emitSwitch(
+                value, expressions.emit(value.value), emittedCases
+            )
+        }
         if (statement.class.isOfType(BoundWhileStatement.class)) {
             let value = (BoundWhileStatement)statement
             return statements.emitWhile(
@@ -62,6 +79,12 @@ class {
             let value = (BoundLocalDeclarationStatement)statement
             if (!value.initializer) return statements.emitUninitializedLocal(value)
             return statements.emitInitializedLocal(value, expressions.emit(value.initializer))
+        }
+        if (statement.class.isOfType(BoundArrayAssignmentStatement.class)) {
+            let value = (BoundArrayAssignmentStatement)statement
+            return statements.emitAssignmentValue(
+                expressions.emit(value.target), expressions.emit(value.value)
+            )
         }
         if (statement.class.isOfType(BoundAssignmentStatement.class)) {
             let value = (BoundAssignmentStatement)statement

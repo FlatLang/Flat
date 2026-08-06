@@ -6,6 +6,16 @@ import flat/compiler/models/Token
 import static flat/lexer/TestUtils_Test.TestUtils
 
 testable class {
+    async test `lexes floating point literal as one typed token`() {
+        let stream = Lexer().lex("0.5")
+        stream.emit("start")
+        let values = stream.consumeAll<Token>("data")
+
+        expect(values.count).toBe(1)
+        expect(values.first.value).toBe("0.5")
+        expect(values.first.type).toBe(Token.Type.FLOAT)
+    }
+
     async test `can lex a single-line comment`() {
         let stream = Lexer().lex("|
             // this is a test
@@ -81,7 +91,7 @@ testable class {
         expectTokens(value, expected, checkType: true)
     }
 
-    async test `publishes interpolated string as canonical expression tokens`() {
+    async test `preserves interpolated strings as one source ranged token`() {
         var String source = "\": "
         source += '#'
         source += "message\""
@@ -89,26 +99,24 @@ testable class {
         stream.emit("start")
         let tokens = stream.consumeAll<Token>("data")
 
-        expect(tokens.map({ _.value })).toBe(["\": \"", "+", "message"])
-        expect(tokens.map({ _.type })).toBe([
-            Token.Type.STRING, Token.Type.SYMBOL, Token.Type.IDENTIFIER
-        ])
+        expect(tokens.map({ _.value })).toBe([source])
+        expect(tokens.map({ _.type })).toBe([Token.Type.STRING])
         expect(tokens.first.location.column).toBe(1)
-        expect(tokens.last.location.column).toBe(1)
+        expect(tokens.first.endColumn).toBe(source.count + 1)
     }
 
-    async test `publishes braced interpolation as canonical expression tokens`() {
+    async test `preserves multiple braced and unbraced interpolation segments`() {
         var String source = "\"Hello "
         source += '#'
-        source += "{name}\""
+        source += "{name}, "
+        source += '#'
+        source += "other!\""
         let stream = Lexer().lexInterpolated(source)
         stream.emit("start")
         let tokens = stream.consumeAll<Token>("data")
 
-        expect(tokens.map({ _.value })).toBe(["\"Hello \"", "+", "name"])
-        expect(tokens.map({ _.type })).toBe([
-            Token.Type.STRING, Token.Type.SYMBOL, Token.Type.IDENTIFIER
-        ])
+        expect(tokens.map({ _.value })).toBe([source])
+        expect(tokens.map({ _.type })).toBe([Token.Type.STRING])
     }
 
     async test `can lex an exxternal block`() {

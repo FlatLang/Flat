@@ -3,6 +3,7 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/parser/flat
 import flat/bound
+import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
@@ -23,6 +24,259 @@ testable class {
         expect(constructor.constructorFunction).toBe(true)
         expect(assignment.target.memberName).toBe("value")
         expect(result.functionUnits().last.returnType.value()).toBe("primitive:Int")
+    }
+
+    test `binds structured receiver member compound assignment`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:member-compound-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Counter", false, 7), token("{", true, 15),
+            token("Int", false, 17), token("value", false, 21), token(";", true, 26),
+            token("public", false, 28),
+            token("increase", false, 39), token("(", true, 47), token("Int", false, 48),
+            token("amount", false, 52), token(")", true, 58), token("{", true, 60),
+            token("this", false, 62), token(".", true, 66), token("value", false, 67),
+            token("+=", true, 73), token("amount", false, 76), token("}", true, 83),
+            token("}", true, 85)
+        ], snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let functions = type.functionUnits()
+        let method = functions.last
+        let statements = method.statements()
+        let statementObject = (Object)statements.first
+        let assignment = (BoundMemberAssignmentStatement)statementObject
+
+        expect(assignment.target.memberName).toBe("value")
+        expect(assignment.value.expressionKind()).toBe("binary")
+    }
+
+    test `binds non Bool receiver negation through explicit truthiness conversion`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-truthiness"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7), token("{", true, 13),
+            token("public", false, 15), token("empty", false, 22),
+            token("(", true, 27), token(")", true, 28), token("->", true, 30),
+            token("Bool", false, 33), token("=>", true, 38), token("!", true, 41),
+            token("this", false, 42), token("}", true, 47)
+        ], snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let functions = type.functionUnits()
+        let statements = functions.last.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let unary = (BoundUnaryExpression)returned.value
+
+        expect(unary.semanticType.value()).toBe("primitive:Bool")
+        expect(unary.operand.expressionKind()).toBe("conversion")
+    }
+
+    test `binds static native namespace member call without instance receiver`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:static-native-member"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Numbers", false, 7), token("{", true, 15),
+            token("public", false, 17), token("static", false, 24),
+            token("absolute", false, 31), token("(", true, 39), token("Long", false, 40),
+            token("value", false, 45), token(")", true, 50), token("=>", true, 52),
+            token("Math", false, 55), token(".", true, 59), token("abs", false, 60),
+            token("(", true, 63), token("value", false, 64), token(")", true, 69),
+            token("}", true, 71)
+        ], snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let functions = type.functionUnits()
+        let statements = functions.last.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+
+        expect(returned.value.expressionKind()).toBe("native-call")
+        expect(returned.value.semanticType.value()).toBe("primitive:Long")
+    }
+
+    test `binds self primitive metadata to its declaration identity`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-class-metadata"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Bool", false, 7), token("{", true, 12),
+            token("public", false, 14), token("equals", false, 21),
+            token("(", true, 27), token("Object", false, 28), token("other", false, 35),
+            token(")", true, 40), token("=>", true, 42), token("other", false, 45),
+            token(".", true, 50), token("class", false, 51), token(".", true, 56),
+            token("isOfType", false, 57), token("(", true, 65), token("Bool", false, 66),
+            token(".", true, 70), token("class", false, 71), token(")", true, 76),
+            token("}", true, 78)
+        ], snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = type.functionUnits().last
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let expressionObject = (Object)returned.value
+        let typeTest = (BoundTypeTestExpression)expressionObject
+
+        expect(typeTest.typeMetadata.referencedType.declarationIdentity).toBe(type.identity)
+    }
+
+    test `binds null initialized reference field as nullable`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:nullable-field"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("App", false, 7), token("{", true, 11),
+            token("static", false, 13), token("String", false, 20),
+            token("name", false, 27), token("=", true, 32),
+            token("null", false, 34, Token.Type.NULL), token("}", true, 39)
+        ], snapshot)
+        let field = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit.fieldUnits().first
+
+        expect(field.staticField).toBe(true)
+        expect(field.semanticType.kind()).toBe("nullable")
+        expect(field.initializer.semanticType.kind()).toBe("null")
+
+        var Bool rejected
+        try {
+            let invalid = PrimitiveClassParser().parse([
+                token("class", false, 1), token("Bad", false, 7), token("{", true, 11),
+                token("Int", false, 13), token("value", false, 17), token("=", true, 23),
+                token("null", false, 25, Token.Type.NULL), token("}", true, 30)
+            ], snapshot)
+            PrimitiveClassBinder().bind(invalid, snapshot)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    test `binds structured static method body`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:structured-static-method"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Math", false, 7), token("{", true, 12),
+            token("public", false, 14), token("static", false, 21),
+            token("gcd", false, 28), token("(", true, 31), token("Int", false, 32),
+            token("a", false, 36), token(",", true, 37), token("Int", false, 39),
+            token("b", false, 43), token(")", true, 44), token("->", true, 46),
+            token("Int", false, 49), token("{", true, 53), token("let", false, 55),
+            token("r", false, 59), token("=", true, 61),
+            token("a", false, 63), token("%", true, 65), token("b", false, 67),
+            token(";", true, 68), token("if", false, 70), token("(", true, 73),
+            token("r", false, 74), token("==", true, 76),
+            token("0", false, 79, Token.Type.INTEGER), token(")", true, 80),
+            token("{", true, 82), token("return", false, 84), token("b", false, 91),
+            token(";", true, 92), token("}", true, 94), token("return", false, 96),
+            token("r", false, 103),
+            token(";", true, 112), token("}", true, 114), token("}", true, 116)
+        ], snapshot)
+        let method = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit.functionUnits().last
+
+        expect(method.statements().map({ _.unitKind() })).toBe([
+            "local-declaration", "if", "return"
+        ])
+        expect(method.returnType.value()).toBe("primitive:Int")
+    }
+
+    async test `binds primitive wrapper comparison through value field`() {
+        let source = "class Float { construct(public Float value) {} " +
+            "equals(Object other) => (Float)other == value }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-wrapper-comparison"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(tokens, snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "equals" })
+        let statements = method.statements()
+        let returnObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnObject
+        let expressionObject = (Object)returned.value
+        let comparison = (BoundBinaryExpression)expressionObject
+
+        expect(comparison.left.expressionKind()).toBe("member-access")
+        expect(comparison.right.expressionKind()).toBe("member-access")
+        expect(comparison.right.semanticType.value()).toBe("primitive:Float")
+    }
+
+    async test `infers fallback method return through switch body`() {
+        let source = "class Char { static isWhitespace(Char value) => false { " +
+            "switch value { ' ' => fallthrough '\\n' => return true } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:switch-fallback-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(tokens, snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "isWhitespace" })
+
+        expect(method.returnType.value()).toBe("primitive:Bool")
+    }
+
+    async test `binds interpolated String repeat intrinsic`() {
+        var String source = "class Char { static repeat(Char value, Int times) => \""
+        source += '#'
+        source += "value\".repeat(times) }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-repeat-intrinsic"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(tokens, snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "repeat" })
+        let statements = method.statements()
+        let returnObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnObject
+
+        expect(returned.value.expressionKind()).toBe("intrinsic-member-call")
+        expect(returned.value.semanticType.value()).toBe("builtin:String")
+    }
+
+    test `binds required method contract`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:abstract-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("abstract", false, 1), token("class", false, 10),
+            token("Number", false, 16), token("{", true, 23),
+            token("public", false, 25), token("abstract", false, 32),
+            token("plus", false, 41), token("(", true, 45), token("Long", false, 46),
+            token("other", false, 51), token(")", true, 56), token("->", true, 58),
+            token("Long", false, 61), token("}", true, 66)
+        ], snapshot)
+        let method = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit.functionUnits().last
+
+        expect(method.abstractFunction).toBe(true)
+        expect(method.statements().count).toBe(0)
+        expect(method.returnType.value()).toBe("primitive:Long")
+    }
+
+    test `binds static method parameters without an instance receiver`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:static-class-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Object", false, 7), token("{", true, 14),
+            token("public", false, 16), token("static", false, 23),
+            token("referenceEquals", false, 30), token("(", true, 45),
+            token("Object", false, 46), token("one", false, 53), token(",", true, 56),
+            token("Object", false, 58), token("two", false, 65), token(")", true, 68),
+            token("->", true, 70), token("Bool", false, 73), token("{", true, 78),
+            token("return", false, 80), token("true", false, 87, Token.Type.BOOL),
+            token(";", true, 91), token("}", true, 93), token("}", true, 95)
+        ], snapshot)
+        let method = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit.functionUnits().last
+
+        expect(method.staticFunction).toBe(true)
+        expect(method.name).toBe("referenceEquals")
+        expect(method.parameterValues().count).toBe(2)
+        expect(method.returnType.value()).toBe("primitive:Bool")
     }
 
     test `binds initialized visible field default parameter and target native constructor`() {

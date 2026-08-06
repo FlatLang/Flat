@@ -1,0 +1,24 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Target-independent typed interpolation preserving source segment order. */
+data class extends BoundExpression {
+    var BoundInterpolatedStringSegment[] segments
+
+    public construct(SourceRange range, BoundInterpolatedStringSegment[] segmentValues) {
+        if (!range || !segmentValues || segmentValues.isEmpty || segmentValues.any({ !_ }) ||
+            !segmentValues.any({ !_.literal() })) {
+            throw Exception("Bound interpolated string requires ordered segments and an expression")
+        }
+        segments = BoundInterpolatedStringSegment[]
+        segments.addAll(segmentValues)
+        super(range, SemanticTypes.stringType())
+    }
+
+    public segmentValues() -> BoundInterpolatedStringSegment[] =>
+        BoundInterpolatedStringSegment[]:addAll(segments)
+
+    override public expressionKind() => "interpolated-string"
+}

@@ -8,7 +8,8 @@ data class {
         visible String value
     ) {
         if ((metadataKind != "data-class" && metadataKind != "generic" &&
-             metadataKind != "reified" && metadataKind != "annotation") ||
+             metadataKind != "reified" && metadataKind != "annotation" &&
+             metadataKind != "implements") ||
             !name || name.trim().count == 0 || !value) {
             throw Exception("Bound metadata requires supported kind, name, and value")
         }

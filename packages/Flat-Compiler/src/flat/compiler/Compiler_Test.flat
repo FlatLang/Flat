@@ -5,6 +5,8 @@ import flat/io
 import flat/system
 import flat/time/Time
 import flat/compiler/models
+import flat/lexer
+import flat/parser/flat
 import flat/writer/es6/bound
 
 testable class {
@@ -372,32 +374,638 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
-    async test `package linker reports static overlay body as next real Bool unsupported construct`() {
+    async test `package linker compiles and executes real Bool inheritance slice`() {
         let identity = "flat/primitive/Bool.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                identity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Bool.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/Primitive.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/Object.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.flat"))
+            ),
+            CompilerSource(
+                "flat/datastruct/Comparable.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/Comparable.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/Object.js.flat",
+                "package flat class { " +
+                "public String hashCode => \"No hashcode available\" " +
+                "public static referenceEquals(Object one, Object two) -> Bool { " +
+                "return true; } }"
+            )
+        ])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let boolType = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 8), "class", "Bool"
+        )
+        let boolName = Es6NameMangler.mangle(boolType.value)
+        let valueField = Es6NameMangler.mangle(SymbolIdentity(boolType, "field", 0).value)
+        let compareToIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", 26),
+            "instance-method", "compareTo"
+        )
+        let objectSnapshot = SourceSnapshotIdentity(
+            SourceIdentity("flat/primitive/Object.flat"), "compiler-input"
+        )
+        let toStringIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(objectSnapshot, "instance-method", 17),
+            "instance-method", "toString"
+        )
+        let fromStringIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", 120),
+            "static-method", "fromString"
+        )
+        let compareToName = Es6NameMangler.mangle(compareToIdentity.value)
+        let toStringName = Es6NameMangler.mangle(toStringIdentity.value)
+        let fromStringName = Es6NameMangler.mangle(fromStringIdentity.value)
+        let root = File(".flat-compiler-bool-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let yes = new " + boolName + "(true);\n" +
+                "let no = new " + boolName + "(false);\n" +
+                "console.log(yes." + valueField + ", no." + valueField + ");\n" +
+                "console.log(yes." + compareToName + "(true), yes." +
+                    compareToName + "(false));\n" +
+                "console.log(yes." + toStringName + "(), no." + toStringName + "());\n" +
+                "console.log(" + boolName + "." + fromStringName + "('true'), " +
+                    boolName + "." + fromStringName + "('false'));\n" +
+                "console.log(yes instanceof " + boolName + ");\n" +
+                "console.log(" + boolName + ".__flatType.interfaces[0]);\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe(
+            "true false\n0 -1\ntrue false\ntrue false\ntrue\nComparable<Bool>\n"
+        )
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker compiles and executes unchanged real Math target source`() {
+        let identity = "flat/Math.js.flat"
+        let baseIdentity = "flat/Math.flat"
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Math.js.flat"))
+        let baseSource = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Math.flat"))
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(baseIdentity, baseSource),
+            CompilerSource(identity, source)
+        ])
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Math"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "Math"
+        )
+        let baseStream = Lexer().lexInterpolated(baseSource)
+        baseStream.emit("start")
+        let baseTokens = baseStream.consumeAll<Token>("data")
+        let baseSnapshot = SourceSnapshotIdentity(SourceIdentity(baseIdentity), "compiler-input")
+        let basePartition = FlatSourceTypePartitioner().partition(baseTokens, baseSnapshot).first
+        let baseSyntax = PrimitiveClassParser().parse(
+            basePartition.tokenValues(), baseSnapshot, basePartition.startTokenIndex, "Math"
+        )
+        let baseTypeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(baseSnapshot, "class", baseSyntax.range.startTokenIndex),
+            "class", "Math"
+        )
+        let piName = Es6NameMangler.mangle(SymbolIdentity(baseTypeIdentity, "field", 0).value)
+        let gcdMethod = baseSyntax.methodValues().firstOrNull({ _.name == "gcd" })
+        let gcdName = methodName(baseSnapshot, gcdMethod)
+        let className = Es6NameMangler.mangle(baseTypeIdentity.value)
+        let sqrtMethod = syntax.methodValues().firstOrNull({ _.name == "sqrt" })
+        let roundMethod = syntax.methodValues().firstOrNull({ _.name == "round" })
+        let floorMethod = syntax.methodValues().firstOrNull({ _.name == "floor" })
+        let sqrtName = methodName(snapshot, sqrtMethod)
+        let roundName = methodName(snapshot, roundMethod)
+        let floorName = methodName(snapshot, floorMethod)
+        let root = File(".flat-compiler-math-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(" + className + "." + sqrtName + "(81));\n" +
+                "console.log(" + className + "." + roundName + "(2.6));\n" +
+                "console.log(" + className + "." + floorName + "(2.9));\n" +
+                "console.log(" + className + "." + piName + ");\n" +
+                "console.log(" + className + "." + gcdName + "(84, 30));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("9\n3\n2\n3.141592653\n6\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker compiles and executes unchanged real Int target source`() {
+        let identity = "flat/primitive/number/Int.js.flat"
+        let source = Es6ArtifactFiles.read(
+            File("../Flat-Core/src/flat/primitive/number/Int.js.flat")
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Int"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "Int"
+        )
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let parseMethod = syntax.methodValues().firstOrNull({ _.name == "parseInt" })
+        let parseName = methodName(snapshot, parseMethod)
+        let root = File(".flat-compiler-int-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(" + className + "." + parseName + "('42'));\n" +
+                "console.log(" + className + "." + parseName + "('-7'));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42\n-7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker compiles and executes unchanged real Long target source`() {
+        let identity = "flat/primitive/number/Long.js.flat"
+        let source = Es6ArtifactFiles.read(
+            File("../Flat-Core/src/flat/primitive/number/Long.js.flat")
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Long"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "Long"
+        )
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let parseMethod = syntax.methodValues().firstOrNull({ _.name == "parseLong" })
+        let parseName = methodName(snapshot, parseMethod)
+        let root = File(".flat-compiler-long-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(" + className + "." + parseName + "('9001'));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("9001\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker advances unchanged Number source`() {
         var String message
         try {
             FlatEs6PackageLinker().link([
                 CompilerSource(
-                    identity,
-                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Bool.flat"))
+                    "flat/primitive/number/Number.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Number.flat"))
                 ),
                 CompilerSource(
                     "flat/primitive/Primitive.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
-                ),
-                CompilerSource(
-                    "flat/primitive/Object.flat",
-                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.flat"))
-                ),
-                CompilerSource(
-                    "flat/primitive/Object.js.flat",
-                    "package flat/primitive class { " +
-                    "public static referenceEquals(Object one, Object two) -> Bool { " +
-                    "return true; } }"
                 )
             ])
         } catch (Exception error) { message = error.message }
-        expect(message).toBe("Invalid Flat braced member header")
+        expect(message).toBe(null)
+    }
+
+    async test `package linker compiles and executes unchanged Double parse and toFixed`() {
+        let identity = "flat/primitive/number/Double.flat"
+        let overlayIdentity = "flat/primitive/number/Double.js.flat"
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.flat"))
+        let overlay = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.js.flat"))
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity, source),
+            CompilerSource(overlayIdentity, overlay),
+            CompilerSource(
+                "flat/primitive/number/Number.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Number.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/number/RealNumber.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/RealNumber.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/Primitive.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+            )
+        ])
+        let sourceStream = Lexer().lex(source)
+        sourceStream.emit("start")
+        let sourceSnapshot = SourceSnapshotIdentity(
+            SourceIdentity(identity), "compiler-input"
+        )
+        let sourcePartition = FlatSourceTypePartitioner().partition(
+            sourceStream.consumeAll<Token>("data"), sourceSnapshot
+        ).first
+        let sourceSyntax = PrimitiveClassParser().parse(
+            sourcePartition.tokenValues(), sourceSnapshot,
+            sourcePartition.startTokenIndex, "Double"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(
+                sourceSnapshot, "class", sourceSyntax.range.startTokenIndex
+            ),
+            "class", "Double"
+        )
+        let overlayStream = Lexer().lexInterpolated(overlay)
+        overlayStream.emit("start")
+        let overlaySnapshot = SourceSnapshotIdentity(
+            SourceIdentity(overlayIdentity), "compiler-input"
+        )
+        let overlayPartition = FlatSourceTypePartitioner().partition(
+            overlayStream.consumeAll<Token>("data"), overlaySnapshot, "js"
+        ).first
+        let overlaySyntax = PrimitiveClassParser().parse(
+            overlayPartition.tokenValues(), overlaySnapshot,
+            overlayPartition.startTokenIndex, "Double"
+        )
+        let parseMethod = overlaySyntax.methodValues().firstOrNull({ _.name == "parseDouble" })
+        var PrimitiveFunctionSyntax fixedMethod
+        for (method in overlaySyntax.methodValues()) {
+            if (method.name == "toFixed" && !method.staticMethod) fixedMethod = method
+        }
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let parseName = methodName(overlaySnapshot, parseMethod)
+        let fixedName = methodName(overlaySnapshot, fixedMethod)
+        let root = File(".flat-compiler-double-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let parsed = " + className + "." + parseName +
+                "('12.5');\n" +
+                "let value = new " + className + "(parsed);\n" +
+                "console.log(parsed);\n" +
+                "console.log(value." + fixedName + "(2));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("12.5\n12.50\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker compiles and executes unchanged Float parse and toFixed`() {
+        let identity = "flat/primitive/number/Float.flat"
+        let overlayIdentity = "flat/primitive/number/Float.js.flat"
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Float.flat"))
+        let overlay = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Float.js.flat"))
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity, source),
+            CompilerSource(overlayIdentity, overlay),
+            CompilerSource(
+                "flat/primitive/number/Double.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/number/Double.js.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.js.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/number/Number.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Number.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/number/RealNumber.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/RealNumber.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/Primitive.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+            )
+        ])
+        let sourceStream = Lexer().lex(source)
+        sourceStream.emit("start")
+        let sourceSnapshot = SourceSnapshotIdentity(
+            SourceIdentity(identity), "compiler-input"
+        )
+        let sourcePartition = FlatSourceTypePartitioner().partition(
+            sourceStream.consumeAll<Token>("data"), sourceSnapshot
+        ).first
+        let sourceSyntax = PrimitiveClassParser().parse(
+            sourcePartition.tokenValues(), sourceSnapshot,
+            sourcePartition.startTokenIndex, "Float"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(
+                sourceSnapshot, "class", sourceSyntax.range.startTokenIndex
+            ),
+            "class", "Float"
+        )
+        let overlayStream = Lexer().lexInterpolated(overlay)
+        overlayStream.emit("start")
+        let overlaySnapshot = SourceSnapshotIdentity(
+            SourceIdentity(overlayIdentity), "compiler-input"
+        )
+        let overlayPartition = FlatSourceTypePartitioner().partition(
+            overlayStream.consumeAll<Token>("data"), overlaySnapshot, "js"
+        ).first
+        let overlaySyntax = PrimitiveClassParser().parse(
+            overlayPartition.tokenValues(), overlaySnapshot,
+            overlayPartition.startTokenIndex, "Float"
+        )
+        let parseMethod = overlaySyntax.methodValues().firstOrNull({ _.name == "parseFloat" })
+        var PrimitiveFunctionSyntax fixedMethod
+        for (method in overlaySyntax.methodValues()) {
+            if (method.name == "toFixed" && !method.staticMethod) fixedMethod = method
+        }
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let parseName = methodName(overlaySnapshot, parseMethod)
+        let fixedName = methodName(overlaySnapshot, fixedMethod)
+        let root = File(".flat-compiler-float-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let parsed = " + className + "." + parseName +
+                "('12.5');\n" +
+                "let value = new " + className + "(parsed);\n" +
+                "console.log(parsed);\n" +
+                "console.log(value." + fixedName + "(2));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("12.5\n12.50\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker compiles unchanged Byte numeric source`() {
+        var String message
+        try {
+            FlatEs6PackageLinker().link([
+                CompilerSource(
+                    "flat/primitive/number/Byte.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Byte.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/number/Number.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Number.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/number/Integer.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Integer.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/Primitive.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+                )
+            ])
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe(null)
+    }
+
+    async test `package linker compiles unchanged Short numeric source`() {
+        var String message
+        try {
+            FlatEs6PackageLinker().link([
+                CompilerSource(
+                    "flat/primitive/number/Short.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Short.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/number/Number.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Number.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/number/Integer.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Integer.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/Primitive.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+                )
+            ])
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe(null)
+    }
+
+    async test `package linker compiles and executes unchanged Char switch and repeat`() {
+        let identity = "flat/primitive/number/Char.flat"
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Char.flat"))
+        let code = FlatEs6PackageLinker().link([
+                CompilerSource(identity, source),
+                CompilerSource(
+                    "flat/primitive/number/Number.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Number.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/number/Integer.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Integer.flat"))
+                ),
+                CompilerSource(
+                    "flat/primitive/Primitive.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
+                )
+            ])
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Char"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "Char"
+        )
+        var PrimitiveFunctionSyntax whitespace
+        var PrimitiveFunctionSyntax repeat
+        for (method in syntax.methodValues()) {
+            if (method.name == "isWhitespace" && method.staticMethod) whitespace = method
+            if (method.name == "repeat" && method.staticMethod) repeat = method
+        }
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let whitespaceName = methodName(snapshot, whitespace)
+        let repeatName = methodName(snapshot, repeat)
+        let root = File(".flat-compiler-char-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(" + className + "." + whitespaceName + "(32));\n" +
+                "console.log(" + className + "." + whitespaceName + "(120));\n" +
+                "console.log(" + className + "." + repeatName + "('a', 3));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("false\nfalse\naaa\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `partitions unchanged String source to its first reduced parser frontier`() {
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.flat"))
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("flat/String.flat"), "compiler-input"
+        )
+        var String message
+        try {
+            FlatSourceTypePartitioner().partition(tokens, snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe(null)
+    }
+
+    async test `package linker advances unchanged String storage through indexed loop assignment`() {
+        var String message
+        try {
+            FlatEs6PackageLinker().link([
+                CompilerSource(
+                    "flat/String.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.flat"))
+                ),
+                CompilerSource(
+                    "flat/String.js.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.js.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/StringCharArray.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/StringCharArray.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/StringCharArray.js.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/StringCharArray.js.flat"
+                    ))
+                )
+            ])
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe(
+            "Flat package source 'flat/datastruct/list/StringCharArray.js.flat' failed: " +
+                "Primitive class syntax error at token 8: Expected ';'"
+        )
+    }
+
+    async test `package linker compiles and executes unchanged real App static metadata`() {
+        let identity = "flat/App.flat"
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/App.flat"))
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "App"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "App"
+        )
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let fields = syntax.fieldValues()
+        let names = String[]
+        var Int index
+        while (index < fields.count) {
+            names.add(Es6NameMangler.mangle(SymbolIdentity(typeIdentity, "field", index).value))
+            index++
+        }
+        let root = File(".flat-compiler-app-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log([" + names.map({ className + "." + _ }).join(",") +
+                "].every(value => value === null));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    methodName(
+        SourceSnapshotIdentity snapshot,
+        PrimitiveFunctionSyntax method
+    ) -> String => Es6NameMangler.mangle(DeclarationIdentity(
+        SyntaxIslandIdentity(
+            snapshot,
+            method.staticMethod ? "static-method" : "instance-method",
+            method.range.startTokenIndex
+        ),
+        method.staticMethod ? "static-method" : "instance-method",
+        method.name
+    ).value)
+
+    async test `package linker compiles and executes unchanged real Object overlay`() {
+        let identity = "flat/primitive/Object.js.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                identity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.flat"))
+            ),
+            CompilerSource(
+                "flat/primitive/Object.js.flat",
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.js.flat"))
+            )
+        ])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 2), "class", "Object"
+        )
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let root = File(".flat-compiler-object-overlay-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "(async () => { let value = new " + className + "(); " +
+                "value.touch = function() { this.touched = true; }; " +
+                "console.log((await value.__chainAsync('touch', [])) === value); " +
+                "console.log(value.touched === true); })();\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\ntrue\n")
+        Es6ArtifactFiles.remove(root)
     }
 
     async test `package linker compiles and executes selected real Flat Core source`() {

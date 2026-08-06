@@ -39,6 +39,19 @@ testable class {
             .toBe("return 'Hello, Flat';\n")
         expect(emitter.emitVoidReturn(noValue).code).toBe("return;\n")
 
+        let nativeParameter = fixture.reference(
+            "parameter", "number", 7, SemanticTypes.doubleType()
+        )
+        let namedExternal = BoundExternalStatement(
+            fixture.range(), "es6", [
+                BoundExternalCodeSegment(fixture.range(), "return Math.sqrt(number);")
+            ], [BoundExternalNameBinding("number", nativeParameter)]
+        )
+        expect(emitter.emitExternal(namedExternal).code).toBe(
+            "let number = " + Es6NameMangler.mangle(nativeParameter.symbolIdentity.value) +
+                ";\nreturn Math.sqrt(number);\n"
+        )
+
         let boolType = SemanticTypes.boolType()
         let condition = BoundLiteralExpression(fixture.range(), boolType, "true")
         let branch = BoundExpressionStatement(fixture.range(), literal)
@@ -59,6 +72,35 @@ testable class {
             Es6CodeResult(code: "true"),
             Es6CodeResult(code: "body;\n")
         ).code).toBe("while (true) {\n    body;\n}\n")
+    }
+
+    test `emits switch cases with explicit fallthrough and break`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let charType = SemanticTypes.charType()
+        let value = fixture.reference("parameter", "value", 1, charType)
+        let space = BoundLiteralExpression(fixture.range(), charType, "' '")
+        let first = BoundSwitchCase(
+            fixture.range(), space, BoundStatement[], fallsThrough: true
+        )
+        let second = BoundSwitchCase(
+            fixture.range(), null, BoundStatement[], defaultCase: true
+        )
+        let statement = BoundSwitchStatement(
+            fixture.range(), value, [first, second]
+        )
+        let emitter = Es6StatementEmitter()
+        let firstCode = emitter.emitSwitchCase(
+            first, Es6CodeResult(code: "' '"), Es6CodeResult(code: "")
+        )
+        let secondCode = emitter.emitSwitchCase(
+            second, Es6CodeResult(code: ""), Es6CodeResult(code: "return false;\n")
+        )
+
+        expect(emitter.emitSwitch(
+            statement, Es6CodeResult(code: "value"), [firstCode, secondCode]
+        ).code).toBe(
+            "switch (value) {\ncase ' ':\ndefault:\nreturn false;\nbreak;\n}\n"
+        )
     }
 
     test `emits an uninitialized local and propagates child diagnostics`() {

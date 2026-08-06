@@ -98,6 +98,10 @@ testable class {
             "Exception"
         )
         expect(syntax.methodValues().first.name).toBe("toString")
+
+        let selected = FlatSourceTypePartitioner().partition(tokens, snapshot, "js")
+        expect(selected.first.tokenValues().any({ _.value == "Target" })).toBe(false)
+        expect(selected.first.tokenValues().any({ _.value == "run" })).toBe(true)
     }
 
     async test `preserves adjacent bodyless member boundaries`() {
@@ -114,6 +118,257 @@ testable class {
         )
 
         expect(syntax.methodValues().map({ _.name })).toBe(["compare", "toString"])
+    }
+
+    async test `partitions full Bool member sequence`() {
+        let source = "package flat/primitive import flat/datastruct " +
+            "class extends Primitive implements Comparable<Bool> { " +
+            "public construct(public Bool value) {} " +
+            "public compareTo(Bool other) => value == other ? 0 : -1 " +
+            "public equals(Object other) => (other || !this) && other.class.isOfType(Bool.class) && value == ((Bool)other) " +
+            "public toString() => toString(value) " +
+            "public static toString(Bool value) => value ? \"true\" : \"false\" " +
+            "public static toJson(Bool value, Bool: format = false, String: tab = \"\\t\") => toString(value) " +
+            "public static fromString(String value) => value == \"true\" ? true : false }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:full-bool"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Bool"
+        )
+
+        expect(syntax.methodValues().count).toBe(6)
+    }
+
+    async test `partitions canonical Object members with preserved interpolation token`() {
+        var String interpolation = "\"{"
+        interpolation += '#'
+        interpolation += "this.class.name @"
+        interpolation += '#'
+        interpolation += "hashCode}\""
+        let source = "package flat class Object { " +
+            "public equals(Object another) => referenceEquals(this, another) " +
+            "public toString() -> String => " + interpolation + " " +
+            "public toJson(Bool: format = false, String: tab = \"\\t\") => \"{}\" " +
+            "visible Long hashCodeLong => 0 }"
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:object-partition"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Object"
+        )
+
+        expect(syntax.methodValues().map({ _.name })).toBe([
+            "equals", "toString", "toJson", "hashCodeLong"
+        ])
+    }
+
+    async test `partitions array returning braced function`() {
+        let source = "class String { public split(Char delimiter) -> String[] { " +
+            "let values = String[] return values } }"
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-return-function"), "one"
+        )
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+
+        expect(partition.tokenValues().last.value).toBe("}")
+    }
+
+    async test `partitions native array return function`() {
+        let source = "package flat class { " +
+            "public native_array native static toCharArray(Double value) -> Char[] { " +
+            "external { return value.toString(); } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-array-return"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Double"
+        )
+        let method = syntax.methodValues().first
+
+        expect(method.name).toBe("toCharArray")
+        expect(method.staticMethod).toBe(true)
+        expect(method.returnTypeName).toBe("Char[]")
+    }
+
+    async test `partitions overlay property before static braced method`() {
+        let source = "package flat class { " +
+            "public String hashCode => \"No hashcode available\" " +
+            "public static referenceEquals(Object one, Object two) -> Bool { return true; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:overlay-property"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Object"
+        )
+
+        expect(syntax.methodValues().map({ _.name })).toBe([
+            "hashCode", "referenceEquals"
+        ])
+        expect(syntax.methodValues().first.returnTypeName).toBe("String")
+        expect(syntax.methodValues().last.staticMethod).toBe(true)
+    }
+
+    async test `parses selected modifier rich overlay function`() {
+        let source = "package flat class { [Target js] " +
+            "async compiler_visible external_name " +
+            "chain(String name) -> String { return name; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:modifier-overlay"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Object"
+        )
+
+        expect(syntax.methodValues().first.name).toBe("chain")
+        expect(syntax.methodValues().first.externalName).toBe("chain")
+        expect(syntax.methodValues().first.asyncMethod).toBe(true)
+    }
+
+    async test `partitions overlay property before async receiver method`() {
+        let source = "package flat class { " +
+            "public String hashCode => \"missing\" " +
+            "async compiler_visible external_name chain(String name, Object[] args) => this { " +
+            "external { return this; } } }"
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:property-async-receiver"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Object"
+        )
+
+        expect(syntax.methodValues().map({ _.name })).toBe(["hashCode", "chain"])
+    }
+
+    async test `partitions receiver shorthand braced method before adjacent method`() {
+        let source = "package flat class { " +
+            "compiler_visible external_name chain(String name) => this { " +
+            "external { return this; } } " +
+            "public static referenceEquals(Object one, Object two) -> Bool { return true; } }"
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:receiver-shorthand"), "one")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Object"
+        )
+
+        expect(syntax.methodValues().map({ _.name })).toBe([
+            "chain", "referenceEquals"
+        ])
+        expect(syntax.methodValues().first.returnTypeName).toBe("this")
+    }
+
+    async test `partitions unchanged Double source through its final concrete member`() {
+        let source = "package flat/primitive/number class extends Number<Double> implements RealNumber { " +
+            "public Double realValue => value public Long integerValue => (Long)value " +
+            "public construct(public Double value) {} " +
+            "public static numDigits(Double number) -> Int { var Int size = number < 0 ? 2 : 1 " +
+            "number /= 10 while (number > 0) { number /= 10 size++ } return size } " +
+            "public static toJson(Double value, Bool: format = false, String: tab = \"\\t\") => toString(value) " +
+            "public withinTolerance(Double target, Double tolerance) => withinTolerance(value, target, tolerance) " +
+            "public static withinTolerance(Double value, Double target, Double tolerance = 0.00000001) => " +
+            "(value - target) < tolerance && (value - target) > -tolerance " +
+            "public compareTo(Double other) => this.value > other ? 1 : (this.value == other ? 0 : -1) " +
+            "public compareToReal(Double other) => this.value > other ? 1 : (this.value == other ? 0 : -1) " +
+            "public compareToInteger(Long other) -> Long => this.value > other ? 1 : (this.value == other ? 0 : -1) " +
+            "public static compareTo(Double value, Double other) => value - other " +
+            "public static compareToReal(Double value, Double other) => value - other " +
+            "public static compareToInteger(Double value, Long other) => (Long)(value - other) " +
+            "public plus(Double other) => this.value + other public plusReal(Double other) => this.value + other " +
+            "public plusInteger(Long other) -> Long => (Long)(this.value + other) " +
+            "public plusEquals(Double other) => this.value += other " +
+            "public plusEqualsReal(Double other) => this.value += other " +
+            "public plusEqualsInteger(Long other) -> Long => (Long)(this.value += other) " +
+            "public minus(Double other) => this.value - other public minusReal(Double other) => this.value - other " +
+            "public minusInteger(Long other) -> Long => (Long)(this.value - other) " +
+            "public minusEquals(Double other) => this.value -= other " +
+            "public minusEqualsReal(Double other) => this.value -= other " +
+            "public minusEqualsInteger(Long other) -> Long => (Long)(this.value -= other) " +
+            "public multiply(Double other) => this.value * other public multiplyReal(Double other) => this.value * other " +
+            "public multiplyInteger(Long other) -> Long => (Long)(this.value * other) " +
+            "public multiplyEquals(Double other) => this.value *= other " +
+            "public multiplyEqualsReal(Double other) => this.value *= other " +
+            "public multiplyEqualsInteger(Long other) -> Long => (Long)(this.value *= other) " +
+            "public equals(Object other) => (other || !this) && other.class.isOfType(Number.class) && (Byte)other == value " +
+            "public equals(Double other) => this.value == other public equalsReal(Double other) => this.value == other " +
+            "public equalsInteger(Long other) => this.value == other " +
+            "public static equals(Double value, Double other) => value == other " +
+            "public static equalsReal(Double value, Double other) => value == other " +
+            "public static equalsInteger(Double value, Long other) => value == other " +
+            "public toString() => toString(value) public static hashCodeLong(Double value) => Math.abs((Long)value) " +
+            "public static plus(Double a, Double b) => a + b }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:double"), "double")
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+
+        expect(partition.packageName).toBe("flat/primitive/number")
+        expect(partition.tokenValues().last.value).toBe("}")
+    }
+
+    async test `partitions fallback expression before switch method`() {
+        let source = "class Char { public static isWhitespace(Char value) => false { " +
+            "switch value { ' ' => return true } } public toString() => value }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:fallback-expression-method"), "one"
+        )
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+
+        expect(partition.tokenValues().last.value).toBe("}")
+    }
+
+    async test `partitions reduced String header sequence`() {
+        let source = "class implements Comparable<String>, PlusOperator<String, String>, " +
+            "MultiplyOperator<Int, String> { visible Int count visible StringCharArray chars " +
+            "visible Char first => chars.first visible Char last => chars.last " +
+            "visible String title => capitalize() this[Int index] => chars[index] " +
+            "static Char[] WHITESPACE = [ ' ', '\\t', '\\n', '\\r' ] " +
+            "public Long hashCodeLong => chars.hashCodeLong public construct(Char[] chars) { " +
+            "count = chars.count this.chars = StringCharArray(chars) } }"
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-header-sequence"), "one"
+        )
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+
+        expect(partition.tokenValues().last.value).toBe("}")
+    }
+
+    async test `partitions array initialized static field without treating initializer as member`() {
+        let source = "class String { static Char[] values = [ ' ', '\\t' ] " +
+            "public construct(Char[] chars) { this.chars = chars } }"
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-field-initializer"), "one"
+        )
+        let partition = FlatSourceTypePartitioner().partition(tokens, snapshot).first
+
+        expect(partition.tokenValues().last.value).toBe("}")
     }
 
     async test `enforces type count and token capacities`() {

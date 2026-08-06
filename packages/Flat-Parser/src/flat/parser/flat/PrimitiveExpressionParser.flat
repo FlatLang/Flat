@@ -89,6 +89,9 @@ class {
         return parsePrimary()
     }
 
+    assignmentOperator(String value) -> Bool =>
+        value == "+=" || value == "-=" || value == "*=" || value == "/=" || value == "%="
+
     parsePrimary() -> PrimitiveExpressionSyntax {
         if (index >= tokens.count) syntax("Expected primitive expression", index)
         if (tokens[index].value == "(") {
@@ -102,7 +105,19 @@ class {
                     range(start, value.range.endTokenIndex - tokenIndexOffset), typeName, value
                 )
             }
-            let expression = parseConditional()
+            var PrimitiveExpressionSyntax expression = parseConditional()
+            if (index < tokens.count && assignmentOperator(tokens[index].value) &&
+                expression.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                let operator = tokens[index++].value
+                let value = parseConditional()
+                let assignment = PrimitiveMemberAssignmentValueSyntax(
+                    range(start + 1, value.range.endTokenIndex - tokenIndexOffset),
+                    (PrimitiveMemberAccessSyntax)expression,
+                    operator,
+                    value
+                )
+                expression = (PrimitiveExpressionSyntax)assignment
+            }
             if (index >= tokens.count || tokens[index].value != ")") {
                 syntax("Expected closing expression parenthesis", index)
             }
@@ -145,6 +160,17 @@ class {
                 syntax("Expected constructed type name", index)
             }
             let typeName = tokens[index++].value
+            if (index < tokens.count && tokens[index].value == "[") {
+                index++
+                let size = parseConditional()
+                if (index >= tokens.count || tokens[index].value != "]") {
+                    syntax("Expected closing array construction bracket", index)
+                }
+                index++
+                return PrimitiveArrayConstructionSyntax(
+                    range(tokenIndex, index), typeName, size
+                )
+            }
             if (index >= tokens.count || tokens[index].value != "(") {
                 syntax("Expected constructor arguments", index)
             }
@@ -152,6 +178,30 @@ class {
             return PrimitiveConstructionSyntax(call.range, typeName, call.argumentValues())
         }
         if (token.type == Token.Type.IDENTIFIER) {
+            if (token.value == "Array" && index < tokens.count &&
+                tokens[index].value == "<") {
+                index++
+                if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+                    syntax("Expected array element type", index)
+                }
+                let elementTypeName = tokens[index++].value
+                if (index >= tokens.count || tokens[index].value != ">") {
+                    syntax("Expected closing array element type", index)
+                }
+                index++
+                if (index >= tokens.count || tokens[index].value != "(") {
+                    syntax("Expected array allocation size", index)
+                }
+                index++
+                let size = parseConditional()
+                if (index >= tokens.count || tokens[index].value != ")") {
+                    syntax("Expected closing array allocation parenthesis", index)
+                }
+                index++
+                return PrimitiveArrayConstructionSyntax(
+                    range(tokenIndex, index), elementTypeName, size
+                )
+            }
             var PrimitiveExpressionSyntax expression
             if (index < tokens.count && tokens[index].value == "(") {
                 expression = parseCall(tokenIndex, token.value)
@@ -212,10 +262,19 @@ class {
             }
             return expression
         }
-        if (token.type == Token.Type.STRING) return PrimitiveLiteralSyntax(
-            range(tokenIndex, tokenIndex + 1), token.type, token.value
-        )
-        if (token.type != Token.Type.INTEGER && token.type != Token.Type.BOOL &&
+        if (token.type == Token.Type.STRING) {
+            var PrimitiveExpressionSyntax expression
+            if (!hasInterpolationMarker(token.value)) {
+                expression = PrimitiveLiteralSyntax(
+                    range(tokenIndex, tokenIndex + 1), token.type, token.value
+                )
+            } else expression = PrimitiveInterpolatedStringParser().parse(
+                token, snapshot, tokenIndex + tokenIndexOffset
+            ).expression
+            return parsePostfix(tokenIndex, expression)
+        }
+        if (token.type != Token.Type.INTEGER && token.type != Token.Type.FLOAT &&
+            token.type != Token.Type.BOOL &&
             token.type != Token.Type.STRING && token.type != Token.Type.CHAR &&
             token.type != Token.Type.NULL) {
             syntax("Expected primitive literal or identifier but received '#{token.value}'", tokenIndex)
@@ -223,6 +282,56 @@ class {
         return PrimitiveLiteralSyntax(
             range(tokenIndex, tokenIndex + 1), token.type, token.value
         )
+    }
+
+    parsePostfix(
+        Int tokenIndex,
+        PrimitiveExpressionSyntax initial
+    ) -> PrimitiveExpressionSyntax {
+        var PrimitiveExpressionSyntax expression = initial
+        while (index < tokens.count && (tokens[index].value == "." || tokens[index].value == "[")) {
+            if (tokens[index].value == "[") {
+                index++
+                let accessIndex = parseLevel(0)
+                if (index >= tokens.count || tokens[index].value != "]") {
+                    syntax("Expected closing array bracket", index)
+                }
+                index++
+                expression = PrimitiveArrayAccessSyntax(
+                    range(tokenIndex, index), expression, accessIndex
+                )
+                continue
+            }
+            index++
+            if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+                syntax("Expected member name after '.'", index)
+            }
+            let member = tokens[index++].value
+            if (index < tokens.count && tokens[index].value == "(") {
+                index++
+                let arguments = PrimitiveExpressionSyntax[]
+                if (index < tokens.count && tokens[index].value != ")") {
+                    while (true) {
+                        arguments.add(parseConditional())
+                        if (index >= tokens.count || tokens[index].value == ")") break
+                        if (tokens[index].value != ",") {
+                            syntax("Expected member call argument boundary", index)
+                        }
+                        index++
+                    }
+                }
+                if (index >= tokens.count || tokens[index].value != ")") {
+                    syntax("Expected closing member call parenthesis", index)
+                }
+                index++
+                expression = PrimitiveMemberCallSyntax(
+                    range(tokenIndex, index), expression, member, arguments
+                )
+            } else expression = PrimitiveMemberAccessSyntax(
+                range(tokenIndex, index), expression, member
+            )
+        }
+        return expression
     }
 
     parseNative(Int start) -> PrimitiveExpressionSyntax {
@@ -346,6 +455,15 @@ class {
                 syntax("Expected call argument after ','", index)
             }
         }
+    }
+
+    hasInterpolationMarker(String value) -> Bool {
+        var Int index
+        while (index < value.count) {
+            if (value.chars[index] == '#') return true
+            index++
+        }
+        return value.isEmpty
     }
 
     range(Int startIndex, Int endIndex) -> SourceRange {

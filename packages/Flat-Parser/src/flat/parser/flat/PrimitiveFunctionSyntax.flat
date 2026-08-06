@@ -14,11 +14,15 @@ data class {
         visible String returnTypeName,
         PrimitiveStatementSyntax[] statements,
         visible Bool staticMethod = false,
-        visible Bool inferredReturnType = false
+        visible Bool inferredReturnType = false,
+        visible Bool asyncMethod = false,
+        visible String externalName = null,
+        visible Bool abstractMethod = false
     ) {
         if (!range || !name || name.trim().count == 0 || !parameterValues ||
             parameterValues.any({ !_ }) || !returnTypeName ||
-            returnTypeName.trim().count == 0 || !statements || statements.any({ !_ })) {
+            returnTypeName.trim().count == 0 || !statements || statements.any({ !_ }) ||
+            (externalName != null && externalName.trim().isEmpty)) {
             throw Exception("Primitive function syntax requires range, signature, and body")
         }
         parameters = PrimitiveFunctionParameterSyntax[]

@@ -9,6 +9,11 @@ class {
             throw Exception("ES6 external statement requires selected es6 evidence")
         }
         var String code = ""
+        for (binding in statement.nameBindingValues()) {
+            let emitted = Es6ExpressionOrchestrator().emit(binding.value)
+            if (!emitted.emitted) return emitted
+            code += "let " + binding.sourceName + " = " + emitted.code + ";\n"
+        }
         for (segment in statement.segmentValues()) {
             if (!segment.interpolated()) code += segment.text
             else {
@@ -22,6 +27,39 @@ class {
             }
         }
         return Es6CodeResult(code: code + "\n")
+    }
+
+    public emitSwitchCase(
+        BoundSwitchCase caseValue,
+        Es6CodeResult label,
+        Es6CodeResult body
+    ) -> Es6CodeResult {
+        if (!caseValue || !label || !body) {
+            throw Exception("ES6 switch case requires case, label, and body")
+        }
+        if (!label.emitted) return label
+        if (!body.emitted) return body
+        let prefix = caseValue.defaultCase ? "default:\n" :
+            "case " + label.code + ":\n"
+        return Es6CodeResult(code: prefix + body.code +
+            (caseValue.fallsThrough ? "" : "break;\n"))
+    }
+
+    public emitSwitch(
+        BoundSwitchStatement statement,
+        Es6CodeResult value,
+        Es6CodeResult[] cases
+    ) -> Es6CodeResult {
+        if (!statement || !value || !cases || cases.any({ !_ })) {
+            throw Exception("ES6 switch requires statement, value, and cases")
+        }
+        if (!value.emitted) return value
+        var String code = "switch (" + value.code + ") {\n"
+        for (caseValue in cases) {
+            if (!caseValue.emitted) return caseValue
+            code += caseValue.code
+        }
+        return Es6CodeResult(code: code + "}\n")
     }
 
     public emitThrow(
@@ -133,6 +171,18 @@ class {
         }
         let name = Es6NameMangler.mangle(statement.local.symbolIdentity.value)
         return Es6CodeResult(code: "let " + name + ";\n")
+    }
+
+    public emitAssignmentValue(
+        Es6CodeResult target,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!target || !value) {
+            throw Exception("ES6 assignment value requires target and value")
+        }
+        if (!target.emitted) return target
+        if (!value.emitted) return value
+        return Es6CodeResult(code: target.code + " = " + value.code + ";\n")
     }
 
     public emitAssignment(

@@ -1,0 +1,19 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** One immutable, precisely ranged literal or expression segment in a Flat string. */
+data class {
+    public construct(
+        visible SourceRange range,
+        visible String literalSourceValue,
+        visible PrimitiveExpressionSyntax expression
+    ) {
+        if (!range || (literalSourceValue == null && !expression) ||
+            (literalSourceValue != null && expression)) {
+            throw Exception("Interpolated string segment requires exactly one literal or expression")
+        }
+    }
+
+    public literal() -> Bool => literalSourceValue != null
+}

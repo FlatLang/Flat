@@ -42,7 +42,8 @@ class {
         visible SourceSnapshotIdentity snapshot,
         visible SyntaxIslandIdentity containingTypeIdentity,
         visible Int maxRetainedHeaderTokens,
-        Int startOrdinal = 0
+        Int startOrdinal = 0,
+        visible PendingBracedMemberClassification pendingClassification = null
     ) {
         if (!snapshot || !containingTypeIdentity) {
             throw Exception("Braced member scanner requires source and containing type identities")
@@ -106,7 +107,12 @@ class {
         } else if (isSymbol(token, "}") && nestedHeaderBraceDepth > 0) {
             nestedHeaderBraceDepth--
         } else if (isSymbol(token, "{") && parenthesisDepth == 0 && bracketDepth == 0) {
-            activeKind = classifyMember()
+            activeKind = pendingClassification?.memberKind ?: classifyMember()
+            if (headerTokens.any({ _.value == "(" }) &&
+                (headerTokens.any({ _.value == "native_array" }) ||
+                 headerTokens.any({ _.value == "native" }))) {
+                activeKind = "function"
+            }
             validateHeader(activeKind)
             activeName = findMemberName(activeKind)
             activeHeaderIdentity = identity("member-signature")
@@ -251,7 +257,11 @@ class {
     }
 
     validateHeader(String kind) {
-        if (kind == "function") return
+        if (kind == "function") {
+            if (headerTokens.any({ _.value == "native_array" }) ||
+                headerTokens.any({ _.value == "native" })) return
+            return
+        }
         let tokens = Token[]
         let location = headerTokens.first.location
         tokens.add(Token(value: "class", type: Token.Type.IDENTIFIER, location: location))
@@ -266,7 +276,10 @@ class {
         let engine = ParseEngine(FileParser(), ParseContext())
         for (token in tokens) engine.consume(token)
 
-        if (engine.invalid || engine.end().isEmpty) reject("Invalid Flat braced member header")
+        if (engine.invalid || engine.end().isEmpty) {
+            reject("Invalid Flat braced member header '" +
+                headerTokens.skipLast(1).map({ _.value }).join(" ") + "'")
+        }
     }
 
     classifyMember() -> String {

@@ -131,6 +131,17 @@ class {
                     validateReturns(value.thenValues(), returnType, functionName),
                     validateReturns(value.elseValues(), returnType, functionName)
                 ))
+            } else if (statement.class.isOfType(BoundForEachStatement.class)) {
+                let value = (BoundForEachStatement)statement
+                result.add(BoundForEachStatement(
+                    value.range,
+                    value.initialization(),
+                    value.condition,
+                    validateReturns(value.body(), returnType, functionName),
+                    value.advance(),
+                    value.loopLabel,
+                    value.exitLabel
+                ))
             } else if (statement.class.isOfType(BoundWhileStatement.class)) {
                 let value = (BoundWhileStatement)statement
                 result.add(BoundWhileStatement(

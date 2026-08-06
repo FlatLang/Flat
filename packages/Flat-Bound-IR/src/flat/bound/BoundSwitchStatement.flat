@@ -1,0 +1,27 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Target-independent typed value switch. */
+data class extends BoundStatement {
+    var BoundSwitchCase[] cases
+
+    public construct(
+        SourceRange range,
+        visible BoundExpression value,
+        BoundSwitchCase[] caseValues
+    ) {
+        if (!range || !value || !caseValues || caseValues.isEmpty ||
+            caseValues.any({ !_ }) || caseValues.filter({ _.defaultCase }).count > 1 ||
+            caseValues.any((BoundSwitchCase caseValue) => caseValue.label &&
+                caseValue.label.semanticType.value() != value.semanticType.value())) {
+            throw Exception("Bound switch requires typed value and compatible cases")
+        }
+        cases = BoundSwitchCase[]
+        cases.addAll(caseValues)
+        super(range)
+    }
+
+    public caseValues() -> BoundSwitchCase[] => BoundSwitchCase[]:addAll(cases)
+    override public unitKind() => "switch"
+}

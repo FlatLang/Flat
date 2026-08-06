@@ -16,7 +16,8 @@ data class {
         PrimitiveFieldSyntax[] fieldValues,
         visible PrimitiveConstructorSyntax constructorValue,
         PrimitiveFunctionSyntax[] methodValues,
-        String[] implementedTypeNames = String[]
+        String[] implementedTypeNames = String[],
+        visible Bool abstractClass = false
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
@@ -41,11 +42,41 @@ data class {
             overlay.fieldValues().isNotEmpty || overlay.implementedTypeNames().isNotEmpty) {
             throw Exception("Class overlay merge requires same-name method-only syntax")
         }
-        let mergedMethods = methodValues()
-        mergedMethods.addAll(overlay.methodValues())
+        let methods = methodValues()
+        var PrimitiveFunctionSyntax duplicate
+        var Int overlayIndex
+        while (overlayIndex < overlay.methodValues().count && !duplicate) {
+            let method = overlay.methodValues()[overlayIndex]
+            var Int candidateIndex = overlayIndex + 1
+            while (candidateIndex < overlay.methodValues().count && !duplicate) {
+                let candidate = overlay.methodValues()[candidateIndex]
+                if (candidate.name == method.name &&
+                    candidate.staticMethod == method.staticMethod &&
+                    candidate.parameterValues().map({ _.typeName }) ==
+                        method.parameterValues().map({ _.typeName })) duplicate = method
+                candidateIndex++
+            }
+            overlayIndex++
+        }
+        if (duplicate) throw Exception("Class overlay duplicates method '#{duplicate.name}'")
+
+        for (method in overlay.methodValues()) {
+            var Int existingIndex = -1
+            var Int methodIndex
+            while (methodIndex < methods.count && existingIndex < 0) {
+                let existing = methods[methodIndex]
+                if (existing.name == method.name &&
+                    existing.staticMethod == method.staticMethod &&
+                    existing.parameterValues().map({ _.typeName }) ==
+                        method.parameterValues().map({ _.typeName })) existingIndex = methodIndex
+                methodIndex++
+            }
+            if (existingIndex >= 0) methods[existingIndex] = method
+            else methods.add(method)
+        }
         return PrimitiveClassSyntax(
             range, name, genericParameterName, parentName,
-            fieldValues(), constructorValue, mergedMethods, implementedTypeNames()
+            fieldValues(), constructorValue, methods, implementedTypeNames(), abstractClass
         )
     }
 

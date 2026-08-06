@@ -10,19 +10,9 @@ class {
     public inspect(Token[] tokens) -> FlatClassBodyMatch {
         if (tokens.isEmpty) return FlatClassBodyMatch()
 
-        let pattern = NodeGroupTokenPattern(ClassParser().classBodyParsers)
-        let matcher = pattern.getMatcher()
-        let classParser = ClassParser()
-        let match = matcher.matchAll(
-            tokens,
-            ParseContext(
-                parserStack: Stack():push(classParser),
-                currentBaseParser: classParser
-            )
-        ).lastWhere({ _ != null })
-        if (!match) return FlatClassBodyMatch()
+        let group = grammarMatch(tokens)
+        if (!group) return FlatClassBodyMatch()
 
-        let group = (NodeGroupTokenMatch)match
         let counts = Int[]
         var Int pendingMetadataTokenCount
         for (span in group.directSpans) {
@@ -34,9 +24,82 @@ class {
         }
 
         return FlatClassBodyMatch(
-            match.tokens.count,
+            group.tokens.count,
             counts,
-            match.tokens.count == tokens.count
+            group.tokens.count == tokens.count
         )
+    }
+
+    /**
+     * Classifies only a pending header that the existing class-body grammar
+     * accepts once supplied with the opening brace and a minimal valid body.
+     * No token-shape heuristic is used by the mixed-member coordinator.
+     */
+    public classifyPendingBraced(Token[] headerTokens) -> PendingBracedMemberClassification {
+        if (headerTokens.isEmpty) return null
+
+        let normalizedHeader = Token[]
+        var Int index
+        while (index < headerTokens.count) {
+            let token = headerTokens[index]
+            if (token.value != "native_array" && token.value != "native") {
+                normalizedHeader.add(token)
+            }
+            index++
+        }
+        let candidates = [
+            pendingTokens(normalizedHeader, ["{", "}"]),
+            pendingTokens(normalizedHeader, ["Bool", "{", "}"])
+        ]
+        for (candidate in candidates) {
+            let group = grammarMatch(candidate)
+            if (!group || group.tokens.count != candidate.count) continue
+
+            let spans = group.directSpans.filter({
+                _.parserName != AnnotationParser.class.name
+            })
+            if (spans.count != 1) continue
+
+            let parserName = spans.first.parserName
+            if (parserName == FunctionParser.class.name) {
+                return PendingBracedMemberClassification(
+                    PendingBracedMemberClassification.FUNCTION,
+                    parserName
+                )
+            }
+            if (parserName == StaticBlockParser.class.name) {
+                return PendingBracedMemberClassification(
+                    PendingBracedMemberClassification.STATIC_BLOCK,
+                    parserName
+                )
+            }
+        }
+        return null
+    }
+
+    pendingTokens(Token[] headerTokens, String[] suffix) -> Token[] {
+        let values = Token[]
+        values.addAll(headerTokens)
+        let location = headerTokens.last.location
+        for (value in suffix) {
+            let type = value == "Bool" ? Token.Type.IDENTIFIER : Token.Type.SYMBOL
+            values.add(Token(value: value, type: type, location: location))
+        }
+        return values
+    }
+
+    grammarMatch(Token[] tokens) -> NodeGroupTokenMatch {
+        let pattern = NodeGroupTokenPattern(ClassParser().classBodyParsers)
+        let matcher = pattern.getMatcher()
+        let classParser = ClassParser()
+        let result = matcher.matchAll(
+            tokens,
+            ParseContext(
+                parserStack: Stack():push(classParser),
+                currentBaseParser: classParser
+            )
+        ).lastWhere({ _ != null })
+        if (!result) return null
+        return (NodeGroupTokenMatch)result
     }
 }

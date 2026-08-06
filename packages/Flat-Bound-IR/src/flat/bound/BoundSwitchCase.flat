@@ -1,0 +1,25 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Immutable typed branch in one switch statement. */
+data class {
+    var BoundStatement[] body
+
+    public construct(
+        visible SourceRange range,
+        visible BoundExpression label,
+        BoundStatement[] statements,
+        visible Bool defaultCase = false,
+        visible Bool fallsThrough = false
+    ) {
+        if (!range || (defaultCase == (label != null)) || !statements ||
+            statements.any({ !_ }) || (fallsThrough && statements.isNotEmpty)) {
+            throw Exception("Bound switch case requires one label/default and valid body")
+        }
+        body = BoundStatement[]
+        body.addAll(statements)
+    }
+
+    public statementValues() -> BoundStatement[] => BoundStatement[]:addAll(body)
+}

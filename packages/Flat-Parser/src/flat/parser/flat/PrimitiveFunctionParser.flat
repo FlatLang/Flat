@@ -32,47 +32,157 @@ class {
     parseFunction() -> PrimitiveFunctionSyntax {
         let start = index
         var Bool staticMethod
-        while (index < tokens.count && (tokens[index].value == "public" ||
-            tokens[index].value == "private" || tokens[index].value == "protected" ||
-            tokens[index].value == "static")) {
-            if (tokens[index].value == "static") staticMethod = true
-            index++
+        var Bool asyncMethod
+        var Bool externalNaming
+        var Bool abstractMethod
+        while (index < tokens.count && modifier(tokens[index].value)) {
+            let modifier = tokens[index++].value
+            if (modifier == "static") staticMethod = true
+            else if (modifier == "async") asyncMethod = true
+            else if (modifier == "external_name") externalNaming = true
+            else if (modifier == "abstract") abstractMethod = true
         }
         let name = requireIdentifier("Expected function name")
+        let externalName = externalNaming ? name : null
         require("(", "Expected function parameter list")
         let parameters = parseParameters()
         require(")", "Expected closing parameter parenthesis")
         if (index < tokens.count && tokens[index].value == "=>") {
             index++
+            if (index < tokens.count && tokens[index].value == "this" &&
+                index + 1 < tokens.count && tokens[index + 1].value == "{") {
+                index++
+                require("{", "Expected opening function brace")
+                let statements = parseBracedBody()
+                return PrimitiveFunctionSyntax(
+                    range(start, index), name, parameters, "this", statements,
+                    staticMethod, false, asyncMethod, externalName
+                )
+            }
             let expressionStart = index
             if (expressionStart >= tokens.count) syntax("Expected method expression", index)
-            index = tokens.count
-            let expression = PrimitiveExpressionParser().parse(
-                tokens.skip(expressionStart), snapshot, expressionStart + tokenIndexOffset
-            )
+            let bodyStart = fallbackBodyStart(expressionStart)
+            var Int expressionEnd = tokens.count
+            if (bodyStart >= 0) expressionEnd = bodyStart
+            index = expressionEnd
+            let statement = expressionBodyStatement(expressionStart, expressionEnd)
+            var String inferredType = "String"
+            if (statement.class.isOfType(PrimitiveMemberAssignmentSyntax.class)) {
+                inferredType = "Unknown"
+            }
+            let statements = PrimitiveStatementSyntax[]
+            statements.add(statement)
+            if (bodyStart >= 0) {
+                index = bodyStart + 1
+                statements.addAll(parseBracedBody())
+            }
             return PrimitiveFunctionSyntax(
-                range(start, index), name, parameters, "String",
-                [PrimitiveReturnSyntax(range(expressionStart, index), expression)],
-                staticMethod, true
+                range(start, index), name, parameters, inferredType,
+                statements,
+                staticMethod, true, asyncMethod, externalName
             )
         }
-        require("->", "Expected function return type arrow")
-        let returnType = requireIdentifier("Expected function return type")
+        var String returnType = "Unit"
+        if (index < tokens.count && tokens[index].value == "->") {
+            index++
+            returnType = parseTypeName("Expected function return type")
+        }
+        if (abstractMethod) {
+            if (returnType == "Unit") {
+                syntax("Abstract method requires explicit return type", index)
+            }
+            return PrimitiveFunctionSyntax(
+                range(start, index), name, parameters, returnType,
+                PrimitiveStatementSyntax[],
+                staticMethod, false, asyncMethod, externalName, true
+            )
+        }
         if (index < tokens.count && tokens[index].value == "=>") {
             index++
             let expressionStart = index
             if (expressionStart >= tokens.count) syntax("Expected method expression", index)
+            let bodyStart = fallbackBodyStart(expressionStart)
+            if (bodyStart >= 0) {
+                index = bodyStart + 1
+                let statements = PrimitiveStatementSyntax[]
+                statements.add(expressionBodyStatement(expressionStart, bodyStart))
+                statements.addAll(parseBracedBody())
+                return PrimitiveFunctionSyntax(
+                    range(start, index), name, parameters, returnType, statements,
+                    staticMethod, false, asyncMethod, externalName
+                )
+            }
             index = tokens.count
-            let expression = PrimitiveExpressionParser().parse(
-                tokens.skip(expressionStart), snapshot, expressionStart + tokenIndexOffset
-            )
             return PrimitiveFunctionSyntax(
                 range(start, index), name, parameters, returnType,
-                [PrimitiveReturnSyntax(range(expressionStart, index), expression)],
-                staticMethod
+                [expressionBodyStatement(expressionStart)],
+                staticMethod, false, asyncMethod, externalName
             )
         }
         require("{", "Expected opening function brace")
+        let statements = parseBracedBody()
+        return PrimitiveFunctionSyntax(
+            range(start, index), name, parameters, returnType, statements,
+            staticMethod, false, asyncMethod, externalName
+        )
+    }
+
+    fallbackBodyStart(Int expressionStart) -> Int => -1 {
+        var Int parenthesisDepth
+        var Int bracketDepth
+        var Int cursor = expressionStart
+        while (cursor < tokens.count) {
+            let value = tokens[cursor].value
+            if (value == "(") parenthesisDepth++
+            else if (value == ")") parenthesisDepth--
+            else if (value == "[") bracketDepth++
+            else if (value == "]") bracketDepth--
+            else if (value == "{" && parenthesisDepth == 0 && bracketDepth == 0) {
+                return cursor
+            }
+            cursor++
+        }
+    }
+
+    expressionBodyStatement(
+        Int expressionStart,
+        Int expressionEnd = -1
+    ) -> PrimitiveStatementSyntax {
+        let values = expressionEnd < 0 ? tokens.skip(expressionStart) :
+            tokens.skip(expressionStart).take(expressionEnd - expressionStart)
+        if (values.count >= 5 && values[0].type == Token.Type.IDENTIFIER &&
+            values[1].value == "." && values[2].type == Token.Type.IDENTIFIER &&
+            assignmentOperator(values[3].value)) {
+            let receiver = PrimitiveReferenceSyntax(
+                range(expressionStart, expressionStart + 1), values[0].value
+            )
+            let target = PrimitiveMemberAccessSyntax(
+                range(expressionStart, expressionStart + 3), receiver, values[2].value
+            )
+            let operandStart = expressionStart + 4
+            let operandTokens = expressionEnd < 0 ? tokens.skip(operandStart) :
+                tokens.skip(operandStart).take(expressionEnd - operandStart)
+            let operand = PrimitiveExpressionParser().parse(
+                operandTokens, snapshot, operandStart + tokenIndexOffset
+            )
+            let rangeEnd = expressionEnd < 0 ? index : expressionEnd
+            return PrimitiveMemberAssignmentSyntax(
+                range(expressionStart, rangeEnd), target, operand, values[3].value
+            )
+        }
+        let expression = PrimitiveExpressionParser().parse(
+            values, snapshot, expressionStart + tokenIndexOffset
+        )
+        return PrimitiveReturnSyntax(
+            range(expressionStart, expressionEnd < 0 ? index : expressionEnd), expression
+        )
+    }
+
+    assignmentOperator(String value) -> Bool =>
+        value == "=" || value == "+=" || value == "-=" || value == "*=" ||
+            value == "/=" || value == "%="
+
+    parseBracedBody() -> PrimitiveStatementSyntax[] {
         let bodyStart = index
         var Int depth = 1
         while (index < tokens.count && depth > 0) {
@@ -82,24 +192,31 @@ class {
         }
         if (depth != 0) syntax("Expected closing function brace", index)
         let bodyEnd = index - 1
-        let statements = PrimitiveControlStatementParser().parse(
-            tokens.skip(bodyStart).take(bodyEnd - bodyStart),
-            snapshot,
+        return PrimitiveControlStatementParser().parse(
+            tokens.skip(bodyStart).take(bodyEnd - bodyStart), snapshot,
             bodyStart + tokenIndexOffset
         ).statements()
-        return PrimitiveFunctionSyntax(
-            range(start, index), name, parameters, returnType, statements, staticMethod
-        )
     }
+
+    modifier(String value) -> Bool =>
+        value == "public" || value == "private" || value == "protected" ||
+            value == "visible" || value == "static" || value == "async" ||
+            value == "compiler_visible" || value == "external_name" ||
+            value == "native_array" || value == "native" || value == "abstract" ||
+            value == "override"
 
     parseParameters() -> PrimitiveFunctionParameterSyntax[] {
         let parameters = PrimitiveFunctionParameterSyntax[]
         if (index < tokens.count && tokens[index].value == ")") return parameters
         while (true) {
             let start = index
-            let typeName = requireIdentifier("Expected parameter type")
+            let typeName = parseTypeName("Expected parameter type")
             if (index < tokens.count && tokens[index].value == ":") index++
-            let name = requireIdentifier("Expected parameter name")
+            var String name
+            if ((index >= tokens.count || tokens[index].value == "," ||
+                tokens[index].value == ")") && typeName.indexOf("(") > 0) {
+                name = typeName.substring(0, typeName.indexOf("("))
+            } else name = requireIdentifier("Expected parameter name")
             var PrimitiveExpressionSyntax defaultValue
             if (index < tokens.count && tokens[index].value == "=") {
                 index++
@@ -122,6 +239,34 @@ class {
             }
         }
         return parameters
+    }
+
+    parseTypeName(String message) -> String {
+        var String result = requireIdentifier(message)
+        if (index < tokens.count && tokens[index].value == "(") {
+            result += "("
+            index++
+            if (index < tokens.count && tokens[index].value != ")") {
+                while (true) {
+                    result += parseTypeName("Expected function parameter type")
+                    if (index >= tokens.count || tokens[index].value != ",") break
+                    result += ","
+                    index++
+                }
+            }
+            require(")", "Expected closing function type parenthesis")
+            result += ")"
+            if (index < tokens.count && tokens[index].value == "->") {
+                index++
+                result += "->" + parseTypeName("Expected function return type")
+            }
+        }
+        while (index + 1 < tokens.count && tokens[index].value == "[" &&
+            tokens[index + 1].value == "]") {
+            result += "[]"
+            index += 2
+        }
+        return result
     }
 
     requireIdentifier(String message) -> String {

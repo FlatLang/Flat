@@ -25,6 +25,45 @@ testable class {
         expect(access.memberName).toBe("value")
     }
 
+    test `parses declaration flags`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:abstract-class"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("abstract", false, 1), token("class", false, 10),
+            token("Number", false, 16), token("{", true, 23),
+            token("public", false, 25), token("abstract", false, 32),
+            token("plus", false, 41), token("(", true, 45), token("Long", false, 46),
+            token("other", false, 51), token(")", true, 56), token("->", true, 58),
+            token("Long", false, 61), token("}", true, 66)
+        ], snapshot)
+        let method = parsed.methodValues().first
+
+        expect(parsed.abstractClass).toBe(true)
+        expect(method.name).toBe("plus")
+        expect(method.returnTypeName).toBe("Long")
+        expect(method.abstractMethod).toBe(true)
+        expect(method.statements().count).toBe(0)
+    }
+
+    test `parses static field`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:static-field"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Math", false, 7), token("{", true, 12),
+            token("visible", false, 14), token("static", false, 22),
+            token("Int", false, 29), token("PI", false, 36), token("=", true, 39),
+            token("3", false, 41, Token.Type.INTEGER), token("}", true, 46)
+        ], snapshot)
+        let field = parsed.fieldValues().first
+
+        expect(field.name).toBe("PI")
+        expect(field.visibleField).toBe(true)
+        expect(field.staticField).toBe(true)
+        expect(field.initializer.expressionKind()).toBe("literal")
+    }
+
     test `parses visible constructor parameter as field synthesis syntax`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:visible-constructor-parameter"), "revision:one"
@@ -57,6 +96,44 @@ testable class {
         ], snapshot)
 
         expect(parsed.constructorValue.parameterValues().first.visibleParameter).toBe(true)
+    }
+
+    test `parses bare constructor after expression property`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:bare-constructor-boundary"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Float", false, 7), token("{", true, 13),
+            token("public", false, 15), token("Long", false, 22),
+            token("integerValue", false, 27), token("=>", true, 40),
+            token("(", true, 43), token("Long", false, 44), token(")", true, 48),
+            token("value", false, 49), token("construct", false, 55),
+            token("(", true, 64), token("public", false, 65), token("Float", false, 72),
+            token("value", false, 78), token(")", true, 83),
+            token("{", true, 85), token("}", true, 86), token("}", true, 88)
+        ], snapshot)
+
+        expect(parsed.methodValues().first.name).toBe("integerValue")
+        expect(parsed.constructorValue.parameterValues().first.name).toBe("value")
+    }
+
+    test `parses bodyless native primitive constructor contract`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:bodyless-constructor"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Byte", false, 7), token("{", true, 12),
+            token("public", false, 14), token("construct", false, 21),
+            token("(", true, 30), token("public", false, 31),
+            token("Byte", false, 38), token("value", false, 43), token(")", true, 48),
+            token("public", false, 50), token("toString", false, 57),
+            token("(", true, 65), token(")", true, 66), token("=>", true, 68),
+            token("value", false, 71), token("}", true, 77)
+        ], snapshot)
+
+        expect(parsed.constructorValue.parameterValues().first.name).toBe("value")
+        expect(parsed.constructorValue.statements().count).toBe(0)
+        expect(parsed.methodValues().first.name).toBe("toString")
     }
 
     test `rejects incomplete visible constructor parameter`() {
@@ -306,15 +383,86 @@ testable class {
         ], snapshot)
         let overlay = PrimitiveClassParser().parse([
             token("class", false, 1), token("Object", false, 7), token("{", true, 14),
-            token("public", false, 16), token("static", false, 23),
-            token("referenceEquals", false, 30), token("(", true, 45),
-            token(")", true, 46), token("=>", true, 48),
-            token("true", false, 51), token("}", true, 56)
+            token("public", false, 16), token("String", false, 23),
+            token("hashCode", false, 30), token("=>", true, 39),
+            token("''", false, 42),
+            token("public", false, 45), token("static", false, 52),
+            token("referenceEquals", false, 59), token("(", true, 74),
+            token(")", true, 75), token("=>", true, 77),
+            token("true", false, 80), token("}", true, 85)
         ], snapshot)
         let merged = canonical.mergedWith(overlay)
 
         expect(canonical.methodValues().count).toBe(1)
-        expect(merged.methodValues().map({ _.name })).toBe(["equals", "referenceEquals"])
+        expect(merged.methodValues().map({ _.name })).toBe([
+            "equals", "hashCode", "referenceEquals"
+        ])
+    }
+
+    test `merges target overlay by replacing exact method implementation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-overlay-replacement"), "revision:one"
+        )
+        let canonical = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Float", false, 7), token("{", true, 13),
+            token("public", false, 15), token("static", false, 22),
+            token("toString", false, 29), token("(", true, 37),
+            token("Float", false, 38), token("value", false, 44), token(")", true, 49),
+            token("=>", true, 51), token("value", false, 54), token("}", true, 60)
+        ], snapshot)
+        let overlay = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Float", false, 7), token("{", true, 13),
+            token("public", false, 15), token("static", false, 22),
+            token("toString", false, 29), token("(", true, 37),
+            token("Float", false, 38), token("value", false, 44), token(")", true, 49),
+            token("=>", true, 51), token("other", false, 54), token("}", true, 60)
+        ], snapshot)
+        let merged = canonical.mergedWith(overlay)
+
+        expect(merged.methodValues().count).toBe(1)
+        let mergedMethod = merged.methodValues().first
+        let mergedStatements = mergedMethod.statements()
+        let returnedObject = (Object)mergedStatements.first
+        let returned = (PrimitiveReturnSyntax)returnedObject
+        let valueObject = (Object)returned.value
+        let value = (PrimitiveReferenceSyntax)valueObject
+        expect(value.name).toBe("other")
+    }
+
+    test `parses override expression method after expression method`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:override-boundary"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7), token("{", true, 13),
+            token("public", false, 15), token("toString", false, 22),
+            token("(", true, 30), token(")", true, 31), token("=>", true, 33),
+            token("String", false, 36), token("(", true, 42), token("this", false, 43),
+            token(")", true, 47), token("override", false, 49),
+            token("public", false, 58), token("equals", false, 65),
+            token("(", true, 71), token("Object", false, 72), token("other", false, 79),
+            token(")", true, 84), token("=>", true, 86), token("true", false, 89),
+            token("}", true, 94)
+        ], snapshot)
+
+        expect(parsed.methodValues().map({ _.name })).toBe(["toString", "equals"])
+    }
+
+    test `attributes reduced member parser failures to their method name`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-member-diagnostic"), "revision:one"
+        )
+        var String message
+        try {
+            PrimitiveClassParser().parse([
+                token("class", false, 1), token("Box", false, 7), token("{", true, 11),
+                token("public", false, 13), token("broken", false, 20),
+                token("(", true, 26), token(")", true, 27), token("=>", true, 29),
+                token(")", true, 32), token("}", true, 34)
+            ], snapshot)
+        } catch (Exception error) { message = error.message }
+
+        expect(message).toNotBe(null)
     }
 
     test `rejects invalid reduced types`() {
@@ -361,10 +509,11 @@ testable class {
     token(
         String value,
         Bool symbol,
-        Int column
+        Int column,
+        Int explicitType = Token.Type.IDENTIFIER
     ) -> Token {
         let type = symbol ? Token.Type.SYMBOL :
-            value == "''" ? Token.Type.STRING : Token.Type.IDENTIFIER
+            value == "''" ? Token.Type.STRING : explicitType
         return Token(value: value, type: type,
             location: Location(lineNumber: 1, column: column))
     }

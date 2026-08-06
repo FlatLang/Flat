@@ -23,7 +23,9 @@ class extends BoundFunctionLoweringPass {
         }
         return BoundFunctionUnit(
             input.identity, input.name, input.returnType, output, input.range,
-            input.parameterValues(), input.staticFunction, input.mainFunction
+            input.parameterValues(), input.staticFunction, input.mainFunction,
+            input.constructorFunction, input.dispatchIdentity, input.parentConstructorCall,
+            input.asyncFunction, input.externalName
         )
     }
 

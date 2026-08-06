@@ -9,7 +9,8 @@ data class {
         visible String typeName,
         visible String name,
         visible Bool visibleField = false,
-        visible PrimitiveExpressionSyntax initializer = null
+        visible PrimitiveExpressionSyntax initializer = null,
+        visible Bool staticField = false
     ) {
         if (!range || !typeName || typeName.trim().count == 0 ||
             !name || name.trim().count == 0) {

@@ -2,6 +2,7 @@ package flat/semantic/binding/primitive
 
 import flat/compiler/models
 import flat/parser/flat
+import flat/lexer/Lexer
 
 testable class {
     test `binds sealed parent child component and shared virtual slot`() {
@@ -32,6 +33,115 @@ testable class {
         expect(parentCall.argumentValues().count).toBe(1)
         expect(parentCall.argumentValues().first.semanticType.value()).toBe("builtin:String")
         expect(parentCall.argumentConversions().first.conversionKind).toBe("identity")
+    }
+
+    test `inherits explicit parent return for an inferred override`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-inferred-return"), "revision:one"
+        )
+        let parent = PrimitiveClassParser().parse([
+            token("class", false), token("Parent", false), token("{", true),
+            token("value", false), token("(", true), token(")", true),
+            token("->", true), token("String", false), token("=>", true),
+            token("\"parent\"", false, Token.Type.STRING), token("}", true)
+        ], snapshot)
+        let child = PrimitiveClassParser().parse([
+            token("class", false), token("Child", false), token("extends", false),
+            token("Parent", false), token("{", true), token("value", false),
+            token("(", true), token(")", true), token("=>", true),
+            token("\"child\"", false, Token.Type.STRING), token("}", true)
+        ], snapshot)
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let parentMethod = result.parentType.functionUnits().last
+        let childMethod = result.childType.functionUnits().last
+
+        expect(childMethod.returnType.value()).toBe("builtin:String")
+        expect(childMethod.dispatchIdentity).toBe(parentMethod.dispatchIdentity)
+    }
+
+    test `refines inferred numeric override to parent contract`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-numeric-return"), "revision:one"
+        )
+        let parent = PrimitiveClassParser().parse([
+            token("abstract", false), token("class", false), token("Parent", false),
+            token("{", true), token("public", false), token("abstract", false),
+            token("value", false), token("(", true), token(")", true),
+            token("->", true), token("Double", false), token("}", true)
+        ], snapshot)
+        let child = PrimitiveClassParser().parse([
+            token("class", false), token("Child", false), token("extends", false),
+            token("Parent", false), token("{", true), token("value", false),
+            token("(", true), token(")", true), token("=>", true),
+            token("1", false, Token.Type.INTEGER), token("}", true)
+        ], snapshot)
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let method = result.childType.functionUnits().last
+
+        expect(method.returnType.value()).toBe("primitive:Double")
+    }
+
+    async test `refines inferred switch override to parent contract`() {
+        let source = "abstract class Parent { public abstract check(Char value) -> Bool } " +
+            "class Child extends Parent { check(Char value) => false { " +
+            "switch value { ' ' => fallthrough '\\n' => return true } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-switch-return"), "revision:one"
+        )
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+        let parent = PrimitiveClassParser().parse(
+            partitions.first.tokenValues(), snapshot, partitions.first.startTokenIndex
+        )
+        let child = PrimitiveClassParser().parse(
+            partitions.last.tokenValues(), snapshot, partitions.last.startTokenIndex
+        )
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let method = result.childType.functionUnits().last
+
+        expect(method.returnType.value()).toBe("primitive:Bool")
+    }
+
+    test `keeps static overload separate from parent instance method`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-static-overload"), "revision:one"
+        )
+        let parent = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), snapshot)
+        let child = PrimitiveClassParser().parse([
+            token("class", false), token("Child", false), token("extends", false),
+            token("Parent", false), token("{", true), token("public", false),
+            token("static", false), token("value", false), token("(", true),
+            token("Int", false), token("input", false), token(")", true),
+            token("=>", true), token("input", false), token("}", true)
+        ], snapshot)
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let method = result.childType.functionUnits().last
+
+        expect(method.staticFunction).toBe(true)
+        expect(method.returnType.value()).toBe("primitive:Int")
+        expect(method.dispatchIdentity).toBe(null)
+    }
+
+    test `preserves inheritance metadata`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inheritance-interface-metadata"), "revision:one"
+        )
+        let parent = PrimitiveClassParser().parse(typeTokens("Parent", null, "1"), snapshot)
+        let child = PrimitiveClassParser().parse([
+            token("class", false), token("Child", false), token("extends", false),
+            token("Parent", false), token("implements", false), token("Marker", false),
+            token("{", true), token("extra", false), token("(", true), token(")", true),
+            token("->", true), token("Int", false), token("=>", true),
+            token("2", false, Token.Type.INTEGER), token("}", true)
+        ], snapshot)
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let implemented = result.childType.metadata().firstOrNull({
+            _.metadataKind == "implements"
+        })
+
+        expect(implemented.value).toBe("Marker")
     }
 
     test `rejects parent constructor arity and type mismatch`() {

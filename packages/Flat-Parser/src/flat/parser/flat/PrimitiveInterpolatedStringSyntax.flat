@@ -1,0 +1,26 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable source-ranged string interpolation syntax preserving segment order. */
+data class extends PrimitiveExpressionSyntax {
+    var PrimitiveInterpolatedStringSegmentSyntax[] segments
+
+    public construct(
+        SourceRange range,
+        PrimitiveInterpolatedStringSegmentSyntax[] segmentValues
+    ) {
+        if (!range || !segmentValues || segmentValues.isEmpty || segmentValues.any({ !_ }) ||
+            !segmentValues.any({ !_.literal() })) {
+            throw Exception("Interpolated string syntax requires ordered segments and an expression")
+        }
+        segments = PrimitiveInterpolatedStringSegmentSyntax[]
+        segments.addAll(segmentValues)
+        super(range)
+    }
+
+    public segmentValues() -> PrimitiveInterpolatedStringSegmentSyntax[] =>
+        PrimitiveInterpolatedStringSegmentSyntax[]:addAll(segments)
+
+    override public expressionKind() => "interpolated-string"
+}

@@ -230,10 +230,10 @@ testable class {
         expect(result.succeeded).toBe(true)
         BoundIRAssertions.assertStatementKinds(result.loweredFunction, [
             "expression", "expression", "expression", "expression", "expression",
-            "label", "conditional-branch", "expression", "expression", "branch", "label"
+            "while"
         ])
         expect(BoundIRAssertions.expressionKinds(result.loweredFunction)).toBe([
-            "literal", "literal", "literal", "literal", "literal", "literal", "literal"
+            "literal", "literal", "literal", "literal", "literal"
         ])
         BoundIRAssertions.assertNoRichCollectionForms(result.loweredFunction)
         BoundIRAssertions.assertReducedSubset(result.loweredFunction)

@@ -21,6 +21,28 @@ testable class PrimitiveOpaqueCodeBinder_Test {
         expect(value.range.snapshot).toBe(snapshot)
     }
 
+    test `binds opaque parameter names`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-bind-parameter-name"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "method", 0), "static-method", "sqrt"
+        )
+        let parameter = LocalBinding(
+            "number", SymbolIdentity(declaration, "parameter"), SemanticTypes.doubleType()
+        )
+        let bound = PrimitiveControlStatementBinder().bind(
+            parse(snapshot, "return Math.sqrt(number);"), snapshot, [parameter]
+        ).statements()
+        let statementObject = (Object)bound.first
+        let statement = (BoundExternalStatement)statementObject
+        let bindings = statement.nameBindingValues()
+        let binding = bindings.first
+
+        expect(binding.sourceName).toBe("number")
+        expect(binding.value.symbolIdentity).toBe(parameter.identity)
+    }
+
     test `binds string data interpolation to typed reference evidence`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:external-bind-interpolation"), "revision:one"

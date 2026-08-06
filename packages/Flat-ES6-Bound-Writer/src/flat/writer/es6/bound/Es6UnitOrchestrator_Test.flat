@@ -66,6 +66,34 @@ testable class {
             "let " + Es6NameMangler.mangle(local.symbolIdentity.value)
         )).toBe(true)
         expect(typeResult.fragment.code.contains(" = 'Hello, Flat';")).toBe(true)
+
+        let field = BoundFieldUnit(
+            "PI", fixture.symbol("field", "PI", 9), SemanticTypes.doubleType(),
+            fixture.range(), true,
+            BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "3.14"),
+            true
+        )
+        let fieldType = BoundTypeUnit(
+            typeIdentity, UserClassSemanticType(typeIdentity), [main], fixture.range(),
+            fieldValues: [field]
+        )
+        let fieldResult = emitter.emitType(fieldType, 2)
+        expect(fieldResult.fragment.code.contains(
+            Es6NameMangler.mangle(field.identity.value) + " = 3.14;"
+        )).toBe(true)
+        let abstractFunction = BoundFunctionUnit(
+            fixture.declaration("instance-method", "required", 10),
+            "required", SemanticTypes.intType(), BoundStatement[], fixture.range(),
+            abstractFunction: true
+        )
+        let abstractIdentity = fixture.declaration("class", "AbstractOwner", 11)
+        let abstractType = BoundTypeUnit(
+            abstractIdentity,
+            UserClassSemanticType(abstractIdentity),
+            [abstractFunction], fixture.range()
+        )
+        let abstractResult = emitter.emitType(abstractType, 3)
+        expect(abstractResult.fragment.code.contains("required")).toBe(false)
     }
 
     test `emits selected static and constructor calls`() {
@@ -109,12 +137,12 @@ testable class {
         let owner = Es6NameMangler.mangle(ownerIdentity.value)
 
         expect(staticCall.code).toBe(
-            owner + "." + Es6NameMangler.mangle(staticIdentity.value) + "()"
+            owner + "." + Es6NameMangler.mangle(staticIdentity.declaration.value) + "()"
         )
         expect(constructorCall.code).toBe("new " + owner + "()")
         expect(instanceCall.code).toBe(
             Es6NameMangler.mangle(receiver.symbolIdentity.value) + "." +
-            Es6NameMangler.mangle(instanceIdentity.value) + "()"
+            Es6NameMangler.mangle(instanceIdentity.declaration.value) + "()"
         )
         expect(external.code).toBe("code\n")
 

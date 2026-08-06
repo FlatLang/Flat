@@ -16,10 +16,12 @@ class {
         String stableIdentity,
         String[] parameterNames,
         String body,
-        Bool staticMethod = false
+        Bool staticMethod = false,
+        Bool asyncMethod = false,
+        String externalName = null
     ) -> String {
-        let name = Es6NameMangler.mangle(stableIdentity)
-        let prefix = staticMethod ? "static " : ""
+        let name = externalName ?: Es6NameMangler.mangle(stableIdentity)
+        let prefix = (staticMethod ? "static " : "") + (asyncMethod ? "async " : "")
         return prefix + name + "(" + parameterNames.join(", ") + ") {\n" +
             indent(body, "  ") + "}\n"
     }

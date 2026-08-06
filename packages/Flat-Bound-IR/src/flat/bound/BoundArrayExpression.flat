@@ -3,9 +3,10 @@ package flat/bound
 import flat/compiler/models
 import flat/semantic/types
 
-/** Typed immutable array literal. */
+/** Typed immutable array literal or fixed-size allocation. */
 data class extends BoundExpression {
     var BoundExpression[] elements
+    visible BoundExpression allocationSize
     public construct(
         SourceRange range,
         ArraySemanticType semanticType,
@@ -18,6 +19,19 @@ data class extends BoundExpression {
         elements = BoundExpression[]
         elements.addAll(values)
     }
+    public construct(
+        SourceRange range,
+        ArraySemanticType semanticType,
+        BoundExpression size
+    ) {
+        if (!range || !semanticType || !size ||
+            size.semanticType.value() != SemanticTypes.intType().value()) {
+            throw Exception("Bound array allocation requires array type and Int size")
+        }
+        super(range, semanticType)
+        elements = BoundExpression[]
+        allocationSize = size
+    }
     public elementValues() -> BoundExpression[] => BoundExpression[]:addAll(elements)
-    override public expressionKind() => "array"
+    override public expressionKind() => allocationSize ? "array-construction" : "array"
 }

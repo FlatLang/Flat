@@ -43,10 +43,10 @@ class {
             return Token.Type.STRING
         } else if (lexeme.value.isCharLiteral()) {
             return Token.Type.CHAR
-        } else if (lexeme.value.isUnsignedInteger()) {
-            return Token.Type.INTEGER
         } else if (lexeme.value.isUnsignedFloat()) {
             return Token.Type.FLOAT
+        } else if (lexeme.value.isUnsignedInteger()) {
+            return Token.Type.INTEGER
         } else if (lexeme.value.isSymbol()) {
             return Token.Type.SYMBOL
         } else {

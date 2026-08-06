@@ -24,9 +24,15 @@ class {
         tokenIndexOffset = sourceTokenIndexOffset
         index = 0
         let start = index
+        var Bool abstractClass
+        if (index < tokens.count && tokens[index].value == "abstract") {
+            abstractClass = true
+            index++
+        }
         require("class")
         let name = index < tokens.count && implicitName &&
-            (tokens[index].value == "{" || tokens[index].value == "extends" ||
+            (tokens[index].value == "{" || tokens[index].value == "<" ||
+                tokens[index].value == "extends" ||
                 tokens[index].value == "implements")
             ? implicitName
             : identifier("Expected class name")
@@ -34,12 +40,17 @@ class {
         if (index < tokens.count && tokens[index].value == "<") {
             index++
             genericParameterName = identifier("Expected generic parameter name")
+            if (index < tokens.count && tokens[index].value == "extends") {
+                index++
+                identifier("Expected generic parameter bound")
+            }
             require(">")
         }
         var String parentName
         if (index < tokens.count && tokens[index].value == "extends") {
             index++
             parentName = identifier("Expected parent class name")
+            if (index < tokens.count && tokens[index].value == "<") skipGenericArguments()
         }
         let implementedTypeNames = String[]
         if (index < tokens.count && tokens[index].value == "implements") {
@@ -48,7 +59,16 @@ class {
                 var String implemented = identifier("Expected implemented type name")
                 if (index < tokens.count && tokens[index].value == "<") {
                     index++
-                    implemented += "<" + identifier("Expected implemented generic argument")
+                    implemented += "<"
+                    var Bool firstArgument = true
+                    while (index < tokens.count && tokens[index].value != ">") {
+                        if (!firstArgument) {
+                            require(",")
+                            implemented += ","
+                        }
+                        implemented += identifier("Expected implemented generic argument")
+                        firstArgument = false
+                    }
                     require(">")
                     implemented += ">"
                 }
@@ -62,13 +82,34 @@ class {
         var PrimitiveConstructorSyntax constructorValue
         let methods = PrimitiveFunctionSyntax[]
         var Bool visibleField
+        var Bool staticField
         while (index < tokens.count && tokens[index].value != "}") {
+            if (isFunctionModifier(tokens[index].value) &&
+                tokens[index].value != "visible" &&
+                !(tokens[index].value == "public" && index + 2 < tokens.count &&
+                    tokens[index + 1].value == "construct" &&
+                    tokens[index + 2].value == "(")) {
+                var Int modifierCursor = index
+                while (modifierCursor < tokens.count &&
+                    isFunctionModifier(tokens[modifierCursor].value)) {
+                    modifierCursor++
+                }
+                if (modifierCursor < tokens.count && tokens[modifierCursor].type == Token.Type.IDENTIFIER &&
+                    modifierCursor + 1 < tokens.count && tokens[modifierCursor + 1].value == "(") {
+                    let abstractMethod = tokens.skip(index).take(modifierCursor - index)
+                        .any({ _.value == "abstract" })
+                    let end = abstractMethod ? abstractDeclarationEnd(index) : declarationEnd(index)
+                    let parsed = parseMethod(index, end, "modified method")
+                    if (parsed.count != 1) syntax("Expected one modified method", index)
+                    methods.add(parsed.first)
+                    index = end
+                    continue
+                }
+            }
             if (tokens[index].value == "public" && index + 1 < tokens.count &&
                 tokens[index + 1].value == "static") {
                 let end = declarationEnd(index)
-                let parsed = PrimitiveFunctionParser().parse(
-                    tokens.skip(index).take(end - index), snapshot, index + tokenIndexOffset
-                ).functionValues()
+                let parsed = parseMethod(index, end, "static method")
                 if (parsed.count != 1) syntax("Expected one static method", index)
                 methods.add(parsed.first)
                 index = end
@@ -97,6 +138,13 @@ class {
                 index = end
             } else if (tokens[index].value == "visible") {
                 visibleField = true
+                index++
+                if (index < tokens.count && tokens[index].value == "static") {
+                    staticField = true
+                    index++
+                }
+            } else if (tokens[index].value == "static") {
+                staticField = true
                 index++
             } else if (tokens[index].value == "constructor" || tokens[index].value == "construct") {
                 if (constructorValue) syntax("Duplicate constructor", index)
@@ -137,8 +185,9 @@ class {
                         else if (value == ")" || value == "]") initializerDepth--
                         if (initializerDepth == 0 && (value == ";" ||
                             value == "public" || value == "private" ||
-                            value == "protected" || value == "visible" ||
-                            value == "constructor" || value == "construct")) break
+                            value == "protected" || value == "visible" || value == "static" ||
+                            value == "override" ||
+                            value == "constructor" || value == "construct" || value == "}")) break
                         index++
                     }
                     if (initializerStart == index) syntax("Field initializer requires a value", index)
@@ -150,24 +199,26 @@ class {
                 if (index < tokens.count && tokens[index].value == ";") index++
                 else if (index >= tokens.count || (tokens[index].value != "public" &&
                     tokens[index].value != "private" && tokens[index].value != "protected" &&
-                    tokens[index].value != "visible" && tokens[index].value != "constructor" &&
-                    tokens[index].value != "construct")) require(";")
+                    tokens[index].value != "visible" && tokens[index].value != "static" &&
+                    tokens[index].value != "override" &&
+                    tokens[index].value != "constructor" &&
+                    tokens[index].value != "construct" && tokens[index].value != "}")) require(";")
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
                 fields.add(PrimitiveFieldSyntax(
-                    range(fieldStart, index), typeName, fieldName, visibleField, initializer
+                    range(fieldStart, index), typeName, fieldName,
+                    visibleField, initializer, staticField
                 ))
                 visibleField = false
+                staticField = false
             } else {
                 let end = declarationEnd(index)
-                let parsed = PrimitiveFunctionParser().parse(
-                    tokens.skip(index).take(end - index), snapshot, index + tokenIndexOffset
-                ).functionValues()
+                let parsed = parseMethod(index, end, "method")
                 if (parsed.count != 1) syntax("Expected one method", index)
                 methods.add(parsed.first)
                 index = end
             }
         }
-        if (visibleField) syntax("Expected visible field declaration", index)
+        if (visibleField || staticField) syntax("Expected field declaration", index)
         require("}")
         if (index != tokens.count) syntax("Unexpected trailing class token", index)
         if (!constructorValue) {
@@ -177,7 +228,7 @@ class {
         }
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
-            fields, constructorValue, methods, implementedTypeNames
+            fields, constructorValue, methods, implementedTypeNames, abstractClass
         )
     }
 
@@ -219,6 +270,11 @@ class {
             require(")")
             return PrimitiveConstructorSyntax(
                 range(start, index), parameters, PrimitiveStatementSyntax[], arguments
+            )
+        }
+        if (index >= tokens.count || tokens[index].value != "{") {
+            return PrimitiveConstructorSyntax(
+                range(start, index), parameters, PrimitiveStatementSyntax[]
             )
         }
         require("{")
@@ -284,12 +340,126 @@ class {
         return result
     }
 
+    isFunctionModifier(String value) -> Bool =>
+        value == "public" || value == "private" || value == "protected" ||
+            value == "static" || value == "async" || value == "compiler_visible" ||
+            value == "external_name" || value == "native_array" || value == "native" ||
+            value == "abstract" || value == "override"
+
+    skipGenericArguments() {
+        require("<")
+        var Int depth = 1
+        while (index < tokens.count && depth > 0) {
+            if (tokens[index].value == "<") depth++
+            else if (tokens[index].value == ">") depth--
+            index++
+        }
+        if (depth != 0) syntax("Unterminated generic arguments", index)
+    }
+
+    abstractDeclarationEnd(Int start) -> Int {
+        var Int cursor = start
+        while (cursor < tokens.count && tokens[cursor].value != "->") cursor++
+        if (cursor >= tokens.count) syntax("Abstract method requires return type", start)
+        cursor++
+        parseTypeNameAt(cursor)
+        cursor++
+        return cursor
+    }
+
+    parseTypeNameAt(Int cursor) {
+        if (cursor >= tokens.count || tokens[cursor].type != Token.Type.IDENTIFIER) {
+            syntax("Abstract method requires return type", cursor)
+        }
+    }
+
+    fallbackBodyEnd(Int expressionStart) -> Int => -1 {
+        var Int parenthesisDepth
+        var Int bracketDepth
+        var Int cursor = expressionStart
+        while (cursor < tokens.count) {
+            let value = tokens[cursor].value
+            if (value == "(") parenthesisDepth++
+            else if (value == ")") parenthesisDepth--
+            else if (value == "[") bracketDepth++
+            else if (value == "]") bracketDepth--
+            else if (value == "{" && parenthesisDepth == 0 && bracketDepth == 0) {
+                var Int bodyDepth = 1
+                cursor++
+                while (cursor < tokens.count && bodyDepth > 0) {
+                    if (tokens[cursor].value == "{") bodyDepth++
+                    else if (tokens[cursor].value == "}") bodyDepth--
+                    cursor++
+                }
+                if (bodyDepth != 0) syntax("Unterminated fallback method body", expressionStart)
+                return cursor
+            }
+            var Bool typeBoundary = value == "class" || value == "trait" ||
+                value == "interface"
+            if (typeBoundary && cursor > 0 && tokens[cursor - 1].value == ".") {
+                typeBoundary = false
+            }
+            if (parenthesisDepth == 0 && bracketDepth == 0 &&
+                (value == "}" || value == "public" || value == "private" ||
+                    value == "protected" || value == "visible" || value == "static" ||
+                    value == "async" || value == "compiler_visible" ||
+                    value == "external_name" || value == "override" ||
+                    value == "constructor" ||
+                    value == "construct" || typeBoundary ||
+                    (value == "[" && cursor + 1 < tokens.count &&
+                        tokens[cursor + 1].value == "Target"))) return -1
+            cursor++
+        }
+    }
+
+    parseMethod(
+        Int start,
+        Int end,
+        String context
+    ) -> PrimitiveFunctionSyntax[] {
+        try {
+            return PrimitiveFunctionParser().parse(
+                tokens.skip(start).take(end - start), snapshot,
+                start + tokenIndexOffset
+            ).functionValues()
+        } catch (Exception error) {
+            let name = methodName(start, end)
+            throw Exception(
+                "Primitive class #context '#name' at token #start failed: #{error.message}"
+            )
+        }
+    }
+
+    methodName(Int start, Int end) -> String {
+        var Int cursor = start
+        while (cursor + 1 < end) {
+            if (tokens[cursor].type == Token.Type.IDENTIFIER &&
+                tokens[cursor + 1].value == "(") return tokens[cursor].value
+            cursor++
+        }
+        return "<unknown>"
+    }
+
     declarationEnd(Int start) -> Int {
         var Int cursor = start
         while (cursor < tokens.count && tokens[cursor].value != "{" &&
             tokens[cursor].value != "=>") cursor++
         if (cursor < tokens.count && tokens[cursor].value == "=>") {
             cursor++
+            if (cursor + 1 < tokens.count && tokens[cursor].value == "this" &&
+                tokens[cursor + 1].value == "{") {
+                cursor += 2
+                var Int bodyDepth = 1
+                while (cursor < tokens.count && bodyDepth > 0) {
+                    if (tokens[cursor].value == "{") bodyDepth++
+                    else if (tokens[cursor].value == "}") bodyDepth--
+                    cursor++
+                }
+                if (bodyDepth != 0) syntax("Unterminated receiver-return method", start)
+                return cursor
+            }
+            let fallbackEnd = fallbackBodyEnd(cursor)
+            if (fallbackEnd >= 0) return fallbackEnd
             var Int parenthesisDepth
             var Int bracketDepth
             while (cursor < tokens.count) {
@@ -301,7 +471,9 @@ class {
                 else if (parenthesisDepth == 0 && bracketDepth == 0 &&
                     (value == "public" || value == "private" ||
                         value == "protected" || value == "static" ||
-                        value == "visible" || value == "}")) break
+                        value == "async" || value == "compiler_visible" ||
+                        value == "external_name" || value == "visible" ||
+                        value == "override" || value == "constructor" || value == "construct" || value == "}")) break
                 cursor++
             }
             if (cursor >= tokens.count) syntax("Expected method expression boundary", start)

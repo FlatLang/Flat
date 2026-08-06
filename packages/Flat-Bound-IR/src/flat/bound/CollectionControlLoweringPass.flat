@@ -11,7 +11,9 @@ class extends BoundFunctionLoweringPass {
         for (statement in input.statements()) lowerStatement(statement, output)
         return BoundFunctionUnit(
             input.identity, input.name, input.returnType, output, input.range,
-            input.parameterValues(), input.staticFunction, input.mainFunction
+            input.parameterValues(), input.staticFunction, input.mainFunction,
+            input.constructorFunction, input.dispatchIdentity, input.parentConstructorCall,
+            input.asyncFunction, input.externalName
         )
     }
 
@@ -19,19 +21,23 @@ class extends BoundFunctionLoweringPass {
         if (statement.class.isOfType(BoundForEachStatement.class)) {
             let loop = (BoundForEachStatement)statement
             for (initialization in loop.initialization()) lowerStatement(initialization, output)
-            output.add(BoundLabelStatement(loop.range, loop.loopLabel))
-            output.add(BoundConditionalBranchStatement(
-                loop.range,
-                lowerExpression(loop.condition),
-                loop.exitLabel
+            let loweredBody = BoundStatement[]
+            for (bodyStatement in loop.body()) lowerStatement(bodyStatement, loweredBody)
+            for (advance in loop.advance()) lowerStatement(advance, loweredBody)
+            output.add(BoundWhileStatement(
+                loop.range, lowerExpression(loop.condition), loweredBody
             ))
-            for (body in loop.body()) lowerStatement(body, output)
-            for (advance in loop.advance()) lowerStatement(advance, output)
-            output.add(BoundBranchStatement(loop.range, loop.loopLabel))
-            output.add(BoundLabelStatement(loop.range, loop.exitLabel))
         } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
             let value = (BoundExpressionStatement)statement
             output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
+        } else if (statement.class.isOfType(BoundArrayAssignmentStatement.class)) {
+            let value = (BoundArrayAssignmentStatement)statement
+            output.add(BoundArrayAssignmentStatement(
+                value.range,
+                (BoundArrayAccessExpression)lowerExpression(value.target),
+                lowerExpression(value.value),
+                value.conversion
+            ))
         } else if (statement.class.isOfType(BoundAssignmentStatement.class)) {
             let value = (BoundAssignmentStatement)statement
             output.add(BoundAssignmentStatement(
@@ -49,6 +55,13 @@ class extends BoundFunctionLoweringPass {
 
     lowerExpression(BoundExpression expression) -> BoundExpression {
         if (!expression) return null
+        if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
+            let value = (BoundArrayAccessExpression)expression
+            return BoundArrayAccessExpression(
+                value.range, value.semanticType,
+                lowerExpression(value.receiver), lowerExpression(value.index)
+            )
+        }
         if (expression.class.isOfType(BoundRichCollectionExpression.class)) {
             return lowerExpression(((BoundRichCollectionExpression)expression).canonicalExpression)
         }

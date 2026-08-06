@@ -29,8 +29,7 @@ testable class {
             BoundReturnStatement(syntax.range, bound.semanticType, bound,
                 TypeConversions.classify(bound.semanticType, bound.semanticType))
         ], syntax.range)
-        let lowered = CollectionControlLoweringPass().lower(rich)
-        let emitted = Es6UnitOrchestrator().emitFunction(lowered, 0)
+        let emitted = Es6UnitOrchestrator().emitFunction(rich, 0)
         let root = File(".flat-es6-collection-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "collection.js")

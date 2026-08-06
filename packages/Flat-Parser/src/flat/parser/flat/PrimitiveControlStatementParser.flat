@@ -33,7 +33,9 @@ class {
         let statements = PrimitiveStatementSyntax[]
         while (index < tokens.count && (!insideBody || tokens[index].value != "}")) {
             if (tokens[index].value == "if") statements.add(parseIf())
+            else if (tokens[index].value == "switch") statements.add(parseSwitch())
             else if (tokens[index].value == "while") statements.add(parseWhile())
+            else if (tokens[index].value == "for") statements.add(parseForEach())
             else if (tokens[index].value == "try") statements.add(parseTry())
             else if (tokens[index].value == "external") statements.add(parseExternal())
             else statements.add(parseSimple())
@@ -57,6 +59,116 @@ class {
             elseValues.addAll(parseBody())
         }
         return PrimitiveIfSyntax(range(start, index), condition, thenValues, elseValues)
+    }
+
+    parseSwitch() -> PrimitiveStatementSyntax {
+        let start = index++
+        let valueStart = index
+        while (index < tokens.count && tokens[index].value != "{") index++
+        if (index == valueStart || index >= tokens.count) {
+            syntax("Switch requires value and opening brace", start)
+        }
+        let value = PrimitiveExpressionParser().parse(
+            tokens.skip(valueStart).take(index - valueStart),
+            snapshot, valueStart + tokenIndexOffset
+        )
+        index++
+        let cases = PrimitiveSwitchCaseSyntax[]
+        var Bool defaultSeen
+        while (index < tokens.count && tokens[index].value != "}") {
+            let caseStart = index
+            var PrimitiveExpressionSyntax label
+            var Bool defaultCase
+            if (tokens[index].value == "default") {
+                if (defaultSeen) syntax("Switch cannot contain duplicate default", index)
+                defaultSeen = true
+                defaultCase = true
+                index++
+            } else {
+                let labelStart = index
+                while (index < tokens.count && tokens[index].value != "=>") index++
+                if (index == labelStart || index >= tokens.count) {
+                    syntax("Switch case requires label and arrow", caseStart)
+                }
+                label = PrimitiveExpressionParser().parse(
+                    tokens.skip(labelStart).take(index - labelStart),
+                    snapshot, labelStart + tokenIndexOffset
+                )
+            }
+            if (index >= tokens.count || tokens[index].value != "=>") {
+                syntax("Switch case requires arrow", index)
+            }
+            index++
+            let bodyStart = index
+            while (index < tokens.count && tokens[index].value != "}" &&
+                !(index + 1 < tokens.count && tokens[index + 1].value == "=>")) index++
+            let bodyTokens = tokens.skip(bodyStart).take(index - bodyStart)
+            let fallsThrough = bodyTokens.count == 1 &&
+                bodyTokens.first.value == "fallthrough"
+            let statements = fallsThrough ? PrimitiveStatementSyntax[] :
+                PrimitiveControlStatementParser().parse(
+                    bodyTokens, snapshot, bodyStart + tokenIndexOffset
+                ).statements()
+            cases.add(PrimitiveSwitchCaseSyntax(
+                range(caseStart, index), label, statements,
+                defaultCase, fallsThrough
+            ))
+        }
+        if (index >= tokens.count) syntax("Expected closing switch brace", start)
+        index++
+        return PrimitiveSwitchSyntax(range(start, index), value, cases)
+    }
+
+    parseForEach() -> PrimitiveStatementSyntax {
+        let start = index++
+        if (index >= tokens.count || tokens[index].value != "(") {
+            syntax("Expected foreach opening parenthesis", index)
+        }
+        index++
+        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+            syntax("Expected foreach index name", index)
+        }
+        let indexName = tokens[index++].value
+        if (index >= tokens.count || tokens[index].value != "in") {
+            syntax("Expected 'in' in foreach range", index)
+        }
+        index++
+        let rangeStart = index
+        var Int rangeOperator = -1
+        var Int rangeOperatorWidth = 1
+        var Int depth
+        while (index < tokens.count && tokens[index].value != ")") {
+            if (tokens[index].value == "(") depth++
+            else if (tokens[index].value == ")" && depth > 0) depth--
+            else if (depth == 0 && tokens[index].value == "..") rangeOperator = index
+            else if (depth == 0 && tokens[index].value == "." &&
+                index + 1 < tokens.count && tokens[index + 1].value == ".") {
+                rangeOperator = index
+                rangeOperatorWidth = 2
+                index++
+            }
+            index++
+        }
+        if (rangeOperator < rangeStart || rangeOperator + rangeOperatorWidth >= index) {
+            syntax("Foreach requires an exclusive range", rangeStart)
+        }
+        let startValue = PrimitiveExpressionParser().parse(
+            tokens.skip(rangeStart).take(rangeOperator - rangeStart),
+            snapshot, rangeStart + tokenIndexOffset
+        )
+        let endStart = rangeOperator + rangeOperatorWidth
+        let endValue = PrimitiveExpressionParser().parse(
+            tokens.skip(endStart).take(index - endStart),
+            snapshot, endStart + tokenIndexOffset
+        )
+        if (index >= tokens.count || tokens[index].value != ")") {
+            syntax("Expected foreach closing parenthesis", index)
+        }
+        index++
+        let body = parseBody()
+        return PrimitiveForEachSyntax(
+            range(start, index), indexName, startValue, endValue, body
+        )
     }
 
     parseWhile() -> PrimitiveStatementSyntax {
@@ -94,10 +206,11 @@ class {
 
     parseExternal() -> PrimitiveExternalStatementSyntax {
         let start = index++
-        if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
-            syntax("External block requires a target", index)
+        var String target = "js"
+        if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
+            tokens[index].value != "{") {
+            target = tokens[index++].value
         }
-        let target = tokens[index++].value
         if (index >= tokens.count || tokens[index].value != "{") {
             syntax("External block requires an opening brace", index)
         }
@@ -151,19 +264,64 @@ class {
         return parseStatements(true)
     }
 
+    controlStart(Int tokenIndex) -> Bool {
+        if (tokenIndex >= tokens.count) return false
+        let value = tokens[tokenIndex].value
+        return value == "if" || value == "while" || value == "for" ||
+            value == "try" || value == "external"
+    }
+
+    statementStart(Int tokenIndex) -> Bool {
+        if (tokenIndex >= tokens.count) return false
+        let value = tokens[tokenIndex].value
+        if (value == "let" || value == "var" || value == "return" ||
+            value == "throw" || value == "native") return true
+        if (tokens[tokenIndex].type != Token.Type.IDENTIFIER ||
+            tokenIndex + 1 >= tokens.count) return false
+        if (value == "native_array" && tokenIndex + 2 < tokens.count &&
+            tokens[tokenIndex + 2].value == "var") return true
+        let next = tokens[tokenIndex + 1].value
+        if (next == "[" && tokenIndex + 2 < tokens.count) {
+            var Int close = tokenIndex + 2
+            while (close < tokens.count && tokens[close].value != "]") close++
+            return close + 1 < tokens.count && assignmentOperator(tokens[close + 1].value)
+        }
+        if (next == "." && tokenIndex + 3 < tokens.count) {
+            let memberOperator = tokens[tokenIndex + 3].value
+            return memberOperator == "=" || memberOperator == "+=" || memberOperator == "-=" ||
+                memberOperator == "*=" || memberOperator == "/=" || memberOperator == "%="
+        }
+        return next == "=" || next == "+=" || next == "-=" || next == "*=" ||
+            next == "/=" || next == "%=" || next == "++" || next == "--"
+    }
+
+    assignmentOperator(String value) -> Bool =>
+        value == "=" || value == "+=" || value == "-=" || value == "*=" ||
+            value == "/=" || value == "%="
+
     parseSimple() -> PrimitiveStatementSyntax {
         let start = index
+        let line = tokens[start].location.lineNumber
         while (index < tokens.count && tokens[index].value != ";" &&
-            tokens[index].value != "}") index++
-        if (index == start || index >= tokens.count || tokens[index].value != ";") {
-            syntax("Expected semicolon-terminated statement", start)
+            tokens[index].value != "}" &&
+            !(tokens[index].location.lineNumber > line &&
+                (controlStart(index) || statementStart(index)))) index++
+        if (index == start) {
+            syntax("Expected statement", start)
+        }
+        let terminated = index < tokens.count && tokens[index].value == ";"
+        let boundary = index >= tokens.count || tokens[index].value == "}" ||
+            (tokens[index].location.lineNumber > line &&
+                (controlStart(index) || statementStart(index)))
+        if (!terminated && !boundary) {
+            syntax("Expected terminated statement", start)
         }
         let result = PrimitiveStatementParser().parse(
             tokens.skip(start).take(index - start),
             snapshot,
             start + tokenIndexOffset
         )
-        index++
+        if (terminated) index++
         return result.statements().first
     }
 

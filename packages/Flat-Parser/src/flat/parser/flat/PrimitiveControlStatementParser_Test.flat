@@ -3,6 +3,171 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses adjacent local and indexed assignment without semicolons`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-adjacent-indexed"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("let", Token.Type.IDENTIFIER, 1, 1),
+            token("c", Token.Type.IDENTIFIER, 5, 1), token("=", Token.Type.SYMBOL, 7, 1),
+            token("data", Token.Type.IDENTIFIER, 9, 1), token("[", Token.Type.SYMBOL, 13, 1),
+            token("i", Token.Type.IDENTIFIER, 14, 1), token("]", Token.Type.SYMBOL, 15, 1),
+            token("array", Token.Type.IDENTIFIER, 1, 2), token("[", Token.Type.SYMBOL, 6, 2),
+            token("i", Token.Type.IDENTIFIER, 7, 2), token("]", Token.Type.SYMBOL, 8, 2),
+            token("=", Token.Type.SYMBOL, 10, 2), token("c", Token.Type.IDENTIFIER, 12, 2)
+        ], snapshot)
+
+        expect(parsed.statements().map({ _.statementKind() })).toBe([
+            "local-declaration", "array-assignment"
+        ])
+    }
+
+    test `parses exclusive integer range foreach`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-foreach"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("i", Token.Type.IDENTIFIER, 6), token("in", Token.Type.IDENTIFIER, 8),
+            token("0", Token.Type.INTEGER, 11), token("..", Token.Type.SYMBOL, 12),
+            token("count", Token.Type.IDENTIFIER, 14), token(")", Token.Type.SYMBOL, 19),
+            token("{", Token.Type.SYMBOL, 21), token("value", Token.Type.IDENTIFIER, 23),
+            token("=", Token.Type.SYMBOL, 29), token("i", Token.Type.IDENTIFIER, 31),
+            token("}", Token.Type.SYMBOL, 33)
+        ], snapshot)
+        let statements = parsed.statements()
+        let loopObject = (Object)statements.first
+        let loop = (PrimitiveForEachSyntax)loopObject
+
+        expect(loop.statementKind()).toBe("foreach")
+        expect(loop.indexName).toBe("i")
+        expect(loop.rangeStart.expressionKind()).toBe("literal")
+        expect(loop.rangeEnd.expressionKind()).toBe("reference")
+        expect(loop.bodyValues().first.statementKind()).toBe("assignment")
+    }
+
+    test `rejects malformed exclusive foreach ranges`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-foreach-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token("i", Token.Type.IDENTIFIER, 6), token("in", Token.Type.IDENTIFIER, 8),
+                token("count", Token.Type.IDENTIFIER, 11), token(")", Token.Type.SYMBOL, 16),
+                token("{", Token.Type.SYMBOL, 18), token("}", Token.Type.SYMBOL, 19)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token("i", Token.Type.IDENTIFIER, 6), token("in", Token.Type.IDENTIFIER, 8),
+                token("0", Token.Type.INTEGER, 11), token("..", Token.Type.SYMBOL, 12),
+                token(")", Token.Type.SYMBOL, 14), token("{", Token.Type.SYMBOL, 16),
+                token("}", Token.Type.SYMBOL, 17)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `parses switch cases fallthrough and return body`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-switch"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("switch", Token.Type.IDENTIFIER, 1),
+            token("value", Token.Type.IDENTIFIER, 8), token("{", Token.Type.SYMBOL, 14),
+            token("' '", Token.Type.CHAR, 16), token("=>", Token.Type.SYMBOL, 20),
+            token("fallthrough", Token.Type.IDENTIFIER, 23),
+            token("'\\n'", Token.Type.CHAR, 35), token("=>", Token.Type.SYMBOL, 40),
+            token("return", Token.Type.IDENTIFIER, 43), token("true", Token.Type.BOOL, 50),
+            token("}", Token.Type.SYMBOL, 55)
+        ], snapshot)
+        let statements = parsed.statements()
+        let switchObject = (Object)statements.first
+        let value = (PrimitiveSwitchSyntax)switchObject
+        let cases = value.caseValues()
+
+        expect(cases.count).toBe(2)
+        expect(cases.first.fallsThrough).toBe(true)
+        expect(cases.last.statementValues().first.statementKind()).toBe("return")
+    }
+
+    test `rejects duplicate switch default and incomplete switch`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-switch-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("switch", Token.Type.IDENTIFIER, 1),
+                token("value", Token.Type.IDENTIFIER, 8), token("{", Token.Type.SYMBOL, 14),
+                token("default", Token.Type.IDENTIFIER, 16), token("=>", Token.Type.SYMBOL, 24),
+                token("return", Token.Type.IDENTIFIER, 27), token("true", Token.Type.BOOL, 34),
+                token("default", Token.Type.IDENTIFIER, 39), token("=>", Token.Type.SYMBOL, 47),
+                token("return", Token.Type.IDENTIFIER, 50), token("false", Token.Type.BOOL, 57),
+                token("}", Token.Type.SYMBOL, 63)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveControlStatementParser().parse([
+                token("switch", Token.Type.IDENTIFIER, 1),
+                token("value", Token.Type.IDENTIFIER, 8), token("{", Token.Type.SYMBOL, 14),
+                token("' '", Token.Type.CHAR, 16), token("=>", Token.Type.SYMBOL, 20),
+                token("return", Token.Type.IDENTIFIER, 23), token("true", Token.Type.BOOL, 30)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `parses newline terminated statements at control boundaries`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-control-newlines"), "revision:one"
+        )
+        let result = PrimitiveControlStatementParser().parse([
+            token("let", Token.Type.IDENTIFIER, 1, 1),
+            token("r", Token.Type.IDENTIFIER, 5, 1),
+            token("=", Token.Type.SYMBOL, 7, 1),
+            token("1", Token.Type.INTEGER, 9, 1),
+            token("if", Token.Type.IDENTIFIER, 1, 2),
+            token("(", Token.Type.SYMBOL, 4, 2),
+            token("true", Token.Type.BOOL, 5, 2),
+            token(")", Token.Type.SYMBOL, 9, 2),
+            token("{", Token.Type.SYMBOL, 11, 2),
+            token("return", Token.Type.IDENTIFIER, 3, 3),
+            token("r", Token.Type.IDENTIFIER, 10, 3),
+            token("}", Token.Type.SYMBOL, 1, 4)
+        ], snapshot)
+
+        let statements = result.statements()
+        expect(statements.map({ _.statementKind() })).toBe([
+            "local-declaration", "if"
+        ])
+        let conditionalObject = (Object)statements.last
+        let conditional = (PrimitiveIfSyntax)conditionalObject
+        expect(conditional.thenValues().first.statementKind()).toBe("return")
+    }
+
+    test `separates newline terminated compound and update assignments`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-control-assignments"), "revision:one"
+        )
+        let result = PrimitiveControlStatementParser().parse([
+            token("number", Token.Type.IDENTIFIER, 1, 1),
+            token("/=", Token.Type.SYMBOL, 8, 1),
+            token("10", Token.Type.INTEGER, 11, 1),
+            token("size", Token.Type.IDENTIFIER, 1, 2),
+            token("++", Token.Type.SYMBOL, 5, 2),
+            token("return", Token.Type.IDENTIFIER, 1, 3),
+            token("number", Token.Type.IDENTIFIER, 8, 3)
+        ], snapshot)
+
+        expect(result.statements().map({ _.statementKind() })).toBe([
+            "assignment", "assignment", "return"
+        ])
+    }
+
     test `parses nested if else and while with absolute ranges`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-control"), "revision:one"
@@ -112,8 +277,8 @@ testable class {
         expect(rejected).toBe(2)
     }
 
-    token(String value, Int type, Int column) -> Token {
+    token(String value, Int type, Int column, Int line = 1) -> Token {
         return Token(value: value, type: type,
-            location: Location(lineNumber: 1, column: column))
+            location: Location(lineNumber: line, column: column))
     }
 }

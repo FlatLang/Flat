@@ -23,14 +23,15 @@ class {
 
     public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
         if (!functionUnit) throw Exception("ES6 function unit is required")
-        let body = statements.emitAll(functionUnit.statements())
+        let loweredFunction = CollectionControlLoweringPass().lower(functionUnit)
+        let body = statements.emitAll(loweredFunction.statements())
         if (!body.emitted) return Es6EmissionResult(diagnostic: body.diagnostic)
-        let parameters = parameterNames(functionUnit)
-        let code = functionUnit.constructorFunction ?
+        let parameters = parameterNames(loweredFunction)
+        let code = loweredFunction.constructorFunction ?
             units.emitConstructor(parameters, body.code) :
-            units.emitFunction(functionUnit.identity.value, parameters, body.code)
+            units.emitFunction(loweredFunction.identity.value, parameters, body.code)
         return Es6EmissionResult(
-            fragment: Es6ArtifactFragment(functionUnit.identity.value, ordinal, code)
+            fragment: Es6ArtifactFragment(loweredFunction.identity.value, ordinal, code)
         )
     }
 
@@ -47,7 +48,9 @@ class {
             name,
             parameters,
             body.code,
-            functionUnit.staticFunction
+            functionUnit.staticFunction,
+            functionUnit.asyncFunction,
+            functionUnit.externalName
         ))
     }
 
@@ -86,21 +89,43 @@ class {
 
     public emitType(BoundTypeUnit typeUnit, Int ordinal) -> Es6EmissionResult {
         if (!typeUnit) throw Exception("ES6 type unit is required")
-        let methods = String[]
+        let loweredFunctions = BoundFunctionUnit[]
         for (functionUnit in typeUnit.functionUnits()) {
+            let lowered = CollectionControlLoweringPass().lower(functionUnit)
+            loweredFunctions.add(lowered)
+        }
+        let loweredType = BoundTypeUnit(
+            typeUnit.identity, typeUnit.semanticType, loweredFunctions, typeUnit.range,
+            typeUnit.metadata(), typeUnit.fieldUnits(), typeUnit.parentType
+        )
+        let methods = String[]
+        for (functionUnit in loweredType.functionUnits()) {
+            if (functionUnit.abstractFunction) continue
             let method = emitTypeMethod(functionUnit, typeUnit)
             if (!method.emitted) return Es6EmissionResult(diagnostic: method.diagnostic)
             methods.add(method.code)
         }
+        let classCode = units.emitClass(
+            loweredType.identity.value,
+            loweredType.parentType ? loweredType.parentType.declarationIdentity.value : null,
+            String[],
+            methods
+        )
+        let owner = Es6NameMangler.mangle(loweredType.identity.value)
+        var String staticFields = ""
+        for (field in loweredType.fieldUnits().filter({ _.staticField })) {
+            if (!field.initializer) continue
+            let initializer = statements.expressions.emit(field.initializer)
+            if (!initializer.emitted) {
+                return Es6EmissionResult(diagnostic: initializer.diagnostic)
+            }
+            staticFields += owner + "." + Es6NameMangler.mangle(field.identity.value) +
+                " = " + initializer.code + ";\n"
+        }
         return Es6EmissionResult(fragment: Es6ArtifactFragment(
-            typeUnit.identity.value,
+            loweredType.identity.value,
             ordinal,
-            units.emitClass(
-                typeUnit.identity.value,
-                typeUnit.parentType ? typeUnit.parentType.declarationIdentity.value : null,
-                String[],
-                methods
-            ) + emitMetadata(typeUnit)
+            classCode + staticFields + emitMetadata(loweredType)
         ))
     }
 }

@@ -34,6 +34,24 @@ testable class {
         expect(result.locals().first.identity.value.contains("local")).toBe(true)
     }
 
+    test `lowers compound and update assignments to typed binary assignments`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-compound-binding"), "revision:one"
+        )
+        let syntax = PrimitiveStatementParser().parse([
+            token("let", Token.Type.IDENTIFIER, 1), token("number", Token.Type.IDENTIFIER, 5),
+            token("=", Token.Type.SYMBOL, 12), token("20", Token.Type.INTEGER, 14),
+            token(";", Token.Type.SYMBOL, 16), token("number", Token.Type.IDENTIFIER, 18),
+            token("/=", Token.Type.SYMBOL, 25), token("10", Token.Type.INTEGER, 28),
+            token(";", Token.Type.SYMBOL, 30), token("number", Token.Type.IDENTIFIER, 32),
+            token("++", Token.Type.SYMBOL, 38)
+        ], snapshot)
+        let statements = PrimitiveStatementBinder().bind(syntax, snapshot).statements()
+        expect(statements.map({ _.unitKind() })).toBe([
+            "local-declaration", "assignment", "assignment"
+        ])
+    }
+
     test `rejects duplicate unknown and incompatible locals`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-statement-invalid"), "revision:one"

@@ -1,0 +1,22 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Typed assignment to an array element. */
+data class extends BoundStatement {
+    public construct(
+        SourceRange range,
+        visible BoundArrayAccessExpression target,
+        visible BoundExpression value,
+        visible TypeConversion conversion
+    ) {
+        if (!range || !target || !value || !conversion || !conversion.applicable ||
+            conversion.fromType.value() != value.semanticType.value() ||
+            conversion.toType.value() != target.semanticType.value()) {
+            throw Exception("Bound array assignment requires consistent target/value conversion")
+        }
+        super(range)
+    }
+    override public unitKind() => "array-assignment"
+}

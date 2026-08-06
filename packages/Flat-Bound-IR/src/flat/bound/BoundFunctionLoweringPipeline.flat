@@ -52,6 +52,10 @@ class {
             output.returnType.value() != original.returnType.value() ||
             output.staticFunction != original.staticFunction ||
             output.mainFunction != original.mainFunction ||
+            output.constructorFunction != original.constructorFunction ||
+            output.dispatchIdentity != original.dispatchIdentity ||
+            output.asyncFunction != original.asyncFunction ||
+            output.externalName != original.externalName ||
             !sameParameters(output.parameterValues(), original.parameterValues())) {
             throw Exception("Lowering pass '#{pass.name()}' violated function identity/type ownership")
         }

@@ -9,6 +9,16 @@ class {
         return Es6CodeResult(code: expression.sourceValue)
     }
 
+    public emitInterpolatedString(
+        BoundInterpolatedStringExpression expression,
+        String[] segmentCode
+    ) -> Es6CodeResult {
+        if (!expression || !segmentCode || segmentCode.count != expression.segmentValues().count) {
+            throw Exception("ES6 interpolation emission requires every ordered segment")
+        }
+        return Es6CodeResult(code: "(" + segmentCode.join(" + ") + ")")
+    }
+
     public emitReference(BoundReferenceExpression expression) -> Es6CodeResult {
         if (!expression) throw Exception("ES6 reference emission requires an expression")
         return Es6CodeResult(code: Es6NameMangler.mangle(expression.symbolIdentity.value))
@@ -36,6 +46,20 @@ class {
         return Es6CodeResult(code: "(" + left.code + " " + expression.operator + " " + right.code + ")")
     }
 
+    public emitMemberAssignmentValue(
+        BoundMemberAssignmentValueExpression expression,
+        Es6CodeResult target,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!expression || !target || !value) {
+            throw Exception("ES6 member assignment value requires expression, target, and value")
+        }
+        if (!target.emitted) return target
+        if (!value.emitted) return value
+        return Es6CodeResult(code: "(" + target.code + " " +
+            expression.operator + "= " + value.code + ")")
+    }
+
     public emitMemberAccess(
         BoundMemberAccessExpression expression,
         Es6CodeResult receiver
@@ -55,6 +79,10 @@ class {
     ) -> Es6CodeResult {
         if (!expression || !value) {
             throw Exception("ES6 conversion emission requires expression and value")
+        }
+        if (!value.emitted) return value
+        if (expression.conversion.conversionKind == "numeric-unboxing") {
+            return Es6CodeResult(code: "Number(" + value.code + ")")
         }
         return value
     }

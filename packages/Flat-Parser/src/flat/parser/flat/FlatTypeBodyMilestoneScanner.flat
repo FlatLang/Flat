@@ -88,7 +88,10 @@ class {
                 return islands
             }
 
-            let islands = nonBraced.finishBeforeBracedMember()
+            let pendingClassification = nonBraced.classifyPendingBraced(pendingHeaderTokens)
+            let islands = pendingClassification
+                ? SyntaxIsland[]
+                : nonBraced.finishBeforeBracedMember()
             nextOrdinal = nonBraced.nextOrdinal
             releasePublishedPrefix(islands)
 
@@ -96,7 +99,8 @@ class {
                 snapshot,
                 containingTypeIdentity,
                 maxRetainedHeaderTokens,
-                nextOrdinal
+                nextOrdinal,
+                pendingClassification
             )
             nonBraced.cancel()
             nonBraced = null
@@ -115,6 +119,12 @@ class {
 
         if (token.type != Token.Type.COMMENT && token.type != Token.Type.WS) {
             retainPending(token, tokenIndex)
+        }
+
+        if (pendingHeaderTokens.any({ _.value == "native_array" }) ||
+            pendingHeaderTokens.any({ _.value == "native" })) {
+            updatePeak()
+            return SyntaxIsland[]
         }
 
         let islands = nonBraced.accept(token, tokenIndex)

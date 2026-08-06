@@ -3,6 +3,82 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses interpolated string segments with exact source ranges`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-interpolation"), "revision:one"
+        )
+        var String source = "\"Hello "
+        source += '#'
+        source += "{this.class.name} @"
+        source += '#'
+        source += "hashCode!\""
+        let expression = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 4)
+        ], snapshot, 12)
+        var PrimitiveInterpolatedStringSyntax interpolation
+        interpolation = (PrimitiveInterpolatedStringSyntax)expression
+        let segments = interpolation.segmentValues()
+
+        expect(segments.count).toBe(5)
+        expect(segments.map({ _.literal() })).toBe([true, false, true, false, true])
+        expect(segments[0].literalSourceValue).toBe("\"Hello \"")
+        expect(segments[1].expression.expressionKind()).toBe("interpolation-path")
+        expect(((PrimitiveInterpolationPathSyntax)segments[1].expression).pathValues()).toBe(
+            ["this", "class", "name"]
+        )
+        expect(((PrimitiveInterpolationPathSyntax)segments[3].expression).pathValues()).toBe(
+            ["hashCode"]
+        )
+        expect(interpolation.range.startTokenIndex).toBe(12)
+        expect(interpolation.range.endTokenIndex).toBe(13)
+        expect(segments[0].range.start.column).toBe(5)
+        expect(segments[1].range.start.column).toBe(11)
+        expect(segments[4].range.end.column).toBe(41)
+
+        let copied = interpolation.segmentValues()
+        copied.clear()
+        expect(interpolation.segmentValues().count).toBe(5)
+    }
+
+    test `rejects malformed string interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-interpolation-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            var String unterminated = "\"Hello "
+            unterminated += '#'
+            unterminated += "{name\""
+            PrimitiveExpressionParser().parse([
+                token(unterminated, Token.Type.STRING, 1)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            var String empty = "\"Hello "
+            empty += '#'
+            empty += "{}\""
+            PrimitiveExpressionParser().parse([
+                token(empty, Token.Type.STRING, 1)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
+    }
+
+    test `parses floating point literal with exact source evidence`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-float"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("0.5", Token.Type.FLOAT, 3)
+        ], snapshot, 7)
+        let literal = (PrimitiveLiteralSyntax)expression
+
+        expect(literal.tokenType).toBe(Token.Type.FLOAT)
+        expect(literal.sourceValue).toBe("0.5")
+        expect(literal.range.startTokenIndex).toBe(7)
+        expect(literal.range.start.column).toBe(3)
+    }
+
     test `parses primitive literal unary binary precedence and absolute ranges`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-expression"), "revision:one"
@@ -35,6 +111,23 @@ testable class {
         expect(offsetExpression.range.endTokenIndex).toBe(13)
     }
 
+    test `parses cast wrapped member compound assignment value`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:member-assignment-value"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("Long", Token.Type.IDENTIFIER, 2),
+            token(")", Token.Type.SYMBOL, 6), token("(", Token.Type.SYMBOL, 7),
+            token("this", Token.Type.IDENTIFIER, 8), token(".", Token.Type.SYMBOL, 12),
+            token("value", Token.Type.IDENTIFIER, 13), token("+=", Token.Type.SYMBOL, 19),
+            token("other", Token.Type.IDENTIFIER, 22), token(")", Token.Type.SYMBOL, 27)
+        ], snapshot)
+        let cast = (PrimitiveCastSyntax)expression
+
+        expect(cast.value.expressionKind()).toBe("member-assignment-value")
+        expect(cast.typeName).toBe("Long")
+    }
+
     test `parses metadata access explicitly`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:class-name-expression"), "revision:one"
@@ -48,6 +141,42 @@ testable class {
         expect(expression.expressionKind()).toBe("class-name")
         expect(expression.range.startTokenIndex).toBe(0)
         expect(expression.range.endTokenIndex).toBe(5)
+    }
+
+    test `parses generic array allocation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-array-construction"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("Array", Token.Type.IDENTIFIER, 1), token("<", Token.Type.SYMBOL, 6),
+            token("Char", Token.Type.IDENTIFIER, 7), token(">", Token.Type.SYMBOL, 11),
+            token("(", Token.Type.SYMBOL, 12), token("count", Token.Type.IDENTIFIER, 13),
+            token(")", Token.Type.SYMBOL, 18)
+        ], snapshot)
+        let allocation = (PrimitiveArrayConstructionSyntax)expression
+
+        expect(allocation.elementTypeName).toBe("Char")
+        expect(allocation.size.expressionKind()).toBe("reference")
+    }
+
+    test `parses fixed size array construction`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-construction"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("new", Token.Type.IDENTIFIER, 1),
+            token("Char", Token.Type.IDENTIFIER, 5),
+            token("[", Token.Type.SYMBOL, 9),
+            token("count", Token.Type.IDENTIFIER, 10),
+            token("]", Token.Type.SYMBOL, 15)
+        ], snapshot)
+        let construction = (PrimitiveArrayConstructionSyntax)expression
+
+        expect(construction.expressionKind()).toBe("array-construction")
+        expect(construction.elementTypeName).toBe("Char")
+        expect(construction.size.expressionKind()).toBe("reference")
+        expect(construction.range.startTokenIndex).toBe(0)
+        expect(construction.range.endTokenIndex).toBe(5)
     }
 
     test `parses receiver owned member call`() {
@@ -64,6 +193,24 @@ testable class {
         expect(call.expressionKind()).toBe("member-call")
         expect(call.memberName).toBe("equals")
         expect(call.argumentValues().count).toBe(1)
+    }
+
+    test `parses interpolated string receiver member call`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-receiver-call"), "revision:one"
+        )
+        var String source = "\""
+        source += '#'
+        source += "value\""
+        let expression = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 1), token(".", Token.Type.SYMBOL, 9),
+            token("repeat", Token.Type.IDENTIFIER, 10), token("(", Token.Type.SYMBOL, 16),
+            token("times", Token.Type.IDENTIFIER, 17), token(")", Token.Type.SYMBOL, 22)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)expression
+
+        expect(call.receiver.expressionKind()).toBe("interpolated-string")
+        expect(call.memberName).toBe("repeat")
     }
 
     test `parses explicit cast expression with source range`() {
@@ -332,6 +479,30 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected = true }
         expect(rejected).toBe(true)
+    }
+
+    test `rejects malformed fixed size array construction`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-construction-invalid"), "revision:one"
+        )
+        var Int rejected
+        try {
+            PrimitiveExpressionParser().parse([
+                token("new", Token.Type.IDENTIFIER, 1),
+                token("Char", Token.Type.IDENTIFIER, 5),
+                token("[", Token.Type.SYMBOL, 9),
+                token("]", Token.Type.SYMBOL, 10)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveExpressionParser().parse([
+                token("new", Token.Type.IDENTIFIER, 1),
+                token("Char", Token.Type.IDENTIFIER, 5),
+                token("[", Token.Type.SYMBOL, 9),
+                token("count", Token.Type.IDENTIFIER, 10)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
     }
 
     test `rejects incomplete and trailing primitive expressions`() {

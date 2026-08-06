@@ -1,0 +1,146 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Parses all Flat string interpolation segments without target-specific lowering. */
+class {
+    public parse(
+        Token token,
+        SourceSnapshotIdentity snapshot,
+        Int tokenIndex
+    ) -> PrimitiveStringExpressionSyntaxResult {
+        if (!token || token.type != Token.Type.STRING || !snapshot || tokenIndex < 0 || !token.location) {
+            throw Exception("String interpolation parsing requires a ranged string token")
+        }
+        let source = token.value
+        let segments = PrimitiveInterpolatedStringSegmentSyntax[]
+        var Int cursor = 1
+        var Int literalStart = cursor
+        let contentEnd = source.count - 1
+        while (cursor < contentEnd) {
+            if (source.chars[cursor] != '#') {
+                cursor++
+                continue
+            }
+            if (cursor > literalStart) {
+                segments.add(literal(token, snapshot, tokenIndex, literalStart, cursor))
+            }
+            let interpolationStart = cursor
+            cursor++
+            var Int expressionStart = cursor
+            var Int expressionEnd
+            if (cursor < contentEnd && source.substring(cursor, cursor + 1) == "{") {
+                cursor++
+                expressionStart = cursor
+                var Int depth = 1
+                while (cursor < contentEnd && depth > 0) {
+                    let value = source.substring(cursor, cursor + 1)
+                    if (value == "{") depth++
+                    else if (value == "}") depth--
+                    if (depth > 0) cursor++
+                }
+                if (depth != 0) invalid("Unterminated braced string interpolation")
+                expressionEnd = cursor
+                cursor++
+            } else {
+                while (cursor < contentEnd && interpolationPart(source.substring(cursor, cursor + 1))) {
+                    cursor++
+                }
+                expressionEnd = cursor
+            }
+            if (expressionStart == expressionEnd) invalid("String interpolation requires an expression")
+            let expressionSource = source.substring(expressionStart, expressionEnd)
+            let expressionObject = expressionSyntax(
+                expressionSource,
+                range(token, snapshot, tokenIndex, expressionStart, expressionEnd)
+            )
+            let expression = (PrimitiveExpressionSyntax)expressionObject
+            segments.add(PrimitiveInterpolatedStringSegmentSyntax(
+                range(token, snapshot, tokenIndex, interpolationStart, cursor),
+                null,
+                expression
+            ))
+            literalStart = cursor
+        }
+        if (literalStart < contentEnd) {
+            segments.add(literal(token, snapshot, tokenIndex, literalStart, contentEnd))
+        }
+        if (!segments.any({ !_.literal() })) {
+            invalid("Interpolated string parser requires an interpolation marker")
+        }
+        let interpolationObject = (Object)PrimitiveInterpolatedStringSyntax(
+            range(token, snapshot, tokenIndex, 0, source.count), segments
+        )
+        let expression = (PrimitiveExpressionSyntax)interpolationObject
+        return PrimitiveStringExpressionSyntaxResult(expression)
+    }
+
+    literal(
+        Token token,
+        SourceSnapshotIdentity snapshot,
+        Int tokenIndex,
+        Int start,
+        Int end
+    ) -> PrimitiveInterpolatedStringSegmentSyntax {
+        return PrimitiveInterpolatedStringSegmentSyntax(
+            range(token, snapshot, tokenIndex, start, end),
+            "\"" + token.value.substring(start, end) + "\"",
+            null
+        )
+    }
+
+    expressionSyntax(String source, SourceRange sourceRange) -> PrimitiveInterpolationPathSyntax {
+        let parts = source.split(".")
+        if (parts.isEmpty || parts.any({ !identifier(_) })) {
+            invalid("String interpolation supports a dotted identifier expression")
+        }
+        return PrimitiveInterpolationPathSyntax(sourceRange, parts)
+    }
+
+    interpolationPart(String value) -> Bool =>
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789.".contains(value)
+
+    identifier(String value) -> Bool {
+        if (!value || value.isEmpty) return false
+        let first = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+        let rest = first + "0123456789"
+        if (!first.contains(value.substring(0, 1))) return false
+        var Int index = 1
+        while (index < value.count) {
+            if (!rest.contains(value.substring(index, index + 1))) return false
+            index++
+        }
+        return true
+    }
+
+    range(
+        Token token,
+        SourceSnapshotIdentity snapshot,
+        Int tokenIndex,
+        Int start,
+        Int end
+    ) -> SourceRange {
+        return SourceRange(
+            snapshot, tokenIndex, tokenIndex + 1,
+            location(token, start), location(token, end)
+        )
+    }
+
+    location(Token token, Int offset) -> Location {
+        var Int line = token.location.lineNumber
+        var Int column = token.location.column
+        var Int index
+        while (index < offset) {
+            if (token.value.substring(index, index + 1) == "\n") {
+                line++
+                column = 1
+            } else column++
+            index++
+        }
+        return Location(lineNumber: line, column: column)
+    }
+
+    invalid(String message) {
+        throw Exception(message)
+    }
+}

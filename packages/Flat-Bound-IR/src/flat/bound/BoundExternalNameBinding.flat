@@ -1,0 +1,14 @@
+package flat/bound
+
+/** Explicit source-name alias for a typed value referenced by opaque external code. */
+data class {
+    public construct(
+        visible String sourceName,
+        visible BoundReferenceExpression value
+    ) {
+        if (!sourceName || sourceName.trim().isEmpty || !value ||
+            value.symbolIdentity.symbolKind != "parameter") {
+            throw Exception("Bound external name binding requires a parameter reference")
+        }
+    }
+}

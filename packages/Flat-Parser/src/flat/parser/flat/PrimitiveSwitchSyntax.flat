@@ -1,0 +1,26 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax for a value-selected switch statement. */
+data class extends PrimitiveStatementSyntax {
+    var PrimitiveSwitchCaseSyntax[] cases
+
+    public construct(
+        SourceRange range,
+        visible PrimitiveExpressionSyntax value,
+        PrimitiveSwitchCaseSyntax[] caseValues
+    ) {
+        if (!range || !value || !caseValues || caseValues.isEmpty ||
+            caseValues.any({ !_ }) || caseValues.filter({ _.defaultCase }).count > 1) {
+            throw Exception("Primitive switch syntax requires value and cases")
+        }
+        cases = PrimitiveSwitchCaseSyntax[]
+        cases.addAll(caseValues)
+        super(range)
+    }
+
+    public caseValues() -> PrimitiveSwitchCaseSyntax[] =>
+        PrimitiveSwitchCaseSyntax[]:addAll(cases)
+    override public statementKind() => "switch"
+}

@@ -37,17 +37,17 @@ class {
             if (locals.any({ _.name == value.name })) {
                 throw Exception("Duplicate local '#{value.name}'")
             }
+            if (!value.initializer) {
+                let semanticType = declaredType(value.declaredTypeName)
+                let identity = localIdentity(snapshot, statement, value.name)
+                let reference = BoundReferenceExpression(
+                    value.range, semanticType, value.name, identity
+                )
+                locals.add(LocalBinding(value.name, identity, semanticType))
+                return BoundLocalDeclarationStatement(value.range, reference)
+            }
             let expression = expression(value.initializer)
-            let identity = SymbolIdentity(
-                DeclarationIdentity(
-                    SyntaxIslandIdentity(
-                        snapshot, "local", statement.range.startTokenIndex
-                    ),
-                    "local",
-                    value.name
-                ),
-                "local"
-            )
+            let identity = localIdentity(snapshot, statement, value.name)
             let reference = BoundReferenceExpression(
                 value.range, expression.semanticType, value.name, identity
             )
@@ -61,16 +61,29 @@ class {
             let value = (PrimitiveAssignmentSyntax)statement
             let local = locals.reverse().firstOrNull({ _.name == value.name })
             if (!local) throw Exception("Unknown local '#{value.name}'")
-            let expression = expression(value.value)
+            let target = BoundReferenceExpression(
+                value.range, local.semanticType, local.name, local.identity
+            )
+            var BoundExpression expression
+            if (value.assignmentOperator == "=") {
+                expression = expression(value.value)
+            } else {
+                let operand = expression(value.value)
+                let operator = binaryOperator(value.assignmentOperator)
+                let operation = TypeOperations.binary(
+                    operator, local.semanticType, operand.semanticType, value.range
+                )
+                if (!operation.valid) throw Exception(operation.diagnostic.message)
+                expression = BoundBinaryExpression(
+                    value.range, operation.semanticType, operator, target, operand
+                )
+            }
             let conversion = TypeConversions.classify(
                 expression.semanticType, local.semanticType
             )
             if (!conversion.applicable) {
                 throw Exception("Cannot assign '#{expression.semanticType.value()}' to '#{local.semanticType.value()}'")
             }
-            let target = BoundReferenceExpression(
-                value.range, local.semanticType, local.name, local.identity
-            )
             return BoundAssignmentStatement(value.range, target, expression, conversion)
         }
         if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
@@ -85,6 +98,44 @@ class {
             )
         }
         throw Exception("Unsupported primitive statement syntax '#{statement.statementKind()}'")
+    }
+
+    localIdentity(
+        SourceSnapshotIdentity snapshot,
+        PrimitiveStatementSyntax statement,
+        String name
+    ) -> SymbolIdentity => SymbolIdentity(
+        DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "local", statement.range.startTokenIndex),
+            "local", name
+        ),
+        "local"
+    )
+
+    declaredType(String name) -> SemanticType {
+        if (name == "Bool") return SemanticTypes.boolType()
+        if (name == "Byte") return SemanticTypes.byteType()
+        if (name == "Short") return SemanticTypes.shortType()
+        if (name == "Int") return SemanticTypes.intType()
+        if (name == "Long") return SemanticTypes.longType()
+        if (name == "Float") return SemanticTypes.floatType()
+        if (name == "Double") return SemanticTypes.doubleType()
+        if (name == "Char") return SemanticTypes.charType()
+        if (name == "String") return SemanticTypes.stringType()
+        if (name == "Object") return SemanticTypes.objectType()
+        if (name.endsWith("[]")) {
+            return ArraySemanticType(declaredType(name.substring(0, name.count - 2)))
+        }
+        throw Exception("Unknown primitive local type '#name'")
+    }
+
+    binaryOperator(String assignmentOperator) -> String {
+        if (assignmentOperator == "+=" || assignmentOperator == "++") return "+"
+        if (assignmentOperator == "-=" || assignmentOperator == "--") return "-"
+        if (assignmentOperator == "*=") return "*"
+        if (assignmentOperator == "/=") return "/"
+        if (assignmentOperator == "%=") return "%"
+        throw Exception("Unsupported compound assignment operator '#assignmentOperator'")
     }
 
     expression(PrimitiveExpressionSyntax syntax) -> BoundExpression {

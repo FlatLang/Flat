@@ -6,6 +6,17 @@ class {
         return mangledName + "(" + argumentText + ")"
     }
 
+    public emitIntrinsicMemberCall(
+        String receiver,
+        String memberName,
+        String argumentText
+    ) -> String {
+        if (memberName == "repeat") {
+            return receiver + ".repeat(" + argumentText + ")"
+        }
+        throw Exception("Unsupported ES6 intrinsic member call '#memberName'")
+    }
+
     public emitInstanceCall(String receiver, String methodName, String argumentText) -> String {
         return receiver + "." + methodName + "(" + argumentText + ")"
     }

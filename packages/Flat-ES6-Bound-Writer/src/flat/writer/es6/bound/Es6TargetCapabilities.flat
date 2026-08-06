@@ -5,14 +5,19 @@ class {
     public static supportsStatement(String kind) -> Bool {
         return kind == "expression" || kind == "external" || kind == "local-declaration" ||
             kind == "assignment" || kind == "member-assignment" || kind == "return" || kind == "if" ||
-            kind == "while" || kind == "throw" || kind == "try"
+            kind == "switch" ||
+            kind == "while" || kind == "throw" || kind == "try" ||
+            kind == "array-assignment"
     }
 
     public static supportsExpression(String kind) -> Bool {
-        return kind == "literal" || kind == "reference" || kind == "member-access" ||
+        return kind == "literal" || kind == "interpolated-string" || kind == "reference" || kind == "member-access" ||
             kind == "unary" || kind == "binary" || kind == "conditional" ||
-            kind == "class-name" || kind == "conversion" ||
+            kind == "class-name" || kind == "type-metadata" || kind == "type-test" ||
+            kind == "conversion" || kind == "member-assignment-value" ||
+            kind == "intrinsic-member-call" ||
             kind == "call" || kind == "native-call" || kind == "array" ||
+            kind == "array-construction" ||
             kind == "array-access" || kind == "lambda" || kind == "function-reference"
     }
 

@@ -3,8 +3,46 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/parser/flat
 import flat/bound
+import flat/lexer/Lexer
+import flat/semantic/types
 
 testable class {
+    test `binds exclusive integer range foreach mechanics and loop scope`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-foreach-bind"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "iterate"
+        )
+        let count = LocalBinding(
+            "count", SymbolIdentity(declaration, "parameter", 0), SemanticTypes.intType()
+        )
+        let total = LocalBinding(
+            "total", SymbolIdentity(declaration, "local", 1), SemanticTypes.intType()
+        )
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("i", Token.Type.IDENTIFIER, 6), token("in", Token.Type.IDENTIFIER, 8),
+            token("0", Token.Type.INTEGER, 11), token("..", Token.Type.SYMBOL, 12),
+            token("count", Token.Type.IDENTIFIER, 14), token(")", Token.Type.SYMBOL, 19),
+            token("{", Token.Type.SYMBOL, 21), token("total", Token.Type.IDENTIFIER, 23),
+            token("+=", Token.Type.SYMBOL, 29), token("i", Token.Type.IDENTIFIER, 32),
+            token("}", Token.Type.SYMBOL, 34)
+        ], snapshot)
+        let result = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, [count, total]
+        )
+        let boundStatements = result.statements()
+        let loopObject = (Object)boundStatements.first
+        let loop = (BoundForEachStatement)loopObject
+
+        expect(loop.initialization().first.unitKind()).toBe("local-declaration")
+        expect(loop.condition.semanticType.value()).toBe("primitive:Bool")
+        expect(loop.body().first.unitKind()).toBe("assignment")
+        expect(loop.advance().first.unitKind()).toBe("assignment")
+        expect(result.locals().map({ _.name })).toBe(["count", "total"])
+    }
+
     test `binds Bool conditions and isolates nested local scopes`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-control-bind"), "revision:one"
@@ -31,6 +69,35 @@ testable class {
         expect(thenStatements.first.unitKind()).toBe("local-declaration")
         expect(result.locals().count).toBe(0)
         expect(result.statements().count).toBe(2)
+    }
+
+    async test `binds typed switch cases and fallthrough`() {
+        let source = "switch value { ' ' => fallthrough '\\n' => return true }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-switch-bind"), "revision:one"
+        )
+        let syntax = PrimitiveControlStatementParser().parse(tokens, snapshot)
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "run"
+        )
+        var LocalBinding local = LocalBinding(
+            name: "value", identity: SymbolIdentity(owner, "parameter"),
+            semanticType: SemanticTypes.charType()
+        )
+        let result = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, locals: [local]
+        )
+        let statements = result.statements()
+        let switchObject = (Object)statements.first
+        let value = (BoundSwitchStatement)switchObject
+        let cases = value.caseValues()
+
+        expect(value.value.semanticType.value()).toBe("primitive:Char")
+        expect(cases.first.fallsThrough).toBe(true)
+        expect(cases.last.label.semanticType.value()).toBe("primitive:Char")
     }
 
     test `rejects non Bool and unknown-reference conditions`() {
@@ -85,6 +152,27 @@ testable class {
         expect(tryValues.first.unitKind()).toBe("throw")
         expect(catches.first.local.semanticType.value()).toBe("builtin:String")
         expect(value.finallyValues().count).toBe(1)
+    }
+
+    async test `binds compound Float field assignment with explicit narrowing`() {
+        let source = "class Float { construct(public Float value) {} " +
+            "plusEqualsReal(Double other) => this.value += other }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-float-member-assignment"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(tokens, snapshot)
+        let result = PrimitiveClassBinder().bind(syntax, snapshot)
+        let method = result.typeUnit.functionUnits().firstOrNull({ _.name == "plusEqualsReal" })
+        let statements = method.statements()
+        let assignmentObject = (Object)statements.first
+        var BoundMemberAssignmentStatement assignment
+        assignment = (BoundMemberAssignmentStatement)assignmentObject
+
+        expect(assignment.conversion.conversionKind).toBe("numeric-cast")
+        expect(assignment.value.semanticType.value()).toBe("primitive:Double")
     }
 
     test `rejects non throwable values and catch types`() {

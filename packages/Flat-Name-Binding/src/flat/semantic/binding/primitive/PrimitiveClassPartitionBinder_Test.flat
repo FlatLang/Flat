@@ -79,6 +79,23 @@ testable class {
         expect(rejected).toBe(2)
     }
 
+    test `resolves structural arrays and functions without erasing element types`() {
+        let resolver = PrimitiveStructuralTypeResolver()
+        let arrayType = resolver.resolve("Object[]")
+        let functionType = resolver.resolve("func(Object[],String)->Bool")
+
+        expect(arrayType.value()).toBe("array:1:builtin:Object")
+        expect(functionType.value())
+            .toBe("function:(array:1:builtin:Object,builtin:String)->primitive:Bool")
+    }
+
+    test `rejects unknown structural types`() {
+        var Int rejected
+        try { PrimitiveStructuralTypeResolver().resolve("func()->Missing") }
+        catch (Exception error) { rejected++ }
+        expect(rejected).toBe(1)
+    }
+
     test `missing parent fails`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-invalid"), "one")
         var Int rejected
@@ -100,6 +117,18 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(1)
+    }
+
+    test `binds deterministic three level ancestry`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-ancestry"), "one")
+        let leaf = PrimitiveClassParser().parse(typeTokens("Leaf", "Middle", "3"), snapshot)
+        let middle = PrimitiveClassParser().parse(typeTokens("Middle", "Root", "2"), snapshot)
+        let root = PrimitiveClassParser().parse(typeTokens("Root", null, "1"), snapshot)
+        let types = PrimitiveClassPartitionBinder().bind([leaf, root, middle], snapshot).typeUnits()
+
+        expect(types.map({ _.identity.name })).toBe(["Root", "Middle", "Leaf"])
+        expect(types.last.parentType.value()).toBe(types[1].semanticType.value())
+        expect(types[1].parentType.value()).toBe(types.first.semanticType.value())
     }
 
     test `cycle fails`() {

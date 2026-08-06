@@ -1,0 +1,22 @@
+package flat/parser/flat
+
+/**
+ * Immutable grammar-backed classification of one pending class-body member
+ * whose opening brace has not yet been consumed.
+ */
+data class {
+    public static String FUNCTION = "function"
+    public static String STATIC_BLOCK = "static-block"
+
+    public construct(
+        visible String memberKind,
+        visible String parserName
+    ) {
+        if (memberKind != FUNCTION && memberKind != STATIC_BLOCK) {
+            throw Exception("Pending braced member classification requires a supported member kind")
+        }
+        if (!parserName || parserName.trim().isEmpty) {
+            throw Exception("Pending braced member classification requires its grammar parser identity")
+        }
+    }
+}

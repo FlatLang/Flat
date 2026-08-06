@@ -3,6 +3,28 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses array element assignment with indexed value`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-array-assignment"), "revision:one"
+        )
+        let result = PrimitiveStatementParser().parse([
+            token("array", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 6),
+            token("count", Token.Type.IDENTIFIER, 7), token("-", Token.Type.SYMBOL, 13),
+            token("i", Token.Type.IDENTIFIER, 15), token("-", Token.Type.SYMBOL, 17),
+            token("1", Token.Type.INTEGER, 19), token("]", Token.Type.SYMBOL, 20),
+            token("=", Token.Type.SYMBOL, 22), token("this", Token.Type.IDENTIFIER, 24),
+            token("[", Token.Type.SYMBOL, 28), token("i", Token.Type.IDENTIFIER, 29),
+            token("]", Token.Type.SYMBOL, 30)
+        ], snapshot)
+        let statements = result.statements()
+        let assignmentObject = (Object)statements.first
+        let assignment = (PrimitiveArrayAssignmentSyntax)assignmentObject
+
+        expect(assignment.statementKind()).toBe("array-assignment")
+        expect(assignment.target.index.expressionKind()).toBe("binary")
+        expect(assignment.value.expressionKind()).toBe("array-access")
+    }
+
     test `parses syntax only locals assignments and returns`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-statements"), "revision:one"
@@ -30,6 +52,77 @@ testable class {
         ])
         expect(declaration.range.start.column).toBe(1)
         expect(declaration.range.end.column).toBe(14)
+    }
+
+    test `parses compound and update assignments as assignment evidence`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-compound-assignments"), "revision:one"
+        )
+        let divided = PrimitiveStatementParser().parse([
+            token("number", Token.Type.IDENTIFIER, 1),
+            token("/=", Token.Type.SYMBOL, 8),
+            token("10", Token.Type.INTEGER, 11)
+        ], snapshot)
+        let incremented = PrimitiveStatementParser().parse([
+            token("size", Token.Type.IDENTIFIER, 1),
+            token("++", Token.Type.SYMBOL, 5)
+        ], snapshot)
+        let member = PrimitiveStatementParser().parse([
+            token("this", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 5),
+            token("value", Token.Type.IDENTIFIER, 6), token("+=", Token.Type.SYMBOL, 12),
+            token("1", Token.Type.INTEGER, 15)
+        ], snapshot)
+        expect(divided.statements().map({ _.statementKind() })).toBe(["assignment"])
+        expect(incremented.statements().map({ _.statementKind() })).toBe(["assignment"])
+        expect(member.statements().map({ _.statementKind() })).toBe(["member-assignment"])
+    }
+
+    test `parses typed primitive local declaration`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:typed-primitive-local"), "revision:one"
+        )
+        let result = PrimitiveStatementParser().parse([
+            token("var", Token.Type.IDENTIFIER, 1),
+            token("Int", Token.Type.IDENTIFIER, 5),
+            token("size", Token.Type.IDENTIFIER, 9),
+            token("=", Token.Type.SYMBOL, 14),
+            token("1", Token.Type.INTEGER, 16)
+        ], snapshot)
+        expect(result.statements().map({ _.statementKind() })).toBe(["local-declaration"])
+    }
+
+    test `parses direct typed initialized local declaration`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:direct-typed-local"), "revision:one"
+        )
+        let result = PrimitiveStatementParser().parse([
+            token("Int", Token.Type.IDENTIFIER, 1),
+            token("id", Token.Type.IDENTIFIER, 5),
+            token("=", Token.Type.SYMBOL, 8),
+            token("1", Token.Type.INTEGER, 10)
+        ], snapshot)
+        let statements = result.statements()
+        let localObject = (Object)statements.first
+        let local = (PrimitiveLocalDeclarationSyntax)localObject
+
+        expect(local.declaredTypeName).toBe("Int")
+        expect(local.name).toBe("id")
+    }
+
+    test `parses native array typed local without initializer`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-array-local"), "revision:one"
+        )
+        let result = PrimitiveStatementParser().parse([
+            token("native_array", Token.Type.IDENTIFIER, 1),
+            token("native", Token.Type.IDENTIFIER, 14),
+            token("var", Token.Type.IDENTIFIER, 21),
+            token("Char", Token.Type.IDENTIFIER, 25),
+            token("[", Token.Type.SYMBOL, 29), token("]", Token.Type.SYMBOL, 30),
+            token("data", Token.Type.IDENTIFIER, 32)
+        ], snapshot)
+
+        expect(result.statements().map({ _.statementKind() })).toBe(["local-declaration"])
     }
 
     test `parses target native expression statement`() {

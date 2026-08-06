@@ -1,0 +1,28 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only exclusive integer range foreach loop. */
+data class extends PrimitiveStatementSyntax {
+    var PrimitiveStatementSyntax[] bodyStatements
+
+    public construct(
+        SourceRange range,
+        visible String indexName,
+        visible PrimitiveExpressionSyntax rangeStart,
+        visible PrimitiveExpressionSyntax rangeEnd,
+        PrimitiveStatementSyntax[] bodyValues
+    ) {
+        if (!range || !indexName || indexName.trim().isEmpty || !rangeStart || !rangeEnd ||
+            !bodyValues || bodyValues.any({ !_ })) {
+            throw Exception("Primitive foreach syntax requires index, range, and body")
+        }
+        bodyStatements = PrimitiveStatementSyntax[]
+        bodyStatements.addAll(bodyValues)
+        super(range)
+    }
+
+    public bodyValues() -> PrimitiveStatementSyntax[] =>
+        PrimitiveStatementSyntax[]:addAll(bodyStatements)
+    override public statementKind() => "foreach"
+}

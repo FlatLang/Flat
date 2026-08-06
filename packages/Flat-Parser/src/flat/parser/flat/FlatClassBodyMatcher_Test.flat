@@ -4,6 +4,14 @@ import flat/compiler/models/Token
 import flat/lexer/Lexer
 
 testable class {
+    async test `classifies native modifier braced function header`() {
+        let classification = FlatClassBodyMatcher().classifyPendingBraced(significant(lex(
+            "public native_array native static toCharArray(Double value) -> Char[]"
+        )))
+
+        expect(classification.memberKind).toBe("function")
+    }
+
     async test `class body grammar probe counts complete adjacent members`() {
         let cases = [
             "run() next()",
@@ -61,6 +69,30 @@ testable class {
         )))
         expect(result.matchedAll).toBe(true)
         expect(result.memberTokenCounts.count).toBe(1)
+    }
+
+    async test `classifies pending static functions and static blocks from grammar spans`() {
+        let functionClassification = FlatClassBodyMatcher().classifyPendingBraced(
+            significant(lex(
+                "public static referenceEquals(Object one, Object two) -> Bool"
+            ))
+        )
+        expect(functionClassification.memberKind).toBe(
+            PendingBracedMemberClassification.FUNCTION
+        )
+        expect(functionClassification.parserName).toBe(FunctionParser.class.name)
+
+        let blockClassification = FlatClassBodyMatcher().classifyPendingBraced(
+            significant(lex("static"))
+        )
+        expect(blockClassification.memberKind).toBe(
+            PendingBracedMemberClassification.STATIC_BLOCK
+        )
+        expect(blockClassification.parserName).toBe(StaticBlockParser.class.name)
+
+        expect(FlatClassBodyMatcher().classifyPendingBraced(
+            significant(lex("nonsense"))
+        )).toBe(null)
     }
 
     async test `class body grammar probe rejects an incomplete member`() {

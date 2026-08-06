@@ -1,0 +1,110 @@
+package flat/semantic/binding/primitive
+
+import flat/parser/flat
+import flat/compiler/models
+import flat/semantic/types
+
+/** Resolves reduced declaration type text without erasing structural array/function evidence. */
+class {
+    public construct(
+        visible PrimitiveClassSyntax[] syntaxes = PrimitiveClassSyntax[],
+        visible CallableSignature[] callables = CallableSignature[],
+        visible SourceSnapshotIdentity snapshot = null,
+        visible GenericParameterSemanticType genericParameter = null,
+        visible UserClassSemanticType receiverType = null
+    ) {
+        if (!syntaxes || syntaxes.any({ !_ }) || !callables || callables.any({ !_ })) {
+            throw Exception("Reduced structural type resolution requires valid declarations")
+        }
+    }
+
+    public resolve(String name) -> SemanticType {
+        if (!name || name.trim().isEmpty) throw Exception("Reduced type name is required")
+        if (name.endsWith("[]")) {
+            return ArraySemanticType(resolve(name.substring(0, name.count - 2)))
+        }
+        let open = name.indexOf("(", defaultReturnValue: -1)
+        if (open >= 0) return functionType(name, open)
+        if (genericParameter && name == genericParameter.name) return genericParameter
+        if (name == "this" && receiverType) return receiverType
+        if (name == "Unknown") return SemanticTypes.unknownType()
+        if (name == "Bool") return SemanticTypes.boolType()
+        if (name == "Byte") return SemanticTypes.byteType()
+        if (name == "Short") return SemanticTypes.shortType()
+        if (name == "Int") return SemanticTypes.intType()
+        if (name == "Long") return SemanticTypes.longType()
+        if (name == "Float") return SemanticTypes.floatType()
+        if (name == "Double") return SemanticTypes.doubleType()
+        if (name == "Char") return SemanticTypes.charType()
+        if (name == "String") return SemanticTypes.stringType()
+        if (name == "Object") return SemanticTypes.objectType()
+        if (name == "Void") return SemanticTypes.voidType()
+        if (name == "Unit") return SemanticTypes.unitType()
+        let callable = callables.firstOrNull((candidate) =>
+            candidate.callableKind.value == "constructor" &&
+            candidate.ownerType.declarationIdentity.name == name
+        )
+        if (callable) return callable.ownerType
+        let syntax = syntaxes.firstOrNull({ _.name == name })
+        if (syntax) {
+            let targetSnapshot = snapshot ?: syntax.range.snapshot
+            return UserClassSemanticType(DeclarationIdentity(
+                SyntaxIslandIdentity(targetSnapshot, "class", syntax.range.startTokenIndex),
+                "class", name
+            ))
+        }
+        throw Exception("Unknown reduced type '#name'")
+    }
+
+    functionType(String name, Int open) -> FunctionSemanticType {
+        let close = matchingClose(name, open)
+        if (close < 0) throw Exception("Unterminated reduced function type '#name'")
+        let parameters = SemanticType[]
+        let body = name.substring(open + 1, close)
+        for (part in splitTypes(body)) parameters.add(resolve(part))
+        var SemanticType returnType = SemanticTypes.unitType()
+        if (close + 2 < name.count && name.substring(close + 1, close + 3) == "->") {
+            returnType = resolve(name.substring(close + 3))
+        } else if (close != name.count - 1) {
+            throw Exception("Invalid reduced function type '#name'")
+        }
+        return FunctionSemanticType(parameters, returnType)
+    }
+
+    matchingClose(String value, Int open) -> Int {
+        var Int depth
+        var Int index = open
+        while (index < value.count) {
+            let character = value.substring(index, index + 1)
+            if (character == "(") depth++
+            else if (character == ")") {
+                depth--
+                if (depth == 0) return index
+            }
+            index++
+        }
+        return -1
+    }
+
+    splitTypes(String value) -> String[] {
+        let result = String[]
+        if (value.isEmpty) return result
+        var Int start
+        var Int depth
+        var Int index
+        while (index < value.count) {
+            let character = value.substring(index, index + 1)
+            if (character == "(") depth++
+            else if (character == ")") depth--
+            else if (character == "," && depth == 0) {
+                if (start == index) throw Exception("Reduced function type requires parameter type")
+                result.add(value.substring(start, index))
+                start = index + 1
+            }
+            index++
+        }
+        if (start == value.count) throw Exception("Reduced function type has trailing comma")
+        result.add(value.substring(start))
+        return result
+    }
+}

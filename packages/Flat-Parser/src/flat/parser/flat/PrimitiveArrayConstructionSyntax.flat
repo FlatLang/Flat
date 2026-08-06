@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only fixed-size array allocation. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible String elementTypeName,
+        visible PrimitiveExpressionSyntax size
+    ) {
+        if (!range || !elementTypeName || elementTypeName.trim().count == 0 || !size) {
+            throw Exception("Primitive array construction syntax requires element type and size")
+        }
+        super(range)
+    }
+    override public expressionKind() => "array-construction"
+}

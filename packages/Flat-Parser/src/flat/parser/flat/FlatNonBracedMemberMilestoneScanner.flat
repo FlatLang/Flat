@@ -63,6 +63,10 @@ class {
         retain(token, tokenIndex)
         if (expressionBodyOpen) return SyntaxIsland[]
 
+        // A grammar-proven braced header remains pending until its opening
+        // brace arrives; it must not be published as a bodyless declaration.
+        if (FlatClassBodyMatcher().classifyPendingBraced(retained)) return SyntaxIsland[]
+
         let match = FlatClassBodyMatcher().inspect(retained)
 
         if (match.memberTokenCounts.count > 1 ||
@@ -70,6 +74,7 @@ class {
             let count = match.memberTokenCounts.first
             let candidate = retained.take(count)
             let arrow = findTopLevelArrow(candidate)
+            if (continuesMember(count)) return SyntaxIsland[]
             if (hasLambdaArrowPrefix() && isSymbol(retained.last, "=>")) return SyntaxIsland[]
             if (arrow < 0 || arrow + 1 < candidate.count) return publishFirst(count)
         }
@@ -82,6 +87,15 @@ class {
      * span before its trailing candidate. Metadata without a declaration is
      * retained for the braced scanner that owns the opening brace.
      */
+    /**
+     * Returns immutable parser identity for the retained declaration only when
+     * the class-body grammar proves it as a braced function or static block.
+     */
+    public classifyPendingBraced(Token[] tokens) -> PendingBracedMemberClassification {
+        if (finished || !tokens || tokens.isEmpty || expressionBodyOpen) return null
+        return FlatClassBodyMatcher().classifyPendingBraced(tokens)
+    }
+
     public finishBeforeBracedMember() -> SyntaxIsland[] {
         if (finished || retained.isEmpty) return SyntaxIsland[]
 
@@ -183,6 +197,24 @@ class {
         retained = retained.skip(count)
         retainedIndexes = retainedIndexes.skip(count)
         return islands
+    }
+
+    continuesMember(Int count) -> Bool => false {
+        if (count >= retained.count) return false
+        if (isSymbol(retained[count], ".")) return true
+        if (!isSymbol(retained[count], "[")) return false
+        if (count + 1 < retained.count && retained[count + 1].value == "Target") return false
+        var Int cursor = count + 1
+        var Int depth = 1
+        while (cursor < retained.count && depth > 0) {
+            if (isSymbol(retained[cursor], "[")) depth++
+            else if (isSymbol(retained[cursor], "]")) depth--
+            cursor++
+        }
+        if (depth > 0) return true
+        if (cursor >= retained.count) return false
+        let value = retained[cursor].value
+        return value == "=>" || value == "<=>" || value == "." || value == "["
     }
 
     hasLambdaArrowPrefix() -> Bool {

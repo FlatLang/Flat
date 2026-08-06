@@ -1,0 +1,10 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Result of parsing one string token as a literal or interpolated expression. */
+data class {
+    public construct(visible PrimitiveExpressionSyntax expression) {
+        if (!expression) throw Exception("String expression result requires syntax")
+    }
+}

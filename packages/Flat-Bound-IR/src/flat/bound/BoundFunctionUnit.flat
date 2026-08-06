@@ -18,15 +18,24 @@ data class {
         visible Bool mainFunction = false,
         visible Bool constructorFunction = false,
         visible String dispatchIdentity = null,
-        visible BoundParentConstructorCall parentConstructorCall = null
+        visible BoundParentConstructorCall parentConstructorCall = null,
+        visible Bool asyncFunction = false,
+        visible String externalName = null,
+        visible Bool abstractFunction = false
     ) {
         if (!identity || !name || !returnType || !statements || statements.any({ !_ }) || !range ||
             !parameterValues || parameterValues.any({ !_ }) ||
+            (externalName != null && externalName.trim().isEmpty) ||
             identity.syntaxIdentity.snapshot != range.snapshot) {
             throw Exception("Bound function requires identity, name, return type, statements, and range")
         }
-        if (constructorFunction && (staticFunction || mainFunction || returnType.value() != "unit")) {
+        if (constructorFunction && (staticFunction || mainFunction || abstractFunction ||
+            returnType.value() != "unit")) {
             throw Exception("Bound constructor must be an instance unit-returning function")
+        }
+        if (abstractFunction && (staticFunction || mainFunction || statements.isNotEmpty ||
+            externalName != null || asyncFunction)) {
+            throw Exception("Bound abstract function must be bodyless instance contract")
         }
         if (dispatchIdentity && (constructorFunction || staticFunction)) {
             throw Exception("Only instance methods can carry virtual dispatch identity")

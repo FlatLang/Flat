@@ -11,12 +11,15 @@ data class {
         visible SemanticType semanticType,
         visible SourceRange range,
         visible Bool visibleField = false,
-        visible BoundExpression initializer = null
+        visible BoundExpression initializer = null,
+        visible Bool staticField = false
     ) {
         if (!name || !identity || !semanticType || !range ||
-            (initializer && !TypeConversions.classify(
+            (initializer && initializer.semanticType.kind() != "null" && !TypeConversions.classify(
                 initializer.semanticType, semanticType
             ).applicable) ||
+            (initializer && initializer.semanticType.kind() == "null" &&
+                semanticType.kind() != "nullable") ||
             identity.declaration.syntaxIdentity.snapshot != range.snapshot) {
             throw Exception("Bound field requires name identity type and range")
         }

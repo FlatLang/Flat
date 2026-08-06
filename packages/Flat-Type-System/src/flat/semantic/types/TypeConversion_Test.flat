@@ -63,6 +63,15 @@ testable class {
         let objectCast = TypeConversions.classify(
             SemanticTypes.objectType(), userType, explicit: true
         )
+        let numericUnboxing = TypeConversions.classify(
+            SemanticTypes.objectType(), SemanticTypes.byteType(), explicit: true
+        )
+        let implicitNumericUnboxing = TypeConversions.classify(
+            SemanticTypes.objectType(), SemanticTypes.byteType()
+        )
+        let boolUnboxing = TypeConversions.classify(
+            SemanticTypes.objectType(), SemanticTypes.boolType(), explicit: true
+        )
 
         expect(toObject.conversionKind).toBe("reference-upcast")
         expect(nullToUser.applicable).toBe(false)
@@ -71,6 +80,10 @@ testable class {
         expect(unsafeUnwrap.applicable).toBe(false)
         expect(explicitUnwrap.conversionKind).toBe("nullable-unwrap")
         expect(objectCast.conversionKind).toBe("reference-cast")
+        expect(numericUnboxing.conversionKind).toBe("numeric-unboxing")
+        expect(numericUnboxing.implicit).toBe(false)
+        expect(implicitNumericUnboxing.applicable).toBe(false)
+        expect(boolUnboxing.applicable).toBe(false)
     }
 
     test `unknown and error conversions distinguish pending and diagnosed state`() {

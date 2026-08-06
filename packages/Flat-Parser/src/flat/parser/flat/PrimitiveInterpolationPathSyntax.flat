@@ -1,0 +1,20 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable dotted identifier expression retained inside a string segment. */
+data class extends PrimitiveExpressionSyntax {
+    var String[] path
+
+    public construct(SourceRange range, String[] pathValues) {
+        if (!range || !pathValues || pathValues.isEmpty) {
+            throw Exception("Interpolation path syntax requires identifier components")
+        }
+        path = String[]
+        path.addAll(pathValues)
+        super(range)
+    }
+
+    public pathValues() -> String[] => String[]:addAll(path)
+    override public expressionKind() => "interpolation-path"
+}

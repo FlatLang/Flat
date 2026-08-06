@@ -34,6 +34,7 @@ class {
         }
         let sources = sourceValues.sort({ _a.identity.compareTo(_b.identity) })
         let syntaxes = PrimitiveClassSyntax[]
+        let interfaceSyntaxes = PrimitiveInterfaceSyntax[]
         var String packageName
         for (source in sources) {
             if (source.text.count > maxSourceCharacters) {
@@ -46,35 +47,51 @@ class {
                 throw Exception("Flat package source exceeds configured token capacity")
             }
             let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
+            let overlay = source.identity.endsWith(".js.flat")
             let partitions = FlatSourceTypePartitioner(
                 maxTypeTokens: maxTokensPerSource, maxTypes: maxTypes
-            ).partition(tokens, snapshot)
+            ).partition(tokens, snapshot, overlay ? "js" : null)
             for (partition in partitions) {
                 if (!packageName) packageName = partition.packageName
+                if (partition.declarationKind != "class" &&
+                    partition.declarationKind != "trait" &&
+                    partition.declarationKind != "interface") {
+                    throw Exception("Reduced Flat ES6 package linking supports classes and interfaces")
+                }
                 if (partition.declarationKind != "class") {
-                    throw Exception("Reduced Flat ES6 package linking supports classes")
+                    interfaceSyntaxes.add(PrimitiveInterfaceParser().parse(
+                        partition.tokenValues(), snapshot, partition.startTokenIndex,
+                        implicitName(source.identity, partition.name)
+                    ))
+                    continue
                 }
                 if (syntaxes.count >= maxTypes) {
                     throw Exception("Flat ES6 package exceeds configured type capacity")
                 }
-                let parsed = PrimitiveClassParser().parse(
-                    partition.tokenValues(), snapshot, partition.startTokenIndex,
-                    implicitName(source.identity, partition.name)
-                )
+                var PrimitiveClassSyntax parsed
+                try {
+                    parsed = PrimitiveClassParser().parse(
+                        partition.tokenValues(), snapshot, partition.startTokenIndex,
+                        implicitName(source.identity, partition.name)
+                    )
+                } catch (Exception error) {
+                    throw Exception(
+                        "Flat package source '#{source.identity}' failed: #{error.message}"
+                    )
+                }
                 var Int existingIndex = -1
                 var Int syntaxIndex
                 while (syntaxIndex < syntaxes.count && existingIndex < 0) {
                     if (syntaxes[syntaxIndex].name == parsed.name) existingIndex = syntaxIndex
                     syntaxIndex++
                 }
-                let overlay = source.identity.endsWith(".js.flat")
                 if (existingIndex >= 0 && overlay) {
                     syntaxes[existingIndex] = syntaxes[existingIndex].mergedWith(parsed)
                 } else syntaxes.add(parsed)
             }
         }
         let types = PrimitiveClassPartitionBinder().bind(
-            syntaxes, maxTypes: maxTypes
+            syntaxes, maxTypes: maxTypes, interfaceSyntaxValues: interfaceSyntaxes
         ).typeUnits()
         if (types.count > maxFragments) {
             throw Exception("Flat ES6 package exceeds configured fragment capacity")

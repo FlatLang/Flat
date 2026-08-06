@@ -3,6 +3,15 @@ package flat/extensions
 import flat/extensions/SyntaxStringFunctions
 
 testable class {
+    test `classifies unsigned decimal literals without accepting malformed values`() {
+        expect("0.5".isUnsignedFloat()).toBe(true)
+        expect("234.141".isUnsignedFloat()).toBe(true)
+        expect("234".isUnsignedFloat()).toBe(false)
+        expect("1.".isUnsignedFloat()).toBe(false)
+        expect(".5".isUnsignedFloat()).toBe(false)
+        expect("1.2.3".isUnsignedFloat()).toBe(false)
+    }
+
     test `can create`() {
         let value = "this is".nextNonWhitespaceChar()
 

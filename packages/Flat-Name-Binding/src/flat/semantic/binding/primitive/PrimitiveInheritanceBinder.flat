@@ -11,16 +11,23 @@ class {
         PrimitiveClassSyntax parentSyntax,
         PrimitiveClassSyntax childSyntax,
         SourceSnapshotIdentity snapshot = null,
-        CallableSignature[] availableConstructors = CallableSignature[]
+        CallableSignature[] availableConstructors = CallableSignature[],
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[],
+        BoundFunctionUnit[] rootContractFunctions = BoundFunctionUnit[],
+        BoundTypeUnit boundParent = null
     ) -> PrimitiveInheritanceBindingResult {
         if (!parentSyntax || !childSyntax || !availableConstructors ||
-            availableConstructors.any({ !_ }) ||
-            childSyntax.parentName != parentSyntax.name || parentSyntax.parentName) {
+            availableConstructors.any({ !_ }) || !interfaceSyntaxValues ||
+            interfaceSyntaxValues.any({ !_ }) || !rootContractFunctions ||
+            rootContractFunctions.any({ !_ }) ||
+            childSyntax.parentName != parentSyntax.name ||
+            (parentSyntax.parentName && !boundParent) ||
+            (boundParent && boundParent.identity.name != parentSyntax.name)) {
             throw Exception("Reduced inheritance requires one declared root parent and matching child")
         }
         let parentSnapshot = snapshot ?: parentSyntax.range.snapshot
         let childSnapshot = snapshot ?: childSyntax.range.snapshot
-        let parent = PrimitiveClassBinder().bind(
+        let parent = boundParent ?: PrimitiveClassBinder().bind(
             parentSyntax, parentSnapshot,
             availableConstructors: availableConstructors
         ).typeUnit
@@ -41,14 +48,28 @@ class {
             throw Exception("Invalid reduced inheritance component")
         }
         let parentFunctions = normalizeParent(parent.functionUnits())
-        let childFunctions = normalizeChild(child.functionUnits(), parentFunctions)
+        let parentContracts = BoundFunctionUnit[]
+        parentContracts.addAll(parentFunctions)
+        let rootInstanceFunctions = BoundFunctionUnit[]
+        for (function in rootContractFunctions) {
+            if (!function.constructorFunction && !function.staticFunction) {
+                rootInstanceFunctions.add(function)
+            }
+        }
+        parentContracts.addAll(normalizeParent(rootInstanceFunctions))
+        let childFunctions = normalizeChild(
+            child.functionUnits(), parentContracts, childSyntax,
+            interfaceSyntaxValues
+        )
         return PrimitiveInheritanceBindingResult(
             BoundTypeUnit(
                 parent.identity, parent.semanticType, parentFunctions, parent.range,
-                fieldValues: parent.fieldUnits()
+                metadataValues: parent.metadata(), fieldValues: parent.fieldUnits(),
+                parentType: parent.parentType
             ),
             BoundTypeUnit(
                 child.identity, child.semanticType, childFunctions, child.range,
+                metadataValues: child.metadata(),
                 fieldValues: child.fieldUnits(), parentType: parent.semanticType
             )
         )
@@ -89,7 +110,9 @@ class {
 
     normalizeChild(
         BoundFunctionUnit[] functions,
-        BoundFunctionUnit[] parentFunctions
+        BoundFunctionUnit[] parentFunctions,
+        PrimitiveClassSyntax childSyntax,
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues
     ) -> BoundFunctionUnit[] {
         let result = BoundFunctionUnit[]
         for (function in functions) {
@@ -97,15 +120,119 @@ class {
                 result.add(copy(function, null))
                 continue
             }
-            let parent = parentFunctions.firstOrNull({ _.name == function.name })
-            if (!parent) throw Exception("Child method '#{function.name}' must override a parent method")
-            if (parent.returnType.value() != function.returnType.value() ||
+            let parent = parentFunctionMatching(parentFunctions, function)
+            if (!parent) {
+                let interfaceMethod = interfaceMethodNamed(
+                    function.name, childSyntax, interfaceSyntaxValues
+                )
+                if (interfaceMethod) {
+                    validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues)
+                }
+                result.add(copy(function, function.staticFunction ? null : function.identity.value))
+                continue
+            }
+            var Bool returnMismatch
+            let parentReturnValue = parent.returnType.value()
+            var String functionReturnValue = function.returnType.value()
+            var BoundFunctionUnit normalizedFunction = function
+            if (functionReturnValue == "unknown" && parentReturnValue != "unknown") {
+                normalizedFunction = copyWithReturnType(function, parent.returnType)
+                functionReturnValue = parentReturnValue
+            } else if (parent.abstractFunction && parentReturnValue != "unknown" &&
+                functionReturnValue != parentReturnValue &&
+                returnsConvertTo(function.statements(), parent.returnType)) {
+                normalizedFunction = copyWithReturnType(function, parent.returnType)
+                functionReturnValue = parentReturnValue
+            }
+            if (parentReturnValue != "unknown" && functionReturnValue != "unknown") {
+                returnMismatch = parentReturnValue != functionReturnValue
+            }
+            if (returnMismatch ||
                 !sameParameters(parent.parameterValues(), function.parameterValues())) {
+                let interfaceMethod = interfaceMethodNamed(
+                    function.name, childSyntax, interfaceSyntaxValues
+                )
+                if (interfaceMethod) {
+                    validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues)
+                    result.add(copy(function, function.identity.value))
+                    continue
+                }
                 throw Exception("Invalid override '#{function.name}'")
             }
-            result.add(copy(function, parent.dispatchIdentity))
+            result.add(copy(normalizedFunction, parent.dispatchIdentity))
         }
         return result
+    }
+
+    interfaceMethodNamed(
+        String name,
+        PrimitiveClassSyntax childSyntax,
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues
+    ) -> PrimitiveInterfaceMethodSyntax {
+        for (implementedName in childSyntax.implementedTypeNames()) {
+            let genericStart = implementedName.indexOf("<", defaultReturnValue: -1)
+            let interfaceName = genericStart < 0 ? implementedName :
+                implementedName.substring(0, genericStart)
+            let syntax = interfaceSyntaxValues.firstOrNull({ _.name == interfaceName })
+            if (syntax) {
+                let method = syntax.methodValues().firstOrNull({ _.name == name })
+                if (method) return method
+            }
+        }
+        return null
+    }
+
+    validateInterfaceMethod(
+        BoundFunctionUnit function,
+        PrimitiveClassSyntax childSyntax,
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues
+    ) {
+        let implementedNames = childSyntax.implementedTypeNames()
+        for (implementedName in implementedNames) {
+            let genericStart = implementedName.indexOf("<", defaultReturnValue: -1)
+            let interfaceName = genericStart < 0 ? implementedName :
+                implementedName.substring(0, genericStart)
+            let syntax = interfaceSyntaxValues.firstOrNull({ _.name == interfaceName })
+            if (!syntax) continue
+            let method = syntax.methodValues().firstOrNull({ _.name == function.name })
+            if (!method) continue
+            var String[] parameterNames = method.parameterTypeNames()
+            if (syntax.genericParameterName && genericStart >= 0) {
+                let argument = implementedName.substring(genericStart + 1, implementedName.count - 1)
+                parameterNames = parameterNames.map({
+                    _ == syntax.genericParameterName ? argument : _
+                })
+            }
+            if (parameterNames.count != function.parameterValues().count) {
+                throw Exception("Invalid interface method '#{function.name}'")
+            }
+            var Int index
+            while (index < parameterNames.count) {
+                let boundTypeValue = function.parameterValues()[index].semanticType.value()
+                let interfaceType = interfaceTypeValue(
+                    parameterNames[index], function, childSyntax
+                )
+                if (boundTypeValue != interfaceType) {
+                    throw Exception("Invalid interface method '#{function.name}'")
+                }
+                index++
+            }
+            return
+        }
+        throw Exception("Child method '#{function.name}' must override a parent or interface method")
+    }
+
+    interfaceTypeValue(
+        String name,
+        BoundFunctionUnit function,
+        PrimitiveClassSyntax childSyntax
+    ) -> String {
+        if (name == childSyntax.name) return function.parameterValues().first.semanticType.value()
+        if (name == "Int") return SemanticTypes.intType().value()
+        if (name == "Bool") return SemanticTypes.boolType().value()
+        if (name == "String") return SemanticTypes.stringType().value()
+        if (name == "Object") return SemanticTypes.objectType().value()
+        throw Exception("Unknown interface type '#name'")
     }
 
     sameParameters(
@@ -121,10 +248,141 @@ class {
         return true
     }
 
+    parentFunctionMatching(
+        BoundFunctionUnit[] functions,
+        BoundFunctionUnit target
+    ) -> BoundFunctionUnit {
+        for (function in functions) {
+            if (function.name == target.name &&
+                function.staticFunction == target.staticFunction &&
+                sameParameters(function.parameterValues(), target.parameterValues())) {
+                return function
+            }
+        }
+        return null
+    }
+
+    returnsConvertTo(BoundStatement[] statements, SemanticType returnType) -> Bool {
+        var Bool found
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundReturnStatement.class)) {
+                let returned = (BoundReturnStatement)statement
+                let converted = TypeConversions.classify(
+                    returned.value.semanticType, returnType
+                )
+                if (!returned.value || (!converted.applicable &&
+                    returned.value.semanticType.kind() != "unknown")) return false
+                found = true
+            } else if (statement.class.isOfType(BoundIfStatement.class)) {
+                let conditional = (BoundIfStatement)statement
+                if (!returnsConvertTo(conditional.thenValues(), returnType) ||
+                    !returnsConvertTo(conditional.elseValues(), returnType)) return false
+                found = true
+            } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
+                let cases = ((BoundSwitchStatement)statement).caseValues()
+                for (caseValue in cases) {
+                    if (caseValue.statementValues().isNotEmpty &&
+                        !returnsConvertTo(caseValue.statementValues(), returnType)) return false
+                }
+                found = true
+            } else if (statement.class.isOfType(BoundForEachStatement.class)) {
+                if (!returnsConvertTo(
+                    ((BoundForEachStatement)statement).body(), returnType
+                )) return false
+                found = true
+            } else if (statement.class.isOfType(BoundWhileStatement.class)) {
+                if (!returnsConvertTo(
+                    ((BoundWhileStatement)statement).bodyValues(), returnType
+                )) return false
+                found = true
+            } else if (statement.class.isOfType(BoundTryStatement.class)) {
+                let attempted = (BoundTryStatement)statement
+                if (!returnsConvertTo(attempted.tryValues(), returnType) ||
+                    !returnsConvertTo(attempted.finallyValues(), returnType)) return false
+                for (caught in attempted.catchValues()) {
+                    if (!returnsConvertTo(caught.statements(), returnType)) return false
+                }
+                found = true
+            }
+        }
+        return found
+    }
+
+    retypeReturns(BoundStatement[] statements, SemanticType returnType) -> BoundStatement[] {
+        let result = BoundStatement[]
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundReturnStatement.class)) {
+                let returned = (BoundReturnStatement)statement
+                var TypeConversion conversion = TypeConversions.classify(
+                    returned.value.semanticType, returnType
+                )
+                if (!conversion.applicable &&
+                    returned.value.semanticType.kind() == "unknown") {
+                    conversion = TypeConversion(
+                        returned.value.semanticType, returnType,
+                        "deferred-inferred-return", true, false, true, 1000
+                    )
+                }
+                if (!conversion.applicable) {
+                    throw Exception("Cannot refine return '#{returned.value.semanticType.value()}' to '#{returnType.value()}'")
+                }
+                result.add(BoundReturnStatement(
+                    returned.range, returnType, returned.value, conversion
+                ))
+            } else if (statement.class.isOfType(BoundIfStatement.class)) {
+                let conditional = (BoundIfStatement)statement
+                result.add(BoundIfStatement(
+                    conditional.range, conditional.condition,
+                    retypeReturns(conditional.thenValues(), returnType),
+                    retypeReturns(conditional.elseValues(), returnType)
+                ))
+            } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
+                let switched = (BoundSwitchStatement)statement
+                let cases = BoundSwitchCase[]
+                for (caseValue in switched.caseValues()) {
+                    cases.add(BoundSwitchCase(
+                        caseValue.range, caseValue.label,
+                        retypeReturns(caseValue.statementValues(), returnType),
+                        caseValue.defaultCase, caseValue.fallsThrough
+                    ))
+                }
+                result.add(BoundSwitchStatement(
+                    switched.range, switched.value, cases
+                ))
+            } else if (statement.class.isOfType(BoundForEachStatement.class)) {
+                let loop = (BoundForEachStatement)statement
+                result.add(BoundForEachStatement(
+                    loop.range, loop.initialization(), loop.condition,
+                    retypeReturns(loop.body(), returnType), loop.advance(),
+                    loop.loopLabel, loop.exitLabel
+                ))
+            } else if (statement.class.isOfType(BoundWhileStatement.class)) {
+                let loop = (BoundWhileStatement)statement
+                result.add(BoundWhileStatement(
+                    loop.range, loop.condition,
+                    retypeReturns(loop.bodyValues(), returnType)
+                ))
+            } else result.add(statement)
+        }
+        return result
+    }
+
+    copyWithReturnType(
+        BoundFunctionUnit value,
+        SemanticType returnType
+    ) -> BoundFunctionUnit => BoundFunctionUnit(
+        value.identity, value.name, returnType,
+        retypeReturns(value.statements(), returnType), value.range,
+        value.parameterValues(), value.staticFunction, value.mainFunction,
+        value.constructorFunction, value.dispatchIdentity, value.parentConstructorCall,
+        value.asyncFunction, value.externalName, value.abstractFunction
+    )
+
     copy(BoundFunctionUnit value, String dispatchIdentity) -> BoundFunctionUnit =>
         BoundFunctionUnit(
             value.identity, value.name, value.returnType, value.statements(), value.range,
             value.parameterValues(), value.staticFunction, value.mainFunction,
-            value.constructorFunction, dispatchIdentity, value.parentConstructorCall
+            value.constructorFunction, dispatchIdentity, value.parentConstructorCall,
+            value.asyncFunction, value.externalName, value.abstractFunction
         )
 }

@@ -18,6 +18,14 @@ testable class {
         let classCode = emitter.emitClass(typeIdentity, [mainCode])
         let bootstrap = emitter.emitBootstrap(typeIdentity, mainIdentity)
 
+        let externalCode = emitter.emitMethod(
+            "stable:instance-method:chain", ["args"], "return this;\n",
+            asyncMethod: true, externalName: "__chainAsync"
+        )
+        expect(externalCode).toBe(
+            "async __chainAsync(args) {\n  return this;\n}\n"
+        )
+
         expect(functionCode).toBe(
             "function " + Es6NameMangler.mangle(functionIdentity) + "() {\n" +
             "  return 'Hello, Flat';\n}\n"

@@ -1,0 +1,19 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only assignment to an array element. */
+data class extends PrimitiveStatementSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveArrayAccessSyntax target,
+        visible PrimitiveExpressionSyntax value,
+        visible String assignmentOperator = "="
+    ) {
+        if (!range || !target || !value || !assignmentOperator) {
+            throw Exception("Primitive array assignment requires target, value, and operator")
+        }
+        super(range)
+    }
+    override public statementKind() => "array-assignment"
+}

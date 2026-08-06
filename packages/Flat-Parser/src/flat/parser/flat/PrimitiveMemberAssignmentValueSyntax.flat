@@ -1,0 +1,21 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Assignment whose stored value is consumed by an enclosing expression. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible PrimitiveMemberAccessSyntax target,
+        visible String assignmentOperator,
+        visible PrimitiveExpressionSyntax value
+    ) {
+        var Bool compound = assignmentOperator == "+=" || assignmentOperator == "-=" ||
+            assignmentOperator == "*=" || assignmentOperator == "/=" || assignmentOperator == "%="
+        if (!range || !target || !compound || !value) {
+            throw Exception("Primitive member assignment value requires target, compound operator, and value")
+        }
+        super(range)
+    }
+    override public expressionKind() => "member-assignment-value"
+}

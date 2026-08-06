@@ -11,13 +11,16 @@ class {
         PrimitiveExpressionSyntax syntax,
         SemanticType requiredType = null,
         LocalBinding[] locals = LocalBinding[],
-        CallableSignature[] callables = CallableSignature[]
+        CallableSignature[] callables = CallableSignature[],
+        Bool explicitConversion = false
     ) -> PrimitiveExpressionBindingResult {
         if (!syntax || !locals || !callables) throw Exception("Primitive binding requires syntax, locals, and callables")
         try {
             let expression = bindSyntax(syntax, locals, callables)
             if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
-            let conversion = TypeConversions.classify(expression.semanticType, requiredType)
+            let conversion = TypeConversions.classify(
+                expression.semanticType, requiredType, explicit: explicitConversion
+            )
             if (!conversion.applicable) {
                 return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
                     "type.primitive-conversion",
@@ -42,8 +45,13 @@ class {
 
     namedType(String name) -> SemanticType {
         if (name == "Bool") return SemanticTypes.boolType()
+        if (name == "Byte") return SemanticTypes.byteType()
+        if (name == "Short") return SemanticTypes.shortType()
         if (name == "Int") return SemanticTypes.intType()
         if (name == "Long") return SemanticTypes.longType()
+        if (name == "Float") return SemanticTypes.floatType()
+        if (name == "Double") return SemanticTypes.doubleType()
+        if (name == "Char") return SemanticTypes.charType()
         if (name == "String") return SemanticTypes.stringType()
         throw Exception("Unknown lambda parameter type '#name'")
     }
@@ -96,11 +104,16 @@ class {
                 arguments, checked.argumentConversions()
             )
         }
+        if (syntax.class.isOfType(PrimitiveMemberAssignmentValueSyntax.class)) {
+            throw Exception("Member assignment value requires class receiver context")
+        }
         if (syntax.class.isOfType(PrimitiveCastSyntax.class)) {
             let value = (PrimitiveCastSyntax)syntax
             let operand = bindSyntax(value.value, locals, callables)
             let target = namedType(value.typeName)
-            let conversion = TypeConversions.classify(operand.semanticType, target)
+            let conversion = TypeConversions.classify(
+                operand.semanticType, target, explicit: true
+            )
             if (!conversion.applicable) throw Exception("Explicit cast type mismatch")
             return BoundConversionExpression(value.range, target, operand, conversion)
         }
@@ -108,6 +121,7 @@ class {
             let value = (PrimitiveLiteralSyntax)syntax
             var SemanticType type
             if (value.tokenType == Token.Type.INTEGER) type = SemanticTypes.intType()
+            else if (value.tokenType == Token.Type.FLOAT) type = SemanticTypes.doubleType()
             else if (value.tokenType == Token.Type.BOOL) type = SemanticTypes.boolType()
             else if (value.tokenType == Token.Type.STRING) type = SemanticTypes.stringType()
             else if (value.tokenType == Token.Type.CHAR) type = SemanticTypes.charType()
@@ -115,10 +129,45 @@ class {
             else throw Exception("Unsupported primitive literal '#{value.sourceValue}'")
             return BoundLiteralExpression(value.range, type, value.sourceValue)
         }
+        if (syntax.class.isOfType(PrimitiveInterpolatedStringSyntax.class)) {
+            let value = (PrimitiveInterpolatedStringSyntax)syntax
+            let segments = BoundInterpolatedStringSegment[]
+            for (segment in value.segmentValues()) {
+                if (segment.literal()) {
+                    segments.add(BoundInterpolatedStringSegment(
+                        segment.range, segment.literalSourceValue, null
+                    ))
+                } else {
+                    let path = (PrimitiveInterpolationPathSyntax)segment.expression
+                    if (path.pathValues().count != 1) {
+                        throw Exception("Generic interpolation binding supports local roots")
+                    }
+                    let local = locals.reverse().firstOrNull({ _.name == path.pathValues().first })
+                    if (!local) throw Exception("Unknown interpolation root '#{path.pathValues().first}'")
+                    segments.add(BoundInterpolatedStringSegment(
+                        segment.range, null,
+                        BoundReferenceExpression(
+                            path.range, local.semanticType, local.name, local.identity
+                        )
+                    ))
+                }
+            }
+            return BoundInterpolatedStringExpression(value.range, segments)
+        }
         if (syntax.class.isOfType(PrimitiveClassNameSyntax.class)) {
             let value = (PrimitiveClassNameSyntax)syntax
             let receiver = bindSyntax(value.receiver, locals, callables)
             return BoundClassNameExpression(value.range, receiver)
+        }
+        if (syntax.class.isOfType(PrimitiveArrayConstructionSyntax.class)) {
+            let value = (PrimitiveArrayConstructionSyntax)syntax
+            let size = bindSyntax(value.size, locals, callables)
+            if (size.semanticType.value() != SemanticTypes.intType().value()) {
+                throw Exception("Array construction size requires Int")
+            }
+            return BoundArrayExpression(
+                value.range, ArraySemanticType(namedType(value.elementTypeName)), size
+            )
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
             let value = (PrimitiveConstructionSyntax)syntax
@@ -292,12 +341,19 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let value = (PrimitiveCallSyntax)syntax
-            let candidates = callables.filter({ _.name == value.name })
-            if (candidates.isEmpty) throw Exception("Unknown function '#{value.name}'")
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 arguments.add(bindSyntax(argument, locals, callables))
             }
+            let candidates = callables.filter({ _.name == value.name })
+            if (candidates.isEmpty && value.name == "String" && arguments.count == 1 &&
+                (arguments.first.semanticType.kind() == "array" ||
+                 arguments.first.semanticType.kind() == "char")) {
+                return BoundNativeCallExpression(
+                    value.range, SemanticTypes.stringType(), "String", arguments
+                )
+            }
+            if (candidates.isEmpty) throw Exception("Unknown function '#{value.name}'")
             let resolution = OverloadResolver.resolve(
                 value.name, candidates, null,
                 arguments.map({ _.semanticType }), value.range

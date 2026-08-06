@@ -13,5 +13,7 @@ testable class {
             .toBe("globalThis['flatPrint']('first', 'second')")
         expect(emitter.emitNativeCall("console.log", "'Hello, Flat'"))
             .toBe("globalThis['console']['log']('Hello, Flat')")
+        expect(emitter.emitIntrinsicMemberCall("'x'", "repeat", "3"))
+            .toBe("'x'.repeat(3)")
     }
 }

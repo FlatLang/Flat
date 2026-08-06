@@ -1,0 +1,19 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** One immutable literal or typed expression segment of an interpolated string. */
+data class {
+    public construct(
+        visible SourceRange range,
+        visible String literalSourceValue,
+        visible BoundExpression expression
+    ) {
+        if (!range || (literalSourceValue == null && !expression) ||
+            (literalSourceValue != null && expression)) {
+            throw Exception("Bound interpolation segment requires exactly one literal or expression")
+        }
+    }
+
+    public literal() -> Bool => literalSourceValue != null
+}

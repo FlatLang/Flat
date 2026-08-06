@@ -12,9 +12,35 @@ testable class {
         let reference = BoundReferenceExpression(
             fixture.range(2, 3), longType, "value", fixture.symbol("local", "value", 2)
         )
+        let asyncExternal = BoundFunctionUnit(
+            fixture.declaration("instance-method", "chain", 4),
+            "chain", SemanticTypes.objectType(), BoundStatement[], fixture.range(),
+            asyncFunction: true, externalName: "chain"
+        )
+        expect(asyncExternal.asyncFunction).toBe(true)
+        expect(asyncExternal.externalName).toBe("chain")
+
+        let typeMetadata = BoundTypeMetadataExpression(
+            fixture.range(), UserClassSemanticType(fixture.declaration("class", "Value", 5))
+        )
+        let typeTestValue = BoundReferenceExpression(
+            fixture.range(), SemanticTypes.objectType(), "object",
+            fixture.symbol("local", "object", 6)
+        )
+        let typeTest = BoundTypeTestExpression(fixture.range(), typeTestValue, typeMetadata)
+        expect(typeMetadata.expressionKind()).toBe("type-metadata")
+        expect(typeTest.semanticType.value()).toBe("primitive:Bool")
+
         let className = BoundClassNameExpression(fixture.range(), reference)
-        expect(className.semanticType.value()).toBe("builtin:String")
-        expect(className.expressionKind()).toBe("class-name")
+        let interpolation = BoundInterpolatedStringExpression(fixture.range(), [
+            BoundInterpolatedStringSegment(fixture.range(1, 2), "\"Hello \"", null),
+            BoundInterpolatedStringSegment(fixture.range(2, 3), null, className)
+        ])
+        expect(interpolation.semanticType.value()).toBe("builtin:String")
+        expect(interpolation.expressionKind()).toBe("interpolated-string")
+        let copiedInterpolation = interpolation.segmentValues()
+        copiedInterpolation.clear()
+        expect(interpolation.segmentValues().count).toBe(2)
         let conversion = TypeConversions.classify(intType, longType)
         let converted = BoundConversionExpression(
             fixture.range(1, 2), longType, literal, conversion
@@ -35,6 +61,9 @@ testable class {
         copiedSegments.clear()
         expect(statement.segmentValues().count).toBe(1)
         expect(statement.segmentValues().first.text).toBe("code")
+        let copiedNames = statement.nameBindingValues()
+        copiedNames.clear()
+        expect(statement.nameBindingValues().count).toBe(0)
         var Int rejected
         try { BoundExternalCodeSegment(fixture.range(), "", null, null) }
         catch (Exception error) { rejected++ }
@@ -95,6 +124,18 @@ testable class {
         expect(function.statements()).toBe([assignment, returned])
         expect(type.functionUnits()).toBe([function])
         expect(program.typeUnits()).toBe([type])
+    }
+
+    test `fixed size array allocation retains typed immutable size evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let size = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "3")
+        let allocation = BoundArrayExpression(
+            fixture.range(), ArraySemanticType(SemanticTypes.charType()), size
+        )
+
+        expect(allocation.expressionKind()).toBe("array-construction")
+        expect(allocation.allocationSize).toBe(size)
+        expect(allocation.elementValues()).toBe(BoundExpression[])
     }
 
     test `bound calls retain selected target arguments and conversions`() {
@@ -246,5 +287,10 @@ testable class {
         expect(BoundBinaryExpression(
             fixture.range(), SemanticTypes.intType(), "+", one, one
         ).expressionKind()).toBe("binary")
+        let receiver = BoundReferenceExpression(
+            fixture.range(), SemanticTypes.objectType(), "this",
+            fixture.symbol("receiver", "this", 3)
+        )
+        expect(receiver.expressionKind()).toBe("reference")
     }
 }

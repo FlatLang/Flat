@@ -7,10 +7,11 @@ data class extends PrimitiveStatementSyntax {
         SourceRange range,
         visible Bool mutable,
         visible String name,
-        visible PrimitiveExpressionSyntax initializer
+        visible PrimitiveExpressionSyntax initializer = null,
+        visible String declaredTypeName = null
     ) {
-        if (!range || !name || !initializer) {
-            throw Exception("Primitive local syntax requires name and initializer")
+        if (!range || !name || (!initializer && !declaredTypeName) || declaredTypeName == "") {
+            throw Exception("Primitive local syntax requires name and initializer or explicit type")
         }
         super(range)
     }

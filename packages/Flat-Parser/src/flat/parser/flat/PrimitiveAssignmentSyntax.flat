@@ -6,10 +6,15 @@ data class extends PrimitiveStatementSyntax {
     public construct(
         SourceRange range,
         visible String name,
-        visible PrimitiveExpressionSyntax value
+        visible PrimitiveExpressionSyntax value,
+        visible String assignmentOperator = "="
     ) {
-        if (!range || !name || !value) {
-            throw Exception("Primitive assignment syntax requires name and value")
+        var Bool update = assignmentOperator == "++" || assignmentOperator == "--"
+        var Bool compound = assignmentOperator == "+=" || assignmentOperator == "-=" ||
+            assignmentOperator == "*=" || assignmentOperator == "/=" || assignmentOperator == "%="
+        if (!range || !name || !value ||
+            (assignmentOperator != "=" && !compound && !update)) {
+            throw Exception("Primitive assignment syntax requires name, supported operator, and value")
         }
         super(range)
     }

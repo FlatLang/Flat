@@ -5,6 +5,55 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `exposes grammar backed pending static member classification`() {
+        let functionScanner = scanner(64)
+        let functionTokens = significant(lex(
+            "public static referenceEquals(Object one, Object two) -> Bool"
+        ))
+        var Int index
+        for (token in functionTokens) {
+            functionScanner.accept(token, index)
+            index++
+        }
+        let classification = functionScanner.classifyPendingBraced(functionTokens)
+        expect(classification != null).toBe(true)
+        expect(classification.memberKind).toBe(
+            PendingBracedMemberClassification.FUNCTION
+        )
+
+        let staticScanner = scanner(64)
+        let staticTokens = significant(lex("static"))
+        staticScanner.accept(staticTokens.first, 0)
+        let staticClassification = staticScanner.classifyPendingBraced(staticTokens)
+        expect(staticClassification != null).toBe(true)
+        expect(staticClassification.memberKind).toBe(
+            PendingBracedMemberClassification.STATIC_BLOCK
+        )
+    }
+
+    async test `publishes implicit visibility array override member`() {
+        let result = collect("this[Int index] => chars[index]")
+        var NonBracedMemberHeaderSyntaxIsland header
+        header = (NonBracedMemberHeaderSyntaxIsland)result.first
+
+        expect(header.memberKind).toBe("array-override")
+        expect(header.name).toBe("this")
+    }
+
+    async test `publishes adjacent signature contracts`() {
+        let islands = collect(
+            "public abstract plusInteger(Long other) -> Long " +
+            "public abstract plusReal(Double other) -> Double"
+        )
+        expect(islands.count).toBe(2)
+        var NonBracedMemberHeaderSyntaxIsland first
+        first = (NonBracedMemberHeaderSyntaxIsland)islands.first
+        var NonBracedMemberHeaderSyntaxIsland second
+        second = (NonBracedMemberHeaderSyntaxIsland)islands.last
+        expect(first.name).toBe("plusInteger")
+        expect(second.name).toBe("plusReal")
+    }
+
     async test `publishes adjacent bodyless functions from grammar boundaries`() {
         let islands = collect("run() next()")
         expect(islands.count).toBe(2)

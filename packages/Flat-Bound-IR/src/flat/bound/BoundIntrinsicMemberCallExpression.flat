@@ -1,0 +1,28 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Target-independent intrinsic member call on an already typed receiver. */
+data class extends BoundExpression {
+    var BoundExpression[] arguments
+
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundExpression receiver,
+        visible String memberName,
+        BoundExpression[] argumentValues
+    ) {
+        if (!range || !semanticType || !receiver || !memberName || !memberName.trim() ||
+            !argumentValues || argumentValues.any({ !_ })) {
+            throw Exception("Intrinsic member call requires receiver, member, type, and arguments")
+        }
+        arguments = BoundExpression[]
+        arguments.addAll(argumentValues)
+        super(range, semanticType)
+    }
+
+    public argumentValues() -> BoundExpression[] => BoundExpression[]:addAll(arguments)
+    override public expressionKind() => "intrinsic-member-call"
+}

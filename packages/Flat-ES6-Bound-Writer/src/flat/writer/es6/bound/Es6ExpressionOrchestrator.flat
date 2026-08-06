@@ -19,6 +19,19 @@ class {
             let value = (BoundLiteralExpression)expression
             return expressions.emitLiteral(value)
         }
+        if (expression.class.isOfType(BoundInterpolatedStringExpression.class)) {
+            let value = (BoundInterpolatedStringExpression)expression
+            let segmentCode = String[]
+            for (segment in value.segmentValues()) {
+                if (segment.literal()) segmentCode.add(segment.literalSourceValue)
+                else {
+                    let emitted = emit(segment.expression)
+                    if (!emitted.emitted) return emitted
+                    segmentCode.add(emitted.code)
+                }
+            }
+            return expressions.emitInterpolatedString(value, segmentCode)
+        }
         if (expression.class.isOfType(BoundReferenceExpression.class)) {
             let value = (BoundReferenceExpression)expression
             if (value.name == "this" && value.symbolIdentity.symbolKind == "receiver") {
@@ -37,6 +50,12 @@ class {
         if (expression.class.isOfType(BoundBinaryExpression.class)) {
             let value = (BoundBinaryExpression)expression
             return expressions.emitBinary(value, emit(value.left), emit(value.right))
+        }
+        if (expression.class.isOfType(BoundMemberAssignmentValueExpression.class)) {
+            let value = (BoundMemberAssignmentValueExpression)expression
+            return expressions.emitMemberAssignmentValue(
+                value, emit(value.target), emit(value.value)
+            )
         }
         if (expression.class.isOfType(BoundConversionExpression.class)) {
             let value = (BoundConversionExpression)expression
@@ -57,6 +76,11 @@ class {
         }
         if (expression.class.isOfType(BoundArrayExpression.class)) {
             let value = (BoundArrayExpression)expression
+            if (value.allocationSize) {
+                let size = emit(value.allocationSize)
+                if (!size.emitted) return size
+                return Es6CodeResult(code: "new Array(" + size.code + ").fill(null)")
+            }
             let elements = emitArguments(value.elementValues())
             if (!elements.emitted) return elements
             return Es6CodeResult(code: "[" + elements.code + "]")
@@ -68,6 +92,20 @@ class {
             let index = emit(value.index)
             if (!index.emitted) return index
             return Es6CodeResult(code: receiver.code + "[" + index.code + "]")
+        }
+        if (expression.class.isOfType(BoundTypeMetadataExpression.class)) {
+            let value = (BoundTypeMetadataExpression)expression
+            return Es6CodeResult(code: Es6NameMangler.mangle(
+                value.referencedType.declarationIdentity.value
+            ))
+        }
+        if (expression.class.isOfType(BoundTypeTestExpression.class)) {
+            let value = (BoundTypeTestExpression)expression
+            let tested = emit(value.value)
+            if (!tested.emitted) return tested
+            let metadata = emit(value.typeMetadata)
+            if (!metadata.emitted) return metadata
+            return Es6CodeResult(code: "(" + tested.code + " instanceof " + metadata.code + ")")
         }
         if (expression.class.isOfType(BoundClassNameExpression.class)) {
             let value = (BoundClassNameExpression)expression
@@ -86,6 +124,16 @@ class {
             if (!whenFalse.emitted) return whenFalse
             return Es6CodeResult(code: "(" + condition.code + " ? " +
                 whenTrue.code + " : " + whenFalse.code + ")")
+        }
+        if (expression.class.isOfType(BoundIntrinsicMemberCallExpression.class)) {
+            let value = (BoundIntrinsicMemberCallExpression)expression
+            let receiver = emit(value.receiver)
+            if (!receiver.emitted) return receiver
+            let arguments = emitArguments(value.argumentValues())
+            if (!arguments.emitted) return arguments
+            return Es6CodeResult(code: calls.emitIntrinsicMemberCall(
+                receiver.code, value.memberName, arguments.code
+            ))
         }
         if (expression.class.isOfType(BoundCallExpression.class)) {
             let value = (BoundCallExpression)expression
@@ -106,8 +154,7 @@ class {
         let arguments = emitArguments(expression.argumentValues())
         if (!arguments.emitted) return arguments
         let kind = expression.target.callableKind.value
-        let identity = expression.target.callableKind.value == "function" ?
-            expression.target.identity.declaration.value : expression.target.identity.value
+        let identity = expression.target.identity.declaration.value
         let name = Es6NameMangler.mangle(identity)
         let String argumentText = arguments.code
         if (kind == "function") {
