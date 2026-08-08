@@ -36,7 +36,9 @@ class {
                 function.name,
                 CallableKind("function"),
                 function.parameterValues().map({ typeOf(_.typeName) }),
-                typeOf(function.returnTypeName)
+                typeOf(function.returnTypeName), null,
+                function.parameterValues().filter({ _.defaultValue != null }).count,
+                function.parameterValues().map({ _.name })
             ))
             index++
         }

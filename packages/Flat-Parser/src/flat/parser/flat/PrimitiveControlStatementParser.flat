@@ -258,7 +258,16 @@ class {
 
     parseBody() -> PrimitiveStatementSyntax[] {
         if (index >= tokens.count || tokens[index].value != "{") {
-            syntax("Expected opening brace", index)
+            let statementStart = index
+            let line = tokens[index].location.lineNumber
+            while (index < tokens.count && tokens[index].value != "}" &&
+                tokens[index].location.lineNumber == line) index++
+            let parsed = PrimitiveStatementParser().parse(
+                tokens.skip(statementStart).take(index - statementStart), snapshot,
+                statementStart + tokenIndexOffset
+            ).statements()
+            if (parsed.count != 1) syntax("Expected one inline control statement", statementStart)
+            return [parsed.first]
         }
         index++
         return parseStatements(true)
@@ -267,7 +276,7 @@ class {
     controlStart(Int tokenIndex) -> Bool {
         if (tokenIndex >= tokens.count) return false
         let value = tokens[tokenIndex].value
-        return value == "if" || value == "while" || value == "for" ||
+        return value == "if" || value == "switch" || value == "while" || value == "for" ||
             value == "try" || value == "external"
     }
 
@@ -275,11 +284,10 @@ class {
         if (tokenIndex >= tokens.count) return false
         let value = tokens[tokenIndex].value
         if (value == "let" || value == "var" || value == "return" ||
-            value == "throw" || value == "native") return true
+            value == "continue" || value == "throw" || value == "native") return true
         if (tokens[tokenIndex].type != Token.Type.IDENTIFIER ||
             tokenIndex + 1 >= tokens.count) return false
-        if (value == "native_array" && tokenIndex + 2 < tokens.count &&
-            tokens[tokenIndex + 2].value == "var") return true
+        if (value == "native_array") return true
         let next = tokens[tokenIndex + 1].value
         if (next == "[" && tokenIndex + 2 < tokens.count) {
             var Int close = tokenIndex + 2

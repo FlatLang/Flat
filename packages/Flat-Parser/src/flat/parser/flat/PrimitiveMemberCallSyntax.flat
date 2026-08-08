@@ -5,25 +5,38 @@ import flat/compiler/models
 /** Immutable receiver-owned member call syntax. */
 data class extends PrimitiveExpressionSyntax {
     var PrimitiveExpressionSyntax[] arguments
+    var PrimitiveMixedNamedArgumentSyntax[] namedArguments
 
     public construct(
         SourceRange range,
         visible PrimitiveExpressionSyntax receiver,
         visible String memberName,
-        PrimitiveExpressionSyntax[] argumentValues
+        PrimitiveExpressionSyntax[] argumentValues,
+        PrimitiveMixedNamedArgumentSyntax[] namedArgumentValues = PrimitiveMixedNamedArgumentSyntax[]
     ) {
         if (!range || !receiver || !memberName || !argumentValues ||
-            argumentValues.any({ !_ })) {
+            argumentValues.any({ !_ }) || !namedArgumentValues ||
+            namedArgumentValues.any({ !_ }) || namedArgumentValues.any((argument) =>
+                namedArgumentValues.filter({ _.name == argument.name }).count != 1
+            )) {
             throw Exception("Primitive member call requires receiver, name, and arguments")
         }
         arguments = PrimitiveExpressionSyntax[]
         arguments.addAll(argumentValues)
+        namedArguments = PrimitiveMixedNamedArgumentSyntax[]
+        namedArguments.addAll(namedArgumentValues)
         super(range)
     }
 
     public argumentValues() -> PrimitiveExpressionSyntax[] {
         let result = PrimitiveExpressionSyntax[]
         result.addAll(arguments)
+        return result
+    }
+
+    public namedArgumentValues() -> PrimitiveMixedNamedArgumentSyntax[] {
+        let result = PrimitiveMixedNamedArgumentSyntax[]
+        result.addAll(namedArguments)
         return result
     }
 

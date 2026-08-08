@@ -1,0 +1,25 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Typed local assignment whose stored value is consumed by an expression. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundReferenceExpression target,
+        visible BoundExpression value,
+        visible TypeConversion storageConversion
+    ) {
+        if (!range || !semanticType || !target || !value || !storageConversion ||
+            !storageConversion.applicable ||
+            storageConversion.fromType.value() != value.semanticType.value() ||
+            storageConversion.toType.value() != target.semanticType.value() ||
+            semanticType.value() != target.semanticType.value()) {
+            throw Exception("Bound assignment value requires consistent local storage evidence")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "assignment-value"
+}

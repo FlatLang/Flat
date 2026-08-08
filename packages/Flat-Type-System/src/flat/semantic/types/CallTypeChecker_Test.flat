@@ -1,6 +1,19 @@
 package flat/semantic/types
 
 testable class {
+    test `callable signatures preserve immutable parameter names`() {
+        let fixture = TypeSystem_TestFixture()
+        let signature = CallableSignature(
+            fixture.symbolIdentity("sum", "function"), "sum", CallableKind("function"),
+            [SemanticTypes.intType(), SemanticTypes.intType()], SemanticTypes.intType(),
+            null, 1, ["left", "right"]
+        )
+        let names = signature.parameterNames()
+        names.clear()
+
+        expect(signature.parameterNames()).toBe(["left", "right"])
+    }
+
     test `non-overloaded function calls retain argument conversions and result type`() {
         let fixture = TypeSystem_TestFixture()
         let target = fixture.signature(

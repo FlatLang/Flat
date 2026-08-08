@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Local assignment whose stored value is consumed by an enclosing expression. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible String name,
+        visible PrimitiveExpressionSyntax value
+    ) {
+        if (!range || !name || name.trim().isEmpty || !value) {
+            throw Exception("Primitive assignment value requires local name and value")
+        }
+        super(range)
+    }
+    override public expressionKind() => "assignment-value"
+}

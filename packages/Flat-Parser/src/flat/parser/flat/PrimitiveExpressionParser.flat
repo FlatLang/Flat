@@ -96,6 +96,19 @@ class {
         if (index >= tokens.count) syntax("Expected primitive expression", index)
         if (tokens[index].value == "(") {
             let start = index++
+            if (index + 2 < tokens.count && tokens[index].value == "let" &&
+                tokens[index + 1].type == Token.Type.IDENTIFIER &&
+                tokens[index + 2].value == "=") {
+                index++
+                let name = tokens[index++].value
+                index++
+                let value = parseConditional()
+                if (index >= tokens.count || tokens[index].value != ")") {
+                    syntax("Expected closing declaration expression parenthesis", index)
+                }
+                index++
+                return PrimitiveDeclarationValueSyntax(range(start, index), name, value)
+            }
             if (index + 1 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
                 tokens[index + 1].value == ")") {
                 let typeName = tokens[index++].value
@@ -106,7 +119,15 @@ class {
                 )
             }
             var PrimitiveExpressionSyntax expression = parseConditional()
-            if (index < tokens.count && assignmentOperator(tokens[index].value) &&
+            if (index < tokens.count && tokens[index].value == "=" &&
+                expression.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                index++
+                let value = parseConditional()
+                expression = (PrimitiveExpressionSyntax)PrimitiveAssignmentValueSyntax(
+                    range(start + 1, value.range.endTokenIndex - tokenIndexOffset),
+                    ((PrimitiveReferenceSyntax)expression).name, value
+                )
+            } else if (index < tokens.count && assignmentOperator(tokens[index].value) &&
                 expression.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
                 let operator = tokens[index++].value
                 let value = parseConditional()
@@ -132,6 +153,17 @@ class {
             return expression
         }
         if (tokens[index].value == "[") return parseArray()
+        if (tokens[index].value == "{") {
+            let start = index++
+            let body = parseConditional()
+            if (index >= tokens.count || tokens[index].value != "}") {
+                syntax("Expected closing implicit lambda brace", index)
+            }
+            index++
+            return PrimitiveLambdaSyntax(
+                range(start, index), PrimitiveFunctionParameterSyntax[], body
+            )
+        }
         let tokenIndex = index
         let token = tokens[index++]
         if (token.value == "native") return parseNative(tokenIndex)
@@ -193,14 +225,20 @@ class {
                     syntax("Expected array allocation size", index)
                 }
                 index++
+                if (index < tokens.count && tokens[index].value == ")") {
+                    index++
+                    return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(
+                        range(tokenIndex, index), elementTypeName
+                    ), true)
+                }
                 let size = parseConditional()
                 if (index >= tokens.count || tokens[index].value != ")") {
                     syntax("Expected closing array allocation parenthesis", index)
                 }
                 index++
-                return PrimitiveArrayConstructionSyntax(
+                return parsePostfix(tokenIndex, PrimitiveArrayConstructionSyntax(
                     range(tokenIndex, index), elementTypeName, size
-                )
+                ))
             }
             var PrimitiveExpressionSyntax expression
             if (index < tokens.count && tokens[index].value == "(") {
@@ -229,9 +267,25 @@ class {
                 if (index < tokens.count && tokens[index].value == "(") {
                     index++
                     let arguments = PrimitiveExpressionSyntax[]
+                    let namedArguments = PrimitiveMixedNamedArgumentSyntax[]
                     if (index < tokens.count && tokens[index].value != ")") {
                         while (true) {
-                            arguments.add(parseConditional())
+                            if (tokens[index].type == Token.Type.IDENTIFIER &&
+                                index + 1 < tokens.count && tokens[index + 1].value == ":") {
+                                let argumentStart = index
+                                let argumentName = tokens[index++].value
+                                index++
+                                let argumentValue = parseConditional()
+                                namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
+                                    range(argumentStart, argumentValue.range.endTokenIndex - tokenIndexOffset),
+                                    argumentName, argumentValue
+                                ))
+                            } else {
+                                if (namedArguments.isNotEmpty) {
+                                    syntax("Positional member argument cannot follow a named argument", index)
+                                }
+                                arguments.add(parseConditional())
+                            }
                             if (index >= tokens.count || tokens[index].value == ")") break
                             if (tokens[index].value != ",") {
                                 syntax("Expected member call argument boundary", index)
@@ -244,7 +298,8 @@ class {
                     }
                     index++
                     expression = PrimitiveMemberCallSyntax(
-                        range(tokenIndex, index), expression, member, arguments
+                        range(tokenIndex, index), expression, member, arguments,
+                        namedArguments
                     )
                 } else expression = PrimitiveMemberAccessSyntax(
                     range(tokenIndex, index), expression, member
@@ -286,10 +341,12 @@ class {
 
     parsePostfix(
         Int tokenIndex,
-        PrimitiveExpressionSyntax initial
+        PrimitiveExpressionSyntax initial,
+        Bool colonCall = false
     ) -> PrimitiveExpressionSyntax {
         var PrimitiveExpressionSyntax expression = initial
-        while (index < tokens.count && (tokens[index].value == "." || tokens[index].value == "[")) {
+        while (index < tokens.count && (tokens[index].value == "." ||
+            (colonCall && tokens[index].value == ":") || tokens[index].value == "[")) {
             if (tokens[index].value == "[") {
                 index++
                 let accessIndex = parseLevel(0)
@@ -302,17 +359,42 @@ class {
                 )
                 continue
             }
-            index++
+            if (tokens[index].value == ":") index++
+            else index++
             if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
                 syntax("Expected member name after '.'", index)
             }
             let member = tokens[index++].value
             if (index < tokens.count && tokens[index].value == "(") {
                 index++
+                if (index < tokens.count && tokens[index].value == ")") {
+                    index++
+                    expression = PrimitiveMemberCallSyntax(
+                        range(tokenIndex, index), expression, member,
+                        PrimitiveExpressionSyntax[]
+                    )
+                    continue
+                }
                 let arguments = PrimitiveExpressionSyntax[]
+                let namedArguments = PrimitiveMixedNamedArgumentSyntax[]
                 if (index < tokens.count && tokens[index].value != ")") {
                     while (true) {
-                        arguments.add(parseConditional())
+                        if (tokens[index].type == Token.Type.IDENTIFIER &&
+                            index + 1 < tokens.count && tokens[index + 1].value == ":") {
+                            let argumentStart = index
+                            let argumentName = tokens[index++].value
+                            index++
+                            let argumentValue = parseConditional()
+                            namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
+                                range(argumentStart, argumentValue.range.endTokenIndex - tokenIndexOffset),
+                                argumentName, argumentValue
+                            ))
+                        } else {
+                            if (namedArguments.isNotEmpty) {
+                                syntax("Positional member argument cannot follow a named argument", index)
+                            }
+                            arguments.add(parseConditional())
+                        }
                         if (index >= tokens.count || tokens[index].value == ")") break
                         if (tokens[index].value != ",") {
                             syntax("Expected member call argument boundary", index)
@@ -325,7 +407,8 @@ class {
                 }
                 index++
                 expression = PrimitiveMemberCallSyntax(
-                    range(tokenIndex, index), expression, member, arguments
+                    range(tokenIndex, index), expression, member, arguments,
+                    namedArguments
                 )
             } else expression = PrimitiveMemberAccessSyntax(
                 range(tokenIndex, index), expression, member
@@ -435,17 +518,38 @@ class {
     parseCall(Int start, String name) -> PrimitiveExpressionSyntax {
         index++
         let arguments = PrimitiveExpressionSyntax[]
+        let namedArguments = PrimitiveMixedNamedArgumentSyntax[]
         if (index < tokens.count && tokens[index].value == ")") {
             index++
-            return PrimitiveCallSyntax(range(start, index), name, arguments)
+            return PrimitiveCallSyntax(range(start, index), name, arguments, namedArguments)
         }
         while (true) {
             if (index >= tokens.count) syntax("Expected closing call parenthesis", index)
-            arguments.add(parseLevel(0))
+            if (tokens[index].type == Token.Type.IDENTIFIER &&
+                index + 1 < tokens.count && tokens[index + 1].value == ":") {
+                let argumentStart = index
+                let argumentName = tokens[index++].value
+                index++
+                if (arguments.isEmpty && namedArguments.isNotEmpty) {
+                    syntax("Named arguments must use one call form", argumentStart)
+                }
+                let value = parseLevel(0)
+                namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
+                    range(argumentStart, value.range.endTokenIndex - tokenIndexOffset),
+                    argumentName, value
+                ))
+            } else {
+                if (namedArguments.isNotEmpty) {
+                    syntax("Positional argument cannot follow a named argument", index)
+                }
+                arguments.add(parseLevel(0))
+            }
             if (index >= tokens.count) syntax("Expected closing call parenthesis", index)
             if (tokens[index].value == ")") {
                 index++
-                return PrimitiveCallSyntax(range(start, index), name, arguments)
+                return PrimitiveCallSyntax(
+                    range(start, index), name, arguments, namedArguments
+                )
             }
             if (tokens[index].value != ",") {
                 syntax("Expected ',' or ')' after call argument", index)

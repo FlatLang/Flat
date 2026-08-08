@@ -5,6 +5,7 @@ import flat/compiler/models
 /** Immutable target-independent callable contract. */
 data class {
     var SemanticType[] parameters
+    var String[] namesStore
 
     public construct(
         visible SymbolIdentity identity,
@@ -13,11 +14,16 @@ data class {
         SemanticType[] parameterTypes,
         visible SemanticType returnType,
         visible UserClassSemanticType ownerType = null,
-        visible Int optionalParameterCount = 0
+        visible Int optionalParameterCount = 0,
+        String[] names = String[]
     ) {
         if (!identity || !name || name.trim().count == 0 || !callableKind ||
             !parameterTypes || parameterTypes.any({ !_ }) || !returnType ||
-            optionalParameterCount < 0 || optionalParameterCount > parameterTypes.count) {
+            optionalParameterCount < 0 || optionalParameterCount > parameterTypes.count ||
+            !names || (names.isNotEmpty && names.count != parameterTypes.count) ||
+            names.any((parameterName) => !parameterName ||
+                names.filter({ _ == parameterName }).count != 1
+            )) {
             throw Exception("Callable signature requires identity, name, kind, parameters, and return type")
         }
         if (callableKind.value == "function" && ownerType) {
@@ -31,11 +37,19 @@ data class {
         }
         parameters = SemanticType[]
         parameters.addAll(parameterTypes)
+        namesStore = String[]
+        namesStore.addAll(names)
     }
 
     public parameterTypes() -> SemanticType[] {
         let result = SemanticType[]
         result.addAll(parameters)
+        return result
+    }
+
+    public parameterNames() -> String[] {
+        let result = String[]
+        result.addAll(namesStore)
         return result
     }
 }

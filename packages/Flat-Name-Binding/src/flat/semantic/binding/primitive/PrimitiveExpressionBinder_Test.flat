@@ -6,6 +6,29 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `binds local assignment value with storage conversion`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:assignment-value-bind"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "next"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("index", Token.Type.IDENTIFIER, 2),
+            token("=", Token.Type.SYMBOL, 8), token("next", Token.Type.IDENTIFIER, 10),
+            token(")", Token.Type.SYMBOL, 14)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [
+            LocalBinding("index", SymbolIdentity(declaration, "local", 0), SemanticTypes.intType()),
+            LocalBinding("next", SymbolIdentity(declaration, "local", 1), SemanticTypes.intType())
+        ])
+        let assignment = (BoundAssignmentValueExpression)result.expression
+
+        expect(result.succeeded).toBe(true)
+        expect(assignment.target.name).toBe("index")
+        expect(assignment.semanticType.value()).toBe("primitive:Int")
+    }
+
     test `binds ordered interpolated string segments`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-interpolation-bind"), "revision:one"

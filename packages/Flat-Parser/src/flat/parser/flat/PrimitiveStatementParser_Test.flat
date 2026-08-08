@@ -3,6 +3,36 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses continue statement`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:continue"), "revision:one"
+        )
+        let parsed = PrimitiveStatementParser().parse([
+            token("continue", Token.Type.IDENTIFIER, 1)
+        ], snapshot)
+
+        expect(parsed.statements().first.statementKind()).toBe("continue")
+    }
+
+    test `parses native array local without var modifier`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-array-local-no-var"), "revision:one"
+        )
+        let result = PrimitiveStatementParser().parse([
+            token("native_array", Token.Type.IDENTIFIER, 1),
+            token("native", Token.Type.IDENTIFIER, 14),
+            token("Char", Token.Type.IDENTIFIER, 21),
+            token("[", Token.Type.SYMBOL, 25), token("]", Token.Type.SYMBOL, 26),
+            token("buf", Token.Type.IDENTIFIER, 28)
+        ], snapshot)
+        let statements = result.statements()
+        let localObject = (Object)statements.first
+        let local = (PrimitiveLocalDeclarationSyntax)localObject
+
+        expect(local.name).toBe("buf")
+        expect(local.declaredTypeName).toBe("Char[]")
+    }
+
     test `parses array element assignment with indexed value`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-array-assignment"), "revision:one"

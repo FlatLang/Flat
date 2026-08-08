@@ -3,6 +3,41 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses mutable parameter modifier`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:mutable-parameter"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("scan", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("var", Token.Type.IDENTIFIER, 6), token("Int", Token.Type.IDENTIFIER, 10),
+            token("count", Token.Type.IDENTIFIER, 14), token(")", Token.Type.SYMBOL, 19),
+            token("=>", Token.Type.SYMBOL, 21), token("count", Token.Type.IDENTIFIER, 24)
+        ], snapshot)
+        let parameter = parsed.functionValues().first.parameterValues().first
+
+        expect(parameter.typeName).toBe("Int")
+        expect(parameter.name).toBe("count")
+    }
+
+    test `parses fallback body beginning with switch after expression result`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:fallback-switch"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("check", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token(")", Token.Type.SYMBOL, 7), token("=>", Token.Type.SYMBOL, 9),
+            token("true", Token.Type.BOOL, 12), token("{", Token.Type.SYMBOL, 17),
+            token("switch", Token.Type.IDENTIFIER, 19), token("value", Token.Type.IDENTIFIER, 26),
+            token("{", Token.Type.SYMBOL, 32), token("default", Token.Type.IDENTIFIER, 34),
+            token("=>", Token.Type.SYMBOL, 42), token("return", Token.Type.IDENTIFIER, 45),
+            token("false", Token.Type.BOOL, 52), token("}", Token.Type.SYMBOL, 58),
+            token("}", Token.Type.SYMBOL, 60)
+        ], snapshot)
+        let method = parsed.functionValues().first
+
+        expect(method.statements().map({ _.statementKind() })).toBe(["return", "switch"])
+    }
+
     test `parses multiple functions parameters calls recursion and ranges`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-functions"), "revision:one"

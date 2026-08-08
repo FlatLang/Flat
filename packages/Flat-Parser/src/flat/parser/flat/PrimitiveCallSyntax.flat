@@ -5,24 +5,37 @@ import flat/compiler/models
 /** Immutable syntax-only call expression with source-ordered arguments. */
 data class extends PrimitiveExpressionSyntax {
     var PrimitiveExpressionSyntax[] arguments
+    var PrimitiveMixedNamedArgumentSyntax[] namedArguments
 
     public construct(
         SourceRange range,
         visible String name,
-        PrimitiveExpressionSyntax[] argumentValues
+        PrimitiveExpressionSyntax[] argumentValues,
+        PrimitiveMixedNamedArgumentSyntax[] namedArgumentValues = PrimitiveMixedNamedArgumentSyntax[]
     ) {
         if (!range || !name || name.trim().count == 0 || !argumentValues ||
-            argumentValues.any({ !_ })) {
+            argumentValues.any({ !_ }) || !namedArgumentValues ||
+            namedArgumentValues.any({ !_ }) || namedArgumentValues.any((argument) =>
+                namedArgumentValues.filter({ _.name == argument.name }).count != 1
+            )) {
             throw Exception("Primitive call syntax requires range, name, and arguments")
         }
         super(range)
         arguments = PrimitiveExpressionSyntax[]
         arguments.addAll(argumentValues)
+        namedArguments = PrimitiveMixedNamedArgumentSyntax[]
+        namedArguments.addAll(namedArgumentValues)
     }
 
     public argumentValues() -> PrimitiveExpressionSyntax[] {
         let result = PrimitiveExpressionSyntax[]
         result.addAll(arguments)
+        return result
+    }
+
+    public namedArgumentValues() -> PrimitiveMixedNamedArgumentSyntax[] {
+        let result = PrimitiveMixedNamedArgumentSyntax[]
+        result.addAll(namedArguments)
         return result
     }
 

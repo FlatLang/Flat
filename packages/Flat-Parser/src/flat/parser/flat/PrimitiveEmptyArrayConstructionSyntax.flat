@@ -1,0 +1,14 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Syntax-only empty generic array allocation used by fluent collection construction. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(SourceRange range, visible String elementTypeName) {
+        if (!range || !elementTypeName || elementTypeName.trim().count == 0) {
+            throw Exception("Primitive empty array construction requires range and element type")
+        }
+        super(range)
+    }
+    override public expressionKind() => "array"
+}

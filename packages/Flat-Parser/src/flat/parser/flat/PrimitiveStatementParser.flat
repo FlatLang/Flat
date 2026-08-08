@@ -41,10 +41,13 @@ class {
             (start + 2 < end && tokens[start].type == Token.Type.IDENTIFIER &&
                 tokens[start + 1].type == Token.Type.IDENTIFIER &&
                 tokens[start + 2].value == "=") ||
-            (first == "native_array" && start + 2 < end && tokens[start + 2].value == "var")) {
+            first == "native_array") {
             return parseLocal(start, end)
         }
         if (first == "return") return parseReturn(start, end)
+        if (first == "continue" && end - start == 1) {
+            return PrimitiveContinueSyntax(range(start, end))
+        }
         if (first == "throw") return parseThrow(start, end)
         if (first == "native") return PrimitiveExpressionStatementSyntax(
             range(start, end), expression(start, end)
@@ -55,8 +58,13 @@ class {
     parseLocal(Int start, Int end) -> PrimitiveStatementSyntax {
         var Int declarationStart = start
         var Bool directTyped
-        if (tokens[start].value == "native_array") declarationStart += 2
-        else if (tokens[start].value != "let" && tokens[start].value != "var") {
+        if (tokens[start].value == "native_array") {
+            declarationStart++
+            while (declarationStart < end &&
+                (tokens[declarationStart].value == "native" ||
+                 tokens[declarationStart].value == "var")) declarationStart++
+            declarationStart--
+        } else if (tokens[start].value != "let" && tokens[start].value != "var") {
             directTyped = true
             declarationStart--
         }

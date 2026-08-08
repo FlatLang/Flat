@@ -51,6 +51,18 @@ class {
             let value = (BoundBinaryExpression)expression
             return expressions.emitBinary(value, emit(value.left), emit(value.right))
         }
+        if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
+            let value = (BoundDeclarationValueExpression)expression
+            return expressions.emitDeclarationValue(
+                expressions.emitReference(value.local), emit(value.value)
+            )
+        }
+        if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
+            let value = (BoundAssignmentValueExpression)expression
+            return expressions.emitAssignmentValue(
+                expressions.emitReference(value.target), emit(value.value)
+            )
+        }
         if (expression.class.isOfType(BoundMemberAssignmentValueExpression.class)) {
             let value = (BoundMemberAssignmentValueExpression)expression
             return expressions.emitMemberAssignmentValue(

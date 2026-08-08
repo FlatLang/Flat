@@ -7,6 +7,8 @@ data class {
     var PrimitiveFieldSyntax[] fields
     var PrimitiveFunctionSyntax[] methods
     var String[] implementedTypes
+    var PrimitiveArrayOverrideSyntax[] arrayOverrides
+    var PrimitiveConstructorSyntax[] constructors
 
     public construct(
         visible SourceRange range,
@@ -17,7 +19,9 @@ data class {
         visible PrimitiveConstructorSyntax constructorValue,
         PrimitiveFunctionSyntax[] methodValues,
         String[] implementedTypeNames = String[],
-        visible Bool abstractClass = false
+        visible Bool abstractClass = false,
+        PrimitiveArrayOverrideSyntax[] arrayOverrideValues = PrimitiveArrayOverrideSyntax[],
+        PrimitiveConstructorSyntax[] constructorValues = PrimitiveConstructorSyntax[]
     ) {
         if (!range || !name || name.trim().count == 0 ||
             (genericParameterName && genericParameterName.trim().count == 0) ||
@@ -26,7 +30,8 @@ data class {
             methodValues.any({ !_ }) || !implementedTypeNames ||
             implementedTypeNames.any((implementedType) =>
                 !implementedType || implementedType.trim().count == 0
-            )) {
+            ) || !arrayOverrideValues || arrayOverrideValues.any({ !_ }) ||
+            !constructorValues || constructorValues.any({ !_ })) {
             throw Exception("Primitive class syntax requires range name fields constructor and methods")
         }
         fields = PrimitiveFieldSyntax[]
@@ -35,12 +40,28 @@ data class {
         methods.addAll(methodValues)
         implementedTypes = String[]
         implementedTypes.addAll(implementedTypeNames)
+        arrayOverrides = PrimitiveArrayOverrideSyntax[]
+        arrayOverrides.addAll(arrayOverrideValues)
+        constructors = PrimitiveConstructorSyntax[]
+        if (constructorValues.isEmpty) constructors.add(constructorValue)
+        else constructors.addAll(constructorValues)
     }
 
     public mergedWith(PrimitiveClassSyntax overlay) -> PrimitiveClassSyntax {
         if (!overlay || overlay.name != name || overlay.parentName != null ||
-            overlay.fieldValues().isNotEmpty || overlay.implementedTypeNames().isNotEmpty) {
-            throw Exception("Class overlay merge requires same-name method-only syntax")
+            overlay.implementedTypeNames().isNotEmpty) {
+            throw Exception("Class overlay merge requires same-name syntax")
+        }
+        let fields = fieldValues()
+        for (field in overlay.fieldValues()) {
+            var Int existingFieldIndex = -1
+            var Int fieldIndex
+            while (fieldIndex < fields.count && existingFieldIndex < 0) {
+                if (fields[fieldIndex].name == field.name) existingFieldIndex = fieldIndex
+                fieldIndex++
+            }
+            if (existingFieldIndex >= 0) fields[existingFieldIndex] = field
+            else fields.add(field)
         }
         let methods = methodValues()
         var PrimitiveFunctionSyntax duplicate
@@ -74,13 +95,36 @@ data class {
             if (existingIndex >= 0) methods[existingIndex] = method
             else methods.add(method)
         }
+        let mergedConstructors = constructorValues()
+        for (overlayConstructor in overlay.constructorValues()) {
+            var Int existingConstructorIndex = -1
+            var Int constructorIndex
+            while (constructorIndex < mergedConstructors.count &&
+                existingConstructorIndex < 0) {
+                if (mergedConstructors[constructorIndex].parameterValues().map({ _.typeName }) ==
+                    overlayConstructor.parameterValues().map({ _.typeName })) {
+                    existingConstructorIndex = constructorIndex
+                }
+                constructorIndex++
+            }
+            if (existingConstructorIndex >= 0) {
+                mergedConstructors[existingConstructorIndex] = overlayConstructor
+            } else mergedConstructors.add(overlayConstructor)
+        }
         return PrimitiveClassSyntax(
             range, name, genericParameterName, parentName,
-            fieldValues(), constructorValue, methods, implementedTypeNames(), abstractClass
+            fields, mergedConstructors.first, methods, implementedTypeNames(), abstractClass,
+            overlay.arrayOverrideValues().isNotEmpty ?
+                overlay.arrayOverrideValues() : arrayOverrideValues(),
+            mergedConstructors
         )
     }
 
     public fieldValues() -> PrimitiveFieldSyntax[] => PrimitiveFieldSyntax[]:addAll(fields)
     public methodValues() -> PrimitiveFunctionSyntax[] => PrimitiveFunctionSyntax[]:addAll(methods)
     public implementedTypeNames() -> String[] => String[]:addAll(implementedTypes)
+    public arrayOverrideValues() -> PrimitiveArrayOverrideSyntax[] =>
+        PrimitiveArrayOverrideSyntax[]:addAll(arrayOverrides)
+    public constructorValues() -> PrimitiveConstructorSyntax[] =>
+        PrimitiveConstructorSyntax[]:addAll(constructors)
 }

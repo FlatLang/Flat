@@ -3,6 +3,22 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses inline if return body`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inline-if"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("if", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+            token("true", Token.Type.BOOL, 5), token(")", Token.Type.SYMBOL, 9),
+            token("return", Token.Type.IDENTIFIER, 11), token("false", Token.Type.BOOL, 18)
+        ], snapshot)
+        let parsedStatements = parsed.statements()
+        let conditionalObject = (Object)parsedStatements.first
+        let conditional = (PrimitiveIfSyntax)conditionalObject
+
+        expect(conditional.thenValues().first.statementKind()).toBe("return")
+    }
+
     test `parses adjacent local and indexed assignment without semicolons`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-adjacent-indexed"), "revision:one"

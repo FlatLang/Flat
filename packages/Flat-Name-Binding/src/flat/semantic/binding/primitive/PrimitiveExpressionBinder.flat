@@ -80,6 +80,58 @@ class {
     ) -> BoundExpression {
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
+            if (value.namedArgumentValues().isNotEmpty) {
+                let candidates = callables.filter((candidate) =>
+                    candidate.callableKind.value == "instance-method" &&
+                    candidate.name == value.memberName &&
+                    candidate.parameterNames().isNotEmpty &&
+                    candidate.parameterTypes().count == value.argumentValues().count +
+                        value.namedArgumentValues().count
+                )
+                if (candidates.count != 1) {
+                    throw Exception("Mixed member call '#{value.memberName}' requires one named target")
+                }
+                let target = candidates.first
+                let owner = bindSyntax(value.receiver, locals, callables)
+                let ordered = BoundExpression[]
+                let names = target.parameterNames()
+                var Int argumentIndex
+                while (argumentIndex < value.argumentValues().count) {
+                    ordered.add(bindSyntax(
+                        value.argumentValues()[argumentIndex], locals, callables
+                    ))
+                    argumentIndex++
+                }
+                while (argumentIndex < names.count) {
+                    let supplied = value.namedArgumentValues().firstOrNull({
+                        _.name == names[argumentIndex]
+                    })
+                    if (!supplied) throw Exception(
+                        "Missing named member argument '#{names[argumentIndex]}'"
+                    )
+                    ordered.add(bindSyntax(supplied.value, locals, callables))
+                    argumentIndex++
+                }
+                let checked = CallTypeChecker.check(
+                    target, owner.semanticType, ordered.map({ _.semanticType }), value.range
+                )
+                if (!checked.valid) throw Exception(checked.diagnostic.message)
+                return BoundCallExpression(
+                    value.range, checked.semanticType, target, owner,
+                    ordered, checked.argumentConversions()
+                )
+            }
+            if (value.receiver.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class) &&
+                value.memberName == "add" && value.argumentValues().count == 1) {
+                let empty = (PrimitiveEmptyArrayConstructionSyntax)value.receiver
+                let arrayType = ArraySemanticType(namedType(empty.elementTypeName))
+                let argument = bindSyntax(value.argumentValues().first, locals, callables)
+                let conversion = TypeConversions.classify(
+                    argument.semanticType, arrayType.elementType
+                )
+                if (!conversion.applicable) throw Exception("Array add argument type mismatch")
+                return BoundArrayExpression(value.range, arrayType, [argument])
+            }
             let receiver = bindSyntax(value.receiver, locals, callables)
             let candidates = callables.filter((candidate) =>
                 candidate.callableKind.value == "instance-method" &&
@@ -102,6 +154,46 @@ class {
             return BoundCallExpression(
                 value.range, checked.semanticType, target, receiver,
                 arguments, checked.argumentConversions()
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) {
+            let value = (PrimitiveDeclarationValueSyntax)syntax
+            if (locals.any({ _.name == value.name })) {
+                throw Exception("Duplicate declaration local '#{value.name}'")
+            }
+            let initialized = bindSyntax(value.value, locals, callables)
+            let identity = SymbolIdentity(
+                DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        value.range.snapshot, "declaration-value", value.range.startTokenIndex
+                    ),
+                    "declaration-value", value.name
+                ),
+                "local"
+            )
+            let local = BoundReferenceExpression(
+                value.range, initialized.semanticType, value.name, identity
+            )
+            locals.add(LocalBinding(value.name, identity, initialized.semanticType))
+            return BoundDeclarationValueExpression(
+                value.range, initialized.semanticType, local, initialized,
+                TypeConversions.classify(initialized.semanticType, initialized.semanticType)
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveAssignmentValueSyntax.class)) {
+            let value = (PrimitiveAssignmentValueSyntax)syntax
+            let local = locals.reverse().firstOrNull({ _.name == value.name })
+            if (!local) throw Exception("Unknown assignment local '#{value.name}'")
+            let target = BoundReferenceExpression(
+                value.range, local.semanticType, local.name, local.identity
+            )
+            let assigned = bindSyntax(value.value, locals, callables)
+            let conversion = TypeConversions.classify(
+                assigned.semanticType, target.semanticType
+            )
+            if (!conversion.applicable) throw Exception("Assignment value type mismatch")
+            return BoundAssignmentValueExpression(
+                value.range, target.semanticType, target, assigned, conversion
             )
         }
         if (syntax.class.isOfType(PrimitiveMemberAssignmentValueSyntax.class)) {
@@ -158,6 +250,13 @@ class {
             let value = (PrimitiveClassNameSyntax)syntax
             let receiver = bindSyntax(value.receiver, locals, callables)
             return BoundClassNameExpression(value.range, receiver)
+        }
+        if (syntax.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class)) {
+            let value = (PrimitiveEmptyArrayConstructionSyntax)syntax
+            return BoundArrayExpression(
+                value.range, ArraySemanticType(namedType(value.elementTypeName)),
+                BoundExpression[]
+            )
         }
         if (syntax.class.isOfType(PrimitiveArrayConstructionSyntax.class)) {
             let value = (PrimitiveArrayConstructionSyntax)syntax

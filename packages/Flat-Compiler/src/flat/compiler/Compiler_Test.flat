@@ -915,8 +915,9 @@ testable class {
             ])
         } catch (Exception error) { message = error.message }
         expect(message).toBe(
-            "Flat package source 'flat/datastruct/list/StringCharArray.js.flat' failed: " +
-                "Primitive class syntax error at token 8: Expected ';'"
+            "Flat package source 'flat/String.flat' failed: " +
+                "Primitive class modified method 'surroundWith' at token 1681 failed: " +
+                "String interpolation supports a dotted identifier expression"
         )
     }
 

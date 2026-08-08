@@ -429,6 +429,151 @@ testable class {
         expect(value.name).toBe("other")
     }
 
+    test `parses expression bodied inferred array override`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-override-expression"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("this", false, 16), token("[", true, 20), token("Int", false, 21),
+            token("index", false, 25), token("]", true, 30), token("=>", true, 32),
+            token("data", false, 35), token("[", true, 39), token("index", false, 40),
+            token("]", true, 45), token("}", true, 47)
+        ], snapshot)
+        let override = parsed.arrayOverrideValues().first
+
+        expect(override.elementTypeName).toBe("inferred")
+        expect(override.getterValues().first.statementKind()).toBe("return")
+    }
+
+    test `parses and merges constructor overloads by parameter types`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-overloads"), "revision:one"
+        )
+        let canonical = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7), token("{", true, 13),
+            token("construct", false, 15), token("(", true, 24), token("Int", false, 25),
+            token("count", false, 29), token(")", true, 34), token("{", true, 36),
+            token("}", true, 37), token("}", true, 39)
+        ], snapshot)
+        let overlay = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7), token("{", true, 13),
+            token("construct", false, 15), token("(", true, 24), token("String", false, 25),
+            token("text", false, 32), token(")", true, 36), token("{", true, 38),
+            token("}", true, 39), token("construct", false, 41), token("(", true, 50),
+            token("Int", false, 51), token("count", false, 55), token(")", true, 60),
+            token("{", true, 62), token("}", true, 63), token("}", true, 65)
+        ], snapshot)
+        let merged = canonical.mergedWith(overlay)
+
+        expect(overlay.constructorValues().count).toBe(2)
+        expect(merged.constructorValues().count).toBe(2)
+        expect(merged.constructorValues().map({ _.parameterValues().first.typeName }))
+            .toBe(["Int", "String"])
+    }
+
+    test `parses native array constructor parameter representation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-array-parameter"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("construct", false, 16), token("(", true, 25),
+            token("native_array", false, 26), token("native", false, 39),
+            token("Char", false, 46), token("[", true, 50), token("]", true, 51),
+            token("data", false, 53), token(")", true, 57), token("{", true, 59),
+            token("}", true, 60), token("}", true, 62)
+        ], snapshot)
+
+        expect(parsed.constructorValue.parameterValues().first.typeName).toBe("Char[]")
+        expect(parsed.constructorValue.parameterValues().first.name).toBe("data")
+    }
+
+    test `parses typed array override getter and setter bodies`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-override"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("this", false, 16), token("[", true, 20), token("Int", false, 21),
+            token("index", false, 25), token("]", true, 30), token("->", true, 32),
+            token("Char", false, 35), token("{", true, 40), token("get", false, 42),
+            token("{", true, 46), token("return", false, 48), token("data", false, 55),
+            token("[", true, 59), token("index", false, 60), token("]", true, 65),
+            token("}", true, 67), token("set", false, 69), token("{", true, 73),
+            token("return", false, 75), token("}", true, 81),
+            token("}", true, 83), token("}", true, 85)
+        ], snapshot)
+        let override = parsed.arrayOverrideValues().first
+
+        expect(override.indexParameter.typeName).toBe("Int")
+        expect(override.indexParameter.name).toBe("index")
+        expect(override.elementTypeName).toBe("Char")
+        expect(override.getterValues().first.statementKind()).toBe("return")
+        expect(override.setterValues().first.statementKind()).toBe("return")
+    }
+
+    test `merges target overlay field representation by stable field name`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-overlay-field"), "revision:one"
+        )
+        let canonical = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("visible", false, 16), token("Char", false, 24),
+            token("[", true, 28), token("]", true, 29), token("data", false, 31),
+            token("}", true, 36)
+        ], snapshot)
+        let overlay = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("visible", false, 16), token("native_array", false, 24),
+            token("native", false, 37), token("Char", false, 44),
+            token("[", true, 48), token("]", true, 49), token("data", false, 51),
+            token("}", true, 56)
+        ], snapshot)
+        let merged = canonical.mergedWith(overlay)
+
+        expect(merged.fieldValues().count).toBe(1)
+        expect(merged.fieldValues().first.name).toBe("data")
+        expect(merged.fieldValues().first.typeName).toBe("Char[]")
+    }
+
+    test `parses target field native representation modifiers`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-field-modifiers"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("visible", false, 16), token("native_array", false, 24),
+            token("native", false, 37), token("Char", false, 44),
+            token("[", true, 48), token("]", true, 49), token("data", false, 51),
+            token("}", true, 56)
+        ], snapshot)
+        let field = parsed.fieldValues().first
+
+        expect(field.name).toBe("data")
+        expect(field.typeName).toBe("Char[]")
+        expect(field.visibleField).toBe(true)
+    }
+
+    test `parses terminal expression method beginning with indexed this`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:terminal-indexed-this"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7), token("{", true, 13),
+            token("public", false, 15), token("startsWith", false, 22),
+            token("(", true, 32), token("Char", false, 33), token("search", false, 38),
+            token(")", true, 44), token("=>", true, 46), token("this", false, 49),
+            token("[", true, 53), token("0", false, 54, Token.Type.INTEGER),
+            token("]", true, 55), token("==", true, 57), token("search", false, 60),
+            token("}", true, 67)
+        ], snapshot)
+        let method = parsed.methodValues().first
+
+        expect(method.name).toBe("startsWith")
+        expect(method.statements().first.statementKind()).toBe("return")
+    }
+
     test `parses override expression method after expression method`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:override-boundary"), "revision:one"

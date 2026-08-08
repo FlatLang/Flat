@@ -1,0 +1,33 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax for a typed index override with optional getter and setter bodies. */
+data class {
+    var PrimitiveStatementSyntax[] getterBody
+    var PrimitiveStatementSyntax[] setterBody
+
+    public construct(
+        visible SourceRange range,
+        visible PrimitiveFunctionParameterSyntax indexParameter,
+        visible String elementTypeName,
+        PrimitiveStatementSyntax[] getterValues,
+        PrimitiveStatementSyntax[] setterValues
+    ) {
+        if (!range || !indexParameter || !elementTypeName || elementTypeName.trim().isEmpty ||
+            !getterValues || getterValues.any({ !_ }) ||
+            !setterValues || setterValues.any({ !_ }) ||
+            (getterValues.isEmpty && setterValues.isEmpty)) {
+            throw Exception("Primitive array override requires index, element type, and accessor body")
+        }
+        getterBody = PrimitiveStatementSyntax[]
+        getterBody.addAll(getterValues)
+        setterBody = PrimitiveStatementSyntax[]
+        setterBody.addAll(setterValues)
+    }
+
+    public getterValues() -> PrimitiveStatementSyntax[] =>
+        PrimitiveStatementSyntax[]:addAll(getterBody)
+    public setterValues() -> PrimitiveStatementSyntax[] =>
+        PrimitiveStatementSyntax[]:addAll(setterBody)
+}

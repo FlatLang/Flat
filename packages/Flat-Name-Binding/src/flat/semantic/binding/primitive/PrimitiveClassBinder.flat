@@ -55,7 +55,9 @@ class {
             })
             if (!existing) constructors.add(CallableSignature(
                 SymbolIdentity(methodIdentity, methodKind), method.name,
-                CallableKind(methodKind), parameterTypes, methodReturnType, type
+                CallableKind(methodKind), parameterTypes, methodReturnType, type,
+                method.parameterValues().filter({ _.defaultValue != null }).count,
+                method.parameterValues().map({ _.name })
             ))
         }
         let fields = BoundFieldUnit[]
@@ -625,6 +627,60 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
+            if (value.namedArgumentValues().isNotEmpty) {
+                let owner = expression(value.receiver, receiver, fields, locals)
+                let candidates = constructors.filter((candidate) =>
+                    candidate.callableKind.value == "instance-method" &&
+                    candidate.name == value.memberName &&
+                    candidate.parameterNames().isNotEmpty &&
+                    candidate.parameterTypes().count == value.argumentValues().count +
+                        value.namedArgumentValues().count
+                )
+                if (candidates.count != 1) {
+                    throw Exception("Mixed member call '#{value.memberName}' requires one named target")
+                }
+                let target = candidates.first
+                let ordered = BoundExpression[]
+                let names = target.parameterNames()
+                var Int argumentIndex
+                while (argumentIndex < value.argumentValues().count) {
+                    ordered.add(expression(
+                        value.argumentValues()[argumentIndex], receiver, fields, locals
+                    ))
+                    argumentIndex++
+                }
+                while (argumentIndex < names.count) {
+                    let supplied = value.namedArgumentValues().firstOrNull({
+                        _.name == names[argumentIndex]
+                    })
+                    if (!supplied) throw Exception(
+                        "Missing named member argument '#{names[argumentIndex]}'"
+                    )
+                    ordered.add(expression(supplied.value, receiver, fields, locals))
+                    argumentIndex++
+                }
+                let checked = CallTypeChecker.check(
+                    target, owner.semanticType, ordered.map({ _.semanticType }), value.range
+                )
+                if (!checked.valid) throw Exception(checked.diagnostic.message)
+                return BoundCallExpression(
+                    value.range, checked.semanticType, target, owner,
+                    ordered, checked.argumentConversions()
+                )
+            }
+            if (value.receiver.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class) &&
+                value.memberName == "add" && value.argumentValues().count == 1) {
+                let empty = (PrimitiveEmptyArrayConstructionSyntax)value.receiver
+                let arrayType = ArraySemanticType(typeOf(empty.elementTypeName))
+                let argument = expression(
+                    value.argumentValues().first, receiver, fields, locals
+                )
+                let conversion = TypeConversions.classify(
+                    argument.semanticType, arrayType.elementType
+                )
+                if (!conversion.applicable) throw Exception("Array add argument type mismatch")
+                return BoundArrayExpression(value.range, arrayType, [argument])
+            }
             if (!receiver && value.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
                 let ownerName = ((PrimitiveReferenceSyntax)value.receiver).name
                 if (!locals.any({ _.name == ownerName })) {
@@ -709,6 +765,37 @@ class {
             return BoundCallExpression(
                 value.range, checked.semanticType, target, owner,
                 arguments, checked.argumentConversions()
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) {
+            let value = (PrimitiveDeclarationValueSyntax)syntax
+            if (locals.any({ _.name == value.name })) {
+                throw Exception("Duplicate declaration local '#{value.name}'")
+            }
+            let initialized = expression(value.value, receiver, fields, locals)
+            let identity = SymbolIdentity(
+                DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        value.range.snapshot, "declaration-value", value.range.startTokenIndex
+                    ),
+                    "declaration-value", value.name
+                ),
+                "local"
+            )
+            let local = BoundReferenceExpression(
+                value.range, initialized.semanticType, value.name, identity
+            )
+            locals.add(LocalBinding(value.name, identity, initialized.semanticType))
+            return BoundDeclarationValueExpression(
+                value.range, initialized.semanticType, local, initialized,
+                TypeConversions.classify(initialized.semanticType, initialized.semanticType)
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class)) {
+            let value = (PrimitiveEmptyArrayConstructionSyntax)syntax
+            return BoundArrayExpression(
+                value.range, ArraySemanticType(typeOf(value.elementTypeName)),
+                BoundExpression[]
             )
         }
         if (syntax.class.isOfType(PrimitiveMemberAssignmentValueSyntax.class)) {

@@ -4,6 +4,26 @@ import flat/bound
 
 /** Emits literal/reference/member/conversion expressions for the first vertical slice. */
 class {
+    public emitDeclarationValue(
+        Es6CodeResult local,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!local || !value) throw Exception("ES6 declaration value requires local and value")
+        if (!local.emitted) return local
+        if (!value.emitted) return value
+        return Es6CodeResult(code: "(" + local.code + " = " + value.code + ")")
+    }
+
+    public emitAssignmentValue(
+        Es6CodeResult target,
+        Es6CodeResult value
+    ) -> Es6CodeResult {
+        if (!target || !value) throw Exception("ES6 assignment value requires target and value")
+        if (!target.emitted) return target
+        if (!value.emitted) return value
+        return Es6CodeResult(code: "(" + target.code + " = " + value.code + ")")
+    }
+
     public emitLiteral(BoundLiteralExpression expression) -> Es6CodeResult {
         if (!expression) throw Exception("ES6 literal emission requires an expression")
         return Es6CodeResult(code: expression.sourceValue)

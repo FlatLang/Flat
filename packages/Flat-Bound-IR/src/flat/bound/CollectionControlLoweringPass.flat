@@ -55,6 +55,20 @@ class extends BoundFunctionLoweringPass {
 
     lowerExpression(BoundExpression expression) -> BoundExpression {
         if (!expression) return null
+        if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
+            let value = (BoundDeclarationValueExpression)expression
+            return BoundDeclarationValueExpression(
+                value.range, value.semanticType, value.local,
+                lowerExpression(value.value), value.storageConversion
+            )
+        }
+        if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
+            let value = (BoundAssignmentValueExpression)expression
+            return BoundAssignmentValueExpression(
+                value.range, value.semanticType, value.target,
+                lowerExpression(value.value), value.storageConversion
+            )
+        }
         if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
             let value = (BoundArrayAccessExpression)expression
             return BoundArrayAccessExpression(

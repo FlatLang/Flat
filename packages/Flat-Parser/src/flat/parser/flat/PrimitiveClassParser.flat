@@ -80,7 +80,9 @@ class {
         require("{")
         let fields = PrimitiveFieldSyntax[]
         var PrimitiveConstructorSyntax constructorValue
+        let constructorValues = PrimitiveConstructorSyntax[]
         let methods = PrimitiveFunctionSyntax[]
+        let arrayOverrides = PrimitiveArrayOverrideSyntax[]
         var Bool visibleField
         var Bool staticField
         while (index < tokens.count && tokens[index].value != "}") {
@@ -143,12 +145,23 @@ class {
                     staticField = true
                     index++
                 }
+                while (index < tokens.count &&
+                    (tokens[index].value == "native_array" ||
+                     tokens[index].value == "native")) index++
             } else if (tokens[index].value == "static") {
                 staticField = true
                 index++
             } else if (tokens[index].value == "constructor" || tokens[index].value == "construct") {
-                if (constructorValue) syntax("Duplicate constructor", index)
-                constructorValue = parseConstructor()
+                let constructor = parseConstructor()
+                if (constructorValues.any((existing) =>
+                    existing.parameterValues().map({ _.typeName }) ==
+                        constructor.parameterValues().map({ _.typeName })
+                )) syntax("Duplicate constructor signature", index)
+                constructorValues.add(constructor)
+                if (!constructorValue) constructorValue = constructor
+            } else if (tokens[index].value == "this" && index + 1 < tokens.count &&
+                tokens[index + 1].value == "[") {
+                arrayOverrides.add(parseArrayOverride())
             } else if (index + 2 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER &&
                 tokens[index + 1].type == Token.Type.IDENTIFIER &&
@@ -169,10 +182,19 @@ class {
                     [PrimitiveReturnSyntax(range(expressionStart, end), value)]
                 ))
                 index = end
-            } else if (index + 1 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
-                tokens[index + 1].type == Token.Type.IDENTIFIER) {
+            } else if (index + 1 < tokens.count &&
+                tokens[index].type == Token.Type.IDENTIFIER &&
+                (tokens[index + 1].type == Token.Type.IDENTIFIER ||
+                 (index + 3 < tokens.count && tokens[index + 1].value == "[" &&
+                    tokens[index + 2].value == "]" &&
+                    tokens[index + 3].type == Token.Type.IDENTIFIER))) {
                 let fieldStart = index
-                let typeName = tokens[index++].value
+                var String typeName = tokens[index++].value
+                if (index + 1 < tokens.count && tokens[index].value == "[" &&
+                    tokens[index + 1].value == "]") {
+                    typeName += "[]"
+                    index += 2
+                }
                 let fieldName = tokens[index++].value
                 var PrimitiveExpressionSyntax initializer
                 if (index < tokens.count && tokens[index].value == "=") {
@@ -225,10 +247,82 @@ class {
             constructorValue = PrimitiveConstructorSyntax(
                 range(start, index), PrimitiveFunctionParameterSyntax[], PrimitiveStatementSyntax[]
             )
+            constructorValues.add(constructorValue)
         }
         return PrimitiveClassSyntax(
             range(start, index), name, genericParameterName, parentName,
-            fields, constructorValue, methods, implementedTypeNames, abstractClass
+            fields, constructorValue, methods, implementedTypeNames, abstractClass,
+            arrayOverrides, constructorValues
+        )
+    }
+
+    parseArrayOverride() -> PrimitiveArrayOverrideSyntax {
+        let start = index++
+        require("[")
+        let parameterStart = index
+        let typeName = identifier("Expected array override index type")
+        let name = identifier("Expected array override index name")
+        require("]")
+        if (index < tokens.count && tokens[index].value == "=>") {
+            index++
+            let expressionStart = index
+            let end = declarationEnd(start)
+            let value = PrimitiveExpressionParser().parse(
+                tokens.skip(expressionStart).take(end - expressionStart), snapshot,
+                expressionStart + tokenIndexOffset
+            )
+            index = end
+            return PrimitiveArrayOverrideSyntax(
+                range(start, end),
+                PrimitiveFunctionParameterSyntax(
+                    range(parameterStart, parameterStart + 2), typeName, name
+                ),
+                "inferred",
+                [PrimitiveReturnSyntax(range(expressionStart, end), value)],
+                PrimitiveStatementSyntax[]
+            )
+        }
+        require("->")
+        let elementTypeName = identifier("Expected array override element type")
+        require("{")
+        let getter = PrimitiveStatementSyntax[]
+        let setter = PrimitiveStatementSyntax[]
+        while (index < tokens.count && tokens[index].value != "}") {
+            let kind = tokens[index++].value
+            if (kind != "get" && kind != "set") syntax("Expected get or set accessor", index - 1)
+            if (kind == "set" && index < tokens.count && tokens[index].value == "(") {
+                var Int depth = 1
+                index++
+                while (index < tokens.count && depth > 0) {
+                    if (tokens[index].value == "(") depth++
+                    else if (tokens[index].value == ")") depth--
+                    index++
+                }
+                if (depth != 0) syntax("Unterminated array setter parameter", index)
+            }
+            require("{")
+            let bodyStart = index
+            var Int bodyDepth = 1
+            while (index < tokens.count && bodyDepth > 0) {
+                if (tokens[index].value == "{") bodyDepth++
+                else if (tokens[index].value == "}") bodyDepth--
+                index++
+            }
+            if (bodyDepth != 0) syntax("Unterminated array accessor", index)
+            let values = PrimitiveControlStatementParser().parse(
+                tokens.skip(bodyStart).take(index - bodyStart - 1), snapshot,
+                bodyStart + tokenIndexOffset
+            ).statements()
+            if (kind == "get") getter.addAll(values)
+            else setter.addAll(values)
+        }
+        require("}")
+        return PrimitiveArrayOverrideSyntax(
+            range(start, index),
+            PrimitiveFunctionParameterSyntax(
+                range(parameterStart, parameterStart + 2), typeName, name
+            ),
+            elementTypeName, getter, setter
         )
     }
 
@@ -307,7 +401,15 @@ class {
                 visibleParameter = true
                 index++
             }
-            let typeName = identifier("Expected parameter type")
+            while (index < tokens.count &&
+                (tokens[index].value == "native_array" ||
+                 tokens[index].value == "native")) index++
+            var String typeName = identifier("Expected parameter type")
+            if (index + 1 < tokens.count && tokens[index].value == "[" &&
+                tokens[index + 1].value == "]") {
+                typeName += "[]"
+                index += 2
+            }
             let name = identifier("Expected parameter name")
             if (result.any({ _.name == name })) syntax("Duplicate parameter '#name'", start)
             var PrimitiveExpressionSyntax defaultValue
@@ -404,6 +506,8 @@ class {
                     value == "protected" || value == "visible" || value == "static" ||
                     value == "async" || value == "compiler_visible" ||
                     value == "external_name" || value == "override" ||
+                    (value == "this" && cursor > expressionStart &&
+                        cursor + 1 < tokens.count && tokens[cursor + 1].value == "[") ||
                     value == "constructor" ||
                     value == "construct" || typeBoundary ||
                     (value == "[" && cursor + 1 < tokens.count &&
@@ -458,6 +562,7 @@ class {
                 if (bodyDepth != 0) syntax("Unterminated receiver-return method", start)
                 return cursor
             }
+            let expressionStart = cursor
             let fallbackEnd = fallbackBodyEnd(cursor)
             if (fallbackEnd >= 0) return fallbackEnd
             var Int parenthesisDepth
@@ -473,10 +578,14 @@ class {
                         value == "protected" || value == "static" ||
                         value == "async" || value == "compiler_visible" ||
                         value == "external_name" || value == "visible" ||
-                        value == "override" || value == "constructor" || value == "construct" || value == "}")) break
+                        value == "override" ||
+                        (value == "this" && cursor > expressionStart &&
+                            cursor + 1 < tokens.count &&
+                            tokens[cursor + 1].value == "[") ||
+                        value == "constructor" || value == "construct" || value == "}")) break
                 cursor++
             }
-            if (cursor >= tokens.count) syntax("Expected method expression boundary", start)
+            if (cursor >= tokens.count) return cursor
             return cursor
         }
         if (cursor >= tokens.count) syntax("Expected method body", start)

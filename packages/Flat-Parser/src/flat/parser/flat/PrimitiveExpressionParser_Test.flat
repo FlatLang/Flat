@@ -3,6 +3,65 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses parenthesized local declaration value`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:declaration-value"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("let", Token.Type.IDENTIFIER, 2),
+            token("found", Token.Type.IDENTIFIER, 6), token("=", Token.Type.SYMBOL, 12),
+            token("next", Token.Type.IDENTIFIER, 14), token("(", Token.Type.SYMBOL, 18),
+            token(")", Token.Type.SYMBOL, 19), token(")", Token.Type.SYMBOL, 20),
+            token(">=", Token.Type.SYMBOL, 22), token("0", Token.Type.INTEGER, 25)
+        ], snapshot)
+        let binary = (PrimitiveBinarySyntax)parsed
+        let declaration = (PrimitiveDeclarationValueSyntax)binary.left
+
+        expect(declaration.name).toBe("found")
+        expect(declaration.value.expressionKind()).toBe("call")
+        expect(binary.operator).toBe(">=")
+    }
+
+    test `parses ordinary call with trailing named argument`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:mixed-call"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("indexOf", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 8),
+            token("search", Token.Type.IDENTIFIER, 9), token(",", Token.Type.SYMBOL, 15),
+            token("start", Token.Type.IDENTIFIER, 17), token(",", Token.Type.SYMBOL, 22),
+            token("searchCount", Token.Type.IDENTIFIER, 24), token(":", Token.Type.SYMBOL, 35),
+            token("1", Token.Type.INTEGER, 37), token(")", Token.Type.SYMBOL, 38)
+        ], snapshot)
+        let expression = (PrimitiveCallSyntax)parsed
+        let namedArguments = expression.namedArgumentValues()
+
+        expect(expression.argumentValues().count).toBe(2)
+        expect(namedArguments.map({ _.name })).toBe(["searchCount"])
+        expect(namedArguments.first.value.expressionKind()).toBe("literal")
+    }
+
+    test `rejects positional argument after ordinary named argument`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:mixed-call-order"), "revision:one"
+        )
+        var String message
+        try {
+            PrimitiveExpressionParser().parse([
+                token("run", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 4),
+                token("first", Token.Type.IDENTIFIER, 5), token(",", Token.Type.SYMBOL, 10),
+                token("second", Token.Type.IDENTIFIER, 12), token(":", Token.Type.SYMBOL, 18),
+                token("2", Token.Type.INTEGER, 20), token(",", Token.Type.SYMBOL, 21),
+                token("3", Token.Type.INTEGER, 23), token(")", Token.Type.SYMBOL, 24)
+            ], snapshot)
+        } catch (Exception error) { message = error.message }
+
+        expect(message).toBe(
+            "Primitive expression syntax error at token 8: " +
+                "Positional argument cannot follow a named argument"
+        )
+    }
+
     test `parses interpolated string segments with exact source ranges`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-interpolation"), "revision:one"
@@ -111,6 +170,23 @@ testable class {
         expect(offsetExpression.range.endTokenIndex).toBe(13)
     }
 
+    test `parses parenthesized local assignment value`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:assignment-value"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("index", Token.Type.IDENTIFIER, 2),
+            token("=", Token.Type.SYMBOL, 8), token("next", Token.Type.IDENTIFIER, 10),
+            token(")", Token.Type.SYMBOL, 14), token(">=", Token.Type.SYMBOL, 16),
+            token("0", Token.Type.INTEGER, 19)
+        ], snapshot)
+        let comparison = (PrimitiveBinarySyntax)expression
+        let assignment = (PrimitiveAssignmentValueSyntax)comparison.left
+
+        expect(assignment.name).toBe("index")
+        expect(assignment.value.expressionKind()).toBe("reference")
+    }
+
     test `parses cast wrapped member compound assignment value`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:member-assignment-value"), "revision:one"
@@ -141,6 +217,76 @@ testable class {
         expect(expression.expressionKind()).toBe("class-name")
         expect(expression.range.startTokenIndex).toBe(0)
         expect(expression.range.endTokenIndex).toBe(5)
+    }
+
+    test `parses colon fluent call on empty generic array`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:colon-array"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("Array", Token.Type.IDENTIFIER, 1), token("<", Token.Type.SYMBOL, 6),
+            token("Char", Token.Type.IDENTIFIER, 7), token(">", Token.Type.SYMBOL, 11),
+            token("(", Token.Type.SYMBOL, 12), token(")", Token.Type.SYMBOL, 13),
+            token(":", Token.Type.SYMBOL, 14), token("add", Token.Type.IDENTIFIER, 15),
+            token("(", Token.Type.SYMBOL, 18), token("value", Token.Type.IDENTIFIER, 19),
+            token(")", Token.Type.SYMBOL, 24)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)parsed
+
+        expect(call.memberName).toBe("add")
+    }
+
+    test `parses zero size generic array construction`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:zero-array"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("Array", Token.Type.IDENTIFIER, 1), token("<", Token.Type.SYMBOL, 6),
+            token("Char", Token.Type.IDENTIFIER, 7), token(">", Token.Type.SYMBOL, 11),
+            token("(", Token.Type.SYMBOL, 12), token(")", Token.Type.SYMBOL, 13),
+            token(".", Token.Type.SYMBOL, 14), token("add", Token.Type.IDENTIFIER, 15),
+            token("(", Token.Type.SYMBOL, 18), token("value", Token.Type.IDENTIFIER, 19),
+            token(")", Token.Type.SYMBOL, 24)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)parsed
+
+        expect(call.receiver.expressionKind()).toBe("array")
+        let receiver = (PrimitiveEmptyArrayConstructionSyntax)call.receiver
+        expect(receiver.elementTypeName).toBe("Char")
+        expect(call.memberName).toBe("add")
+    }
+
+    test `parses zero argument member call`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:zero-member-call"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("values", Token.Type.IDENTIFIER, 1),
+            token(".", Token.Type.SYMBOL, 7), token("clear", Token.Type.IDENTIFIER, 8),
+            token("(", Token.Type.SYMBOL, 13), token(")", Token.Type.SYMBOL, 14)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)parsed
+
+        expect(call.memberName).toBe("clear")
+        expect(call.argumentValues().count).toBe(0)
+    }
+
+    test `parses member call after generic array allocation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-array-postfix"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("Array", Token.Type.IDENTIFIER, 1), token("<", Token.Type.SYMBOL, 6),
+            token("String", Token.Type.IDENTIFIER, 7), token(">", Token.Type.SYMBOL, 13),
+            token("(", Token.Type.SYMBOL, 14), token("count", Token.Type.IDENTIFIER, 15),
+            token(")", Token.Type.SYMBOL, 20), token(".", Token.Type.SYMBOL, 21),
+            token("join", Token.Type.IDENTIFIER, 22), token("(", Token.Type.SYMBOL, 26),
+            token(")", Token.Type.SYMBOL, 27)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)expression
+
+        expect(call.memberName).toBe("join")
+        expect(call.receiver.expressionKind()).toBe("array-construction")
     }
 
     test `parses generic array allocation`() {
@@ -177,6 +323,25 @@ testable class {
         expect(construction.size.expressionKind()).toBe("reference")
         expect(construction.range.startTokenIndex).toBe(0)
         expect(construction.range.endTokenIndex).toBe(5)
+    }
+
+    test `parses member call with trailing named argument`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:mixed-member-call"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("value", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 6),
+            token("trim", Token.Type.IDENTIFIER, 7), token("(", Token.Type.SYMBOL, 11),
+            token("character", Token.Type.IDENTIFIER, 12), token(",", Token.Type.SYMBOL, 21),
+            token("count", Token.Type.IDENTIFIER, 23), token(":", Token.Type.SYMBOL, 28),
+            token("count", Token.Type.IDENTIFIER, 30), token("-", Token.Type.SYMBOL, 36),
+            token("1", Token.Type.INTEGER, 38), token(")", Token.Type.SYMBOL, 39)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)parsed
+
+        expect(call.argumentValues().count).toBe(1)
+        expect(call.namedArgumentValues().map({ _.name })).toBe(["count"])
+        expect(call.namedArgumentValues().first.value.expressionKind()).toBe("binary")
     }
 
     test `parses receiver owned member call`() {
@@ -345,6 +510,19 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(2)
+    }
+
+    test `parses implicit braced lambda expression`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:implicit-lambda"), "revision:one"
+        )
+        let lambda = PrimitiveExpressionParser().parse([
+            token("{", Token.Type.SYMBOL, 1), token("this", Token.Type.IDENTIFIER, 3),
+            token("}", Token.Type.SYMBOL, 8)
+        ], snapshot)
+
+        expect(lambda.expressionKind()).toBe("lambda")
+        expect(((PrimitiveLambdaSyntax)lambda).parameterValues().count).toBe(0)
     }
 
     test `parses lambdas function references captures and invalid forms`() {

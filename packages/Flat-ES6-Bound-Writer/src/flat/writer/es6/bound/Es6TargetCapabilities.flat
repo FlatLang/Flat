@@ -14,7 +14,9 @@ class {
         return kind == "literal" || kind == "interpolated-string" || kind == "reference" || kind == "member-access" ||
             kind == "unary" || kind == "binary" || kind == "conditional" ||
             kind == "class-name" || kind == "type-metadata" || kind == "type-test" ||
-            kind == "conversion" || kind == "member-assignment-value" ||
+            kind == "conversion" || kind == "assignment-value" ||
+            kind == "declaration-value" ||
+            kind == "member-assignment-value" ||
             kind == "intrinsic-member-call" ||
             kind == "call" || kind == "native-call" || kind == "array" ||
             kind == "array-construction" ||

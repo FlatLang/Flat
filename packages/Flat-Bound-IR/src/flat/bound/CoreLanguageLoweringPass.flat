@@ -58,6 +58,13 @@ class extends BoundFunctionLoweringPass {
 
     lowerExpression(BoundExpression expression) -> BoundExpression {
         if (!expression) return null
+        if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
+            let value = (BoundDeclarationValueExpression)expression
+            return BoundDeclarationValueExpression(
+                value.range, value.semanticType, value.local,
+                lowerExpression(value.value), value.storageConversion
+            )
+        }
         if (expression.class.isOfType(BoundRichCallExpression.class)) {
             return lowerExpression(((BoundRichCallExpression)expression).canonicalCall)
         }
