@@ -139,40 +139,42 @@ class {
                 "class", syntax.name
             )
             let type = UserClassSemanticType(typeIdentity)
-            let constructor = syntax.constructorValue
-            let constructorIdentity = DeclarationIdentity(
-                SyntaxIslandIdentity(
-                    constructor.range.snapshot,
+            for (constructor in syntax.constructorValues()) {
+                let constructorIdentity = DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        constructor.range.snapshot,
+                        constructor == syntax.constructorValue
+                            ? "constructor" : "constructor-overload",
+                        constructor.range.startTokenIndex
+                    ),
                     "constructor",
-                    constructor.range.startTokenIndex
-                ),
-                "constructor",
-                syntax.name
-            )
-            let parameterTypes = SemanticType[]
-            var Int optionalCount
-            var Bool optionalStarted
-            for (parameter in constructor.parameterValues()) {
-                parameterTypes.add(signatureType(
-                    parameter.typeName, syntaxes, snapshot
-                ))
-                if (parameter.defaultValue) {
-                    optionalStarted = true
-                    optionalCount++
-                } else if (optionalStarted) {
-                    throw Exception("Default constructor parameters must be trailing")
+                    syntax.name
+                )
+                let parameterTypes = SemanticType[]
+                var Int optionalCount
+                var Bool optionalStarted
+                for (parameter in constructor.parameterValues()) {
+                    parameterTypes.add(signatureType(
+                        parameter.typeName, syntaxes, snapshot
+                    ))
+                    if (parameter.defaultValue) {
+                        optionalStarted = true
+                        optionalCount++
+                    } else if (optionalStarted) {
+                        throw Exception("Default constructor parameters must be trailing")
+                    }
                 }
+                result.add(CallableSignature(
+                    SymbolIdentity(constructorIdentity, "constructor"),
+                    syntax.name,
+                    CallableKind("constructor"),
+                    parameterTypes,
+                    type,
+                    type,
+                    optionalCount,
+                    constructor.parameterValues().map({ _.name })
+                ))
             }
-            result.add(CallableSignature(
-                SymbolIdentity(constructorIdentity, "constructor"),
-                syntax.name,
-                CallableKind("constructor"),
-                parameterTypes,
-                type,
-                type,
-                optionalCount,
-                constructor.parameterValues().map({ _.name })
-            ))
         }
         return result
     }

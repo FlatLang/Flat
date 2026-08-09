@@ -229,7 +229,7 @@ class {
                     segments.add(BoundInterpolatedStringSegment(
                         segment.range, segment.literalSourceValue, null
                     ))
-                } else {
+                } else if (segment.expression.class.isOfType(PrimitiveInterpolationPathSyntax.class)) {
                     let path = (PrimitiveInterpolationPathSyntax)segment.expression
                     if (path.pathValues().count != 1) {
                         throw Exception("Generic interpolation binding supports local roots")
@@ -241,6 +241,10 @@ class {
                         BoundReferenceExpression(
                             path.range, local.semanticType, local.name, local.identity
                         )
+                    ))
+                } else {
+                    segments.add(BoundInterpolatedStringSegment(
+                        segment.range, null, bindSyntax(segment.expression, locals, callables)
                     ))
                 }
             }

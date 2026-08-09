@@ -513,9 +513,12 @@ testable class {
         expect(override.setterValues().first.statementKind()).toBe("return")
     }
 
-    test `merges target overlay field representation by stable field name`() {
+    test `merges target overlay field representation with canonical source range`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:class-overlay-field"), "revision:one"
+        )
+        let overlaySnapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:class-overlay-field.js"), "revision:one"
         )
         let canonical = PrimitiveClassParser().parse([
             token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
@@ -529,12 +532,13 @@ testable class {
             token("native", false, 37), token("Char", false, 44),
             token("[", true, 48), token("]", true, 49), token("data", false, 51),
             token("}", true, 56)
-        ], snapshot)
+        ], overlaySnapshot)
         let merged = canonical.mergedWith(overlay)
 
         expect(merged.fieldValues().count).toBe(1)
         expect(merged.fieldValues().first.name).toBe("data")
         expect(merged.fieldValues().first.typeName).toBe("Char[]")
+        expect(merged.fieldValues().first.range.snapshot).toBe(snapshot)
     }
 
     test `parses target field native representation modifiers`() {

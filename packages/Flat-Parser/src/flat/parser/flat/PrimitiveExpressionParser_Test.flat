@@ -219,6 +219,23 @@ testable class {
         expect(expression.range.endTokenIndex).toBe(5)
     }
 
+    test `parses typed empty array shorthand without erasing element type`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:typed-empty-array"), "revision:one"
+        )
+        let expression = PrimitiveExpressionParser().parse([
+            token("String", Token.Type.IDENTIFIER, 1),
+            token("[", Token.Type.SYMBOL, 7), token("]", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        var PrimitiveEmptyArrayConstructionSyntax empty
+        empty = (PrimitiveEmptyArrayConstructionSyntax)expression
+
+        expect(empty.expressionKind()).toBe("array")
+        expect(empty.elementTypeName).toBe("String")
+        expect(empty.range.startTokenIndex).toBe(0)
+        expect(empty.range.endTokenIndex).toBe(3)
+    }
+
     test `parses colon fluent call on empty generic array`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:colon-array"), "revision:one"
@@ -358,6 +375,48 @@ testable class {
         expect(call.expressionKind()).toBe("member-call")
         expect(call.memberName).toBe("equals")
         expect(call.argumentValues().count).toBe(1)
+    }
+
+    test `parses complete expression inside braced interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:interpolation-expression"), "revision:one"
+        )
+        var String source = "\"before "
+        source += '#'
+        source += "{symmetrical ? str.reverse() : str} after\""
+        let parsedExpression = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 4)
+        ], snapshot, 12)
+        var PrimitiveInterpolatedStringSyntax parsed
+        parsed = (PrimitiveInterpolatedStringSyntax)parsedExpression
+        var PrimitiveConditionalSyntax expression
+        expression = (PrimitiveConditionalSyntax)parsed.segmentValues()[1].expression
+        var PrimitiveMemberCallSyntax call
+        call = (PrimitiveMemberCallSyntax)expression.whenTrue
+
+        expect(expression.expressionKind()).toBe("conditional")
+        expect(call.memberName).toBe("reverse")
+        expect(expression.range.startTokenIndex).toBe(12)
+        expect(expression.range.endTokenIndex).toBe(13)
+        expect(expression.range.start.column).toBe(14)
+        expect(expression.range.end.column).toBe(47)
+    }
+
+    test `rejects malformed expression inside braced interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:invalid-interpolation-expression"), "revision:one"
+        )
+        var String source = "\""
+        source += '#'
+        source += "{condition ? value}\""
+        var String message
+        try {
+            PrimitiveExpressionParser().parse([
+                token(source, Token.Type.STRING, 1)
+            ], snapshot)
+        } catch (Exception error) { message = error.message }
+
+        expect(message).toBe("Expected ':' in conditional expression")
     }
 
     test `parses interpolated string receiver member call`() {

@@ -24,6 +24,27 @@ testable class {
         expect(value.range.endTokenIndex).toBe(12)
     }
 
+    test `parses complete expression interpolation segment`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-external-expression"), "revision:one"
+        )
+        var String code = "value += "
+        code += '#'
+        code += "{transform(chars[i], i)};"
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("external", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 10),
+            token(code, Token.Type.CODE, 12), token("}", Token.Type.SYMBOL, 47)
+        ], snapshot)
+        let statements = parsed.statements()
+        let object = (Object)statements.first
+        let value = (PrimitiveExternalStatementSyntax)object
+        let segments = value.segmentValues()
+
+        expect(segments.count).toBe(3)
+        expect(segments[1].expressionSegment()).toBe(true)
+        expect(segments[1].expression.expressionKind()).toBe("call")
+    }
+
     test `parses immutable interpolation segments and source ranges`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-external-interpolation"), "revision:one"
@@ -81,7 +102,7 @@ testable class {
         invalid.add(next)
         next = ""
         next += '#'
-        next += "{message()}"
+        next += "{message +}"
         invalid.add(next)
         for (code in invalid) {
             try {

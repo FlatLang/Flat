@@ -13,6 +13,7 @@ class extends BoundFunctionLoweringPass {
             input.identity, input.name, input.returnType, output, input.range,
             input.parameterValues(), input.staticFunction, input.mainFunction,
             input.constructorFunction, input.dispatchIdentity, input.parentConstructorCall,
+            input.constructorDelegation,
             input.asyncFunction, input.externalName
         )
     }
@@ -67,6 +68,18 @@ class extends BoundFunctionLoweringPass {
             return BoundAssignmentValueExpression(
                 value.range, value.semanticType, value.target,
                 lowerExpression(value.value), value.storageConversion
+            )
+        }
+        if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) {
+            let value = (BoundNativeArrayDataExpression)expression
+            return BoundNativeArrayDataExpression(
+                value.range, lowerExpression(value.receiver)
+            )
+        }
+        if (expression.class.isOfType(BoundArrayLengthExpression.class)) {
+            let value = (BoundArrayLengthExpression)expression
+            return BoundArrayLengthExpression(
+                value.range, lowerExpression(value.receiver)
             )
         }
         if (expression.class.isOfType(BoundArrayAccessExpression.class)) {

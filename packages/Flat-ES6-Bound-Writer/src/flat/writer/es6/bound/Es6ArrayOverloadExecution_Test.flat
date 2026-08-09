@@ -72,6 +72,133 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `class array override getter and setter execute under Node`() {
+        let source = "class Buffer { Char[] data; construct() { data = new Char[1] } " +
+            "this[Int index] -> Char { get { return data[index] } " +
+            "set { data[index] = value } } " +
+            "write(Int index, Char value) { this[index] = value } " +
+            "read(Int index) -> Char { return this[index] } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let sourceTokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-override-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(sourceTokens, snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let writeName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "write" }).identity.value
+        )
+        let readName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "read" }).identity.value
+        )
+        let root = File(".flat-es6-array-override-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "array-override.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + className + "();\n" +
+                "value." + writeName + "(0, 'z');\n" +
+                "console.log(value." + readName + "(0));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("z\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `overloaded constructors select and execute through deterministic factory`() {
+        let firstStream = Lexer().lex(
+            "class Source { construct() {} create() => Target(this) }"
+        )
+        firstStream.emit("start")
+        let secondStream = Lexer().lex(
+            "class Target { Int value; construct(Int value) { this.value = value; } " +
+                "construct(Source source) { this.value = 7; } }"
+        )
+        secondStream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-overload-execute"), "revision:one"
+        )
+        let types = PrimitiveClassPartitionBinder().bind([
+            PrimitiveClassParser().parse(
+                firstStream.consumeAll<Token>("data"), snapshot
+            ),
+            PrimitiveClassParser().parse(
+                secondStream.consumeAll<Token>("data"), snapshot
+            )
+        ], snapshot).typeUnits()
+        let fragments = Es6ArtifactFragment[]
+        var Int index
+        while (index < types.count) {
+            fragments.add(Es6UnitOrchestrator().emitType(types[index], index).fragment)
+            index++
+        }
+        let code = Es6FragmentAssembler(2).assemble(fragments).code
+        let sourceType = types.firstOrNull({ _.identity.name == "Source" })
+        let targetType = types.firstOrNull({ _.identity.name == "Target" })
+        let className = Es6NameMangler.mangle(sourceType.identity.value)
+        let createName = Es6NameMangler.mangle(
+            sourceType.functionUnits().firstOrNull({ _.name == "create" }).identity.value
+        )
+        let fieldName = Es6NameMangler.mangle(targetType.fieldUnits().first.identity.value)
+        let root = File(".flat-es6-constructor-overload-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "constructor-overload.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(new " + className + "()." + createName + "()." +
+                fieldName + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `same class constructor delegation executes on one object`() {
+        let stream = Lexer().lex(
+            "class Value { Int value; construct(Int value) { this.value = value; } " +
+                "construct() { this(7); } read() -> Int { return value; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-delegation-execute"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let factory = Es6NameMangler.mangle(
+            type.functionUnits().filter({ _.constructorFunction }).last.identity.value
+        )
+        let readName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "read" }).identity.value
+        )
+        let root = File(".flat-es6-constructor-delegation-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "constructor-delegation.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(" + className + "." + factory + "()." + readName + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     token(String value, Int type, Int column) -> Token => Token(
         value: value, type: type, location: Location(lineNumber: 1, column: column)
     )

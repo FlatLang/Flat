@@ -69,6 +69,22 @@ testable class {
         expect(orchestrator.emit(interpolation).code).toBe(
             "(\"Hello \" + #{Es6NameMangler.mangle(receiver.symbolIdentity.value)})"
         )
+        let conditionalInterpolation = BoundInterpolatedStringExpression(fixture.range(), [
+            BoundInterpolatedStringSegment(fixture.range(), null, conditional)
+        ])
+        expect(orchestrator.emit(conditionalInterpolation).code).toBe("((true ? 1 : 2))")
+        let invocationType = FunctionSemanticType(
+            [SemanticTypes.intType()], SemanticTypes.intType()
+        )
+        let functionValue = fixture.reference(
+            "parameter", "transform", 9, invocationType
+        )
+        let invocation = BoundFunctionInvocationExpression(
+            fixture.range(), functionValue, invocationType, [one]
+        )
+        expect(orchestrator.emit(invocation).code).toBe(
+            Es6NameMangler.mangle(functionValue.symbolIdentity.value) + "(1)"
+        )
         let className = BoundClassNameExpression(fixture.range(), receiver)
         let referencedType = UserClassSemanticType(
             fixture.declaration("class", "Value", 7)
@@ -86,11 +102,19 @@ testable class {
             Es6NameMangler.mangle(receiver.symbolIdentity.value) +
             ".constructor.__flatType.name"
         )
+        let emptyArray = BoundArrayExpression(
+            fixture.range(), ArraySemanticType(SemanticTypes.stringType()),
+            BoundExpression[]
+        )
+        expect(orchestrator.emit(emptyArray).code).toBe("[]")
         let arrayConstruction = BoundArrayExpression(
             fixture.range(), ArraySemanticType(SemanticTypes.charType()),
             fixture.reference("local", "count", 8, SemanticTypes.intType())
         )
         let size = (BoundReferenceExpression)arrayConstruction.allocationSize
+        let arrayLength = BoundArrayLengthExpression(fixture.range(), arrayConstruction)
+        expect(orchestrator.emit(arrayLength).code).toBe("new Array(" +
+            Es6NameMangler.mangle(size.symbolIdentity.value) + ").fill(null).length")
         expect(orchestrator.emit(arrayConstruction).code).toBe(
             "new Array(" + Es6NameMangler.mangle(size.symbolIdentity.value) +
                 ").fill(null)"

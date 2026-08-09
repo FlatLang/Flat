@@ -10,6 +10,218 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    async test `array add expression statement mutates receiver and executes`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-add-execute"), "revision:one"
+        )
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "append"
+        )
+        let valuesIdentity = SymbolIdentity(identity, "local", 0)
+        let values = BoundReferenceExpression(
+            SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1),
+                Location(lineNumber: 1, column: 2)),
+            ArraySemanticType(SemanticTypes.intType()), "values", valuesIdentity
+        )
+        let range = values.range
+        let function = BoundFunctionUnit(identity, "append", SemanticTypes.intType(), [
+            BoundLocalDeclarationStatement(
+                range, values,
+                BoundArrayExpression(
+                    range, ArraySemanticType(SemanticTypes.intType()), BoundExpression[]
+                ),
+                TypeConversions.classify(values.semanticType, values.semanticType)
+            ),
+            BoundExpressionStatement(
+                range,
+                BoundIntrinsicMemberCallExpression(
+                    range, SemanticTypes.unitType(), values, "add",
+                    [BoundLiteralExpression(range, SemanticTypes.intType(), "7")]
+                )
+            ),
+            BoundReturnStatement(
+                range, SemanticTypes.intType(), BoundArrayLengthExpression(range, values),
+                TypeConversions.classify(
+                    SemanticTypes.intType(), SemanticTypes.intType()
+                )
+            )
+        ], range)
+        let emitted = Es6UnitOrchestrator().emitFunction(function, 0)
+        let root = File(".flat-es6-array-add-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "array-add.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(" + Es6NameMangler.mangle(identity.value) + "());\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("1\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `C style for lowers and executes canonical loop mechanics`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:c-style-for-execute"), "revision:one"
+        )
+        let functionIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "sum"
+        )
+        let totalIdentity = SymbolIdentity(functionIdentity, "local", 0)
+        let total = LocalBinding("total", totalIdentity, SemanticTypes.intType())
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER), token("(", Token.Type.SYMBOL),
+            token("var", Token.Type.IDENTIFIER), token("Int", Token.Type.IDENTIFIER),
+            token("i", Token.Type.IDENTIFIER), token("=", Token.Type.SYMBOL),
+            token("0", Token.Type.INTEGER), token(";", Token.Type.SYMBOL),
+            token("i", Token.Type.IDENTIFIER), token("<", Token.Type.SYMBOL),
+            token("3", Token.Type.INTEGER), token(";", Token.Type.SYMBOL),
+            token("i", Token.Type.IDENTIFIER), token("=", Token.Type.SYMBOL),
+            token("i", Token.Type.IDENTIFIER), token("+", Token.Type.SYMBOL),
+            token("1", Token.Type.INTEGER), token(")", Token.Type.SYMBOL),
+            token("{", Token.Type.SYMBOL), token("total", Token.Type.IDENTIFIER),
+            token("+=", Token.Type.SYMBOL), token("i", Token.Type.IDENTIFIER),
+            token("}", Token.Type.SYMBOL)
+        ], snapshot)
+        let loop = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, [total]
+        ).statements().first
+        let totalReference = BoundReferenceExpression(
+            syntax.statements().first.range, SemanticTypes.intType(), "total", totalIdentity
+        )
+        let function = BoundFunctionUnit(
+            functionIdentity, "sum", SemanticTypes.intType(), [
+                BoundLocalDeclarationStatement(
+                    syntax.statements().first.range, totalReference,
+                    BoundLiteralExpression(
+                        syntax.statements().first.range, SemanticTypes.intType(), "0"
+                    ),
+                    TypeConversions.classify(
+                        SemanticTypes.intType(), SemanticTypes.intType()
+                    )
+                ),
+                loop,
+                BoundReturnStatement(
+                    syntax.statements().first.range, SemanticTypes.intType(), totalReference,
+                    TypeConversions.classify(
+                        SemanticTypes.intType(), SemanticTypes.intType()
+                    )
+                )
+            ], syntax.statements().first.range
+        )
+        let emitted = Es6UnitOrchestrator().emitFunction(function, 0)
+        let root = File(".flat-es6-c-style-for-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "c-style-for.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(" + Es6NameMangler.mangle(functionIdentity.value) + "());\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("3\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `typed empty array emits and executes as empty`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:empty-array-execute"), "revision:one"
+        )
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "empty"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("String", Token.Type.IDENTIFIER), token("[", Token.Type.SYMBOL),
+            token("]", Token.Type.SYMBOL)
+        ], snapshot)
+        let bound = PrimitiveExpressionBinder().bind(syntax).expression
+        let function = BoundFunctionUnit(
+            identity, "empty", bound.semanticType, [
+                BoundReturnStatement(
+                    syntax.range, bound.semanticType, bound,
+                    TypeConversions.classify(bound.semanticType, bound.semanticType)
+                )
+            ], syntax.range
+        )
+        let emitted = Es6UnitOrchestrator().emitFunction(function, 0)
+        let root = File(".flat-es6-empty-array-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "empty-array.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(" + Es6NameMangler.mangle(identity.value) + "().length);\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("0\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `collection foreach lowers and executes each element once`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:collection-foreach-execute"), "revision:one"
+        )
+        let functionIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "sum"
+        )
+        let valuesIdentity = SymbolIdentity(functionIdentity, "parameter", 0)
+        let values = LocalBinding(
+            "values", valuesIdentity, ArraySemanticType(SemanticTypes.intType())
+        )
+        let totalIdentity = SymbolIdentity(functionIdentity, "local", 1)
+        let total = LocalBinding("total", totalIdentity, SemanticTypes.intType())
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER), token("(", Token.Type.SYMBOL),
+            token("value", Token.Type.IDENTIFIER), token("in", Token.Type.IDENTIFIER),
+            token("values", Token.Type.IDENTIFIER), token(")", Token.Type.SYMBOL),
+            token("{", Token.Type.SYMBOL), token("total", Token.Type.IDENTIFIER),
+            token("+=", Token.Type.SYMBOL), token("value", Token.Type.IDENTIFIER),
+            token("}", Token.Type.SYMBOL)
+        ], snapshot)
+        let loop = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, [values, total]
+        ).statements().first
+        let totalReference = BoundReferenceExpression(
+            syntax.statements().first.range, SemanticTypes.intType(), "total", totalIdentity
+        )
+        let function = BoundFunctionUnit(
+            functionIdentity, "sum", SemanticTypes.intType(), [
+                BoundLocalDeclarationStatement(
+                    syntax.statements().first.range, totalReference,
+                    BoundLiteralExpression(
+                        syntax.statements().first.range, SemanticTypes.intType(), "0"
+                    ),
+                    TypeConversions.classify(
+                        SemanticTypes.intType(), SemanticTypes.intType()
+                    )
+                ),
+                loop,
+                BoundReturnStatement(
+                    syntax.statements().first.range, SemanticTypes.intType(), totalReference,
+                    TypeConversions.classify(
+                        SemanticTypes.intType(), SemanticTypes.intType()
+                    )
+                )
+            ], syntax.statements().first.range, [
+                BoundFunctionParameter(
+                    "values", valuesIdentity, ArraySemanticType(SemanticTypes.intType())
+                )
+            ]
+        )
+        let emitted = Es6UnitOrchestrator().emitFunction(function, 0)
+        let root = File(".flat-es6-collection-foreach-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "collection-foreach.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code +
+            "console.log(" + Es6NameMangler.mangle(functionIdentity.value) + "([1,2,3]));\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("6\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `match safe range data metadata lower and execute`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:collection-execute"), "revision:one"

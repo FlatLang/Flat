@@ -7,6 +7,72 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    test `binds C style for mechanics and loop local scope`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-c-style-for-bind"), "revision:one"
+        )
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("var", Token.Type.IDENTIFIER, 6), token("Int", Token.Type.IDENTIFIER, 10),
+            token("i", Token.Type.IDENTIFIER, 14), token("=", Token.Type.SYMBOL, 16),
+            token("0", Token.Type.INTEGER, 18), token(";", Token.Type.SYMBOL, 19),
+            token("i", Token.Type.IDENTIFIER, 21), token("<", Token.Type.SYMBOL, 23),
+            token("3", Token.Type.INTEGER, 25), token(";", Token.Type.SYMBOL, 26),
+            token("i", Token.Type.IDENTIFIER, 28), token("=", Token.Type.SYMBOL, 30),
+            token("i", Token.Type.IDENTIFIER, 32), token("+", Token.Type.SYMBOL, 34),
+            token("1", Token.Type.INTEGER, 36), token(")", Token.Type.SYMBOL, 37),
+            token("{", Token.Type.SYMBOL, 39), token("return", Token.Type.IDENTIFIER, 41),
+            token("i", Token.Type.IDENTIFIER, 48), token("}", Token.Type.SYMBOL, 50)
+        ], snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let statements = result.statements()
+        let loopObject = (Object)statements.first
+        let loop = (BoundForEachStatement)loopObject
+        let initializationValues = loop.initialization()
+        let initializationObject = (Object)initializationValues.first
+        var BoundLocalDeclarationStatement initialization
+        initialization = (BoundLocalDeclarationStatement)initializationObject
+
+        expect(initialization.local.semanticType.value()).toBe("primitive:Int")
+        expect(loop.condition.semanticType.value()).toBe("primitive:Bool")
+        expect(loop.body().first.unitKind()).toBe("return")
+        expect(loop.advance().first.unitKind()).toBe("assignment")
+    }
+
+    test `binds collection foreach with stable element scope`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-collection-foreach-bind"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "iterate"
+        )
+        let chars = LocalBinding(
+            "chars", SymbolIdentity(declaration, "parameter", 0),
+            ArraySemanticType(SemanticTypes.charType())
+        )
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("char", Token.Type.IDENTIFIER, 6), token("in", Token.Type.IDENTIFIER, 11),
+            token("chars", Token.Type.IDENTIFIER, 14), token(")", Token.Type.SYMBOL, 19),
+            token("{", Token.Type.SYMBOL, 21), token("return", Token.Type.IDENTIFIER, 23),
+            token("char", Token.Type.IDENTIFIER, 30), token("}", Token.Type.SYMBOL, 35)
+        ], snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot, [chars])
+        let statements = result.statements()
+        let loopObject = (Object)statements.first
+        let loop = (BoundForEachStatement)loopObject
+        let body = loop.body()
+        let declarationObject = (Object)body.first
+        var BoundLocalDeclarationStatement iterator
+        iterator = (BoundLocalDeclarationStatement)declarationObject
+
+        expect(loop.initialization().count).toBe(2)
+        expect(loop.condition.expressionKind()).toBe("binary")
+        expect(iterator.local.semanticType.value()).toBe("primitive:Char")
+        expect(iterator.initializer.expressionKind()).toBe("array-access")
+        expect(body[1].unitKind()).toBe("return")
+    }
+
     test `binds exclusive integer range foreach mechanics and loop scope`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-foreach-bind"), "revision:one"

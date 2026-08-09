@@ -35,13 +35,31 @@ class {
         )
     }
 
+    emitConstructorDelegation(
+        BoundFunctionUnit functionUnit
+    ) -> Es6CodeResult {
+        if (!functionUnit.constructorDelegation) return Es6CodeResult(code: "")
+        let arguments = statements.expressions.emitArguments(
+            functionUnit.constructorDelegation.argumentValues()
+        )
+        if (!arguments.emitted) return arguments
+        let target = Es6NameMangler.mangle(
+            functionUnit.constructorDelegation.target.identity.declaration.value
+        )
+        return Es6CodeResult(code: "this." + target + "(" + arguments.code + ");\n")
+    }
+
     public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         if (!functionUnit) throw Exception("ES6 method unit is required")
         var Es6CodeResult body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
+        let delegation = emitConstructorDelegation(functionUnit)
+        if (!delegation.emitted) return delegation
         let parameters = parameterNames(functionUnit)
         if (functionUnit.constructorFunction) {
-            return Es6CodeResult(code: units.emitConstructor(parameters, body.code))
+            return Es6CodeResult(code: units.emitConstructor(
+                parameters, delegation.code + body.code
+            ))
         }
         let name = functionUnit.dispatchIdentity ?: functionUnit.identity.value
         return Es6CodeResult(code: units.emitMethod(
@@ -54,6 +72,35 @@ class {
         ))
     }
 
+    emitTypeConstructorOverload(
+        BoundFunctionUnit functionUnit,
+        BoundTypeUnit typeUnit
+    ) -> Es6CodeResult {
+        let body = statements.emitAll(functionUnit.statements())
+        if (!body.emitted) return body
+        let delegation = emitConstructorDelegation(functionUnit)
+        if (!delegation.emitted) return delegation
+        let parameters = parameterNames(functionUnit)
+        let name = functionUnit.identity.value
+        let initializer = units.emitConstructorInitializer(
+            name, parameters, delegation.code + body.code
+        )
+        var String parentArguments = ""
+        if (functionUnit.parentConstructorCall) {
+            let emitted = statements.expressions.emitArguments(
+                functionUnit.parentConstructorCall.argumentValues()
+            )
+            if (!emitted.emitted) return emitted
+            parentArguments = emitted.code
+        }
+        let factory = units.emitConstructorFactory(
+            name, typeUnit.identity.value,
+            typeUnit.parentType ? typeUnit.parentType.declarationIdentity.value : null,
+            parameters, parentArguments
+        )
+        return Es6CodeResult(code: initializer + factory)
+    }
+
     emitTypeMethod(
         BoundFunctionUnit functionUnit,
         BoundTypeUnit typeUnit
@@ -61,13 +108,16 @@ class {
         if (!functionUnit.constructorFunction || !typeUnit.parentType) return emitMethod(functionUnit)
         let body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
+        let delegation = emitConstructorDelegation(functionUnit)
+        if (!delegation.emitted) return delegation
         let parentCall = functionUnit.parentConstructorCall
         let parentArgumentValues = parentCall.argumentValues()
         let parentArguments = statements.expressions.emitArguments(parentArgumentValues)
         if (!parentArguments.emitted) return parentArguments
         let parameters = parameterNames(functionUnit)
         return Es6CodeResult(code: units.emitConstructor(
-            parameters, "super(" + parentArguments.code + ");\n" + body.code
+            parameters, "super(" + parentArguments.code + ");\n" +
+                delegation.code + body.code
         ))
     }
 
@@ -101,7 +151,10 @@ class {
         let methods = String[]
         for (functionUnit in loweredType.functionUnits()) {
             if (functionUnit.abstractFunction) continue
-            let method = emitTypeMethod(functionUnit, typeUnit)
+            let method = functionUnit.constructorFunction &&
+                functionUnit.identity.syntaxIdentity.kind == "constructor-overload"
+                ? emitTypeConstructorOverload(functionUnit, typeUnit)
+                : emitTypeMethod(functionUnit, typeUnit)
             if (!method.emitted) return Es6EmissionResult(diagnostic: method.diagnostic)
             methods.add(method.code)
         }

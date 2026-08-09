@@ -15,5 +15,7 @@ testable class {
             .toBe("globalThis['console']['log']('Hello, Flat')")
         expect(emitter.emitIntrinsicMemberCall("'x'", "repeat", "3"))
             .toBe("'x'.repeat(3)")
+        expect(emitter.emitIntrinsicMemberCall("values", "add", "item"))
+            .toBe("values.push(item)")
     }
 }

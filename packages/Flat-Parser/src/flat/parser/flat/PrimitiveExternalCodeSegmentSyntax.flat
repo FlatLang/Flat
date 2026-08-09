@@ -2,33 +2,34 @@ package flat/parser/flat
 
 import flat/compiler/models
 
-/** One immutable literal or interpolated path segment inside opaque external code. */
+/** One immutable literal, path, or complete expression segment inside opaque external code. */
 data class {
     var String[] path
 
     public construct(
         visible SourceRange range,
         visible String text,
-        String[] pathValues
+        String[] pathValues,
+        visible PrimitiveExpressionSyntax expression = null
     ) {
         if (!range || text == null || !pathValues) {
-            throw Exception("External code segment requires literal text or a path")
+            throw Exception("External code segment requires literal text, a path, or an expression")
         }
         for (part in pathValues) {
             if (!part || part.count == 0) {
                 throw Exception("External code path parts cannot be empty")
             }
         }
-        if (text.count > 0 && pathValues.isNotEmpty) {
-            throw Exception("External code segment cannot mix literal text and a path")
-        }
-        if (text.count == 0 && pathValues.isEmpty) {
-            throw Exception("External code segment requires either literal text or a path")
+        let forms = (text.count > 0 ? 1 : 0) + (pathValues.isNotEmpty ? 1 : 0) +
+            (expression ? 1 : 0)
+        if (forms != 1) {
+            throw Exception("External code segment requires exactly one segment form")
         }
         path = String[]
         path.addAll(pathValues)
     }
 
-    public interpolated() => path.isNotEmpty
+    public interpolated() => path.isNotEmpty || expression != null
+    public expressionSegment() => expression != null
     public pathValues() -> String[] => String[]:addAll(path)
 }

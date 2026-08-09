@@ -1,0 +1,94 @@
+package flat/writer/es6/bound
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/compiler/models
+import flat/semantic/types
+import flat/bound
+
+/** Executes a receiver-owned selected overload through generated ES6. */
+testable class {
+    async test `receiver selected overload executes under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-overload-execute"), "revision:one"
+        )
+        let range = SourceRange(
+            snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2)
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "StringCharArray"
+        )
+        let type = UserClassSemanticType(typeIdentity)
+        let selectedIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", 1),
+            "instance-method", "equals"
+        )
+        let selected = CallableSignature(
+            SymbolIdentity(selectedIdentity, "instance-method"), "equals",
+            CallableKind("instance-method"), [type], SemanticTypes.boolType(), type
+        )
+        let parameter = BoundFunctionParameter(
+            "other", SymbolIdentity(selectedIdentity, "parameter"), type
+        )
+        let selectedUnit = BoundFunctionUnit(
+            selectedIdentity, "equals", SemanticTypes.boolType(), [
+                BoundReturnStatement(
+                    range, SemanticTypes.boolType(),
+                    BoundLiteralExpression(range, SemanticTypes.boolType(), "true"),
+                    TypeConversions.classify(
+                        SemanticTypes.boolType(), SemanticTypes.boolType()
+                    )
+                )
+            ], range, [parameter]
+        )
+        let callerIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", 2),
+            "instance-method", "equalsObject"
+        )
+        let receiver = BoundReferenceExpression(
+            range, type, "this", SymbolIdentity(typeIdentity, "receiver")
+        )
+        let argument = BoundReferenceExpression(
+            range, type, "other", SymbolIdentity(callerIdentity, "parameter")
+        )
+        let call = BoundCallExpression(
+            range, SemanticTypes.boolType(), selected, receiver, [argument], [
+                TypeConversions.classify(type, type)
+            ]
+        )
+        let callerUnit = BoundFunctionUnit(
+            callerIdentity, "equalsObject", SemanticTypes.boolType(), [
+                BoundReturnStatement(
+                    range, SemanticTypes.boolType(), call,
+                    TypeConversions.classify(
+                        SemanticTypes.boolType(), SemanticTypes.boolType()
+                    )
+                )
+            ], range, [BoundFunctionParameter(
+                "other", argument.identity, type
+            )]
+        )
+        let typeUnit = BoundTypeUnit(
+            typeIdentity, type, [selectedUnit, callerUnit], range
+        )
+        let code = Es6UnitOrchestrator().emitType(typeUnit, 0).fragment.code
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let callerName = Es6NameMangler.mangle(callerIdentity.value)
+        let root = File(".flat-es6-receiver-overload-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "receiver-overload.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "const value = new " + className + "();\n" +
+                "console.log(value." + callerName + "(value));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+}

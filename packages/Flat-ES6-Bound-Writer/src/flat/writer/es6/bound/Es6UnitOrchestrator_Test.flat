@@ -161,6 +161,22 @@ testable class {
         expect(interpolated.code).toBe(
             "Error(" + Es6NameMangler.mangle(stringValue.symbolIdentity.value) + ");\n"
         )
+
+        let arrayValue = fixture.reference(
+            "parameter", "data", 7, ArraySemanticType(SemanticTypes.charType())
+        )
+        let projected = Es6StatementOrchestrator().emit(
+            BoundExternalStatement(fixture.range(), "es6", [
+                BoundExternalCodeSegment(
+                    fixture.range(), "",
+                    BoundNativeArrayDataExpression(fixture.range(), arrayValue),
+                    "identity"
+                )
+            ])
+        )
+        expect(projected.code).toBe(
+            Es6NameMangler.mangle(arrayValue.symbolIdentity.value) + "\n"
+        )
     }
 
     test `unsupported reduced input produces a diagnostic and no partial fragment`() {

@@ -82,6 +82,103 @@ testable class PrimitiveOpaqueCodeBinder_Test {
         expect(((BoundReferenceExpression)segments[1].value).symbolIdentity).toBe(local.identity)
     }
 
+    test `binds native array data expression interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-native-array-projection"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "constructor", 0), "constructor", "Owner"
+        )
+        let local = LocalBinding(
+            "data", SymbolIdentity(declaration, "parameter"),
+            ArraySemanticType(SemanticTypes.charType())
+        )
+        let range = SourceRange(
+            snapshot, 0, 4,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5)
+        )
+        var String code = ""
+        code += '#'
+        code += "{data.data}"
+        let syntax = result([
+            PrimitiveExternalCodeSegmentSyntax(
+                range, "", String[], PrimitiveMemberAccessSyntax(
+                    range, PrimitiveReferenceSyntax(range, "data"), "data"
+                )
+            )
+        ], range, code, "js")
+        let bound = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, [local]
+        ).statements()
+        let object = (Object)bound.first
+        let statement = (BoundExternalStatement)object
+
+        expect(statement.segmentValues().first.value.expressionKind())
+            .toBe("native-array-data")
+    }
+
+    test `binds native array path interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-native-array-path"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "constructor", 0), "constructor", "Owner"
+        )
+        let local = LocalBinding(
+            "data", SymbolIdentity(declaration, "parameter"),
+            ArraySemanticType(SemanticTypes.charType())
+        )
+        let range = SourceRange(
+            snapshot, 0, 2,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 3)
+        )
+        let bound = PrimitiveControlStatementBinder().bind(
+            result([
+                PrimitiveExternalCodeSegmentSyntax(range, "", ["data", "data"]),
+                PrimitiveExternalCodeSegmentSyntax(range, "", ["data", "count"])
+            ], range, "native array paths", "js"),
+            snapshot, [local]
+        ).statements()
+        let object = (Object)bound.first
+        let statement = (BoundExternalStatement)object
+
+        expect(statement.segmentValues().first.value.expressionKind())
+            .toBe("native-array-data")
+        expect(statement.segmentValues().last.value.expressionKind())
+            .toBe("array-length")
+    }
+
+    test `binds explicit receiver field interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-receiver-field"), "revision:one"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "Owner"
+        )
+        let range = SourceRange(
+            snapshot, 0, 2,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 3)
+        )
+        let receiver = BoundReferenceExpression(
+            range, UserClassSemanticType(owner), "this", SymbolIdentity(owner, "receiver")
+        )
+        let field = BoundFieldUnit(
+            "data", SymbolIdentity(owner, "field"),
+            ArraySemanticType(SemanticTypes.charType()), range
+        )
+        let syntax = result([
+            PrimitiveExternalCodeSegmentSyntax(range, "", ["this", "data"])
+        ], range, "receiver field", "js")
+        let bound = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, receiver: receiver, fields: [field]
+        ).statements()
+        let object = (Object)bound.first
+        let statement = (BoundExternalStatement)object
+
+        expect(statement.segmentValues().first.value.expressionKind())
+            .toBe("member-access")
+    }
+
     test `rejects mismatched target unknown root and unsupported projection`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:external-bind-invalid"), "revision:one"

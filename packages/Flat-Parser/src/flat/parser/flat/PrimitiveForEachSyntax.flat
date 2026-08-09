@@ -2,7 +2,7 @@ package flat/parser/flat
 
 import flat/compiler/models
 
-/** Syntax-only exclusive integer range foreach loop. */
+/** Syntax-only foreach over either an exclusive integer range or a collection expression. */
 data class extends PrimitiveStatementSyntax {
     var PrimitiveStatementSyntax[] bodyStatements
 
@@ -11,11 +11,14 @@ data class extends PrimitiveStatementSyntax {
         visible String indexName,
         visible PrimitiveExpressionSyntax rangeStart,
         visible PrimitiveExpressionSyntax rangeEnd,
-        PrimitiveStatementSyntax[] bodyValues
+        PrimitiveStatementSyntax[] bodyValues,
+        visible PrimitiveExpressionSyntax collection = null
     ) {
-        if (!range || !indexName || indexName.trim().isEmpty || !rangeStart || !rangeEnd ||
-            !bodyValues || bodyValues.any({ !_ })) {
-            throw Exception("Primitive foreach syntax requires index, range, and body")
+        let rangeLoop = rangeStart && rangeEnd && !collection
+        let collectionLoop = collection && !rangeStart && !rangeEnd
+        if (!range || !indexName || indexName.trim().isEmpty ||
+            (!rangeLoop && !collectionLoop) || !bodyValues || bodyValues.any({ !_ })) {
+            throw Exception("Primitive foreach syntax requires iterator, source, and body")
         }
         bodyStatements = PrimitiveStatementSyntax[]
         bodyStatements.addAll(bodyValues)
@@ -24,5 +27,6 @@ data class extends PrimitiveStatementSyntax {
 
     public bodyValues() -> PrimitiveStatementSyntax[] =>
         PrimitiveStatementSyntax[]:addAll(bodyStatements)
+    public collectionLoop() -> Bool => collection != null
     override public statementKind() => "foreach"
 }

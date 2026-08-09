@@ -18,7 +18,7 @@ class InvalidIdentityLoweringPass_TestFixture extends BoundFunctionLoweringPass 
             input.mainFunction,
             input.constructorFunction,
             input.dispatchIdentity,
-            input.parentConstructorCall,
+            input.parentConstructorCall, input.constructorDelegation,
             input.asyncFunction,
             input.externalName
         )

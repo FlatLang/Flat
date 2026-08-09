@@ -2,8 +2,43 @@ package flat/semantic/binding/primitive
 
 import flat/compiler/models
 import flat/parser/flat
+import flat/bound
+import flat/lexer/Lexer
 
 testable class {
+    async test `selects receiver owned overload using explicit cast type evidence`() {
+        let stream = Lexer().lex(
+            "class StringCharArray { equals(Object other) -> Bool { return equals((StringCharArray)other); } " +
+                "equals(StringCharArray other) -> Bool { return true; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-overload-bind"), "one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let functions = type.functionUnits()
+        let overloads = functions.filter({ _.name == "equals" })
+        let objectOverload = overloads.first
+        let statements = objectOverload.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        let arguments = call.argumentValues()
+        let argumentObject = (Object)arguments.first
+        let argument = (BoundConversionExpression)argumentObject
+
+        expect(objectOverload.parameterValues().first.semanticType.value()).toBe("builtin:Object")
+        expect(call.target.ownerType.value()).toBe(type.semanticType.value())
+        expect(call.target.parameterTypes().first.value()).toBe(type.semanticType.value())
+        expect(argument.semanticType.value()).toBe(type.semanticType.value())
+        expect(argument.conversion.conversionKind).toBe("reference-cast")
+        expect(call.argumentConversions().first.conversionKind).toBe("identity")
+    }
+
     test `binds child before parent input`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partition-bind"), "one")
         let child = PrimitiveClassParser().parse(typeTokens("Child", "Parent", "2"), snapshot)

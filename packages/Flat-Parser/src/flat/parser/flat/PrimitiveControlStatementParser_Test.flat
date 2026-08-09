@@ -38,6 +38,86 @@ testable class {
         ])
     }
 
+    test `parses C style for with calls and member access`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-c-style-for-calls"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("var", Token.Type.IDENTIFIER, 6), token("Int", Token.Type.IDENTIFIER, 10),
+            token("i", Token.Type.IDENTIFIER, 14), token("=", Token.Type.SYMBOL, 16),
+            token("indexOf", Token.Type.IDENTIFIER, 18), token("(", Token.Type.SYMBOL, 25),
+            token("delimiter", Token.Type.IDENTIFIER, 26), token(")", Token.Type.SYMBOL, 35),
+            token(";", Token.Type.SYMBOL, 36), token("i", Token.Type.IDENTIFIER, 38),
+            token("!=", Token.Type.SYMBOL, 40), token("-", Token.Type.SYMBOL, 43),
+            token("1", Token.Type.INTEGER, 44), token(";", Token.Type.SYMBOL, 45),
+            token("i", Token.Type.IDENTIFIER, 47), token("=", Token.Type.SYMBOL, 49),
+            token("indexOf", Token.Type.IDENTIFIER, 51), token("(", Token.Type.SYMBOL, 58),
+            token("delimiter", Token.Type.IDENTIFIER, 59), token(",", Token.Type.SYMBOL, 68),
+            token("i", Token.Type.IDENTIFIER, 70), token("+", Token.Type.SYMBOL, 72),
+            token("delimiter", Token.Type.IDENTIFIER, 74), token(".", Token.Type.SYMBOL, 83),
+            token("count", Token.Type.IDENTIFIER, 84), token(")", Token.Type.SYMBOL, 89),
+            token(")", Token.Type.SYMBOL, 90), token("{", Token.Type.SYMBOL, 92),
+            token("return", Token.Type.IDENTIFIER, 94), token("i", Token.Type.IDENTIFIER, 101),
+            token("}", Token.Type.SYMBOL, 103)
+        ], snapshot)
+        let statements = parsed.statements()
+        let loopObject = (Object)statements.first
+        let loop = (PrimitiveForSyntax)loopObject
+
+        expect(loop.initializer.initializer.expressionKind()).toBe("call")
+        expect(loop.advance.value.expressionKind()).toBe("call")
+    }
+
+    test `parses C style for clauses in one loop scope`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-c-style-for"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("var", Token.Type.IDENTIFIER, 6), token("Int", Token.Type.IDENTIFIER, 10),
+            token("i", Token.Type.IDENTIFIER, 14), token("=", Token.Type.SYMBOL, 16),
+            token("0", Token.Type.INTEGER, 18), token(";", Token.Type.SYMBOL, 19),
+            token("i", Token.Type.IDENTIFIER, 21), token("<", Token.Type.SYMBOL, 23),
+            token("3", Token.Type.INTEGER, 25), token(";", Token.Type.SYMBOL, 26),
+            token("i", Token.Type.IDENTIFIER, 28), token("=", Token.Type.SYMBOL, 30),
+            token("i", Token.Type.IDENTIFIER, 32), token("+", Token.Type.SYMBOL, 34),
+            token("1", Token.Type.INTEGER, 36), token(")", Token.Type.SYMBOL, 37),
+            token("{", Token.Type.SYMBOL, 39), token("return", Token.Type.IDENTIFIER, 41),
+            token("i", Token.Type.IDENTIFIER, 48), token("}", Token.Type.SYMBOL, 50)
+        ], snapshot)
+        let statements = parsed.statements()
+        let loopObject = (Object)statements.first
+        let loop = (PrimitiveForSyntax)loopObject
+
+        expect(loop.initializer.name).toBe("i")
+        expect(loop.condition.expressionKind()).toBe("binary")
+        expect(loop.advance.name).toBe("i")
+        expect(loop.bodyValues().first.statementKind()).toBe("return")
+    }
+
+    test `parses collection foreach expression`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-collection-foreach"), "revision:one"
+        )
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("char", Token.Type.IDENTIFIER, 6), token("in", Token.Type.IDENTIFIER, 11),
+            token("chars", Token.Type.IDENTIFIER, 14), token(".", Token.Type.SYMBOL, 19),
+            token("toCharArray", Token.Type.IDENTIFIER, 20), token("(", Token.Type.SYMBOL, 31),
+            token(")", Token.Type.SYMBOL, 32), token(")", Token.Type.SYMBOL, 33),
+            token("{", Token.Type.SYMBOL, 35), token("return", Token.Type.IDENTIFIER, 37),
+            token("char", Token.Type.IDENTIFIER, 44), token("}", Token.Type.SYMBOL, 49)
+        ], snapshot)
+        let statements = parsed.statements()
+        let loopObject = (Object)statements.first
+        let loop = (PrimitiveForEachSyntax)loopObject
+
+        expect(loop.collectionLoop()).toBe(true)
+        expect(loop.collection.expressionKind()).toBe("member-call")
+        expect(loop.bodyValues().first.statementKind()).toBe("return")
+    }
+
     test `parses exclusive integer range foreach`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-foreach"), "revision:one"
@@ -71,8 +151,8 @@ testable class {
             PrimitiveControlStatementParser().parse([
                 token("for", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
                 token("i", Token.Type.IDENTIFIER, 6), token("in", Token.Type.IDENTIFIER, 8),
-                token("count", Token.Type.IDENTIFIER, 11), token(")", Token.Type.SYMBOL, 16),
-                token("{", Token.Type.SYMBOL, 18), token("}", Token.Type.SYMBOL, 19)
+                token(")", Token.Type.SYMBOL, 11),
+                token("{", Token.Type.SYMBOL, 13), token("}", Token.Type.SYMBOL, 14)
             ], snapshot)
         } catch (Exception error) { rejected++ }
         try {

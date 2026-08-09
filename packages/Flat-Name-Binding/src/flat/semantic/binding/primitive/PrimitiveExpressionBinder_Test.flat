@@ -29,6 +29,49 @@ testable class {
         expect(assignment.semanticType.value()).toBe("primitive:Int")
     }
 
+    test `binds conditional expression inside interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:interpolation-expression-bind"), "revision:one"
+        )
+        var String source = "\""
+        source += '#'
+        source += "{ready ? left : right}\""
+        let syntax = PrimitiveExpressionParser().parse([
+            token(source, Token.Type.STRING, 1)
+        ], snapshot)
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "value"
+        )
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [
+            LocalBinding("ready", SymbolIdentity(declaration, "local", 0), SemanticTypes.boolType()),
+            LocalBinding("left", SymbolIdentity(declaration, "local", 1), SemanticTypes.stringType()),
+            LocalBinding("right", SymbolIdentity(declaration, "local", 2), SemanticTypes.stringType())
+        ])
+        var BoundInterpolatedStringExpression interpolation
+        interpolation = (BoundInterpolatedStringExpression)result.expression
+
+        expect(result.succeeded).toBe(true)
+        expect(interpolation.segmentValues().first.expression.expressionKind()).toBe("conditional")
+        expect(interpolation.segmentValues().first.expression.semanticType.value()).toBe("builtin:String")
+    }
+
+    test `binds typed empty array without Any fallback`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:typed-empty-array-bind"), "revision:one"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("String", Token.Type.IDENTIFIER, 1),
+            token("[", Token.Type.SYMBOL, 7), token("]", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax)
+        var BoundArrayExpression array
+        array = (BoundArrayExpression)result.expression
+
+        expect(result.succeeded).toBe(true)
+        expect(array.semanticType.value()).toBe("array:1:builtin:String")
+        expect(array.elementValues().isEmpty).toBe(true)
+    }
+
     test `binds ordered interpolated string segments`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-interpolation-bind"), "revision:one"

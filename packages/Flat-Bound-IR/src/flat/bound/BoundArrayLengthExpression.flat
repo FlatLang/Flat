@@ -1,0 +1,15 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Typed cardinality of an array receiver. */
+data class extends BoundExpression {
+    public construct(SourceRange range, visible BoundExpression receiver) {
+        if (!range || !receiver || receiver.semanticType.kind() != "array") {
+            throw Exception("Bound array length requires an array receiver")
+        }
+        super(range, SemanticTypes.intType())
+    }
+    override public expressionKind() => "array-length"
+}

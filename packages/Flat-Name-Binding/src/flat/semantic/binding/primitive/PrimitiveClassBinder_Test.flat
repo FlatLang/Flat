@@ -26,6 +26,36 @@ testable class {
         expect(result.functionUnits().last.returnType.value()).toBe("primitive:Int")
     }
 
+    test `binds merged overlay field with canonical identity type and range`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:overlay-field-bind"), "revision:one"
+        )
+        let overlaySnapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:overlay-field-bind.js"), "revision:one"
+        )
+        let canonical = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("visible", false, 16), token("Char", false, 24),
+            token("[", true, 28), token("]", true, 29), token("data", false, 31),
+            token("}", true, 36)
+        ], snapshot)
+        let overlay = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Buffer", false, 7), token("{", true, 14),
+            token("visible", false, 16), token("native_array", false, 24),
+            token("native", false, 37), token("Char", false, 44),
+            token("[", true, 48), token("]", true, 49), token("data", false, 51),
+            token("}", true, 56)
+        ], overlaySnapshot)
+        let field = PrimitiveClassBinder().bind(
+            canonical.mergedWith(overlay), snapshot
+        ).typeUnit.fieldUnits().first
+
+        expect(field.identity.declaration.syntaxIdentity.snapshot).toBe(snapshot)
+        expect(field.range.snapshot).toBe(snapshot)
+        expect(field.semanticType.kind()).toBe("array")
+        expect(field.semanticType.value()).toBe("array:1:primitive:Char")
+    }
+
     test `binds structured receiver member compound assignment`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:member-compound-bind"), "revision:one"
@@ -238,6 +268,28 @@ testable class {
         expect(returned.value.semanticType.value()).toBe("builtin:String")
     }
 
+    test `binds unqualified constructor field assignment to canonical member`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-field"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Counter", false, 7), token("{", true, 15),
+            token("Int", false, 17), token("count", false, 21),
+            token("construct", false, 27), token("(", true, 36), token("Int", false, 37),
+            token("value", false, 41), token(")", true, 46), token("{", true, 48),
+            token("count", false, 50), token("=", true, 56), token("value", false, 58),
+            token("}", true, 64), token("}", true, 66)
+        ], snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let constructor = type.functionUnits().first
+        let statements = constructor.statements()
+        let statementObject = (Object)statements.first
+        let assignment = (BoundMemberAssignmentStatement)statementObject
+
+        expect(assignment.target.memberIdentity).toBe(type.fieldUnits().first.identity)
+        expect(assignment.value.expressionKind()).toBe("reference")
+    }
+
     test `binds required method contract`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:abstract-bind"), "revision:one"
@@ -406,6 +458,99 @@ testable class {
             token(".", true, 94), token("value", false, 95), token(";", true, 100),
             token("}", true, 102), token("}", true, 104)
         ]
+    }
+
+    async test `binds native array data and count projections in constructor expressions`() {
+        let source = "class Buffer { Char[] stored; Int count; " +
+            "construct(native_array Char[] data) { stored = data.data; count = data.count; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let sourceTokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-array-projection-bind"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(sourceTokens, snapshot), snapshot
+        ).typeUnit
+        expect(type.functionUnits().first.statements().first.unitKind())
+            .toBe("member-assignment")
+        expect(type.functionUnits().first.statements().count).toBe(2)
+    }
+
+    async test `selects non primary package constructor for StringCharArray argument`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-overload-bind"), "revision:one"
+        )
+        let charArrayStream = Lexer().lex(
+            "class StringCharArray { construct() {} " +
+                "toString() => String(this) }"
+        )
+        charArrayStream.emit("start")
+        let stringCharArray = PrimitiveClassParser().parse(
+            charArrayStream.consumeAll<Token>("data"), snapshot
+        )
+        let stringStream = Lexer().lex(
+            "class String { construct(Char[] chars) {} " +
+                "construct(StringCharArray chars) {} }"
+        )
+        stringStream.emit("start")
+        let stringType = PrimitiveClassParser().parse(
+            stringStream.consumeAll<Token>("data"), snapshot
+        )
+        let types = PrimitiveClassPartitionBinder().bind(
+            [stringCharArray, stringType], snapshot
+        ).typeUnits()
+        let owner = types.firstOrNull({ _.identity.name == "StringCharArray" })
+        expect(owner.functionUnits().firstOrNull({ _.name == "toString" })
+            .statements().first.unitKind()).toBe("return")
+    }
+
+    async test `binds field sized array local and indexed copy loop`() {
+        let source = "class Buffer { Int count; Char[] data; " +
+            "copy() -> Char[] { let array = Array<Char>(count); " +
+            "for (i in 0..count) { array[i] = data[i]; } return array; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let sourceTokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:field-sized-array-copy"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(sourceTokens, snapshot), snapshot
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "copy" })
+
+        expect(method.returnType.value()).toBe("array:1:primitive:Char")
+        expect(method.statements().count).toBe(3)
+        expect(method.statements().first.unitKind()).toBe("local-declaration")
+        expect(method.statements()[1].unitKind()).toBe("foreach")
+    }
+
+    async test `binds typed array override accessors and indexed use`() {
+        let source = "class Buffer { Char[] data; " +
+            "this[Int index] -> Char { get { return data[index] } " +
+            "set { data[index] = value } } " +
+            "read(Int index) -> Char { return this[index] } " +
+            "write(Int index, Char value) { this[index] = value } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let sourceTokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-override-bind"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(sourceTokens, snapshot), snapshot
+        ).typeUnit
+        expect(type.functionUnits().any({ _.name == "getAt" })).toBe(true)
+        expect(type.functionUnits().any({ _.name == "setAt" })).toBe(true)
+        expect(type.functionUnits().firstOrNull({ _.name == "getAt" }).returnType.value())
+            .toBe("primitive:Char")
+        expect(type.functionUnits().firstOrNull({ _.name == "getAt" }).parameterValues().count)
+            .toBe(1)
+        expect(type.functionUnits().firstOrNull({ _.name == "setAt" }).returnType.value())
+            .toBe("unit")
+        expect(type.functionUnits().firstOrNull({ _.name == "setAt" }).parameterValues().count)
+            .toBe(2)
     }
 
     test `rejects invalid reduced type bindings`() {

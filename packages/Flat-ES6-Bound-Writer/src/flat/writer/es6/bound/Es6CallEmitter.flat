@@ -14,6 +14,9 @@ class {
         if (memberName == "repeat") {
             return receiver + ".repeat(" + argumentText + ")"
         }
+        if (memberName == "add") {
+            return receiver + ".push(" + argumentText + ")"
+        }
         throw Exception("Unsupported ES6 intrinsic member call '#memberName'")
     }
 
@@ -25,7 +28,14 @@ class {
         return ownerName + "." + methodName + "(" + argumentText + ")"
     }
 
-    public emitConstructorCall(String ownerName, String argumentText) -> String {
+    public emitConstructorCall(
+        String ownerName,
+        String argumentText,
+        String constructorName = null
+    ) -> String {
+        if (constructorName) {
+            return ownerName + "." + constructorName + "(" + argumentText + ")"
+        }
         return "new " + ownerName + "(" + argumentText + ")"
     }
 

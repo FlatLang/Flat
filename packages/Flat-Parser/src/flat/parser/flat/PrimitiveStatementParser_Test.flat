@@ -3,6 +3,37 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses receiver owned call as expression statement`() {
+        let delegationSnapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-delegation-parse"), "revision:one"
+        )
+        let delegation = PrimitiveStatementParser().parse([
+            token("this", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("value", Token.Type.IDENTIFIER, 6), token(")", Token.Type.SYMBOL, 11),
+            token(";", Token.Type.SYMBOL, 12)
+        ], delegationSnapshot)
+        expect(delegation.statements().first.statementKind())
+            .toBe("constructor-delegation")
+
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:member-call-statement"), "revision:one"
+        )
+        let parsed = PrimitiveStatementParser().parse([
+            token("strs", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 5),
+            token("add", Token.Type.IDENTIFIER, 6), token("(", Token.Type.SYMBOL, 9),
+            token("substring", Token.Type.IDENTIFIER, 10), token("(", Token.Type.SYMBOL, 19),
+            token("lastI", Token.Type.IDENTIFIER, 20), token(",", Token.Type.SYMBOL, 25),
+            token("i", Token.Type.IDENTIFIER, 27), token(")", Token.Type.SYMBOL, 28),
+            token(")", Token.Type.SYMBOL, 29)
+        ], snapshot)
+        let statements = parsed.statements()
+        let statementObject = (Object)statements.first
+        let statement = (PrimitiveExpressionStatementSyntax)statementObject
+
+        expect(statement.statementKind()).toBe("expression")
+        expect(statement.expression.expressionKind()).toBe("member-call")
+    }
+
     test `parses continue statement`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:continue"), "revision:one"

@@ -211,6 +211,10 @@ class {
         while (true) {
             let start = index
             if (index < tokens.count && tokens[index].value == "var") index++
+            while (index < tokens.count &&
+                (tokens[index].value == "native_array" || tokens[index].value == "native")) {
+                index++
+            }
             let typeName = parseTypeName("Expected parameter type")
             if (index < tokens.count && tokens[index].value == ":") index++
             var String name

@@ -60,8 +60,14 @@ data class {
                 if (fields[fieldIndex].name == field.name) existingFieldIndex = fieldIndex
                 fieldIndex++
             }
-            if (existingFieldIndex >= 0) fields[existingFieldIndex] = field
-            else fields.add(field)
+            if (existingFieldIndex >= 0) {
+                let canonicalField = fields[existingFieldIndex]
+                if (canonicalField.typeName != field.typeName ||
+                    canonicalField.visibleField != field.visibleField ||
+                    canonicalField.staticField != field.staticField) {
+                    throw Exception("Class overlay field must preserve canonical declaration shape")
+                }
+            } else fields.add(field)
         }
         let methods = methodValues()
         var PrimitiveFunctionSyntax duplicate

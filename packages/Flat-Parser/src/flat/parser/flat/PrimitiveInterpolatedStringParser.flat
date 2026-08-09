@@ -50,11 +50,11 @@ class {
             }
             if (expressionStart == expressionEnd) invalid("String interpolation requires an expression")
             let expressionSource = source.substring(expressionStart, expressionEnd)
-            let expressionObject = expressionSyntax(
+            let expression = expressionSyntax(
                 expressionSource,
-                range(token, snapshot, tokenIndex, expressionStart, expressionEnd)
+                range(token, snapshot, tokenIndex, expressionStart, expressionEnd),
+                tokenIndex, location(token, expressionStart)
             )
-            let expression = (PrimitiveExpressionSyntax)expressionObject
             segments.add(PrimitiveInterpolatedStringSegmentSyntax(
                 range(token, snapshot, tokenIndex, interpolationStart, cursor),
                 null,
@@ -89,12 +89,122 @@ class {
         )
     }
 
-    expressionSyntax(String source, SourceRange sourceRange) -> PrimitiveInterpolationPathSyntax {
+    public expressionSyntax(
+        String source,
+        SourceRange sourceRange,
+        Int tokenIndex,
+        Location start
+    ) -> PrimitiveExpressionSyntax {
         let parts = source.split(".")
-        if (parts.isEmpty || parts.any({ !identifier(_) })) {
-            invalid("String interpolation supports a dotted identifier expression")
+        if (parts.isNotEmpty && parts.all({ identifier(_) })) {
+            return PrimitiveInterpolationPathSyntax(sourceRange, parts)
         }
-        return PrimitiveInterpolationPathSyntax(sourceRange, parts)
+        let tokens = expressionTokens(source, start)
+        try {
+            return PrimitiveExpressionParser().parse(
+                tokens, sourceRange.snapshot, tokenIndex, sourceRange
+            )
+        } catch (Exception error) {
+            let prefix = "Primitive expression syntax error at token "
+            if (error.message.startsWith(prefix) && error.message.contains(":")) {
+                invalid(error.message.substring(error.message.indexOf(":") + 2))
+            }
+            invalid(error.message)
+        }
+    }
+
+    expressionTokens(String source, Location start) -> Token[] {
+        let tokens = Token[]
+        var Int cursor
+        var Int line = start.lineNumber
+        var Int column = start.column
+        while (cursor < source.count) {
+            let value = source.substring(cursor, cursor + 1)
+            if (" \t\r\n".contains(value)) {
+                if (value == "\n") {
+                    line++
+                    column = 1
+                } else column++
+                cursor++
+                continue
+            }
+            let tokenLine = line
+            let tokenColumn = column
+            let tokenStart = cursor
+            var Int type
+            if (value == "\"" || value == "'") {
+                let quote = value
+                cursor++
+                column++
+                var Bool escaped
+                var Bool closed
+                while (cursor < source.count && !closed) {
+                    let next = source.substring(cursor, cursor + 1)
+                    cursor++
+                    if (next == "\n") {
+                        line++
+                        column = 1
+                    } else column++
+                    if (escaped) escaped = false
+                    else if (next == "\\") escaped = true
+                    else if (next == quote) closed = true
+                }
+                if (!closed) invalid("Unterminated literal in string interpolation")
+                type = quote == "\"" ? Token.Type.STRING : Token.Type.CHAR
+            } else if ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_".contains(value)) {
+                cursor++
+                column++
+                while (cursor < source.count &&
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789".contains(
+                        source.substring(cursor, cursor + 1)
+                    )) {
+                    cursor++
+                    column++
+                }
+                let word = source.substring(tokenStart, cursor)
+                if (word == "true" || word == "false") type = Token.Type.BOOL
+                else if (word == "null") type = Token.Type.NULL
+                else type = Token.Type.IDENTIFIER
+            } else if ("0123456789".contains(value)) {
+                var Bool decimal
+                cursor++
+                column++
+                while (cursor < source.count) {
+                    let next = source.substring(cursor, cursor + 1)
+                    if ("0123456789".contains(next)) {
+                        cursor++
+                        column++
+                    } else if (next == "." && !decimal && cursor + 1 < source.count &&
+                        "0123456789".contains(source.substring(cursor + 1, cursor + 2))) {
+                        decimal = true
+                        cursor++
+                        column++
+                    } else break
+                }
+                type = decimal ? Token.Type.FLOAT : Token.Type.INTEGER
+            } else {
+                let pair = cursor + 1 < source.count ? source.substring(cursor, cursor + 2) : ""
+                let pairs = [
+                    "==", "!=", "<=", ">=", "&&", "||",
+                    "++", "--", "+=", "-=", "*=", "/="
+                ]
+                if (pairs.contains(pair)) {
+                    cursor += 2
+                    column += 2
+                } else {
+                    cursor++
+                    column++
+                }
+                type = Token.Type.SYMBOL
+            }
+            tokens.add(Token(
+                value: source.substring(tokenStart, cursor),
+                type: type,
+                location: Location(lineNumber: tokenLine, column: tokenColumn)
+            ))
+        }
+        if (tokens.isEmpty) invalid("String interpolation requires an expression")
+        return tokens
     }
 
     interpolationPart(String value) -> Bool =>

@@ -34,12 +34,22 @@ class {
                     cursor++
                 }
                 if (cursor >= code.value.count) invalid("Unterminated external interpolation")
-                let pathText = code.value.substring(pathStart, cursor).trim()
-                let path = parsePath(pathText)
+                let expressionText = code.value.substring(pathStart, cursor).trim()
+                let expressionRange = range(
+                    code, statementRange, codeTokenIndex, pathStart, cursor
+                )
+                let path = tryPath(expressionText)
+                var PrimitiveExpressionSyntax expression
+                if (path.isEmpty) {
+                    expression = PrimitiveInterpolatedStringParser().expressionSyntax(
+                        expressionText, expressionRange, codeTokenIndex,
+                        location(code, pathStart)
+                    )
+                }
                 cursor++
                 segments.add(PrimitiveExternalCodeSegmentSyntax(
                     range(code, statementRange, codeTokenIndex, interpolationStart, cursor),
-                    "", path
+                    "", path, expression
                 ))
                 literalStart = cursor
             } else cursor++
@@ -61,12 +71,10 @@ class {
         return result
     }
 
-    parsePath(String value) -> String[] {
-        if (!value || value.count == 0) invalid("External interpolation requires a path")
+    tryPath(String value) -> String[] {
+        if (!value || value.count == 0) invalid("External interpolation requires an expression")
         let result = value.split(".")
-        for (part in result) {
-            if (!identifier(part)) invalid("External interpolation requires a dotted identifier path")
-        }
+        if (result.any({ !identifier(_) })) return String[]
         return result
     }
 

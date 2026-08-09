@@ -49,9 +49,25 @@ class {
             return PrimitiveContinueSyntax(range(start, end))
         }
         if (first == "throw") return parseThrow(start, end)
+        if (first == "this" && start + 1 < end && tokens[start + 1].value == "(") {
+            let call = (PrimitiveCallSyntax)expression(start, end)
+            return PrimitiveConstructorDelegationSyntax(
+                range(start, end), call.argumentValues()
+            )
+        }
         if (first == "native") return PrimitiveExpressionStatementSyntax(
             range(start, end), expression(start, end)
         )
+        if (start + 1 < end &&
+            (tokens[start + 1].value == "(" ||
+                (tokens[start + 1].value == "." && start + 3 < end &&
+                    tokens[start + 3].value == "("))) {
+            let value = expression(start, end)
+            if (value.class.isOfType(PrimitiveCallSyntax.class) ||
+                value.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+                return PrimitiveExpressionStatementSyntax(range(start, end), value)
+            }
+        }
         return parseAssignment(start, end)
     }
 

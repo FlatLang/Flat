@@ -888,7 +888,7 @@ testable class {
         expect(message).toBe(null)
     }
 
-    async test `package linker advances unchanged String storage through indexed loop assignment`() {
+    async test `package linker advances unchanged String overlay`() {
         var String message
         try {
             FlatEs6PackageLinker().link([
@@ -915,9 +915,8 @@ testable class {
             ])
         } catch (Exception error) { message = error.message }
         expect(message).toBe(
-            "Flat package source 'flat/String.flat' failed: " +
-                "Primitive class modified method 'surroundWith' at token 1681 failed: " +
-                "String interpolation supports a dotted identifier expression"
+            "Method StringCharArray.equals token 150: Structured expression member-access token 163: " +
+                "Unsupported primitive expression syntax 'member-access'"
         )
     }
 

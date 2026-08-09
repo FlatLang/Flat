@@ -7,12 +7,14 @@ class {
     var Token[] tokens
     var Int index
     var Int tokenIndexOffset
+    var SourceRange containingRange
     var SourceSnapshotIdentity snapshot
 
     public parse(
         Token[] tokenValues,
         SourceSnapshotIdentity sourceSnapshot,
-        Int sourceTokenIndexOffset = 0
+        Int sourceTokenIndexOffset = 0,
+        SourceRange expressionContainingRange = null
     ) -> PrimitiveExpressionSyntax {
         if (!tokenValues || tokenValues.isEmpty || !sourceSnapshot) {
             throw Exception("Primitive expression parsing requires tokens and snapshot")
@@ -23,6 +25,7 @@ class {
         })
         snapshot = sourceSnapshot
         tokenIndexOffset = sourceTokenIndexOffset
+        containingRange = expressionContainingRange
         index = 0
         let expression = parseConditional()
         if (index != tokens.count) syntax("Unexpected token '#{tokens[index].value}'", index)
@@ -41,7 +44,7 @@ class {
         index++
         let whenFalse = parseLevel(0)
         return PrimitiveConditionalSyntax(
-            range(start, whenFalse.range.endTokenIndex - tokenIndexOffset),
+            range(start, index),
             condition, whenTrue, whenFalse
         )
     }
@@ -54,7 +57,7 @@ class {
             let operator = tokens[index++].value
             let right = parseLevel(level + 1)
             let expressionRange = range(left.range.startTokenIndex - tokenIndexOffset,
-                right.range.endTokenIndex - tokenIndexOffset)
+                index)
             left = PrimitiveBinarySyntax(expressionRange, operator, left, right)
         }
         return left
@@ -80,7 +83,7 @@ class {
                 let operator = tokens[index++].value
                 let operand = parseUnary()
                 return PrimitiveUnarySyntax(
-                    range(start, operand.range.endTokenIndex - tokenIndexOffset),
+                    range(start, index),
                     operator,
                     operand
                 )
@@ -115,7 +118,7 @@ class {
                 index++
                 let value = parseUnary()
                 return PrimitiveCastSyntax(
-                    range(start, value.range.endTokenIndex - tokenIndexOffset), typeName, value
+                    range(start, index), typeName, value
                 )
             }
             var PrimitiveExpressionSyntax expression = parseConditional()
@@ -124,7 +127,7 @@ class {
                 index++
                 let value = parseConditional()
                 expression = (PrimitiveExpressionSyntax)PrimitiveAssignmentValueSyntax(
-                    range(start + 1, value.range.endTokenIndex - tokenIndexOffset),
+                    range(start + 1, index),
                     ((PrimitiveReferenceSyntax)expression).name, value
                 )
             } else if (index < tokens.count && assignmentOperator(tokens[index].value) &&
@@ -132,7 +135,7 @@ class {
                 let operator = tokens[index++].value
                 let value = parseConditional()
                 let assignment = PrimitiveMemberAssignmentValueSyntax(
-                    range(start + 1, value.range.endTokenIndex - tokenIndexOffset),
+                    range(start + 1, index),
                     (PrimitiveMemberAccessSyntax)expression,
                     operator,
                     value
@@ -210,6 +213,13 @@ class {
             return PrimitiveConstructionSyntax(call.range, typeName, call.argumentValues())
         }
         if (token.type == Token.Type.IDENTIFIER) {
+            if (index + 1 < tokens.count && tokens[index].value == "[" &&
+                tokens[index + 1].value == "]") {
+                index += 2
+                return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(
+                    range(tokenIndex, index), token.value
+                ), true)
+            }
             if (token.value == "Array" && index < tokens.count &&
                 tokens[index].value == "<") {
                 index++
@@ -277,7 +287,7 @@ class {
                                 index++
                                 let argumentValue = parseConditional()
                                 namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
-                                    range(argumentStart, argumentValue.range.endTokenIndex - tokenIndexOffset),
+                                    range(argumentStart, index),
                                     argumentName, argumentValue
                                 ))
                             } else {
@@ -386,7 +396,7 @@ class {
                             index++
                             let argumentValue = parseConditional()
                             namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
-                                range(argumentStart, argumentValue.range.endTokenIndex - tokenIndexOffset),
+                                range(argumentStart, index),
                                 argumentName, argumentValue
                             ))
                         } else {
@@ -452,7 +462,7 @@ class {
             if (index >= tokens.count || tokens[index].value != ":") syntax("Expected ':' after named argument", index)
             index++
             let value = parseLevel(0)
-            values.add(PrimitiveNamedArgumentSyntax(range(argumentStart, value.range.endTokenIndex - tokenIndexOffset), argumentName, value))
+            values.add(PrimitiveNamedArgumentSyntax(range(argumentStart, index), argumentName, value))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++
         }
@@ -483,7 +493,7 @@ class {
         if (index >= tokens.count || tokens[index].value != "=>") syntax("Expected lambda arrow", index)
         index++
         let body = parseLevel(0)
-        return PrimitiveLambdaSyntax(range(start, body.range.endTokenIndex - tokenIndexOffset), parameters, body)
+        return PrimitiveLambdaSyntax(range(start, index), parameters, body)
     }
 
     parseFunctionReference(Int start) -> PrimitiveExpressionSyntax {
@@ -535,7 +545,7 @@ class {
                 }
                 let value = parseLevel(0)
                 namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
-                    range(argumentStart, value.range.endTokenIndex - tokenIndexOffset),
+                    range(argumentStart, index),
                     argumentName, value
                 ))
             } else {
@@ -577,8 +587,8 @@ class {
         let sourceEndIndex = endIndex + tokenIndexOffset
         return SourceRange(
             snapshot,
-            sourceStartIndex,
-            sourceEndIndex,
+            containingRange ? containingRange.startTokenIndex : sourceStartIndex,
+            containingRange ? containingRange.endTokenIndex : sourceEndIndex,
             start,
             Location(lineNumber: last.endLineNumber, column: last.endColumn)
         )

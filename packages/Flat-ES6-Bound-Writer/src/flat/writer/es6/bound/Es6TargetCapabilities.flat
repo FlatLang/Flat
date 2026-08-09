@@ -17,9 +17,10 @@ class {
             kind == "conversion" || kind == "assignment-value" ||
             kind == "declaration-value" ||
             kind == "member-assignment-value" ||
-            kind == "intrinsic-member-call" ||
+            kind == "intrinsic-member-call" || kind == "function-invocation" ||
             kind == "call" || kind == "native-call" || kind == "array" ||
-            kind == "array-construction" ||
+            kind == "array-construction" || kind == "array-length" ||
+            kind == "native-array-data" ||
             kind == "array-access" || kind == "lambda" || kind == "function-reference"
     }
 

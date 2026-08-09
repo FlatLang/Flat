@@ -1,0 +1,28 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax-only C-style for loop with one local initializer and assignment advance. */
+data class extends PrimitiveStatementSyntax {
+    var PrimitiveStatementSyntax[] bodyStatements
+
+    public construct(
+        SourceRange range,
+        visible PrimitiveLocalDeclarationSyntax initializer,
+        visible PrimitiveExpressionSyntax condition,
+        visible PrimitiveAssignmentSyntax advance,
+        PrimitiveStatementSyntax[] bodyValues
+    ) {
+        if (!range || !initializer || !initializer.initializer || !condition || !advance ||
+            !bodyValues || bodyValues.any({ !_ })) {
+            throw Exception("Primitive C-style for syntax requires initializer, condition, advance, and body")
+        }
+        bodyStatements = PrimitiveStatementSyntax[]
+        bodyStatements.addAll(bodyValues)
+        super(range)
+    }
+
+    public bodyValues() -> PrimitiveStatementSyntax[] =>
+        PrimitiveStatementSyntax[]:addAll(bodyStatements)
+    override public statementKind() => "for"
+}

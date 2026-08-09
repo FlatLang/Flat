@@ -3,6 +3,27 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses representation modified structural parameter`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:representation-parameter"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("calculateSize", Token.Type.IDENTIFIER, 1),
+            token("(", Token.Type.SYMBOL, 14),
+            token("native_array", Token.Type.IDENTIFIER, 15),
+            token("native", Token.Type.IDENTIFIER, 28),
+            token("Char", Token.Type.IDENTIFIER, 35),
+            token("[", Token.Type.SYMBOL, 39), token("]", Token.Type.SYMBOL, 40),
+            token("chars", Token.Type.IDENTIFIER, 42), token(")", Token.Type.SYMBOL, 47),
+            token("->", Token.Type.SYMBOL, 49), token("Int", Token.Type.IDENTIFIER, 52),
+            token("{", Token.Type.SYMBOL, 56), token("}", Token.Type.SYMBOL, 57)
+        ], snapshot).functionValues().first
+        let parameter = parsed.parameterValues().first
+
+        expect(parameter.typeName).toBe("Char[]")
+        expect(parameter.name).toBe("chars")
+    }
+
     test `parses mutable parameter modifier`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:mutable-parameter"), "revision:one"
@@ -166,6 +187,30 @@ testable class {
         expect(parameter.typeName).toBe("Bool")
         expect(parameter.name).toBe("format")
         expect(parameter.defaultValue.expressionKind()).toBe("literal")
+    }
+
+    test `parses inferred expression followed by nested fallback control body`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:function-fallback-if"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("substring", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 10),
+            token("Int", Token.Type.IDENTIFIER, 11), token("start", Token.Type.IDENTIFIER, 15),
+            token(")", Token.Type.SYMBOL, 20), token("=>", Token.Type.SYMBOL, 22),
+            token("null", Token.Type.NULL, 25), token("{", Token.Type.SYMBOL, 30),
+            token("if", Token.Type.IDENTIFIER, 32), token("(", Token.Type.SYMBOL, 35),
+            token("true", Token.Type.BOOL, 36), token(")", Token.Type.SYMBOL, 40),
+            token("{", Token.Type.SYMBOL, 42), token("return", Token.Type.IDENTIFIER, 44),
+            token("null", Token.Type.NULL, 51), token("}", Token.Type.SYMBOL, 56),
+            token("else", Token.Type.IDENTIFIER, 58), token("if", Token.Type.IDENTIFIER, 63),
+            token("(", Token.Type.SYMBOL, 66), token("false", Token.Type.BOOL, 67),
+            token(")", Token.Type.SYMBOL, 72), token("{", Token.Type.SYMBOL, 74),
+            token("return", Token.Type.IDENTIFIER, 76), token("null", Token.Type.NULL, 83),
+            token("}", Token.Type.SYMBOL, 88), token("}", Token.Type.SYMBOL, 90)
+        ], snapshot).functionValues().first
+
+        expect(parsed.statements().count).toBe(2)
+        expect(parsed.statements().last.statementKind()).toBe("if")
     }
 
     test `parses expression fallback followed by braced body`() {

@@ -1,0 +1,24 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Immutable syntax for delegating one constructor to another on the same receiver. */
+data class extends PrimitiveStatementSyntax {
+    var PrimitiveExpressionSyntax[] arguments
+
+    public construct(
+        SourceRange range,
+        PrimitiveExpressionSyntax[] argumentValues
+    ) {
+        if (!range || !argumentValues || argumentValues.any({ !_ })) {
+            throw Exception("Primitive constructor delegation requires typed arguments")
+        }
+        arguments = PrimitiveExpressionSyntax[]
+        arguments.addAll(argumentValues)
+        super(range)
+    }
+
+    public argumentValues() -> PrimitiveExpressionSyntax[] =>
+        PrimitiveExpressionSyntax[]:addAll(arguments)
+    override public statementKind() => "constructor-delegation"
+}

@@ -1,0 +1,44 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Explicit selected same-receiver constructor delegation. */
+data class {
+    var BoundExpression[] arguments
+    var TypeConversion[] conversions
+
+    public construct(
+        visible CallableSignature target,
+        BoundExpression[] argumentValues,
+        TypeConversion[] argumentConversions,
+        visible SourceRange range
+    ) {
+        if (!target || target.callableKind.value != "constructor" ||
+            !argumentValues || !argumentConversions || !range ||
+            argumentValues.count != argumentConversions.count ||
+            argumentValues.count < target.parameterTypes().count - target.optionalParameterCount ||
+            argumentValues.count > target.parameterTypes().count) {
+            throw Exception("Bound constructor delegation requires selected target and arguments")
+        }
+        var Int index
+        while (index < argumentValues.count) {
+            if (!argumentValues[index] || !argumentConversions[index] ||
+                !argumentConversions[index].applicable ||
+                argumentConversions[index].fromType.value() !=
+                    argumentValues[index].semanticType.value() ||
+                argumentConversions[index].toType.value() !=
+                    target.parameterTypes()[index].value()) {
+                throw Exception("Bound constructor delegation conversion is invalid")
+            }
+            index++
+        }
+        arguments = BoundExpression[]
+        arguments.addAll(argumentValues)
+        conversions = TypeConversion[]
+        conversions.addAll(argumentConversions)
+    }
+
+    public argumentValues() -> BoundExpression[] => BoundExpression[]:addAll(arguments)
+    public argumentConversions() -> TypeConversion[] => TypeConversion[]:addAll(conversions)
+}

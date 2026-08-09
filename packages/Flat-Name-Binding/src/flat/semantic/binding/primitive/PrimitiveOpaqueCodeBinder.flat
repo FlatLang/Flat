@@ -8,9 +8,11 @@ import flat/semantic/types
 class PrimitiveOpaqueCodeBinder {
     public bind(
         PrimitiveExternalStatementSyntax syntax,
-        LocalBinding[] locals
+        LocalBinding[] locals,
+        BoundReferenceExpression receiver = null,
+        BoundFieldUnit[] fields = BoundFieldUnit[]
     ) -> BoundExternalStatement {
-        if (!syntax || !locals) throw Exception("Opaque-code binding requires input")
+        if (!syntax || !locals || !fields) throw Exception("Opaque-code binding requires input")
         if (syntax.target != "js") throw Exception("Opaque target is unavailable")
         let pieces = BoundExternalCodeSegment[]
         let syntaxPieces = syntax.segmentValues()
@@ -19,6 +21,11 @@ class PrimitiveOpaqueCodeBinder {
             let piece = syntaxPieces[pieceIndex]
             if (!piece.interpolated()) {
                 pieces.add(BoundExternalCodeSegment(piece.range, piece.text))
+            } else if (piece.expressionSegment()) {
+                let bound = bindExpression(piece.expression, locals, receiver, fields)
+                pieces.add(BoundExternalCodeSegment(
+                    piece.range, "", bound, "identity"
+                ))
             } else {
                 let path = piece.pathValues()
                 var LocalBinding root
@@ -28,13 +35,52 @@ class PrimitiveOpaqueCodeBinder {
                     if (candidate.name == path.first) root = candidate
                     candidateIndex--
                 }
-                if (!root) throw Exception("Unknown interpolation root")
+                if (!root) {
+                    if (path.first == "this" && receiver && path.count >= 2) {
+                        let field = fields.firstOrNull({ _.name == path[1] })
+                        if (!field) throw Exception("Unknown interpolation root")
+                        var BoundExpression value = BoundMemberAccessExpression(
+                            piece.range, field.semanticType, receiver,
+                            field.name, field.identity
+                        )
+                        if (path.count == 3 && path[2] == "data" &&
+                            value.semanticType.kind() == "array") {
+                            value = BoundNativeArrayDataExpression(piece.range, value)
+                        } else if (path.count != 2) {
+                            throw Exception("Unsupported interpolation path")
+                        }
+                        pieces.add(BoundExternalCodeSegment(
+                            piece.range, "", value, "identity"
+                        ))
+                        pieceIndex++
+                        continue
+                    }
+                    let field = fields.firstOrNull({ _.name == path.first })
+                    if (!field || !receiver) throw Exception("Unknown interpolation root")
+                    let value = BoundMemberAccessExpression(
+                        piece.range, field.semanticType, receiver, field.name, field.identity
+                    )
+                    if (path.count != 1) throw Exception("Unsupported interpolation path")
+                    pieces.add(BoundExternalCodeSegment(
+                        piece.range, "", value, "identity"
+                    ))
+                    pieceIndex++
+                    continue
+                }
                 let value = BoundReferenceExpression(
                     piece.range, root.semanticType, root.name, root.identity
                 )
-                let rendering = renderingFor(value, path)
+                var BoundExpression projected = value
+                var String rendering = "identity"
+                if (path.count == 2 && root.semanticType.kind() == "array") {
+                    if (path[1] == "data") {
+                        projected = BoundNativeArrayDataExpression(piece.range, value)
+                    } else if (path[1] == "count") {
+                        projected = BoundArrayLengthExpression(piece.range, value)
+                    } else throw Exception("Unsupported interpolation path")
+                } else rendering = renderingFor(value, path)
                 pieces.add(BoundExternalCodeSegment(
-                    piece.range, "", value, rendering
+                    piece.range, "", projected, rendering
                 ))
             }
             pieceIndex++
@@ -54,6 +100,74 @@ class PrimitiveOpaqueCodeBinder {
             }
         }
         return BoundExternalStatement(syntax.range, selectedTarget, pieces, nameBindings)
+    }
+
+    bindExpression(
+        PrimitiveExpressionSyntax syntax,
+        LocalBinding[] locals,
+        BoundReferenceExpression receiver,
+        BoundFieldUnit[] fields
+    ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
+            let call = (PrimitiveCallSyntax)syntax
+            let function = locals.reverse().firstOrNull({ _.name == call.name })
+            if (!function || function.semanticType.kind() != "function") {
+                throw Exception("Unknown external interpolation function '#{call.name}'")
+            }
+            let typeObject = (Object)function.semanticType
+            var FunctionSemanticType functionType
+            functionType = (FunctionSemanticType)typeObject
+            let arguments = BoundExpression[]
+            for (argument in call.argumentValues()) {
+                arguments.add(bindExpression(argument, locals, receiver, fields))
+            }
+            return BoundFunctionInvocationExpression(
+                call.range,
+                BoundReferenceExpression(
+                    call.range, function.semanticType, function.name, function.identity
+                ),
+                functionType,
+                arguments
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+            let access = (PrimitiveMemberAccessSyntax)syntax
+            let projectedReceiver = bindExpression(
+                access.receiver, locals, receiver, fields
+            )
+            if (projectedReceiver.semanticType.kind() == "array") {
+                if (access.memberName == "data") {
+                    return BoundNativeArrayDataExpression(
+                        access.range, projectedReceiver
+                    )
+                }
+                if (access.memberName == "count") {
+                    return BoundArrayLengthExpression(
+                        access.range, projectedReceiver
+                    )
+                }
+            }
+        }
+        if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
+            let reference = (PrimitiveReferenceSyntax)syntax
+            let local = locals.reverse().firstOrNull({ _.name == reference.name })
+            if (local && local.identity.symbolKind == "field") {
+                let field = fields.firstOrNull({ _.identity == local.identity })
+                if (!field || !receiver) throw Exception("Invalid external field reference")
+                return BoundMemberAccessExpression(
+                    reference.range, field.semanticType, receiver, field.name, field.identity
+                )
+            }
+            if (!local) {
+                let field = fields.firstOrNull({ _.name == reference.name })
+                if (field && receiver) return BoundMemberAccessExpression(
+                    reference.range, field.semanticType, receiver, field.name, field.identity
+                )
+            }
+        }
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+        if (!result.succeeded) throw Exception(result.diagnostic.message)
+        return result.expression
     }
 
     renderingFor(BoundReferenceExpression value, String[] path) -> String {

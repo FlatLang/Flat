@@ -375,6 +375,7 @@ class {
         retypeReturns(value.statements(), returnType), value.range,
         value.parameterValues(), value.staticFunction, value.mainFunction,
         value.constructorFunction, value.dispatchIdentity, value.parentConstructorCall,
+        value.constructorDelegation,
         value.asyncFunction, value.externalName, value.abstractFunction
     )
 
@@ -383,6 +384,7 @@ class {
             value.identity, value.name, value.returnType, value.statements(), value.range,
             value.parameterValues(), value.staticFunction, value.mainFunction,
             value.constructorFunction, dispatchIdentity, value.parentConstructorCall,
+            value.constructorDelegation,
             value.asyncFunction, value.externalName, value.abstractFunction
         )
 }

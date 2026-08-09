@@ -34,6 +34,33 @@ class {
             indent(body, "  ") + "}\n"
     }
 
+    public emitConstructorInitializer(
+        String stableIdentity,
+        String[] parameterNames,
+        String body
+    ) -> String => emitMethod(stableIdentity, parameterNames, body)
+
+    public emitConstructorFactory(
+        String stableIdentity,
+        String ownerIdentity,
+        String parentIdentity,
+        String[] parameterNames,
+        String parentArguments
+    ) -> String {
+        let name = Es6NameMangler.mangle(stableIdentity)
+        let owner = Es6NameMangler.mangle(ownerIdentity)
+        let allocation = parentIdentity
+            ? "Reflect.construct(" + Es6NameMangler.mangle(parentIdentity) +
+                ", [" + parentArguments + "], this)"
+            : "Object.create(this.prototype)"
+        let arguments = parameterNames.join(", ")
+        return "static " + name + "(" + arguments + ") {\n" +
+            "  let value = " + allocation + ";\n" +
+            "  value." + name + "(" + arguments + ");\n" +
+            "  return value;\n" +
+            "}\n"
+    }
+
     public emitClass(
         String stableIdentity,
         String parentIdentity,

@@ -5,6 +5,27 @@ import flat/parser/flat
 import flat/bound
 
 testable class {
+    test `binds representation modified array parameter structurally`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:representation-parameter-bind"), "revision:one"
+        )
+        let syntax = PrimitiveFunctionParser().parse([
+            token("size", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("native_array", Token.Type.IDENTIFIER, 6),
+            token("native", Token.Type.IDENTIFIER, 19),
+            token("Char", Token.Type.IDENTIFIER, 26), token("[", Token.Type.SYMBOL, 30),
+            token("]", Token.Type.SYMBOL, 31), token("chars", Token.Type.IDENTIFIER, 33),
+            token(")", Token.Type.SYMBOL, 38), token("->", Token.Type.SYMBOL, 40),
+            token("Int", Token.Type.IDENTIFIER, 43), token("{", Token.Type.SYMBOL, 47),
+            token("return", Token.Type.IDENTIFIER, 49), token("0", Token.Type.INTEGER, 56),
+            token(";", Token.Type.SYMBOL, 57), token("}", Token.Type.SYMBOL, 59)
+        ], snapshot)
+        let function = PrimitiveFunctionBinder().bind(syntax, snapshot).functionValues().first
+
+        expect(function.parameterValues().first.semanticType.value())
+            .toBe("array:1:primitive:Char")
+    }
+
     test `binds parameters forward calls recursion and explicit call evidence`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:function-bind"), "revision:one"

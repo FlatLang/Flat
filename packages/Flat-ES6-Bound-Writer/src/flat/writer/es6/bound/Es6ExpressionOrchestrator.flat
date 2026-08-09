@@ -39,6 +39,9 @@ class {
             }
             return expressions.emitReference(value)
         }
+        if (expression.class.isOfType(BoundNativeArrayDataExpression.class)) {
+            return emit(((BoundNativeArrayDataExpression)expression).receiver)
+        }
         if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
             let value = (BoundMemberAccessExpression)expression
             return expressions.emitMemberAccess(value, emit(value.receiver))
@@ -97,6 +100,12 @@ class {
             if (!elements.emitted) return elements
             return Es6CodeResult(code: "[" + elements.code + "]")
         }
+        if (expression.class.isOfType(BoundArrayLengthExpression.class)) {
+            let value = (BoundArrayLengthExpression)expression
+            let receiver = emit(value.receiver)
+            if (!receiver.emitted) return receiver
+            return Es6CodeResult(code: receiver.code + ".length")
+        }
         if (expression.class.isOfType(BoundArrayAccessExpression.class)) {
             let value = (BoundArrayAccessExpression)expression
             let receiver = emit(value.receiver)
@@ -147,6 +156,14 @@ class {
                 receiver.code, value.memberName, arguments.code
             ))
         }
+        if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
+            let value = (BoundFunctionInvocationExpression)expression
+            let functionValue = emit(value.functionValue)
+            if (!functionValue.emitted) return functionValue
+            let arguments = emitArguments(value.argumentValues())
+            if (!arguments.emitted) return arguments
+            return Es6CodeResult(code: functionValue.code + "(" + arguments.code + ")")
+        }
         if (expression.class.isOfType(BoundCallExpression.class)) {
             let value = (BoundCallExpression)expression
             return emitCall(value)
@@ -178,7 +195,13 @@ class {
         }
         if (kind == "constructor") {
             let owner = Es6NameMangler.mangle(expression.target.ownerType.declarationIdentity.value)
-            return Es6CodeResult(code: calls.emitConstructorCall(owner, argumentText))
+            let constructorName = expression.target.identity.declaration.syntaxIdentity.kind ==
+                "constructor-overload"
+                ? Es6NameMangler.mangle(identity)
+                : null
+            return Es6CodeResult(code: calls.emitConstructorCall(
+                owner, argumentText, constructorName
+            ))
         }
         if (kind == "instance-method") {
             if (!expression.receiver) {

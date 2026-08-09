@@ -10,6 +10,8 @@ class {
     var GenericParameterSemanticType genericParameter
     var CallableSignature[] constructors
     var UserClassSemanticType boundType
+    var CallableSignature arrayGetter
+    var CallableSignature arraySetter
 
     public bind(
         PrimitiveClassSyntax syntax,
@@ -39,6 +41,40 @@ class {
         ) : null
         constructors = CallableSignature[]
         constructors.addAll(availableConstructors)
+        arrayGetter = null
+        arraySetter = null
+        if (syntax.arrayOverrideValues().isNotEmpty) {
+            let override = syntax.arrayOverrideValues().first
+            let indexType = typeOf(override.indexParameter.typeName)
+            let elementType = typeOf(override.elementTypeName)
+            if (override.getterValues().isNotEmpty) {
+                let identity = DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        override.range.snapshot, "array-getter", override.range.startTokenIndex
+                    ),
+                    "array-getter", "getAt"
+                )
+                arrayGetter = CallableSignature(
+                    SymbolIdentity(identity, "array-getter"), "getAt",
+                    CallableKind("instance-method"), [indexType], elementType, type
+                )
+                constructors.add(arrayGetter)
+            }
+            if (override.setterValues().isNotEmpty) {
+                let identity = DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        override.range.snapshot, "array-setter", override.range.startTokenIndex
+                    ),
+                    "array-setter", "setAt"
+                )
+                arraySetter = CallableSignature(
+                    SymbolIdentity(identity, "array-setter"), "setAt",
+                    CallableKind("instance-method"), [indexType, elementType],
+                    SemanticTypes.unitType(), type
+                )
+                constructors.add(arraySetter)
+            }
+        }
         for (method in syntax.methodValues()) {
             let methodKind = method.staticMethod ? "static-method" : "instance-method"
             let methodIdentity = DeclarationIdentity(
@@ -72,6 +108,10 @@ class {
         while (fieldIndex < fieldSyntaxValues.count) {
             let field = fieldSyntaxValues[fieldIndex]
             let identity = SymbolIdentity(typeIdentity, "field", fieldIndex)
+            let fieldRange = SourceRange(
+                snapshot, field.range.startTokenIndex, field.range.endTokenIndex,
+                field.range.start, field.range.end
+            )
             var SemanticType fieldType = typeOf(field.typeName)
             var BoundExpression initializer
             if (field.initializer) {
@@ -95,7 +135,7 @@ class {
                 }
             }
             fields.add(BoundFieldUnit(
-                field.name, identity, fieldType, field.range,
+                field.name, identity, fieldType, fieldRange,
                 field.visibleField, initializer, field.staticField
             ))
             fieldIndex++
@@ -108,15 +148,37 @@ class {
             fieldIndex++
         }
         let functions = BoundFunctionUnit[]
-        functions.add(bindConstructor(
-            syntax, typeIdentity, type, fields, parentConstructor, inheritedFields
-        ))
+        var Int constructorIndex
+        while (constructorIndex < syntax.constructorValues().count) {
+            functions.add(bindConstructor(
+                syntax, syntax.constructorValues()[constructorIndex], constructorIndex,
+                typeIdentity, type, fields, parentConstructor, inheritedFields
+            ))
+            constructorIndex++
+        }
+        for (override in syntax.arrayOverrideValues()) {
+            if (arrayGetter) functions.add(bindArrayOverrideAccessor(
+                override, arrayGetter, typeIdentity, type, fields, inheritedFields,
+                override.getterValues(), false
+            ))
+            if (arraySetter) functions.add(bindArrayOverrideAccessor(
+                override, arraySetter, typeIdentity, type, fields, inheritedFields,
+                override.setterValues(), true
+            ))
+        }
         var Int methodIndex
         while (methodIndex < syntax.methodValues().count) {
-            functions.add(bindMethod(
-                syntax.methodValues()[methodIndex], typeIdentity, type,
-                fields, inheritedFields, methodIndex
-            ))
+            let method = syntax.methodValues()[methodIndex]
+            try {
+                functions.add(bindMethod(
+                    method, typeIdentity, type,
+                    fields, inheritedFields, methodIndex
+                ))
+            } catch (Exception error) {
+                throw Exception(
+                    "Method #{syntax.name}.#{method.name} token #{method.range.startTokenIndex}: #{error.message}"
+                )
+            }
             methodIndex++
         }
         let metadata = BoundMetadataUnit[]
@@ -135,20 +197,30 @@ class {
 
     bindConstructor(
         PrimitiveClassSyntax owner,
+        PrimitiveConstructorSyntax syntax,
+        Int ordinal,
         DeclarationIdentity typeIdentity,
         UserClassSemanticType type,
         BoundFieldUnit[] fields,
         CallableSignature parentConstructor,
         BoundFieldUnit[] inheritedFields
     ) -> BoundFunctionUnit {
-        let syntax = owner.constructorValue
         let identity = DeclarationIdentity(
-            SyntaxIslandIdentity(syntax.range.snapshot, "constructor", syntax.range.startTokenIndex),
+            SyntaxIslandIdentity(
+                syntax.range.snapshot,
+                ordinal == 0 ? "constructor" : "constructor-overload",
+                syntax.range.startTokenIndex
+            ),
             "constructor", owner.name
         )
         let parameters = parameters(syntax.parameterValues(), identity)
-        let locals = localBindings(parameters)
+        var LocalBinding[] locals = localBindings(parameters)
         locals.addAll(inheritedFieldBindings(inheritedFields))
+        for (field in fields) {
+            if (!locals.any({ _.name == field.name })) {
+                locals.add(LocalBinding(field.name, field.identity, field.semanticType))
+            }
+        }
         let receiver = receiver(syntax.range, typeIdentity, type)
         let statements = BoundStatement[]
         for (parameterSyntax in syntax.parameterValues().filter({ _.visibleParameter })) {
@@ -185,44 +257,50 @@ class {
                 ))
             }
         }
-        for (statement in syntax.statements()) {
-            if (statement.class.isOfType(PrimitiveExternalStatementSyntax.class)) {
-                let opaqueStatement = (PrimitiveExternalStatementSyntax)statement
-                let externalBinding = bindConstructorOpaqueCode(opaqueStatement, locals)
-                statements.add(externalBinding)
-                continue
+        let allFields = BoundFieldUnit[]
+        allFields.addAll(fields)
+        allFields.addAll(inheritedFields)
+        var BoundConstructorDelegation delegation
+        let delegationSyntax = syntax.statements().firstOrNull({
+            _.class.isOfType(PrimitiveConstructorDelegationSyntax.class)
+        })
+        if (delegationSyntax) {
+            let value = (PrimitiveConstructorDelegationSyntax)delegationSyntax
+            let arguments = BoundExpression[]
+            for (argumentSyntax in value.argumentValues()) {
+                arguments.add(expression(argumentSyntax, receiver, fields, locals))
             }
-            if (statement.class.isOfType(PrimitiveExpressionStatementSyntax.class)) {
-                let expressionSyntax = (PrimitiveExpressionStatementSyntax)statement
-                if (!expressionSyntax.expression.class.isOfType(PrimitiveNativeSyntax.class)) {
-                    throw Exception("Constructor expression statement requires target native syntax")
-                }
-                let external = PrimitiveNativeBinder().bind(
-                    (PrimitiveNativeSyntax)expressionSyntax.expression, "es6", locals,
-                    SemanticTypes.unitType()
-                )
-                statements.add(BoundExpressionStatement(
-                    expressionSyntax.range, external.nativeCall
-                ))
-                continue
-            }
-            if (!statement.class.isOfType(PrimitiveMemberAssignmentSyntax.class)) {
-                throw Exception("Constructor '#{owner.name}' supports only field assignments")
-            }
-            let assignment = (PrimitiveMemberAssignmentSyntax)statement
-            let allFields = BoundFieldUnit[]
-            allFields.addAll(fields)
-            allFields.addAll(inheritedFields)
-            let target = member(assignment.target, receiver, allFields)
-            let value = expression(
-                assignment.value, receiver, allFields, locals
+            let candidates = constructors.filter((candidate) =>
+                candidate.callableKind.value == "constructor" &&
+                candidate.ownerType.value() == type.value() &&
+                candidate.identity.declaration.value != identity.value
             )
-            let conversion = TypeConversions.classify(value.semanticType, target.semanticType)
-            if (!conversion.applicable) throw Exception("Constructor field assignment type mismatch")
-            statements.add(BoundMemberAssignmentStatement(
-                assignment.range, target, value, conversion
-            ))
+            let resolution = OverloadResolver.resolve(
+                owner.name, candidates, null,
+                arguments.map({ _.semanticType }), value.range
+            )
+            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+            let checked = CallTypeChecker.check(
+                resolution.selected, null, arguments.map({ _.semanticType }), value.range
+            )
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            delegation = BoundConstructorDelegation(
+                resolution.selected, arguments, checked.argumentConversions(), value.range
+            )
         }
+        var PrimitiveStatementBindingResult bodyBinding
+        try {
+            bodyBinding = PrimitiveControlStatementBinder().bind(
+                PrimitiveStatementSyntaxResult(syntax.statements().filter({
+                    !_.class.isOfType(PrimitiveConstructorDelegationSyntax.class)
+                })), syntax.range.snapshot,
+                locals, constructors, receiver, allFields, arrayGetter, arraySetter
+            )
+        } catch (Exception error) {
+            throw Exception("Constructor #{owner.name} token #{syntax.range.startTokenIndex}: #{error.message}")
+        }
+        statements.addAll(bodyBinding.statements())
+        locals = bodyBinding.locals()
         var BoundParentConstructorCall parentCall
         if (parentConstructor) {
             let arguments = BoundExpression[]
@@ -242,7 +320,8 @@ class {
         return BoundFunctionUnit(
             identity, owner.name, SemanticTypes.unitType(), statements,
             syntax.range, parameters, constructorFunction: true,
-            parentConstructorCall: parentCall
+            parentConstructorCall: parentCall,
+            constructorDelegation: delegation
         )
     }
 
@@ -251,6 +330,44 @@ class {
         LocalBinding[] locals
     ) -> BoundExternalStatement {
         return PrimitiveOpaqueCodeBinder().bind(syntax, locals)
+    }
+
+    bindArrayOverrideAccessor(
+        PrimitiveArrayOverrideSyntax syntax,
+        CallableSignature signature,
+        DeclarationIdentity typeIdentity,
+        UserClassSemanticType type,
+        BoundFieldUnit[] fields,
+        BoundFieldUnit[] inheritedFields,
+        PrimitiveStatementSyntax[] syntaxStatements,
+        Bool setter
+    ) -> BoundFunctionUnit {
+        let identity = signature.identity.declaration
+        let parameters = BoundFunctionParameter[]
+        parameters.add(BoundFunctionParameter(
+            syntax.indexParameter.name,
+            SymbolIdentity(identity, "parameter", 0),
+            signature.parameterTypes().first
+        ))
+        if (setter) parameters.add(BoundFunctionParameter(
+            "value", SymbolIdentity(identity, "parameter", 1),
+            signature.parameterTypes().last
+        ))
+        let locals = localBindings(parameters)
+        let receiver = receiver(syntax.range, typeIdentity, type)
+        let allFields = BoundFieldUnit[]
+        allFields.addAll(fields)
+        allFields.addAll(inheritedFields)
+        let bound = PrimitiveControlStatementBinder().bind(
+            PrimitiveStatementSyntaxResult(syntaxStatements),
+            syntax.range.snapshot, locals, constructors, receiver, allFields,
+            arrayGetter, arraySetter
+        ).statements()
+        validateReturns(bound, signature.name, signature.returnType, false)
+        return BoundFunctionUnit(
+            identity, signature.name, signature.returnType,
+            retypeReturns(bound, signature.returnType), syntax.range, parameters
+        )
     }
 
     bindMethod(
@@ -300,7 +417,9 @@ class {
                 opaqueLocals,
                 constructors,
                 receiver,
-                allFields
+                allFields,
+                arrayGetter,
+                arraySetter
             ).statements()
             if (syntax.inferredReturnType) {
                 let inferred = firstReturnType(bound)
@@ -552,6 +671,34 @@ class {
         range, type, "this", SymbolIdentity(typeIdentity, "receiver")
     )
 
+    public bindScopedExpression(
+        PrimitiveExpressionSyntax syntax,
+        BoundReferenceExpression receiver,
+        BoundFieldUnit[] fields,
+        LocalBinding[] locals,
+        CallableSignature[] callables,
+        CallableSignature scopedArrayGetter = null,
+        CallableSignature scopedArraySetter = null
+    ) -> BoundExpression {
+        let previousConstructors = constructors
+        let previousBoundType = boundType
+        let previousArrayGetter = arrayGetter
+        let previousArraySetter = arraySetter
+        constructors = callables
+        if (scopedArrayGetter) arrayGetter = scopedArrayGetter
+        if (scopedArraySetter) arraySetter = scopedArraySetter
+        if (!boundType && receiver && receiver.semanticType.kind() == "user-class") {
+            let receiverObject = (Object)receiver.semanticType
+            boundType = (UserClassSemanticType)receiverObject
+        }
+        let result = expression(syntax, receiver, fields, locals)
+        constructors = previousConstructors
+        boundType = previousBoundType
+        arrayGetter = previousArrayGetter
+        arraySetter = previousArraySetter
+        return result
+    }
+
     expression(
         PrimitiveExpressionSyntax syntax,
         BoundReferenceExpression receiver,
@@ -580,7 +727,7 @@ class {
                     segments.add(BoundInterpolatedStringSegment(
                         segment.range, segment.literalSourceValue, null
                     ))
-                } else {
+                } else if (segment.expression.class.isOfType(PrimitiveInterpolationPathSyntax.class)) {
                     let path = (PrimitiveInterpolationPathSyntax)segment.expression
                     let parts = path.pathValues()
                     var BoundExpression boundValue
@@ -621,6 +768,11 @@ class {
                         }
                     } else throw Exception("Unsupported interpolation path")
                     segments.add(BoundInterpolatedStringSegment(segment.range, null, boundValue))
+                } else {
+                    segments.add(BoundInterpolatedStringSegment(
+                        segment.range, null,
+                        expression(segment.expression, receiver, fields, locals)
+                    ))
                 }
             }
             return BoundInterpolatedStringExpression(value.range, segments)
@@ -753,11 +905,17 @@ class {
                     value.memberName, arguments
                 )
             }
-            let target = constructors.firstOrNull((candidate) =>
+            let candidates = constructors.filter((candidate) =>
                 candidate.callableKind.value == "instance-method" &&
+                candidate.ownerType.value() == owner.semanticType.value() &&
                 candidate.name == value.memberName
             )
-            if (!target) throw Exception("Unknown member call '#{value.memberName}'")
+            let resolution = OverloadResolver.resolve(
+                value.memberName, candidates, owner.semanticType,
+                arguments.map({ _.semanticType }), value.range
+            )
+            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+            let target = resolution.selected
             let checked = CallTypeChecker.check(
                 target, owner.semanticType, arguments.map({ _.semanticType }), value.range
             )
@@ -791,6 +949,38 @@ class {
                 TypeConversions.classify(initialized.semanticType, initialized.semanticType)
             )
         }
+        if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
+            let value = (PrimitiveArrayAccessSyntax)syntax
+            let indexedReceiver = expression(value.receiver, receiver, fields, locals)
+            let index = expression(value.index, receiver, fields, locals)
+            if (indexedReceiver.semanticType.kind() == "user-class" && arrayGetter) {
+                let checked = CallTypeChecker.check(
+                    arrayGetter, indexedReceiver.semanticType,
+                    [index.semanticType], value.range
+                )
+                if (!checked.valid) throw Exception(checked.diagnostic.message)
+                return BoundCallExpression(
+                    value.range, checked.semanticType, arrayGetter, indexedReceiver,
+                    [index], checked.argumentConversions()
+                )
+            }
+            let typeObject = (Object)indexedReceiver.semanticType
+            var ArraySemanticType arrayType
+            arrayType = (ArraySemanticType)typeObject
+            return BoundArrayAccessExpression(
+                value.range, arrayType.elementType, indexedReceiver, index
+            )
+        }
+        if (syntax.class.isOfType(PrimitiveArrayConstructionSyntax.class)) {
+            let value = (PrimitiveArrayConstructionSyntax)syntax
+            let size = expression(value.size, receiver, fields, locals)
+            if (size.semanticType.value() != SemanticTypes.intType().value()) {
+                throw Exception("Array construction size requires Int")
+            }
+            return BoundArrayExpression(
+                value.range, ArraySemanticType(typeOf(value.elementTypeName)), size
+            )
+        }
         if (syntax.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class)) {
             let value = (PrimitiveEmptyArrayConstructionSyntax)syntax
             return BoundArrayExpression(
@@ -819,8 +1009,9 @@ class {
             let value = (PrimitiveCastSyntax)syntax
             let operand = expression(value.value, receiver, fields, locals)
             var SemanticType target
-            if (value.typeName == boundType.declarationIdentity.name) target = boundType
-            else target = typeOf(value.typeName)
+            if (boundType && value.typeName == boundType.declarationIdentity.name) {
+                target = boundType
+            } else target = typeOf(value.typeName)
             let conversion = TypeConversions.classify(
                 operand.semanticType, target, explicit: true
             )
@@ -973,7 +1164,17 @@ class {
             for (argument in value.argumentValues()) {
                 arguments.add(expression(argument, receiver, fields, locals))
             }
-            let candidates = constructors.filter({ _.name == value.name })
+            let nonInstanceCandidates = constructors.filter((candidate) =>
+                candidate.name == value.name &&
+                candidate.callableKind.value != "instance-method"
+            )
+            let instanceCandidates = constructors.filter((candidate) =>
+                candidate.name == value.name &&
+                candidate.callableKind.value == "instance-method" && receiver &&
+                candidate.ownerType.value() == receiver.semanticType.value()
+            )
+            let candidates = nonInstanceCandidates.isNotEmpty ? nonInstanceCandidates :
+                instanceCandidates
             if (candidates.isEmpty && value.name == "String" && arguments.count == 1 &&
                 (arguments.first.semanticType.kind() == "array" ||
                  arguments.first.semanticType.kind() == "char" ||
@@ -983,17 +1184,23 @@ class {
                 )
             }
             if (candidates.isEmpty) throw Exception("Unknown function '#{value.name}'")
+            let callReceiver = nonInstanceCandidates.isEmpty &&
+                instanceCandidates.isNotEmpty ? receiver : null
             let resolution = OverloadResolver.resolve(
-                value.name, candidates, null,
+                value.name, candidates, callReceiver ? callReceiver.semanticType : null,
                 arguments.map({ _.semanticType }), value.range
             )
             if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
             let target = resolution.selected
             let checked = CallTypeChecker.check(
-                target, null, arguments.map({ _.semanticType }), value.range
+                target, callReceiver ? callReceiver.semanticType : null,
+                arguments.map({ _.semanticType }), value.range
             )
             if (!checked.valid) throw Exception(checked.diagnostic.message)
-            return BoundCallExpression(
+            return callReceiver ? BoundCallExpression(
+                value.range, checked.semanticType, target, callReceiver,
+                arguments, checked.argumentConversions()
+            ) : BoundCallExpression(
                 value.range, checked.semanticType, target,
                 arguments, checked.argumentConversions()
             )
