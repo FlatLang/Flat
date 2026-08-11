@@ -7,6 +7,136 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `binds native String constructor member assignment`() {
+        let stream = Lexer().lex(
+            "class Value { Int count; this chars; construct(this input) { " +
+                "this.chars = input; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-string-constructor-member"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
+
+        expect(constructor.statements().last.unitKind()).toBe("member-assignment")
+    }
+
+    async test `binds constructor local receiver field member access`() {
+        let stream = Lexer().lex(
+                "class Value { Int count; construct(this input) { count = input.count; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-member-access-bind"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
+        let statements = constructor.statements()
+        let assignmentObject = (Object)statements.first
+        let assignment = (BoundMemberAssignmentStatement)assignmentObject
+        let selectedObject = (Object)assignment.value
+        let selected = (BoundMemberAccessExpression)selectedObject
+
+        expect(selected.receiver.expressionKind()).toBe("reference")
+        expect(selected.memberName).toBe("count")
+        expect(selected.memberIdentity).toBe(type.fieldUnits().first.identity)
+    }
+
+    async test `binds constructor local call to receiver method signature`() {
+        let stream = Lexer().lex(
+            "class Value { Int value; construct(Int input) { value = calculateSize(input); } " +
+                "calculateSize(Int input) -> Int { return input; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-local-call-bind"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
+        let statements = constructor.statements()
+        let assignmentObject = (Object)statements.first
+        let assignment = (BoundMemberAssignmentStatement)assignmentObject
+        let callObject = (Object)assignment.value
+        let call = (BoundCallExpression)callObject
+
+        expect(call.receiver.expressionKind()).toBe("reference")
+        expect(call.target.name).toBe("calculateSize")
+        expect(call.target.ownerType.value()).toBe(type.semanticType.value())
+        expect(call.argumentConversions().first.conversionKind).toBe("identity")
+    }
+
+    async test `binds required Char conditional fallback with explicit conversion evidence`() {
+        let stream = Lexer().lex(
+            "class Value { first() -> Char { return true ? 'a' : 0; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:char-conditional-bind"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let functions = type.functionUnits()
+        let method = functions.firstOrNull({ _.name == "first" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let conditionalObject = (Object)returned.value
+        let conditional = (BoundConditionalExpression)conditionalObject
+        let fallbackObject = (Object)conditional.whenFalse
+        let fallback = (BoundConversionExpression)fallbackObject
+
+        expect(conditional.semanticType.value()).toBe("primitive:Char")
+        expect(fallback.conversion.conversionKind).toBe("numeric-cast")
+        expect(fallback.semanticType.value()).toBe("primitive:Char")
+    }
+
+    test `binds local object field access in structured expression`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:local-receiver-field-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Value", false, 7), token("{", true, 13),
+            token("Int", false, 15), token("count", false, 19), token(";", true, 24),
+            token("equals", false, 26), token("(", true, 32), token("this", false, 33),
+            token("other", false, 39), token(")", true, 44), token("->", true, 46),
+            token("Bool", false, 49), token("{", true, 54), token("return", false, 56),
+            token("count", false, 63), token("==", true, 69), token("other", false, 72),
+            token(".", true, 77), token("count", false, 78), token(";", true, 83),
+            token("}", true, 85), token("}", true, 87)
+        ], snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let functions = type.functionUnits()
+        let method = functions.firstOrNull({ _.name == "equals" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let comparisonObject = (Object)returned.value
+        let comparison = (BoundBinaryExpression)comparisonObject
+        let selectedObject = (Object)comparison.right
+        let selected = (BoundMemberAccessExpression)selectedObject
+
+        expect(selected.receiver.expressionKind()).toBe("reference")
+        expect(selected.memberName).toBe("count")
+        expect(selected.memberIdentity).toBe(type.fieldUnits().first.identity)
+        expect(selected.semanticType.value()).toBe("primitive:Int")
+    }
+
     test `binds reduced type slice`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:class-bind"), "revision:one"
@@ -524,6 +654,25 @@ testable class {
         expect(method.statements().count).toBe(3)
         expect(method.statements().first.unitKind()).toBe("local-declaration")
         expect(method.statements()[1].unitKind()).toBe("foreach")
+    }
+
+    async test `infers expression array override element contract`() {
+        let stream = Lexer().lex(
+            "class Buffer { Char[] data; this[Int index] => data[index] }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inferred-array-override-bind"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let getter = type.functionUnits().firstOrNull({ _.name == "getAt" })
+
+        expect(getter.returnType.value()).toBe("primitive:Char")
+        expect(getter.statements().first.unitKind()).toBe("return")
     }
 
     async test `binds typed array override accessors and indexed use`() {

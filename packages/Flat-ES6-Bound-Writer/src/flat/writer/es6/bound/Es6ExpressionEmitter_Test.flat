@@ -4,6 +4,30 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `emits parameter field interpolation`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = UserClassSemanticType(fixture.declaration("class", "Owner", 20))
+        let parameter = fixture.reference("parameter", "other", 22, owner)
+        let fieldIdentity = fixture.symbol("field", "data", 23)
+        let selected = BoundMemberAccessExpression(
+            fixture.range(), ArraySemanticType(SemanticTypes.charType()),
+            parameter, "data", fieldIdentity
+        )
+        let statement = BoundExternalStatement(
+            fixture.range(), "es6", [
+                BoundExternalCodeSegment(fixture.range(), "return "),
+                BoundExternalCodeSegment(fixture.range(), "", selected, "identity"),
+                BoundExternalCodeSegment(fixture.range(), ";")
+            ]
+        )
+        let emitted = Es6StatementOrchestrator().emit(statement).code
+
+        expect(emitted).toBe(
+            "return " + Es6NameMangler.mangle(parameter.symbolIdentity.value) + "." +
+                Es6NameMangler.mangle(fieldIdentity.value) + ";\n"
+        )
+    }
+
     test `emits literals references member access and conversions structurally`() {
         let fixture = Es6BoundWriter_TestFixture()
         let emitter = Es6ExpressionEmitter()

@@ -914,10 +914,7 @@ testable class {
                 )
             ])
         } catch (Exception error) { message = error.message }
-        expect(message).toBe(
-            "Method StringCharArray.equals token 150: Structured expression member-access token 163: " +
-                "Unsupported primitive expression syntax 'member-access'"
-        )
+        expect(message).toBe(null)
     }
 
     async test `package linker compiles and executes unchanged real App static metadata`() {

@@ -41,12 +41,36 @@ class {
         ) : null
         constructors = CallableSignature[]
         constructors.addAll(availableConstructors)
+        var Int constructorSignatureIndex
+        while (constructorSignatureIndex < syntax.constructorValues().count) {
+            let constructorSyntax = syntax.constructorValues()[constructorSignatureIndex]
+            let constructorIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(
+                    constructorSyntax.range.snapshot,
+                    constructorSignatureIndex == 0 ? "constructor" : "constructor-overload",
+                    constructorSyntax.range.startTokenIndex
+                ),
+                "constructor", syntax.name
+            )
+            if (!constructors.any({
+                _.identity.declaration.value == constructorIdentity.value
+            })) constructors.add(CallableSignature(
+                SymbolIdentity(constructorIdentity, "constructor"), syntax.name,
+                CallableKind("constructor"),
+                constructorSyntax.parameterValues().map({ typeOf(_.typeName) }),
+                type, type,
+                constructorSyntax.parameterValues().filter({ _.defaultValue != null }).count,
+                constructorSyntax.parameterValues().map({ _.name })
+            ))
+            constructorSignatureIndex++
+        }
         arrayGetter = null
         arraySetter = null
         if (syntax.arrayOverrideValues().isNotEmpty) {
             let override = syntax.arrayOverrideValues().first
             let indexType = typeOf(override.indexParameter.typeName)
-            let elementType = typeOf(override.elementTypeName)
+            let elementType = override.elementTypeName == "inferred"
+                ? SemanticTypes.unknownType() : typeOf(override.elementTypeName)
             if (override.getterValues().isNotEmpty) {
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
@@ -358,15 +382,33 @@ class {
         let allFields = BoundFieldUnit[]
         allFields.addAll(fields)
         allFields.addAll(inheritedFields)
+        var CallableSignature effectiveSignature = signature
+        if (syntax.elementTypeName == "inferred") {
+            let inferredResult = PrimitiveControlStatementBinder().bind(
+                PrimitiveStatementSyntaxResult(syntaxStatements),
+                syntax.range.snapshot, locals, constructors, receiver, allFields,
+                arrayGetter, arraySetter
+            ).statements()
+            let inferredType = firstReturnType(inferredResult)
+            if (!inferredType) throw Exception("Inferred array override requires return value")
+            effectiveSignature = CallableSignature(
+                signature.identity, signature.name, signature.callableKind,
+                signature.parameterTypes(), inferredType, signature.ownerType,
+                signature.optionalParameterCount, signature.parameterNames()
+            )
+            arrayGetter = effectiveSignature
+        }
         let bound = PrimitiveControlStatementBinder().bind(
             PrimitiveStatementSyntaxResult(syntaxStatements),
             syntax.range.snapshot, locals, constructors, receiver, allFields,
             arrayGetter, arraySetter
         ).statements()
-        validateReturns(bound, signature.name, signature.returnType, false)
+        validateReturns(
+            bound, effectiveSignature.name, effectiveSignature.returnType, false
+        )
         return BoundFunctionUnit(
-            identity, signature.name, signature.returnType,
-            retypeReturns(bound, signature.returnType), syntax.range, parameters
+            identity, effectiveSignature.name, effectiveSignature.returnType,
+            retypeReturns(bound, effectiveSignature.returnType), syntax.range, parameters
         )
     }
 
@@ -430,19 +472,23 @@ class {
             )
             statements.addAll(retypeReturns(bound, returnType))
         } else {
+            let allFields = BoundFieldUnit[]
+            allFields.addAll(fields)
+            allFields.addAll(inheritedFields)
             for (statement in syntaxStatements) {
             if (statement.class.isOfType(PrimitiveExternalStatementSyntax.class)) {
                 statements.add(PrimitiveOpaqueCodeBinder().bind(
-                    (PrimitiveExternalStatementSyntax)statement, opaqueLocals
+                    (PrimitiveExternalStatementSyntax)statement, opaqueLocals,
+                    receiver, allFields
                 ))
                 continue
             }
             let returned = (PrimitiveReturnSyntax)statement
             if (!returned.value) throw Exception("Reduced method requires return value")
-            let allFields = BoundFieldUnit[]
-            allFields.addAll(fields)
-            allFields.addAll(inheritedFields)
-            let value = expression(returned.value, receiver, allFields, locals)
+            let value = expression(
+                returned.value, receiver, allFields, locals,
+                syntax.inferredReturnType ? null : returnType
+            )
             if (syntax.inferredReturnType) returnType = value.semanticType
             var TypeConversion conversion = TypeConversions.classify(
                 value.semanticType, returnType
@@ -703,7 +749,8 @@ class {
         PrimitiveExpressionSyntax syntax,
         BoundReferenceExpression receiver,
         BoundFieldUnit[] fields,
-        LocalBinding[] locals
+        LocalBinding[] locals,
+        SemanticType requiredType = null
     ) -> BoundExpression {
         if (!syntax) throw Exception("Reduced method expression syntax is required")
         if (!receiver && syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
@@ -1042,8 +1089,33 @@ class {
                     value.condition.range, SemanticTypes.boolType(), "!=", condition, empty
                 )
             }
-            let whenTrue = expression(value.whenTrue, receiver, fields, locals)
-            let whenFalse = expression(value.whenFalse, receiver, fields, locals)
+            var BoundExpression whenTrue = expression(
+                value.whenTrue, receiver, fields, locals, requiredType
+            )
+            var BoundExpression whenFalse = expression(
+                value.whenFalse, receiver, fields, locals, requiredType
+            )
+            if (requiredType) {
+                let trueConversion = TypeConversions.classify(
+                    whenTrue.semanticType, requiredType, explicit: true
+                )
+                let falseConversion = TypeConversions.classify(
+                    whenFalse.semanticType, requiredType, explicit: true
+                )
+                if (!trueConversion.applicable || !falseConversion.applicable) {
+                    throw Exception("Reduced conditional branches cannot convert to required type")
+                }
+                if (trueConversion.conversionKind != "identity") {
+                    whenTrue = BoundConversionExpression(
+                        value.whenTrue.range, requiredType, whenTrue, trueConversion
+                    )
+                }
+                if (falseConversion.conversionKind != "identity") {
+                    whenFalse = BoundConversionExpression(
+                        value.whenFalse.range, requiredType, whenFalse, falseConversion
+                    )
+                }
+            }
             if (condition.semanticType.value() != SemanticTypes.boolType().value() ||
                 whenTrue.semanticType.value() != whenFalse.semanticType.value()) {
                 throw Exception("Reduced conditional requires Bool and common branch type")
@@ -1158,6 +1230,48 @@ class {
             }
             throw Exception("Unknown constructor/method name '#{value.name}'")
         }
+        if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
+            let value = (PrimitiveConstructionSyntax)syntax
+            let arguments = BoundExpression[]
+            for (argument in value.argumentValues()) {
+                if (argument.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                    let access = (PrimitiveMemberAccessSyntax)argument
+                    if (access.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                        let receiverName = ((PrimitiveReferenceSyntax)access.receiver).name
+                        let local = locals.reverse().firstOrNull({ _.name == receiverName })
+                        if (local && local.semanticType.kind() == "array" &&
+                            access.memberName == "count") {
+                            arguments.add(BoundArrayLengthExpression(
+                                access.range, BoundReferenceExpression(
+                                    access.receiver.range, local.semanticType,
+                                    local.name, local.identity
+                                )
+                            ))
+                            continue
+                        }
+                    }
+                }
+                arguments.add(expression(argument, receiver, fields, locals))
+            }
+            let candidates = constructors.filter((candidate) =>
+                candidate.callableKind.value == "constructor" &&
+                candidate.name == value.typeName
+            )
+            let resolution = OverloadResolver.resolve(
+                value.typeName, candidates, null,
+                arguments.map({ _.semanticType }), value.range
+            )
+            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+            let target = resolution.selected
+            let checked = CallTypeChecker.check(
+                target, null, arguments.map({ _.semanticType }), value.range
+            )
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            return BoundCallExpression(
+                value.range, checked.semanticType, target,
+                arguments, checked.argumentConversions()
+            )
+        }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let value = (PrimitiveCallSyntax)syntax
             let arguments = BoundExpression[]
@@ -1209,6 +1323,21 @@ class {
             let access = (PrimitiveMemberAccessSyntax)syntax
             if (access.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
                 let receiverName = ((PrimitiveReferenceSyntax)access.receiver).name
+                let local = locals.reverse().firstOrNull({ _.name == receiverName })
+                if (local && local.semanticType.kind() == "array") {
+                    let localReceiver = BoundReferenceExpression(
+                        access.receiver.range, local.semanticType, local.name, local.identity
+                    )
+                    if (access.memberName == "data") {
+                        return BoundNativeArrayDataExpression(access.range, localReceiver)
+                    }
+                    if (access.memberName == "count") {
+                        return BoundArrayLengthExpression(access.range, localReceiver)
+                    }
+                }
+            }
+            if (access.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let receiverName = ((PrimitiveReferenceSyntax)access.receiver).name
                 if (receiverName == "this") return member(access, receiver, fields)
                 if (access.memberName == "class") {
                     let local = locals.firstOrNull({ _.name == receiverName })
@@ -1223,6 +1352,24 @@ class {
                         "class", local.identity
                     )
                 }
+            }
+            let projectedReceiver = expression(
+                access.receiver, receiver, fields, locals
+            )
+            if (projectedReceiver.semanticType.kind() == "array") {
+                if (access.memberName == "data") {
+                    return BoundNativeArrayDataExpression(access.range, projectedReceiver)
+                }
+                if (access.memberName == "count") {
+                    return BoundArrayLengthExpression(access.range, projectedReceiver)
+                }
+            }
+            if (receiver && projectedReceiver.semanticType.value() == receiver.semanticType.value()) {
+                let field = fields.firstOrNull({ _.name == access.memberName })
+                if (field) return BoundMemberAccessExpression(
+                    access.range, field.semanticType, projectedReceiver,
+                    field.name, field.identity
+                )
             }
             let inherited = locals.firstOrNull((field) =>
                 field.identity.symbolKind == "field" && field.name == access.memberName

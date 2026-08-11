@@ -3,86 +3,36 @@ package flat/writer/es6/bound
 import flat/io
 import flat/system
 import flat/time/Time
+import flat/lexer/Lexer
+import flat/parser/flat
+import flat/semantic/binding/primitive
 import flat/compiler/models
-import flat/semantic/types
-import flat/bound
 
-/** Executes a receiver-owned selected overload through generated ES6. */
+/** Executes receiver-owned overload selection through generated ES6. */
 testable class {
-    async test `receiver selected overload executes under Node`() {
+    async test `constructor member assignment executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { Int count; Object chars; construct(Object input) { " +
+                "this.chars = input; } read() -> Object { return chars; } }"
+        )
+        stream.emit("start")
         let snapshot = SourceSnapshotIdentity(
-            SourceIdentity("memory:receiver-overload-execute"), "revision:one"
+            SourceIdentity("memory:constructor-member-execute"), "revision:one"
         )
-        let range = SourceRange(
-            snapshot, 0, 1,
-            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2)
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
         )
-        let typeIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "class", 0), "class", "StringCharArray"
-        )
-        let type = UserClassSemanticType(typeIdentity)
-        let selectedIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "instance-method", 1),
-            "instance-method", "equals"
-        )
-        let selected = CallableSignature(
-            SymbolIdentity(selectedIdentity, "instance-method"), "equals",
-            CallableKind("instance-method"), [type], SemanticTypes.boolType(), type
-        )
-        let parameter = BoundFunctionParameter(
-            "other", SymbolIdentity(selectedIdentity, "parameter"), type
-        )
-        let selectedUnit = BoundFunctionUnit(
-            selectedIdentity, "equals", SemanticTypes.boolType(), [
-                BoundReturnStatement(
-                    range, SemanticTypes.boolType(),
-                    BoundLiteralExpression(range, SemanticTypes.boolType(), "true"),
-                    TypeConversions.classify(
-                        SemanticTypes.boolType(), SemanticTypes.boolType()
-                    )
-                )
-            ], range, [parameter]
-        )
-        let callerIdentity = DeclarationIdentity(
-            SyntaxIslandIdentity(snapshot, "instance-method", 2),
-            "instance-method", "equalsObject"
-        )
-        let receiver = BoundReferenceExpression(
-            range, type, "this", SymbolIdentity(typeIdentity, "receiver")
-        )
-        let argument = BoundReferenceExpression(
-            range, type, "other", SymbolIdentity(callerIdentity, "parameter")
-        )
-        let call = BoundCallExpression(
-            range, SemanticTypes.boolType(), selected, receiver, [argument], [
-                TypeConversions.classify(type, type)
-            ]
-        )
-        let callerUnit = BoundFunctionUnit(
-            callerIdentity, "equalsObject", SemanticTypes.boolType(), [
-                BoundReturnStatement(
-                    range, SemanticTypes.boolType(), call,
-                    TypeConversions.classify(
-                        SemanticTypes.boolType(), SemanticTypes.boolType()
-                    )
-                )
-            ], range, [BoundFunctionParameter(
-                "other", argument.identity, type
-            )]
-        )
-        let typeUnit = BoundTypeUnit(
-            typeIdentity, type, [selectedUnit, callerUnit], range
-        )
-        let code = Es6UnitOrchestrator().emitType(typeUnit, 0).fragment.code
-        let className = Es6NameMangler.mangle(typeIdentity.value)
-        let callerName = Es6NameMangler.mangle(callerIdentity.value)
-        let root = File(".flat-es6-receiver-overload-test-#{Time.currentTimeMillis}")
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let read = type.functionUnits().firstOrNull({ _.name == "read" })
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-constructor-member-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
-        let destination = File(root, "receiver-overload.js")
+        let destination = File(root, "constructor-member.js")
         Es6ArtifactCommitter().commit(
             destination,
-            code + "const value = new " + className + "();\n" +
-                "console.log(value." + callerName + "(value));\n"
+            code + "const value = new " + className + "(null);\n" +
+                "console.log(value." + Es6NameMangler.mangle(read.identity.value) + "() === null);\n"
         )
         let response = System.execute(
             ["node", destination.normalizedLocation], silent: true, shell: false
@@ -91,4 +41,171 @@ testable class {
         expect(response.stdout.join("")).toBe("true\n")
         Es6ArtifactFiles.remove(root)
     }
+
+    async test `constructor local call executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { Int value; construct(Int input) { value = calculateSize(input); } " +
+                "calculateSize(Int input) -> Int { return input; } read() -> Int { return value; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:constructor-local-call-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let read = type.functionUnits().firstOrNull({ _.name == "read" })
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let root = File(".flat-es6-constructor-call-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "constructor-call.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "const value = new " + className + "(7);\n" +
+                "console.log(value." + Es6NameMangler.mangle(read.identity.value) + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `inferred array override executes under Node`() {
+        let stream = Lexer().lex(
+            "class Buffer { Char[] data = ['z']; this[Int index] => data[index] }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inferred-array-override-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let getter = type.functionUnits().firstOrNull({ _.name == "getAt" })
+        let getterName = Es6NameMangler.mangle(getter.identity.value)
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-inferred-array-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "inferred-array.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(new " + className + "()." + getterName + "(0));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("z\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `Char conditional conversion executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { first() -> Char { return true ? 'a' : 0; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:char-conditional-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let firstName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "first" }).identity.value
+        )
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-char-conditional-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "char-conditional.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(new " + className + "()." + firstName + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("a\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `receiver interpolation executes under Node`() {
+        var String source = "class Value { Char[] data = ['a']; same(Value other) -> Bool { external { return "
+        source += '#'
+        source += "{this.data} === "
+        source += '#'
+        source += "{other.data}; } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-field-path-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let sameName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "same" }).identity.value
+        )
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-receiver-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "receiver-field.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "const value = new " + className + "();\n" +
+                "console.log(value." + sameName + "(value));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `cast dispatch executes under Node`() {
+        let stream = Lexer().lex(
+            "class StringCharArray { equals(Object other) -> Bool { " +
+                "return equals((StringCharArray)other); } " +
+                "equals(StringCharArray other) -> Bool { return true; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-overload-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let overloads = type.functionUnits().filter({ _.name == "equals" })
+        let objectOverload = overloads.first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let objectMethod = Es6NameMangler.mangle(objectOverload.identity.value)
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-receiver-overload-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "receiver-overload.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "const value = new " + className + "();\n" +
+                "console.log(value." + objectMethod + "(value));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
 }

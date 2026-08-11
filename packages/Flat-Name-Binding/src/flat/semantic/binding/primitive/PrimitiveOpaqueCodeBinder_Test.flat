@@ -148,6 +148,45 @@ testable class PrimitiveOpaqueCodeBinder_Test {
             .toBe("array-length")
     }
 
+    test `binds parameter field path interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-parameter-field"), "revision:one"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "Owner"
+        )
+        let range = SourceRange(
+            snapshot, 0, 2,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 3)
+        )
+        let type = UserClassSemanticType(owner)
+        let receiver = BoundReferenceExpression(
+            range, type, "this", SymbolIdentity(owner, "receiver")
+        )
+        let field = BoundFieldUnit(
+            "data", SymbolIdentity(owner, "field"),
+            ArraySemanticType(SemanticTypes.charType()), range
+        )
+        let parameter = LocalBinding(
+            "other", SymbolIdentity(owner, "parameter"), type
+        )
+        let syntax = result([
+            PrimitiveExternalCodeSegmentSyntax(range, "", ["other", "data"])
+        ], range, "parameter field", "js")
+        let bound = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, [parameter], receiver: receiver, fields: [field]
+        ).statements()
+        let statementObject = (Object)bound.first
+        let statement = (BoundExternalStatement)statementObject
+        let segments = statement.segmentValues()
+        let selectedObject = (Object)segments.first.value
+        let selected = (BoundMemberAccessExpression)selectedObject
+
+        expect(selected.receiver.expressionKind()).toBe("reference")
+        expect(selected.memberName).toBe("data")
+        expect(selected.memberIdentity).toBe(field.identity)
+    }
+
     test `binds explicit receiver field interpolation`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:external-receiver-field"), "revision:one"

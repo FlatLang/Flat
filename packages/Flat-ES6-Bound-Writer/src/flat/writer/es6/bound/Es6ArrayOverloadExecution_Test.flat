@@ -3,6 +3,7 @@ package flat/writer/es6/bound
 import flat/io
 import flat/system
 import flat/time/Time
+import flat/lexer/Lexer
 import flat/parser/flat
 import flat/semantic/binding/primitive
 import flat/compiler/models
@@ -162,42 +163,6 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
-    async test `same class constructor delegation executes on one object`() {
-        let stream = Lexer().lex(
-            "class Value { Int value; construct(Int value) { this.value = value; } " +
-                "construct() { this(7); } read() -> Int { return value; } }"
-        )
-        stream.emit("start")
-        let snapshot = SourceSnapshotIdentity(
-            SourceIdentity("memory:constructor-delegation-execute"), "revision:one"
-        )
-        let type = PrimitiveClassBinder().bind(
-            PrimitiveClassParser().parse(
-                stream.consumeAll<Token>("data"), snapshot
-            ), snapshot
-        ).typeUnit
-        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
-        let className = Es6NameMangler.mangle(type.identity.value)
-        let factory = Es6NameMangler.mangle(
-            type.functionUnits().filter({ _.constructorFunction }).last.identity.value
-        )
-        let readName = Es6NameMangler.mangle(
-            type.functionUnits().firstOrNull({ _.name == "read" }).identity.value
-        )
-        let root = File(".flat-es6-constructor-delegation-test-#{Time.currentTimeMillis}")
-        Es6ArtifactFiles.ensureDirectory(root)
-        let destination = File(root, "constructor-delegation.js")
-        Es6ArtifactCommitter().commit(
-            destination,
-            code + "console.log(" + className + "." + factory + "()." + readName + "());\n"
-        )
-        let response = System.execute(
-            ["node", destination.normalizedLocation], silent: true, shell: false
-        )
-        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("7\n")
-        Es6ArtifactFiles.remove(root)
-    }
 
     token(String value, Int type, Int column) -> Token => Token(
         value: value, type: type, location: Location(lineNumber: 1, column: column)

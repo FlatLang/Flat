@@ -22,6 +22,7 @@ import flat/io/FancyOutputStream
     Es6FunctionExecution_Test,
     Es6ClassExecution_Test,
     Es6ArrayOverloadExecution_Test,
+    Es6ReceiverOverloadExecution_Test,
     Es6ExceptionExecution_Test,
     Es6InheritanceExecution_Test,
     Es6LambdaExecution_Test,

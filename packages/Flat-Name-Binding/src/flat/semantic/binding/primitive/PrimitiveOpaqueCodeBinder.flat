@@ -72,7 +72,15 @@ class PrimitiveOpaqueCodeBinder {
                 )
                 var BoundExpression projected = value
                 var String rendering = "identity"
-                if (path.count == 2 && root.semanticType.kind() == "array") {
+                if (path.count == 2 && root.semanticType.kind() == "user-class" && receiver &&
+                    root.semanticType.value() == receiver.semanticType.value()) {
+                    let field = fields.firstOrNull({ _.name == path[1] })
+                    if (!field) throw Exception("Unsupported interpolation path")
+                    projected = BoundMemberAccessExpression(
+                        piece.range, field.semanticType, value,
+                        field.name, field.identity
+                    )
+                } else if (path.count == 2 && root.semanticType.kind() == "array") {
                     if (path[1] == "data") {
                         projected = BoundNativeArrayDataExpression(piece.range, value)
                     } else if (path[1] == "count") {
