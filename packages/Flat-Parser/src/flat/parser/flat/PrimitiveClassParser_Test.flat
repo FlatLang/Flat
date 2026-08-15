@@ -25,6 +25,25 @@ testable class {
         expect(access.memberName).toBe("value")
     }
 
+    test `parses modified visible expression property`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:modified-visible-property"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Range", false, 7), token("{", true, 13),
+            token("override", false, 15), token("visible", false, 24),
+            token("Int", false, 32), token("size", false, 36), token("<=>", true, 41),
+            token("end", false, 44), token("-", true, 48), token("start", false, 50),
+            token("}", true, 56)
+        ], snapshot)
+        let property = parsed.methodValues().first
+
+        expect(property.name).toBe("size")
+        expect(property.returnTypeName).toBe("Int")
+        expect(property.statements().first.statementKind()).toBe("return")
+        expect(property.range.snapshot).toBe(snapshot)
+    }
+
     test `parses declaration flags`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:abstract-class"), "revision:one"

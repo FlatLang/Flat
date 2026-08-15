@@ -87,6 +87,48 @@ class {
         var Bool staticField
         while (index < tokens.count && tokens[index].value != "}") {
             if (isFunctionModifier(tokens[index].value) &&
+                tokens[index].value != "visible") {
+                let propertyStart = index
+                var Int propertyCursor = index
+                var Bool visibleProperty
+                var Bool staticProperty
+                while (propertyCursor < tokens.count &&
+                    (isFunctionModifier(tokens[propertyCursor].value) ||
+                        tokens[propertyCursor].value == "visible")) {
+                    if (tokens[propertyCursor].value == "visible") visibleProperty = true
+                    if (tokens[propertyCursor].value == "static") staticProperty = true
+                    propertyCursor++
+                }
+                if (visibleProperty && propertyCursor + 2 < tokens.count &&
+                    tokens[propertyCursor].type == Token.Type.IDENTIFIER &&
+                    tokens[propertyCursor + 1].type == Token.Type.IDENTIFIER &&
+                    (tokens[propertyCursor + 2].value == "=>" ||
+                    tokens[propertyCursor + 2].value == "<=>")) {
+                    let returnType = tokens[propertyCursor++].value
+                    let propertyName = tokens[propertyCursor++].value
+                    propertyCursor++
+                    let expressionStart = propertyCursor
+                    let fallbackEnd = fallbackBodyEnd(expressionStart)
+                    let end = fallbackEnd >= 0 ? fallbackEnd : declarationEnd(propertyStart)
+                    let expressionEnd = fallbackEnd >= 0
+                        ? fallbackExpressionEnd(expressionStart) : end
+                    let value = PrimitiveExpressionParser().parse(
+                        tokens.skip(expressionStart).take(expressionEnd - expressionStart),
+                        snapshot, expressionStart + tokenIndexOffset
+                    )
+                    methods.add(PrimitiveFunctionSyntax(
+                        range(propertyStart, end), propertyName,
+                        PrimitiveFunctionParameterSyntax[], returnType,
+                        [PrimitiveReturnSyntax(
+                            range(expressionStart, expressionEnd), value
+                        )],
+                        staticMethod: staticProperty
+                    ))
+                    index = end
+                    continue
+                }
+            }
+            if (isFunctionModifier(tokens[index].value) &&
                 tokens[index].value != "visible" &&
                 !(tokens[index].value == "public" && index + 2 < tokens.count &&
                     tokens[index + 1].value == "construct" &&
@@ -121,21 +163,24 @@ class {
             } else if (tokens[index].value == "visible" && index + 3 < tokens.count &&
                 tokens[index + 1].type == Token.Type.IDENTIFIER &&
                 tokens[index + 2].type == Token.Type.IDENTIFIER &&
-                tokens[index + 3].value == "=>") {
+                (tokens[index + 3].value == "=>" || tokens[index + 3].value == "<=>")) {
                 let propertyStart = index++
                 let returnType = tokens[index++].value
                 let propertyName = tokens[index++].value
                 index++
                 let expressionStart = index
-                let end = declarationEnd(propertyStart)
+                let fallbackEnd = fallbackBodyEnd(expressionStart)
+                let end = fallbackEnd >= 0 ? fallbackEnd : declarationEnd(propertyStart)
+                let expressionEnd = fallbackEnd >= 0
+                    ? fallbackExpressionEnd(expressionStart) : end
                 let value = PrimitiveExpressionParser().parse(
-                    tokens.skip(expressionStart).take(end - expressionStart), snapshot,
+                    tokens.skip(expressionStart).take(expressionEnd - expressionStart), snapshot,
                     expressionStart + tokenIndexOffset
                 )
                 methods.add(PrimitiveFunctionSyntax(
                     range(propertyStart, end), propertyName,
                     PrimitiveFunctionParameterSyntax[], returnType,
-                    [PrimitiveReturnSyntax(range(expressionStart, end), value)]
+                    [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)]
                 ))
                 index = end
             } else if (tokens[index].value == "visible") {
@@ -165,21 +210,24 @@ class {
             } else if (index + 2 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER &&
                 tokens[index + 1].type == Token.Type.IDENTIFIER &&
-                tokens[index + 2].value == "=>") {
+                (tokens[index + 2].value == "=>" || tokens[index + 2].value == "<=>")) {
                 let propertyStart = index
                 let returnType = tokens[index++].value
                 let propertyName = tokens[index++].value
                 index++
                 let expressionStart = index
-                let end = declarationEnd(propertyStart)
+                let fallbackEnd = fallbackBodyEnd(expressionStart)
+                let end = fallbackEnd >= 0 ? fallbackEnd : declarationEnd(propertyStart)
+                let expressionEnd = fallbackEnd >= 0
+                    ? fallbackExpressionEnd(expressionStart) : end
                 let value = PrimitiveExpressionParser().parse(
-                    tokens.skip(expressionStart).take(end - expressionStart), snapshot,
+                    tokens.skip(expressionStart).take(expressionEnd - expressionStart), snapshot,
                     expressionStart + tokenIndexOffset
                 )
                 methods.add(PrimitiveFunctionSyntax(
                     range(propertyStart, end), propertyName,
                     PrimitiveFunctionParameterSyntax[], returnType,
-                    [PrimitiveReturnSyntax(range(expressionStart, end), value)]
+                    [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)]
                 ))
                 index = end
             } else if (index + 1 < tokens.count &&
@@ -475,6 +523,24 @@ class {
         }
     }
 
+    fallbackExpressionEnd(Int expressionStart) -> Int {
+        var Int parenthesisDepth
+        var Int bracketDepth
+        var Int cursor = expressionStart
+        while (cursor < tokens.count) {
+            let value = tokens[cursor].value
+            if (value == "(") parenthesisDepth++
+            else if (value == ")") parenthesisDepth--
+            else if (value == "[") bracketDepth++
+            else if (value == "]") bracketDepth--
+            else if (value == "{" && parenthesisDepth == 0 && bracketDepth == 0) {
+                return cursor
+            }
+            cursor++
+        }
+        syntax("Expected fallback property body", expressionStart)
+    }
+
     fallbackBodyEnd(Int expressionStart) -> Int => -1 {
         var Int parenthesisDepth
         var Int bracketDepth
@@ -547,8 +613,9 @@ class {
     declarationEnd(Int start) -> Int {
         var Int cursor = start
         while (cursor < tokens.count && tokens[cursor].value != "{" &&
-            tokens[cursor].value != "=>") cursor++
-        if (cursor < tokens.count && tokens[cursor].value == "=>") {
+            tokens[cursor].value != "=>" && tokens[cursor].value != "<=>") cursor++
+        if (cursor < tokens.count &&
+            (tokens[cursor].value == "=>" || tokens[cursor].value == "<=>")) {
             cursor++
             if (cursor + 1 < tokens.count && tokens[cursor].value == "this" &&
                 tokens[cursor + 1].value == "{") {
