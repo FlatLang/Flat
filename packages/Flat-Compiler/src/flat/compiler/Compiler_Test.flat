@@ -374,6 +374,67 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `package linker executes real NoSuchElementException default delegation`() {
+        let identity = "flat/datastruct/list/NoSuchElementException.flat"
+        let exceptionIdentity = "flat/exception/Exception.flat"
+        let stackIdentity = "flat/exception/StackTrace.flat"
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(
+                identity,
+                Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/datastruct/list/NoSuchElementException.flat"
+                ))
+            ),
+            CompilerSource(
+                exceptionIdentity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
+            ),
+            CompilerSource(
+                stackIdentity,
+                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
+            )
+        ])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lexInterpolated(
+            Es6ArtifactFiles.read(File(
+                "../Flat-Core/src/flat/datastruct/list/NoSuchElementException.flat"
+            ))
+        )
+        stream.emit("start")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex,
+            "NoSuchElementException"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "NoSuchElementException"
+        )
+        let exceptionSnapshot = SourceSnapshotIdentity(
+            SourceIdentity(exceptionIdentity), "compiler-input"
+        )
+        let exceptionType = DeclarationIdentity(
+            SyntaxIslandIdentity(exceptionSnapshot, "class", 4), "class", "Exception"
+        )
+        let messageField = SymbolIdentity(exceptionType, "field", 1)
+        let root = File(".flat-compiler-no-such-element-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + Es6NameMangler.mangle(typeIdentity.value) +
+                "();\nconsole.log(value." + Es6NameMangler.mangle(messageField.value) + ");\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("No such element\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `package linker compiles and executes real Bool inheritance slice`() {
         let identity = "flat/primitive/Bool.flat"
         let code = FlatEs6PackageLinker().link([
