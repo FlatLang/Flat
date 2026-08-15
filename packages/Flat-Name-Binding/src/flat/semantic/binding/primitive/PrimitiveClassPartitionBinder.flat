@@ -21,27 +21,35 @@ class {
             !interfaceSyntaxValues || interfaceSyntaxValues.any({ !_ })) {
             throw Exception("Primitive class partition binding requires syntax snapshot and capacity")
         }
-        if (syntaxValues.count > maxTypes) {
+        let effectiveSyntaxValues = syntaxValues.map({
+            withImplicitRootParent(_, syntaxValues)
+        })
+        if (effectiveSyntaxValues.count > maxTypes) {
             throw Exception("Primitive class partition exceeds configured type capacity")
         }
         var Int index
-        while (index < syntaxValues.count) {
-            let syntax = syntaxValues[index]
-            if (syntaxValues.take(index).any({ _.name == syntax.name })) {
+        while (index < effectiveSyntaxValues.count) {
+            let syntax = effectiveSyntaxValues[index]
+            if (effectiveSyntaxValues.take(index).any({ _.name == syntax.name })) {
                 throw Exception("Duplicate reduced class '#{syntax.name}'")
             }
             index++
         }
 
-        let constructorSignatures = constructorSignatures(syntaxValues, snapshot)
-        constructorSignatures.addAll(methodSignatures(syntaxValues, snapshot))
+        let constructorSignatures = constructorSignatures(effectiveSyntaxValues, snapshot)
+        constructorSignatures.addAll(methodSignatures(effectiveSyntaxValues, snapshot))
+        constructorSignatures.addAll(inheritedMethodSignatures(
+            effectiveSyntaxValues, constructorSignatures, snapshot
+        ))
+        constructorSignatures.addAll(arrayAccessorSignatures(effectiveSyntaxValues, snapshot))
+        let declaredFields = fieldUnits(effectiveSyntaxValues, snapshot)
         let result = BoundTypeUnit[]
         let boundNames = String[]
-        while (result.count < syntaxValues.count) {
+        while (result.count < effectiveSyntaxValues.count) {
             var Bool progressed
             index = 0
-            while (index < syntaxValues.count) {
-                let syntax = syntaxValues[index]
+            while (index < effectiveSyntaxValues.count) {
+                let syntax = effectiveSyntaxValues[index]
                 if (boundNames.contains(syntax.name)) {
                     index++
                     continue
@@ -50,12 +58,13 @@ class {
                     let syntaxSnapshot = snapshot ?: syntax.range.snapshot
                     result.add(PrimitiveClassBinder().bind(
                         syntax, syntaxSnapshot,
-                        availableConstructors: constructorSignatures
+                        availableConstructors: constructorSignatures,
+                        availableFields: declaredFields
                     ).typeUnit)
                     boundNames.add(syntax.name)
                     progressed = true
                 } else if (boundNames.contains(syntax.parentName)) {
-                    let parentSyntax = syntaxValues.firstOrNull({ _.name == syntax.parentName })
+                    let parentSyntax = effectiveSyntaxValues.firstOrNull({ _.name == syntax.parentName })
                     if (!parentSyntax) throw Exception("Missing reduced parent '#{syntax.parentName}'")
                     let rootContract = result.firstOrNull({ _.identity.name == "Object" })
                     let boundParent = result.firstOrNull({ _.identity.name == parentSyntax.name })
@@ -63,7 +72,8 @@ class {
                         parentSyntax, syntax, snapshot, constructorSignatures,
                         interfaceSyntaxValues,
                         rootContract ? rootContract.functionUnits() : BoundFunctionUnit[],
-                        boundParent
+                        boundParent,
+                        declaredFields
                     )
                     var Int parentIndex
                     while (result[parentIndex].identity.name != parentSyntax.name) parentIndex++
@@ -75,10 +85,33 @@ class {
                 index++
             }
             if (!progressed) {
-                throw Exception("Missing or cyclic reduced parent")
+                let unresolved = effectiveSyntaxValues.filter((candidate) =>
+                    !boundNames.contains(candidate.name)
+                ).map((candidate) =>
+                    candidate.parentName
+                        ? "#{candidate.name}->#{candidate.parentName}"
+                        : candidate.name
+                ).sort({ _a.compareTo(_b) })
+                throw Exception(
+                    "Missing or cyclic reduced parent for #{unresolved.join(", ")}"
+                )
             }
         }
         return PrimitiveClassPartitionBindingResult(result)
+    }
+
+    withImplicitRootParent(
+        PrimitiveClassSyntax syntax,
+        PrimitiveClassSyntax[] syntaxes
+    ) -> PrimitiveClassSyntax {
+        if (syntax.parentName || syntax.name == "Object" ||
+            syntaxes.none({ _.name == "Object" })) return syntax
+        return PrimitiveClassSyntax(
+            syntax.range, syntax.name, syntax.genericParameterName, "Object",
+            syntax.fieldValues(), syntax.constructorValue, syntax.methodValues(),
+            syntax.implementedTypeNames(), syntax.abstractClass,
+            syntax.arrayOverrideValues(), syntax.constructorValues()
+        )
     }
 
     methodSignatures(
@@ -95,11 +128,43 @@ class {
             let owner = UserClassSemanticType(ownerIdentity)
             var Int ordinal
             for (method in syntax.methodValues()) {
-                let parameterTypes = method.parameterValues().map({
+                var SemanticType[] parameterTypes = method.parameterValues().map({
                     signatureType(_.typeName, syntaxes, snapshot)
                 })
-                let returnType = method.inferredReturnType ? SemanticTypes.unknownType() :
-                    method.returnTypeName == "this" ? owner :
+                if (syntax.name == "String") {
+                    parameterTypes = SemanticType[]
+                    for (parameter in method.parameterValues()) {
+                        parameterTypes.add(parameter.typeName == "String" ? owner :
+                            signatureType(parameter.typeName, syntaxes, snapshot))
+                    }
+                }
+                let declaredStringResult = syntax.name == "String" &&
+                    (method.name == "plus" || method.name == "repeat" ||
+                     method.name == "trimStart" || method.name == "trimEnd" ||
+                     method.name == "trimEnds" || method.name == "toLowerCase" ||
+                     method.name == "toUpperCase" || method.name == "capitalize" ||
+                     method.name == "getStringBetween" || method.name == "surroundWith" ||
+                     method.name == "orElse" || method.name == "toString" ||
+                     method.name == "transform")
+                var SemanticType inferredMethodReturn = SemanticTypes.unknownType()
+                let methodStatements = method.statements()
+                if (method.inferredReturnType && methodStatements.isNotEmpty &&
+                    methodStatements.first.class.isOfType(PrimitiveReturnSyntax.class)) {
+                    let inferredObject = (Object)methodStatements.first
+                    let inferredSyntax = (PrimitiveReturnSyntax)inferredObject
+                    if (inferredSyntax.value) {
+                        let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
+                        if (inferred.succeeded) {
+                            inferredMethodReturn = inferred.expression.semanticType
+                        }
+                    }
+                }
+                let returnType = method.inferredReturnType
+                    ? (declaredStringResult ? owner : inferredMethodReturn)
+                    : method.returnTypeName == "this" ||
+                        (syntax.name == "String" && method.name == "replace" &&
+                         method.returnTypeName == "String")
+                        ? owner :
                     signatureType(method.returnTypeName, syntaxes, snapshot)
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
@@ -179,11 +244,171 @@ class {
         return result
     }
 
+    inheritedMethodSignatures(
+        PrimitiveClassSyntax[] syntaxes,
+        CallableSignature[] declared,
+        SourceSnapshotIdentity snapshot
+    ) -> CallableSignature[] {
+        let result = CallableSignature[]
+        for (syntax in syntaxes) {
+            if (!syntax.parentName) continue
+            let ownerIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(
+                    snapshot ?: syntax.range.snapshot,
+                    "class", syntax.range.startTokenIndex
+                ),
+                "class", syntax.name
+            )
+            let owner = UserClassSemanticType(ownerIdentity)
+            var String parentName = syntax.parentName
+            let visited = String[]
+            while (parentName && !visited.contains(parentName)) {
+                visited.add(parentName)
+                let parent = syntaxes.firstOrNull({ _.name == parentName })
+                if (!parent) break
+                for (candidate in declared.filter((signature) =>
+                    signature.callableKind.value == "instance-method" &&
+                    signature.ownerType.declarationIdentity.name == parentName
+                )) {
+                    let overridden = declared.any((signature) =>
+                        signature.callableKind.value == "instance-method" &&
+                        signature.ownerType.value() == owner.value() &&
+                        signature.name == candidate.name &&
+                        sameTypes(signature.parameterTypes(), candidate.parameterTypes())
+                    )
+                    if (!overridden && result.none((signature) =>
+                        signature.ownerType.value() == owner.value() &&
+                        signature.name == candidate.name &&
+                        sameTypes(signature.parameterTypes(), candidate.parameterTypes())
+                    )) {
+                        result.add(CallableSignature(
+                            candidate.identity, candidate.name, candidate.callableKind,
+                            candidate.parameterTypes(), candidate.returnType, owner,
+                            candidate.optionalParameterCount, candidate.parameterNames()
+                        ))
+                    }
+                }
+                parentName = parent.parentName
+            }
+        }
+        return result
+    }
+
+    sameTypes(SemanticType[] left, SemanticType[] right) -> Bool {
+        if (left.count != right.count) return false
+        var Int index
+        while (index < left.count) {
+            if (left[index].value() != right[index].value()) return false
+            index++
+        }
+        return true
+    }
+
+    arrayAccessorSignatures(
+        PrimitiveClassSyntax[] syntaxes,
+        SourceSnapshotIdentity snapshot
+    ) -> CallableSignature[] {
+        let result = CallableSignature[]
+        for (syntax in syntaxes) {
+            if (syntax.arrayOverrideValues().isEmpty) continue
+            let override = syntax.arrayOverrideValues().first
+            let syntaxSnapshot = snapshot ?: syntax.range.snapshot
+            let ownerIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(syntaxSnapshot, "class", syntax.range.startTokenIndex),
+                "class", syntax.name
+            )
+            let owner = UserClassSemanticType(ownerIdentity)
+            let indexType = signatureType(
+                override.indexParameter.typeName, syntaxes, snapshot
+            )
+            let elementType = override.elementTypeName == "inferred"
+                ? SemanticTypes.unknownType()
+                : signatureType(override.elementTypeName, syntaxes, snapshot)
+            if (override.getterValues().isNotEmpty) {
+                let identity = DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        override.range.snapshot, "array-getter", override.range.startTokenIndex
+                    ),
+                    "array-getter", "getAt"
+                )
+                result.add(CallableSignature(
+                    SymbolIdentity(identity, "array-getter"), "getAt",
+                    CallableKind("instance-method"), [indexType], elementType, owner
+                ))
+            }
+            if (override.setterValues().isNotEmpty) {
+                let identity = DeclarationIdentity(
+                    SyntaxIslandIdentity(
+                        override.range.snapshot, "array-setter", override.range.startTokenIndex
+                    ),
+                    "array-setter", "setAt"
+                )
+                result.add(CallableSignature(
+                    SymbolIdentity(identity, "array-setter"), "setAt",
+                    CallableKind("instance-method"), [indexType, elementType],
+                    SemanticTypes.unitType(), owner
+                ))
+            }
+        }
+        return result
+    }
+
+    fieldUnits(
+        PrimitiveClassSyntax[] syntaxes,
+        SourceSnapshotIdentity snapshot
+    ) -> BoundFieldUnit[] {
+        let result = BoundFieldUnit[]
+        for (syntax in syntaxes) {
+            let syntaxSnapshot = snapshot ?: syntax.range.snapshot
+            let ownerIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(syntaxSnapshot, "class", syntax.range.startTokenIndex),
+                "class", syntax.name
+            )
+            var Int ordinal
+            for (field in syntax.fieldValues()) {
+                let fieldRange = SourceRange(
+                    syntaxSnapshot, field.range.startTokenIndex, field.range.endTokenIndex,
+                    field.range.start, field.range.end
+                )
+                result.add(BoundFieldUnit(
+                    field.name, SymbolIdentity(ownerIdentity, "field", ordinal),
+                    signatureType(field.typeName, syntaxes, snapshot), fieldRange,
+                    field.visibleField, staticField: field.staticField
+                ))
+                ordinal++
+            }
+            for (parameter in syntax.constructorValue.parameterValues().filter({
+                _.visibleParameter
+            })) {
+                let parameterRange = SourceRange(
+                    syntaxSnapshot, parameter.range.startTokenIndex, parameter.range.endTokenIndex,
+                    parameter.range.start, parameter.range.end
+                )
+                result.add(BoundFieldUnit(
+                    parameter.name, SymbolIdentity(ownerIdentity, "field", ordinal),
+                    signatureType(parameter.typeName, syntaxes, snapshot), parameterRange,
+                    true
+                ))
+                ordinal++
+            }
+        }
+        return result
+    }
+
     signatureType(
         String name,
         PrimitiveClassSyntax[] syntaxes,
         SourceSnapshotIdentity snapshot
-    ) -> SemanticType => PrimitiveStructuralTypeResolver(
-        syntaxes: syntaxes, snapshot: snapshot
-    ).resolve(name)
+    ) -> SemanticType {
+        var String normalized = name
+        while (normalized.startsWith("native")) {
+            normalized = normalized.substring("native".count)
+            if (normalized.startsWith("_array")) {
+                normalized = normalized.substring("_array".count)
+            }
+        }
+        return PrimitiveStructuralTypeResolver(
+            syntaxes: syntaxes, snapshot: snapshot
+        ).resolve(normalized)
+    }
 }

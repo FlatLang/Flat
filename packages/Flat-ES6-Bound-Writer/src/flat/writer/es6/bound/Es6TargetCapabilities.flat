@@ -4,8 +4,8 @@ package flat/writer/es6/bound
 class {
     public static supportsStatement(String kind) -> Bool {
         return kind == "expression" || kind == "external" || kind == "local-declaration" ||
-            kind == "assignment" || kind == "member-assignment" || kind == "return" || kind == "if" ||
-            kind == "switch" ||
+            kind == "assignment" || kind == "member-assignment" || kind == "return" || kind == "continue" || kind == "if" ||
+            kind == "switch" || kind == "foreach" ||
             kind == "while" || kind == "throw" || kind == "try" ||
             kind == "array-assignment"
     }

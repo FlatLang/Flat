@@ -175,9 +175,16 @@ class {
                 value.range, initialized.semanticType, value.name, identity
             )
             locals.add(LocalBinding(value.name, identity, initialized.semanticType))
+            let storage = initialized.semanticType.kind() == "unknown"
+                ? TypeConversion(
+                    initialized.semanticType, initialized.semanticType,
+                    "deferred-declaration-value", true, false, true, 1000
+                )
+                : TypeConversions.classify(
+                    initialized.semanticType, initialized.semanticType
+                )
             return BoundDeclarationValueExpression(
-                value.range, initialized.semanticType, local, initialized,
-                TypeConversions.classify(initialized.semanticType, initialized.semanticType)
+                value.range, initialized.semanticType, local, initialized, storage
             )
         }
         if (syntax.class.isOfType(PrimitiveAssignmentValueSyntax.class)) {
@@ -430,6 +437,23 @@ class {
         if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
             let value = (PrimitiveArrayAccessSyntax)syntax
             let receiver = bindSyntax(value.receiver, locals, callables)
+            if (receiver.semanticType.kind() == "user-class") {
+                let getter = callables.firstOrNull((candidate) =>
+                    candidate.identity.symbolKind == "array-getter" &&
+                    candidate.ownerType.value() == receiver.semanticType.value()
+                )
+                if (getter) {
+                    let index = bindSyntax(value.index, locals, callables)
+                    let checked = CallTypeChecker.check(
+                        getter, receiver.semanticType, [index.semanticType], value.range
+                    )
+                    if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    return BoundCallExpression(
+                        value.range, checked.semanticType, getter, receiver,
+                        [index], checked.argumentConversions()
+                    )
+                }
+            }
             if (receiver.semanticType.kind() != "array") {
                 throw Exception("Array access requires an array receiver")
             }

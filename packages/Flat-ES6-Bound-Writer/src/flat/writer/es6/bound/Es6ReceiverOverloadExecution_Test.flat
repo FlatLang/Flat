@@ -105,6 +105,75 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `callable invocation with implicit field executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { Char[] chars; construct() { chars = ['a']; } " +
+                "transform(map(Char, Int) -> Char) -> Char { return map(chars[0], 0); } " +
+                "apply(map(Char, Int) -> Char) -> Char { return transform(map); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:function-invocation-field-execute"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let applyName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "apply" }).identity.value
+        )
+        let root = File(".flat-es6-function-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "function-field.js")
+        Es6ArtifactCommitter().commit(destination,
+            code + "console.log(new " + className + "()." + applyName +
+                "((value, index) => value));\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("a\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `declared String conditional branch reconciliation executes under Node`() {
+        let stream = Lexer().lex(
+            "class String { Char[] chars; construct() { chars = ['a']; } " +
+                "this[Int index] -> Char { get { return chars[index]; } } " +
+                "substring(Int start) -> String { return this; } " +
+                "capitalize() -> String { return true ? " +
+                "this[0].toUpperCase() + substring(1) : this; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:declared-string-conditional-execute"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let capitalizeName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "capitalize" }).identity.value
+        )
+        let root = File(".flat-es6-declared-string-conditional-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "declared-string-conditional.js")
+        Es6ArtifactCommitter().commit(destination,
+            code + "console.log(new " + className + "()." + capitalizeName + "());\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("").count > 0).toBe(true)
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `Char conditional conversion executes under Node`() {
         let stream = Lexer().lex(
             "class Value { first() -> Char { return true ? 'a' : 0; } }"
@@ -170,6 +239,201 @@ testable class {
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `nested owner interpolation executes under Node`() {
+        var String source = "class Value { Chars chars; " +
+            "construct() { chars = Chars(); } " +
+            "same(Value other) -> Bool { external { return "
+        source += '#'
+        source += "{chars.data} === "
+        source += '#'
+        source += "{other.chars.data}; } } }"
+        let charsStream = Lexer().lex(
+            "class Chars { Char[] data = ['a']; }"
+        )
+        charsStream.emit("start")
+        let valueStream = Lexer().lex(source)
+        valueStream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:nested-owner-field-path-execute"), "revision:one"
+        )
+        let syntaxes = [
+            PrimitiveClassParser().parse(
+                charsStream.consumeAll<Token>("data"), snapshot
+            ),
+            PrimitiveClassParser().parse(
+                valueStream.consumeAll<Token>("data"), snapshot, 100, "Value"
+            )
+        ]
+        let types = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        let charsType = types.firstOrNull({ _.identity.name == "Chars" })
+        let valueType = types.firstOrNull({ _.identity.name == "Value" })
+        let charsCode = Es6UnitOrchestrator().emitType(charsType, 0).fragment.code
+        let valueCode = Es6UnitOrchestrator().emitType(valueType, 1).fragment.code
+        let valueName = Es6NameMangler.mangle(valueType.identity.value)
+        let sameName = Es6NameMangler.mangle(
+            valueType.functionUnits().firstOrNull({ _.name == "same" }).identity.value
+        )
+        let root = File(".flat-es6-nested-owner-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "nested-owner-field.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            charsCode + valueCode + "const value = new " + valueName + "();\n" +
+                "console.log(value." + sameName + "(value));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `overloaded calls in C style for clauses execute under Node`() {
+        let stream = Lexer().lex(
+            "class Value { visible Int count = 4; " +
+                "indexOf(Char search, Int start = 0) -> Int { return 1; } " +
+                "indexOf(Value search, Int start = 0) -> Int { return start + 1; } " +
+                "run(Value delimiter) -> Int { var Int lastI = 0; " +
+                "for (var Int i = indexOf(delimiter); i < 3; " +
+                "i = indexOf(delimiter, i + delimiter.count)) { lastI = i; } " +
+                "return lastI; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:for-clause-overload-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let runName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "run" }).identity.value
+        )
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-for-overload-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "for-overload.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "const value = new " + className + "();\n" +
+                "console.log(value." + runName + "(value));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("1\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `chained declared String calls execute under Node`() {
+        let stream = Lexer().lex(
+            "class String { " +
+                "replace(String search, String replacement) -> String { return this; } " +
+                "sanitize() -> String { return this.replace(\"a\", \"b\")" +
+                ".replace(\"b\", \"c\").replace(\"c\", \"d\"); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-chained-calls-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let sanitizeName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "sanitize" }).identity.value
+        )
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-string-chain-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "string-chain.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "const value = new " + className + "();\n" +
+                "console.log(value." + sanitizeName + "() === value);\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `inferred predicate call executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { " +
+                "validate(Int start, Int end, Bool fail = false) => true { " +
+                "if (fail) { return false; } } " +
+                "run() -> Bool { return !validate(0, 1, true); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inferred-predicate-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let runName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "run" }).identity.value
+        )
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-inferred-predicate-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "inferred-predicate.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(new " + className + "()." + runName + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("false\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `declared reference null branch executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { substring(Bool invalid) -> Value { " +
+                "if (invalid) { return null; } return this; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:nullable-reference-return-execute"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let substringName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "substring" }).identity.value
+        )
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-null-return-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "null-return.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "const value = new " + className + "();\n" +
+                "console.log(value." + substringName + "(true) === null);\n" +
+                "console.log(value." + substringName + "(false) === value);\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\ntrue\n")
         Es6ArtifactFiles.remove(root)
     }
 

@@ -163,6 +163,151 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `indexed Char case conversion executes under Node`() {
+        let valueStream = Lexer().lex(
+            "class Value { Char[] chars; construct() { chars = ['a']; } " +
+                "upper() -> Char { return chars[0].toUpperCase(); } }"
+        )
+        valueStream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:indexed-char-case-execute"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                valueStream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let upperName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "upper" }).identity.value
+        )
+        let root = File(".flat-es6-indexed-char-case-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "indexed-char-case.js")
+        Es6ArtifactCommitter().commit(destination,
+            code + "console.log(new " + className + "()." + upperName + "());\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("0\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `receiver method wins over same named constructor under Node`() {
+        let valueStream = Lexer().lex(
+            "class Value { repeat(Int times) -> Int { return times; } " +
+                "repeat(String text) -> Int { return 0; } " +
+                "multiply(Int times) -> Int { return repeat(times); } }"
+        )
+        let repeatStream = Lexer().lex(
+            "class repeat { construct(Int value) {} }"
+        )
+        valueStream.emit("start")
+        repeatStream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-method-constructor-execute"), "revision:one"
+        )
+        let types = PrimitiveClassPartitionBinder().bind([
+            PrimitiveClassParser().parse(
+                valueStream.consumeAll<Token>("data"), snapshot
+            ),
+            PrimitiveClassParser().parse(
+                repeatStream.consumeAll<Token>("data"), snapshot
+            )
+        ], snapshot).typeUnits()
+        let type = types.firstOrNull({ _.identity.name == "Value" })
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let multiplyName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "multiply" }).identity.value
+        )
+        let root = File(".flat-es6-receiver-method-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "receiver-method.js")
+        Es6ArtifactCommitter().commit(destination,
+            code + "console.log(new " + className + "()." + multiplyName + "(7));\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `receiver property condition executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { Int first => 1 " +
+                "public matches(Int expected) -> Bool { " +
+                "if (first == expected) { return true; } return false; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-property-execute"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let matchesName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "matches" }).identity.value
+        )
+        let root = File(".flat-es6-receiver-property-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "receiver-property.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(new " + className + "()." + matchesName + "(1));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `mixed named String overload selection executes under Node`() {
+        let stream = Lexer().lex(
+            "class String { " +
+                "trimStart(Int count, Char[] other) -> Int { return count + 1; } " +
+                "trimStart(Int start = 0, Char[] charsToTrim = Char[]) -> Int { " +
+                "return start + 7; } " +
+                "trimStart(Char charToTrim, Int start = 0) -> Int { " +
+                "return trimStart(start, charsToTrim: [charToTrim]); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:mixed-named-string-overload-execute"), "revision:one"
+        )
+        let value = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(value, 0).fragment.code
+        let className = Es6NameMangler.mangle(value.identity.value)
+        let trimChar = value.functionUnits().last
+        let trimCharName = Es6NameMangler.mangle(trimChar.identity.value)
+        let root = File(".flat-es6-mixed-named-overload-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "mixed-named-overload.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "console.log(new " + className + "()." + trimCharName + "('x', 0));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
 
     token(String value, Int type, Int column) -> Token => Token(
         value: value, type: type, location: Location(lineNumber: 1, column: column)

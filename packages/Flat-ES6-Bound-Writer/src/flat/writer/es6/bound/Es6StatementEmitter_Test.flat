@@ -4,6 +4,14 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `emits structured continue`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let statement = BoundContinueStatement(fixture.range())
+
+        expect(Es6StatementOrchestrator().emit(statement).code)
+            .toBe("continue;\n")
+    }
+
     test `emits expression local assignment and return statements`() {
         let fixture = Es6BoundWriter_TestFixture()
         let emitter = Es6StatementEmitter()

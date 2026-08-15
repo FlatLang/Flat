@@ -46,8 +46,8 @@ data class {
             throw Exception("Only a same-source constructor can invoke its direct parent")
         }
         if (constructorDelegation && (!constructorFunction || parentConstructorCall ||
-            constructorDelegation.range.snapshot != range.snapshot ||
-            constructorDelegation.target.ownerType == null)) {
+            constructorDelegation.target.ownerType == null ||
+            constructorDelegation.target.ownerType.declarationIdentity.name != name)) {
             throw Exception("Only a same-source constructor can delegate on its receiver")
         }
         body = BoundStatement[]

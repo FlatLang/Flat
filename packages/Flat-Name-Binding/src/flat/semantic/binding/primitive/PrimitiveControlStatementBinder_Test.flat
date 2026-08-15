@@ -137,6 +137,75 @@ testable class {
         expect(result.statements().count).toBe(2)
     }
 
+    async test `binds constructor call in structured expression`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:structured-constructor-call"), "revision:one"
+        )
+        let exceptionIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 1), "class", "Exception"
+        )
+        let exceptionType = UserClassSemanticType(exceptionIdentity)
+        let constructor = CallableSignature(
+            SymbolIdentity(exceptionIdentity, "constructor"), "Exception",
+            CallableKind("constructor"), [SemanticTypes.stringType()],
+            exceptionType, exceptionType
+        )
+        let stream = Lexer().lex(
+            "if (true) { throw Exception(\"invalid\") }"
+        )
+        stream.emit("start")
+        let statements = PrimitiveControlStatementBinder().bind(
+            PrimitiveControlStatementParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot, callables: [constructor]
+        ).statements()
+        let ifObject = (Object)statements.first
+        let conditional = (BoundIfStatement)ifObject
+        let thenValues = conditional.thenValues()
+        let throwObject = (Object)thenValues.first
+        var BoundThrowStatement thrown
+        thrown = (BoundThrowStatement)throwObject
+        let callObject = (Object)thrown.value
+        var BoundCallExpression call
+        call = (BoundCallExpression)callObject
+
+        expect(call.target).toBe(constructor)
+        expect(call.argumentConversions().first.conversionKind).toBe("identity")
+        expect(call.range.startTokenIndex).toBe(6)
+    }
+
+    async test `binds continue through switch nested in loop`() {
+        let source = "while (true) { switch value { ' ' => continue default => return false } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:primitive-continue-bind"), "revision:one"
+        )
+        let syntax = PrimitiveControlStatementParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "run"
+        )
+        let local = LocalBinding(
+            name: "value", identity: SymbolIdentity(owner, "parameter"),
+            semanticType: SemanticTypes.charType()
+        )
+        let statements = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, locals: [local]
+        ).statements()
+        let whileObject = (Object)statements.first
+        let loop = (BoundWhileStatement)whileObject
+        let loopBody = loop.bodyValues()
+        let switchObject = (Object)loopBody.first
+        var BoundSwitchStatement switched
+        switched = (BoundSwitchStatement)switchObject
+        let cases = switched.caseValues()
+        let continued = cases.first.statementValues()
+
+        expect(continued.first.unitKind()).toBe("continue")
+    }
+
     async test `binds typed switch cases and fallthrough`() {
         let source = "switch value { ' ' => fallthrough '\\n' => return true }"
         let stream = Lexer().lex(source)
@@ -218,6 +287,62 @@ testable class {
         expect(tryValues.first.unitKind()).toBe("throw")
         expect(catches.first.local.semanticType.value()).toBe("builtin:String")
         expect(value.finallyValues().count).toBe(1)
+    }
+
+    async test `binds static method reference as structured return argument`() {
+        let source = "class Char { public static toLowerCase(Char value) -> Char { " +
+            "return value; } public apply(transform(Char) -> Char, Char value) -> Char { " +
+            "return value; } public lower(Char value) -> Char { " +
+            "return apply(Char.toLowerCase, value); } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:structured-static-method-reference"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "lower" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        let argument = call.argumentValues().first
+
+        expect(argument.expressionKind()).toBe("function-reference")
+        expect(argument.semanticType.value()).toBe("function:(primitive:Char)->primitive:Char")
+        expect(argument.range.snapshot).toBe(snapshot)
+    }
+
+    async test `binds receiver property references in structured condition`() {
+        let source = "class Value { Int first => 1 " +
+            "public matches(Int expected) -> Bool { if (first == expected) { return true; } " +
+            "return false; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:structured-property-reference"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "matches" })
+        let statements = method.statements()
+        let ifObject = (Object)statements.first
+        let conditional = (BoundIfStatement)ifObject
+        let comparisonObject = (Object)conditional.condition
+        let comparison = (BoundBinaryExpression)comparisonObject
+        let propertyObject = (Object)comparison.left
+        let property = (BoundCallExpression)propertyObject
+
+        expect(property.target.name).toBe("first")
+        expect(property.receiver.semanticType.value()).toBe(type.semanticType.value())
+        expect(property.range.snapshot).toBe(snapshot)
     }
 
     async test `binds compound Float field assignment with explicit narrowing`() {

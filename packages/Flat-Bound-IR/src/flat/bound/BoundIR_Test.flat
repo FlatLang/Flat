@@ -160,6 +160,24 @@ testable class {
         expect(call.argumentConversions()).toBe([conversion])
     }
 
+    test `static method value retains selected callable contract`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = UserClassSemanticType(fixture.declaration("class", "Char", 18))
+        let target = CallableSignature(
+            fixture.symbol("static-method", "toLowerCase", 19),
+            "toLowerCase", CallableKind("static-method"),
+            [SemanticTypes.charType()], SemanticTypes.charType(), owner
+        )
+        let type = FunctionSemanticType(
+            target.parameterTypes(), target.returnType
+        )
+        let value = BoundFunctionValue(fixture.range(), type, target)
+
+        expect(value.expressionKind()).toBe("function-reference")
+        expect(value.target).toBe(target)
+        expect(value.semanticType.value()).toBe(type.value())
+    }
+
     test `published arrays are defensively copied`() {
         let fixture = BoundIR_TestFixture()
         let statement = BoundExpressionStatement(

@@ -187,6 +187,98 @@ testable class PrimitiveOpaqueCodeBinder_Test {
         expect(selected.memberIdentity).toBe(field.identity)
     }
 
+    test `binds parameter nested array data path interpolation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-parameter-nested-array"), "revision:one"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "Owner"
+        )
+        let range = SourceRange(
+            snapshot, 0, 2,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 3)
+        )
+        let type = UserClassSemanticType(owner)
+        let field = BoundFieldUnit(
+            "chars", SymbolIdentity(owner, "field"),
+            ArraySemanticType(SemanticTypes.charType()), range
+        )
+        let parameter = LocalBinding(
+            "other", SymbolIdentity(owner, "parameter"), type
+        )
+        let bound = PrimitiveControlStatementBinder().bind(
+            result([
+                PrimitiveExternalCodeSegmentSyntax(
+                    range, "", ["other", "chars", "data"]
+                )
+            ], range, "parameter nested field", "js"),
+            snapshot, [parameter], fields: [field]
+        ).statements()
+        let object = (Object)bound.first
+        let statement = (BoundExternalStatement)object
+
+        expect(statement.segmentValues().first.value.expressionKind())
+            .toBe("native-array-data")
+    }
+
+    test `binds canonical owner fields through nested opaque paths`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-canonical-owner-fields"), "revision:one"
+        )
+        let stringIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "String"
+        )
+        let charsIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 10), "class", "StringCharArray"
+        )
+        let range = SourceRange(
+            snapshot, 0, 2,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 3)
+        )
+        let stringType = UserClassSemanticType(stringIdentity)
+        let charsType = UserClassSemanticType(charsIdentity)
+        let chars = BoundFieldUnit(
+            "chars", SymbolIdentity(stringIdentity, "field"), charsType, range
+        )
+        let data = BoundFieldUnit(
+            "data", SymbolIdentity(charsIdentity, "field"),
+            ArraySemanticType(SemanticTypes.charType()), range
+        )
+        let receiver = BoundReferenceExpression(
+            range, stringType, "this", SymbolIdentity(stringIdentity, "receiver")
+        )
+        let other = LocalBinding(
+            "other", SymbolIdentity(stringIdentity, "parameter"), stringType
+        )
+        let bound = PrimitiveControlStatementBinder().bind(
+            result([
+                PrimitiveExternalCodeSegmentSyntax(
+                    range, "", ["chars", "data"]
+                ),
+                PrimitiveExternalCodeSegmentSyntax(
+                    range, "", ["other", "chars", "data"]
+                )
+            ], range, "canonical owner fields", "js"),
+            snapshot, [other], receiver: receiver, fields: [chars],
+            availableFields: [chars, data]
+        ).statements()
+        let statementObject = (Object)bound.first
+        let statement = (BoundExternalStatement)statementObject
+        let segments = statement.segmentValues()
+        let directObject = (Object)segments.first.value
+        let direct = (BoundMemberAccessExpression)directObject
+        let nestedObject = (Object)segments.last.value
+        let nested = (BoundMemberAccessExpression)nestedObject
+        let nestedReceiverObject = (Object)nested.receiver
+        let nestedReceiver = (BoundMemberAccessExpression)nestedReceiverObject
+
+        expect(direct.memberIdentity).toBe(data.identity)
+        expect(direct.receiver.expressionKind()).toBe("member-access")
+        expect(nested.memberIdentity).toBe(data.identity)
+        expect(nestedReceiver.memberIdentity).toBe(chars.identity)
+        expect(nested.range.snapshot).toBe(snapshot)
+    }
+
     test `binds explicit receiver field interpolation`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:external-receiver-field"), "revision:one"

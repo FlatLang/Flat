@@ -87,7 +87,14 @@ class {
         }
         if (expression.class.isOfType(BoundFunctionValue.class)) {
             let value = (BoundFunctionValue)expression
-            return Es6CodeResult(code: Es6NameMangler.mangle(value.target.identity.declaration.value))
+            let method = Es6NameMangler.mangle(value.target.identity.declaration.value)
+            if (value.target.callableKind.value == "static-method") {
+                let owner = Es6NameMangler.mangle(
+                    value.target.ownerType.declarationIdentity.value
+                )
+                return Es6CodeResult(code: owner + "." + method)
+            }
+            return Es6CodeResult(code: method)
         }
         if (expression.class.isOfType(BoundArrayExpression.class)) {
             let value = (BoundArrayExpression)expression

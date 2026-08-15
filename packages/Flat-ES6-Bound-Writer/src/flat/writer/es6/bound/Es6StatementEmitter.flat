@@ -119,6 +119,26 @@ class {
         return Es6CodeResult(code: code + "\n")
     }
 
+    public emitForEach(
+        BoundForEachStatement statement,
+        Es6CodeResult initialization,
+        Es6CodeResult condition,
+        Es6CodeResult body,
+        Es6CodeResult advance
+    ) -> Es6CodeResult {
+        if (!statement || !initialization || !condition || !body || !advance) {
+            throw Exception("ES6 foreach emission requires canonical loop mechanics")
+        }
+        if (!initialization.emitted) return initialization
+        if (!condition.emitted) return condition
+        if (!body.emitted) return body
+        if (!advance.emitted) return advance
+        return Es6CodeResult(code:
+            initialization.code + "while (" + condition.code + ") {\n" +
+                indent(body.code + advance.code) + "}\n"
+        )
+    }
+
     public emitWhile(
         BoundWhileStatement statement,
         Es6CodeResult condition,

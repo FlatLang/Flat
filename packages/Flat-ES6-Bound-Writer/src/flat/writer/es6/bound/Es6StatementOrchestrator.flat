@@ -15,6 +15,9 @@ class {
         if (!statement) throw Exception("ES6 statement orchestration requires statement")
         let capability = Es6TargetCapabilities.diagnoseStatement(statement.unitKind())
         if (capability) return Es6CodeResult(diagnostic: capability)
+        if (statement.class.isOfType(BoundContinueStatement.class)) {
+            return Es6ContinueEmitter().emit((BoundContinueStatement)statement)
+        }
         if (statement.class.isOfType(BoundExternalStatement.class)) {
             let value = (BoundExternalStatement)statement
             return statements.emitExternal(value)
@@ -43,6 +46,16 @@ class {
             }
             return statements.emitSwitch(
                 value, expressions.emit(value.value), emittedCases
+            )
+        }
+        if (statement.class.isOfType(BoundForEachStatement.class)) {
+            let value = (BoundForEachStatement)statement
+            return statements.emitForEach(
+                value,
+                emitAll(value.initialization()),
+                expressions.emit(value.condition),
+                emitAll(value.body()),
+                emitAll(value.advance())
             )
         }
         if (statement.class.isOfType(BoundWhileStatement.class)) {

@@ -51,6 +51,36 @@ testable class {
         expect(selected.memberIdentity).toBe(type.fieldUnits().first.identity)
     }
 
+    async test `binds native array constructor parameter count projection`() {
+        let stream = Lexer().lex(
+            "class Value { Int count; construct(native_array native Char[] chars) { " +
+                "count = chars.count; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:native-array-constructor-count"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let constructor = type.functionUnits().firstOrNull({ _.constructorFunction })
+        let statements = constructor.statements()
+        let assignmentObject = (Object)statements.first
+        let assignment = (BoundMemberAssignmentStatement)assignmentObject
+        let projectedObject = (Object)assignment.value
+        let projected = (BoundArrayLengthExpression)projectedObject
+        let parameterObject = (Object)projected.receiver
+        let parameter = (BoundReferenceExpression)parameterObject
+
+        expect(projected.expressionKind()).toBe("array-length")
+        expect(projected.range.startTokenIndex).toBe(18)
+        expect(parameter.semanticType.kind()).toBe("array")
+        expect(parameter.name).toBe("chars")
+        expect(parameter.range.startTokenIndex).toBe(18)
+    }
+
     async test `binds constructor local call to receiver method signature`() {
         let stream = Lexer().lex(
             "class Value { Int value; construct(Int input) { value = calculateSize(input); } " +
@@ -76,6 +106,62 @@ testable class {
         expect(call.target.name).toBe("calculateSize")
         expect(call.target.ownerType.value()).toBe(type.semanticType.value())
         expect(call.argumentConversions().first.conversionKind).toBe("identity")
+    }
+
+    async test `binds callable invocation with implicit field array argument`() {
+        let stream = Lexer().lex(
+            "class Value { Char[] chars; transform(map(Char, Int) -> Char) -> Char { " +
+                "return map(chars[0], 0); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:callable-field-array"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "transform" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let boundValue = returned.value
+
+        expect(boundValue.expressionKind()).toBe("function-invocation")
+        expect(boundValue.semanticType.value()).toBe("primitive:Char")
+        expect(boundValue.range.snapshot).toBe(snapshot)
+    }
+
+    async test `reconciles intrinsic Char plus with declared String conditional branch`() {
+        let stream = Lexer().lex(
+            "class String { Char[] chars; this[Int index] -> Char { " +
+                "get { return chars[index]; } } substring(Int start) -> String { " +
+                "return this; } capitalize() -> String { return true ? " +
+                "this[0].toUpperCase() + substring(1) : this; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:declared-string-conditional"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "capitalize" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let conditionalObject = (Object)returned.value
+        let conditional = (BoundConditionalExpression)conditionalObject
+        let trueObject = (Object)conditional.whenTrue
+        let trueConversion = (BoundConversionExpression)trueObject
+
+        expect(conditional.semanticType.value()).toBe(type.semanticType.value())
+        expect(trueConversion.conversion.conversionKind)
+            .toBe("declared-string-conditional")
+        expect(trueConversion.range.snapshot).toBe(snapshot)
     }
 
     async test `binds required Char conditional fallback with explicit conversion evidence`() {
@@ -377,6 +463,75 @@ testable class {
         expect(method.returnType.value()).toBe("primitive:Bool")
     }
 
+    async test `binds indexed Char case conversion intrinsically`() {
+        let stream = Lexer().lex(
+            "class Value { Char[] chars; upper() -> Char { " +
+                "return chars[0].toUpperCase(); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:indexed-char-case-conversion"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "upper" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundIntrinsicMemberCallExpression)callObject
+
+        expect(call.memberName).toBe("toUpperCase")
+        expect(call.semanticType.value()).toBe("primitive:Char")
+        expect(call.receiver.semanticType.value()).toBe("primitive:Char")
+        expect(call.range.snapshot).toBe(snapshot)
+    }
+
+    async test `prefers receiver method over same named constructor`() {
+        let stream = Lexer().lex(
+            "class Value { construct(Int value) {} repeat(Int times) -> Int { " +
+                "return times; } repeat(String text) -> Int { return 0; } " +
+                "multiply(Int times) -> Int { return repeat(times); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-method-constructor-name"), "revision:one"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 100), "class", "Other"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot,
+            availableConstructors: [CallableSignature(
+                SymbolIdentity(
+                    DeclarationIdentity(
+                        SyntaxIslandIdentity(snapshot, "constructor", 101),
+                        "constructor", "repeat"
+                    ), "constructor"
+                ),
+                "repeat", CallableKind("constructor"),
+                [SemanticTypes.intType()], UserClassSemanticType(typeIdentity),
+                UserClassSemanticType(typeIdentity)
+            )]
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "multiply" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+
+        expect(call.target.name).toBe("repeat")
+        expect(call.target.callableKind.value).toBe("instance-method")
+        expect(call.receiver.semanticType.value()).toBe(type.semanticType.value())
+        expect(call.range.snapshot).toBe(snapshot)
+    }
+
     async test `binds interpolated String repeat intrinsic`() {
         var String source = "class Char { static repeat(Char value, Int times) => \""
         source += '#'
@@ -607,6 +762,314 @@ testable class {
         expect(type.functionUnits().first.statements().count).toBe(2)
     }
 
+    async test `binds structured declared String local member call`() {
+        let stream = Lexer().lex(
+            "class String { indexOf(String search, Int start = 0) -> Int { return 0; } " +
+                "replace(String search, Int start = 0) -> String { var output = this; " +
+                "var Int index = start; index = output.indexOf(search, index); " +
+                "return output; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-local-member-call"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let replace = type.functionUnits().firstOrNull({ _.name == "replace" })
+        let statements = replace.statements()
+        let declarationObject = (Object)statements.first
+        let declaration = (BoundLocalDeclarationStatement)declarationObject
+        let assignmentObject = (Object)statements[2]
+        let assignment = (BoundAssignmentStatement)assignmentObject
+        let callObject = (Object)assignment.value
+        let call = (BoundCallExpression)callObject
+
+        expect(declaration.local.semanticType.value()).toBe(type.semanticType.value())
+        expect(call.receiver.semanticType.value()).toBe(type.semanticType.value())
+        expect(call.target.name).toBe("indexOf")
+        expect(call.target.ownerType.value()).toBe(type.semanticType.value())
+        expect(call.range.startTokenIndex).toBe(46)
+    }
+
+    async test `binds overloaded receiver calls in C style for clauses`() {
+        let stream = Lexer().lex(
+            "class String { visible Int count; " +
+                "indexOf(Char search, Int start = 0) -> Int { return 1; } " +
+                "indexOf(String search, Int start = 0) -> Int { return 2; } " +
+                "split(String delimiter) -> Int { var Int lastI = 0; " +
+                "for (var Int i = indexOf(delimiter); i != -1; " +
+                "i = indexOf(delimiter, i + delimiter.count)) { lastI = i; } " +
+                "return lastI; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:for-clause-overload"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let split = type.functionUnits().firstOrNull({ _.name == "split" })
+        let statements = split.statements()
+        let loopObject = (Object)statements[1]
+        let loop = (BoundForEachStatement)loopObject
+        let initializers = loop.initialization()
+        let initializerObject = (Object)initializers.first
+        let initializer = (BoundLocalDeclarationStatement)initializerObject
+        let initialCallObject = (Object)initializer.initializer
+        let initialCall = (BoundCallExpression)initialCallObject
+        let advances = loop.advance()
+        let advanceObject = (Object)advances.first
+        let advance = (BoundAssignmentStatement)advanceObject
+        let advanceCallObject = (Object)advance.value
+        let advanceCall = (BoundCallExpression)advanceCallObject
+
+        expect(initialCall.target.parameterTypes().first.value())
+            .toBe(type.semanticType.value())
+        expect(advanceCall.target.parameterTypes().first.value())
+            .toBe(type.semanticType.value())
+        expect(advanceCall.argumentValues().count).toBe(2)
+        expect(advanceCall.argumentValues().last.semanticType.value())
+            .toBe("primitive:Int")
+        expect(advanceCall.range.snapshot).toBe(snapshot)
+    }
+
+    async test `preserves declared String identity through chained receiver calls`() {
+        let stream = Lexer().lex(
+            "class String { " +
+                "replace(String search, String replacement) -> String { return this; } " +
+                "sanitize() -> String { let value = this.replace(\"a\", \"b\")" +
+                ".replace(\"b\", \"c\").replace(\"c\", \"d\"); return value; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-chained-receiver-calls"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let sanitize = type.functionUnits().firstOrNull({ _.name == "sanitize" })
+        let statements = sanitize.statements()
+        let declarationObject = (Object)statements.first
+        let declaration = (BoundLocalDeclarationStatement)declarationObject
+        let outerObject = (Object)declaration.initializer
+        let outer = (BoundCallExpression)outerObject
+        let middleObject = (Object)outer.receiver
+        let middle = (BoundCallExpression)middleObject
+        let innerObject = (Object)middle.receiver
+        let inner = (BoundCallExpression)innerObject
+
+        expect(inner.semanticType.value()).toBe(type.semanticType.value())
+        expect(middle.semanticType.value()).toBe(type.semanticType.value())
+        expect(outer.semanticType.value()).toBe(type.semanticType.value())
+        expect(outer.target.ownerType.value()).toBe(type.semanticType.value())
+        expect(outer.range.snapshot).toBe(snapshot)
+    }
+
+    async test `publishes inferred predicate result before dependent binding`() {
+        let stream = Lexer().lex(
+            "class String { " +
+                "validate(Int start, Int end, Bool fail = false) => true { " +
+                "if (fail) { return false; } } " +
+                "substring(Int start, Int end) -> String { " +
+                "if (!validate(start, end, true)) { return this; } return this; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inferred-predicate-signature"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let validate = type.functionUnits().firstOrNull({ _.name == "validate" })
+        let substring = type.functionUnits().firstOrNull({ _.name == "substring" })
+        let statements = substring.statements()
+        let conditionalObject = (Object)statements.first
+        let conditional = (BoundIfStatement)conditionalObject
+        let conditionObject = (Object)conditional.condition
+        let condition = (BoundUnaryExpression)conditionObject
+        let callObject = (Object)condition.operand
+        let call = (BoundCallExpression)callObject
+
+        expect(validate.returnType.value()).toBe("primitive:Bool")
+        expect(call.semanticType.value()).toBe("primitive:Bool")
+        expect(condition.semanticType.value()).toBe("primitive:Bool")
+        expect(call.range.snapshot).toBe(snapshot)
+    }
+
+    async test `binds null branch for declared reference return`() {
+        let stream = Lexer().lex(
+            "class Value { substring(Bool invalid) -> Value { " +
+                "if (invalid) { return null; } return this; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:nullable-reference-return"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let substring = type.functionUnits().firstOrNull({ _.name == "substring" })
+        let statements = substring.statements()
+        let conditionalObject = (Object)statements.first
+        let conditional = (BoundIfStatement)conditionalObject
+        let thenStatements = conditional.thenValues()
+        let returnedObject = (Object)thenStatements.first
+        let returned = (BoundReturnStatement)returnedObject
+
+        expect(returned.value.semanticType.kind()).toBe("null")
+        expect(returned.requiredType.value()).toBe(type.semanticType.value())
+        expect(returned.conversion.conversionKind).toBe("null-reference-return")
+        expect(returned.range.snapshot).toBe(snapshot)
+    }
+
+    async test `binds builtin String parameter receiver method`() {
+        let stream = Lexer().lex(
+            "class String { toLowerCase() -> this { return this; } " +
+                "compareTo(String other) -> Int { return 0; } " +
+                "equalsIgnoreCase(String other) -> Bool { return " +
+                "other.toLowerCase().compareTo(toLowerCase()) == 0; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-parameter-method"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let equals = type.functionUnits().firstOrNull({ _.name == "equalsIgnoreCase" })
+        let statements = equals.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+
+        expect(returned.value.semanticType.value()).toBe("primitive:Bool")
+        let comparisonObject = (Object)returned.value
+        let comparison = (BoundBinaryExpression)comparisonObject
+        let callObject = (Object)comparison.left
+        let call = (BoundCallExpression)callObject
+        let receiverObject = (Object)call.receiver
+        let chainedReceiver = (BoundCallExpression)receiverObject
+
+        expect(chainedReceiver.semanticType.value()).toBe(type.semanticType.value())
+        expect(chainedReceiver.range.startTokenIndex).toBe(34)
+        expect(call.target.name).toBe("compareTo")
+        expect(call.target.ownerType.value()).toBe(type.semanticType.value())
+    }
+
+    async test `binds builtin String parameter field through projected receiver`() {
+        let stream = Lexer().lex(
+            "class String { Int count; equals(String other) -> Bool { " +
+                "return other.count == count; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-parameter-field"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let equals = type.functionUnits().firstOrNull({ _.name == "equals" })
+        let statements = equals.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+
+        expect(returned.value.semanticType.value()).toBe("primitive:Bool")
+    }
+
+    async test `types inferred receiver call as Bool in conjunction`() {
+        let stream = Lexer().lex(
+            "class Value { equals(Object other) -> Bool { return true; } " +
+                "check(Object other) -> Bool { return true && equals(other); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inferred-bool-conjunction"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let check = type.functionUnits().firstOrNull({ _.name == "check" })
+        let statements = check.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+
+        expect(returned.value.semanticType.value()).toBe("primitive:Bool")
+    }
+
+    async test `binds mapped receiver array join`() {
+        let stream = Lexer().lex(
+            "class Sample { repeat(Int times) => Array<Sample>(times).map({ this }).join() }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:array-map-join-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let type = PrimitiveClassPartitionBinder().bind(
+            [syntax], snapshot
+        ).typeUnits().first
+        let method = type.functionUnits().firstOrNull({ _.name == "repeat" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+
+        expect(returned.value.semanticType.value()).toBe("builtin:String")
+    }
+
+    async test `captures lexical receiver in lambda`() {
+        let stream = Lexer().lex(
+            "class Value { repeat() => consume({ this }) }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-lambda-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(
+            stream.consumeAll<Token>("data"), snapshot
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "Value"
+        )
+        let consumeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 100),
+            "function", "consume"
+        )
+        let valueType = UserClassSemanticType(typeIdentity)
+        let type = PrimitiveClassBinder().bind(
+            syntax, snapshot,
+            availableConstructors: [CallableSignature(
+                SymbolIdentity(consumeIdentity, "function"), "consume",
+                CallableKind("function"),
+                [FunctionSemanticType(SemanticType[], valueType)], valueType
+            )]
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "repeat" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+
+        expect(returned.value.semanticType.value()).toBe(type.semanticType.value())
+    }
+
     async test `selects non primary package constructor for StringCharArray argument`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:constructor-overload-bind"), "revision:one"
@@ -675,6 +1138,184 @@ testable class {
         expect(getter.statements().first.unitKind()).toBe("return")
     }
 
+    async test `preserves field context in structured conditional`() {
+        let stream = Lexer().lex(
+            "class Value { Int count; choose(Int start) -> Int { " +
+                "if (true) { return start > count ? start : count; } return count; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:field-conditional-context"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let choose = type.functionUnits().firstOrNull({ _.name == "choose" })
+        let statements = choose.statements()
+        let ifObject = (Object)statements.first
+        let conditionalStatement = (BoundIfStatement)ifObject
+        let thenValues = conditionalStatement.thenValues()
+        let returnObject = (Object)thenValues.first
+        let returned = (BoundReturnStatement)returnObject
+        let conditionalObject = (Object)returned.value
+        let conditional = (BoundConditionalExpression)conditionalObject
+        let falseObject = (Object)conditional.whenFalse
+        let field = (BoundMemberAccessExpression)falseObject
+
+        expect(field.memberIdentity).toBe(type.fieldUnits().first.identity)
+        expect(field.receiver.semanticType.value()).toBe(type.semanticType.value())
+        expect(conditional.semanticType.value()).toBe("primitive:Int")
+    }
+
+    async test `binds array contains with indexed owning field argument`() {
+        let stream = Lexer().lex(
+            "class Value { Char[] chars; has(Char[] searches, Int start) -> Bool { " +
+                "if (searches.contains(chars[start])) { return true; } return false; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:field-index-array-contains"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let has = type.functionUnits().firstOrNull({ _.name == "has" })
+        let statements = has.statements()
+        let ifObject = (Object)statements.first
+        let conditional = (BoundIfStatement)ifObject
+        let callObject = (Object)conditional.condition
+        let call = (BoundIntrinsicMemberCallExpression)callObject
+        let arguments = call.argumentValues()
+        let indexedObject = (Object)arguments.first
+        let indexed = (BoundArrayAccessExpression)indexedObject
+        let fieldObject = (Object)indexed.receiver
+        let field = (BoundMemberAccessExpression)fieldObject
+
+        expect(call.memberName).toBe("contains")
+        expect(call.semanticType.value()).toBe("primitive:Bool")
+        expect(indexed.semanticType.value()).toBe("primitive:Char")
+        expect(field.memberIdentity).toBe(type.fieldUnits().first.identity)
+    }
+
+    async test `binds receiver field in instance parameter default`() {
+        let stream = Lexer().lex(
+            "class Value { Int count; read(Int start = count) -> Int { return start; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-field-default"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let read = type.functionUnits().firstOrNull({ _.name == "read" })
+        let parameter = read.parameterValues().first
+        let defaultObject = (Object)parameter.defaultValue
+        let selected = (BoundMemberAccessExpression)defaultObject
+
+        expect(selected.semanticType.value()).toBe("primitive:Int")
+        expect(selected.memberIdentity).toBe(type.fieldUnits().first.identity)
+        expect(selected.receiver.semanticType.value()).toBe(type.semanticType.value())
+        expect(selected.range.startTokenIndex).toBe(11)
+    }
+
+    async test `types inferred call result from comparison peer`() {
+        let stream = Lexer().lex(
+            "class Value { lookup() -> Int { return 0; } " +
+                "matches(Int expected) -> Bool { return lookup() >= expected; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:inferred-equality-peer"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let matches = type.functionUnits().firstOrNull({ _.name == "matches" })
+        let statements = matches.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let comparisonObject = (Object)returned.value
+        let comparison = (BoundBinaryExpression)comparisonObject
+
+        expect(comparison.left.semanticType.value()).toBe("primitive:Int")
+        expect(comparison.semanticType.value()).toBe("primitive:Bool")
+    }
+
+    async test `preserves inferred String Char index result in equality`() {
+        let stream = Lexer().lex(
+            "class String { Char[] data; this[Int index] -> Char { " +
+                "get { return data[index] } } " +
+                "startsWith(Char search, Int start = 0) => this[start] == search }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:string-char-index-equality"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let startsWith = type.functionUnits().firstOrNull({ _.name == "startsWith" })
+        let statements = startsWith.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let comparisonObject = (Object)returned.value
+        let comparison = (BoundBinaryExpression)comparisonObject
+        let indexedObject = (Object)comparison.left
+        let indexed = (BoundCallExpression)indexedObject
+
+        expect(indexed.semanticType.value()).toBe("primitive:Char")
+        expect(indexed.target.returnType.value()).toBe("primitive:Char")
+        expect(comparison.semanticType.value()).toBe("primitive:Bool")
+    }
+
+    async test `selects reduced overload by mixed named argument label`() {
+        let stream = Lexer().lex(
+            "class String { " +
+                "trimStart(Int count, Char[] other) -> this { return this; } " +
+                "trimStart(Int start = 0, Char[] charsToTrim = Char[]) -> this { " +
+                "return this; } " +
+                "trimStart(Char charToTrim, Int start = 0) -> this { " +
+                "return trimStart(start, charsToTrim: [charToTrim]); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:mixed-named-overload"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        let method = type.functionUnits().last
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        let arguments = call.argumentValues()
+
+        expect(call.target.parameterNames()).toBe(["start", "charsToTrim"])
+        expect(arguments.first.semanticType.value()).toBe("primitive:Int")
+        expect(arguments.last.semanticType.kind()).toBe("array")
+        let argumentTypeObject = (Object)arguments.last.semanticType
+        var ArraySemanticType argumentType
+        argumentType = (ArraySemanticType)argumentTypeObject
+        expect(argumentType.elementType.value()).toBe("primitive:Char")
+        expect(arguments.last.range.snapshot).toBe(snapshot)
+        expect(call.range.snapshot).toBe(snapshot)
+    }
+
     async test `binds typed array override accessors and indexed use`() {
         let source = "class Buffer { Char[] data; " +
             "this[Int index] -> Char { get { return data[index] } " +
@@ -696,6 +1337,14 @@ testable class {
             .toBe("primitive:Char")
         expect(type.functionUnits().firstOrNull({ _.name == "getAt" }).parameterValues().count)
             .toBe(1)
+        let read = type.functionUnits().firstOrNull({ _.name == "read" })
+        let readStatements = read.statements()
+        let returnedObject = (Object)readStatements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let indexedCall = (BoundCallExpression)callObject
+        expect(indexedCall.semanticType.value()).toBe("primitive:Char")
+        expect(indexedCall.target.returnType.value()).toBe("primitive:Char")
         expect(type.functionUnits().firstOrNull({ _.name == "setAt" }).returnType.value())
             .toBe("unit")
         expect(type.functionUnits().firstOrNull({ _.name == "setAt" }).parameterValues().count)

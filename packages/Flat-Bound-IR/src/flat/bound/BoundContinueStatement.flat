@@ -1,0 +1,12 @@
+package flat/bound
+
+import flat/compiler/models
+
+/** Structured loop continuation validated against an enclosing loop by binding. */
+data class extends BoundStatement {
+    public construct(SourceRange range) {
+        if (!range) throw Exception("Bound continue requires range")
+        super(range)
+    }
+    override public unitKind() => "continue"
+}

@@ -1,0 +1,11 @@
+package flat/writer/es6/bound
+
+import flat/bound
+
+/** Emits a validated structured loop continuation. */
+class {
+    public emit(BoundContinueStatement statement) -> Es6CodeResult {
+        if (!statement) throw Exception("ES6 continue emission requires statement")
+        return Es6CodeResult(code: "continue;\n")
+    }
+}

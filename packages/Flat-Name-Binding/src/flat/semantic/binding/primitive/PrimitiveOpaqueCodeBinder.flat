@@ -10,9 +10,14 @@ class PrimitiveOpaqueCodeBinder {
         PrimitiveExternalStatementSyntax syntax,
         LocalBinding[] locals,
         BoundReferenceExpression receiver = null,
-        BoundFieldUnit[] fields = BoundFieldUnit[]
+        BoundFieldUnit[] fields = BoundFieldUnit[],
+        CallableSignature[] callables = CallableSignature[],
+        BoundFieldUnit[] availableFields = BoundFieldUnit[]
     ) -> BoundExternalStatement {
-        if (!syntax || !locals || !fields) throw Exception("Opaque-code binding requires input")
+        if (!syntax || !locals || !fields || !availableFields ||
+            availableFields.any({ !_ })) {
+            throw Exception("Opaque-code binding requires input")
+        }
         if (syntax.target != "js") throw Exception("Opaque target is unavailable")
         let pieces = BoundExternalCodeSegment[]
         let syntaxPieces = syntax.segmentValues()
@@ -22,7 +27,9 @@ class PrimitiveOpaqueCodeBinder {
             if (!piece.interpolated()) {
                 pieces.add(BoundExternalCodeSegment(piece.range, piece.text))
             } else if (piece.expressionSegment()) {
-                let bound = bindExpression(piece.expression, locals, receiver, fields)
+                let bound = bindExpression(
+                    piece.expression, locals, receiver, fields, callables
+                )
                 pieces.add(BoundExternalCodeSegment(
                     piece.range, "", bound, "identity"
                 ))
@@ -37,7 +44,9 @@ class PrimitiveOpaqueCodeBinder {
                 }
                 if (!root) {
                     if (path.first == "this" && receiver && path.count >= 2) {
-                        let field = fields.firstOrNull({ _.name == path[1] })
+                        let field = ownerField(
+                            receiver.semanticType, path[1], fields, availableFields
+                        )
                         if (!field) throw Exception("Unknown interpolation root")
                         var BoundExpression value = BoundMemberAccessExpression(
                             piece.range, field.semanticType, receiver,
@@ -55,12 +64,43 @@ class PrimitiveOpaqueCodeBinder {
                         pieceIndex++
                         continue
                     }
-                    let field = fields.firstOrNull({ _.name == path.first })
-                    if (!field || !receiver) throw Exception("Unknown interpolation root")
-                    let value = BoundMemberAccessExpression(
+                    if (!receiver) throw Exception("Unknown interpolation root")
+                    let field = ownerField(
+                        receiver.semanticType, path.first, fields, availableFields
+                    )
+                    if (!field) throw Exception("Unknown interpolation root")
+                    var BoundExpression value = BoundMemberAccessExpression(
                         piece.range, field.semanticType, receiver, field.name, field.identity
                     )
-                    if (path.count != 1) throw Exception("Unsupported interpolation path")
+                    if (path.count == 2 && path[1] == "data") {
+                        if (value.semanticType.kind() == "array") {
+                            value = BoundNativeArrayDataExpression(piece.range, value)
+                        } else {
+                            let nestedField = ownerField(
+                                value.semanticType, path[1], fields, availableFields
+                            )
+                            if (!nestedField) throw Exception(
+                                "Unsupported interpolation path"
+                            )
+                            value = BoundMemberAccessExpression(
+                                piece.range, nestedField.semanticType, value,
+                                nestedField.name, nestedField.identity
+                            )
+                        }
+                    } else if (path.count == 3) {
+                        let nestedField = ownerField(
+                            value.semanticType, path[2], fields, availableFields
+                        )
+                        if (!nestedField) throw Exception(
+                            "Unsupported interpolation path"
+                        )
+                        value = BoundMemberAccessExpression(
+                            piece.range, nestedField.semanticType, value,
+                            nestedField.name, nestedField.identity
+                        )
+                    } else if (path.count != 1) throw Exception(
+                        "Unsupported interpolation path"
+                    )
                     pieces.add(BoundExternalCodeSegment(
                         piece.range, "", value, "identity"
                     ))
@@ -72,9 +112,38 @@ class PrimitiveOpaqueCodeBinder {
                 )
                 var BoundExpression projected = value
                 var String rendering = "identity"
-                if (path.count == 2 && root.semanticType.kind() == "user-class" && receiver &&
+                if (path.count == 3 && root.semanticType.kind() == "user-class") {
+                    let field = ownerField(
+                        root.semanticType, path[1], fields, availableFields
+                    )
+                    if (!field) throw Exception("Unsupported interpolation path")
+                    projected = BoundMemberAccessExpression(
+                        piece.range, field.semanticType, value,
+                        field.name, field.identity
+                    )
+                    if (path[2] == "data") {
+                        if (projected.semanticType.kind() == "array") {
+                            projected = BoundNativeArrayDataExpression(
+                                piece.range, projected
+                            )
+                        } else {
+                            let nestedField = ownerField(
+                                projected.semanticType, path[2], fields, availableFields
+                            )
+                            if (!nestedField) throw Exception(
+                                "Unsupported interpolation path"
+                            )
+                            projected = BoundMemberAccessExpression(
+                                piece.range, nestedField.semanticType, projected,
+                                nestedField.name, nestedField.identity
+                            )
+                        }
+                    } else throw Exception("Unsupported interpolation path")
+                } else if (path.count == 2 && root.semanticType.kind() == "user-class" && receiver &&
                     root.semanticType.value() == receiver.semanticType.value()) {
-                    let field = fields.firstOrNull({ _.name == path[1] })
+                    let field = ownerField(
+                        root.semanticType, path[1], fields, availableFields
+                    )
                     if (!field) throw Exception("Unsupported interpolation path")
                     projected = BoundMemberAccessExpression(
                         piece.range, field.semanticType, value,
@@ -114,7 +183,8 @@ class PrimitiveOpaqueCodeBinder {
         PrimitiveExpressionSyntax syntax,
         LocalBinding[] locals,
         BoundReferenceExpression receiver,
-        BoundFieldUnit[] fields
+        BoundFieldUnit[] fields,
+        CallableSignature[] callables
     ) -> BoundExpression {
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let call = (PrimitiveCallSyntax)syntax
@@ -127,7 +197,9 @@ class PrimitiveOpaqueCodeBinder {
             functionType = (FunctionSemanticType)typeObject
             let arguments = BoundExpression[]
             for (argument in call.argumentValues()) {
-                arguments.add(bindExpression(argument, locals, receiver, fields))
+                arguments.add(bindExpression(
+                    argument, locals, receiver, fields, callables
+                ))
             }
             return BoundFunctionInvocationExpression(
                 call.range,
@@ -138,10 +210,56 @@ class PrimitiveOpaqueCodeBinder {
                 arguments
             )
         }
+        if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
+            let access = (PrimitiveArrayAccessSyntax)syntax
+            var BoundExpression projectedReceiver = bindExpression(
+                access.receiver, locals, receiver, fields, callables
+            )
+            if (projectedReceiver.semanticType.kind() != "array" &&
+                access.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let name = ((PrimitiveReferenceSyntax)access.receiver).name
+                let field = fields.firstOrNull((candidate) =>
+                    candidate.name == name
+                )
+                if (field && receiver) projectedReceiver = BoundMemberAccessExpression(
+                    access.receiver.range, field.semanticType, receiver,
+                    field.name, field.identity
+                )
+            }
+            let index = bindExpression(
+                access.index, locals, receiver, fields, callables
+            )
+            if (projectedReceiver.semanticType.kind() == "user-class") {
+                let getter = callables.firstOrNull((candidate) =>
+                    candidate.identity.symbolKind == "array-getter" &&
+                    candidate.ownerType.value() == projectedReceiver.semanticType.value()
+                )
+                if (getter) {
+                    let checked = CallTypeChecker.check(
+                        getter, projectedReceiver.semanticType,
+                        [index.semanticType], access.range
+                    )
+                    if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    return BoundCallExpression(
+                        access.range, checked.semanticType, getter, projectedReceiver,
+                        [index], checked.argumentConversions()
+                    )
+                }
+            }
+            if (projectedReceiver.semanticType.kind() != "array") {
+                throw Exception("External array access requires an array receiver")
+            }
+            let typeObject = (Object)projectedReceiver.semanticType
+            var ArraySemanticType arrayType
+            arrayType = (ArraySemanticType)typeObject
+            return BoundArrayAccessExpression(
+                access.range, arrayType.elementType, projectedReceiver, index
+            )
+        }
         if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
             let access = (PrimitiveMemberAccessSyntax)syntax
             let projectedReceiver = bindExpression(
-                access.receiver, locals, receiver, fields
+                access.receiver, locals, receiver, fields, callables
             )
             if (projectedReceiver.semanticType.kind() == "array") {
                 if (access.memberName == "data") {
@@ -176,6 +294,25 @@ class PrimitiveOpaqueCodeBinder {
         let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
         if (!result.succeeded) throw Exception(result.diagnostic.message)
         return result.expression
+    }
+
+    ownerField(
+        SemanticType ownerType,
+        String name,
+        BoundFieldUnit[] fields,
+        BoundFieldUnit[] availableFields
+    ) -> BoundFieldUnit {
+        if (!ownerType || ownerType.kind() != "user-class") return null
+        let expectedOwner = ((UserClassSemanticType)ownerType).declarationIdentity.value
+        let field = fields.firstOrNull((candidate) =>
+            candidate.name == name &&
+            candidate.identity.declaration.value == expectedOwner
+        )
+        if (field) return field
+        return availableFields.firstOrNull((candidate) =>
+            candidate.name == name &&
+            candidate.identity.declaration.value == expectedOwner
+        )
     }
 
     renderingFor(BoundReferenceExpression value, String[] path) -> String {

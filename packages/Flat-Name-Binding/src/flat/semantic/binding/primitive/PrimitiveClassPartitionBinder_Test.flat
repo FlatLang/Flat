@@ -6,6 +6,80 @@ import flat/bound
 import flat/lexer/Lexer
 
 testable class {
+    async test `selects projected receiver property by owner`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:projected-property-owner-bind"), "one"
+        )
+        let objectStream = Lexer().lex(
+            "class Object { hashCodeLong() -> Long { return 0; } }"
+        )
+        objectStream.emit("start")
+        let itemsStream = Lexer().lex("class Items {}")
+        itemsStream.emit("start")
+        let readerStream = Lexer().lex(
+            "class Reader { read(Items items) -> Long { return items.hashCodeLong; } }"
+        )
+        readerStream.emit("start")
+        let types = PrimitiveClassPartitionBinder().bind([
+            PrimitiveClassParser().parse(
+                objectStream.consumeAll<Token>("data"), snapshot
+            ),
+            PrimitiveClassParser().parse(
+                itemsStream.consumeAll<Token>("data"), snapshot
+            ),
+            PrimitiveClassParser().parse(
+                readerStream.consumeAll<Token>("data"), snapshot
+            )
+        ], snapshot).typeUnits()
+        let items = types.firstOrNull({ _.identity.name == "Items" })
+        let reader = types.firstOrNull({ _.identity.name == "Reader" })
+        let method = reader.functionUnits().firstOrNull({ _.name == "read" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+
+        expect(call.target.ownerType.value()).toBe(items.semanticType.value())
+        expect(call.receiver.semanticType.value()).toBe(items.semanticType.value())
+    }
+
+    async test `selects projected receiver array accessor by owner`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:projected-array-owner-bind"), "one"
+        )
+        let itemsStream = Lexer().lex(
+            "class Items { Char[] data; this[Int index] -> Char { " +
+                "get { return data[index] } } }"
+        )
+        itemsStream.emit("start")
+        let readerStream = Lexer().lex(
+            "class Reader { Char[] data; this[Int index] -> Char { " +
+                "get { return data[index] } } " +
+                "read(Items items, Int index) -> Char { return items[index]; } }"
+        )
+        readerStream.emit("start")
+        let types = PrimitiveClassPartitionBinder().bind([
+            PrimitiveClassParser().parse(
+                itemsStream.consumeAll<Token>("data"), snapshot
+            ),
+            PrimitiveClassParser().parse(
+                readerStream.consumeAll<Token>("data"), snapshot
+            )
+        ], snapshot).typeUnits()
+        let items = types.firstOrNull({ _.identity.name == "Items" })
+        let reader = types.firstOrNull({ _.identity.name == "Reader" })
+        let method = reader.functionUnits().firstOrNull({ _.name == "read" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+
+        expect(call.target.ownerType.value()).toBe(items.semanticType.value())
+        expect(call.receiver.semanticType.value()).toBe(items.semanticType.value())
+    }
+
     async test `selects receiver owned overload using explicit cast type evidence`() {
         let stream = Lexer().lex(
             "class StringCharArray { equals(Object other) -> Bool { return equals((StringCharArray)other); } " +
@@ -140,6 +214,21 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(1)
+    }
+
+    test `missing parent diagnostic identifies dependency edge`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:partition-missing-edge"), "one"
+        )
+        var String message
+        try {
+            PrimitiveClassPartitionBinder().bind([
+                PrimitiveClassParser().parse(
+                    typeTokens("Child", "Missing", "2"), snapshot
+                )
+            ], snapshot)
+        } catch (Exception error) { message = error.message }
+        expect(message).toBe("Missing or cyclic reduced parent for Child->Missing")
     }
 
     test `duplicate type fails`() {

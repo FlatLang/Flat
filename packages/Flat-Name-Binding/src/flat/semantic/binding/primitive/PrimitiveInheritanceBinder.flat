@@ -14,10 +14,12 @@ class {
         CallableSignature[] availableConstructors = CallableSignature[],
         PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[],
         BoundFunctionUnit[] rootContractFunctions = BoundFunctionUnit[],
-        BoundTypeUnit boundParent = null
+        BoundTypeUnit boundParent = null,
+        BoundFieldUnit[] availableFields = BoundFieldUnit[]
     ) -> PrimitiveInheritanceBindingResult {
         if (!parentSyntax || !childSyntax || !availableConstructors ||
-            availableConstructors.any({ !_ }) || !interfaceSyntaxValues ||
+            availableConstructors.any({ !_ }) || !availableFields ||
+            availableFields.any({ !_ }) || !interfaceSyntaxValues ||
             interfaceSyntaxValues.any({ !_ }) || !rootContractFunctions ||
             rootContractFunctions.any({ !_ }) ||
             childSyntax.parentName != parentSyntax.name ||
@@ -29,12 +31,13 @@ class {
         let childSnapshot = snapshot ?: childSyntax.range.snapshot
         let parent = boundParent ?: PrimitiveClassBinder().bind(
             parentSyntax, parentSnapshot,
-            availableConstructors: availableConstructors
+            availableConstructors: availableConstructors,
+            availableFields: availableFields
         ).typeUnit
         let parentConstructor = constructorSignature(parent)
         let child = PrimitiveClassBinder().bind(
             childSyntax, childSnapshot, parentConstructor, parent.fieldUnits(),
-            availableConstructors
+            availableConstructors, availableFields
         ).typeUnit
         let hierarchy = TypeHierarchyComponent()
         hierarchy.add(TypeHierarchyDeclaration(
@@ -102,7 +105,8 @@ class {
         let result = BoundFunctionUnit[]
         for (function in functions) {
             result.add(copy(function,
-                function.constructorFunction ? null : function.identity.value
+                function.constructorFunction || function.staticFunction
+                    ? null : function.identity.value
             ))
         }
         return result

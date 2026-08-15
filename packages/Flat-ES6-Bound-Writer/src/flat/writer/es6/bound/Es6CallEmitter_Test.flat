@@ -17,5 +17,15 @@ testable class {
             .toBe("'x'.repeat(3)")
         expect(emitter.emitIntrinsicMemberCall("values", "add", "item"))
             .toBe("values.push(item)")
+        expect(emitter.emitIntrinsicMemberCall("values", "map", "mapper"))
+            .toBe("values.map(mapper)")
+        expect(emitter.emitIntrinsicMemberCall("values", "contains", "item"))
+            .toBe("values.includes(item)")
+        expect(emitter.emitIntrinsicMemberCall("values", "join", ""))
+            .toBe("values.join()")
+        expect(emitter.emitIntrinsicMemberCall("value", "toUpperCase", ""))
+            .toBe("String.fromCharCode(value).toUpperCase().charCodeAt(0)")
+        expect(emitter.emitIntrinsicMemberCall("value", "toLowerCase", ""))
+            .toBe("String.fromCharCode(value).toLowerCase().charCodeAt(0)")
     }
 }

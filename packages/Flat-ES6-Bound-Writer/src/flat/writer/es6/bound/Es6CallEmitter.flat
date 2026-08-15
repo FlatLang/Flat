@@ -17,6 +17,20 @@ class {
         if (memberName == "add") {
             return receiver + ".push(" + argumentText + ")"
         }
+        if (memberName == "map") {
+            return receiver + ".map(" + argumentText + ")"
+        }
+        if (memberName == "contains") {
+            return receiver + ".includes(" + argumentText + ")"
+        }
+        if (memberName == "join") {
+            return receiver + ".join(" + argumentText + ")"
+        }
+        if ((memberName == "toLowerCase" || memberName == "toUpperCase") &&
+            argumentText.count == 0) {
+            return "String.fromCharCode(" + receiver + ")." + memberName +
+                "().charCodeAt(0)"
+        }
         throw Exception("Unsupported ES6 intrinsic member call '#memberName'")
     }
 

@@ -152,5 +152,22 @@ testable class {
                 " = 'Hello, Flat')"
         )
         expect(orchestrator.emit(conditional).code).toBe("(true ? 1 : 2)")
+        let owner = UserClassSemanticType(
+            fixture.declaration("class", "Char", 20)
+        )
+        let staticTarget = CallableSignature(
+            fixture.symbol("static-method", "toLowerCase", 21),
+            "toLowerCase", CallableKind("static-method"),
+            [SemanticTypes.charType()], SemanticTypes.charType(), owner
+        )
+        let methodValue = BoundFunctionValue(
+            fixture.range(), FunctionSemanticType(
+                staticTarget.parameterTypes(), staticTarget.returnType
+            ), staticTarget
+        )
+        expect(orchestrator.emit(methodValue).code).toBe(
+            Es6NameMangler.mangle(owner.declarationIdentity.value) + "." +
+                Es6NameMangler.mangle(staticTarget.identity.declaration.value)
+        )
     }
 }

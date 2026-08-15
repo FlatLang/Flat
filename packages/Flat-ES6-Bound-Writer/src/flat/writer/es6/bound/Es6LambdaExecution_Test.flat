@@ -63,6 +63,47 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `static method reference executes under Node`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:static-method-reference-execute"), "revision:one"
+        )
+        let ownerIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 30), "class", "Value"
+        )
+        let owner = UserClassSemanticType(ownerIdentity)
+        let targetIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", 31),
+            "static-method", "increment"
+        )
+        let target = CallableSignature(
+            SymbolIdentity(targetIdentity, "static-method"),
+            "increment", CallableKind("static-method"),
+            [SemanticTypes.intType()], SemanticTypes.intType(), owner
+        )
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let value = BoundFunctionValue(
+            range, FunctionSemanticType(
+                target.parameterTypes(), target.returnType
+            ), target
+        )
+        let code = Es6ExpressionOrchestrator().emit(value).code
+        let ownerName = Es6NameMangler.mangle(owner.declarationIdentity.value)
+        let methodName = Es6NameMangler.mangle(target.identity.declaration.value)
+        let root = File(".flat-es6-static-method-reference-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "static-method-reference.js")
+        Es6ArtifactCommitter().commit(destination,
+            "class " + ownerName + " { static " + methodName +
+            "(value) { return value + 1; } }\nconsole.log(" + code + "(6));\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     token(String value, Int type, Int column) -> Token => Token(
         value: value, type: type, location: Location(lineNumber: 1, column: column)
     )

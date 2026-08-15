@@ -3,7 +3,7 @@ package flat/bound
 import flat/compiler/models
 import flat/semantic/types
 
-/** Immutable selected free-function value. */
+/** Immutable selected free-function or static-method value. */
 data class extends BoundExpression {
     public construct(
         SourceRange range,
@@ -11,8 +11,9 @@ data class extends BoundExpression {
         visible CallableSignature target
     ) {
         if (!range || !semanticType || semanticType.kind() != "function" || !target ||
-            target.callableKind.value != "function") {
-            throw Exception("Bound function value requires selected free function target")
+            (target.callableKind.value != "function" &&
+             target.callableKind.value != "static-method")) {
+            throw Exception("Bound function value requires selected function target")
         }
         super(range, semanticType)
     }

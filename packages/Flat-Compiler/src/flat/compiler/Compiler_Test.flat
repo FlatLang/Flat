@@ -888,13 +888,40 @@ testable class {
         expect(message).toBe(null)
     }
 
-    async test `package linker advances unchanged String overlay`() {
-        var String message
-        try {
-            FlatEs6PackageLinker().link([
+    async test `package linker compiles and executes unchanged String overlay`() {
+        let identity = "flat/String.flat"
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.flat"))
+        let code = FlatEs6PackageLinker().link([
                 CompilerSource(
-                    "flat/String.flat",
-                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.flat"))
+                    "flat/Object.flat",
+                    "package flat class Object { Long hashCodeLong => 0 }"
+                ),
+                CompilerSource(
+                    "flat/exception/Exception.flat",
+                    "package flat/exception class Exception { " +
+                        "construct(String message = \"\") {} }"
+                ),
+                CompilerSource(
+                    "flat/primitive/number/Char.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/primitive/number/Char.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/primitive/number/Number.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/primitive/number/Number.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/primitive/Primitive.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/primitive/Primitive.flat"
+                    ))
+                ),
+                CompilerSource(
+                    identity,
+                    source
                 ),
                 CompilerSource(
                     "flat/String.js.flat",
@@ -913,8 +940,38 @@ testable class {
                     ))
                 )
             ])
-        } catch (Exception error) { message = error.message }
-        expect(message).toBe(null)
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "String"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "String"
+        )
+        let className = Es6NameMangler.mangle(typeIdentity.value)
+        let equalsIgnoreCaseName = methodName(
+            snapshot,
+            syntax.methodValues().firstOrNull({ _.name == "equalsIgnoreCase" })
+        )
+        let root = File(".flat-compiler-string-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let value = new " + className + "([]);\n" +
+                "console.log(value." + equalsIgnoreCaseName + "(value));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
     }
 
     async test `package linker compiles and executes unchanged real App static metadata`() {
