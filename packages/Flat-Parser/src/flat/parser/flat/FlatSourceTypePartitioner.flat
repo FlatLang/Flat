@@ -25,10 +25,30 @@ class {
         result.addAll(tokens)
         var Int index
         while (index + 1 < result.count) {
+            var Int openingParenthesis = -1
             if (result[index + 1].value == "(" &&
                 (result[index].type == Token.Type.IDENTIFIER ||
                     result[index].value == "constructor" || result[index].value == "construct")) {
-                var Int cursor = index + 2
+                openingParenthesis = index + 1
+            } else if (result[index].type == Token.Type.IDENTIFIER &&
+                result[index + 1].value == "<") {
+                var Int genericDepth
+                var Int genericCursor = index + 1
+                while (genericCursor < result.count) {
+                    if (result[genericCursor].value == "<") genericDepth++
+                    else if (result[genericCursor].value == ">") {
+                        genericDepth--
+                        if (genericDepth == 0) break
+                    }
+                    genericCursor++
+                }
+                if (genericCursor + 1 < result.count &&
+                    result[genericCursor + 1].value == "(") {
+                    openingParenthesis = genericCursor + 1
+                }
+            }
+            if (openingParenthesis >= 0) {
+                var Int cursor = openingParenthesis + 1
                 var Int depth = 1
                 while (cursor < result.count && depth > 0) {
                     if (result[cursor].value == "(") depth++
@@ -40,14 +60,17 @@ class {
                         )
                         cursor++
                         var Int valueDepth
+                        var Int valueBraceDepth
                         while (cursor < result.count) {
                             let value = result[cursor].value
                             if (value == "(" || value == "[") valueDepth++
                             else if (value == ")" || value == "]") {
                                 if (valueDepth == 0 && value == ")") break
                                 valueDepth--
-                            }
-                            if (valueDepth == 0 && (value == "," || value == ")")) break
+                            } else if (value == "{") valueBraceDepth++
+                            else if (value == "}") valueBraceDepth--
+                            if (valueDepth == 0 && valueBraceDepth == 0 &&
+                                (value == "," || value == ")")) break
                             result[cursor] = Token(
                                 value: " ", type: Token.Type.WHITESPACE,
                                 location: result[cursor].location

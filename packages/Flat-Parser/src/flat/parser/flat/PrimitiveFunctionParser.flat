@@ -43,6 +43,15 @@ class {
             else if (modifier == "abstract") abstractMethod = true
         }
         let name = requireIdentifier("Expected function name")
+        if (index < tokens.count && tokens[index].value == "<") {
+            index++
+            requireIdentifier("Expected function generic parameter")
+            while (index < tokens.count && tokens[index].value == ",") {
+                index++
+                requireIdentifier("Expected function generic parameter")
+            }
+            require(">", "Expected closing function generic parameter list")
+        }
         let externalName = externalNaming ? name : null
         require("(", "Expected function parameter list")
         let parameters = parseParameters()
@@ -210,26 +219,76 @@ class {
         if (index < tokens.count && tokens[index].value == ")") return parameters
         while (true) {
             let start = index
+            var Bool asyncParameter
+            if (index < tokens.count && tokens[index].value == "async") {
+                asyncParameter = true
+                index++
+            }
             if (index < tokens.count && tokens[index].value == "var") index++
             while (index < tokens.count &&
                 (tokens[index].value == "native_array" || tokens[index].value == "native")) {
                 index++
             }
-            let typeName = parseTypeName("Expected parameter type")
-            if (index < tokens.count && tokens[index].value == ":") index++
+            var String typeName
             var String name
-            if ((index >= tokens.count || tokens[index].value == "," ||
-                tokens[index].value == ")") && typeName.indexOf("(") > 0) {
-                name = typeName.substring(0, typeName.indexOf("("))
-            } else name = requireIdentifier("Expected parameter name")
+            if (asyncParameter && index + 1 < tokens.count &&
+                tokens[index].type == Token.Type.IDENTIFIER &&
+                tokens[index + 1].value == "(") {
+                name = tokens[index++].value
+                typeName = "async func("
+                index++
+                var Bool firstType = true
+                while (index < tokens.count && tokens[index].value != ")") {
+                    let parameterType = parseTypeName("Expected async function parameter type")
+                    if (!firstType) typeName += ","
+                    typeName += parameterType
+                    firstType = false
+                    if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) index++
+                    if (index >= tokens.count || tokens[index].value != ",") break
+                    index++
+                }
+                require(")", "Expected closing async function parameter list")
+                typeName += ")"
+                if (index < tokens.count && tokens[index].value == "->") {
+                    index++
+                    typeName += "->" + parseTypeName("Expected async function return type")
+                }
+            } else {
+                typeName = parseTypeName("Expected parameter type")
+                if (index < tokens.count && tokens[index].value == ":") index++
+                if ((index >= tokens.count || tokens[index].value == "," ||
+                    tokens[index].value == ")") && typeName.indexOf("(") > 0) {
+                    name = typeName.substring(0, typeName.indexOf("("))
+                } else name = requireIdentifier("Expected parameter name")
+            }
             var PrimitiveExpressionSyntax defaultValue
             if (index < tokens.count && tokens[index].value == "=") {
                 index++
                 let defaultStart = index
-                while (index < tokens.count && tokens[index].value != "," &&
-                    tokens[index].value != ")") index++
+                var Int braceDepth
+                while (index < tokens.count) {
+                    if (tokens[index].value == "{") braceDepth++
+                    else if (tokens[index].value == "}") {
+                        braceDepth--
+                        index++
+                        if (braceDepth == 0) break
+                        continue
+                    }
+                    if (braceDepth == 0 &&
+                        (tokens[index].value == "," || tokens[index].value == ")")) break
+                    index++
+                }
                 if (defaultStart == index) syntax("Expected default parameter value", index)
-                defaultValue = PrimitiveExpressionParser().parse(
+                if (tokens[defaultStart].value == "{" &&
+                    index == defaultStart + 2 && tokens[defaultStart + 1].value == "}") {
+                    defaultValue = PrimitiveLambdaSyntax(
+                        range(defaultStart, index),
+                        PrimitiveFunctionParameterSyntax[],
+                        PrimitiveLiteralSyntax(
+                            range(defaultStart, index), Token.Type.NULL, "null"
+                        )
+                    )
+                } else defaultValue = PrimitiveExpressionParser().parse(
                     tokens.skip(defaultStart).take(index - defaultStart), snapshot,
                     defaultStart + tokenIndexOffset
                 )
@@ -248,6 +307,21 @@ class {
 
     parseTypeName(String message) -> String {
         var String result = requireIdentifier(message)
+        if (index < tokens.count && tokens[index].value == "<") {
+            result += "<"
+            index++
+            var Bool firstGeneric = true
+            while (index < tokens.count && tokens[index].value != ">") {
+                if (!firstGeneric) {
+                    require(",", "Expected generic type argument separator")
+                    result += ","
+                }
+                result += parseTypeName("Expected generic type argument")
+                firstGeneric = false
+            }
+            require(">", "Expected closing generic type argument list")
+            result += ">"
+        }
         if (index < tokens.count && tokens[index].value == "(") {
             result += "("
             index++

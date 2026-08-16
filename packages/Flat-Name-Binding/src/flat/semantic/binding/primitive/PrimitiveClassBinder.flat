@@ -161,10 +161,19 @@ class {
         }
         let fields = BoundFieldUnit[]
         let fieldSyntaxValues = syntax.fieldValues()
-        let visibleParameters = syntax.constructorValue.parameterValues().filter({ _.visibleParameter })
-        for (parameter in visibleParameters) {
+        let fieldParameters = PrimitiveFunctionParameterSyntax[]
+        for (constructorSyntax in syntax.constructorValues()) {
+            for (parameter in constructorSyntax.parameterValues().filter((value) =>
+                value.visibleParameter || value.privateParameter
+            )) {
+                if (fieldParameters.none({ _.name == parameter.name })) {
+                    fieldParameters.add(parameter)
+                }
+            }
+        }
+        for (parameter in fieldParameters) {
             if (fieldSyntaxValues.any({ _.name == parameter.name })) {
-                throw Exception("Visible constructor parameter duplicates field '#{parameter.name}'")
+                throw Exception("Constructor parameter duplicates field '#{parameter.name}'")
             }
         }
         var Int fieldIndex
@@ -199,14 +208,14 @@ class {
             }
             fields.add(BoundFieldUnit(
                 field.name, identity, fieldType, fieldRange,
-                field.visibleField, initializer, field.staticField
+                field.visibleField, initializer, field.staticField, field.mutableField
             ))
             fieldIndex++
         }
-        for (parameter in visibleParameters) {
+        for (parameter in fieldParameters) {
             fields.add(BoundFieldUnit(
                 parameter.name, SymbolIdentity(typeIdentity, "field", fieldIndex),
-                typeOf(parameter.typeName), parameter.range, true
+                typeOf(parameter.typeName), parameter.range, parameter.visibleParameter
             ))
             fieldIndex++
         }
@@ -297,9 +306,16 @@ class {
         }
         let receiver = receiver(syntax.range, typeIdentity, type)
         let statements = BoundStatement[]
-        for (parameterSyntax in syntax.parameterValues().filter({ _.visibleParameter })) {
+        for (parameterSyntax in syntax.parameterValues().filter((parameter) =>
+            parameter.visibleParameter || parameter.privateParameter
+        )) {
             let parameter = parameters.firstOrNull({ _.name == parameterSyntax.name })
             let field = fields.firstOrNull({ _.name == parameterSyntax.name })
+            if (!parameter || !field) {
+                throw Exception(
+                    "Constructor-backed field '#{parameterSyntax.name}' requires its declared field"
+                )
+            }
             let target = BoundMemberAccessExpression(
                 parameterSyntax.range,
                 field.semanticType,
@@ -1205,6 +1221,44 @@ class {
                 normalizedArguments, checked.argumentConversions()
             )
         }
+        if (syntax.class.isOfType(PrimitivePostfixUpdateSyntax.class)) {
+            let value = (PrimitivePostfixUpdateSyntax)syntax
+            if (!value.operand.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                throw Exception("Postfix update requires a local reference")
+            }
+            let reference = (PrimitiveReferenceSyntax)value.operand
+            let local = locals.reverse().firstOrNull({ _.name == reference.name })
+            var BoundExpression target
+            if (local) {
+                target = BoundReferenceExpression(
+                    value.range, local.semanticType, local.name, local.identity
+                )
+            } else {
+                let field = fields.firstOrNull({ _.name == reference.name })
+                if (!field || !receiver) {
+                    throw Exception("Unknown postfix update local '#{reference.name}'")
+                }
+                if (!field.mutableField) {
+                    throw Exception("Postfix update requires mutable field '#{reference.name}'")
+                }
+                target = BoundMemberAccessExpression(
+                    value.range, field.semanticType, receiver,
+                    field.name, field.identity
+                )
+            }
+            let one = BoundLiteralExpression(value.range, SemanticTypes.intType(), "1")
+            let typed = TypeOperations.binary(
+                value.updateOperator == "++" ? "+" : "-",
+                target.semanticType, one.semanticType, value.range
+            )
+            if (!typed.valid ||
+                typed.semanticType.value() != target.semanticType.value()) {
+                throw Exception("Postfix update requires a numeric local")
+            }
+            return BoundPostfixUpdateExpression(
+                value.range, target.semanticType, target, value.updateOperator
+            )
+        }
         if (syntax.class.isOfType(PrimitiveAssignmentValueSyntax.class)) {
             let value = (PrimitiveAssignmentValueSyntax)syntax
             let local = locals.reverse().firstOrNull({ _.name == value.name })
@@ -1607,6 +1661,27 @@ class {
                 if (!receiver) throw Exception("Static method cannot access instance field '#{field.name}'")
                 return BoundMemberAccessExpression(
                     value.range, field.semanticType, receiver, field.name, field.identity
+                )
+            }
+            let properties = constructors.filter((candidate) =>
+                candidate.callableKind.value == "instance-method" && receiver &&
+                candidate.ownerType.value() == receiver.semanticType.value() &&
+                candidate.name == value.name && candidate.parameterTypes().isEmpty
+            )
+            if (properties.isNotEmpty) {
+                let resolution = OverloadResolver.resolve(
+                    value.name, properties, receiver.semanticType,
+                    SemanticType[], value.range
+                )
+                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+                let target = resolution.selected
+                let checked = CallTypeChecker.check(
+                    target, receiver.semanticType, SemanticType[], value.range
+                )
+                if (!checked.valid) throw Exception(checked.diagnostic.message)
+                return BoundCallExpression(
+                    value.range, checked.semanticType, target, receiver,
+                    BoundExpression[], checked.argumentConversions()
                 )
             }
             throw Exception("Unknown constructor/method name '#{value.name}'")

@@ -25,6 +25,293 @@ testable class {
         expect(access.memberName).toBe("value")
     }
 
+    test `parses generic async method with parameter defaults`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-async-defaults"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("async", false, 21),
+            token("mapParallel", false, 27), token("<", true, 38),
+            token("Out", false, 39), token(">", true, 42), token("(", true, 43),
+            token("Int", false, 44), token("maxParallel", false, 48),
+            token("=", true, 60), token("-", true, 62), token("1", false, 63),
+            token(")", true, 64), token("->", true, 66), token("Int", false, 69),
+            token("{", true, 73), token("return", false, 75), token("1", false, 82),
+            token("}", true, 84), token("}", true, 86)
+        ], snapshot)
+
+        expect(parsed.methodValues().first.name).toBe("mapParallel")
+    }
+
+    test `parses ordered bodyless property contracts`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:interface-properties"), "revision:one"
+        )
+        let parsed = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("Iterator", false, 7),
+            token("<", true, 15), token("E", false, 16), token(">", true, 17),
+            token("{", true, 19), token("visible", false, 21),
+            token("Bool", false, 29), token("hasNext", false, 34),
+            token("=>", true, 42), token("false", false, 45, Token.Type.BOOL),
+            token("visible", false, 51), token("E", false, 59),
+            token("stepNext", false, 61), token("=>", true, 70),
+            token("null", false, 73, Token.Type.NULL), token("}", true, 78)
+        ], snapshot)
+        let methods = parsed.methodValues()
+
+        expect(parsed.genericParameterName).toBe("E")
+        expect(methods.map({ _.name })).toBe(["hasNext", "stepNext"])
+        expect(methods.map({ _.returnTypeName })).toBe(["Bool", "E"])
+        expect(methods.first.defaultValue.expressionKind()).toBe("literal")
+        expect(methods.last.defaultValue.expressionKind()).toBe("literal")
+        expect(methods.first.range.snapshot).toBe(snapshot)
+        expect(methods.first.range.start.column).toBe(21)
+        expect(methods.last.range.end.column).toBe(77)
+
+        let anonymous = PrimitiveInterfaceParser().parseImplicit([
+            token("trait", false, 1), token("<", true, 6), token("E", false, 7),
+            token(">", true, 8), token("{", true, 10), token("visible", false, 12),
+            token("Bool", false, 20), token("hasNext", false, 25),
+            token("=>", true, 33), token("false", false, 36, Token.Type.BOOL),
+            token("}", true, 42)
+        ], snapshot, 0, "AnonymousIterator")
+        expect(anonymous.name).toBe("AnonymousIterator")
+        expect(anonymous.genericParameterName).toBe("E")
+        expect(anonymous.methodValues().first.name).toBe("hasNext")
+        expect(anonymous.methodValues().first.defaultValue.expressionKind()).toBe("literal")
+        expect(anonymous.range.endTokenIndex).toBe(11)
+
+        let mutableProperty = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("visible", false, 14), token("var", false, 22),
+            token("Int", false, 26), token("count", false, 30), token("}", true, 36)
+        ], snapshot)
+        expect(mutableProperty.methodValues().first.name).toBe("count")
+        expect(mutableProperty.methodValues().first.returnTypeName).toBe("Int")
+
+        let structural = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("forEach", false, 21),
+            token("(", true, 28), token("func", false, 29), token("(", true, 33),
+            token("Type", false, 34), token("x", false, 39), token(",", true, 40),
+            token("Int", false, 42), token("i", false, 46), token(",", true, 47),
+            token("List", false, 49), token("<", true, 53), token("Type", false, 54),
+            token(">", true, 58), token("list", false, 60), token(")", true, 64),
+            token(")", true, 65), token("=>", true, 67), token("this", false, 70),
+            token("}", true, 74)
+        ], snapshot)
+        let asyncStructural = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("run", false, 21), token("(", true, 24),
+            token("async", false, 25), token("func", false, 31), token("(", true, 35),
+            token("Type", false, 36), token("x", false, 41), token(")", true, 42),
+            token(",", true, 43), token("Int", false, 45), token("limit", false, 49),
+            token("=", true, 55), token("-", true, 57), token("1", false, 58),
+            token(")", true, 59), token("=>", true, 61), token("this", false, 64),
+            token("}", true, 68)
+        ], snapshot)
+        expect(asyncStructural.methodValues().first.parameterTypeNames()).toBe(
+            ["async func(Type)", "Int"]
+        )
+        expect(structural.methodValues().first.parameterTypeNames().first).toBe(
+            "func(Type,Int,List<Type>)"
+        )
+
+        let genericMethod = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("map", false, 21), token("<", true, 24),
+            token("Out", false, 25), token(">", true, 28), token("(", true, 29),
+            token("func", false, 30), token("(", true, 34),
+            token("Type", false, 35), token("x", false, 40), token(")", true, 41),
+            token("->", true, 43), token("Out", false, 46), token(")", true, 49),
+            token("->", true, 51), token("List", false, 54), token("<", true, 58),
+            token("Out", false, 59), token(">", true, 62), token("}", true, 64)
+        ], snapshot)
+        expect(genericMethod.methodValues().first.name).toBe("map")
+        expect(genericMethod.methodValues().first.parameterTypeNames().first).toBe(
+            "func(Type)->Out"
+        )
+        expect(genericMethod.methodValues().first.returnTypeName).toBe("List<Out>")
+
+        let multiGeneric = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("zip", false, 21), token("<", true, 24),
+            token("Other", false, 25), token(",", true, 30),
+            token("Out", false, 32), token(">", true, 35), token("(", true, 36),
+            token("List", false, 37), token("<", true, 41),
+            token("Other", false, 42), token(">", true, 47),
+            token("other", false, 49), token(")", true, 54), token("->", true, 56),
+            token("List", false, 59), token("<", true, 63),
+            token("Out", false, 64), token(">", true, 67), token("}", true, 69)
+        ], snapshot)
+        expect(multiGeneric.methodValues().first.name).toBe("zip")
+        expect(multiGeneric.methodValues().first.parameterTypeNames().first).toBe("List<Other>")
+        expect(multiGeneric.methodValues().first.returnTypeName).toBe("List<Out>")
+
+        let anyMethod = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("any", false, 21), token("(", true, 24),
+            token("anyFunc", false, 25), token("(", true, 32),
+            token("Type", false, 33), token("x", false, 38), token(")", true, 39),
+            token("->", true, 41), token("Bool", false, 44), token(")", true, 48),
+            token("=>", true, 50), token("false", false, 53, Token.Type.BOOL),
+            token("{", true, 59), token("return", false, 61),
+            token("true", false, 68, Token.Type.BOOL), token("}", true, 72),
+            token("}", true, 74)
+        ], snapshot)
+        expect(anyMethod.methodValues().first.name).toBe("any")
+        expect(anyMethod.methodValues().first.parameterTypeNames().first).toBe(
+            "anyFunc(Type)->Bool"
+        )
+        expect(anyMethod.methodValues().first.defaultValue.expressionKind()).toBe("literal")
+
+        let inferredMethod = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("contains", false, 21),
+            token("(", true, 29), token("Type", false, 30),
+            token("value", false, 35), token(")", true, 40),
+            token("=>", true, 42), token("any", false, 45), token("(", true, 48),
+            token("value", false, 49), token(")", true, 54), token("}", true, 56)
+        ], snapshot)
+        expect(inferredMethod.methodValues().first.name).toBe("contains")
+        expect(inferredMethod.methodValues().first.returnTypeName).toBe("Unknown")
+        expect(inferredMethod.methodValues().first.defaultValue.expressionKind()).toBe("call")
+
+        let bracedLambdaCall = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("filterNull", false, 21),
+            token("(", true, 31), token(")", true, 32), token("=>", true, 34),
+            token("filter", false, 37), token("(", true, 43), token("{", true, 44),
+            token("value", false, 46), token("!=", true, 52),
+            token("null", false, 55, Token.Type.NULL), token("}", true, 60),
+            token(")", true, 61), token("}", true, 63)
+        ], snapshot)
+        expect(bracedLambdaCall.methodValues().first.returnTypeName).toBe("Unknown")
+        expect(bracedLambdaCall.methodValues().first.defaultValue.expressionKind()).toBe("call")
+        expect(bracedLambdaCall.methodValues().first.range.endTokenIndex).toBe(16)
+
+        let arrayReturn = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("toArray", false, 21),
+            token("(", true, 28), token(")", true, 29), token("->", true, 31),
+            token("Type", false, 34), token("[", true, 38), token("]", true, 39),
+            token("{", true, 41), token("return", false, 43),
+            token("values", false, 50), token("}", true, 56), token("}", true, 58)
+        ], snapshot)
+        expect(arrayReturn.methodValues().first.name).toBe("toArray")
+        expect(arrayReturn.methodValues().first.returnTypeName).toBe("Type[]")
+
+        let adjacentTyped = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("first", false, 21),
+            token("(", true, 26), token(")", true, 27), token("->", true, 29),
+            token("Type", false, 32), token("=>", true, 37),
+            token("lookup", false, 40), token("(", true, 46), token(")", true, 47),
+            token("public", false, 49), token("second", false, 56),
+            token("(", true, 62), token(")", true, 63), token("->", true, 65),
+            token("Type", false, 68), token("=>", true, 73),
+            token("other", false, 76), token("(", true, 81), token(")", true, 82),
+            token("}", true, 84)
+        ], snapshot)
+        let modifiedDefaults = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("public", false, 14), token("join", false, 21), token("(", true, 25),
+            token("String", false, 26), token("delimiter", false, 33),
+            token("=", true, 42), token("value", false, 44), token(",", true, 49),
+            token("var", false, 51), token("Int", false, 55),
+            token("max", false, 59), token("=", true, 63),
+            token("count", false, 65), token(")", true, 70), token("->", true, 72),
+            token("String", false, 75), token("}", true, 82)
+        ], snapshot)
+        expect(modifiedDefaults.methodValues().first.parameterTypeNames()).toBe(
+            ["String", "Int"]
+        )
+        let namedTypes = PrimitiveInterfaceParser().parse([
+            token("trait", false, 1), token("List", false, 7), token("{", true, 12),
+            token("override", false, 14), token("public", false, 23),
+            token("toJson", false, 30), token("(", true, 36),
+            token("Bool", false, 37), token(":", true, 41),
+            token("format", false, 43), token(",", true, 49),
+            token("String", false, 51), token(":", true, 57),
+            token("tab", false, 59), token(")", true, 62), token("->", true, 64),
+            token("String", false, 67), token("}", true, 74)
+        ], snapshot)
+        expect(namedTypes.methodValues().first.parameterTypeNames()).toBe(
+            ["Bool", "String"]
+        )
+        expect(adjacentTyped.methodValues().map({ _.name })).toBe(["first", "second"])
+        expect(adjacentTyped.methodValues().first.returnTypeName).toBe("Type")
+        expect(adjacentTyped.methodValues().first.defaultValue.expressionKind()).toBe("call")
+    }
+
+    test `parses private constructor parameter as field synthesis syntax`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:private-constructor-parameter"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Iterator", false, 7), token("{", true, 16),
+            token("construct", false, 18), token("(", true, 27),
+            token("private", false, 28), token("IntRange", false, 36),
+            token("range", false, 45), token(")", true, 50), token("{", true, 52),
+            token("}", true, 53), token("}", true, 55)
+        ], snapshot)
+        let parameter = parsed.constructorValue.parameterValues().first
+
+        expect(parameter.name).toBe("range")
+        expect(parameter.privateParameter).toBe(true)
+        expect(parameter.visibleParameter).toBe(false)
+        expect(parameter.range.snapshot).toBe(snapshot)
+        expect(parameter.range.start.column).toBe(28)
+        expect(parameter.range.end.column).toBe(50)
+    }
+
+    test `parses visible braced getter with nested control and throw`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-braced-getter"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Iterator", false, 7), token("{", true, 16),
+            token("visible", false, 18), token("Int", false, 26),
+            token("stepNext", false, 30), token("{", true, 39),
+            token("get", false, 41), token("{", true, 45),
+            token("if", false, 47), token("(", true, 50), token("hasNext", false, 51),
+            token(")", true, 58), token("{", true, 60), token("return", false, 62),
+            token("position", false, 69), token("++", true, 77), token("}", true, 80),
+            token("throw", false, 82), token("NoSuchElementException", false, 88),
+            token("(", true, 110), token(")", true, 111), token("}", true, 113),
+            token("}", true, 115), token("}", true, 117)
+        ], snapshot)
+        let getter = parsed.methodValues().first
+
+        expect(getter.name).toBe("stepNext")
+        expect(getter.returnTypeName).toBe("Int")
+        expect(getter.statements().map({ _.statementKind() })).toBe(["if", "throw"])
+        expect(getter.range.snapshot).toBe(snapshot)
+        expect(getter.range.start.column).toBe(18)
+        expect(getter.range.end.column).toBe(116)
+    }
+
+    test `parses visible mutable field`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:visible-mutable-field"), "revision:one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Iterator", false, 7), token("{", true, 16),
+            token("visible", false, 18), token("var", false, 26),
+            token("Int", false, 30), token("position", false, 34),
+            token("}", true, 43)
+        ], snapshot)
+        let field = parsed.fieldValues().first
+
+        expect(field.name).toBe("position")
+        expect(field.visibleField).toBe(true)
+        expect(field.mutableField).toBe(true)
+        expect(field.range.snapshot).toBe(snapshot)
+        expect(field.range.start.column).toBe(18)
+        expect(field.range.end.column).toBe(42)
+    }
+
     test `parses modified visible expression property`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:modified-visible-property"), "revision:one"
@@ -169,6 +456,22 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected = true }
         expect(rejected).toBe(true)
+    }
+
+    test `parses same-receiver constructor delegation`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:same-receiver-construct"), "one"
+        )
+        let parsed = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Range", false, 7), token("{", true, 13),
+            token("construct", false, 15), token("(", true, 24), token(")", true, 25),
+            token("=>", true, 27), token("this", false, 30), token("(", true, 34),
+            token("0", false, 35), token(",", true, 36), token("0", false, 38),
+            token(")", true, 39), token("}", true, 41)
+        ], snapshot)
+
+        expect(parsed.constructorValue.statements().first.statementKind())
+            .toBe("constructor-delegation")
     }
 
     test `parses delegated legacy constructor arguments`() {

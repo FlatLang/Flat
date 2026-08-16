@@ -187,6 +187,32 @@ class {
                 value.range, initialized.semanticType, local, initialized, storage
             )
         }
+        if (syntax.class.isOfType(PrimitivePostfixUpdateSyntax.class)) {
+            let value = (PrimitivePostfixUpdateSyntax)syntax
+            if (!value.operand.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                throw Exception("Postfix update requires a local reference")
+            }
+            let reference = (PrimitiveReferenceSyntax)value.operand
+            let local = locals.reverse().firstOrNull({ _.name == reference.name })
+            if (!local) throw Exception("Unknown postfix update local '#{reference.name}'")
+            let target = BoundReferenceExpression(
+                value.range, local.semanticType, local.name, local.identity
+            )
+            let one = BoundLiteralExpression(
+                value.range, SemanticTypes.intType(), "1"
+            )
+            let operator = value.updateOperator == "++" ? "+" : "-"
+            let typed = TypeOperations.binary(
+                operator, target.semanticType, one.semanticType, value.range
+            )
+            if (!typed.valid ||
+                typed.semanticType.value() != target.semanticType.value()) {
+                throw Exception("Postfix update requires a numeric local")
+            }
+            return BoundPostfixUpdateExpression(
+                value.range, target.semanticType, target, value.updateOperator
+            )
+        }
         if (syntax.class.isOfType(PrimitiveAssignmentValueSyntax.class)) {
             let value = (PrimitiveAssignmentValueSyntax)syntax
             let local = locals.reverse().firstOrNull({ _.name == value.name })

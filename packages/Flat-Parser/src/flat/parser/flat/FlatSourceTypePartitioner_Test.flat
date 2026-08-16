@@ -66,6 +66,21 @@ testable class {
         expect(value.filter({ _.value == "(" }).count).toBe(1)
     }
 
+    async test `partitions generic async method defaults without changing original tokens`() {
+        let source = "package flat/test class Value { " +
+            "public async mapParallel<Out>(async mapFunc(Type x, Int i, List<Type> list) -> Out, " +
+                "Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> List<Out> " +
+                "{ return values } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-default-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(tokens, snapshot)
+
+        expect(partitions.count).toBe(1)
+        expect(partitions.first.tokenValues().filter({ _.value == "=" }).count).toBe(2)
+    }
+
     async test `partitions default constructor parameter without changing original tokens`() {
         let source = "package flat/test class Value { constructor(String message = \"\") {} }"
         let stream = Lexer().lex(source)

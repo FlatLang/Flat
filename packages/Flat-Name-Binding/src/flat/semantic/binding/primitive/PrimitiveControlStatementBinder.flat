@@ -868,6 +868,44 @@ class {
                 value.range, typed.semanticType, value.operator, operand
             )
         }
+        if (syntax.class.isOfType(PrimitivePostfixUpdateSyntax.class)) {
+            let value = (PrimitivePostfixUpdateSyntax)syntax
+            if (!value.operand.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                throw Exception("Postfix update requires a local reference")
+            }
+            let reference = (PrimitiveReferenceSyntax)value.operand
+            let local = locals.reverse().firstOrNull({ _.name == reference.name })
+            var BoundExpression target
+            if (local) {
+                target = BoundReferenceExpression(
+                    value.range, local.semanticType, local.name, local.identity
+                )
+            } else {
+                let field = fields.firstOrNull({ _.name == reference.name })
+                if (!field || !receiver) {
+                    throw Exception("Unknown postfix update local '#{reference.name}'")
+                }
+                if (!field.mutableField) {
+                    throw Exception("Postfix update requires mutable field '#{reference.name}'")
+                }
+                target = BoundMemberAccessExpression(
+                    value.range, field.semanticType, receiver,
+                    field.name, field.identity
+                )
+            }
+            let one = BoundLiteralExpression(value.range, SemanticTypes.intType(), "1")
+            let typed = TypeOperations.binary(
+                value.updateOperator == "++" ? "+" : "-",
+                target.semanticType, one.semanticType, value.range
+            )
+            if (!typed.valid ||
+                typed.semanticType.value() != target.semanticType.value()) {
+                throw Exception("Postfix update requires a numeric local")
+            }
+            return BoundPostfixUpdateExpression(
+                value.range, target.semanticType, target, value.updateOperator
+            )
+        }
         if (syntax.class.isOfType(PrimitiveAssignmentValueSyntax.class)) {
             let value = (PrimitiveAssignmentValueSyntax)syntax
             let local = locals.reverse().firstOrNull({ _.name == value.name })
@@ -976,6 +1014,21 @@ class {
                 arguments.add(classExpression(
                     argument, receiver, fields, locals, callables
                 ))
+            }
+            if (owner.semanticType.kind() == "array" &&
+                value.memberName == "set" && arguments.count == 2) {
+                if (arguments.first.semanticType.value() != SemanticTypes.intType().value()) {
+                    throw Exception("Array set index requires Int")
+                }
+                let elementType = collectionElementType(owner.semanticType)
+                let conversion = TypeConversions.classify(
+                    arguments.last.semanticType, elementType
+                )
+                if (!conversion.applicable) throw Exception("Array set value type mismatch")
+                return BoundIntrinsicMemberCallExpression(
+                    value.range, SemanticTypes.unitType(), owner,
+                    "set", arguments
+                )
             }
             if (owner.semanticType.kind() == "array" &&
                 value.memberName == "add" && arguments.count == 1) {

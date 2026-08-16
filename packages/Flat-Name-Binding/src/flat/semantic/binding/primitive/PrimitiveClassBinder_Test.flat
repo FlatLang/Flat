@@ -616,6 +616,52 @@ testable class {
         expect(method.returnType.value()).toBe("primitive:Bool")
     }
 
+    test `synthesizes private constructor parameter field and initialization`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:private-constructor-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Iterator", false, 7), token("{", true, 16),
+            token("construct", false, 18), token("(", true, 27),
+            token("private", false, 28), token("Object", false, 36),
+            token("range", false, 43), token(")", true, 48), token("{", true, 50),
+            token("}", true, 51), token("}", true, 53)
+        ], snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let field = type.fieldUnits().first
+        let constructor = type.functionUnits().first
+        let statements = constructor.statements()
+        let assignmentObject = (Object)statements.first
+        let fieldAssignment = (BoundMemberAssignmentStatement)assignmentObject
+
+        expect(field.name).toBe("range")
+        expect(field.visibleField).toBe(false)
+        expect(field.range.start.column).toBe(28)
+        expect(fieldAssignment.target.memberIdentity).toBe(field.identity)
+    }
+
+    test `binds visible mutable field contract`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:mutable-field-bind"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse([
+            token("class", false, 1),
+            token("Iterator", false, 7),
+            token("{", true, 16),
+            token("visible", false, 18),
+            token("var", false, 26),
+            token("Int", false, 30),
+            token("position", false, 34),
+            token("}", true, 43)
+        ], snapshot)
+        let field = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit.fieldUnits().first
+
+        expect(field.name).toBe("position")
+        expect(field.visibleField).toBe(true)
+        expect(field.mutableField).toBe(true)
+        expect(field.range.start.column).toBe(18)
+    }
+
     test `binds initialized visible field default parameter and target native constructor`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:exception-bind"), "revision:one"
@@ -657,6 +703,21 @@ testable class {
         expect(assignment.target.memberIdentity).toBe(field.identity)
         expect(value.symbolIdentity).toBe(constructor.parameterValues().first.identity)
         expect(constructor.parameterValues().first.defaultValue.expressionKind()).toBe("literal")
+
+        let overloaded = PrimitiveClassParser().parse([
+            token("class", false, 1), token("Range", false, 7), token("{", true, 13),
+            token("construct", false, 15), token("(", true, 24), token(")", true, 25),
+            token("{", true, 27), token("}", true, 28),
+            token("construct", false, 30), token("(", true, 39),
+            token("public", false, 40), token("Int", false, 47),
+            token("start", false, 51), token(")", true, 56),
+            token("{", true, 58), token("}", true, 59), token("}", true, 61)
+        ], snapshot)
+        let overloadedType = PrimitiveClassBinder().bind(overloaded, snapshot).typeUnit
+        expect(overloadedType.fieldUnits().first.name).toBe("start")
+        expect(overloadedType.functionUnits().last.statements().first.unitKind()).toBe(
+            "member-assignment"
+        )
     }
 
     test `rejects visible constructor parameter that duplicates explicit field`() {
@@ -1096,6 +1157,43 @@ testable class {
         let owner = types.firstOrNull({ _.identity.name == "StringCharArray" })
         expect(owner.functionUnits().firstOrNull({ _.name == "toString" })
             .statements().first.unitKind()).toBe("return")
+    }
+
+    async test `binds mutable receiver field postfix update with old value`() {
+        let stream = Lexer().lex(
+            "class Iterator { visible var Int position; " +
+                "visible Int stepNext { get { return position++; } } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:field-postfix-update"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        expect(type.functionUnits().firstOrNull({ _.name == "stepNext" })
+            .statements().first.unitKind()).toBe("return")
+    }
+
+    async test `binds receiver fields inside array set arguments`() {
+        let source = "class Range { Int size => end - start " +
+            "public construct(public Int start, public Int end) {} " +
+            "toArray() -> Int[] { let ints = Array<Int>(size); var Int i = start; " +
+            "while (i < end) { ints.set(i - start, i++); } return ints; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:receiver-property-array-size"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(
+                stream.consumeAll<Token>("data"), snapshot
+            ), snapshot
+        ).typeUnit
+        expect(type.functionUnits().firstOrNull({ _.name == "toArray" })
+            .statements().first.unitKind()).toBe("local-declaration")
     }
 
     async test `binds field sized array local and indexed copy loop`() {

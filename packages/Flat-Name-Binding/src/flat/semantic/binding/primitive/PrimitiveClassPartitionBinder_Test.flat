@@ -4,8 +4,56 @@ import flat/compiler/models
 import flat/parser/flat
 import flat/bound
 import flat/lexer/Lexer
+import flat/semantic/types
 
 testable class {
+    test `resolves nested generic async callback signature`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:map-parallel-signature-bind"), "one"
+        )
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "List"
+        )
+        let listType = UserClassSemanticType(identity)
+        let resolved = PrimitiveStructuralTypeResolver(
+            callables: [CallableSignature(
+                SymbolIdentity(identity, "constructor"), "List",
+                CallableKind("constructor"), SemanticType[], listType, listType
+            )],
+            genericParameter: GenericParameterSemanticType(identity, "Type", 0)
+        ).resolve("async func(Type,Int,List<Type>)->Type")
+
+        expect(resolved.kind()).toBe("function")
+    }
+
+    async test `selects projected constructor field by owner`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:projected-constructor-field-bind"), "one"
+        )
+        let rangeStream = Lexer().lex(
+            "class Range { construct() {} construct(public Int start, public Int end) {} }"
+        )
+        rangeStream.emit("start")
+        let iteratorStream = Lexer().lex(
+            "class RangeIterator { construct(private Range range) {} " +
+                "Bool hasNext => range.end > 0 }"
+        )
+        iteratorStream.emit("start")
+        let types = PrimitiveClassPartitionBinder().bind([
+            PrimitiveClassParser().parse(
+                rangeStream.consumeAll<Token>("data"), snapshot
+            ),
+            PrimitiveClassParser().parse(
+                iteratorStream.consumeAll<Token>("data"), snapshot
+            )
+        ], snapshot).typeUnits()
+        let rangeType = types.firstOrNull({ _.identity.name == "Range" })
+        let iterator = types.firstOrNull({ _.identity.name == "RangeIterator" })
+        expect(iterator.functionUnits().firstOrNull({ _.name == "hasNext" })
+            .statements().first.unitKind()).toBe("return")
+        expect(rangeType.fieldUnits().firstOrNull({ _.name == "end" }).name).toBe("end")
+    }
+
     async test `selects projected receiver property by owner`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:projected-property-owner-bind"), "one"

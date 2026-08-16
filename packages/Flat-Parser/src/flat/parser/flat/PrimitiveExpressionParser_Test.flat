@@ -273,6 +273,38 @@ testable class {
         expect(call.memberName).toBe("add")
     }
 
+    test `parses value producing postfix increment in call argument`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:postfix-call-argument"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("ints", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 5),
+            token("set", Token.Type.IDENTIFIER, 6), token("(", Token.Type.SYMBOL, 9),
+            token("i", Token.Type.IDENTIFIER, 10), token("-", Token.Type.SYMBOL, 12),
+            token("start", Token.Type.IDENTIFIER, 14), token(",", Token.Type.SYMBOL, 19),
+            token("i", Token.Type.IDENTIFIER, 21), token("++", Token.Type.SYMBOL, 22),
+            token(")", Token.Type.SYMBOL, 24)
+        ], snapshot)
+        let call = (PrimitiveMemberCallSyntax)parsed
+        let arguments = call.argumentValues()
+
+        expect(arguments.last.expressionKind()).toBe("postfix-update")
+        expect(arguments.last.range.start.column).toBe(21)
+        expect(arguments.last.range.end.column).toBe(24)
+    }
+
+    test `parses rich form keywords as ordinary references without call syntax`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:rich-keyword-reference"), "revision:one"
+        )
+        let parsed = PrimitiveExpressionParser().parse([
+            token("range", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 6),
+            token("end", Token.Type.IDENTIFIER, 7)
+        ], snapshot)
+
+        expect(parsed.expressionKind()).toBe("member-access")
+    }
+
     test `parses zero argument member call`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:zero-member-call"), "revision:one"

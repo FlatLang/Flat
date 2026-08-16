@@ -5,6 +5,35 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `coordinates canonical generic async function header as one braced member`() {
+        let islands = collect(
+            "public async mapParallel<Out>(async mapFunc(Type x, Int i, List<Type> list) -> Out, " +
+                "Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> List<Out> " +
+                "{ return Async.all(values) }"
+        )
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)islands.first
+
+        expect(islands.count).toBe(2)
+        expect(header.memberKind).toBe("function")
+        expect(header.name).toBe("mapParallel")
+        expect(header.range.startTokenIndex).toBe(0)
+    }
+
+    async test `coordinates generic function header as one braced member`() {
+        let islands = collect(
+            "public map<Out>(mapFunc(Type x, Int i, List<Type> list) -> Out) -> " +
+                "List<Out> { return values }"
+        )
+        var BracedMemberHeaderSyntaxIsland header
+        header = (BracedMemberHeaderSyntaxIsland)islands.first
+
+        expect(islands.count).toBe(2)
+        expect(header.memberKind).toBe("function")
+        expect(header.name).toBe("map")
+        expect(header.range.startTokenIndex).toBe(0)
+    }
+
     async test `coordinates mixed non braced and braced members in source order`() {
         let source = "public before() [Target js] String value => initial static { boot() } private class Nested {} after()"
         let islands = collect(source)

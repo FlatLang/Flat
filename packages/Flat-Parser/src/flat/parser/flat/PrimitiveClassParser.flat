@@ -85,6 +85,8 @@ class {
         let arrayOverrides = PrimitiveArrayOverrideSyntax[]
         var Bool visibleField
         var Bool staticField
+        var Bool mutableField
+        var Int fieldModifierStart = -1
         while (index < tokens.count && tokens[index].value != "}") {
             if (isFunctionModifier(tokens[index].value) &&
                 tokens[index].value != "visible") {
@@ -138,17 +140,38 @@ class {
                     isFunctionModifier(tokens[modifierCursor].value)) {
                     modifierCursor++
                 }
-                if (modifierCursor < tokens.count && tokens[modifierCursor].type == Token.Type.IDENTIFIER &&
-                    modifierCursor + 1 < tokens.count && tokens[modifierCursor + 1].value == "(") {
-                    let abstractMethod = tokens.skip(index).take(modifierCursor - index)
-                        .any({ _.value == "abstract" })
-                    let end = abstractMethod ? abstractDeclarationEnd(index) : declarationEnd(index)
-                    let parsed = parseMethod(index, end, "modified method")
-                    if (parsed.count != 1) syntax("Expected one modified method", index)
-                    methods.add(parsed.first)
-                    index = end
-                    continue
+                if (modifierCursor < tokens.count &&
+                    tokens[modifierCursor].type == Token.Type.IDENTIFIER) {
+                    var Int parameterCursor = modifierCursor + 1
+                    if (parameterCursor < tokens.count &&
+                        tokens[parameterCursor].value == "<") {
+                        var Int genericDepth = 1
+                        parameterCursor++
+                        while (parameterCursor < tokens.count && genericDepth > 0) {
+                            if (tokens[parameterCursor].value == "<") genericDepth++
+                            else if (tokens[parameterCursor].value == ">") genericDepth--
+                            parameterCursor++
+                        }
+                    }
+                    if (parameterCursor < tokens.count &&
+                        tokens[parameterCursor].value == "(") {
+                        let abstractMethod = tokens.skip(index).take(modifierCursor - index)
+                            .any({ _.value == "abstract" })
+                        let end = abstractMethod ? abstractDeclarationEnd(index) : declarationEnd(index)
+                        let parsed = parseMethod(index, end, "modified method")
+                        if (parsed.count != 1) syntax("Expected one modified method", index)
+                        methods.add(parsed.first)
+                        index = end
+                        continue
+                    }
                 }
+            }
+            if (tokens[index].value == "visible" && index + 4 < tokens.count &&
+                tokens[index + 1].type == Token.Type.IDENTIFIER &&
+                tokens[index + 2].type == Token.Type.IDENTIFIER &&
+                tokens[index + 3].value == "{" && tokens[index + 4].value == "get") {
+                methods.add(parseVisibleGetter())
+                continue
             }
             if (tokens[index].value == "public" && index + 1 < tokens.count &&
                 tokens[index + 1].value == "static") {
@@ -184,16 +207,22 @@ class {
                 ))
                 index = end
             } else if (tokens[index].value == "visible") {
+                fieldModifierStart = index
                 visibleField = true
                 index++
                 if (index < tokens.count && tokens[index].value == "static") {
                     staticField = true
                     index++
                 }
+                if (index < tokens.count && tokens[index].value == "var") {
+                    mutableField = true
+                    index++
+                }
                 while (index < tokens.count &&
                     (tokens[index].value == "native_array" ||
                      tokens[index].value == "native")) index++
             } else if (tokens[index].value == "static") {
+                fieldModifierStart = index
                 staticField = true
                 index++
             } else if (tokens[index].value == "constructor" || tokens[index].value == "construct") {
@@ -236,7 +265,7 @@ class {
                  (index + 3 < tokens.count && tokens[index + 1].value == "[" &&
                     tokens[index + 2].value == "]" &&
                     tokens[index + 3].type == Token.Type.IDENTIFIER))) {
-                let fieldStart = index
+                let fieldStart = fieldModifierStart >= 0 ? fieldModifierStart : index
                 var String typeName = tokens[index++].value
                 if (index + 1 < tokens.count && tokens[index].value == "[" &&
                     tokens[index + 1].value == "]") {
@@ -276,10 +305,12 @@ class {
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
                 fields.add(PrimitiveFieldSyntax(
                     range(fieldStart, index), typeName, fieldName,
-                    visibleField, initializer, staticField
+                    visibleField, initializer, staticField, mutableField
                 ))
                 visibleField = false
                 staticField = false
+                mutableField = false
+                fieldModifierStart = -1
             } else {
                 let end = declarationEnd(index)
                 let parsed = parseMethod(index, end, "method")
@@ -381,6 +412,46 @@ class {
         require(")")
         if (index < tokens.count && tokens[index].value == "=>") {
             index++
+            if (index < tokens.count && tokens[index].value == "this") {
+                let delegationStart = index
+                index++
+                require("(")
+                let arguments = PrimitiveExpressionSyntax[]
+                if (index < tokens.count && tokens[index].value != ")") {
+                    while (true) {
+                        let argumentStart = index
+                        var Int parenthesisDepth
+                        while (index < tokens.count) {
+                            let value = tokens[index].value
+                            if (value == "(") parenthesisDepth++
+                            else if (value == ")") {
+                                if (parenthesisDepth == 0) break
+                                parenthesisDepth--
+                            } else if (value == "," && parenthesisDepth == 0) break
+                            index++
+                        }
+                        if (argumentStart == index) {
+                            syntax("Expected delegated constructor argument", index)
+                        }
+                        arguments.add(PrimitiveExpressionParser().parse(
+                            tokens.skip(argumentStart).take(index - argumentStart), snapshot,
+                            argumentStart + tokenIndexOffset
+                        ))
+                        if (index >= tokens.count || tokens[index].value == ")") break
+                        require(",")
+                        if (index >= tokens.count || tokens[index].value == ")") {
+                            syntax("Expected delegated constructor argument", index)
+                        }
+                    }
+                }
+                require(")")
+                return PrimitiveConstructorSyntax(
+                    range(start, index), parameters,
+                    [PrimitiveConstructorDelegationSyntax(
+                        range(delegationStart, index), arguments
+                    )]
+                )
+            }
             require("super")
             require("(")
             let arguments = PrimitiveExpressionSyntax[]
@@ -444,9 +515,13 @@ class {
         while (true) {
             let start = index
             var Bool visibleParameter
+            var Bool privateParameter
             if (index < tokens.count &&
                 (tokens[index].value == "visible" || tokens[index].value == "public")) {
                 visibleParameter = true
+                index++
+            } else if (index < tokens.count && tokens[index].value == "private") {
+                privateParameter = true
                 index++
             }
             while (index < tokens.count &&
@@ -482,7 +557,8 @@ class {
                 )
             }
             result.add(PrimitiveFunctionParameterSyntax(
-                range(start, index), typeName, name, defaultValue, visibleParameter
+                range(start, index), typeName, name, defaultValue,
+                visibleParameter, privateParameter
             ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++
@@ -580,6 +656,33 @@ class {
                         tokens[cursor + 1].value == "Target"))) return -1
             cursor++
         }
+    }
+
+    parseVisibleGetter() -> PrimitiveFunctionSyntax {
+        let start = index
+        require("visible")
+        let returnType = identifier("Expected getter return type")
+        let name = identifier("Expected getter name")
+        require("{")
+        require("get")
+        require("{")
+        let bodyStart = index
+        var Int bodyDepth = 1
+        while (index < tokens.count && bodyDepth > 0) {
+            if (tokens[index].value == "{") bodyDepth++
+            else if (tokens[index].value == "}") bodyDepth--
+            index++
+        }
+        if (bodyDepth != 0) syntax("Unterminated getter body", start)
+        let bodyEnd = index - 1
+        require("}")
+        return PrimitiveFunctionSyntax(
+            range(start, index), name, PrimitiveFunctionParameterSyntax[], returnType,
+            PrimitiveControlStatementParser().parse(
+                tokens.skip(bodyStart).take(bodyEnd - bodyStart), snapshot,
+                bodyStart + tokenIndexOffset
+            ).statements()
+        )
     }
 
     parseMethod(

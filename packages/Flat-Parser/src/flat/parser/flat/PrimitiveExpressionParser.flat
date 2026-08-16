@@ -178,9 +178,9 @@ class {
             index++
             return PrimitiveRichCollectionSyntax(range(tokenIndex, index), "async", canonical)
         }
-        if (token.value == "range" || token.value == "safe" || token.value == "match") {
+        if ((token.value == "range" || token.value == "safe" || token.value == "match") &&
+            index < tokens.count && tokens[index].value == "(") {
             let kind = token.value == "safe" ? "safe-access" : token.value
-            if (index >= tokens.count || tokens[index].value != "(") syntax("Expected rich form expression", index)
             index++
             let canonical = parseLevel(0)
             if (index >= tokens.count || tokens[index].value != ")") syntax("Expected closing rich form parenthesis", index)
@@ -313,6 +313,13 @@ class {
                     )
                 } else expression = PrimitiveMemberAccessSyntax(
                     range(tokenIndex, index), expression, member
+                )
+            }
+            if (index < tokens.count &&
+                (tokens[index].value == "++" || tokens[index].value == "--")) {
+                let operator = tokens[index++].value
+                expression = PrimitivePostfixUpdateSyntax(
+                    range(tokenIndex, index), operator, expression
                 )
             }
             if (expression.class.isOfType(PrimitiveMemberAccessSyntax.class)) {

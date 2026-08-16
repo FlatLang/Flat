@@ -373,13 +373,22 @@ class {
                 result.add(BoundFieldUnit(
                     field.name, SymbolIdentity(ownerIdentity, "field", ordinal),
                     signatureType(field.typeName, syntaxes, snapshot), fieldRange,
-                    field.visibleField, staticField: field.staticField
+                    field.visibleField, staticField: field.staticField,
+                    mutableField: field.mutableField
                 ))
                 ordinal++
             }
-            for (parameter in syntax.constructorValue.parameterValues().filter({
-                _.visibleParameter
-            })) {
+            let constructorFields = PrimitiveFunctionParameterSyntax[]
+            for (constructor in syntax.constructorValues()) {
+                for (parameter in constructor.parameterValues().filter((value) =>
+                    value.visibleParameter || value.privateParameter
+                )) {
+                    if (constructorFields.none({ _.name == parameter.name })) {
+                        constructorFields.add(parameter)
+                    }
+                }
+            }
+            for (parameter in constructorFields) {
                 let parameterRange = SourceRange(
                     syntaxSnapshot, parameter.range.startTokenIndex, parameter.range.endTokenIndex,
                     parameter.range.start, parameter.range.end
@@ -387,7 +396,7 @@ class {
                 result.add(BoundFieldUnit(
                     parameter.name, SymbolIdentity(ownerIdentity, "field", ordinal),
                     signatureType(parameter.typeName, syntaxes, snapshot), parameterRange,
-                    true
+                    parameter.visibleParameter
                 ))
                 ordinal++
             }

@@ -15,6 +15,7 @@ class {
             kind == "unary" || kind == "binary" || kind == "conditional" ||
             kind == "class-name" || kind == "type-metadata" || kind == "type-test" ||
             kind == "conversion" || kind == "assignment-value" ||
+            kind == "postfix-update" ||
             kind == "declaration-value" ||
             kind == "member-assignment-value" ||
             kind == "intrinsic-member-call" || kind == "function-invocation" ||

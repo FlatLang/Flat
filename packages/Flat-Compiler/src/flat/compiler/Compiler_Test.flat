@@ -934,6 +934,131 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `package linker executes unchanged range iterator`() {
+        let code = FlatEs6PackageLinker().link([
+                CompilerSource(
+                    "flat/datastruct/list/NoSuchElementException.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/NoSuchElementException.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/exception/Exception.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/exception/Exception.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/exception/StackTrace.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/exception/StackTrace.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/IntRange.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/IntRange.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/IntRangeIterator.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/IntRangeIterator.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/Iterable.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/Iterable.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/Iterator.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/Iterator.flat"
+                    ))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/List.flat",
+                    Es6ArtifactFiles.read(File(
+                        "../Flat-Core/src/flat/datastruct/list/List.flat"
+                    ))
+                )
+            ])
+        let rangeIdentity = "flat/datastruct/list/IntRange.flat"
+        let iteratorIdentity = "flat/datastruct/list/IntRangeIterator.flat"
+        let rangeSnapshot = SourceSnapshotIdentity(
+            SourceIdentity(rangeIdentity), "compiler-input"
+        )
+        let iteratorSnapshot = SourceSnapshotIdentity(
+            SourceIdentity(iteratorIdentity), "compiler-input"
+        )
+        let rangeSource = Es6ArtifactFiles.read(File(
+            "../Flat-Core/src/flat/datastruct/list/IntRange.flat"
+        ))
+        let rangeStream = Lexer().lexInterpolated(rangeSource)
+        rangeStream.emit("start")
+        let rangePartition = FlatSourceTypePartitioner().partition(
+            rangeStream.consumeAll<Token>("data"), rangeSnapshot
+        ).first
+        let rangeSyntax = PrimitiveClassParser().parse(
+            rangePartition.tokenValues(), rangeSnapshot,
+            rangePartition.startTokenIndex, "IntRange"
+        )
+        let iteratorSource = Es6ArtifactFiles.read(File(
+            "../Flat-Core/src/flat/datastruct/list/IntRangeIterator.flat"
+        ))
+        let iteratorStream = Lexer().lexInterpolated(iteratorSource)
+        iteratorStream.emit("start")
+        let iteratorPartition = FlatSourceTypePartitioner().partition(
+            iteratorStream.consumeAll<Token>("data"), iteratorSnapshot
+        ).first
+        let iteratorSyntax = PrimitiveClassParser().parse(
+            iteratorPartition.tokenValues(), iteratorSnapshot,
+            iteratorPartition.startTokenIndex, "IntRangeIterator"
+        )
+        let rangeType = DeclarationIdentity(
+            SyntaxIslandIdentity(rangeSnapshot, "class", rangeSyntax.range.startTokenIndex),
+            "class", "IntRange"
+        )
+        let iteratorType = DeclarationIdentity(
+            SyntaxIslandIdentity(iteratorSnapshot, "class", iteratorSyntax.range.startTokenIndex),
+            "class", "IntRangeIterator"
+        )
+        let hasNext = iteratorSyntax.methodValues().firstOrNull({ _.name == "hasNext" })
+        let stepNext = iteratorSyntax.methodValues().firstOrNull({ _.name == "stepNext" })
+        let hasNextIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(iteratorSnapshot, "instance-method", hasNext.range.startTokenIndex),
+            "instance-method", "hasNext"
+        )
+        let stepNextIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(iteratorSnapshot, "instance-method", stepNext.range.startTokenIndex),
+            "instance-method", "stepNext"
+        )
+        let rangeName = Es6NameMangler.mangle(rangeType.value)
+        let iteratorName = Es6NameMangler.mangle(iteratorType.value)
+        let startName = Es6NameMangler.mangle(SymbolIdentity(rangeType, "field", 0).value)
+        let endName = Es6NameMangler.mangle(SymbolIdentity(rangeType, "field", 1).value)
+        let root = File(".flat-compiler-range-iterator-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let range = new " + rangeName + "();\n" +
+                "range." + startName + " = 2; range." + endName + " = 4;\n" +
+                "let iterator = new " + iteratorName + "(range);\n" +
+                "console.log(iterator." + Es6NameMangler.mangle(hasNextIdentity.value) +
+                "(), iterator." + Es6NameMangler.mangle(stepNextIdentity.value) +
+                "(), iterator." + Es6NameMangler.mangle(stepNextIdentity.value) + "());\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true 2 3\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `partitions unchanged String source to its first reduced parser frontier`() {
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.flat"))
         let stream = Lexer().lexInterpolated(source)

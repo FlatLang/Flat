@@ -59,10 +59,16 @@ class {
                     throw Exception("Reduced Flat ES6 package linking supports classes and interfaces")
                 }
                 if (partition.declarationKind != "class") {
-                    interfaceSyntaxes.add(PrimitiveInterfaceParser().parse(
-                        partition.tokenValues(), snapshot, partition.startTokenIndex,
-                        implicitName(source.identity, partition.name)
-                    ))
+                    try {
+                        interfaceSyntaxes.add(PrimitiveInterfaceParser().parseImplicit(
+                            partition.tokenValues(), snapshot, partition.startTokenIndex,
+                            implicitName(source.identity, partition.name)
+                        ))
+                    } catch (Exception error) {
+                        throw Exception(
+                            "Flat package interface '#{source.identity}' failed: #{error.message}"
+                        )
+                    }
                     continue
                 }
                 if (syntaxes.count >= maxTypes) {

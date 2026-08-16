@@ -9,6 +9,15 @@ class {
     var SourceSnapshotIdentity snapshot
     var Int tokenIndexOffset
 
+    public parseImplicit(
+        Token[] tokenValues,
+        SourceSnapshotIdentity sourceSnapshot,
+        Int sourceTokenIndexOffset,
+        String implicitName
+    ) -> PrimitiveInterfaceSyntax {
+        return parse(tokenValues, sourceSnapshot, sourceTokenIndexOffset, implicitName)
+    }
+
     public parse(
         Token[] tokenValues,
         SourceSnapshotIdentity sourceSnapshot,
@@ -22,6 +31,14 @@ class {
             let type = token.type
             return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
         })
+        if (implicitName && tokens.count > 1 && tokens[1].value != implicitName &&
+            tokens[1].value != "<" && tokens[1].value != "{" &&
+            tokens[1].value != "implements" && tokens[1].value != "extends") {
+            let withoutPartitionName = Token[]
+            withoutPartitionName.add(tokens.first)
+            withoutPartitionName.addAll(tokens.skip(2))
+            tokens = withoutPartitionName
+        }
         snapshot = sourceSnapshot
         tokenIndexOffset = sourceTokenIndexOffset
         index = 0
@@ -30,46 +47,260 @@ class {
             syntax("Expected trait or interface")
         }
         index++
-        let name = index < tokens.count && implicitName &&
-            (tokens[index].value == "<" || tokens[index].value == "{")
-            ? implicitName
-            : identifier("Expected interface name")
+        var String name
+        if (index < tokens.count && implicitName &&
+            (tokens[index].value == "<" || tokens[index].value == "{")) {
+            name = implicitName
+        } else name = identifier("Expected interface name")
         var String genericParameterName
         if (index < tokens.count && tokens[index].value == "<") {
             index++
             genericParameterName = identifier("Expected generic parameter")
             require(">")
         }
+        if (index < tokens.count && tokens[index].value == "implements") {
+            while (index < tokens.count && tokens[index].value != "{") index++
+        }
         require("{")
         let methods = PrimitiveInterfaceMethodSyntax[]
         while (index < tokens.count && tokens[index].value != "}") {
+            let memberStart = index
             while (index < tokens.count && modifier(tokens[index].value)) index++
+            if (index < tokens.count && tokens[index].value == "var") index++
+            var Int propertyCursor = index
+            var String propertyType
+            if (propertyCursor < tokens.count &&
+                tokens[propertyCursor].type == Token.Type.IDENTIFIER) {
+                propertyType = tokens[propertyCursor++].value
+                if (propertyCursor < tokens.count && tokens[propertyCursor].value == "<") {
+                    propertyType += "<"
+                    propertyCursor++
+                    var Bool firstArgument = true
+                    while (propertyCursor < tokens.count &&
+                        tokens[propertyCursor].value != ">") {
+                        if (!firstArgument) propertyType += ","
+                        propertyType += tokens[propertyCursor++].value
+                        firstArgument = false
+                        if (propertyCursor < tokens.count &&
+                            tokens[propertyCursor].value == ",") propertyCursor++
+                        else break
+                    }
+                    requireAt(">", propertyCursor)
+                    propertyType += ">"
+                    propertyCursor++
+                }
+            }
+            if (propertyType && propertyCursor < tokens.count &&
+                tokens[propertyCursor].type == Token.Type.IDENTIFIER &&
+                (propertyCursor + 1 >= tokens.count ||
+                    tokens[propertyCursor + 1].value == "=>" ||
+                    tokens[propertyCursor + 1].value == "}" ||
+                    modifier(tokens[propertyCursor + 1].value))) {
+                let methodName = tokens[propertyCursor++].value
+                index = propertyCursor
+                var PrimitiveExpressionSyntax value
+                if (index < tokens.count && tokens[index].value == "=>") {
+                    index++
+                    let expressionStart = index
+                    while (index < tokens.count && tokens[index].value != "}" &&
+                        !propertyBoundary(index)) index++
+                    if (expressionStart == index) syntax("Expected interface property value")
+                    value = PrimitiveExpressionParser().parse(
+                        tokens.skip(expressionStart).take(index - expressionStart), snapshot,
+                        expressionStart + tokenIndexOffset
+                    )
+                }
+                methods.add(PrimitiveInterfaceMethodSyntax(
+                    methodName, String[], propertyType, range(memberStart, index), value
+                ))
+                continue
+            }
+            if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
+                let received = index < tokens.count ? tokens[index].value : "<end>"
+                let previous = index > 0 ? tokens[index - 1].value : "<start>"
+                syntax("Expected interface method name after '#previous' but received '#received'")
+            }
             let methodName = identifier("Expected interface method name")
+            if (index < tokens.count && tokens[index].value == "<") {
+                index++
+                identifier("Expected interface method generic parameter")
+                while (index < tokens.count && tokens[index].value == ",") {
+                    index++
+                    identifier("Expected interface method generic parameter")
+                }
+                require(">")
+            }
             require("(")
             let parameterTypes = String[]
             while (index < tokens.count && tokens[index].value != ")") {
-                let typeName = identifier("Expected interface parameter type")
-                identifier("Expected interface parameter name")
+                let typeName = parseParameterType()
                 parameterTypes.add(typeName)
+                if (index < tokens.count && tokens[index].value == "=") {
+                    index++
+                    var Int defaultBraceDepth
+                    while (index < tokens.count) {
+                        if (tokens[index].value == "{") defaultBraceDepth++
+                        else if (tokens[index].value == "}") defaultBraceDepth--
+                        if (defaultBraceDepth == 0 &&
+                            (tokens[index].value == "," || tokens[index].value == ")")) break
+                        index++
+                    }
+                }
                 if (tokens[index].value != ",") break
                 index++
             }
             require(")")
-            require("->")
-            let returnType = identifier("Expected interface return type")
-            methods.add(PrimitiveInterfaceMethodSyntax(methodName, parameterTypes, returnType))
+            var String returnType = "Unknown"
+            var PrimitiveExpressionSyntax defaultValue
+            if (index < tokens.count && tokens[index].value == "->") {
+                index++
+                returnType = parseTypeName("Expected interface return type")
+            } else if (index < tokens.count && tokens[index].value == "=>") {
+                index++
+                let expressionStart = index
+                if (index + 1 < tokens.count && tokens[index].value == "this" &&
+                    tokens[index + 1].value == "{") {
+                    index++
+                } else {
+                    var Int expressionBraceDepth
+                    while (index < tokens.count) {
+                        if (tokens[index].value == "{" && expressionBraceDepth == 0 &&
+                            index > expressionStart && tokens[index - 1].value != "(") break
+                        if (tokens[index].value == "{") expressionBraceDepth++
+                        else if (tokens[index].value == "}") {
+                            if (expressionBraceDepth == 0) break
+                            expressionBraceDepth--
+                        }
+                        if (expressionBraceDepth == 0 && propertyBoundary(index)) break
+                        index++
+                    }
+                }
+                if (expressionStart == index) syntax("Expected interface method expression")
+                try {
+                    defaultValue = PrimitiveExpressionParser().parse(
+                        tokens.skip(expressionStart).take(index - expressionStart), snapshot,
+                        expressionStart + tokenIndexOffset
+                    )
+                } catch (Exception error) {
+                    throw Exception("Primitive interface method '#methodName' failed: #{error.message}")
+                }
+            } else syntax("Expected '->' or '=>'")
+            if (index < tokens.count && tokens[index].value == "=>") {
+                index++
+                let expressionStart = index
+                while (index < tokens.count && tokens[index].value != "{" &&
+                    tokens[index].value != "}" && !modifier(tokens[index].value) &&
+                    !propertyBoundary(index)) index++
+                if (expressionStart == index) syntax("Expected interface method expression")
+                try {
+                    defaultValue = PrimitiveExpressionParser().parse(
+                        tokens.skip(expressionStart).take(index - expressionStart), snapshot,
+                        expressionStart + tokenIndexOffset
+                    )
+                } catch (Exception error) {
+                    throw Exception("Primitive interface method '#methodName' failed: #{error.message}")
+                }
+            }
+            if (index < tokens.count && tokens[index].value == "{") {
+                index++
+                var Int bodyDepth = 1
+                while (index < tokens.count && bodyDepth > 0) {
+                    if (tokens[index].value == "{") bodyDepth++
+                    else if (tokens[index].value == "}") bodyDepth--
+                    index++
+                }
+                if (bodyDepth != 0) syntax("Expected closing interface method body")
+            }
+            methods.add(PrimitiveInterfaceMethodSyntax(
+                methodName, parameterTypes, returnType, range(memberStart, index), defaultValue
+            ))
         }
         require("}")
         if (index != tokens.count) syntax("Unexpected interface tokens")
         return PrimitiveInterfaceSyntax(range(start, index), name, genericParameterName, methods)
     }
 
+    parseParameterType() -> String {
+        var Bool asyncType
+        if (index < tokens.count && tokens[index].value == "var") index++
+        if (index < tokens.count && tokens[index].value == "async") {
+            asyncType = true
+            index++
+        }
+        var String result = parseTypeName("Expected interface parameter type")
+        if (index < tokens.count && tokens[index].value == "(") {
+            result += "("
+            index++
+            var Bool first = true
+            while (index < tokens.count && tokens[index].value != ")") {
+                if (!first) result += ","
+                result += parseTypeName("Expected function parameter type")
+                identifier("Expected function parameter name")
+                first = false
+                if (index >= tokens.count || tokens[index].value != ",") break
+                index++
+            }
+            require(")")
+            result += ")"
+            if (index < tokens.count && tokens[index].value == "->") {
+                index++
+                result += "->" + parseTypeName("Expected function return type")
+            }
+        } else {
+            if (index < tokens.count && tokens[index].value == ":") index++
+            identifier("Expected interface parameter name")
+        }
+        if (asyncType) result = "async " + result
+        return result
+    }
+
+    parseTypeName(String message) -> String {
+        var String result = identifier(message)
+        if (index < tokens.count && tokens[index].value == "<") {
+            result += "<"
+            index++
+            result += parseTypeName("Expected generic interface type argument")
+            require(">")
+            result += ">"
+        }
+        while (index + 1 < tokens.count && tokens[index].value == "[" &&
+            tokens[index + 1].value == "]") {
+            result += "[]"
+            index += 2
+        }
+        return result
+    }
+
+    propertyBoundary(Int cursor) -> Bool {
+        if (cursor + 2 >= tokens.count) return false
+        var Int candidate = cursor
+        var Bool modified
+        while (candidate < tokens.count && modifier(tokens[candidate].value)) {
+            modified = true
+            candidate++
+        }
+        if (candidate >= tokens.count ||
+            tokens[candidate].type != Token.Type.IDENTIFIER) return false
+        if (modified && candidate + 1 < tokens.count &&
+            tokens[candidate + 1].value == "(") return true
+        return candidate + 2 < tokens.count &&
+            tokens[candidate + 1].type == Token.Type.IDENTIFIER &&
+            (tokens[candidate + 2].value == "=>" || tokens[candidate + 2].value == "(")
+    }
+
     modifier(String value) -> Bool =>
-        value == "public" || value == "private" || value == "protected"
+        value == "public" || value == "private" || value == "protected" ||
+            value == "visible" || value == "async" || value == "override"
 
     identifier(String message) -> String {
         if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax(message)
         return tokens[index++].value
+    }
+
+    requireAt(String value, Int cursor) {
+        if (cursor >= tokens.count || tokens[cursor].value != value) {
+            syntax("Expected '#value'")
+        }
     }
 
     require(String value) {

@@ -14,6 +14,10 @@ class {
         if (memberName == "repeat") {
             return receiver + ".repeat(" + argumentText + ")"
         }
+        if (memberName == "set") {
+            return "((__flatArgs) => " + receiver + "[__flatArgs[0]] = " +
+                "__flatArgs[1])([" + argumentText + "])"
+        }
         if (memberName == "add") {
             return receiver + ".push(" + argumentText + ")"
         }

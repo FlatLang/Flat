@@ -1,0 +1,18 @@
+package flat/parser/flat
+
+import flat/compiler/models
+
+/** Value-producing postfix update with old-value result semantics. */
+data class extends PrimitiveExpressionSyntax {
+    public construct(
+        SourceRange range,
+        visible String updateOperator,
+        visible PrimitiveExpressionSyntax operand
+    ) {
+        if (!range || (updateOperator != "++" && updateOperator != "--") || !operand) {
+            throw Exception("Primitive postfix update requires increment or decrement operand")
+        }
+        super(range)
+    }
+    override public expressionKind() => "postfix-update"
+}

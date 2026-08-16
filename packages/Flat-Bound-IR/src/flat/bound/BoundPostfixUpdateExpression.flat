@@ -1,0 +1,24 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Typed postfix update whose expression result is the value before storage. */
+data class extends BoundExpression {
+    public construct(
+        SourceRange range,
+        SemanticType semanticType,
+        visible BoundExpression target,
+        visible String updateOperator
+    ) {
+        if (!range || !semanticType || !target ||
+            (updateOperator != "++" && updateOperator != "--") ||
+            semanticType.value() != target.semanticType.value() ||
+            (!target.class.isOfType(BoundReferenceExpression.class) &&
+             !target.class.isOfType(BoundMemberAccessExpression.class))) {
+            throw Exception("Bound postfix update requires a consistent numeric storage target")
+        }
+        super(range, semanticType)
+    }
+    override public expressionKind() => "postfix-update"
+}

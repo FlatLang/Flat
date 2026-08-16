@@ -247,6 +247,52 @@ testable class {
         expect(parsed.inferredReturnType).toBe(true)
     }
 
+    test `parses canonical generic async parameter defaults`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:canonical-map-parallel"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("public", Token.Type.IDENTIFIER, 1),
+            token("async", Token.Type.IDENTIFIER, 8),
+            token("mapParallel", Token.Type.IDENTIFIER, 14),
+            token("<", Token.Type.SYMBOL, 25), token("Out", Token.Type.IDENTIFIER, 26),
+            token(">", Token.Type.SYMBOL, 29), token("(", Token.Type.SYMBOL, 30),
+            token("async", Token.Type.IDENTIFIER, 31),
+            token("mapFunc", Token.Type.IDENTIFIER, 37), token("(", Token.Type.SYMBOL, 44),
+            token("Type", Token.Type.IDENTIFIER, 45), token("x", Token.Type.IDENTIFIER, 50),
+            token(",", Token.Type.SYMBOL, 51), token("Int", Token.Type.IDENTIFIER, 53),
+            token("i", Token.Type.IDENTIFIER, 57), token(",", Token.Type.SYMBOL, 58),
+            token("List", Token.Type.IDENTIFIER, 60), token("<", Token.Type.SYMBOL, 64),
+            token("Type", Token.Type.IDENTIFIER, 65), token(">", Token.Type.SYMBOL, 69),
+            token("list", Token.Type.IDENTIFIER, 71),
+            token(")", Token.Type.SYMBOL, 75), token("->", Token.Type.SYMBOL, 77),
+            token("Out", Token.Type.IDENTIFIER, 80), token(",", Token.Type.SYMBOL, 83),
+            token("Int", Token.Type.IDENTIFIER, 61), token("maxParallel", Token.Type.IDENTIFIER, 65),
+            token("=", Token.Type.SYMBOL, 77), token("-", Token.Type.SYMBOL, 79),
+            token("1", Token.Type.INTEGER, 80), token(",", Token.Type.SYMBOL, 81),
+            token("async", Token.Type.IDENTIFIER, 83),
+            token("onAfterChunk", Token.Type.IDENTIFIER, 89), token("(", Token.Type.SYMBOL, 101),
+            token("Int", Token.Type.IDENTIFIER, 102), token("count", Token.Type.IDENTIFIER, 106),
+            token(")", Token.Type.SYMBOL, 111), token("=", Token.Type.SYMBOL, 113),
+            token("{", Token.Type.SYMBOL, 115), token("}", Token.Type.SYMBOL, 116),
+            token(")", Token.Type.SYMBOL, 117), token("->", Token.Type.SYMBOL, 119),
+            token("Int", Token.Type.IDENTIFIER, 122), token("{", Token.Type.SYMBOL, 126),
+            token("return", Token.Type.IDENTIFIER, 128), token("1", Token.Type.INTEGER, 135),
+            token("}", Token.Type.SYMBOL, 137)
+        ], snapshot).functionValues().first
+        let parameters = parsed.parameterValues()
+
+        expect(parsed.name).toBe("mapParallel")
+        expect(parameters.count).toBe(3)
+        expect(parameters[0].typeName).toBe("async func(Type,Int,List<Type>)->Out")
+        expect(parameters[1].defaultValue.expressionKind()).toBe("unary")
+        expect(parameters[2].defaultValue.expressionKind()).toBe("lambda")
+        expect(parsed.returnTypeName).toBe("Int")
+        expect(parsed.asyncMethod).toBe(true)
+        expect(parsed.range.startTokenIndex).toBe(0)
+        expect(parsed.range.endTokenIndex).toBe(47)
+    }
+
     test `parses structural parameters and implicit Unit body`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:structural-function"), "revision:one"

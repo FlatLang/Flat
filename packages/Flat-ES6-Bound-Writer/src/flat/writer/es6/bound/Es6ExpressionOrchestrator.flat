@@ -60,6 +60,12 @@ class {
                 expressions.emitReference(value.local), emit(value.value)
             )
         }
+        if (expression.class.isOfType(BoundPostfixUpdateExpression.class)) {
+            let value = (BoundPostfixUpdateExpression)expression
+            return expressions.emitPostfixUpdate(
+                value, emit(value.target)
+            )
+        }
         if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
             let value = (BoundAssignmentValueExpression)expression
             return expressions.emitAssignmentValue(

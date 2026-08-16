@@ -31,6 +31,37 @@ testable class {
         )
     }
 
+    async test `retains empty default lambda inside generic async header`() {
+        let tokens = significant(lex(
+            "public async mapParallel<Out>(async mapFunc(Type x, Int i, List<Type> list) -> Out, " +
+                "Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> List<Out>"
+        ))
+        let scanner = scanner(64)
+        var Int index
+        for (token in tokens) {
+            scanner.accept(token, index)
+            index++
+        }
+        let classification = scanner.classifyPendingBraced(tokens)
+
+        expect(classification != null).toBe(true)
+        expect(classification.memberKind).toBe(
+            PendingBracedMemberClassification.FUNCTION
+        )
+    }
+
+    async test `publishes bodyless generic return function contract at end`() {
+        let islands = collect("public reverse() -> List<Type>")
+        var NonBracedMemberHeaderSyntaxIsland header
+        header = (NonBracedMemberHeaderSyntaxIsland)islands.first
+
+        expect(islands.count).toBe(1)
+        expect(header.memberKind).toBe("function")
+        expect(header.name).toBe("reverse")
+        expect(header.range.startTokenIndex).toBe(0)
+        expect(header.range.endTokenIndex).toBe(9)
+    }
+
     async test `publishes implicit visibility array override member`() {
         let result = collect("this[Int index] => chars[index]")
         var NonBracedMemberHeaderSyntaxIsland header

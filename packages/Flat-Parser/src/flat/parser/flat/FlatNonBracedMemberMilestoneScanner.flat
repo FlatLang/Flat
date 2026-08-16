@@ -18,7 +18,8 @@ class {
     visible var Bool finished
     visible Int retainedTokenCount => retained.count
     visible Bool expressionBodyOpen => expressionBraceDepth > 0
-    visible Bool canOpenExpressionBrace => hasLambdaArrowPrefix()
+    visible Bool canOpenExpressionBrace => hasLambdaArrowPrefix() ||
+        (retained.isNotEmpty && retained.last.value == "=")
     visible var Int peakRetainedTokenCount
 
     public construct(
@@ -117,6 +118,31 @@ class {
         return islands
     }
 
+    bodylessGenericReturnFunction(Token[] tokens) -> Bool {
+        var Int closeParenthesis = -1
+        var Int genericOpen = -1
+        var Int index
+        while (index < tokens.count) {
+            if (tokens[index].value == ")") closeParenthesis = index
+            else if (closeParenthesis >= 0 && tokens[index].value == "<") {
+                genericOpen = index
+                break
+            }
+            index++
+        }
+        if (closeParenthesis < 0 || genericOpen <= closeParenthesis + 1 ||
+            tokens.last.value != ">") return false
+        var Int depth
+        index = genericOpen
+        while (index < tokens.count) {
+            if (tokens[index].value == "<") depth++
+            else if (tokens[index].value == ">") depth--
+            if (depth == 0 && index + 1 < tokens.count) return false
+            index++
+        }
+        return depth == 0
+    }
+
     public end() -> SyntaxIsland[] {
         if (finished) return SyntaxIsland[]
         if (expressionBodyOpen) reject("Flat type body ended inside an incomplete braced expression body")
@@ -124,8 +150,14 @@ class {
 
         while (retained.isNotEmpty) {
             let match = FlatClassBodyMatcher().inspect(retained)
+            if ((!match.matchedAll || match.memberTokenCounts.isEmpty) &&
+                bodylessGenericReturnFunction(retained)) {
+                islands.addAll(publishFirst(retained.count))
+                continue
+            }
             if (!match.matchedAll || match.memberTokenCounts.isEmpty) {
-                reject("Flat type body ended inside an invalid or incomplete non-braced member")
+                reject("Flat type body ended inside an invalid or incomplete non-braced member '" +
+                    retained.map({ _.value }).join(" ") + "'")
             }
             islands.addAll(publishFirst(match.memberTokenCounts.first))
         }
@@ -202,6 +234,7 @@ class {
     continuesMember(Int count) -> Bool => false {
         if (count >= retained.count) return false
         if (isSymbol(retained[count], ".")) return true
+        if (isSymbol(retained[count], "<")) return true
         if (!isSymbol(retained[count], "[")) return false
         if (count + 1 < retained.count && retained[count + 1].value == "Target") return false
         var Int cursor = count + 1

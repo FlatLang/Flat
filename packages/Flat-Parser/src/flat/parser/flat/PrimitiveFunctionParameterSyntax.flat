@@ -9,7 +9,8 @@ data class {
         visible String typeName,
         visible String name,
         visible PrimitiveExpressionSyntax defaultValue = null,
-        visible Bool visibleParameter = false
+        visible Bool visibleParameter = false,
+        visible Bool privateParameter = false
     ) {
         if (!range || !typeName || typeName.trim().count == 0 ||
             !name || name.trim().count == 0) {

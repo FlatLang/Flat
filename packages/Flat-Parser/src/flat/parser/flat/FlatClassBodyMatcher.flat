@@ -35,8 +35,41 @@ class {
      * accepts once supplied with the opening brace and a minimal valid body.
      * No token-shape heuristic is used by the mixed-member coordinator.
      */
+    genericFunctionHeader(Token[] tokens) -> Bool {
+        var Int open = -1
+        var Int close = -1
+        var Int index
+        while (index < tokens.count) {
+            if (tokens[index].value == "<" && open < 0) open = index
+            else if (tokens[index].value == ">" && open >= 0) {
+                close = index
+                break
+            }
+            index++
+        }
+        if (open <= 0 || close <= open + 1 || close + 1 >= tokens.count ||
+            tokens[open - 1].type != Token.Type.IDENTIFIER ||
+            tokens[close + 1].value != "(") return false
+        index = open + 1
+        while (index < close) {
+            if (tokens[index].type != Token.Type.IDENTIFIER) return false
+            index++
+            if (index < close) {
+                if (tokens[index].value != ",") return false
+                index++
+            }
+        }
+        return true
+    }
+
     public classifyPendingBraced(Token[] headerTokens) -> PendingBracedMemberClassification {
         if (headerTokens.isEmpty) return null
+        if (genericFunctionHeader(headerTokens)) {
+            return PendingBracedMemberClassification(
+                PendingBracedMemberClassification.FUNCTION,
+                FunctionParser.class.name
+            )
+        }
 
         let normalizedHeader = Token[]
         var Int index

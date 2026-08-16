@@ -1,5 +1,7 @@
 package flat/parser/flat
 
+import flat/compiler/models
+
 /** Immutable reduced interface method signature. */
 data class {
     var String[] parameterTypes
@@ -7,7 +9,9 @@ data class {
     public construct(
         visible String name,
         String[] parameterTypeNames,
-        visible String returnTypeName
+        visible String returnTypeName,
+        visible SourceRange range = null,
+        visible PrimitiveExpressionSyntax defaultValue = null
     ) {
         if (!name || name.trim().isEmpty || !parameterTypeNames ||
             parameterTypeNames.any((parameterTypeName) =>

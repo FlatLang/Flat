@@ -20,6 +20,7 @@ class {
 
     public resolve(String name) -> SemanticType {
         if (!name || name.trim().isEmpty) throw Exception("Reduced type name is required")
+        if (name.startsWith("async ")) return resolve(name.substring("async ".count))
         if (name.endsWith("[]")) {
             return ArraySemanticType(resolve(name.substring(0, name.count - 2)))
         }
@@ -40,6 +41,21 @@ class {
         if (name == "Object") return SemanticTypes.objectType()
         if (name == "Void") return SemanticTypes.voidType()
         if (name == "Unit") return SemanticTypes.unitType()
+        let genericOpen = name.indexOf("<", defaultReturnValue: -1)
+        if (genericOpen > 0 && name.endsWith(">")) {
+            let declarationName = name.substring(0, genericOpen)
+            let declaration = resolve(declarationName)
+            if (!declaration.class.isOfType(UserClassSemanticType.class)) {
+                throw Exception("Reduced generic type requires class declaration '#declarationName'")
+            }
+            let declarationObject = (Object)declaration
+            let declarationType = (UserClassSemanticType)declarationObject
+            let arguments = SemanticType[]
+            for (argument in splitTypes(
+                name.substring(genericOpen + 1, name.count - 1)
+            )) arguments.add(resolve(argument))
+            return GenericInstanceSemanticType(declarationType, arguments)
+        }
         let callable = callables.firstOrNull((candidate) =>
             candidate.callableKind.value == "constructor" &&
             candidate.ownerType.declarationIdentity.name == name
@@ -94,8 +110,8 @@ class {
         var Int index
         while (index < value.count) {
             let character = value.substring(index, index + 1)
-            if (character == "(") depth++
-            else if (character == ")") depth--
+            if (character == "(" || character == "<") depth++
+            else if (character == ")" || character == ">") depth--
             else if (character == "," && depth == 0) {
                 if (start == index) throw Exception("Reduced function type requires parameter type")
                 result.add(value.substring(start, index))

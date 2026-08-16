@@ -14,6 +14,17 @@ class {
         return Es6CodeResult(code: "(" + local.code + " = " + value.code + ")")
     }
 
+    public emitPostfixUpdate(
+        BoundPostfixUpdateExpression expression,
+        Es6CodeResult target
+    ) -> Es6CodeResult {
+        if (!expression || !target) {
+            throw Exception("ES6 postfix update requires expression and target")
+        }
+        if (!target.emitted) return target
+        return Es6CodeResult(code: "(" + target.code + expression.updateOperator + ")")
+    }
+
     public emitAssignmentValue(
         Es6CodeResult target,
         Es6CodeResult value

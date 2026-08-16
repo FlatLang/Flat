@@ -143,6 +143,12 @@ testable class {
             "new Array(" + Es6NameMangler.mangle(size.symbolIdentity.value) +
                 ").fill(null)"
         )
+        let postfix = BoundPostfixUpdateExpression(
+            fixture.range(), receiver.semanticType, receiver, "++"
+        )
+        expect(orchestrator.emit(postfix).code).toBe(
+            "(" + Es6NameMangler.mangle(receiver.symbolIdentity.value) + "++)"
+        )
         let assignment = BoundAssignmentValueExpression(
             fixture.range(), receiver.semanticType, receiver, literal,
             TypeConversions.classify(literal.semanticType, receiver.semanticType)

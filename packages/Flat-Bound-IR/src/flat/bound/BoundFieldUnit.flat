@@ -12,7 +12,8 @@ data class {
         visible SourceRange range,
         visible Bool visibleField = false,
         visible BoundExpression initializer = null,
-        visible Bool staticField = false
+        visible Bool staticField = false,
+        visible Bool mutableField = false
     ) {
         if (!name || !identity || !semanticType || !range ||
             (initializer && initializer.semanticType.kind() != "null" && !TypeConversions.classify(
