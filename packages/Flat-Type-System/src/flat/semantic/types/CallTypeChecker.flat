@@ -37,6 +37,26 @@ class {
                 range
             )
         }
+        let generics = target.genericParameters()
+        if (generics.isNotEmpty) {
+            let inference = GenericInference.infer(
+                GenericDeclaration(target.identity.declaration, generics, target.returnType),
+                parameterTypes.take(argumentTypes.count), argumentTypes, range
+            )
+            if (!inference.inferred) {
+                return CallCheckResult(
+                    target, TypeConversion[], SemanticTypes.errorType(), inference.diagnostic
+                )
+            }
+            let substitution = inference.substitution
+            let instantiated = CallableSignature(
+                target.identity, target.name, target.callableKind,
+                parameterTypes.map({ substitution.apply(_) }),
+                substitution.apply(target.returnType), target.ownerType,
+                target.optionalParameterCount, target.parameterNames()
+            )
+            return check(instantiated, receiverType, argumentTypes, range)
+        }
         let conversions = TypeConversion[]
         var Int index
         while (index < argumentTypes.count) {

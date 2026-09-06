@@ -6,6 +6,7 @@ import flat/compiler/models
 data class {
     var PrimitiveFunctionParameterSyntax[] parameters
     var PrimitiveStatementSyntax[] body
+    var String[] genericNames
 
     public construct(
         visible SourceRange range,
@@ -17,7 +18,8 @@ data class {
         visible Bool inferredReturnType = false,
         visible Bool asyncMethod = false,
         visible String externalName = null,
-        visible Bool abstractMethod = false
+        visible Bool abstractMethod = false,
+        String[] genericParameterNameValues = String[]
     ) {
         if (!range || !name || name.trim().count == 0 || !parameterValues ||
             parameterValues.any({ !_ }) || !returnTypeName ||
@@ -25,10 +27,24 @@ data class {
             (externalName != null && externalName.trim().isEmpty)) {
             throw Exception("Primitive function syntax requires range, signature, and body")
         }
+        genericNames = String[]
+        if (!genericParameterNameValues || genericParameterNameValues.any((candidate) => !candidate || candidate.trim().isEmpty)) {
+            throw Exception("Primitive function generic parameters require names")
+        }
+        for (genericName in genericParameterNameValues) {
+            if (genericNames.contains(genericName)) throw Exception("Duplicate function generic parameter '#genericName'")
+            genericNames.add(genericName)
+        }
         parameters = PrimitiveFunctionParameterSyntax[]
         parameters.addAll(parameterValues)
         body = PrimitiveStatementSyntax[]
         body.addAll(statements)
+    }
+
+    public genericParameterNames() -> String[] {
+        let result = String[]
+        result.addAll(genericNames)
+        return result
     }
 
     public parameterValues() -> PrimitiveFunctionParameterSyntax[] {

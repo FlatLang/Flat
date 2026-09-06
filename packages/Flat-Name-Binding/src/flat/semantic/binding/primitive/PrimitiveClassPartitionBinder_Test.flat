@@ -7,6 +7,95 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `binds generic method parameter and return identity`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-method-binding"), "one"
+        )
+        let stream = Lexer().lex("class Box { identity<Out>(Out value) -> Out { return value; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = bound.functionUnits().firstOrNull({ _.name == "identity" })
+        expect(method.returnType.kind()).toBe("generic-parameter")
+        let partition = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let partitionMethod = partition.functionUnits().firstOrNull({ _.name == "identity" })
+        expect(partitionMethod.returnType.value()).toBe(method.returnType.value())
+    }
+
+    test `resolves generic collection of callbacks`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:callback-collection"), "one"
+        )
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "List"
+        )
+        let listType = UserClassSemanticType(identity)
+        let resolver = PrimitiveStructuralTypeResolver(callables: [CallableSignature(
+            SymbolIdentity(identity, "constructor"), "List", CallableKind("constructor"),
+            SemanticType[], listType, listType
+        )])
+        let resolved = resolver.resolve("List<func(Int)->Bool[]>")
+        expect(resolved.kind()).toBe("generic-instance")
+        let list = (GenericInstanceSemanticType)resolved
+        let argument = list.typeArguments().first
+        expect(argument.kind()).toBe("function")
+        let callback = (FunctionSemanticType)argument
+        expect(callback.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(callback.returnType.kind()).toBe("array")
+        let array = (ArraySemanticType)callback.returnType
+        expect(array.elementType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    test `resolves callback returning generic array`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:callback-array-return"), "one"
+        )
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", 0), "instance-method", "map"
+        )
+        let parameter = GenericParameterSemanticType(identity, "Out", 0)
+        let resolved = PrimitiveStructuralTypeResolver(
+            methodGenericParameters: [parameter]
+        ).resolve("async func(Int)->Out[]")
+        expect(resolved.kind()).toBe("function")
+        let callback = (FunctionSemanticType)resolved
+        expect(callback.returnType.kind()).toBe("array")
+        let array = (ArraySemanticType)callback.returnType
+        expect(array.elementType.value()).toBe(parameter.value())
+        expect(callback.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    test `resolves method generic scope`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-scope"), "one"
+        )
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 0), "class", "List"
+        )
+        let parameter = GenericParameterSemanticType(identity, "Out", 0)
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", 10), "instance-method", "map"
+        )
+        let methodParameter = GenericParameterSemanticType(methodIdentity, "Out", 0)
+        let parameters = [methodParameter]
+        let resolver = PrimitiveStructuralTypeResolver(
+            genericParameter: parameter, methodGenericParameters: parameters
+        )
+        parameters.clear()
+        expect(resolver.resolve("Out").value()).toBe(methodParameter.value())
+        let resolved = resolver.resolve("async func(Out,Int)->Out")
+        let callback = (FunctionSemanticType)resolved
+        expect(callback.returnType.value()).toBe(methodParameter.value())
+        expect(callback.parameterTypes().first.value()).toBe(methodParameter.value())
+        var Bool rejected
+        try {
+            PrimitiveStructuralTypeResolver(methodGenericParameters: [parameter, parameter])
+        } catch (Exception error) {
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+    }
+
     test `resolves nested generic async callback signature`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:map-parallel-signature-bind"), "one"
@@ -24,6 +113,29 @@ testable class {
         ).resolve("async func(Type,Int,List<Type>)->Type")
 
         expect(resolved.kind()).toBe("function")
+        let callback = (FunctionSemanticType)resolved
+        expect(callback.parameterTypes().count).toBe(3)
+        expect(callback.parameterTypes()[0].kind()).toBe("generic-parameter")
+        expect(callback.parameterTypes()[1].value()).toBe(SemanticTypes.intType().value())
+        let parameterTypes = callback.parameterTypes()
+        let listParameter = parameterTypes[2]
+        let listTypeArgument = ((GenericInstanceSemanticType)listParameter).typeArguments().first
+        expect(listTypeArgument.value()).toBe(parameterTypes[0].value())
+        expect(callback.returnType.value()).toBe(callback.parameterTypes()[0].value())
+    }
+
+    test `resolves nested callback before following parameter`() {
+        let type = PrimitiveStructuralTypeResolver().resolve(
+            "func(func(Int)->Bool,Int)->Bool"
+        )
+        let resolved = (FunctionSemanticType)type
+        expect(resolved.parameterTypes().count).toBe(2)
+        let firstParameter = resolved.parameterTypes().first
+        let callback = (FunctionSemanticType)firstParameter
+        expect(callback.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(callback.returnType.value()).toBe(SemanticTypes.boolType().value())
+        expect(resolved.parameterTypes()[1].value()).toBe(SemanticTypes.intType().value())
+        expect(resolved.returnType.value()).toBe(SemanticTypes.boolType().value())
     }
 
     async test `selects projected constructor field by owner`() {

@@ -374,6 +374,39 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `package linker executes generic identity method`() {
+        let identity = "memory:generic-identity"
+        let source = "class Box { identity<Out>(Out value) -> Out { return value; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Box"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", method.range.startTokenIndex),
+            "instance-method", "identity"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-generic-identity-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(
+            destination,
+            code + "let box = new " + Es6NameMangler.mangle(typeIdentity.value) + "();\n" +
+                "let value = {}; console.log(box." + Es6NameMangler.mangle(methodIdentity.value) +
+                "(42), box." + Es6NameMangler.mangle(methodIdentity.value) + "(value) === value);\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42 true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `package linker executes real NoSuchElementException default delegation`() {
         let identity = "flat/datastruct/list/NoSuchElementException.flat"
         let exceptionIdentity = "flat/exception/Exception.flat"

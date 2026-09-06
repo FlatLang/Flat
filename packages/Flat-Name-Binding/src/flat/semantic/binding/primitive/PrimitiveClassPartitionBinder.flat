@@ -128,14 +128,28 @@ class {
             let owner = UserClassSemanticType(ownerIdentity)
             var Int ordinal
             for (method in syntax.methodValues()) {
+                let methodKind = method.staticMethod ? "static-method" : "instance-method"
+                let methodIdentity = DeclarationIdentity(
+                    SyntaxIslandIdentity(method.range.snapshot, methodKind, method.range.startTokenIndex),
+                    methodKind, method.name
+                )
+                let methodGenerics = GenericParameterSemanticType[]
+                for (genericName in method.genericParameterNames()) {
+                    methodGenerics.add(GenericParameterSemanticType(
+                        methodIdentity, genericName, methodGenerics.count
+                    ))
+                }
+                let classGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
+                    ownerIdentity, syntax.genericParameterName, 0
+                ) : null
                 var SemanticType[] parameterTypes = method.parameterValues().map({
-                    signatureType(_.typeName, syntaxes, snapshot)
+                    signatureType(_.typeName, syntaxes, snapshot, classGeneric, methodGenerics)
                 })
                 if (syntax.name == "String") {
                     parameterTypes = SemanticType[]
                     for (parameter in method.parameterValues()) {
                         parameterTypes.add(parameter.typeName == "String" ? owner :
-                            signatureType(parameter.typeName, syntaxes, snapshot))
+                            signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics))
                     }
                 }
                 let declaredStringResult = syntax.name == "String" &&
@@ -165,7 +179,7 @@ class {
                         (syntax.name == "String" && method.name == "replace" &&
                          method.returnTypeName == "String")
                         ? owner :
-                    signatureType(method.returnTypeName, syntaxes, snapshot)
+                    signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics)
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
                         method.range.snapshot,
@@ -407,7 +421,9 @@ class {
     signatureType(
         String name,
         PrimitiveClassSyntax[] syntaxes,
-        SourceSnapshotIdentity snapshot
+        SourceSnapshotIdentity snapshot,
+        GenericParameterSemanticType classGeneric = null,
+        GenericParameterSemanticType[] methodGenerics = GenericParameterSemanticType[]
     ) -> SemanticType {
         var String normalized = name
         while (normalized.startsWith("native")) {
@@ -417,7 +433,8 @@ class {
             }
         }
         return PrimitiveStructuralTypeResolver(
-            syntaxes: syntaxes, snapshot: snapshot
+            syntaxes: syntaxes, snapshot: snapshot,
+            genericParameter: classGeneric, methodGenericParameters: methodGenerics
         ).resolve(normalized)
     }
 }

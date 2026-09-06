@@ -1,6 +1,52 @@
 package flat/semantic/types
 
 testable class {
+    test `infers generic call result and rejects missing evidence`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.symbolIdentity("identity", "function")
+        let parameter = GenericParameterSemanticType(identity.declaration, "Out", 0)
+        let target = CallableSignature(
+            identity, "identity", CallableKind("function"), [parameter], parameter,
+            genericParameterValues: [parameter]
+        )
+        let result = CallTypeChecker.check(target, null, [SemanticTypes.intType()], fixture.range())
+        expect(result.valid).toBe(true)
+        expect(result.semanticType.value()).toBe(SemanticTypes.intType().value())
+        expect(result.target.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(target.parameterTypes().first.value()).toBe(parameter.value())
+        let unresolved = CallableSignature(
+            identity, "identity", CallableKind("function"), SemanticType[], parameter,
+            genericParameterValues: [parameter]
+        )
+        let failure = CallTypeChecker.check(unresolved, null, SemanticType[], fixture.range())
+        expect(failure.valid).toBe(false)
+        expect(failure.diagnostic.code).toBe("type.generic-unresolved")
+    }
+
+    test `callable signatures preserve owned generic declarations`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.symbolIdentity("identity", "function")
+        let parameter = GenericParameterSemanticType(identity.declaration, "Out", 0)
+        let parameters = [parameter]
+        let signature = CallableSignature(
+            identity, "identity", CallableKind("function"), [parameter], parameter,
+            genericParameterValues: parameters
+        )
+        parameters.clear()
+        let returned = signature.genericParameters()
+        returned.clear()
+        expect(signature.genericParameters().count).toBe(1)
+        expect(signature.genericParameters().first.value()).toBe(parameter.value())
+        var Bool rejected
+        try {
+            CallableSignature(
+                fixture.symbolIdentity("other", "function"), "other", CallableKind("function"),
+                [parameter], parameter, genericParameterValues: [parameter]
+            )
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
     test `callable signatures preserve immutable parameter names`() {
         let fixture = TypeSystem_TestFixture()
         let signature = CallableSignature(

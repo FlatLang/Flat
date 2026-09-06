@@ -114,7 +114,7 @@ class {
                 ),
                 methodKind, method.name
             )
-            var SemanticType[] parameterTypes = method.parameterValues().map({ typeOf(_.typeName) })
+            var SemanticType[] parameterTypes = method.parameterValues().map({ methodTypeOf(_.typeName, method) })
             if (syntax.name == "String") {
                 parameterTypes = SemanticType[]
                 for (parameter in method.parameterValues()) {
@@ -148,7 +148,7 @@ class {
                 : method.returnTypeName == "this" ||
                     (syntax.name == "String" && method.name == "replace" &&
                      method.returnTypeName == "String")
-                    ? type : typeOf(method.returnTypeName)
+                    ? type : methodTypeOf(method.returnTypeName, method)
             let existing = constructors.firstOrNull({
                 _.identity.declaration.value == methodIdentity.value
             })
@@ -504,7 +504,7 @@ class {
             }
         }
         let parameters = parameters(
-            syntax.parameterValues(), identity, type, receiver, allFields
+            syntax.parameterValues(), identity, type, receiver, allFields, syntax
         )
         let locals = localBindings(parameters)
         locals.addAll(inheritedFieldBindings(inheritedFields))
@@ -519,7 +519,7 @@ class {
             (type.declarationIdentity.name == "String" &&
              syntax.returnTypeName == "String")
             ? type
-            : typeOf(syntax.returnTypeName)
+            : methodTypeOf(syntax.returnTypeName, syntax)
         var SemanticType returnType = declaredReturnType
         let statements = BoundStatement[]
         let opaqueLocals = LocalBinding[]
@@ -828,7 +828,8 @@ class {
         DeclarationIdentity owner,
         UserClassSemanticType receiverType = null,
         BoundReferenceExpression receiver = null,
-        BoundFieldUnit[] fields = BoundFieldUnit[]
+        BoundFieldUnit[] fields = BoundFieldUnit[],
+        PrimitiveFunctionSyntax method = null
     ) -> BoundFunctionParameter[] {
         let result = BoundFunctionParameter[]
         var Int index
@@ -839,7 +840,8 @@ class {
             }
             let type = receiverType &&
                 receiverType.declarationIdentity.name == "String" &&
-                value.typeName == "String" ? receiverType : typeOf(value.typeName)
+                value.typeName == "String" ? receiverType :
+                method ? methodTypeOf(value.typeName, method) : typeOf(value.typeName)
             var BoundExpression defaultValue
             if (value.defaultValue) {
                 var PrimitiveExpressionBindingResult bound
@@ -2123,6 +2125,22 @@ class {
     referenceType(SemanticType type) -> Bool =>
         type.kind() == "string" || type.kind() == "object" || type.kind() == "array" ||
         type.kind() == "user-class" || type.kind() == "function"
+
+    methodTypeOf(String name, PrimitiveFunctionSyntax method) -> SemanticType {
+        let kind = method.staticMethod ? "static-method" : "instance-method"
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(method.range.snapshot, kind, method.range.startTokenIndex),
+            kind, method.name
+        )
+        let generics = GenericParameterSemanticType[]
+        for (genericName in method.genericParameterNames()) {
+            generics.add(GenericParameterSemanticType(identity, genericName, generics.count))
+        }
+        return PrimitiveStructuralTypeResolver(
+            callables: constructors, genericParameter: genericParameter,
+            receiverType: boundType, methodGenericParameters: generics
+        ).resolve(name)
+    }
 
     typeOf(String name) -> SemanticType => PrimitiveStructuralTypeResolver(
         callables: constructors,

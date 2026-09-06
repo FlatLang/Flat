@@ -6,6 +6,7 @@ import flat/compiler/models
 data class {
     var SemanticType[] parameters
     var String[] namesStore
+    var GenericParameterSemanticType[] genericsStore
 
     public construct(
         visible SymbolIdentity identity,
@@ -15,7 +16,8 @@ data class {
         visible SemanticType returnType,
         visible UserClassSemanticType ownerType = null,
         visible Int optionalParameterCount = 0,
-        String[] names = String[]
+        String[] names = String[],
+        GenericParameterSemanticType[] genericParameterValues = GenericParameterSemanticType[]
     ) {
         if (!identity || !name || name.trim().count == 0 || !callableKind ||
             !parameterTypes || parameterTypes.any({ !_ }) || !returnType ||
@@ -35,10 +37,28 @@ data class {
         if (callableKind.value == "constructor" && returnType.value() != ownerType.value()) {
             throw Exception("Constructor return type must be its owning type")
         }
+        if (!genericParameterValues || genericParameterValues.any({ !_ })) {
+            throw Exception("Callable generic parameters must be valid")
+        }
+        genericsStore = GenericParameterSemanticType[]
+        for (parameter in genericParameterValues) {
+            if (parameter.ownerIdentity != identity.declaration ||
+                parameter.ordinal != genericsStore.count ||
+                genericsStore.any({ _.name == parameter.name })) {
+                throw Exception("Callable generic parameters require unique names and contiguous declaration ownership")
+            }
+            genericsStore.add(parameter)
+        }
         parameters = SemanticType[]
         parameters.addAll(parameterTypes)
         namesStore = String[]
         namesStore.addAll(names)
+    }
+
+    public genericParameters() -> GenericParameterSemanticType[] {
+        let result = GenericParameterSemanticType[]
+        result.addAll(genericsStore)
+        return result
     }
 
     public parameterTypes() -> SemanticType[] {

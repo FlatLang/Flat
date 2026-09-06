@@ -290,7 +290,34 @@ testable class {
         expect(parsed.returnTypeName).toBe("Int")
         expect(parsed.asyncMethod).toBe(true)
         expect(parsed.range.startTokenIndex).toBe(0)
+        expect(parsed.genericParameterNames()).toBe(["Out"])
+        let names = parsed.genericParameterNames()
+        names.add("Other")
+        expect(parsed.genericParameterNames()).toBe(["Out"])
         expect(parsed.range.endTokenIndex).toBe(47)
+    }
+
+    test `preserves ordered generic names and rejects duplicate names`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-names"), "one")
+        let names = ["First", "Second"]
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let syntax = PrimitiveFunctionSyntax(
+            range, "map", PrimitiveFunctionParameterSyntax[],
+            "Unit", PrimitiveStatementSyntax[], genericParameterNameValues: names
+        )
+        names.add("Third")
+        expect(syntax.genericParameterNames()).toBe(["First", "Second"])
+        var Bool rejected
+        try {
+            PrimitiveFunctionSyntax(
+                range, "map", PrimitiveFunctionParameterSyntax[],
+                "Unit", PrimitiveStatementSyntax[], genericParameterNameValues: ["Out", "Out"]
+            )
+        } catch (Exception error) {
+            rejected = true
+        }
+        expect(rejected).toBe(true)
     }
 
     test `parses structural parameters and implicit Unit body`() {

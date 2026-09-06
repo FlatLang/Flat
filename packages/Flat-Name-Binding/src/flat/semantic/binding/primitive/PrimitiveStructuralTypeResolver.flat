@@ -6,13 +6,26 @@ import flat/semantic/types
 
 /** Resolves reduced declaration type text without erasing structural array/function evidence. */
 class {
+    var GenericParameterSemanticType[] methodParameters
+
     public construct(
         visible PrimitiveClassSyntax[] syntaxes = PrimitiveClassSyntax[],
         visible CallableSignature[] callables = CallableSignature[],
         visible SourceSnapshotIdentity snapshot = null,
         visible GenericParameterSemanticType genericParameter = null,
-        visible UserClassSemanticType receiverType = null
+        visible UserClassSemanticType receiverType = null,
+        GenericParameterSemanticType[] methodGenericParameters = GenericParameterSemanticType[]
     ) {
+        methodParameters = GenericParameterSemanticType[]
+        if (!methodGenericParameters || methodGenericParameters.any({ !_ })) {
+            throw Exception("Method generic scope requires valid parameters")
+        }
+        for (parameter in methodGenericParameters) {
+            if (methodParameters.any({ _.name == parameter.name })) {
+                throw Exception("Duplicate method generic parameter '#{parameter.name}'")
+            }
+            methodParameters.add(parameter)
+        }
         if (!syntaxes || syntaxes.any({ !_ }) || !callables || callables.any({ !_ })) {
             throw Exception("Reduced structural type resolution requires valid declarations")
         }
@@ -21,11 +34,22 @@ class {
     public resolve(String name) -> SemanticType {
         if (!name || name.trim().isEmpty) throw Exception("Reduced type name is required")
         if (name.startsWith("async ")) return resolve(name.substring("async ".count))
+        var Int open = name.indexOf("(", defaultReturnValue: -1)
+        let firstGenericOpen = name.indexOf("<", defaultReturnValue: -1)
+        if (firstGenericOpen >= 0 && firstGenericOpen < open) open = -1
+        if (open >= 0) {
+            let close = matchingClose(name, open)
+            if (close >= 0 && close + 2 < name.count &&
+                name.substring(close + 1, close + 3) == "->") {
+                return functionType(name, open)
+            }
+        }
         if (name.endsWith("[]")) {
             return ArraySemanticType(resolve(name.substring(0, name.count - 2)))
         }
-        let open = name.indexOf("(", defaultReturnValue: -1)
         if (open >= 0) return functionType(name, open)
+        let methodParameter = methodParameters.firstOrNull({ _.name == name })
+        if (methodParameter) return methodParameter
         if (genericParameter && name == genericParameter.name) return genericParameter
         if (name == "this" && receiverType) return receiverType
         if (name == "Unknown") return SemanticTypes.unknownType()
@@ -111,7 +135,8 @@ class {
         while (index < value.count) {
             let character = value.substring(index, index + 1)
             if (character == "(" || character == "<") depth++
-            else if (character == ")" || character == ">") depth--
+            else if (character == ")" ||
+                (character == ">" && (index == 0 || value.substring(index - 1, index) != "-"))) depth--
             else if (character == "," && depth == 0) {
                 if (start == index) throw Exception("Reduced function type requires parameter type")
                 result.add(value.substring(start, index))

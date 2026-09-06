@@ -43,12 +43,13 @@ class {
             else if (modifier == "abstract") abstractMethod = true
         }
         let name = requireIdentifier("Expected function name")
+        let genericNames = String[]
         if (index < tokens.count && tokens[index].value == "<") {
             index++
-            requireIdentifier("Expected function generic parameter")
+            genericNames.add(requireIdentifier("Expected function generic parameter"))
             while (index < tokens.count && tokens[index].value == ",") {
                 index++
-                requireIdentifier("Expected function generic parameter")
+                genericNames.add(requireIdentifier("Expected function generic parameter"))
             }
             require(">", "Expected closing function generic parameter list")
         }
@@ -65,7 +66,7 @@ class {
                 let statements = parseBracedBody()
                 return PrimitiveFunctionSyntax(
                     range(start, index), name, parameters, "this", statements,
-                    staticMethod, false, asyncMethod, externalName
+                    staticMethod, false, asyncMethod, externalName, false, genericNames
                 )
             }
             let expressionStart = index
@@ -88,7 +89,7 @@ class {
             return PrimitiveFunctionSyntax(
                 range(start, index), name, parameters, inferredType,
                 statements,
-                staticMethod, true, asyncMethod, externalName
+                staticMethod, true, asyncMethod, externalName, false, genericNames
             )
         }
         var String returnType = "Unit"
@@ -103,7 +104,7 @@ class {
             return PrimitiveFunctionSyntax(
                 range(start, index), name, parameters, returnType,
                 PrimitiveStatementSyntax[],
-                staticMethod, false, asyncMethod, externalName, true
+                staticMethod, false, asyncMethod, externalName, true, genericNames
             )
         }
         if (index < tokens.count && tokens[index].value == "=>") {
@@ -118,21 +119,21 @@ class {
                 statements.addAll(parseBracedBody())
                 return PrimitiveFunctionSyntax(
                     range(start, index), name, parameters, returnType, statements,
-                    staticMethod, false, asyncMethod, externalName
+                    staticMethod, false, asyncMethod, externalName, false, genericNames
                 )
             }
             index = tokens.count
             return PrimitiveFunctionSyntax(
                 range(start, index), name, parameters, returnType,
                 [expressionBodyStatement(expressionStart)],
-                staticMethod, false, asyncMethod, externalName
+                staticMethod, false, asyncMethod, externalName, false, genericNames
             )
         }
         require("{", "Expected opening function brace")
         let statements = parseBracedBody()
         return PrimitiveFunctionSyntax(
             range(start, index), name, parameters, returnType, statements,
-            staticMethod, false, asyncMethod, externalName
+            staticMethod, false, asyncMethod, externalName, false, genericNames
         )
     }
 
