@@ -390,10 +390,16 @@ class {
     parseSimple() -> PrimitiveStatementSyntax {
         let start = index
         let line = tokens[start].location.lineNumber
-        while (index < tokens.count && tokens[index].value != ";" &&
-            tokens[index].value != "}" &&
-            !(tokens[index].location.lineNumber > line &&
-                (controlStart(index) || statementStart(index)))) index++
+        var Int braceDepth
+        while (index < tokens.count) {
+            let value = tokens[index].value
+            if (braceDepth == 0 && (value == ";" || value == "}" ||
+                (tokens[index].location.lineNumber > line &&
+                    (controlStart(index) || statementStart(index))))) break
+            if (value == "{") braceDepth++
+            else if (value == "}") braceDepth--
+            index++
+        }
         if (index == start) {
             syntax("Expected statement", start)
         }

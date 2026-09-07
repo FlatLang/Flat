@@ -37,6 +37,7 @@ class {
 
     public emitLiteral(BoundLiteralExpression expression) -> Es6CodeResult {
         if (!expression) throw Exception("ES6 literal emission requires an expression")
+        if (expression.semanticType.kind() == "unit") return Es6CodeResult(code: "void 0")
         return Es6CodeResult(code: expression.sourceValue)
     }
 

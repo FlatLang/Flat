@@ -8,7 +8,8 @@ data class extends PrimitiveExpressionSyntax {
     public construct(
         SourceRange range,
         PrimitiveFunctionParameterSyntax[] parameterValues,
-        visible PrimitiveExpressionSyntax body
+        visible PrimitiveExpressionSyntax body,
+        visible Bool emptyBody = false
     ) {
         if (!range || !parameterValues || parameterValues.any({ !_ }) || !body) {
             throw Exception("Lambda syntax requires parameters and body")

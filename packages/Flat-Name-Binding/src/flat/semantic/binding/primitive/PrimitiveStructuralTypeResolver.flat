@@ -33,7 +33,12 @@ class {
 
     public resolve(String name) -> SemanticType {
         if (!name || name.trim().isEmpty) throw Exception("Reduced type name is required")
-        if (name.startsWith("async ")) return resolve(name.substring("async ".count))
+        if (name.startsWith("async ")) {
+            let resolved = resolve(name.substring("async ".count))
+            if (resolved.kind() != "function") throw Exception("Async type requires a function signature")
+            let callback = (FunctionSemanticType)resolved
+            return FunctionSemanticType(callback.parameterTypes(), callback.returnType, asyncFunction: true)
+        }
         var Int open = name.indexOf("(", defaultReturnValue: -1)
         let firstGenericOpen = name.indexOf("<", defaultReturnValue: -1)
         if (firstGenericOpen >= 0 && firstGenericOpen < open) open = -1

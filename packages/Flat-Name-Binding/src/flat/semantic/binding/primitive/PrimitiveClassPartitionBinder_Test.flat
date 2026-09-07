@@ -7,6 +7,55 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `binds canonical mapParallel signature and defaults`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:map-parallel-signature"), "one")
+        let stream = Lexer().lex(
+            "class List<Type> { public async mapParallel<Out>(async mapFunc(Type x, Int i, List<Type> list) -> Out, Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> List<Out> { return null; } }"
+        )
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let method = type.functionUnits().firstOrNull({ _.name == "mapParallel" })
+        let parameters = method.parameterValues()
+        let callback = (FunctionSemanticType)parameters[0].semanticType
+        expect(callback.asyncFunction).toBe(true)
+        let afterChunk = (FunctionSemanticType)parameters[2].semanticType
+        expect(afterChunk.asyncFunction).toBe(true)
+        let defaultType = parameters[2].defaultValue.semanticType
+        let defaultCallback = (FunctionSemanticType)defaultType
+        expect(defaultCallback.asyncFunction).toBe(true)
+        expect(callback.parameterTypes().count).toBe(3)
+        expect(callback.parameterTypes()[0].kind()).toBe("generic-parameter")
+        expect(callback.parameterTypes()[2].kind()).toBe("generic-instance")
+        expect(callback.returnType.kind()).toBe("generic-parameter")
+        expect(method.returnType.kind()).toBe("generic-instance")
+        let resultType = (GenericInstanceSemanticType)method.returnType
+        expect(resultType.typeArguments().first.value()).toBe(callback.returnType.value())
+        let callbackParameters = callback.parameterTypes()
+        let listParameterObject = (Object)callbackParameters[2]
+        let listParameter = (GenericInstanceSemanticType)listParameterObject
+        expect(listParameter.typeArguments().first.value()).toBe(callbackParameters.first.value())
+        let statements = method.statements()
+        let statementObject = (Object)statements.first
+        let statement = (BoundReturnStatement)statementObject
+        expect(statement.conversion.conversionKind).toBe("null-reference-return")
+        expect(statement.requiredType.value()).toBe(method.returnType.value())
+        expect(statement.value.semanticType.kind()).toBe("null")
+        expect(parameters[1].defaultValue.semanticType.value()).toBe("primitive:Int")
+        expect(parameters[2].defaultValue.semanticType.value()).toBe(parameters[2].semanticType.value())
+    }
+
+    async test `rejects null return for unconstrained generic parameter`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-invalid"), "one")
+        let stream = Lexer().lex("class Box { empty<Out>() -> Out { return null; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("cannot return 'null'")).toBe(true)
+    }
+
     async test `binds generic method parameter and return identity`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:generic-method-binding"), "one"
@@ -115,6 +164,7 @@ testable class {
 
         expect(resolved.kind()).toBe("function")
         let callback = (FunctionSemanticType)resolved
+        expect(callback.asyncFunction).toBe(true)
         expect(callback.parameterTypes().count).toBe(3)
         expect(callback.parameterTypes()[0].kind()).toBe("generic-parameter")
         expect(callback.parameterTypes()[1].value()).toBe(SemanticTypes.intType().value())

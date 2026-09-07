@@ -16,6 +16,33 @@ class {
     ) -> PrimitiveExpressionBindingResult {
         if (!syntax || !locals || !callables) throw Exception("Primitive binding requires syntax, locals, and callables")
         try {
+            if (requiredType && requiredType.kind() == "function" &&
+                syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
+                let lambda = (PrimitiveLambdaSyntax)syntax
+                if (lambda.emptyBody) {
+                    let type = (FunctionSemanticType)requiredType
+                    if (type.returnType.value() != SemanticTypes.unitType().value()) {
+                        throw Exception("Empty callback requires a Unit return type")
+                    }
+                    let parameters = BoundFunctionParameter[]
+                    var Int index
+                    for (parameterType in type.parameterTypes()) {
+                        let name = "argument#index"
+                        let owner = DeclarationIdentity(
+                            SyntaxIslandIdentity(lambda.range.snapshot, "lambda", lambda.range.startTokenIndex),
+                            "lambda-parameter", name
+                        )
+                        parameters.add(BoundFunctionParameter(
+                            name, SymbolIdentity(owner, "lambda-parameter", index), parameterType
+                        ))
+                        index++
+                    }
+                    return PrimitiveExpressionBindingResult(expression: BoundLambdaExpression(
+                        lambda.range, type, parameters, BoundReferenceExpression[],
+                        BoundLiteralExpression(lambda.range, SemanticTypes.unitType(), "null")
+                    ))
+                }
+            }
             let expression = bindSyntax(syntax, locals, callables)
             if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
             let conversion = TypeConversions.classify(
@@ -60,6 +87,50 @@ class {
         if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
             return ((PrimitiveReferenceSyntax)syntax).name == name
         }
+        if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
+            return ((PrimitiveConstructionSyntax)syntax).argumentValues().any({ referencesName(_, name) })
+        }
+        if (syntax.class.isOfType(PrimitiveArrayConstructionSyntax.class)) {
+            return referencesName(((PrimitiveArrayConstructionSyntax)syntax).size, name)
+        }
+        if (syntax.class.isOfType(PrimitiveArraySyntax.class)) {
+            return ((PrimitiveArraySyntax)syntax).elementValues().any({ referencesName(_, name) })
+        }
+        if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
+            let access = (PrimitiveArrayAccessSyntax)syntax
+            return referencesName(access.receiver, name) || referencesName(access.index, name)
+        }
+        if (syntax.class.isOfType(PrimitiveInterpolationPathSyntax.class)) {
+            return ((PrimitiveInterpolationPathSyntax)syntax).pathValues().first == name
+        }
+        if (syntax.class.isOfType(PrimitiveInterpolatedStringSyntax.class)) {
+            return ((PrimitiveInterpolatedStringSyntax)syntax).segmentValues().any((segment) =>
+                !segment.literal() && referencesName(segment.expression, name))
+        }
+        if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
+            let conditional = (PrimitiveConditionalSyntax)syntax
+            return referencesName(conditional.condition, name) ||
+                referencesName(conditional.whenTrue, name) || referencesName(conditional.whenFalse, name)
+        }
+        if (syntax.class.isOfType(PrimitiveCastSyntax.class)) {
+            return referencesName(((PrimitiveCastSyntax)syntax).value, name)
+        }
+        if (syntax.class.isOfType(PrimitivePostfixUpdateSyntax.class)) {
+            return referencesName(((PrimitivePostfixUpdateSyntax)syntax).operand, name)
+        }
+        if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) {
+            return referencesName(((PrimitiveDeclarationValueSyntax)syntax).value, name)
+        }
+        if (syntax.class.isOfType(PrimitiveAssignmentValueSyntax.class)) {
+            let assignment = (PrimitiveAssignmentValueSyntax)syntax
+            return assignment.name == name || referencesName(assignment.value, name)
+        }
+        if (syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
+            let lambda = (PrimitiveLambdaSyntax)syntax
+            return !lambda.emptyBody &&
+                !lambda.parameterValues().any({ _.name == name }) &&
+                referencesName(lambda.body, name)
+        }
         if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
             return referencesName(((PrimitiveUnarySyntax)syntax).operand, name)
         }
@@ -67,8 +138,15 @@ class {
             let value = (PrimitiveBinarySyntax)syntax
             return referencesName(value.left, name) || referencesName(value.right, name)
         }
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+            let call = (PrimitiveMemberCallSyntax)syntax
+            return referencesName(call.receiver, name) ||
+                call.argumentValues().any({ referencesName(_, name) }) ||
+                call.namedArgumentValues().any({ referencesName(_.value, name) })
+        }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
-            return ((PrimitiveCallSyntax)syntax).argumentValues().any({ referencesName(_, name) })
+            let call = (PrimitiveCallSyntax)syntax
+            return call.name == name || call.argumentValues().any({ referencesName(_, name) })
         }
         return false
     }
@@ -80,44 +158,99 @@ class {
     ) -> BoundExpression {
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
-            if (value.namedArgumentValues().isNotEmpty) {
+            let namedArguments = value.namedArgumentValues()
+            if (namedArguments.isNotEmpty) {
+                let positionalArguments = value.argumentValues()
+                let owner = bindSyntax(value.receiver, locals, callables)
                 let candidates = callables.filter((candidate) =>
                     candidate.callableKind.value == "instance-method" &&
+                    candidate.ownerType.value() == owner.semanticType.value() &&
                     candidate.name == value.memberName &&
-                    candidate.parameterNames().isNotEmpty &&
-                    candidate.parameterTypes().count == value.argumentValues().count +
-                        value.namedArgumentValues().count
+                    candidate.parameterNames().count == candidate.parameterTypes().count &&
+                    candidate.parameterTypes().count == positionalArguments.count +
+                        namedArguments.count
                 )
-                if (candidates.count != 1) {
-                    throw Exception("Mixed member call '#{value.memberName}' requires one named target")
+                if (candidates.count > 1) {
+                    let applicable = CallableSignature[]
+                    for (candidate in candidates) {
+                        let names = candidate.parameterNames()
+                        var Bool matches = true
+                        var Int index
+                        while (index < namedArguments.count) {
+                            if (names[positionalArguments.count + index] !=
+                                namedArguments[index].name) matches = false
+                            index++
+                        }
+                        if (matches) applicable.add(candidate)
+                    }
+                    if (applicable.isEmpty) {
+                        let resolution = OverloadResolver.resolve(value.memberName, applicable,
+                            owner.semanticType, SemanticType[], value.range)
+                        throw Exception(resolution.diagnostic.message)
+                    }
+                    let arguments = BoundExpression[]
+                    for (argument in positionalArguments) {
+                        arguments.add(bindSyntax(argument, locals, callables))
+                    }
+                    for (argument in namedArguments) {
+                        arguments.add(bindSyntax(argument.value, locals, callables))
+                    }
+                    let resolution = OverloadResolver.resolve(
+                        value.memberName, applicable, owner.semanticType,
+                        arguments.map({ _.semanticType }), value.range
+                    )
+                    if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+                    let checked = CallTypeChecker.check(
+                        resolution.selected, owner.semanticType,
+                        arguments.map({ _.semanticType }), value.range
+                    )
+                    if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    return BoundCallExpression(value.range, checked.semanticType,
+                        resolution.selected, owner, arguments, checked.argumentConversions())
+                }
+                if (candidates.isEmpty) {
+                    let resolution = OverloadResolver.resolve(value.memberName, candidates,
+                        owner.semanticType, SemanticType[], value.range)
+                    throw Exception(resolution.diagnostic.message)
                 }
                 let target = candidates.first
-                let owner = bindSyntax(value.receiver, locals, callables)
                 let ordered = BoundExpression[]
                 let names = target.parameterNames()
-                var Int argumentIndex
-                while (argumentIndex < value.argumentValues().count) {
-                    ordered.add(bindSyntax(
-                        value.argumentValues()[argumentIndex], locals, callables
-                    ))
-                    argumentIndex++
+                for (argument in namedArguments) {
+                    if (!names.any({ _ == argument.name })) {
+                        throw Exception("Unknown named member argument '#{argument.name}'")
+                    }
+                    var Int positionalIndex
+                    while (positionalIndex < positionalArguments.count) {
+                        if (names[positionalIndex] == argument.name) {
+                            throw Exception("Member argument '#{argument.name}' supplied positionally and by name")
+                        }
+                        positionalIndex++
+                    }
                 }
-                while (argumentIndex < names.count) {
-                    let supplied = value.namedArgumentValues().firstOrNull({
-                        _.name == names[argumentIndex]
-                    })
-                    if (!supplied) throw Exception(
-                        "Missing named member argument '#{names[argumentIndex]}'"
-                    )
-                    ordered.add(bindSyntax(supplied.value, locals, callables))
-                    argumentIndex++
+                var Int namedIndex
+                while (namedIndex < namedArguments.count) {
+                    if (namedArguments[namedIndex].name !=
+                        names[positionalArguments.count + namedIndex]) {
+                        throw Exception("Reordered named member arguments require source-order lowering")
+                    }
+                    namedIndex++
                 }
+                for (argument in positionalArguments) {
+                    ordered.add(bindSyntax(argument, locals, callables))
+                }
+                for (argument in namedArguments) {
+                    ordered.add(bindSyntax(argument.value, locals, callables))
+                }
+                let resolution = OverloadResolver.resolve(value.memberName, candidates,
+                    owner.semanticType, ordered.map({ _.semanticType }), value.range)
+                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
                 let checked = CallTypeChecker.check(
-                    target, owner.semanticType, ordered.map({ _.semanticType }), value.range
+                    resolution.selected, owner.semanticType, ordered.map({ _.semanticType }), value.range
                 )
                 if (!checked.valid) throw Exception(checked.diagnostic.message)
                 return BoundCallExpression(
-                    value.range, checked.semanticType, target, owner,
+                    value.range, checked.semanticType, resolution.selected, owner,
                     ordered, checked.argumentConversions()
                 )
             }
@@ -388,6 +521,9 @@ class {
             }
             let supplied = BoundNamedArgument[]
             for (argument in value.argumentValues()) {
+                if (supplied.any({ _.name == argument.name })) {
+                    throw Exception("Duplicate named argument '#{argument.name}'")
+                }
                 let parameter = parameters.firstOrNull({ _.name == argument.name })
                 if (!parameter) throw Exception("Unknown named argument '#{argument.name}'")
                 let expression = bindSyntax(argument.value, locals, callables)
@@ -407,6 +543,9 @@ class {
             var Int parameterIndex
             while (parameterIndex < value.parameterValues().count) {
                 let parameter = value.parameterValues()[parameterIndex]
+                if (parameters.any({ _.name == parameter.name })) {
+                    throw Exception("Duplicate lambda parameter '#{parameter.name}'")
+                }
                 let type = namedType(parameter.typeName)
                 let identity = SymbolIdentity(
                     DeclarationIdentity(
@@ -419,11 +558,15 @@ class {
                 lambdaLocals.add(LocalBinding(parameter.name, identity, type))
                 parameterIndex++
             }
-            let body = bindSyntax(value.body, lambdaLocals, callables)
+            let body = value.emptyBody
+                ? BoundLiteralExpression(value.range, SemanticTypes.unitType(), "null")
+                : bindSyntax(value.body, lambdaLocals, callables)
             let parameterNames = value.parameterValues().map({ _.name })
             let captures = BoundReferenceExpression[]
             for (local in locals) {
-                if (referencesName(value.body, local.name) && !parameterNames.contains(local.name)) {
+                let selected = locals.reverse().firstOrNull({ _.name == local.name })
+                if (selected.identity.value == local.identity.value &&
+                    referencesName(value.body, local.name) && !parameterNames.contains(local.name)) {
                     captures.add(BoundReferenceExpression(
                         value.range, local.semanticType, local.name, local.identity
                     ))
@@ -494,6 +637,9 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let value = (PrimitiveCallSyntax)syntax
+            if (value.namedArgumentValues().isNotEmpty) {
+                throw Exception("Named call arguments require callable parameter binding")
+            }
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 arguments.add(bindSyntax(argument, locals, callables))

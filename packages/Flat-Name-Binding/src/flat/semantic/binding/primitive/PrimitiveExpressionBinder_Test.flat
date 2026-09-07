@@ -352,6 +352,549 @@ testable class {
         expect(call.argumentValues().first.expressionKind()).toBe("array-access")
     }
 
+    test `captures constructor argument but not constructed type name`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:constructor-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let value = LocalBinding("value", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let typeName = LocalBinding("Box", SymbolIdentity(owner, "local", 1), SemanticTypes.intType())
+        let target = CallableSignature(SymbolIdentity(owner, "constructor", 0), "Box",
+            CallableKind("constructor"), [SemanticTypes.intType()], type, ownerType: type)
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveConstructionSyntax(range, "Box", [PrimitiveReferenceSyntax(range, "value")]))
+        let result = PrimitiveExpressionBinder().bind(syntax,
+            locals: [value, typeName], callables: [target])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(value.identity.value)
+    }
+
+    test `captures declaration initializer without capturing declared local`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declaration-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("source", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let locals = [local]
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveDeclarationValueSyntax(range, "copy", PrimitiveReferenceSyntax(range, "source")))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(local.identity.value)
+        expect(locals.count).toBe(1)
+    }
+
+    test `captures array allocation size`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:allocation-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("count", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveArrayConstructionSyntax(range, "Int", PrimitiveReferenceSyntax(range, "count")))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [local])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(local.identity.value)
+    }
+
+    test `captures repeated array literal element once`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-literal-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("value", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let reference = PrimitiveReferenceSyntax(range, "value")
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveArraySyntax(range, [reference, reference]))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [local])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(local.identity.value)
+    }
+
+    test `captures array receiver and index`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-captures"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let array = LocalBinding("values", SymbolIdentity(owner, "local", 0),
+            ArraySemanticType(SemanticTypes.intType()))
+        let index = LocalBinding("index", SymbolIdentity(owner, "local", 1), SemanticTypes.intType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveArrayAccessSyntax(range, PrimitiveReferenceSyntax(range, "values"),
+                PrimitiveReferenceSyntax(range, "index")))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [array, index])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(2)
+        expect(lambda.captureValues()[0].symbolIdentity.value).toBe(array.identity.value)
+        expect(lambda.captureValues()[1].symbolIdentity.value).toBe(index.identity.value)
+    }
+
+    test `rejects unsupported named callback arguments instead of dropping them`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-callback"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("next", SymbolIdentity(owner, "local", 0),
+            FunctionSemanticType(SemanticType[], SemanticTypes.intType()))
+        let syntax = PrimitiveCallSyntax(range, "next", PrimitiveExpressionSyntax[],
+            [PrimitiveMixedNamedArgumentSyntax(range, "ignored",
+                PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "42"))])
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [local])
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.message).toBe("Named call arguments require callable parameter binding")
+    }
+
+    test `captures member receiver and named value but not member or label names`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-member-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let value = LocalBinding("value", SymbolIdentity(owner, "local", 1), SemanticTypes.intType())
+        let methodName = LocalBinding("read", SymbolIdentity(owner, "local", 2), SemanticTypes.intType())
+        let labelName = LocalBinding("input", SymbolIdentity(owner, "local", 3), SemanticTypes.intType())
+        let target = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(),
+            ownerType: type, names: ["input"])
+        let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", PrimitiveExpressionSyntax[], [PrimitiveMixedNamedArgumentSyntax(range,
+                "input", PrimitiveReferenceSyntax(range, "value"))])
+        let unrelatedOwner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 2), "class", "OtherBox")
+        let unrelated = CallableSignature(SymbolIdentity(unrelatedOwner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(),
+            ownerType: UserClassSemanticType(unrelatedOwner), names: ["input"])
+        let competing = CallableSignature(SymbolIdentity(owner, "method", 1), "read",
+            CallableKind("instance-method"), [SemanticTypes.boolType()], SemanticTypes.intType(),
+            ownerType: type, names: ["input"])
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], body),
+            locals: [receiver, value, methodName, labelName], callables: [unrelated, competing, target])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(2)
+        expect(lambda.captureValues()[0].symbolIdentity.value).toBe(receiver.identity.value)
+        expect(lambda.captureValues()[1].symbolIdentity.value).toBe(value.identity.value)
+        expect(((BoundCallExpression)lambda.body).target.identity.value).toBe(target.identity.value)
+        let reversed = PrimitiveExpressionBinder().bind(
+            PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], body),
+            locals: [receiver, value, methodName, labelName], callables: [target, competing, unrelated])
+        expect(reversed.succeeded).toBe(true)
+        let reversedLambda = (BoundLambdaExpression)reversed.expression
+        expect(((BoundCallExpression)reversedLambda.body).target.identity.value).toBe(target.identity.value)
+        expect(reversedLambda.captureValues()[0].symbolIdentity.value).toBe(receiver.identity.value)
+        expect(reversedLambda.captureValues()[1].symbolIdentity.value).toBe(value.identity.value)
+    }
+
+    test `named generic member retains instantiated target`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-generic-member"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let parameter = GenericParameterSemanticType(owner, "Type", 0)
+        let target = CallableSignature(SymbolIdentity(owner, "method", 0), "identity",
+            CallableKind("instance-method"), [parameter], parameter,
+            ownerType: type, names: ["input"], genericParameterValues: [parameter])
+        let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "identity", PrimitiveExpressionSyntax[], [PrimitiveMixedNamedArgumentSyntax(range,
+                "input", PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "7"))])
+        let result = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [target])
+        expect(result.succeeded).toBe(true)
+        let call = (BoundCallExpression)result.expression
+        expect(call.target.identity.value).toBe(target.identity.value)
+        expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(call.target.returnType.value()).toBe(SemanticTypes.intType().value())
+        expect(call.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    test `mixed member overloads use positional offset and both argument types`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:mixed-member-overloads"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let first = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType(), SemanticTypes.boolType()],
+            SemanticTypes.intType(), ownerType: type, names: ["input", "other"])
+        let second = CallableSignature(SymbolIdentity(owner, "method", 1), "read",
+            CallableKind("instance-method"), [SemanticTypes.boolType(), SemanticTypes.intType()],
+            SemanticTypes.intType(), ownerType: type, names: ["input", "other"])
+        let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", [PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "7")], [
+                PrimitiveMixedNamedArgumentSyntax(range, "other",
+                    PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"))])
+        let result = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [second, first])
+        expect(result.succeeded).toBe(true)
+        let call = (BoundCallExpression)result.expression
+        expect(call.target.identity.value).toBe(first.identity.value)
+        expect(call.argumentValues().count).toBe(2)
+        expect(((BoundLiteralExpression)call.argumentValues()[0]).sourceValue).toBe("7")
+        expect(((BoundLiteralExpression)call.argumentValues()[1]).sourceValue).toBe("true")
+        let alternate = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", [PrimitiveLiteralSyntax(range, Token.Type.BOOL, "false")], [
+                PrimitiveMixedNamedArgumentSyntax(range, "other",
+                    PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "9"))])
+        let alternateResult = PrimitiveExpressionBinder().bind(alternate,
+            locals: [receiver], callables: [first, second])
+        expect(alternateResult.succeeded).toBe(true)
+        let alternateCall = (BoundCallExpression)alternateResult.expression
+        expect(alternateCall.target.identity.value).toBe(second.identity.value)
+        expect(((BoundLiteralExpression)alternateCall.argumentValues()[0]).sourceValue).toBe("false")
+        expect(((BoundLiteralExpression)alternateCall.argumentValues()[1]).sourceValue).toBe("9")
+        let invalid = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", [PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "7")], [
+                PrimitiveMixedNamedArgumentSyntax(range, "other",
+                    PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "8"))])
+        let rejected = PrimitiveExpressionBinder().bind(invalid, locals: [receiver], callables: [first, second])
+        let reversedRejected = PrimitiveExpressionBinder().bind(invalid,
+            locals: [receiver], callables: [second, first])
+        expect(reversedRejected.succeeded).toBe(false)
+        expect(reversedRejected.diagnostic.message).toBe(rejected.diagnostic.message)
+        expect(rejected.succeeded).toBe(false)
+        expect(rejected.diagnostic.message).toBe("No overload of 'read' accepts the supplied receiver and arguments")
+    }
+
+    test `named member labels disambiguate equal parameter types`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:label-overloads"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let first = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(),
+            ownerType: type, names: ["input"])
+        let second = CallableSignature(SymbolIdentity(owner, "method", 1), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(),
+            ownerType: type, names: ["other"])
+        let targets = [first, second]
+        var Int targetIndex
+        while (targetIndex < targets.count) {
+            let target = targets[targetIndex]
+            let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+                "read", PrimitiveExpressionSyntax[], [PrimitiveMixedNamedArgumentSyntax(range,
+                    target.parameterNames().first, PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"))])
+            let result = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [first, second])
+            let reversed = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [second, first])
+            expect(result.succeeded).toBe(true)
+            expect(reversed.succeeded).toBe(true)
+            expect(((BoundCallExpression)result.expression).target.identity.value).toBe(target.identity.value)
+            expect(((BoundCallExpression)reversed.expression).target.identity.value).toBe(target.identity.value)
+            targetIndex++
+        }
+        let invalid = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", PrimitiveExpressionSyntax[], [PrimitiveMixedNamedArgumentSyntax(range,
+                "missing", PrimitiveReferenceSyntax(range, "unbound"))])
+        let rejected = PrimitiveExpressionBinder().bind(invalid, locals: [receiver], callables: targets)
+        expect(rejected.succeeded).toBe(false)
+        expect(rejected.diagnostic.message).toBe("No overload of 'read' accepts the supplied receiver and arguments")
+    }
+
+    test `reports no overload for absent named member and incorrect arity`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:absent-named-member"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let target = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType(), SemanticTypes.intType()],
+            SemanticTypes.intType(), ownerType: type, names: ["input", "other"])
+        let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", PrimitiveExpressionSyntax[], [PrimitiveMixedNamedArgumentSyntax(range,
+                "input", PrimitiveReferenceSyntax(range, "unbound"))])
+        let absent = PrimitiveExpressionBinder().bind(body, locals: [receiver])
+        let wrongArity = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [target])
+        expect(absent.succeeded).toBe(false)
+        expect(wrongArity.succeeded).toBe(false)
+        expect(absent.diagnostic.message).toBe("No overload of 'read' accepts the supplied receiver and arguments")
+        expect(wrongArity.diagnostic.message).toBe(absent.diagnostic.message)
+    }
+
+    test `rejects incompatible and ambiguous named member overloads`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-named-overloads"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let first = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(),
+            ownerType: type, names: ["input"])
+        let second = CallableSignature(SymbolIdentity(owner, "method", 1), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(),
+            ownerType: type, names: ["input"])
+        let invalid = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", PrimitiveExpressionSyntax[], [PrimitiveMixedNamedArgumentSyntax(range,
+                "input", PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"))])
+        let noMatch = PrimitiveExpressionBinder().bind(invalid, locals: [receiver], callables: [first, second])
+        expect(noMatch.succeeded).toBe(false)
+        expect(noMatch.diagnostic.message).toBe("No overload of 'read' accepts the supplied receiver and arguments")
+        let single = PrimitiveExpressionBinder().bind(invalid, locals: [receiver], callables: [first])
+        expect(single.succeeded).toBe(false)
+        expect(single.diagnostic.message).toBe(noMatch.diagnostic.message)
+        let ambiguous = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", PrimitiveExpressionSyntax[], [PrimitiveMixedNamedArgumentSyntax(range,
+                "input", PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"))])
+        let result = PrimitiveExpressionBinder().bind(ambiguous, locals: [receiver], callables: [first, second])
+        let reversed = PrimitiveExpressionBinder().bind(ambiguous, locals: [receiver], callables: [second, first])
+        expect(result.succeeded).toBe(false)
+        expect(reversed.succeeded).toBe(false)
+        expect(result.diagnostic.message.startsWith("Call to 'read' is ambiguous between ")).toBe(true)
+        expect(reversed.diagnostic.message).toBe(result.diagnostic.message)
+    }
+
+    test `rejects unknown member labels before binding argument values`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:unknown-member-label"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let target = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(),
+            ownerType: type, names: ["input"])
+        let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", PrimitiveExpressionSyntax[], [
+                PrimitiveMixedNamedArgumentSyntax(range, "missing",
+                    PrimitiveReferenceSyntax(range, "unbound"))
+            ])
+        let result = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [target])
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.message).toBe("Unknown named member argument 'missing'")
+    }
+
+    test `rejects member parameter supplied positionally and by name`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-member-parameter"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let target = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType(), SemanticTypes.intType()],
+            SemanticTypes.intType(), ownerType: type, names: ["input", "other"])
+        let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", [PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1")], [
+                PrimitiveMixedNamedArgumentSyntax(range, "input",
+                    PrimitiveReferenceSyntax(range, "unbound"))
+            ])
+        let result = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [target])
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.message).toBe("Member argument 'input' supplied positionally and by name")
+    }
+
+    test `rejects reordered member arguments instead of changing evaluation order`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:reordered-member"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let receiver = LocalBinding("box", SymbolIdentity(owner, "local", 0), type)
+        let target = CallableSignature(SymbolIdentity(owner, "method", 0), "read",
+            CallableKind("instance-method"), [SemanticTypes.intType(), SemanticTypes.intType()],
+            SemanticTypes.intType(), ownerType: type, names: ["input", "other"])
+        let body = PrimitiveMemberCallSyntax(range, PrimitiveReferenceSyntax(range, "box"),
+            "read", PrimitiveExpressionSyntax[], [
+                PrimitiveMixedNamedArgumentSyntax(range, "other",
+                    PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "2")),
+                PrimitiveMixedNamedArgumentSyntax(range, "input",
+                    PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"))
+            ])
+        let result = PrimitiveExpressionBinder().bind(body, locals: [receiver], callables: [target])
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.message).toBe("Reordered named member arguments require source-order lowering")
+    }
+
+    test `captures member call argument`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:member-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("value", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let body = PrimitiveMemberCallSyntax(range,
+            PrimitiveEmptyArrayConstructionSyntax(range, "Int"), "add",
+            [PrimitiveReferenceSyntax(range, "value")])
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], body), locals: [local])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(local.identity.value)
+    }
+
+    test `captures interpolation paths and expressions but not literal text`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:interpolation-captures"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let first = LocalBinding("first", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let second = LocalBinding("second", SymbolIdentity(owner, "local", 1), SemanticTypes.intType())
+        let unused = LocalBinding("unused", SymbolIdentity(owner, "local", 2), SemanticTypes.intType())
+        let body = PrimitiveInterpolatedStringSyntax(range, [
+            PrimitiveInterpolatedStringSegmentSyntax(range, "unused", null),
+            PrimitiveInterpolatedStringSegmentSyntax(range, null,
+                PrimitiveInterpolationPathSyntax(range, ["first"])),
+            PrimitiveInterpolatedStringSegmentSyntax(range, null,
+                PrimitiveReferenceSyntax(range, "second"))
+        ])
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], body),
+            locals: [first, second, unused])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(2)
+        expect(lambda.captureValues()[0].symbolIdentity.value).toBe(first.identity.value)
+        expect(lambda.captureValues()[1].symbolIdentity.value).toBe(second.identity.value)
+    }
+
+    test `captures conditional condition and both branches once`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-captures"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let flag = LocalBinding("flag", SymbolIdentity(owner, "local", 0), SemanticTypes.boolType())
+        let left = LocalBinding("left", SymbolIdentity(owner, "local", 1), SemanticTypes.intType())
+        let right = LocalBinding("right", SymbolIdentity(owner, "local", 2), SemanticTypes.intType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveConditionalSyntax(range, PrimitiveReferenceSyntax(range, "flag"),
+                PrimitiveReferenceSyntax(range, "left"), PrimitiveReferenceSyntax(range, "right")))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [flag, left, right])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(3)
+        expect(lambda.captureValues()[0].symbolIdentity.value).toBe(flag.identity.value)
+        expect(lambda.captureValues()[1].symbolIdentity.value).toBe(left.identity.value)
+        expect(lambda.captureValues()[2].symbolIdentity.value).toBe(right.identity.value)
+    }
+
+    test `captures cast operands and assignment and update locals`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:expression-captures"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let target = LocalBinding("target", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let source = LocalBinding("source", SymbolIdentity(owner, "local", 1), SemanticTypes.intType())
+        let PrimitiveExpressionSyntax[] expressions = [
+            PrimitiveCastSyntax(range, "Double", PrimitiveReferenceSyntax(range, "target")),
+            PrimitivePostfixUpdateSyntax(range, "++", PrimitiveReferenceSyntax(range, "target")),
+            PrimitiveAssignmentValueSyntax(range, "target", PrimitiveReferenceSyntax(range, "source"))
+        ]
+        var Int index
+        for (expression in expressions) {
+            let result = PrimitiveExpressionBinder().bind(
+                PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], expression),
+                locals: [target, source])
+            expect(result.succeeded).toBe(true)
+            let lambda = (BoundLambdaExpression)result.expression
+            expect(lambda.captureValues().count).toBe(index == 2 ? 2 : 1)
+            expect(lambda.captureValues().first.symbolIdentity.value).toBe(target.identity.value)
+            if (index == 2) {
+                expect(lambda.captureValues()[1].symbolIdentity.value).toBe(source.identity.value)
+            }
+            index++
+        }
+    }
+
+    test `captures invoked local callback`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("next", SymbolIdentity(owner, "local", 0),
+            FunctionSemanticType(SemanticType[], SemanticTypes.intType()))
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveCallSyntax(range, "next", PrimitiveExpressionSyntax[]))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [local])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(local.identity.value)
+    }
+
+    test `propagates nested lambda captures without crossing parameter shadowing`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let local = LocalBinding("value", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let reference = PrimitiveReferenceSyntax(range, "value")
+        let nested = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], reference)
+        let result = PrimitiveExpressionBinder().bind(
+            PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], nested), locals: [local])
+        expect(result.succeeded).toBe(true)
+        let outer = (BoundLambdaExpression)result.expression
+        expect(outer.captureValues().count).toBe(1)
+        expect(outer.captureValues().first.symbolIdentity.value).toBe(local.identity.value)
+
+        let shadowing = PrimitiveLambdaSyntax(range,
+            [PrimitiveFunctionParameterSyntax(range, "Int", "value")], reference)
+        let shadowed = PrimitiveExpressionBinder().bind(
+            PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], shadowing), locals: [local])
+        expect(shadowed.succeeded).toBe(true)
+        expect(((BoundLambdaExpression)shadowed.expression).captureValues().count).toBe(0)
+    }
+
+    test `captures only nearest shadowed local`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:shadowed-capture"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "function", 0), "function", "read")
+        let outer = LocalBinding("value", SymbolIdentity(owner, "local", 0), SemanticTypes.intType())
+        let inner = LocalBinding("value", SymbolIdentity(owner, "local", 1), SemanticTypes.intType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[],
+            PrimitiveReferenceSyntax(range, "value"))
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [outer, inner])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(inner.identity.value)
+    }
+
+    test `rejects duplicate explicit lambda parameters`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-lambda-parameter"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let syntax = PrimitiveLambdaSyntax(range, [
+            PrimitiveFunctionParameterSyntax(range, "Int", "value"),
+            PrimitiveFunctionParameterSyntax(range, "Int", "value")
+        ], PrimitiveReferenceSyntax(range, "value"))
+        let result = PrimitiveExpressionBinder().bind(syntax)
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.message).toBe("Duplicate lambda parameter 'value'")
+    }
+
+    test `infers Unit result for empty lambda without contextual type`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:empty-lambda-type"), "one")
+        let syntax = PrimitiveExpressionParser().parse([
+            token("{", Token.Type.SYMBOL, 1), token("}", Token.Type.SYMBOL, 2)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax)
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.body.semanticType.value()).toBe("unit")
+        expect(lambda.semanticType.value()).toBe("function:()->unit")
+        expect(lambda.parameterValues().count).toBe(0)
+        expect(lambda.captureValues().count).toBe(0)
+        let invalid = PrimitiveExpressionBinder().bind(syntax,
+            requiredType: FunctionSemanticType(SemanticType[], SemanticTypes.intType()))
+        expect(invalid.succeeded).toBe(false)
+    }
+
     test `binds lambdas explicit captures and function references`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:lambda-bind"), "revision:one"
@@ -456,6 +999,27 @@ testable class {
         expect(((BoundLiteralExpression)arguments.first).sourceValue).toBe("1")
         expect(((BoundLiteralExpression)arguments.last).sourceValue).toBe("2")
         expect(lower(operator, range).expressionKind()).toBe("call")
+    }
+
+    test `rejects duplicate named arguments before lowering`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-named"), "one")
+        let range = SourceRange(snapshot, 0, 1,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let identity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 1), "function", "sum"
+        )
+        let target = CallableSignature(SymbolIdentity(identity, "function"), "sum",
+            CallableKind("function"), [SemanticTypes.intType(), SemanticTypes.intType()],
+            SemanticTypes.intType())
+        let syntax = PrimitiveNamedCallSyntax(range, "sum", [
+            PrimitiveNamedArgumentSyntax(range, "right",
+                PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "2")),
+            PrimitiveNamedArgumentSyntax(range, "right",
+                PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "3"))
+        ])
+        let result = PrimitiveExpressionBinder().bind(syntax, callables: [target])
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.message).toBe("Duplicate named argument 'right'")
     }
 
     test `rejects unknown named argument and missing required argument`() {

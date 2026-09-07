@@ -3,7 +3,8 @@ package flat/semantic/types
 data class extends SemanticType {
     var SemanticType[] parameters
 
-    public construct(SemanticType[] parameterTypes, visible SemanticType returnType) {
+    public construct(SemanticType[] parameterTypes, visible SemanticType returnType,
+        visible Bool asyncFunction = false) {
         if (!parameterTypes || parameterTypes.any({ !_ }) || !returnType) {
             throw Exception("Function type requires parameter and return types")
         }
@@ -18,7 +19,7 @@ data class extends SemanticType {
     }
 
     override public value() -> String {
-        var String result = "function:("
+        var String result = asyncFunction ? "async-function:(" : "function:("
         var Int index
         while (index < parameters.count) {
             if (index > 0) result += ","

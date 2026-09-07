@@ -4,6 +4,40 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `preserves async lambda emission`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let body = BoundLiteralExpression(fixture.range(), SemanticTypes.unitType(), "null")
+        let emitter = Es6ExpressionOrchestrator()
+        let synchronous = BoundLambdaExpression(
+            fixture.range(), FunctionSemanticType(SemanticType[], SemanticTypes.unitType()),
+            BoundFunctionParameter[], BoundReferenceExpression[], body
+        )
+        let asynchronous = BoundLambdaExpression(
+            fixture.range(), FunctionSemanticType(SemanticType[], SemanticTypes.unitType(), asyncFunction: true),
+            BoundFunctionParameter[], BoundReferenceExpression[], body
+        )
+        expect(emitter.emit(synchronous).code).toBe("() => void 0")
+        expect(emitter.emit(asynchronous).code).toBe("async () => void 0")
+        let syncType = (FunctionSemanticType)synchronous.semanticType
+        let asyncType = (FunctionSemanticType)asynchronous.semanticType
+        expect(emitter.emit(BoundFunctionInvocationExpression(
+            fixture.range(), synchronous, syncType, BoundExpression[]
+        )).code).toBe("(() => void 0)()")
+        expect(emitter.emit(BoundFunctionInvocationExpression(
+            fixture.range(), asynchronous, asyncType, BoundExpression[]
+        )).code).toBe("(await (async () => void 0)())")
+    }
+    test `emits Unit literal as undefined without changing null`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let emitter = Es6ExpressionEmitter()
+        expect(emitter.emitLiteral(BoundLiteralExpression(
+            fixture.range(), SemanticTypes.unitType(), "null"
+        )).code).toBe("void 0")
+        expect(emitter.emitLiteral(BoundLiteralExpression(
+            fixture.range(), SemanticTypes.nullType(), "null"
+        )).code).toBe("null")
+    }
+
     test `emits parameter field interpolation`() {
         let fixture = Es6BoundWriter_TestFixture()
         let owner = UserClassSemanticType(fixture.declaration("class", "Owner", 20))

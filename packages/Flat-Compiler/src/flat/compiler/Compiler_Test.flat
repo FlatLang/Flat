@@ -374,9 +374,134 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `executes empty callback with undefined result`() {
+        let identity = "memory:empty-callback-result"
+        let source = "class Value { static callback() -> func() { return {}; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "callback"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-empty-result-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value) + "()() === undefined);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker rejects duplicate positional named parameter`() {
+        var String failure
+        try {
+            FlatEs6PackageLinker().link([CompilerSource(
+                "memory:duplicate-parameter",
+                "class Value { read(Int count, Int end = 0) -> Int { return count; } run() -> Int { return read(7, count: 9); } }"
+            )])
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Parameter 'count' is supplied both positionally and by name")).toBe(true)
+    }
+
+    async test `executes omitted callback default from Flat named call`() {
+        let identity = "memory:named-empty-default"
+        let source = "class Value { read(Int count = -1, next(Int value) = {}) -> Int { next(count); return count; } run() -> Int { return read(count: 7) + read(8, {}) + read(next: {}, count: 9) + localCallback(); } localCallback() -> Int { let callback = {}; callback(); return 1; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().firstOrNull({ _.name == "run" })
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", method.range.startTokenIndex),
+            "instance-method", "run"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-named-empty-default-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(new " +
+            Es6NameMangler.mangle(typeIdentity.value) + "()." +
+            Es6NameMangler.mangle(methodIdentity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("25\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `executes null return with generic reference identity`() {
+        let identity = "memory:generic-reference-null"
+        let source = "class List<Type> { static empty<Out>() -> List<Out> { return null; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "List"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "empty"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-generic-null-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value) + "() === null);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `executes empty async callback default`() {
+        let identity = "memory:empty-async-default"
+        let source = "class Value { static async read(Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> Int { onAfterChunk(maxParallel); return maxParallel; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "read"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-empty-async-default-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        let callable = Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value)
+        Es6ArtifactCommitter().commit(destination, code +
+            "(async () => { let observed = 0; console.log(await " + callable +
+            "(), await " + callable + "(7, async count => { observed = count; }), observed); })().catch(error => { console.error(error); process.exitCode = 1; });\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("-1 7 7\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `executes callback invocation in static default`() {
         let identity = "memory:callback-default"
-        let source = "class Value { static read(next(Int value)->Int = lambda(Int value) => value + 1, Int end = next(41)) -> Int { return end; } }"
+        let source = "class Value { static read(Int increment = 1, next(Int value)->Int = lambda(Int value) => value + increment++, Int end = next(41) * 100 + next(41)) -> Int { return end; } }"
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
         let stream = Lexer().lex(source)
         stream.emit("start")
@@ -397,10 +522,15 @@ testable class {
             Es6NameMangler.mangle(methodIdentity.value)
         Es6ArtifactCommitter().commit(destination, code +
             "let calls = 0; const next = x => { calls++; return x + 1; };\n" +
-            "console.log(" + callable + "(), " + callable + "(next), " + callable + "(next, 7), calls);\n")
+            "console.log(" + callable + "(), " + callable + "(9), " + callable +
+            "(9, next), " + callable + "(9, next, 7), calls);\n" +
+            "let failures = 0; const failure = new Error('callback failure');\n" +
+            "try { " + callable + "(1, () => { failures++; throw failure; }); } " +
+            "catch (error) { if (error !== failure) throw error; }\n" +
+            "console.log(failures, " + callable + "());\n")
         let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("42 42 7 1\n")
+        expect(response.stdout.join("")).toBe("4243 5051 4242 7 2\n1 4243\n")
         Es6ArtifactFiles.remove(root)
     }
 

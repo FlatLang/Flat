@@ -1,6 +1,22 @@
 package flat/semantic/types
 
 testable class {
+    test `async function identity survives inference and substitution`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("map", 30)
+        let output = GenericParameterSemanticType(identity, "Out", 0)
+        let declaration = GenericDeclaration(identity, [output], output)
+        let template = FunctionSemanticType(SemanticType[], output, asyncFunction: true)
+        let actual = FunctionSemanticType(SemanticType[], SemanticTypes.intType(), asyncFunction: true)
+        let sync = FunctionSemanticType(SemanticType[], SemanticTypes.intType())
+        expect(actual.value() == sync.value()).toBe(false)
+        expect(TypeConversions.classify(actual, sync).applicable).toBe(false)
+        let result = GenericInference.infer(declaration, [template], [actual], fixture.range())
+        expect(result.inferred).toBe(true)
+        expect(result.substitution.apply(template).value()).toBe(actual.value())
+        expect(GenericInference.infer(declaration, [template], [sync], fixture.range()).inferred).toBe(false)
+    }
+
     test `inference preserves matching outer generic identity`() {
         let fixture = TypeSystem_TestFixture()
         let identity = fixture.functionIdentity("map", 30)

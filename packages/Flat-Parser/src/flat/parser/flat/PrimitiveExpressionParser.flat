@@ -37,12 +37,12 @@ class {
         let condition = parseLevel(0)
         if (index >= tokens.count || tokens[index].value != "?") return condition
         index++
-        let whenTrue = parseLevel(0)
+        let whenTrue = parseConditional()
         if (index >= tokens.count || tokens[index].value != ":") {
             syntax("Expected ':' in conditional expression", index)
         }
         index++
-        let whenFalse = parseLevel(0)
+        let whenFalse = parseConditional()
         return PrimitiveConditionalSyntax(
             range(start, index),
             condition, whenTrue, whenFalse
@@ -92,6 +92,16 @@ class {
         return parsePrimary()
     }
 
+    binaryOnlyOperator(String value) -> Bool {
+        if (value == "+" || value == "-") return false
+        var Int level
+        while (level < 6) {
+            if (operatorsFor(level).contains(value)) return true
+            level++
+        }
+        return false
+    }
+
     assignmentOperator(String value) -> Bool =>
         value == "+=" || value == "-=" || value == "*=" || value == "/=" || value == "%="
 
@@ -113,7 +123,12 @@ class {
                 return PrimitiveDeclarationValueSyntax(range(start, index), name, value)
             }
             if (index + 1 < tokens.count && tokens[index].type == Token.Type.IDENTIFIER &&
-                tokens[index + 1].value == ")") {
+                tokens[index + 1].value == ")" &&
+                index + 2 < tokens.count && tokens[index + 2].value != "." &&
+                tokens[index + 2].value != ")" && tokens[index + 2].value != "[" && tokens[index + 2].value != "," &&
+                tokens[index + 2].value != "]" && tokens[index + 2].value != "}" &&
+                tokens[index + 2].value != "?" && tokens[index + 2].value != ":" &&
+                !binaryOnlyOperator(tokens[index + 2].value)) {
                 let typeName = tokens[index++].value
                 index++
                 let value = parseUnary()
@@ -148,16 +163,24 @@ class {
             index++
             if (expression.class.isOfType(PrimitiveConditionalSyntax.class)) {
                 let conditional = (PrimitiveConditionalSyntax)expression
-                return PrimitiveConditionalSyntax(
+                expression = PrimitiveConditionalSyntax(
                     range(start, index), conditional.condition,
                     conditional.whenTrue, conditional.whenFalse
                 )
             }
-            return expression
+            return parsePostfix(start, expression)
         }
         if (tokens[index].value == "[") return parseArray()
         if (tokens[index].value == "{") {
             let start = index++
+            if (index < tokens.count && tokens[index].value == "}") {
+                index++
+                return PrimitiveLambdaSyntax(
+                    range(start, index), PrimitiveFunctionParameterSyntax[],
+                    PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
+                    emptyBody: true
+                )
+            }
             let body = parseConditional()
             if (index >= tokens.count || tokens[index].value != "}") {
                 syntax("Expected closing implicit lambda brace", index)
@@ -259,7 +282,7 @@ class {
             while (index < tokens.count && (tokens[index].value == "." || tokens[index].value == "[")) {
                 if (tokens[index].value == "[") {
                     index++
-                    let accessIndex = parseLevel(0)
+                    let accessIndex = parseConditional()
                     if (index >= tokens.count || tokens[index].value != "]") {
                         syntax("Expected closing array bracket", index)
                     }
@@ -285,6 +308,9 @@ class {
                                 let argumentStart = index
                                 let argumentName = tokens[index++].value
                                 index++
+                                if (namedArguments.any({ _.name == argumentName })) {
+                                    syntax("Duplicate named argument '#argumentName'", argumentStart)
+                                }
                                 let argumentValue = parseConditional()
                                 namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
                                     range(argumentStart, index),
@@ -366,7 +392,7 @@ class {
             (colonCall && tokens[index].value == ":") || tokens[index].value == "[")) {
             if (tokens[index].value == "[") {
                 index++
-                let accessIndex = parseLevel(0)
+                let accessIndex = parseConditional()
                 if (index >= tokens.count || tokens[index].value != "]") {
                     syntax("Expected closing array bracket", index)
                 }
@@ -401,6 +427,9 @@ class {
                             let argumentStart = index
                             let argumentName = tokens[index++].value
                             index++
+                            if (namedArguments.any({ _.name == argumentName })) {
+                                syntax("Duplicate named argument '#argumentName'", argumentStart)
+                            }
                             let argumentValue = parseConditional()
                             namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
                                 range(argumentStart, index),
@@ -499,7 +528,7 @@ class {
         index++
         if (index >= tokens.count || tokens[index].value != "=>") syntax("Expected lambda arrow", index)
         index++
-        let body = parseLevel(0)
+        let body = parseConditional()
         return PrimitiveLambdaSyntax(range(start, index), parameters, body)
     }
 
@@ -518,7 +547,7 @@ class {
             syntax("Array literal requires at least one element", index)
         }
         while (true) {
-            values.add(parseLevel(0))
+            values.add(parseConditional())
             if (index >= tokens.count) syntax("Expected closing array bracket", index)
             if (tokens[index].value == "]") {
                 index++
@@ -547,10 +576,10 @@ class {
                 let argumentStart = index
                 let argumentName = tokens[index++].value
                 index++
-                if (arguments.isEmpty && namedArguments.isNotEmpty) {
-                    syntax("Named arguments must use one call form", argumentStart)
+                if (namedArguments.any({ _.name == argumentName })) {
+                    syntax("Duplicate named argument '#argumentName'", argumentStart)
                 }
-                let value = parseLevel(0)
+                let value = parseConditional()
                 namedArguments.add(PrimitiveMixedNamedArgumentSyntax(
                     range(argumentStart, index),
                     argumentName, value
@@ -559,7 +588,7 @@ class {
                 if (namedArguments.isNotEmpty) {
                     syntax("Positional argument cannot follow a named argument", index)
                 }
-                arguments.add(parseLevel(0))
+                arguments.add(parseConditional())
             }
             if (index >= tokens.count) syntax("Expected closing call parenthesis", index)
             if (tokens[index].value == ")") {
@@ -602,6 +631,7 @@ class {
     }
 
     syntax(String message, Int tokenIndex) {
-        throw Exception("Primitive expression syntax error at token #tokenIndex: #message")
+        let sourceIndex = tokenIndex + tokenIndexOffset
+        throw Exception("Primitive expression syntax error at token #sourceIndex: #message")
     }
 }

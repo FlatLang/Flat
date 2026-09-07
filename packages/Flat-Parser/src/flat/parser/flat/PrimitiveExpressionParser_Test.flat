@@ -3,6 +3,65 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `reports duplicate receiver call label with source offset`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-member-label"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("value", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 6),
+                token("read", Token.Type.IDENTIFIER, 7), token("(", Token.Type.SYMBOL, 11),
+                token("count", Token.Type.IDENTIFIER, 12), token(":", Token.Type.SYMBOL, 17),
+                token("1", Token.Type.INTEGER, 19), token(",", Token.Type.SYMBOL, 20),
+                token("count", Token.Type.IDENTIFIER, 22), token(":", Token.Type.SYMBOL, 27),
+                token("2", Token.Type.INTEGER, 29), token(")", Token.Type.SYMBOL, 30)
+            ], snapshot, 20)
+        } catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Primitive expression syntax error at token 28: Duplicate named argument 'count'")
+    }
+
+    test `reports duplicate named label at its second occurrence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-label"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token("count", Token.Type.IDENTIFIER, 6), token(":", Token.Type.SYMBOL, 11),
+                token("1", Token.Type.INTEGER, 13), token(",", Token.Type.SYMBOL, 14),
+                token("count", Token.Type.IDENTIFIER, 16), token(":", Token.Type.SYMBOL, 21),
+                token("2", Token.Type.INTEGER, 23), token(")", Token.Type.SYMBOL, 24)
+            ], snapshot, 20)
+        } catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Primitive expression syntax error at token 26: Duplicate named argument 'count'")
+    }
+
+    test `parses multiple ordinary named arguments in source order`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:all-named-call"), "one")
+        let parsed = PrimitiveExpressionParser().parse([
+            token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("next", Token.Type.IDENTIFIER, 6), token(":", Token.Type.SYMBOL, 10),
+            token("{", Token.Type.SYMBOL, 12), token("}", Token.Type.SYMBOL, 13),
+            token(",", Token.Type.SYMBOL, 14), token("count", Token.Type.IDENTIFIER, 16),
+            token(":", Token.Type.SYMBOL, 21), token("9", Token.Type.INTEGER, 23),
+            token(")", Token.Type.SYMBOL, 24)
+        ], snapshot)
+        let call = (PrimitiveCallSyntax)parsed
+        expect(call.argumentValues().count).toBe(0)
+        expect(call.namedArgumentValues().map({ _.name })).toBe(["next", "count"])
+        expect(call.range.endTokenIndex).toBe(11)
+    }
+
+    test `parses empty implicit callback expression`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:empty-callback"), "one")
+        let parsed = PrimitiveExpressionParser().parse([
+            token("{", Token.Type.SYMBOL, 1), token("}", Token.Type.SYMBOL, 2)
+        ], snapshot)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        expect(callback.emptyBody).toBe(true)
+        expect(callback.parameterValues().count).toBe(0)
+        expect(callback.range.startTokenIndex).toBe(0)
+        expect(callback.range.endTokenIndex).toBe(2)
+    }
+
     test `parses parenthesized local declaration value`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:declaration-value"), "revision:one"
@@ -601,6 +660,304 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(2)
+    }
+
+    test `parses grouped references before binary only operators`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-binary"), "one")
+        let operators = ["*", "/", "%", "==", "!=", "<", "<=", ">", ">=", "&&", "||"]
+        for (operator in operators) {
+            let expression = PrimitiveExpressionParser().parse([
+                token("(", Token.Type.SYMBOL, 1), token("value", Token.Type.IDENTIFIER, 2),
+                token(")", Token.Type.SYMBOL, 7), token(operator, Token.Type.SYMBOL, 9),
+                token("other", Token.Type.IDENTIFIER, 12)
+            ], snapshot)
+            expect(expression.expressionKind()).toBe("binary")
+        }
+    }
+
+    test `parses grouped references at conditional boundaries`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-conditional-boundaries"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("flag", Token.Type.IDENTIFIER, 2),
+            token(")", Token.Type.SYMBOL, 6), token("?", Token.Type.SYMBOL, 8),
+            token("(", Token.Type.SYMBOL, 10), token("value", Token.Type.IDENTIFIER, 11),
+            token(")", Token.Type.SYMBOL, 16), token(":", Token.Type.SYMBOL, 18),
+            token("other", Token.Type.IDENTIFIER, 20)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("conditional")
+        let conditional = (PrimitiveConditionalSyntax)expression
+        expect(conditional.condition.expressionKind()).toBe("reference")
+        expect(conditional.whenTrue.expressionKind()).toBe("reference")
+    }
+
+    test `parses nested grouped reference`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-grouped-reference"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("(", Token.Type.SYMBOL, 2),
+            token("value", Token.Type.IDENTIFIER, 3), token(")", Token.Type.SYMBOL, 8),
+            token(")", Token.Type.SYMBOL, 9)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("reference")
+    }
+
+    test `parses grouped reference before argument separator`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-argument"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("call", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("(", Token.Type.SYMBOL, 6), token("value", Token.Type.IDENTIFIER, 7),
+            token(")", Token.Type.SYMBOL, 12), token(",", Token.Type.SYMBOL, 13),
+            token("1", Token.Type.INTEGER, 15), token(")", Token.Type.SYMBOL, 16)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("call")
+    }
+
+    test `parses grouped reference at expression end`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-reference-end"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("value", Token.Type.IDENTIFIER, 2),
+            token(")", Token.Type.SYMBOL, 7)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("reference")
+        expect(((PrimitiveReferenceSyntax)expression).name).toBe("value")
+    }
+
+    test `parses array access after grouped reference`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-array"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("values", Token.Type.IDENTIFIER, 2),
+            token(")", Token.Type.SYMBOL, 8), token("[", Token.Type.SYMBOL, 9),
+            token("0", Token.Type.INTEGER, 10), token("]", Token.Type.SYMBOL, 11)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("array-access")
+        expect(expression.range.startTokenIndex).toBe(0)
+        expect(expression.range.endTokenIndex).toBe(6)
+    }
+
+    test `parses conditional array indexes on direct and grouped receivers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-array-index"), "one")
+        let forms = [false, true]
+        for (grouped in forms) {
+            let tokens = Token[]
+            if (grouped) tokens.add(token("(", Token.Type.SYMBOL, 1))
+            tokens.add(token("values", Token.Type.IDENTIFIER, 2))
+            if (grouped) tokens.add(token(")", Token.Type.SYMBOL, 8))
+            tokens.add(token("[", Token.Type.SYMBOL, 9))
+            tokens.add(token("choose", Token.Type.IDENTIFIER, 10))
+            tokens.add(token("?", Token.Type.SYMBOL, 17))
+            tokens.add(token("0", Token.Type.INTEGER, 19))
+            tokens.add(token(":", Token.Type.SYMBOL, 21))
+            tokens.add(token("1", Token.Type.INTEGER, 23))
+            tokens.add(token("]", Token.Type.SYMBOL, 24))
+            let expression = PrimitiveExpressionParser().parse(tokens, snapshot)
+            expect(expression.expressionKind()).toBe("array-access")
+            expect(((PrimitiveArrayAccessSyntax)expression).index.expressionKind()).toBe("conditional")
+            expect(expression.range.startTokenIndex).toBe(0)
+            expect(expression.range.endTokenIndex).toBe(tokens.count)
+        }
+    }
+
+    test `parses nested conditional branches without parentheses`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-conditional"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("a", Token.Type.IDENTIFIER, 1), token("?", Token.Type.SYMBOL, 3),
+            token("b", Token.Type.IDENTIFIER, 5), token("?", Token.Type.SYMBOL, 7),
+            token("1", Token.Type.INTEGER, 9), token(":", Token.Type.SYMBOL, 11),
+            token("2", Token.Type.INTEGER, 13), token(":", Token.Type.SYMBOL, 15),
+            token("c", Token.Type.IDENTIFIER, 17), token("?", Token.Type.SYMBOL, 19),
+            token("3", Token.Type.INTEGER, 21), token(":", Token.Type.SYMBOL, 23),
+            token("4", Token.Type.INTEGER, 25)
+        ], snapshot)
+        let conditional = (PrimitiveConditionalSyntax)expression
+        expect(conditional.whenTrue.expressionKind()).toBe("conditional")
+        expect(conditional.whenFalse.expressionKind()).toBe("conditional")
+        expect(conditional.whenTrue.range.startTokenIndex).toBe(2)
+        expect(conditional.whenTrue.range.endTokenIndex).toBe(7)
+        expect(conditional.whenFalse.range.startTokenIndex).toBe(8)
+        expect(conditional.whenFalse.range.endTokenIndex).toBe(13)
+        expect(expression.range.endTokenIndex).toBe(13)
+    }
+
+    test `rejects nested conditional missing outer colon`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-conditional-invalid"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("a", Token.Type.IDENTIFIER, 1), token("?", Token.Type.SYMBOL, 3),
+                token("b", Token.Type.IDENTIFIER, 5), token("?", Token.Type.SYMBOL, 7),
+                token("1", Token.Type.INTEGER, 9), token(":", Token.Type.SYMBOL, 11),
+                token("2", Token.Type.INTEGER, 13)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Expected ':' in conditional expression")).toBe(true)
+        expect(failure.contains("token 7")).toBe(true)
+    }
+
+    test `rejects conditional array index without colon`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-array-invalid"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("values", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 7),
+                token("true", Token.Type.BOOL, 8), token("?", Token.Type.SYMBOL, 13),
+                token("0", Token.Type.INTEGER, 15), token("]", Token.Type.SYMBOL, 16)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Expected ':' in conditional expression")).toBe(true)
+    }
+
+    test `rejects unclosed grouped array access`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-array-invalid"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("(", Token.Type.SYMBOL, 1), token("values", Token.Type.IDENTIFIER, 2),
+                token(")", Token.Type.SYMBOL, 8), token("[", Token.Type.SYMBOL, 9),
+                token("0", Token.Type.INTEGER, 10)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Expected closing array bracket")).toBe(true)
+    }
+
+    test `parses member access after grouped reference`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-reference"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("value", Token.Type.IDENTIFIER, 2),
+            token(")", Token.Type.SYMBOL, 7), token(".", Token.Type.SYMBOL, 8),
+            token("count", Token.Type.IDENTIFIER, 9)
+        ], snapshot)
+        let member = (PrimitiveMemberAccessSyntax)expression
+        expect(member.receiver.expressionKind()).toBe("reference")
+        expect(expression.range.endTokenIndex).toBe(5)
+    }
+
+    test `parses member access after grouped conditional`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-member"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("(", Token.Type.SYMBOL, 1), token("true", Token.Type.BOOL, 2),
+            token("?", Token.Type.SYMBOL, 7), token("left", Token.Type.IDENTIFIER, 9),
+            token(":", Token.Type.SYMBOL, 14), token("right", Token.Type.IDENTIFIER, 16),
+            token(")", Token.Type.SYMBOL, 21), token(".", Token.Type.SYMBOL, 22),
+            token("count", Token.Type.IDENTIFIER, 23)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("member-access")
+        let member = (PrimitiveMemberAccessSyntax)expression
+        expect(member.receiver.expressionKind()).toBe("conditional")
+        expect(expression.range.startTokenIndex).toBe(0)
+        expect(expression.range.endTokenIndex).toBe(9)
+        expect(member.receiver.range.startTokenIndex).toBe(0)
+        expect(member.receiver.range.endTokenIndex).toBe(7)
+    }
+
+    test `rejects missing member after grouped expression`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-member-invalid"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("(", Token.Type.SYMBOL, 1), token("1", Token.Type.INTEGER, 2),
+                token("+", Token.Type.SYMBOL, 4), token("2", Token.Type.INTEGER, 6),
+                token(")", Token.Type.SYMBOL, 7), token(".", Token.Type.SYMBOL, 8)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Expected member name after '.'")).toBe(true)
+    }
+
+    test `parses conditional expression inside explicit lambda body`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-lambda"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+            token("Bool", Token.Type.IDENTIFIER, 8), token("choose", Token.Type.IDENTIFIER, 13),
+            token(")", Token.Type.SYMBOL, 19), token("=>", Token.Type.SYMBOL, 21),
+            token("choose", Token.Type.IDENTIFIER, 24), token("?", Token.Type.SYMBOL, 31),
+            token("41", Token.Type.INTEGER, 33), token(":", Token.Type.SYMBOL, 36),
+            token("42", Token.Type.INTEGER, 38)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("lambda")
+        let lambda = (PrimitiveLambdaSyntax)expression
+        expect(lambda.body.expressionKind()).toBe("conditional")
+        expect(lambda.body.range.startTokenIndex).toBe(6)
+        expect(lambda.body.range.endTokenIndex).toBe(11)
+        expect(expression.range.endTokenIndex).toBe(11)
+    }
+
+    test `rejects explicit lambda conditional without false branch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-lambda-invalid"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+                token(")", Token.Type.SYMBOL, 8), token("=>", Token.Type.SYMBOL, 10),
+                token("true", Token.Type.BOOL, 13), token("?", Token.Type.SYMBOL, 18),
+                token("1", Token.Type.INTEGER, 20), token(":", Token.Type.SYMBOL, 22)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Expected primitive expression")).toBe(true)
+        expect(failure.contains("token 8")).toBe(true)
+    }
+
+    test `parses conditional array elements`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-array-elements"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("[", Token.Type.SYMBOL, 1), token("true", Token.Type.BOOL, 2),
+            token("?", Token.Type.SYMBOL, 7), token("41", Token.Type.INTEGER, 9),
+            token(":", Token.Type.SYMBOL, 12), token("42", Token.Type.INTEGER, 14),
+            token(",", Token.Type.SYMBOL, 16), token("1", Token.Type.INTEGER, 18),
+            token("]", Token.Type.SYMBOL, 19)
+        ], snapshot)
+        expect(expression.expressionKind()).toBe("array")
+        let elements = ((PrimitiveArraySyntax)expression).elementValues()
+        expect(elements.count).toBe(2)
+        expect(elements.first.expressionKind()).toBe("conditional")
+        expect(elements.first.range.startTokenIndex).toBe(1)
+        expect(elements.first.range.endTokenIndex).toBe(6)
+        expect(expression.range.startTokenIndex).toBe(0)
+        expect(expression.range.endTokenIndex).toBe(9)
+    }
+
+    test `rejects conditional array element missing false branch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-array-element-invalid"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("[", Token.Type.SYMBOL, 1), token("true", Token.Type.BOOL, 2),
+                token("?", Token.Type.SYMBOL, 7), token("1", Token.Type.INTEGER, 9),
+                token(":", Token.Type.SYMBOL, 11)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Expected primitive expression")).toBe(true)
+        expect(failure.contains("token 5")).toBe(true)
+    }
+
+    test `parses conditional positional and named call arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-call-arguments"), "one")
+        let expression = PrimitiveExpressionParser().parse([
+            token("call", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("true", Token.Type.BOOL, 6), token("?", Token.Type.SYMBOL, 11),
+            token("1", Token.Type.INTEGER, 13), token(":", Token.Type.SYMBOL, 15),
+            token("2", Token.Type.INTEGER, 17), token(",", Token.Type.SYMBOL, 18),
+            token("other", Token.Type.IDENTIFIER, 20), token(":", Token.Type.SYMBOL, 25),
+            token("false", Token.Type.BOOL, 27), token("?", Token.Type.SYMBOL, 33),
+            token("3", Token.Type.INTEGER, 35), token(":", Token.Type.SYMBOL, 37),
+            token("4", Token.Type.INTEGER, 39), token(")", Token.Type.SYMBOL, 40)
+        ], snapshot)
+        let call = (PrimitiveCallSyntax)expression
+        expect(call.argumentValues().first.expressionKind()).toBe("conditional")
+        expect(call.namedArgumentValues().first.value.expressionKind()).toBe("conditional")
+        expect(expression.range.endTokenIndex).toBe(16)
+    }
+
+    test `rejects conditional named argument without colon`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-named-invalid"), "one")
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse([
+                token("call", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token("value", Token.Type.IDENTIFIER, 6), token(":", Token.Type.SYMBOL, 11),
+                token("true", Token.Type.BOOL, 13), token("?", Token.Type.SYMBOL, 18),
+                token("1", Token.Type.INTEGER, 20), token(")", Token.Type.SYMBOL, 21)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Expected ':' in conditional expression")).toBe(true)
+        expect(failure.contains("token 7")).toBe(true)
     }
 
     test `parses implicit braced lambda expression`() {

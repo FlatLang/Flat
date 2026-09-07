@@ -357,6 +357,9 @@ testable class {
         expect(parameters[0].typeName).toBe("async func(Type,Int,List<Type>)->Out")
         expect(parameters[1].defaultValue.expressionKind()).toBe("unary")
         expect(parameters[2].defaultValue.expressionKind()).toBe("lambda")
+        let callback = (PrimitiveLambdaSyntax)parameters[2].defaultValue
+        expect(callback.emptyBody).toBe(true)
+        expect(callback.range.endTokenIndex - callback.range.startTokenIndex).toBe(2)
         expect(parsed.returnTypeName).toBe("Int")
         expect(parsed.asyncMethod).toBe(true)
         expect(parsed.range.startTokenIndex).toBe(0)

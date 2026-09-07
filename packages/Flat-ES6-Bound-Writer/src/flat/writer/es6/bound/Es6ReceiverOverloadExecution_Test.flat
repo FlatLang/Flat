@@ -7,9 +7,262 @@ import flat/lexer/Lexer
 import flat/parser/flat
 import flat/semantic/binding/primitive
 import flat/compiler/models
+import flat/bound
+import flat/semantic/types
 
 /** Executes receiver-owned overload selection through generated ES6. */
 testable class {
+    async test `grouped conditional field access executes under Node`() {
+        let stream = Lexer().lex(
+            "class Value { Int count; construct(Int input) { count = input; } " +
+                "select(Bool choose, Value other) -> Int { return ((choose) ? (this) : other).count; } " +
+                "grouped(Value other) -> Int { return (other).count; } " +
+                "identity(Value other) -> Value { return (other); } " +
+                "nested(Value other) -> Value { return ((other)); } " +
+                "forward(Value other) -> Int { return select((false), (other)); } " +
+                "arithmetic(Int value) -> Int { return (value) * 6 / 2 % 43; } " +
+                "compare(Int value) -> Bool { return (value) >= 14 && (value) <= 14 && (value) != 0 " +
+                "&& (value) > 13 && (value) < 15 && (value) == 14; } " +
+                "orSkip(Bool value, probe() -> Bool) -> Bool { return (value) || probe(); } " +
+                "branch(Bool a, Bool b, Bool c, one() -> Int, two() -> Int, three() -> Int, four() -> Int) -> Int " +
+                "{ return a ? b ? one() : two() : c ? three() : four(); } " +
+                "first(Int[] values, Bool choose) -> Int { return (values)[choose ? 0 : 1] - values[choose ? 1 : 0]; } " +
+                "andSkip(Bool value, probe() -> Bool) -> Bool { return (value) && probe(); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:grouped-field-execute"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let emitted = Es6UnitOrchestrator().emitType(type, 0)
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let selectName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "select" }).identity.value
+        )
+        let groupedName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "grouped" }).identity.value
+        )
+        let identityName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "identity" }).identity.value
+        )
+        let nestedName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "nested" }).identity.value
+        )
+        let forwardName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "forward" }).identity.value
+        )
+        let arithmeticName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "arithmetic" }).identity.value
+        )
+        let compareName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "compare" }).identity.value
+        )
+        let orName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "orSkip" }).identity.value
+        )
+        let andName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "andSkip" }).identity.value
+        )
+        let firstName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "first" }).identity.value
+        )
+        let branchName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "branch" }).identity.value
+        )
+        let root = File(".flat-es6-grouped-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "grouped.js")
+        Es6ArtifactCommitter().commit(destination,
+            emitted.fragment.code + "const left = new " + className + "(41); const right = new " +
+                className + "(42); console.log(left." + selectName + "(true, right)); " +
+                "console.log(left." + selectName + "(false, right)); " +
+                "if (left." + groupedName + "(right) !== 42) throw new Error('grouped reference failed'); " +
+                "if (left." + identityName + "(right) !== right) throw new Error('grouping changed identity'); " +
+                "if (left." + nestedName + "(right) !== right) throw new Error('nested grouping changed identity'); " +
+                "if (left." + forwardName + "(right) !== 42) throw new Error('grouped arguments failed'); " +
+                "if (left." + arithmeticName + "(14) !== 42) throw new Error('grouped arithmetic failed'); " +
+                "if (!left." + compareName + "(14) || left." + compareName +
+                "(15)) throw new Error('grouped comparison failed'); " +
+                "if (left." + firstName + "([42, 99], true) !== -57 || left." + firstName +
+                "([42, 99], false) !== 57) throw new Error('conditional array index failed'); " +
+                "for (const a of [false, true]) for (const b of [false, true]) for (const c of [false, true]) { " +
+                "const expected = a ? (b ? 1 : 2) : (c ? 3 : 4); let invoked = 0; " +
+                "const callbacks = [1, 2, 3, 4].map(value => () => { " +
+                "if (value !== expected) throw new Error('unselected branch evaluated'); invoked++; return value; }); " +
+                "if (left." + branchName + "(a, b, c, ...callbacks) !== expected || invoked !== 1) " +
+                "throw new Error('nested conditional failed'); } " +
+                "const forbidden = () => { throw new Error('short circuit violated'); }; " +
+                "if (!left." + orName + "(true, forbidden) || left." + andName +
+                "(false, forbidden)) throw new Error('short circuit result failed'); " +
+                "let calls = 0; const probe = () => { calls++; return true; }; " +
+                "if (!left." + orName + "(false, probe) || !left." + andName +
+                "(true, probe) || calls !== 2) throw new Error('required callback skipped');\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("41\n42\n")
+    }
+
+    async test `source lambda invocation captures local under Node`() {
+        let stream = Lexer().lex(
+            "class Value { run(Int input) -> Int { let captured = 1; let callback = lambda(Int value) => value == 41 ? value + captured : captured; let values = [input == 41 ? callback(input) : callback(0), 99]; return this.combine(input == 41 ? values[0] : 0, other: input == 41 ? 0 : values[0]); } combine(Int value, Int other) -> Int { return value + other; } combine(Bool value, Bool other) -> Int { return -99; } order(get() -> Value, first() -> Int, second() -> Int) -> Int { let local = 0; return get().combine(value: first(), other: second()); } lambdaOrder(get() -> Value, first() -> Int, second() -> Int) -> Int { let callback = lambda() => get().combine(value: first(), other: second()); return callback(); } mixedLambdaOrder(get() -> Value, first() -> Int, second() -> Int) -> Int { let callback = lambda() => get().combine(first(), other: second()); return callback(); } identity<Type>(Type input) -> Type { return input; } genericRun(Int input) -> Int { let owner = this; let callback = lambda() => owner.identity(input: input); return callback(); } genericBoolRun(Bool input) -> Bool { let owner = this; let callback = lambda() => owner.identity(input: input); return callback(); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:source-lambda-execute"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let emitted = Es6UnitOrchestrator().emitType(type, 0)
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let runName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "run" }).identity.value
+        )
+        let orderName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "order" }).identity.value
+        )
+        let lambdaOrderName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "lambdaOrder" }).identity.value
+        )
+        let mixedLambdaOrderName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "mixedLambdaOrder" }).identity.value
+        )
+        let genericRunName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "genericRun" }).identity.value
+        )
+        let genericBoolRunName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "genericBoolRun" }).identity.value
+        )
+        let root = File(".flat-es6-source-lambda-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "lambda.js")
+        Es6ArtifactCommitter().commit(destination,
+            emitted.fragment.code + "const value = new " + className + "(); " +
+                "if (value." + genericRunName + "(42) !== 42 || value." + genericRunName +
+                "(-7) !== -7) throw new Error('named generic lambda call failed'); " +
+                "if (value." + genericBoolRunName + "(true) !== true || value." + genericBoolRunName +
+                "(false) !== false) throw new Error('named generic Bool lambda call failed'); " +
+                "console.log(value." + runName + "(41)); console.log(value." + runName + "(0)); " +
+                "for (const invoke of [value." + orderName + ".bind(value), value." +
+                lambdaOrderName + ".bind(value), value." + mixedLambdaOrderName +
+                ".bind(value)]) { const events = []; const result = invoke" +
+                "(() => { events.push('receiver'); return value; }, " +
+                "() => { events.push('first'); return 40; }, " +
+                "() => { events.push('second'); return 2; }); " +
+                "if (result !== 42 || events.join(',') !== 'receiver,first,second') " +
+                "throw new Error('named call evaluation order failed'); " +
+                "for (let stop = 0; stop < 3; stop++) { " +
+                "const trace = []; const failure = new Error('argument failure'); let caught; " +
+                "const steps = [value, 40, 2].map((result, index) => () => { " +
+                "trace.push(index); if (index === stop) throw failure; return result; }); " +
+                "try { invoke(...steps); } catch (error) { caught = error; } " +
+                "if (caught !== failure || trace.join(',') !== [0, 1, 2].slice(0, stop + 1).join(',')) " +
+                "throw new Error('named call failure propagation failed'); } }\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42\n1\n")
+    }
+
+    async test `omitted callback defaults execute in named instance calls`() {
+        let stream = Lexer().lex(
+            "class Value { read(Int count = -1, next(Int value) = {}) -> Int { next(count); return count; } named() -> Int { return read(count: 7); } omitted() -> Int { return read(); } supplied(next(Int value)) -> Int { return read(count: 7, next: next); } dependent(Int input, Int other = input) -> Int { return input + other; } dependentRun(next() -> Int) -> Int { return dependent(input: next()); } evaluated(next() -> Int, Int result = next()) -> Int { return result; } evaluatedRun(next() -> Int) -> Int { return evaluated(next: next); } overriddenRun(next() -> Int) -> Int { return evaluated(next: next, result: 9); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-default-execute"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let emitted = Es6UnitOrchestrator().emitType(type, 0)
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let namedName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "named" }).identity.value
+        )
+        let omittedName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "omitted" }).identity.value
+        )
+        let suppliedName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "supplied" }).identity.value
+        )
+        let dependentName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "dependentRun" }).identity.value
+        )
+        let evaluatedName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "evaluatedRun" }).identity.value
+        )
+        let overriddenName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "overriddenRun" }).identity.value
+        )
+        let root = File(".flat-es6-omitted-callback-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "defaults.js")
+        Es6ArtifactCommitter().commit(destination,
+            emitted.fragment.code + "const value = new " + className + "(); " +
+                "if (value." + namedName + "() !== 7) throw new Error('named default failed'); " +
+                "if (value." + omittedName + "() !== -1) throw new Error('omitted defaults failed'); " +
+                "let evaluations = 0; if (value." + dependentName +
+                "(() => { evaluations++; return 21; }) !== 42 || evaluations !== 1) " +
+                "throw new Error('dependent default repeated argument'); " +
+                "let defaults = 0; const compute = () => { defaults++; return 42; }; " +
+                "if (value." + evaluatedName + "(compute) !== 42 || defaults !== 1) " +
+                "throw new Error('default evaluation count failed'); " +
+                "if (value." + overriddenName + "(compute) !== 9 || defaults !== 1) " +
+                "throw new Error('overridden default executed'); " +
+                "const defaultFailure = new Error('default failure'); let defaultCaught; " +
+                "try { value." + evaluatedName + "(() => { throw defaultFailure; }); } " +
+                "catch (error) { defaultCaught = error; } " +
+                "if (defaultCaught !== defaultFailure) throw new Error('default failure lost'); " +
+                "const seen = []; if (value." + suppliedName + "(item => { seen.push(item); }) !== 7 " +
+                "|| seen.length !== 1 || seen[0] !== 7) throw new Error('supplied callback failed'); " +
+                "const failure = new Error('callback failure'); let caught; let calls = 0; " +
+                "try { value." + suppliedName + "(() => { calls++; throw failure; }); } " +
+                "catch (error) { caught = error; } " +
+                "if (caught !== failure || calls !== 1) throw new Error('callback failure lost'); " +
+                "console.log('ok');\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("ok\n")
+    }
+
+    async test `direct lambda invocations execute under Node`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let emitter = Es6ExpressionOrchestrator()
+        let body = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "42")
+        let syncType = FunctionSemanticType(SemanticType[], SemanticTypes.intType())
+        let asyncType = FunctionSemanticType(SemanticType[], SemanticTypes.intType(), asyncFunction: true)
+        let synchronous = BoundLambdaExpression(
+            fixture.range(), syncType, BoundFunctionParameter[], BoundReferenceExpression[], body
+        )
+        let asynchronous = BoundLambdaExpression(
+            fixture.range(), asyncType, BoundFunctionParameter[], BoundReferenceExpression[], body
+        )
+        let syncCode = emitter.emit(BoundFunctionInvocationExpression(
+            fixture.range(), synchronous, syncType, BoundExpression[]
+        ))
+        let asyncCode = emitter.emit(BoundFunctionInvocationExpression(
+            fixture.range(), asynchronous, asyncType, BoundExpression[]
+        ))
+        expect(syncCode.emitted).toBe(true)
+        expect(asyncCode.emitted).toBe(true)
+        let root = File(".flat-es6-direct-lambda-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "lambda.js")
+        Es6ArtifactCommitter().commit(destination,
+            "(async () => { console.log(" + syncCode.code + "); console.log(" + asyncCode.code +
+                "); })().catch(error => { console.error(error); process.exitCode = 1; });\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42\n42\n")
+    }
     async test `constructor member assignment executes under Node`() {
         let stream = Lexer().lex(
             "class Value { Int count; Object chars; construct(Object input) { " +
@@ -103,6 +356,68 @@ testable class {
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("z\n")
         Es6ArtifactFiles.remove(root)
+    }
+
+    async test `async callback result is resolved before arithmetic`() {
+        let stream = Lexer().lex(
+            "class Value { async apply(async map(Int) -> Int) -> Int { return map(41) + 1; } " +
+                "async finish(async onAfterChunk(Int count) = {}) -> Int { onAfterChunk(1); return 42; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:async-callback-execute"), "one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let applyName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "apply" }).identity.value
+        )
+        let finishName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "finish" }).identity.value
+        )
+        let root = File(".flat-es6-async-callback-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "callback.js")
+        Es6ArtifactCommitter().commit(destination,
+            code + "(async () => { const instance = new " + className + "(); " +
+                "let release, reject; let completed = false; const seen = []; " +
+                "const firstGate = new Promise(resolve => { release = resolve; }); " +
+                "const secondGate = new Promise((resolve, fail) => { reject = fail; }); " +
+                "const first = instance." + applyName +
+                "(value => { seen.push(value); return firstGate; }); " +
+                "first.then(() => { completed = true; }); " +
+                "const second = instance." + applyName +
+                "(value => { seen.push(value); return secondGate; }); " +
+                "const failure = new Error('callback failure'); " +
+                "const observed = second.then(() => { throw new Error('expected rejection'); }, " +
+                "error => { if (error !== failure) throw new Error('lost rejection identity'); }); " +
+                "await Promise.resolve(); await Promise.resolve(); " +
+                "if (completed || seen.join(',') !== '41,41') throw new Error('gate or overlap violated'); " +
+                "reject(failure); await observed; " +
+                "if (completed) throw new Error('unrelated call completed before release'); " +
+                "release(41); console.log(await first); " +
+                "if (await instance." + finishName + "() !== 42) throw new Error('async default failed'); " +
+                "let finishRelease; let finished = false; let chunkCount; " +
+                "const finishGate = new Promise(resolve => { finishRelease = resolve; }); " +
+                "const finishing = instance." + finishName +
+                "(count => { chunkCount = count; return finishGate; }); " +
+                "finishing.then(() => { finished = true; }); " +
+                "await Promise.resolve(); await Promise.resolve(); " +
+                "if (finished || chunkCount !== 1) throw new Error('callback statement was not awaited'); " +
+                "finishRelease(); if (await finishing !== 42) throw new Error('finish result lost'); " +
+                "await instance." + finishName + "(() => Promise.reject(failure)).then(" +
+                "() => { throw new Error('statement rejection lost'); }, " +
+                "error => { if (error !== failure) throw new Error('statement rejection changed'); }); " +
+                "})().catch(error => { console.error(error); process.exitCode = 1; });\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42\n")
     }
 
     async test `callable invocation with implicit field executes under Node`() {

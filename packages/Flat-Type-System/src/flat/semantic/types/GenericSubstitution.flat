@@ -44,7 +44,7 @@ data class {
             let functionType = (FunctionSemanticType)type
             return FunctionSemanticType(
                 functionType.parameterTypes().map({ apply(_) }),
-                apply(functionType.returnType)
+                apply(functionType.returnType), asyncFunction: functionType.asyncFunction
             )
         }
         if (type.kind() == "generic-instance") {

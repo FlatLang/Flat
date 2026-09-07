@@ -855,7 +855,13 @@ class {
                         parameter.name, parameter.identity, parameter.semanticType
                     ))
                 }
-                if (receiver) {
+                if (value.defaultValue.class.isOfType(PrimitiveLambdaSyntax.class)) {
+                    bound = PrimitiveExpressionBinder().bind(
+                        value.defaultValue, requiredType: type, locals: defaultLocals
+                    )
+                    if (!bound.succeeded) throw Exception(bound.diagnostic.message)
+                    defaultValue = bound.expression
+                } else if (receiver) {
                     defaultValue = expression(
                         value.defaultValue, receiver, fields, defaultLocals
                     )
@@ -937,6 +943,13 @@ class {
         SemanticType requiredType = null
     ) -> BoundExpression {
         if (!syntax) throw Exception("Reduced method expression syntax is required")
+        if (requiredType && syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
+            let bound = PrimitiveExpressionBinder().bind(
+                syntax, requiredType: requiredType, locals: locals, callables: constructors
+            )
+            if (!bound.succeeded) throw Exception(bound.diagnostic.message)
+            return bound.expression
+        }
         if (!receiver && syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
             let access = (PrimitiveMemberAccessSyntax)syntax
             if (!access.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
@@ -1786,6 +1799,14 @@ class {
                 let target = candidates.first
                 let parameters = target.parameterTypes()
                 let names = target.parameterNames()
+                var Int positionalIndex
+                while (positionalIndex < positionalArguments.count) {
+                    let name = names[positionalIndex]
+                    if (namedArguments.any({ _.name == name })) {
+                        throw Exception("Parameter '#name' is supplied both positionally and by name")
+                    }
+                    positionalIndex++
+                }
                 let arguments = BoundExpression[]
                 arguments.addAll(positionalArguments)
                 var Int argumentIndex = value.argumentValues().count
@@ -1795,9 +1816,13 @@ class {
                     })
                     if (namedArgument) {
                         arguments.add(expression(
-                            namedArgument.value, receiver, fields, locals
+                            namedArgument.value, receiver, fields, locals,
+                            parameters[argumentIndex]
                         ))
                     } else {
+                        if (!namedArguments.any((argument) =>
+                            names.skip(argumentIndex + 1).contains(argument.name)
+                        )) break
                         arguments.add(defaultArgument(
                             target, argumentIndex, receiver, fields
                         ))
@@ -2089,6 +2114,14 @@ class {
             ))
             index++
         }
+        if (parameter.defaultValue.class.isOfType(PrimitiveLambdaSyntax.class)) {
+            let bound = PrimitiveExpressionBinder().bind(
+                parameter.defaultValue, requiredType: target.parameterTypes()[parameterIndex],
+                locals: defaultLocals
+            )
+            if (!bound.succeeded) throw Exception(bound.diagnostic.message)
+            return bound.expression
+        }
         return expression(parameter.defaultValue, receiver, fields, defaultLocals)
     }
 
@@ -2128,7 +2161,7 @@ class {
 
     referenceType(SemanticType type) -> Bool =>
         type.kind() == "string" || type.kind() == "object" || type.kind() == "array" ||
-        type.kind() == "user-class" || type.kind() == "function"
+        type.kind() == "user-class" || type.kind() == "generic-instance" || type.kind() == "function"
 
     methodTypeOf(String name, PrimitiveFunctionSyntax method) -> SemanticType {
         let kind = method.staticMethod ? "static-method" : "instance-method"

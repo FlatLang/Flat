@@ -7,6 +7,75 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `rejects named arguments rather than dropping them in structured returns`() {
+        let calls = ["this.pick(1, ignored: 2)", "pick(1, ignored: 2)"]
+        for (call in calls) {
+            let stream = Lexer().lex(
+                "class Value { pick(Int value) -> Int { return value; } " +
+                    "run() -> Int { let local = 0; return " + call + "; } }"
+            )
+            stream.emit("start")
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structured-named-reject"), "one")
+            var String failure
+            try {
+                PrimitiveClassBinder().bind(
+                    PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+                )
+            } catch (Exception error) { failure = error.message }
+            expect(failure.contains("Named arguments require matching source-order parameters in structured expressions")).toBe(true)
+        }
+    }
+    async test `binds source ordered named arguments in structured returns`() {
+        let calls = ["this.pick(1, other: 2)", "pick(1, other: 2)",
+            "this.pick(value: 1, other: 2)", "pick(value: 1, other: 2)"]
+        for (call in calls) {
+            let stream = Lexer().lex("class Value { pick(Int value, Int other) -> Int { return value + other; } pick(Bool value, Bool other) -> Int { return 99; } run() -> Int { let local = 0; return " + call + "; } }")
+            stream.emit("start")
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structured-named"), "one")
+            let type = PrimitiveClassBinder().bind(
+                PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+            ).typeUnit
+            let method = type.functionUnits().firstOrNull({ _.name == "run" })
+            let statements = method.statements()
+            let returnedObject = (Object)statements.last
+            let returned = (BoundReturnStatement)returnedObject
+            let selected = (BoundCallExpression)returned.value
+            expect(selected.target.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+            expect(selected.target.parameterTypes().last.value()).toBe(SemanticTypes.intType().value())
+            expect(selected.argumentValues().count).toBe(2)
+            expect(selected.receiver != null).toBe(true)
+        }
+    }
+
+    async test `rejects incompatible named argument overload combinations`() {
+        let calls = ["this.pick(1, other: true)", "pick(true, other: 2)"]
+        for (call in calls) {
+            let stream = Lexer().lex("class Value { pick(Int value, Int other) -> Int { return value + other; } pick(Bool value, Bool other) -> Int { return 99; } run() -> Int { let local = 0; return " + call + "; } }")
+            stream.emit("start")
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-overload-invalid"), "one")
+            var String failure
+            try {
+                PrimitiveClassBinder().bind(
+                    PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+                )
+            } catch (Exception error) { failure = error.message }
+            expect(failure.contains("No overload of 'pick'")).toBe(true)
+        }
+    }
+
+    async test `named structured call does not bypass shadowing local`() {
+        let stream = Lexer().lex("class Value { pick(Int value) -> Int { return value; } run() -> Int { let pick = lambda(Int value) => value + 1; return pick(value: 41); } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-local-shadow"), "one")
+        var String failure
+        try {
+            PrimitiveClassBinder().bind(
+                PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+            )
+        } catch (Exception error) { failure = error.message }
+        expect(failure.contains("Named arguments for local 'pick' require callable parameter binding")).toBe(true)
+    }
+
     async test `binds native String constructor member assignment`() {
         let stream = Lexer().lex(
             "class Value { Int count; this chars; construct(this input) { " +
@@ -1297,6 +1366,85 @@ testable class {
         expect(call.semanticType.value()).toBe("primitive:Bool")
         expect(indexed.semanticType.value()).toBe("primitive:Char")
         expect(field.memberIdentity).toBe(type.fieldUnits().first.identity)
+    }
+
+    async test `rejects parameter supplied both positionally and by name`() {
+        let stream = Lexer().lex(
+            "class Value { read(Int count, Int end = 0) -> Int { return count; } run() -> Int { return read(7, count: 9); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-call-parameter"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassBinder().bind(syntax, snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Method Value.run token 20: Parameter 'count' is supplied both positionally and by name")
+    }
+
+    async test `binds explicit empty callback argument`() {
+        let stream = Lexer().lex(
+            "class Value { read(next(Int value)) -> Int { next(7); return 7; } run() -> Int { return read({}) + read(next: {}); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-empty-callback"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        expect(type.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe("primitive:Int")
+    }
+
+    async test `binds omitted callback default in named instance call`() {
+        let stream = Lexer().lex(
+            "class Value { read(Int count = -1, next(Int value) = {}) -> Int { next(count); return count; } run() -> Int { return read(count: 7); } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-callback-default"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "run" })
+        expect(method.returnType.value()).toBe("primitive:Int")
+        let statements = method.statements()
+        let statementObject = (Object)statements.first
+        let statement = (BoundReturnStatement)statementObject
+        let callObject = (Object)statement.value
+        let call = (BoundCallExpression)callObject
+        let arguments = call.argumentValues()
+        expect(arguments.count).toBe(1)
+        expect(call.target.optionalParameterCount).toBe(2)
+        let read = type.functionUnits().firstOrNull({ _.name == "read" })
+        let callbackObject = (Object)read.parameterValues()[1].defaultValue
+        let callback = (BoundLambdaExpression)callbackObject
+        expect(callback.parameterValues().count).toBe(1)
+        expect(callback.parameterValues().first.semanticType.value()).toBe("primitive:Int")
+        expect(callback.captureValues().count).toBe(0)
+        let parameterTypes = call.target.parameterTypes()
+        expect(callback.semanticType.value()).toBe(parameterTypes.last.value())
+    }
+
+    async test `binds empty async callback default`() {
+        let stream = Lexer().lex(
+            "class Value { async read(Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> Int { return maxParallel; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:async-callback-default"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "read" })
+        expect(method.parameterValues()[0].defaultValue.semanticType.value()).toBe("primitive:Int")
+        expect(method.parameterValues()[1].defaultValue.semanticType.value())
+            .toBe(method.parameterValues()[1].semanticType.value())
+    }
+
+    async test `rejects empty callback default requiring a result`() {
+        let stream = Lexer().lex(
+            "class Value { read(next(Int count)->Int = {}) -> Int { return 1; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-empty-callback"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassBinder().bind(syntax, snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("Empty callback requires a Unit return type")).toBe(true)
     }
 
     async test `binds callback invocation in static default`() {

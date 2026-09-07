@@ -626,6 +626,44 @@ class {
         return result
     }
 
+    bindStructuredNamedCall(
+        SourceRange range, String name, BoundExpression owner,
+        PrimitiveExpressionSyntax[] positional, PrimitiveMixedNamedArgumentSyntax[] named,
+        BoundReferenceExpression receiver, BoundFieldUnit[] fields,
+        LocalBinding[] locals, CallableSignature[] callables
+    ) -> BoundExpression {
+        if (!owner) throw Exception("Named structured call requires an instance receiver")
+        let candidates = callables.filter((candidate) =>
+            candidate.name == name && candidate.callableKind.value == "instance-method" &&
+            candidate.ownerType.value() == owner.semanticType.value() &&
+            candidate.parameterTypes().count == positional.count + named.count &&
+            candidate.parameterNames().count == positional.count + named.count
+        )
+        let applicable = CallableSignature[]
+        for (candidate in candidates) {
+            let names = candidate.parameterNames()
+            var Bool matches = true
+            var Int i
+            while (i < named.count) {
+                if (named[i].name != names[positional.count + i]) matches = false
+                i++
+            }
+            if (matches) applicable.add(candidate)
+        }
+        if (applicable.isEmpty) throw Exception("Named arguments require matching source-order parameters in structured expressions")
+        let arguments = BoundExpression[]
+        for (argument in positional) arguments.add(classExpression(argument, receiver, fields, locals, callables))
+        for (argument in named) arguments.add(classExpression(argument.value, receiver, fields, locals, callables))
+        let resolution = OverloadResolver.resolve(name, applicable, owner.semanticType,
+            arguments.map({ _.semanticType }), range)
+        if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+        let checked = CallTypeChecker.check(resolution.selected, owner.semanticType,
+            arguments.map({ _.semanticType }), range)
+        if (!checked.valid) throw Exception(checked.diagnostic.message)
+        return BoundCallExpression(range, checked.semanticType, resolution.selected, owner,
+            arguments, checked.argumentConversions())
+    }
+
     classExpression(
         PrimitiveExpressionSyntax syntax,
         BoundReferenceExpression receiver,
@@ -1006,6 +1044,11 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
+            if (value.namedArgumentValues().isNotEmpty) {
+                let owner = classExpression(value.receiver, receiver, fields, locals, callables)
+                return bindStructuredNamedCall(value.range, value.memberName, owner,
+                    value.argumentValues(), value.namedArgumentValues(), receiver, fields, locals, callables)
+            }
             let owner = classExpression(
                 value.receiver, receiver, fields, locals, callables
             )
@@ -1127,6 +1170,13 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let value = (PrimitiveCallSyntax)syntax
+            if (value.namedArgumentValues().isNotEmpty) {
+                if (locals.any({ _.name == value.name })) {
+                    throw Exception("Named arguments for local '#{value.name}' require callable parameter binding")
+                }
+                return bindStructuredNamedCall(value.range, value.name, receiver,
+                    value.argumentValues(), value.namedArgumentValues(), receiver, fields, locals, callables)
+            }
             let localFunction = locals.reverse().firstOrNull((candidate) =>
                 candidate.name == value.name &&
                 candidate.semanticType.kind() == "function"

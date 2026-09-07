@@ -288,16 +288,7 @@ class {
                 }
                 if (!delimiters.isEmpty) syntax("Unclosed default expression delimiter", index)
                 if (defaultStart == index) syntax("Expected default parameter value", index)
-                if (tokens[defaultStart].value == "{" &&
-                    index == defaultStart + 2 && tokens[defaultStart + 1].value == "}") {
-                    defaultValue = PrimitiveLambdaSyntax(
-                        range(defaultStart, index),
-                        PrimitiveFunctionParameterSyntax[],
-                        PrimitiveLiteralSyntax(
-                            range(defaultStart, index), Token.Type.NULL, "null"
-                        )
-                    )
-                } else defaultValue = PrimitiveExpressionParser().parse(
+                defaultValue = PrimitiveExpressionParser().parse(
                     tokens.skip(defaultStart).take(index - defaultStart), snapshot,
                     defaultStart + tokenIndexOffset
                 )

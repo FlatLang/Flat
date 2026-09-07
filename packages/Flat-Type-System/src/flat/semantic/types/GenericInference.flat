@@ -84,6 +84,7 @@ class {
         if (formal.kind() == "function") {
             let formalFunction = (FunctionSemanticType)formal
             let actualFunction = (FunctionSemanticType)actual
+            if (formalFunction.asyncFunction != actualFunction.asyncFunction) return false
             let formals = formalFunction.parameterTypes()
             let actuals = actualFunction.parameterTypes()
             if (formals.count != actuals.count) return false
