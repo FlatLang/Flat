@@ -6,6 +6,51 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `invokes local callback expression`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:callback-expression-call"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "read"
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("next", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("41", Token.Type.INTEGER, 6), token(")", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: [LocalBinding(
+            "next", SymbolIdentity(declaration, "parameter", 0),
+            FunctionSemanticType([SemanticTypes.intType()], SemanticTypes.intType())
+        )])
+        expect(result.succeeded).toBe(true)
+        expect(result.expression.expressionKind()).toBe("function-invocation")
+        expect(result.expression.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    test `publishes instantiated generic call target`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:generic-expression-call"), "revision:one"
+        )
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "function", 0), "function", "identity"
+        )
+        let parameter = GenericParameterSemanticType(declaration, "Out", 0)
+        let target = CallableSignature(
+            SymbolIdentity(declaration, "function"), "identity", CallableKind("function"),
+            [parameter], parameter, genericParameterValues: [parameter]
+        )
+        let syntax = PrimitiveExpressionParser().parse([
+            token("identity", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 9),
+            token("42", Token.Type.INTEGER, 10), token(")", Token.Type.SYMBOL, 12)
+        ], snapshot)
+        let result = PrimitiveExpressionBinder().bind(syntax, callables: [target])
+        expect(result.succeeded).toBe(true)
+        let expression = (Object)result.expression
+        let call = (BoundCallExpression)expression
+        expect(call.target.returnType.value()).toBe(SemanticTypes.intType().value())
+        expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+        expect(target.returnType.value()).toBe(parameter.value())
+    }
+
     test `binds local postfix update with old value type`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:postfix-update-bind"), "revision:one"

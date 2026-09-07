@@ -2,8 +2,43 @@ package flat/parser/flat
 
 import flat/compiler/models
 import flat/lexer
+import flat/io/File
+import flat/io/FileReader
 
 testable class {
+    async test `partitions range dependency sources independently`() {
+        let names = ["IntRange", "IntRangeIterator", "Iterable", "Iterator", "List"]
+        for (name in names) {
+            let reader = FileReader(File("../Flat-Core/src/flat/datastruct/list/#{name}.flat"))
+            let source = reader.readString()
+            reader.close()
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:range-#name"), "one")
+            try {
+                let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+                expect(partitions.count).toBe(1)
+            } catch (Exception error) { throw Exception("#name: #{error.message}") }
+        }
+    }
+
+    async test `partitions nested defaults beside delegated constructors`() {
+        let stream = Lexer().lex(
+            "class Value { construct() => this(0) construct(Int value) {} " +
+            "static read(Int start = (40 + 2), Int end = start + 1) -> Int { return end; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-default-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        expect(partitions.count).toBe(1)
+        let syntax = PrimitiveClassParser().parse(partitions.first.tokenValues(), snapshot)
+        let parameters = syntax.methodValues().first.parameterValues()
+        expect(parameters.count).toBe(2)
+        expect(parameters.first.name).toBe("start")
+        expect(parameters.last.name).toBe("end")
+        expect(parameters.last.defaultValue.expressionKind()).toBe("binary")
+    }
+
     async test `partitions package imports and multiple complete types`() {
         let source = "package flat/test import flat/Value " +
             "class First { constructor() {} } class Second { constructor() {} }"

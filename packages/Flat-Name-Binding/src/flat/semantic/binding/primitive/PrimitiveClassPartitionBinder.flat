@@ -198,7 +198,7 @@ class {
                     CallableKind(method.staticMethod ? "static-method" : "instance-method"),
                     parameterTypes, returnType, owner,
                     method.parameterValues().filter({ _.defaultValue != null }).count,
-                    method.parameterValues().map({ _.name })
+                    method.parameterValues().map({ _.name }), methodGenerics
                 ))
                 ordinal++
             }

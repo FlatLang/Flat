@@ -1299,6 +1299,55 @@ testable class {
         expect(field.memberIdentity).toBe(type.fieldUnits().first.identity)
     }
 
+    async test `binds callback invocation in static default`() {
+        let stream = Lexer().lex(
+            "class Value { static read(next(Int value)->Int, Int end = next(41)) -> Int { return end; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-default"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(syntax.methodValues().first.parameterValues().first.typeName).toBe("func(Int)->Int")
+        let type = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "read" })
+        expect(method.parameterValues()[1].defaultValue.expressionKind()).toBe("function-invocation")
+        expect(method.parameterValues()[1].defaultValue.semanticType.value()).toBe("primitive:Int")
+    }
+
+    async test `binds earlier parameter in static parameter default`() {
+        let stream = Lexer().lex(
+            "class Value { static read(Int start, Int end = start) -> Int { return end; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:static-parameter-default"), "revision:one"
+        )
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let read = type.functionUnits().firstOrNull({ _.name == "read" })
+        let parameters = read.parameterValues()
+        let defaultObject = (Object)parameters[1].defaultValue
+        let reference = (BoundReferenceExpression)defaultObject
+        expect(reference.symbolIdentity).toBe(parameters.first.identity)
+        expect(reference.semanticType.value()).toBe("primitive:Int")
+    }
+
+    async test `rejects later parameter references in static defaults`() {
+        let stream = Lexer().lex(
+            "class Value { static read(Int start = end, Int end = 7) -> Int { return start; } }"
+        )
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:static-forward-default"), "revision:one"
+        )
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try {
+            PrimitiveClassBinder().bind(syntax, snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Method Value.read token 3: Unknown local 'end'")
+    }
+
     async test `binds receiver field in instance parameter default`() {
         let stream = Lexer().lex(
             "class Value { Int count; read(Int start = count) -> Int { return start; } }"

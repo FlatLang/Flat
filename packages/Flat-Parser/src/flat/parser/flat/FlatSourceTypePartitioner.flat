@@ -63,14 +63,14 @@ class {
                         var Int valueBraceDepth
                         while (cursor < result.count) {
                             let value = result[cursor].value
+                            if (valueDepth == 0 && valueBraceDepth == 0 &&
+                                (value == "," || value == ")")) break
                             if (value == "(" || value == "[") valueDepth++
                             else if (value == ")" || value == "]") {
                                 if (valueDepth == 0 && value == ")") break
                                 valueDepth--
                             } else if (value == "{") valueBraceDepth++
                             else if (value == "}") valueBraceDepth--
-                            if (valueDepth == 0 && valueBraceDepth == 0 &&
-                                (value == "," || value == ")")) break
                             result[cursor] = Token(
                                 value: " ", type: Token.Type.WHITESPACE,
                                 location: result[cursor].location
@@ -303,7 +303,7 @@ class {
     }
 
     normalizeScannerTokens(Token[] tokens, String preserveTarget = null) -> Token[] {
-        let result = normalizeDefaultParameters(normalizeDelegatedConstructors(tokens))
+        let result = normalizeDelegatedConstructors(normalizeDefaultParameters(tokens))
         if (preserveTarget) {
             let selected = normalizeTargetAnnotatedMembers(result, preserveTarget)
             result.clear()

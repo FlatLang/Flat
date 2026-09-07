@@ -152,11 +152,15 @@ class {
             let existing = constructors.firstOrNull({
                 _.identity.declaration.value == methodIdentity.value
             })
+            let methodGenerics = GenericParameterSemanticType[]
+            for (genericName in method.genericParameterNames()) {
+                methodGenerics.add(GenericParameterSemanticType(methodIdentity, genericName, methodGenerics.count))
+            }
             if (!existing) constructors.add(CallableSignature(
                 SymbolIdentity(methodIdentity, methodKind), method.name,
                 CallableKind(methodKind), parameterTypes, methodReturnType, type,
                 method.parameterValues().filter({ _.defaultValue != null }).count,
-                method.parameterValues().map({ _.name })
+                method.parameterValues().map({ _.name }), methodGenerics
             ))
         }
         let fields = BoundFieldUnit[]
@@ -845,18 +849,18 @@ class {
             var BoundExpression defaultValue
             if (value.defaultValue) {
                 var PrimitiveExpressionBindingResult bound
+                let defaultLocals = LocalBinding[]
+                for (parameter in result) {
+                    defaultLocals.add(LocalBinding(
+                        parameter.name, parameter.identity, parameter.semanticType
+                    ))
+                }
                 if (receiver) {
-                    let defaultLocals = LocalBinding[]
-                    for (parameter in result) {
-                        defaultLocals.add(LocalBinding(
-                            parameter.name, parameter.identity, parameter.semanticType
-                        ))
-                    }
                     defaultValue = expression(
                         value.defaultValue, receiver, fields, defaultLocals
                     )
                 } else {
-                    bound = PrimitiveExpressionBinder().bind(value.defaultValue)
+                    bound = PrimitiveExpressionBinder().bind(value.defaultValue, locals: defaultLocals)
                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                     defaultValue = bound.expression
                 }

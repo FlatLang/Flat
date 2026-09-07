@@ -171,6 +171,76 @@ testable class {
         expect(parsed.statements().count).toBe(1)
     }
 
+    test `rejects mismatched default delimiters`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:invalid-default-delimiter"), "revision:one"
+        )
+        var String failure
+        try {
+            PrimitiveFunctionParser().parse([
+                token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token("Int", Token.Type.IDENTIFIER, 6), token("end", Token.Type.IDENTIFIER, 10),
+                token("=", Token.Type.SYMBOL, 14), token("(", Token.Type.SYMBOL, 16),
+                token("1", Token.Type.INTEGER, 17), token("]", Token.Type.SYMBOL, 18)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Primitive function syntax error at token 7: Mismatched default expression delimiter")
+    }
+
+    test `keeps call delimiters inside parameter defaults`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:call-default"), "revision:one"
+        )
+        let parsed = PrimitiveFunctionParser().parse([
+            token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("Int", Token.Type.IDENTIFIER, 6), token("end", Token.Type.IDENTIFIER, 10),
+            token("=", Token.Type.SYMBOL, 14), token("next", Token.Type.IDENTIFIER, 16),
+            token("(", Token.Type.SYMBOL, 20), token("41", Token.Type.INTEGER, 21),
+            token(",", Token.Type.SYMBOL, 23), token("1", Token.Type.INTEGER, 25),
+            token(")", Token.Type.SYMBOL, 26), token(")", Token.Type.SYMBOL, 27),
+            token("=>", Token.Type.SYMBOL, 29), token("end", Token.Type.IDENTIFIER, 32)
+        ], snapshot).functionValues().first
+        let value = parsed.parameterValues().first.defaultValue
+        expect(value.expressionKind()).toBe("call")
+        expect(value.range.startTokenIndex).toBe(5)
+        expect(value.range.endTokenIndex).toBe(11)
+        let call = (PrimitiveCallSyntax)value
+        expect(call.argumentValues().count).toBe(2)
+    }
+
+    test `rejects trailing comma in callback parameter list`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-callback-comma"), "one")
+        var String failure
+        try {
+            PrimitiveFunctionParser().parse([
+                token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token("next", Token.Type.IDENTIFIER, 6), token("(", Token.Type.SYMBOL, 10),
+                token("Int", Token.Type.IDENTIFIER, 11), token("value", Token.Type.IDENTIFIER, 15),
+                token(",", Token.Type.SYMBOL, 20), token(")", Token.Type.SYMBOL, 21),
+                token(")", Token.Type.SYMBOL, 22), token("=>", Token.Type.SYMBOL, 24),
+                token("1", Token.Type.INTEGER, 27)
+            ], snapshot)
+        } catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Primitive function syntax error at token 7: Expected callback parameter after ','")
+    }
+
+    test `parses synchronous callback with named parameters`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:sync-callback"), "one")
+        let method = PrimitiveFunctionParser().parse([
+            token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token("next", Token.Type.IDENTIFIER, 6), token("(", Token.Type.SYMBOL, 10),
+            token("Int", Token.Type.IDENTIFIER, 11), token("value", Token.Type.IDENTIFIER, 15),
+            token(")", Token.Type.SYMBOL, 20), token("->", Token.Type.SYMBOL, 21),
+            token("Int", Token.Type.IDENTIFIER, 23), token(")", Token.Type.SYMBOL, 26),
+            token("=>", Token.Type.SYMBOL, 28), token("1", Token.Type.INTEGER, 31)
+        ], snapshot).functionValues().first
+        let parameter = method.parameterValues().first
+        expect(parameter.name).toBe("next")
+        expect(parameter.typeName).toBe("func(Int)->Int")
+        expect(parameter.range.startTokenIndex).toBe(2)
+        expect(parameter.range.endTokenIndex).toBe(9)
+    }
+
     test `parses named default function parameters`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:named-default-function"), "revision:one"

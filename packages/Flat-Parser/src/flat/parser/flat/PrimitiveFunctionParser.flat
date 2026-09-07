@@ -232,11 +232,11 @@ class {
             }
             var String typeName
             var String name
-            if (asyncParameter && index + 1 < tokens.count &&
+            if (index + 1 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER &&
                 tokens[index + 1].value == "(") {
                 name = tokens[index++].value
-                typeName = "async func("
+                typeName = asyncParameter ? "async func(" : "func("
                 index++
                 var Bool firstType = true
                 while (index < tokens.count && tokens[index].value != ")") {
@@ -247,12 +247,18 @@ class {
                     if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) index++
                     if (index >= tokens.count || tokens[index].value != ",") break
                     index++
+                    if (index >= tokens.count || tokens[index].value == ")") {
+                        syntax("Expected callback parameter after ','", index)
+                    }
                 }
                 require(")", "Expected closing async function parameter list")
                 typeName += ")"
                 if (index < tokens.count && tokens[index].value == "->") {
                     index++
                     typeName += "->" + parseTypeName("Expected async function return type")
+                }
+                if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) {
+                    name = requireIdentifier("Expected callback parameter name")
                 }
             } else {
                 typeName = parseTypeName("Expected parameter type")
@@ -266,19 +272,21 @@ class {
             if (index < tokens.count && tokens[index].value == "=") {
                 index++
                 let defaultStart = index
-                var Int braceDepth
+                let delimiters = String[]
                 while (index < tokens.count) {
-                    if (tokens[index].value == "{") braceDepth++
-                    else if (tokens[index].value == "}") {
-                        braceDepth--
-                        index++
-                        if (braceDepth == 0) break
-                        continue
+                    let value = tokens[index].value
+                    if (delimiters.isEmpty && (value == "," || value == ")")) break
+                    if (value == "(" || value == "[" || value == "{") {
+                        delimiters.add(value == "(" ? ")" : value == "[" ? "]" : "}")
+                    } else if (value == ")" || value == "]" || value == "}") {
+                        if (delimiters.isEmpty || delimiters.last != value) {
+                            syntax("Mismatched default expression delimiter", index)
+                        }
+                        delimiters.removeLast()
                     }
-                    if (braceDepth == 0 &&
-                        (tokens[index].value == "," || tokens[index].value == ")")) break
                     index++
                 }
+                if (!delimiters.isEmpty) syntax("Unclosed default expression delimiter", index)
                 if (defaultStart == index) syntax("Expected default parameter value", index)
                 if (tokens[defaultStart].value == "{" &&
                     index == defaultStart + 2 && tokens[defaultStart + 1].value == "}") {

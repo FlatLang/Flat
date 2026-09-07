@@ -1,6 +1,28 @@
 package flat/semantic/types
 
 testable class {
+    test `generic calls reject conflicting arguments without mutating declaration`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.symbolIdentity("choose", "function")
+        let parameter = GenericParameterSemanticType(identity.declaration, "Type", 0)
+        let target = CallableSignature(
+            identity, "choose", CallableKind("function"), [parameter, parameter], parameter,
+            genericParameterValues: [parameter]
+        )
+        let range = fixture.range()
+        let invalid = CallTypeChecker.check(
+            target, null, [SemanticTypes.intType(), SemanticTypes.stringType()], range
+        )
+        expect(invalid.valid).toBe(false)
+        expect(invalid.diagnostic.code).toBe("type.generic-inference")
+        let valid = CallTypeChecker.check(
+            target, null, [SemanticTypes.stringType(), SemanticTypes.stringType()], range
+        )
+        expect(valid.valid).toBe(true)
+        expect(valid.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        expect(target.returnType.value()).toBe(parameter.value())
+    }
+
     test `infers generic call result and rejects missing evidence`() {
         let fixture = TypeSystem_TestFixture()
         let identity = fixture.symbolIdentity("identity", "function")

@@ -11,7 +11,8 @@ testable class {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:generic-method-binding"), "one"
         )
-        let stream = Lexer().lex("class Box { identity<Out>(Out value) -> Out { return value; } }")
+        let stream = Lexer().lex("class Box { identity<Out>(Out value) -> Out { return value; } " +
+            "run() -> Int { return identity(42); } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
         let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit

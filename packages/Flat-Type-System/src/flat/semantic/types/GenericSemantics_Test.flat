@@ -1,6 +1,31 @@
 package flat/semantic/types
 
 testable class {
+    test `inference preserves matching outer generic identity`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("map", 30)
+        let enclosing = fixture.functionIdentity("caller", 10)
+        let input = GenericParameterSemanticType(enclosing, "Type", 0)
+        let output = GenericParameterSemanticType(identity, "Out", 0)
+        let declaration = GenericDeclaration(identity, [output], output)
+        let result = GenericInference.infer(
+            declaration,
+            [FunctionSemanticType([input], output)],
+            [FunctionSemanticType([input], SemanticTypes.intType())],
+            fixture.range()
+        )
+        expect(result.inferred).toBe(true)
+        expect(result.substitution.argumentFor(output).value()).toBe("primitive:Int")
+        let different = GenericParameterSemanticType(fixture.functionIdentity("other", 20), "Type", 0)
+        let rejected = GenericInference.infer(
+            declaration,
+            [FunctionSemanticType([input], output)],
+            [FunctionSemanticType([different], SemanticTypes.intType())],
+            fixture.range()
+        )
+        expect(rejected.inferred).toBe(false)
+    }
+
     test `generic declarations and substitutions preserve nested structure`() {
         let fixture = TypeSystem_TestFixture()
         let identity = fixture.functionIdentity("map", 30)

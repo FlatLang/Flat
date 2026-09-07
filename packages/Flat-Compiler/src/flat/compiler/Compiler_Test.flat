@@ -374,9 +374,77 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `executes callback invocation in static default`() {
+        let identity = "memory:callback-default"
+        let source = "class Value { static read(next(Int value)->Int = lambda(Int value) => value + 1, Int end = next(41)) -> Int { return end; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "read"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-callback-default-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        let callable = Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value)
+        Es6ArtifactCommitter().commit(destination, code +
+            "let calls = 0; const next = x => { calls++; return x + 1; };\n" +
+            "console.log(" + callable + "(), " + callable + "(next), " + callable + "(next, 7), calls);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42 42 7 1\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker executes static defaults referencing earlier parameters`() {
+        let identity = "memory:static-parameter-default"
+        let source = "class Value { static read(Int start = (40 + 2), Int end = start + 1, " +
+            "Int last = end + 1) -> Int { return last; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "read"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-static-default-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        let callable = Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value)
+        Es6ArtifactCommitter().commit(
+            destination, code + "console.log(" + callable + "(), " + callable +
+                "(42, 7), " + callable + "(42, 7, 3));\n"
+        )
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("44 8 3\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `package linker executes generic identity method`() {
         let identity = "memory:generic-identity"
-        let source = "class Box { identity<Out>(Out value) -> Out { return value; } }"
+        let source = "class Box { Int observed = 0; " +
+            "identity<Out>(Out value, Int count = 1) -> Out { " +
+            "this.observed += count; return value; } " +
+            "forward<Type>(Type value) -> Type { return identity(value); } " +
+            "run() -> Int { let result = forward(40) + identity(2, 3); return result + this.observed; } }"
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
         let stream = Lexer().lex(source)
         stream.emit("start")
@@ -389,6 +457,11 @@ testable class {
             SyntaxIslandIdentity(snapshot, "instance-method", method.range.startTokenIndex),
             "instance-method", "identity"
         )
+        let run = syntax.methodValues().firstOrNull({ _.name == "run" })
+        let runIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", run.range.startTokenIndex),
+            "instance-method", "run"
+        )
         let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
         let root = File(".flat-compiler-generic-identity-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
@@ -396,14 +469,14 @@ testable class {
         Es6ArtifactCommitter().commit(
             destination,
             code + "let box = new " + Es6NameMangler.mangle(typeIdentity.value) + "();\n" +
-                "let value = {}; console.log(box." + Es6NameMangler.mangle(methodIdentity.value) +
-                "(42), box." + Es6NameMangler.mangle(methodIdentity.value) + "(value) === value);\n"
+                "let value = {}; console.log(box." + Es6NameMangler.mangle(runIdentity.value) +
+                "(), box." + Es6NameMangler.mangle(methodIdentity.value) + "(value) === value);\n"
         )
         let response = System.execute(
             ["node", destination.normalizedLocation], silent: true, shell: false
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("42 true\n")
+        expect(response.stdout.join("")).toBe("46 true\n")
         Es6ArtifactFiles.remove(root)
     }
 

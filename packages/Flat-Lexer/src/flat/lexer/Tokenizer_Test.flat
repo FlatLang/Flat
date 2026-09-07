@@ -7,6 +7,20 @@ import flat/compiler/models/Location
 import static flat/lexer/TestUtils_Test.TestUtils
 
 testable class {
+    async test `keeps identifiers after compact return arrows`() {
+        let stream = Tokenizer().tokenize("next(Int)->Int")
+        stream.emit("start")
+        let values = stream.consumeAll<Lexeme>("data")
+        expectLexemes(values, [
+            Lexeme(value: "next", location: Location(lineNumber: 1, column: 1)),
+            Lexeme(value: "(", location: Location(lineNumber: 1, column: 5)),
+            Lexeme(value: "Int", location: Location(lineNumber: 1, column: 6)),
+            Lexeme(value: ")", location: Location(lineNumber: 1, column: 9)),
+            Lexeme(value: "->", location: Location(lineNumber: 1, column: 10)),
+            Lexeme(value: "Int", location: Location(lineNumber: 1, column: 12))
+        ], checkLocation: true)
+    }
+
     async test `can tokenize basic package statement with location info`() {
         let stream = Tokenizer().tokenize("|
             package flat/lexer

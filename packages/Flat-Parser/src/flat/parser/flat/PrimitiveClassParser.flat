@@ -715,8 +715,15 @@ class {
 
     declarationEnd(Int start) -> Int {
         var Int cursor = start
-        while (cursor < tokens.count && tokens[cursor].value != "{" &&
-            tokens[cursor].value != "=>" && tokens[cursor].value != "<=>") cursor++
+        var Int headerParenthesisDepth
+        while (cursor < tokens.count) {
+            let value = tokens[cursor].value
+            if (value == "(") headerParenthesisDepth++
+            else if (value == ")") headerParenthesisDepth--
+            else if (headerParenthesisDepth == 0 &&
+                (value == "{" || value == "=>" || value == "<=>")) break
+            cursor++
+        }
         if (cursor < tokens.count &&
             (tokens[cursor].value == "=>" || tokens[cursor].value == "<=>")) {
             cursor++

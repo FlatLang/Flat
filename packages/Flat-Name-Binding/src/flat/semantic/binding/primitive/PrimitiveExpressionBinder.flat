@@ -498,6 +498,19 @@ class {
             for (argument in value.argumentValues()) {
                 arguments.add(bindSyntax(argument, locals, callables))
             }
+            let local = locals.reverse().firstOrNull({ _.name == value.name })
+            if (local) {
+                if (local.semanticType.kind() != "function") {
+                    throw Exception("Local '#{value.name}' is not callable")
+                }
+                let typeObject = (Object)local.semanticType
+                let functionType = (FunctionSemanticType)typeObject
+                return BoundFunctionInvocationExpression(
+                    value.range,
+                    BoundReferenceExpression(value.range, local.semanticType, local.name, local.identity),
+                    functionType, arguments
+                )
+            }
             let candidates = callables.filter({ _.name == value.name })
             if (candidates.isEmpty && value.name == "String" && arguments.count == 1 &&
                 (arguments.first.semanticType.kind() == "array" ||

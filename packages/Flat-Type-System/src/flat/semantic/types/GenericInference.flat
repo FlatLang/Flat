@@ -64,7 +64,7 @@ class {
                 }
                 index++
             }
-            return false
+            return formal.value() == actual.value()
         }
         if (formal.kind() != actual.kind()) return false
         if (formal.kind() == "array") {

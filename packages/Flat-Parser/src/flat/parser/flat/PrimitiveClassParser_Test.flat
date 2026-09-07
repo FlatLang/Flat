@@ -1,8 +1,28 @@
 package flat/parser/flat
 
 import flat/compiler/models
+import flat/lexer/Lexer
 
 testable class {
+    async test `keeps default lambda arrow inside method header`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:default-lambda-header"), "one")
+        let stream = Lexer().lex(
+            "class Value { static read(next(Int value)->Int = lambda(Int value) => value + 1) " +
+            "-> Int { return next(41); } static other() -> Int { return 7; } }"
+        )
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let methods = parsed.methodValues()
+        expect(methods.count).toBe(2)
+        expect(methods.first.name).toBe("read")
+        expect(methods.last.name).toBe("other")
+        let value = methods.first.parameterValues().first.defaultValue
+        expect(value.expressionKind()).toBe("lambda")
+        expect(value.range.startTokenIndex).toBe(14)
+        expect(value.range.endTokenIndex).toBe(23)
+        expect(methods.first.statements().count).toBe(1)
+    }
+
     test `parses reduced type slice`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:class"), "revision:one"

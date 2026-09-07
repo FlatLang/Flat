@@ -177,17 +177,16 @@ class {
                     }
                 }
             }
-            '-' => '=' => {
-                if (contents[index + 1] == '>') {
-                    return index == contents.count - 2 ? -1 : index + 2
-                }
-            }
         }
     }
 
     checkCurrentLexemeContinuation(String contents, Char char, Int prevIndex, Int index) -> Int => -2 {
         if (index == contents.count - 1) {
             return -2
+        }
+
+        if ((char == '-' || char == '=') && contents[index + 1] == '>') {
+            return index + 2
         }
 
         switch char {
