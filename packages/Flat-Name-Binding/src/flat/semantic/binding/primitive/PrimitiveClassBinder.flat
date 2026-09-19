@@ -1078,19 +1078,20 @@ class {
                 if (!conversion.applicable) throw Exception("Array add argument type mismatch")
                 return BoundArrayExpression(value.range, arrayType, [argument])
             }
-            if (!receiver && value.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+            if (value.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
                 let ownerName = ((PrimitiveReferenceSyntax)value.receiver).name
-                if (!locals.any({ _.name == ownerName })) {
-                    let arguments = BoundExpression[]
-                    for (argument in value.argumentValues()) {
-                        arguments.add(expression(argument, receiver, fields, locals))
-                    }
+                if (!locals.any({ _.name == ownerName }) &&
+                    !fields.any({ _.name == ownerName })) {
                     let staticCandidates = constructors.filter((candidate) =>
                         candidate.callableKind.value == "static-method" &&
                         candidate.ownerType.declarationIdentity.name == ownerName &&
                         candidate.name == value.memberName
                     )
                     if (staticCandidates.isNotEmpty) {
+                        let arguments = BoundExpression[]
+                        for (argument in value.argumentValues()) {
+                            arguments.add(expression(argument, receiver, fields, locals))
+                        }
                         let resolution = OverloadResolver.resolve(
                             value.memberName, staticCandidates, null,
                             arguments.map({ _.semanticType }), value.range
@@ -1105,6 +1106,15 @@ class {
                             value.range, checked.semanticType, target,
                             arguments, checked.argumentConversions()
                         )
+                    }
+                }
+            }
+            if (!receiver && value.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let ownerName = ((PrimitiveReferenceSyntax)value.receiver).name
+                if (!locals.any({ _.name == ownerName })) {
+                    let arguments = BoundExpression[]
+                    for (argument in value.argumentValues()) {
+                        arguments.add(expression(argument, receiver, fields, locals))
                     }
                     var SemanticType resultType = SemanticTypes.doubleType()
                     if (value.memberName == "abs" && arguments.count == 1) {

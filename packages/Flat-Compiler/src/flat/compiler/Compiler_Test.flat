@@ -441,6 +441,37 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `executes published static overload from instance method`() {
+        let identity = "memory:instance-static-call"
+        let source = "class Value { run() -> Int { return Helpers.read(21); } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", method.range.startTokenIndex),
+            "instance-method", "run"
+        )
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity, source),
+            CompilerSource("memory:static-helper", "class Helpers { static read(Int value) -> Int { return value * 2; } static read(Bool value) -> Int { return 0; } }")
+        ])
+        let root = File(".flat-compiler-instance-static-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(new " +
+            Es6NameMangler.mangle(typeIdentity.value) + "()." +
+            Es6NameMangler.mangle(methodIdentity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `executes null return with generic reference identity`() {
         let identity = "memory:generic-reference-null"
         let source = "class List<Type> { static empty<Out>() -> List<Out> { return null; } }"

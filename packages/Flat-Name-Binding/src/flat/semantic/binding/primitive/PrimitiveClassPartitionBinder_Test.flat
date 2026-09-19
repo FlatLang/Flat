@@ -7,6 +7,48 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `resolves published static call from instance method and respects local shadowing`() {
+        let dependency = Lexer().lex("class Helpers { static read(Int value) -> Int { return value; } }")
+        dependency.emit("start")
+        let helper = PrimitiveClassParser().parse(dependency.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:helper"), "one"))
+        let stream = Lexer().lex("class Caller { run() -> Int { return Helpers.read(42); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:caller"), "one"))
+        let bound = PrimitiveClassPartitionBinder().bind([syntax, helper]).typeUnits()
+        expect(bound.count).toBe(2)
+        let shadowed = Lexer().lex("class Caller { run(Int Helpers) -> Int { return Helpers.read(42); } }")
+        shadowed.emit("start")
+        let shadowSyntax = PrimitiveClassParser().parse(shadowed.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:shadow"), "one"))
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([shadowSyntax, helper]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+    }
+
+    async test `isolates generic async mapping implicit callback frontier`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:map-parallel-body"), "one")
+        let stream = Lexer().lex(
+            "class List<Type> { toArray() -> Type[] { return null; } " +
+            "public async mapParallel<Out>(async mapFunc(Type x, Int i, List<Type> list) -> Out, Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> Out[] { " +
+            "return Async.all(toArray(), { mapFunc(_, _, this) }, maxParallel, onAfterChunk); } }"
+        )
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let dependency = Lexer().lex(
+            "class Async { public static async all<Out, In>(In[] values, async toPromise(In value, Int index) -> Out, Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> Out[] { return null; } }"
+        )
+        dependency.emit("start")
+        let asyncSyntax = PrimitiveClassParser().parse(dependency.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:async-signature"), "one"))
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([syntax, asyncSyntax]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("Unknown local '_'")).toBe(true)
+    }
+
     async test `binds canonical mapParallel signature and defaults`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:map-parallel-signature"), "one")
         let stream = Lexer().lex(
