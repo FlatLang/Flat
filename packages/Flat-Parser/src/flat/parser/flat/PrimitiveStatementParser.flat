@@ -41,7 +41,8 @@ class {
             (start + 2 < end && tokens[start].type == Token.Type.IDENTIFIER &&
                 tokens[start + 1].type == Token.Type.IDENTIFIER &&
                 tokens[start + 2].value == "=") ||
-            first == "native_array") {
+            first == "native_array" || (first == "native" && start + 1 < end &&
+                tokens[start + 1].value == "var")) {
             return parseLocal(start, end)
         }
         if (first == "return") return parseReturn(start, end)
@@ -83,7 +84,9 @@ class {
     parseLocal(Int start, Int end) -> PrimitiveStatementSyntax {
         var Int declarationStart = start
         var Bool directTyped
-        if (tokens[start].value == "native_array") {
+        if (tokens[start].value == "native" && start + 1 < end && tokens[start + 1].value == "var") {
+            declarationStart++
+        } else if (tokens[start].value == "native_array") {
             declarationStart++
             while (declarationStart < end &&
                 (tokens[declarationStart].value == "native" ||

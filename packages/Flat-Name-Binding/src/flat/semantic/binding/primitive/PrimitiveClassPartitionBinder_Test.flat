@@ -8,6 +8,18 @@ import flat/semantic/types
 
 testable class {
 
+    async test `passes receiver callback`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-trait"), "one")
+        let contractStream = Lexer().lex("trait Sequence<E> {}")
+        contractStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(contractStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Values implements Sequence<Int> { run(func(Sequence<Int> value) -> Int) -> Int { let result = 0; return func(this); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:callback-values"), "one"))
+        expect(PrimitiveClassPartitionBinder().bind([syntax], interfaceSyntaxValues: [contract]).typeUnits().count).toBe(1)
+    }
+
     async test `binds declared iterator loop`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:protocol-loop"), "one")
         let stream = Lexer().lex("class Cursor { visible Bool hasNext => false visible Int stepNext => 42 } ")
@@ -262,6 +274,17 @@ testable class {
         try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
         catch (Exception error) { failure = error.message }
         expect(failure.contains("cannot return 'null'")).toBe(true)
+    }
+
+    async test `preserves method generic scope in sized array initializer`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-array-local"), "one")
+        let stream = Lexer().lex("class Box { static make<Out>(Int size) -> Out[] { " +
+            "let values = Array<Out>(size); return values; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let method = bound.functionUnits().firstOrNull({ _.name == "make" })
+        expect(method.returnType.kind()).toBe("array")
     }
 
     async test `binds generic method parameter and return identity`() {

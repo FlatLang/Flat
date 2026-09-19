@@ -24,6 +24,23 @@ testable class {
         expect(value.range.endTokenIndex).toBe(12)
     }
 
+    test `parses unawaited callback interpolation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:unawaited"), "one")
+        var String code = "return "
+        code += '#'
+        code += "{callback(1)$};"
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("external", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 10),
+            token(code, Token.Type.CODE, 12), token("}", Token.Type.SYMBOL, 40)
+        ], snapshot)
+        let statements = parsed.statements()
+        let object = (Object)statements.first
+        let value = (PrimitiveExternalStatementSyntax)object
+        let segments = value.segmentValues()
+        expect(segments[1].suppressAwait).toBe(true)
+        expect(segments[1].expression.expressionKind()).toBe("call")
+    }
+
     test `parses complete expression interpolation segment`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-external-expression"), "revision:one"
@@ -104,6 +121,14 @@ testable class {
         next += '#'
         next += "{message +}"
         invalid.add(next)
+        next = ""
+        next += '#'
+        next += "{message$}"
+        invalid.add(next)
+        next = ""
+        next += '#'
+        next += "{callback()$$}"
+        invalid.add(next)
         for (code in invalid) {
             try {
                 PrimitiveControlStatementParser().parse([
@@ -115,7 +140,7 @@ testable class {
                 ], snapshot)
             } catch (Exception error) { rejected++ }
         }
-        expect(rejected).toBe(4)
+        expect(rejected).toBe(6)
     }
 
     test `parses implicit js target`() {

@@ -11,7 +11,8 @@ data class extends BoundExpression {
         SourceRange range,
         visible BoundExpression functionValue,
         FunctionSemanticType functionType,
-        BoundExpression[] argumentValues
+        BoundExpression[] argumentValues,
+        visible Bool suppressAwait = false
     ) {
         if (!range || !functionValue || !functionType ||
             functionValue.semanticType.value() != functionType.value() ||

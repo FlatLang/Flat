@@ -1304,6 +1304,10 @@ testable class {
 
     async test `package linker executes unchanged range iterator`() {
         let code = FlatEs6PackageLinker().link([
+                CompilerSource("flat/async/Async.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/async/Async.flat"))),
+                CompilerSource("flat/async/Async.js.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/async/Async.js.flat"))),
                 CompilerSource(
                     "flat/datastruct/list/NoSuchElementException.flat",
                     Es6ArtifactFiles.read(File(

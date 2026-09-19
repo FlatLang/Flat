@@ -7,6 +7,29 @@ import flat/semantic/types
 
 /** Focused binding coverage for selected opaque statements and interpolation. */
 testable class PrimitiveOpaqueCodeBinder_Test {
+    test `preserves callback await suppression evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:suppress-await"), "one")
+        let declaration = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "method", 0), "static-method", "apply"
+        )
+        let parameter = LocalBinding("callback", SymbolIdentity(declaration, "parameter"),
+            FunctionSemanticType([SemanticTypes.intType()], SemanticTypes.intType(), true))
+        var String code = "return "
+        code += '#'
+        code += "{callback(1)$};"
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("external", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 10),
+            token(code, Token.Type.CODE, 12), token("}", Token.Type.SYMBOL, 40)
+        ], snapshot)
+        let bound = PrimitiveControlStatementBinder().bind(syntax, snapshot, [parameter]).statements()
+        let object = (Object)bound.first
+        let statement = (BoundExternalStatement)object
+        let segments = statement.segmentValues()
+        let expressionObject = (Object)segments[1].value
+        let invocation = (BoundFunctionInvocationExpression)expressionObject
+        expect(invocation.suppressAwait).toBe(true)
+    }
+
     test `binds selected target and preserves literal source evidence`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:external-bind"), "revision:one"

@@ -66,7 +66,9 @@ class {
                         syntax, syntaxSnapshot,
                         availableConstructors: constructorSignatures,
                         availableFields: declaredFields,
-                        interfaceSyntaxValues: interfaces, hierarchy: hierarchy
+                        interfaceSyntaxValues: interfaces, hierarchy: hierarchy ?: (
+                            syntax.implementedTypeNames().isNotEmpty && syntax.implementedTypeNames().all({ _.contains("<") })
+                                ? arrayHierarchy(syntax, effectiveSyntaxValues, snapshot, false) : null)
                     ).typeUnit)
                     boundNames.add(syntax.name)
                     progressed = true
@@ -109,15 +111,15 @@ class {
 
     /** Seals the selected array's direct interface component, not the whole package. */
     arrayHierarchy(PrimitiveClassSyntax array, PrimitiveClassSyntax[] syntaxes,
-        SourceSnapshotIdentity snapshot) -> TypeHierarchyComponent {
-        if (!syntaxes.any({ Object.referenceEquals(_, array) }) || !array.genericParameterName) {
+        SourceSnapshotIdentity snapshot, Bool registerArray = true) -> TypeHierarchyComponent {
+        if (!syntaxes.any({ Object.referenceEquals(_, array) }) || (registerArray && !array.genericParameterName)) {
             throw Exception("Array declaration must be a generic class in the bound partition")
         }
         let resolvedType = PrimitiveStructuralTypeResolver(
             syntaxes: syntaxes, snapshot: snapshot, interfaces: interfaces
         ).resolve(array.name)
         let type = (UserClassSemanticType)resolvedType
-        let parameter = GenericParameterSemanticType(type.declarationIdentity, array.genericParameterName, 0)
+        let parameter = array.genericParameterName ? GenericParameterSemanticType(type.declarationIdentity, array.genericParameterName, 0) : null
         let resolver = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, snapshot: snapshot,
             interfaces: interfaces, genericParameter: parameter)
         let parents = UserClassSemanticType[]
@@ -139,9 +141,11 @@ class {
             }
             templates.add(instance)
         }
+        let parameters = GenericParameterSemanticType[]
+        if (parameter) parameters.add(parameter)
         hierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
-            genericParameters: [parameter], genericParents: templates))
-        hierarchy.registerArrayDeclaration(type)
+            genericParameters: parameters, genericParents: templates))
+        if (registerArray) hierarchy.registerArrayDeclaration(type)
         hierarchy.seal()
         if (!hierarchy.valid) throw Exception("Invalid array interface hierarchy")
         return hierarchy

@@ -28,7 +28,7 @@ class PrimitiveOpaqueCodeBinder {
                 pieces.add(BoundExternalCodeSegment(piece.range, piece.text))
             } else if (piece.expressionSegment()) {
                 let bound = bindExpression(
-                    piece.expression, locals, receiver, fields, callables
+                    piece.expression, locals, receiver, fields, callables, piece.suppressAwait
                 )
                 pieces.add(BoundExternalCodeSegment(
                     piece.range, "", bound, "identity"
@@ -184,7 +184,8 @@ class PrimitiveOpaqueCodeBinder {
         LocalBinding[] locals,
         BoundReferenceExpression receiver,
         BoundFieldUnit[] fields,
-        CallableSignature[] callables
+        CallableSignature[] callables,
+        Bool suppressAwait = false
     ) -> BoundExpression {
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let call = (PrimitiveCallSyntax)syntax
@@ -207,7 +208,8 @@ class PrimitiveOpaqueCodeBinder {
                     call.range, function.semanticType, function.name, function.identity
                 ),
                 functionType,
-                arguments
+                arguments,
+                suppressAwait
             )
         }
         if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {

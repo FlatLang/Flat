@@ -34,7 +34,9 @@ class {
                     cursor++
                 }
                 if (cursor >= code.value.count) invalid("Unterminated external interpolation")
-                let expressionText = code.value.substring(pathStart, cursor).trim()
+                var String expressionText = code.value.substring(pathStart, cursor).trim()
+                let suppressAwait = expressionText.endsWith("$")
+                if (suppressAwait) expressionText = expressionText.substring(0, expressionText.count - 1).trim()
                 let expressionRange = range(
                     code, statementRange, codeTokenIndex, pathStart, cursor
                 )
@@ -46,10 +48,14 @@ class {
                         location(code, pathStart)
                     )
                 }
+                if (suppressAwait && (!expression ||
+                    !expression.class.isOfType(PrimitiveCallSyntax.class))) {
+                    invalid("Await suppression requires a callback invocation")
+                }
                 cursor++
                 segments.add(PrimitiveExternalCodeSegmentSyntax(
                     range(code, statementRange, codeTokenIndex, interpolationStart, cursor),
-                    "", path, expression
+                    "", path, expression, suppressAwait
                 ))
                 literalStart = cursor
             } else cursor++

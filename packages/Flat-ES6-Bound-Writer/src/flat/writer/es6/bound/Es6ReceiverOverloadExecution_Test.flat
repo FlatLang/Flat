@@ -358,6 +358,57 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `method generic sized array local executes`() {
+        let stream = Lexer().lex("class Value { static make<Out>(Int size) -> Out[] { " +
+            "let values = Array<Out>(size); return values; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-array-execute"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let methodName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "make" }).identity.value
+        )
+        let root = File(".flat-es6-generic-array-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "generic.js")
+        Es6ArtifactCommitter().commit(destination, code + "const result = " + className + "." +
+            methodName + "(3); if(result.length !== 3) throw Error('array size lost');")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+    }
+
+    async test `external callback suppression preserves promise identity`() {
+        var String source = "class Value { apply(async map(Int) -> Int) -> Int { external { return "
+        source += '#'
+        source += "{map(41)$}; } } }"
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:unawaited-callback"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let applyName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "apply" }).identity.value
+        )
+        let root = File(".flat-es6-unawaited-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "callback.js")
+        Es6ArtifactCommitter().commit(destination, code +
+            "const promise = Promise.resolve(42); let calls = 0; " +
+            "const result = new " + className + "()." + applyName +
+            "(value => { if(value !== 41) throw Error('argument'); calls++; return promise; }); " +
+            "if(result !== promise || calls !== 1) throw Error('promise identity');")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+    }
+
     async test `async callback result is resolved before arithmetic`() {
         let stream = Lexer().lex(
             "class Value { async apply(async map(Int) -> Int) -> Int { return map(41) + 1; } " +

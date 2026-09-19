@@ -7,6 +7,7 @@ import flat/semantic/types
 
 /** Recursively binds structured control syntax with branch-local lexical scopes. */
 class {
+    var TypeHierarchyComponent currentHierarchy
     var PrimitiveStructuralTypeResolver currentTypeResolver
     var CallableSignature currentArrayGetter
     var CallableSignature currentArraySetter
@@ -22,12 +23,14 @@ class {
         CallableSignature arrayGetter = null,
         CallableSignature arraySetter = null,
         BoundFieldUnit[] availableFields = BoundFieldUnit[],
-        PrimitiveStructuralTypeResolver typeResolver = null
+        PrimitiveStructuralTypeResolver typeResolver = null,
+        TypeHierarchyComponent hierarchy = null
     ) -> PrimitiveStatementBindingResult {
         if (!syntax || !snapshot || !locals || !callables || !fields ||
             !availableFields || availableFields.any({ !_ })) {
             throw Exception("Primitive control binding requires syntax snapshot, locals, callables, and fields")
         }
+        currentHierarchy = hierarchy
         currentTypeResolver = typeResolver ?: PrimitiveStructuralTypeResolver(callables: callables)
         currentArrayGetter = arrayGetter
         currentArraySetter = arraySetter
@@ -582,7 +585,7 @@ class {
                         ? classExpression(value.initializer, receiver, fields, scopeLocals, callables)
                         : PrimitiveClassBinder().bindScopedExpression(
                         value.initializer, receiver, fields, scopeLocals, callables,
-                        currentArrayGetter, currentArraySetter
+                        currentArrayGetter, currentArraySetter, currentTypeResolver
                     )
                     if (!value.declaredTypeName) semanticType = initialized.semanticType
                 }
@@ -1275,6 +1278,18 @@ class {
                     invocationArguments.add(classExpression(
                         argument, receiver, fields, locals, callables
                     ))
+                }
+                if (invocationArguments.count != functionType.parameterTypes().count)
+                    throw Exception("Callback argument count mismatch")
+                var Int argumentIndex
+                while (argumentIndex < invocationArguments.count) {
+                    let argument = invocationArguments[argumentIndex]
+                    let target = functionType.parameterTypes()[argumentIndex]
+                    let conversion = TypeConversions.classify(argument.semanticType, target, hierarchy: currentHierarchy)
+                    if (!conversion.applicable) throw Exception("Callback argument #argumentIndex cannot convert '#{argument.semanticType.value()}' to '#{target.value()}'")
+                    if (argument.semanticType.value() != target.value()) invocationArguments[argumentIndex] =
+                        BoundConversionExpression(argument.range, target, argument, conversion)
+                    argumentIndex++
                 }
                 return BoundFunctionInvocationExpression(
                     value.range,

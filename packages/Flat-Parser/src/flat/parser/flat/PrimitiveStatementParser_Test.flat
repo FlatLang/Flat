@@ -3,6 +3,19 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses native storage local`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-local"), "one")
+        let parsed = PrimitiveStatementParser().parse([
+            token("native", Token.Type.IDENTIFIER, 1), token("var", Token.Type.IDENTIFIER, 8),
+            token("Out", Token.Type.IDENTIFIER, 12), token("data", Token.Type.IDENTIFIER, 16)
+        ], snapshot, 30).statements().first
+        let local = (PrimitiveLocalDeclarationSyntax)parsed
+        expect(local.name).toBe("data")
+        expect(local.declaredTypeName).toBe("Out")
+        expect(local.range.startTokenIndex).toBe(30)
+        expect(local.range.endTokenIndex).toBe(34)
+    }
+
     test `parses direct array local`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-local"), "one")
         let values = [token("Type", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 5),

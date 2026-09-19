@@ -24,6 +24,18 @@ class {
     visible Bool valid => sealed && diagnosticValues.isEmpty
     visible Int declarationCount => declarations.count
 
+    public concreteGenericDistance(UserClassSemanticType source, GenericInstanceSemanticType target) -> Int {
+        requireValid()
+        let declaration = find(source)
+        if (!declaration) return -1
+        var Int best = -1
+        for (parent in declaration.concreteGenericParents()) {
+            let distance = genericDistance(parent, target)
+            if (distance >= 0 && (best < 0 || distance + 1 < best)) best = distance + 1
+        }
+        return best
+    }
+
     public genericDistance(GenericInstanceSemanticType source, GenericInstanceSemanticType target) -> Int {
         requireValid()
         if (!source || !target) throw Exception("Generic distance requires source and target")

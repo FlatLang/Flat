@@ -183,7 +183,7 @@ class {
             let callee = value.functionValue.class.isOfType(BoundLambdaExpression.class) ?
                 "(" + functionValue.code + ")" : functionValue.code
             let invocation = callee + "(" + arguments.code + ")"
-            return Es6CodeResult(code: functionType.asyncFunction ? "(await " + invocation + ")" : invocation)
+            return Es6CodeResult(code: functionType.asyncFunction && !value.suppressAwait ? "(await " + invocation + ")" : invocation)
         }
         if (expression.class.isOfType(BoundCallExpression.class)) {
             let value = (BoundCallExpression)expression

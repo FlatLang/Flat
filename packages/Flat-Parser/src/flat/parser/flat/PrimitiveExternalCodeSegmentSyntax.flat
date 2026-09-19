@@ -10,7 +10,8 @@ data class {
         visible SourceRange range,
         visible String text,
         String[] pathValues,
-        visible PrimitiveExpressionSyntax expression = null
+        visible PrimitiveExpressionSyntax expression = null,
+        visible Bool suppressAwait = false
     ) {
         if (!range || text == null || !pathValues) {
             throw Exception("External code segment requires literal text, a path, or an expression")
@@ -19,6 +20,10 @@ data class {
             if (!part || part.count == 0) {
                 throw Exception("External code path parts cannot be empty")
             }
+        }
+        if (suppressAwait && (!expression ||
+            !expression.class.isOfType(PrimitiveCallSyntax.class))) {
+            throw Exception("Await suppression requires a callback invocation")
         }
         let forms = (text.count > 0 ? 1 : 0) + (pathValues.isNotEmpty ? 1 : 0) +
             (expression ? 1 : 0)

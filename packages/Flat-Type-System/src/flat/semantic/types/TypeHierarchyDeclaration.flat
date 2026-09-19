@@ -59,6 +59,11 @@ data class {
         return parentTemplates.map({ substitution.apply(_) })
     }
 
+    public concreteGenericParents() -> GenericInstanceSemanticType[] {
+        if (parameters.isNotEmpty) return GenericInstanceSemanticType[]
+        return GenericInstanceSemanticType[]:addAll(parentTemplates)
+    }
+
     public directParents() -> UserClassSemanticType[] {
         let result = UserClassSemanticType[]
         result.addAll(parents)

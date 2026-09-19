@@ -16,6 +16,7 @@ class {
     var PrimitiveClassSyntax boundSyntax
     var PrimitiveInterfaceSyntax[] interfaces = PrimitiveInterfaceSyntax[]
     var TypeHierarchyComponent typeHierarchy
+    var PrimitiveStructuralTypeResolver scopedTypeResolver
 
     public bind(
         PrimitiveClassSyntax syntax,
@@ -557,7 +558,7 @@ class {
                 arrayGetter,
                 arraySetter,
                 publishedFields,
-                methodTypeResolver(syntax)
+                methodTypeResolver(syntax), typeHierarchy
             ).statements()
             if (syntax.inferredReturnType) {
                 let inferred = firstReturnType(bound)
@@ -922,9 +923,12 @@ class {
         LocalBinding[] locals,
         CallableSignature[] callables,
         CallableSignature scopedArrayGetter = null,
-        CallableSignature scopedArraySetter = null
+        CallableSignature scopedArraySetter = null,
+        PrimitiveStructuralTypeResolver typeResolver = null
     ) -> BoundExpression {
         let previousConstructors = constructors
+        let previousTypeResolver = scopedTypeResolver
+        scopedTypeResolver = typeResolver
         let previousBoundType = boundType
         let previousArrayGetter = arrayGetter
         let previousArraySetter = arraySetter
@@ -935,12 +939,15 @@ class {
             let receiverObject = (Object)receiver.semanticType
             boundType = (UserClassSemanticType)receiverObject
         }
-        let result = expression(syntax, receiver, fields, locals)
-        constructors = previousConstructors
-        boundType = previousBoundType
-        arrayGetter = previousArrayGetter
-        arraySetter = previousArraySetter
-        return result
+        try {
+            return expression(syntax, receiver, fields, locals)
+        } finally {
+            constructors = previousConstructors
+            scopedTypeResolver = previousTypeResolver
+            boundType = previousBoundType
+            arrayGetter = previousArrayGetter
+            arraySetter = previousArraySetter
+        }
     }
 
     expression(
@@ -2279,7 +2286,7 @@ class {
         )
     }
 
-    typeOf(String name) -> SemanticType => PrimitiveStructuralTypeResolver(
+    typeOf(String name) -> SemanticType => scopedTypeResolver ? scopedTypeResolver.resolve(name) : PrimitiveStructuralTypeResolver(
         callables: constructors,
         genericParameter: genericParameter,
         receiverType: boundType, interfaces: interfaces
