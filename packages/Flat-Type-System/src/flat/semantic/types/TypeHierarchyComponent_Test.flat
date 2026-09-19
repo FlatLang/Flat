@@ -1,6 +1,34 @@
 package flat/semantic/types
 
 testable class {
+    test `substitutes declared generic parents without erasing arguments`() {
+        let fixture = TypeSystem_TestFixture()
+        let sequence = fixture.userType("Sequence", 1)
+        let buffer = fixture.userType("Buffer", 2)
+        let element = GenericParameterSemanticType(buffer.declarationIdentity, "E", 0)
+        let component = TypeHierarchyComponent()
+        component.add(TypeHierarchyDeclaration(sequence, "interface", UserClassSemanticType[],
+            genericParameters: [GenericParameterSemanticType(sequence.declarationIdentity, "E", 0)]))
+        component.add(TypeHierarchyDeclaration(buffer, "class", [sequence],
+            genericParameters: [element],
+            genericParents: [GenericInstanceSemanticType(sequence, [element])]))
+        component.registerArrayDeclaration(buffer)
+        component.seal()
+        let source = GenericInstanceSemanticType(buffer, [SemanticTypes.intType()])
+        let target = GenericInstanceSemanticType(sequence, [SemanticTypes.intType()])
+        expect(TypeConversions.classify(source, target, hierarchy: component).applicable).toBe(true)
+        expect(TypeConversions.classify(ArraySemanticType(SemanticTypes.intType()), target,
+            hierarchy: component).applicable).toBe(true)
+        expect(TypeConversions.classify(ArraySemanticType(SemanticTypes.boolType()), target,
+            hierarchy: component).applicable).toBe(false)
+        expect(TypeConversions.classify(ArraySemanticType(SemanticTypes.intType()), target).applicable).toBe(false)
+        expect(TypeConversions.classify(source,
+            GenericInstanceSemanticType(sequence, [SemanticTypes.boolType()]),
+            hierarchy: component).applicable).toBe(false)
+        expect(TypeConversions.classify(source, target).applicable).toBe(false)
+        expect(TypeConversions.classify(target, source, hierarchy: component).applicable).toBe(false)
+    }
+
     test `component-local inheritance distances and conversions stabilize independently`() {
         let fixture = TypeSystem_TestFixture()
         let object = fixture.userType("Object", 1)

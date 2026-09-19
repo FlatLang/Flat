@@ -28,7 +28,7 @@ class {
         return identity.substring(slash + 1, dot)
     }
 
-    public async link(CompilerSource[] sourceValues) -> String {
+    public async link(CompilerSource[] sourceValues, DeclarationIdentity arrayDeclaration = null) -> String {
         if (!sourceValues || sourceValues.any({ !_ }) || sourceValues.count > maxSources) {
             throw Exception("Flat ES6 package linking requires bounded sources")
         }
@@ -96,8 +96,17 @@ class {
                 } else syntaxes.add(parsed)
             }
         }
+        var PrimitiveClassSyntax arraySyntax
+        if (arrayDeclaration) {
+            arraySyntax = syntaxes.firstOrNull((syntax) => DeclarationIdentity(
+                SyntaxIslandIdentity(syntax.range.snapshot, "class", syntax.range.startTokenIndex),
+                "class", syntax.name
+            ).value == arrayDeclaration.value)
+            if (!arraySyntax) throw Exception("Array declaration must identify a linked class")
+        }
         let types = PrimitiveClassPartitionBinder().bind(
-            syntaxes, maxTypes: maxTypes, interfaceSyntaxValues: interfaceSyntaxes
+            syntaxes, maxTypes: maxTypes, interfaceSyntaxValues: interfaceSyntaxes,
+            arrayDeclaration: arraySyntax
         ).typeUnits()
         if (types.count > maxFragments) {
             throw Exception("Flat ES6 package exceeds configured fragment capacity")

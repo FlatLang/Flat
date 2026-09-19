@@ -50,6 +50,68 @@ testable class {
         expect(call.range.endTokenIndex).toBe(11)
     }
 
+    test `preserves generic empty array element`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-empty"), "one")
+        let values = [token("List", Token.Type.IDENTIFIER, 1), token("<", Token.Type.SYMBOL, 5),
+            token("Type", Token.Type.IDENTIFIER, 6), token(">", Token.Type.SYMBOL, 10),
+            token("[", Token.Type.SYMBOL, 11), token("]", Token.Type.SYMBOL, 12)]
+        let parsed = PrimitiveExpressionParser().parse(values, snapshot, 20)
+        let array = (PrimitiveEmptyArrayConstructionSyntax)parsed
+        expect(array.elementTypeName).toBe("List<Type>")
+        expect(array.range.startTokenIndex).toBe(20)
+        expect(array.range.endTokenIndex).toBe(26)
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse(values.take(5), snapshot, 20)
+        } catch (Exception error) {
+            failure = error.message
+        }
+        expect(failure != null).toBe(true)
+    }
+
+    test `preserves explicit member type arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-member"), "one")
+        let values = [token("Async", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 6),
+            token("all", Token.Type.IDENTIFIER, 7), token("<", Token.Type.SYMBOL, 10),
+            token("Bool", Token.Type.IDENTIFIER, 11), token(">", Token.Type.SYMBOL, 15),
+            token("(", Token.Type.SYMBOL, 16), token("true", Token.Type.BOOL, 17),
+            token(")", Token.Type.SYMBOL, 21)]
+        let parsed = PrimitiveExpressionParser().parse(values, snapshot, 30)
+        let call = (PrimitiveMemberCallSyntax)parsed
+        expect(call.typeArgumentNames()).toBe(["Bool"])
+        expect(call.range.startTokenIndex).toBe(30)
+        expect(call.range.endTokenIndex).toBe(39)
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse(values.take(8), snapshot, 30)
+        } catch (Exception error) {
+            failure = error.message
+        }
+        expect(failure != null).toBe(true)
+    }
+
+    test `parses statement callback`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:statement-callback"), "one")
+        let values = [token("{", Token.Type.SYMBOL, 1),
+            token("func", Token.Type.IDENTIFIER, 2), token("(", Token.Type.SYMBOL, 6),
+            token("_", Token.Type.IDENTIFIER, 7), token(")", Token.Type.SYMBOL, 8),
+            token(";", Token.Type.SYMBOL, 9),
+            token("return", Token.Type.IDENTIFIER, 10), token("null", Token.Type.NULL, 17),
+            token("}", Token.Type.SYMBOL, 22)]
+        let parsed = PrimitiveExpressionParser().parse(values, snapshot, 40)
+        let callback = (PrimitiveLambdaSyntax)parsed
+        expect(callback.statementValues().count).toBe(2)
+        expect(callback.range.startTokenIndex).toBe(40)
+        expect(callback.range.endTokenIndex).toBe(49)
+        var String failure
+        try {
+            PrimitiveExpressionParser().parse(values.take(7), snapshot, 40)
+        } catch (Exception error) {
+            failure = error.message
+        }
+        expect(failure != null).toBe(true)
+    }
+
     test `parses empty implicit callback expression`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:empty-callback"), "one")
         let parsed = PrimitiveExpressionParser().parse([

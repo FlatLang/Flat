@@ -5,21 +5,42 @@ import flat/compiler/models
 /** Immutable reduced trait/interface declaration contract. */
 data class {
     var PrimitiveInterfaceMethodSyntax[] methods
+    var String[] parameterNames
+    var String[] parents
 
     public construct(
         visible SourceRange range,
         visible String name,
         visible String genericParameterName,
-        PrimitiveInterfaceMethodSyntax[] methodValues
+        PrimitiveInterfaceMethodSyntax[] methodValues,
+        String[] genericParameters = String[],
+        String[] parentTypes = String[]
     ) {
         if (!range || !name || name.trim().isEmpty ||
             (genericParameterName && genericParameterName.trim().isEmpty) ||
             !methodValues || methodValues.any({ !_ })) {
             throw Exception("Reduced interface syntax requires range, name, and methods")
         }
+        if (!genericParameters || genericParameters.any((name) => !name || name.trim().isEmpty)) {
+            throw Exception("Interface generic parameters must be valid names")
+        }
+        parameterNames = String[]:addAll(genericParameters)
+        if (parameterNames.isEmpty && genericParameterName) parameterNames.add(genericParameterName)
+        if ((parameterNames.isNotEmpty && parameterNames.first != genericParameterName) ||
+            parameterNames.any((name) => parameterNames.filter({ _ == name }).count != 1)) {
+            throw Exception("Interface generic parameters require unique ordered names")
+        }
+        if (!parentTypes || parentTypes.any((name) => !name || name.trim().isEmpty)) {
+            throw Exception("Interface parents must be valid type names")
+        }
+        parents = String[]:addAll(parentTypes)
         methods = PrimitiveInterfaceMethodSyntax[]
         methods.addAll(methodValues)
     }
+
+    public parentTypeNames() -> String[] => String[]:addAll(parents)
+
+    public genericParameterNames() -> String[] => String[]:addAll(parameterNames)
 
     public methodValues() -> PrimitiveInterfaceMethodSyntax[] =>
         PrimitiveInterfaceMethodSyntax[]:addAll(methods)

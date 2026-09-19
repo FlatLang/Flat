@@ -1,6 +1,21 @@
 package flat/semantic/types
 
 testable class {
+    test `ranks contextual call checks independent of candidate order`() {
+        let fixture = TypeSystem_TestFixture()
+        let exact = CallableSignature(fixture.symbolIdentity("exact", "function"), "pick",
+            CallableKind("function"), [SemanticTypes.intType()], SemanticTypes.intType())
+        let wide = CallableSignature(fixture.symbolIdentity("wide", "function"), "pick",
+            CallableKind("function"), [SemanticTypes.longType()], SemanticTypes.intType())
+        let checks = [CallTypeChecker.check(exact, null, [SemanticTypes.intType()], fixture.range()),
+            CallTypeChecker.check(wide, null, [SemanticTypes.intType()], fixture.range())]
+        let result = OverloadResolver.resolveChecked("pick", [wide, exact], checks, fixture.range())
+        expect(result.resolved).toBe(true)
+        expect(result.selected.identity.value).toBe(exact.identity.value)
+        let reversed = OverloadResolver.resolveChecked("pick", [exact, wide], checks.reverse(), fixture.range())
+        expect(reversed.selected.identity.value).toBe(exact.identity.value)
+    }
+
     test `generic calls reject conflicting arguments without mutating declaration`() {
         let fixture = TypeSystem_TestFixture()
         let identity = fixture.symbolIdentity("choose", "function")

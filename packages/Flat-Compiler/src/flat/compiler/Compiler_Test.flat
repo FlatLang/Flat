@@ -474,7 +474,7 @@ testable class {
 
     async test `executes null return with generic reference identity`() {
         let identity = "memory:generic-reference-null"
-        let source = "class List<Type> { static empty<Out>() -> List<Out> { return null; } }"
+        let source = "class List<Type> { static empty<Out>() -> Sequence<Out> { return null; } }"
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
         let stream = Lexer().lex(source)
         stream.emit("start")
@@ -487,7 +487,10 @@ testable class {
             SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
             "static-method", "empty"
         )
-        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity, source),
+            CompilerSource("memory:sequence-contract", "trait Sequence<E> { size() -> Int }")
+        ])
         let root = File(".flat-compiler-generic-null-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "program.js")
@@ -497,6 +500,104 @@ testable class {
         let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `executes default method`() {
+        let identity = "memory:default-factory"
+        let source = "class Factory { static read() -> Int { return Factory.echo<Int>(Value().run()); } static echo<T>(T value) -> T { return value; } static arrayRead() -> Int { let empty = Answer<Int>[]; Int[] values = [42]; if (let found = true) { if (found) { var Int total = 0; for (item in Values()) { total += item; } return Factory.echo<Int>(total); } } return 0; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Factory")
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex), "static-method", "read")
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity, source),
+            CompilerSource("memory:protocol-cursor", "class Cursor { visible var Int position = 0 visible Bool hasNext => position < 2 visible Int stepNext { get { position += 1; return 21; } } }"),
+            CompilerSource("memory:protocol-values", "class Values { visible Cursor iterator => Cursor() }"),
+            CompilerSource("memory:default-value", "class Value implements Answer<Int> { run() -> Int { return read(42); } }"),
+            CompilerSource("memory:default-answer", "trait Answer<T> { read(T value) -> T { T local = value; return local; } }")
+        ])
+        let arrayMethod = syntax.methodValues().last
+        let arrayIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", arrayMethod.range.startTokenIndex),
+            "static-method", "arrayRead")
+        let root = File(".flat-compiler-default-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value) + "());\n" +
+            "console.log(" + Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(arrayIdentity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42\n42\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `executes declared collection return`() {
+        let identity = "memory:array-factory"
+        let source = "class Factory { static read() -> Sequence<Int> { return [2, 3]; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Factory")
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex), "static-method", "read")
+        let arrayIdentity = "memory:buffer-declaration"
+        let arraySnapshot = SourceSnapshotIdentity(SourceIdentity(arrayIdentity), "compiler-input")
+        let arrayDeclaration = DeclarationIdentity(SyntaxIslandIdentity(arraySnapshot, "class", 0), "class", "Buffer")
+        let code = FlatEs6PackageLinker().link([
+            CompilerSource(identity, source),
+            CompilerSource(arrayIdentity, "class Buffer<E> implements Pair<E,E> { size() -> Int { return 0; } }"),
+            CompilerSource("memory:pair-interface", "trait Pair<Left,Right> implements Sequence<Right> { size() -> Int }"),
+            CompilerSource("memory:sequence-interface", "trait Sequence<E> { size() -> Int }")
+        ], arrayDeclaration: arrayDeclaration)
+        let root = File(".flat-compiler-array-interface-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value) + "().join(','));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("2,3\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `executes contextual async callback with captured default`() {
+        let identity = "memory:contextual-async-default"
+        let source = "class Value { static async apply<Out, In>(In value, async callback(In value, Int index) -> Out) -> Out { return callback(value, 2); } static async apply(Int value, async callback(Bool value, Int index) -> Int) -> Int { return 0; } static async read(Int offset = 2, async next(Int value) -> Int = lambda(Int value) => value + offset) -> Int { return Value.apply(40, { next(_) + _ }); } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().firstOrNull({ _.name == "read" })
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value"
+        )
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "read"
+        )
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-contextual-async-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "(async () => { console.log(await " +
+            Es6NameMangler.mangle(typeIdentity.value) + "." +
+            Es6NameMangler.mangle(methodIdentity.value) + "()); })().catch(error => { console.error(error); process.exitCode = 1; });\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("44\n")
         Es6ArtifactFiles.remove(root)
     }
 

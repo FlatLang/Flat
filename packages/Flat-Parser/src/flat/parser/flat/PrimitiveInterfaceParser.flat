@@ -53,13 +53,27 @@ class {
             name = implicitName
         } else name = identifier("Expected interface name")
         var String genericParameterName
+        let genericParameters = String[]
         if (index < tokens.count && tokens[index].value == "<") {
             index++
             genericParameterName = identifier("Expected generic parameter")
+            genericParameters.add(genericParameterName)
+            while (index < tokens.count && tokens[index].value == ",") {
+                index++
+                let parameter = identifier("Expected generic parameter")
+                if (genericParameters.contains(parameter)) syntax("Duplicate generic parameter '#parameter'")
+                genericParameters.add(parameter)
+            }
             require(">")
         }
-        if (index < tokens.count && tokens[index].value == "implements") {
-            while (index < tokens.count && tokens[index].value != "{") index++
+        let parentTypes = String[]
+        if (index < tokens.count && (tokens[index].value == "implements" || tokens[index].value == "extends")) {
+            index++
+            parentTypes.add(parseTypeName("Expected interface parent"))
+            while (index < tokens.count && tokens[index].value == ",") {
+                index++
+                parentTypes.add(parseTypeName("Expected interface parent"))
+            }
         }
         require("{")
         let methods = PrimitiveInterfaceMethodSyntax[]
@@ -201,7 +215,9 @@ class {
                     throw Exception("Primitive interface method '#methodName' failed: #{error.message}")
                 }
             }
+            var Bool bracedBody
             if (index < tokens.count && tokens[index].value == "{") {
+                bracedBody = true
                 index++
                 var Int bodyDepth = 1
                 while (index < tokens.count && bodyDepth > 0) {
@@ -212,12 +228,13 @@ class {
                 if (bodyDepth != 0) syntax("Expected closing interface method body")
             }
             methods.add(PrimitiveInterfaceMethodSyntax(
-                methodName, parameterTypes, returnType, range(memberStart, index), defaultValue
+                methodName, parameterTypes, returnType, range(memberStart, index), defaultValue,
+                bracedBody ? tokens.skip(memberStart).take(index - memberStart) : Token[]
             ))
         }
         require("}")
         if (index != tokens.count) syntax("Unexpected interface tokens")
-        return PrimitiveInterfaceSyntax(range(start, index), name, genericParameterName, methods)
+        return PrimitiveInterfaceSyntax(range(start, index), name, genericParameterName, methods, genericParameters, parentTypes)
     }
 
     parseParameterType() -> String {

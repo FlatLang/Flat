@@ -4,10 +4,47 @@ package flat/semantic/types
 class {
     var TypeHierarchyDeclaration[] declarations = TypeHierarchyDeclaration[]
     var TypeHierarchyDiagnostic[] diagnosticValues = TypeHierarchyDiagnostic[]
+    var UserClassSemanticType arrayDeclaration
+
+    /** Registers the language array declaration explicitly, never by its spelling. */
+    public registerArrayDeclaration(UserClassSemanticType declaration) {
+        if (sealed || !declaration || arrayDeclaration) {
+            throw Exception("Array declaration must be registered once before sealing")
+        }
+        arrayDeclaration = declaration
+    }
+
+    public arrayDistance(ArraySemanticType source, GenericInstanceSemanticType target) -> Int {
+        requireValid()
+        if (!arrayDeclaration || source.dimensions != 1) return -1
+        return genericDistance(GenericInstanceSemanticType(arrayDeclaration, [source.elementType]), target)
+    }
 
     visible var Bool sealed
     visible Bool valid => sealed && diagnosticValues.isEmpty
     visible Int declarationCount => declarations.count
+
+    public genericDistance(GenericInstanceSemanticType source, GenericInstanceSemanticType target) -> Int {
+        requireValid()
+        if (!source || !target) throw Exception("Generic distance requires source and target")
+        return genericDistanceOnPath(source, target, String[])
+    }
+
+    genericDistanceOnPath(GenericInstanceSemanticType source, GenericInstanceSemanticType target,
+        String[] path) -> Int {
+        if (source.value() == target.value()) return 0
+        if (path.contains(source.declarationType.value())) return -1
+        let declaration = find(source.declarationType)
+        if (!declaration) return -1
+        let next = copy(path)
+        next.add(source.declarationType.value())
+        var Int best = -1
+        for (parent in declaration.instantiatedParents(source)) {
+            let distance = genericDistanceOnPath((GenericInstanceSemanticType)parent, target, next)
+            if (distance >= 0 && (best < 0 || distance + 1 < best)) best = distance + 1
+        }
+        return best
+    }
 
     public add(TypeHierarchyDeclaration declaration) {
         if (sealed) throw Exception("Cannot add a declaration to a sealed hierarchy component")
@@ -31,6 +68,10 @@ class {
                     ))
                 }
             }
+        }
+        if (arrayDeclaration && !find(arrayDeclaration)) {
+            diagnosticValues.add(TypeHierarchyDiagnostic("type.hierarchy-missing-array", arrayDeclaration,
+                "Registered array declaration is not present in this component"))
         }
         for (declaration in declarations) {
             if (inCycle(declaration.semanticType)) {

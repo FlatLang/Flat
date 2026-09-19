@@ -1,6 +1,23 @@
 package flat/semantic/types
 
 testable class {
+    test `partial inference preserves unresolved callback result`() {
+        let fixture = TypeSystem_TestFixture()
+        let identity = fixture.functionIdentity("map", 30)
+        let output = GenericParameterSemanticType(identity, "Out", 0)
+        let input = GenericParameterSemanticType(identity, "In", 1)
+        let declaration = GenericDeclaration(identity, [output, input], output)
+        let partial = GenericInference.inferPartial(declaration,
+            [ArraySemanticType(input)], [ArraySemanticType(SemanticTypes.intType())], fixture.range())
+        expect(partial.inferred).toBe(true)
+        expect(partial.substitution.apply(input).value()).toBe(SemanticTypes.intType().value())
+        expect(partial.substitution.apply(output).value()).toBe(output.value())
+        expect(GenericInference.infer(declaration,
+            [ArraySemanticType(input)], [ArraySemanticType(SemanticTypes.intType())], fixture.range()).inferred).toBe(false)
+        expect(GenericInference.inferPartial(declaration, [input, input],
+            [SemanticTypes.intType(), SemanticTypes.boolType()], fixture.range()).inferred).toBe(false)
+    }
+
     test `async function identity survives inference and substitution`() {
         let fixture = TypeSystem_TestFixture()
         let identity = fixture.functionIdentity("map", 30)

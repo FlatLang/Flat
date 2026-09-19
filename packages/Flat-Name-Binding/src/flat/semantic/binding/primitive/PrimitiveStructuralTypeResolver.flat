@@ -14,7 +14,10 @@ class {
         visible SourceSnapshotIdentity snapshot = null,
         visible GenericParameterSemanticType genericParameter = null,
         visible UserClassSemanticType receiverType = null,
-        GenericParameterSemanticType[] methodGenericParameters = GenericParameterSemanticType[]
+        GenericParameterSemanticType[] methodGenericParameters = GenericParameterSemanticType[],
+        visible PrimitiveInterfaceSyntax[] interfaces = PrimitiveInterfaceSyntax[],
+        visible PrimitiveClassSyntax implementationOwner = null,
+        visible SourceRange implementationRange = null
     ) {
         methodParameters = GenericParameterSemanticType[]
         if (!methodGenericParameters || methodGenericParameters.any({ !_ })) {
@@ -26,7 +29,8 @@ class {
             }
             methodParameters.add(parameter)
         }
-        if (!syntaxes || syntaxes.any({ !_ }) || !callables || callables.any({ !_ })) {
+        if (!syntaxes || syntaxes.any({ !_ }) || !callables || callables.any({ !_ }) ||
+            !interfaces || interfaces.any({ !_ })) {
             throw Exception("Reduced structural type resolution requires valid declarations")
         }
     }
@@ -55,6 +59,28 @@ class {
         if (open >= 0) return functionType(name, open)
         let methodParameter = methodParameters.firstOrNull({ _.name == name })
         if (methodParameter) return methodParameter
+        if (implementationOwner && implementationRange) {
+            for (implemented in implementationOwner.implementedTypeNames()) {
+                let genericStart = implemented.indexOf("<", defaultReturnValue: -1)
+                if (genericStart < 0) continue
+                let contract = interfaces.firstOrNull({ _.name == implemented.substring(0, genericStart) })
+                if (!contract || contract.methodValues().none((member) =>
+                    member.range && member.range.snapshot == implementationRange.snapshot &&
+                    member.range.startTokenIndex == implementationRange.startTokenIndex)) continue
+                let names = contract.genericParameterNames()
+                let arguments = splitTypes(implemented.substring(genericStart + 1, implemented.count - 1))
+                if (names.count != arguments.count) throw Exception("Trait implementation generic arity mismatch")
+                var Int parameterIndex
+                while (parameterIndex < names.count) {
+                    if (names[parameterIndex] == name) return PrimitiveStructuralTypeResolver(
+                        syntaxes: syntaxes, callables: callables, snapshot: snapshot,
+                        genericParameter: genericParameter, receiverType: receiverType,
+                        interfaces: interfaces
+                    ).resolve(arguments[parameterIndex])
+                    parameterIndex++
+                }
+            }
+        }
         if (genericParameter && name == genericParameter.name) return genericParameter
         if (name == "this" && receiverType) return receiverType
         if (name == "Unknown") return SemanticTypes.unknownType()
@@ -98,6 +124,11 @@ class {
                 "class", name
             ))
         }
+        let contract = interfaces.firstOrNull({ _.name == name })
+        if (contract) return UserClassSemanticType(DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot ?: contract.range.snapshot, "interface", contract.range.startTokenIndex),
+            "interface", name
+        ))
         throw Exception("Unknown reduced type '#name'")
     }
 

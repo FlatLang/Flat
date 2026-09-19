@@ -56,23 +56,7 @@ class {
         if (index < tokens.count && tokens[index].value == "implements") {
             index++
             while (true) {
-                var String implemented = identifier("Expected implemented type name")
-                if (index < tokens.count && tokens[index].value == "<") {
-                    index++
-                    implemented += "<"
-                    var Bool firstArgument = true
-                    while (index < tokens.count && tokens[index].value != ">") {
-                        if (!firstArgument) {
-                            require(",")
-                            implemented += ","
-                        }
-                        implemented += identifier("Expected implemented generic argument")
-                        firstArgument = false
-                    }
-                    require(">")
-                    implemented += ">"
-                }
-                implementedTypeNames.add(implemented)
+                implementedTypeNames.add(implementedTypeName())
                 if (index >= tokens.count || tokens[index].value != ",") break
                 index++
             }
@@ -591,6 +575,26 @@ class {
         parseTypeNameAt(cursor)
         cursor++
         return cursor
+    }
+
+    implementedTypeName() -> String {
+        var String name = identifier("Expected implemented type name")
+        if (index < tokens.count && tokens[index].value == "<") {
+            index++
+            name += "<" + implementedTypeName()
+            while (index < tokens.count && tokens[index].value == ",") {
+                index++
+                name += "," + implementedTypeName()
+            }
+            require(">")
+            name += ">"
+        }
+        while (index < tokens.count && tokens[index].value == "[") {
+            index++
+            require("]")
+            name += "[]"
+        }
+        return name
     }
 
     parseTypeNameAt(Int cursor) {

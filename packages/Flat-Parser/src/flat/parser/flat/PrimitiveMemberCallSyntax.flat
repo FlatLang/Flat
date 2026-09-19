@@ -4,6 +4,7 @@ import flat/compiler/models
 
 /** Immutable receiver-owned member call syntax. */
 data class extends PrimitiveExpressionSyntax {
+    var String[] typeArguments
     var PrimitiveExpressionSyntax[] arguments
     var PrimitiveMixedNamedArgumentSyntax[] namedArguments
 
@@ -12,7 +13,8 @@ data class extends PrimitiveExpressionSyntax {
         visible PrimitiveExpressionSyntax receiver,
         visible String memberName,
         PrimitiveExpressionSyntax[] argumentValues,
-        PrimitiveMixedNamedArgumentSyntax[] namedArgumentValues = PrimitiveMixedNamedArgumentSyntax[]
+        PrimitiveMixedNamedArgumentSyntax[] namedArgumentValues = PrimitiveMixedNamedArgumentSyntax[],
+        String[] explicitTypeArguments = String[]
     ) {
         if (!range || !receiver || !memberName || !argumentValues ||
             argumentValues.any({ !_ }) || !namedArgumentValues ||
@@ -21,12 +23,18 @@ data class extends PrimitiveExpressionSyntax {
             )) {
             throw Exception("Primitive member call requires receiver, name, and arguments")
         }
+        if (!explicitTypeArguments || explicitTypeArguments.any((name) => !name || name.trim().isEmpty)) {
+            throw Exception("Member type arguments require type names")
+        }
+        typeArguments = String[]:addAll(explicitTypeArguments)
         arguments = PrimitiveExpressionSyntax[]
         arguments.addAll(argumentValues)
         namedArguments = PrimitiveMixedNamedArgumentSyntax[]
         namedArguments.addAll(namedArgumentValues)
         super(range)
     }
+
+    public typeArgumentNames() -> String[] => String[]:addAll(typeArguments)
 
     public argumentValues() -> PrimitiveExpressionSyntax[] {
         let result = PrimitiveExpressionSyntax[]

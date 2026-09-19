@@ -11,18 +11,22 @@ import flat/semantic/types
  * only after their named parent is available.
  */
 class {
+    var PrimitiveInterfaceSyntax[] interfaces
+
     public bind(
         PrimitiveClassSyntax[] syntaxValues,
         SourceSnapshotIdentity snapshot = null,
         Int maxTypes = 256,
-        PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[]
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[],
+        PrimitiveClassSyntax arrayDeclaration = null
     ) -> PrimitiveClassPartitionBindingResult {
         if (!syntaxValues || syntaxValues.any({ !_ }) || maxTypes <= 0 ||
             !interfaceSyntaxValues || interfaceSyntaxValues.any({ !_ })) {
             throw Exception("Primitive class partition binding requires syntax snapshot and capacity")
         }
+        interfaces = PrimitiveInterfaceSyntax[]:addAll(interfaceSyntaxValues)
         let effectiveSyntaxValues = syntaxValues.map({
-            withImplicitRootParent(_, syntaxValues)
+            withImplicitRootParent(withTraitImplementations(_), syntaxValues)
         })
         if (effectiveSyntaxValues.count > maxTypes) {
             throw Exception("Primitive class partition exceeds configured type capacity")
@@ -36,6 +40,8 @@ class {
             index++
         }
 
+        let hierarchy = arrayDeclaration
+            ? arrayHierarchy(arrayDeclaration, syntaxValues, snapshot) : null
         let constructorSignatures = constructorSignatures(effectiveSyntaxValues, snapshot)
         constructorSignatures.addAll(methodSignatures(effectiveSyntaxValues, snapshot))
         constructorSignatures.addAll(inheritedMethodSignatures(
@@ -59,7 +65,8 @@ class {
                     result.add(PrimitiveClassBinder().bind(
                         syntax, syntaxSnapshot,
                         availableConstructors: constructorSignatures,
-                        availableFields: declaredFields
+                        availableFields: declaredFields,
+                        interfaceSyntaxValues: interfaces, hierarchy: hierarchy
                     ).typeUnit)
                     boundNames.add(syntax.name)
                     progressed = true
@@ -73,7 +80,7 @@ class {
                         interfaceSyntaxValues,
                         rootContract ? rootContract.functionUnits() : BoundFunctionUnit[],
                         boundParent,
-                        declaredFields
+                        declaredFields, hierarchy
                     )
                     var Int parentIndex
                     while (result[parentIndex].identity.name != parentSyntax.name) parentIndex++
@@ -98,6 +105,103 @@ class {
             }
         }
         return PrimitiveClassPartitionBindingResult(result)
+    }
+
+    /** Seals the selected array's direct interface component, not the whole package. */
+    arrayHierarchy(PrimitiveClassSyntax array, PrimitiveClassSyntax[] syntaxes,
+        SourceSnapshotIdentity snapshot) -> TypeHierarchyComponent {
+        if (!syntaxes.any({ Object.referenceEquals(_, array) }) || !array.genericParameterName) {
+            throw Exception("Array declaration must be a generic class in the bound partition")
+        }
+        let resolvedType = PrimitiveStructuralTypeResolver(
+            syntaxes: syntaxes, snapshot: snapshot, interfaces: interfaces
+        ).resolve(array.name)
+        let type = (UserClassSemanticType)resolvedType
+        let parameter = GenericParameterSemanticType(type.declarationIdentity, array.genericParameterName, 0)
+        let resolver = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, snapshot: snapshot,
+            interfaces: interfaces, genericParameter: parameter)
+        let parents = UserClassSemanticType[]
+        let templates = GenericInstanceSemanticType[]
+        let hierarchy = TypeHierarchyComponent()
+        let published = String[]
+        for (name in array.implementedTypeNames()) {
+            let parent = resolver.resolve(name)
+            if (parent.kind() != "generic-instance") throw Exception("Array interface requires generic arguments")
+            let instance = (GenericInstanceSemanticType)parent
+            let declaration = instance.declarationType
+            let contract = interfaces.firstOrNull({ _.name == declaration.declarationIdentity.name })
+            if (!contract || instance.typeArguments().count != contract.genericParameterNames().count) {
+                throw Exception("Array interface type argument count must match its declaration")
+            }
+            if (!parents.any({ _.value() == declaration.value() })) {
+                publishInterface(contract, declaration, syntaxes, snapshot, hierarchy, published)
+                parents.add(declaration)
+            }
+            templates.add(instance)
+        }
+        hierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
+            genericParameters: [parameter], genericParents: templates))
+        hierarchy.registerArrayDeclaration(type)
+        hierarchy.seal()
+        if (!hierarchy.valid) throw Exception("Invalid array interface hierarchy")
+        return hierarchy
+    }
+
+    publishInterface(PrimitiveInterfaceSyntax contract, UserClassSemanticType declaration,
+        PrimitiveClassSyntax[] syntaxes, SourceSnapshotIdentity snapshot,
+        TypeHierarchyComponent hierarchy, String[] published) {
+        if (published.contains(declaration.value())) return
+        published.add(declaration.value())
+        let parameters = GenericParameterSemanticType[]
+        for (name in contract.genericParameterNames()) {
+            parameters.add(GenericParameterSemanticType(declaration.declarationIdentity, name, parameters.count))
+        }
+        let resolver = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, snapshot: snapshot,
+            interfaces: interfaces, methodGenericParameters: parameters)
+        let parents = UserClassSemanticType[]
+        let templates = GenericInstanceSemanticType[]
+        for (name in contract.parentTypeNames()) {
+            let resolved = resolver.resolve(name)
+            if (resolved.kind() != "generic-instance") throw Exception("Inherited interface requires generic arguments")
+            let instance = (GenericInstanceSemanticType)resolved
+            let parent = instance.declarationType
+            let parentSyntax = interfaces.firstOrNull({ _.name == parent.declarationIdentity.name })
+            if (!parentSyntax || parentSyntax.genericParameterNames().count != instance.typeArguments().count) {
+                throw Exception("Inherited interface type argument count must match declaration")
+            }
+            if (!parents.any({ _.value() == parent.value() })) parents.add(parent)
+            templates.add(instance)
+            publishInterface(parentSyntax, parent, syntaxes, snapshot, hierarchy, published)
+        }
+        hierarchy.add(TypeHierarchyDeclaration(declaration, "interface", parents,
+            genericParameters: parameters, genericParents: templates))
+    }
+
+    /** Publish default bodies before signatures, scoped to this finite class partition. */
+    withTraitImplementations(PrimitiveClassSyntax syntax) -> PrimitiveClassSyntax {
+        let methods = syntax.methodValues()
+        for (name in syntax.implementedTypeNames()) {
+            let genericStart = name.indexOf("<", defaultReturnValue: -1)
+            let contractName = genericStart < 0 ? name : name.substring(0, genericStart)
+            let contract = interfaces.firstOrNull({ _.name == contractName })
+            if (!contract) continue
+            for (member in contract.methodValues()) {
+                if (syntax.methodValues().any((method) => method.name == member.name &&
+                    method.parameterValues().map({ _.typeName }) == member.parameterTypeNames())) continue
+                let implementation = member.implementation()
+                if (!implementation) continue
+                if (methods.any((method) => method.name == member.name &&
+                    method.parameterValues().map({ _.typeName }) == member.parameterTypeNames())) {
+                    throw Exception("Ambiguous trait default '#{member.name}' requires a class implementation")
+                }
+                methods.add(implementation)
+            }
+        }
+        if (methods.count == syntax.methodValues().count) return syntax
+        return PrimitiveClassSyntax(syntax.range, syntax.name, syntax.genericParameterName,
+            syntax.parentName, syntax.fieldValues(), syntax.constructorValue, methods,
+            syntax.implementedTypeNames(), syntax.abstractClass,
+            syntax.arrayOverrideValues(), syntax.constructorValues())
     }
 
     withImplicitRootParent(
@@ -143,7 +247,7 @@ class {
                     ownerIdentity, syntax.genericParameterName, 0
                 ) : null
                 var SemanticType[] parameterTypes = method.parameterValues().map({
-                    signatureType(_.typeName, syntaxes, snapshot, classGeneric, methodGenerics)
+                    signatureType(_.typeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range)
                 })
                 if (syntax.name == "String") {
                     parameterTypes = SemanticType[]
@@ -179,7 +283,7 @@ class {
                         (syntax.name == "String" && method.name == "replace" &&
                          method.returnTypeName == "String")
                         ? owner :
-                    signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics)
+                    signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range)
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
                         method.range.snapshot,
@@ -423,7 +527,9 @@ class {
         PrimitiveClassSyntax[] syntaxes,
         SourceSnapshotIdentity snapshot,
         GenericParameterSemanticType classGeneric = null,
-        GenericParameterSemanticType[] methodGenerics = GenericParameterSemanticType[]
+        GenericParameterSemanticType[] methodGenerics = GenericParameterSemanticType[],
+        PrimitiveClassSyntax implementationOwner = null,
+        SourceRange implementationRange = null
     ) -> SemanticType {
         var String normalized = name
         while (normalized.startsWith("native")) {
@@ -434,7 +540,9 @@ class {
         }
         return PrimitiveStructuralTypeResolver(
             syntaxes: syntaxes, snapshot: snapshot,
-            genericParameter: classGeneric, methodGenericParameters: methodGenerics
+            genericParameter: classGeneric, methodGenericParameters: methodGenerics,
+            interfaces: interfaces, implementationOwner: implementationOwner,
+            implementationRange: implementationRange
         ).resolve(normalized)
     }
 }

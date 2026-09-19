@@ -4,12 +4,16 @@ package flat/semantic/types
 data class {
     var UserClassSemanticType[] parents
     var TypeMember[] declaredMembers
+    var GenericParameterSemanticType[] parameters
+    var GenericInstanceSemanticType[] parentTemplates
 
     public construct(
         visible UserClassSemanticType semanticType,
         visible String declarationKind,
         UserClassSemanticType[] directParents,
-        TypeMember[] members = TypeMember[]
+        TypeMember[] members = TypeMember[],
+        GenericParameterSemanticType[] genericParameters = GenericParameterSemanticType[],
+        GenericInstanceSemanticType[] genericParents = GenericInstanceSemanticType[]
     ) {
         if (!semanticType || (declarationKind != "class" && declarationKind != "interface") ||
             !directParents || directParents.any({ !_ }) || !members || members.any({ !_ })) {
@@ -21,12 +25,38 @@ data class {
         if (members.any({ _.ownerType.value() != semanticType.value() })) {
             throw Exception("Declared hierarchy members must belong to their type")
         }
+        if (!genericParameters || genericParameters.any({ !_ }) ||
+            !genericParents || genericParents.any({ !_ })) {
+            throw Exception("Generic hierarchy requires valid parameters and parents")
+        }
+        var Int index
+        for (parameter in genericParameters) {
+            if (parameter.ownerIdentity.value != semanticType.declarationIdentity.value || parameter.ordinal != index++) {
+                throw Exception("Hierarchy generic parameters must belong to their declaration")
+            }
+        }
+        for (parent in genericParents) {
+            if (!directParents.any({ _.value() == parent.declarationType.value() })) {
+                throw Exception("Generic parent must be a declared direct parent")
+            }
+        }
+        parameters = GenericParameterSemanticType[]:addAll(genericParameters)
+        parentTemplates = GenericInstanceSemanticType[]:addAll(genericParents)
         parents = UserClassSemanticType[]
         parents.addAll(directParents)
         parents = parents.sort({ _a.value().compareTo(_b.value()) })
         declaredMembers = TypeMember[]
         declaredMembers.addAll(members)
         declaredMembers = declaredMembers.sort({ _a.identity.value.compareTo(_b.identity.value) })
+    }
+
+    public instantiatedParents(GenericInstanceSemanticType instance) -> SemanticType[] {
+        if (!instance || instance.declarationType.value() != semanticType.value() ||
+            instance.typeArguments().count != parameters.count) {
+            throw Exception("Generic hierarchy instance must match declaration arity")
+        }
+        let substitution = GenericSubstitution(parameters, instance.typeArguments())
+        return parentTemplates.map({ substitution.apply(_) })
     }
 
     public directParents() -> UserClassSemanticType[] {

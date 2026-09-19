@@ -14,6 +14,8 @@ class {
     var CallableSignature arraySetter
     var BoundFieldUnit[] publishedFields
     var PrimitiveClassSyntax boundSyntax
+    var PrimitiveInterfaceSyntax[] interfaces = PrimitiveInterfaceSyntax[]
+    var TypeHierarchyComponent typeHierarchy
 
     public bind(
         PrimitiveClassSyntax syntax,
@@ -21,11 +23,14 @@ class {
         CallableSignature parentConstructor = null,
         BoundFieldUnit[] inheritedFields = BoundFieldUnit[],
         CallableSignature[] availableConstructors = CallableSignature[],
-        BoundFieldUnit[] availableFields = BoundFieldUnit[]
+        BoundFieldUnit[] availableFields = BoundFieldUnit[],
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[],
+        TypeHierarchyComponent hierarchy = null
     ) -> PrimitiveClassBindingResult {
         if (!syntax || !snapshot || !inheritedFields || inheritedFields.any({ !_ }) ||
             !availableConstructors || availableConstructors.any({ !_ }) ||
-            !availableFields || availableFields.any({ !_ })) {
+            !availableFields || availableFields.any({ !_ }) ||
+            !interfaceSyntaxValues || interfaceSyntaxValues.any({ !_ })) {
             throw Exception("Primitive class binding requires syntax snapshot and inherited fields")
         }
         if ((syntax.parentName != null) != (parentConstructor != null) ||
@@ -34,6 +39,8 @@ class {
                 parentConstructor.ownerType.declarationIdentity.name != syntax.parentName))) {
             throw Exception("Primitive class parent requires its selected constructor signature")
         }
+        typeHierarchy = hierarchy
+        interfaces = PrimitiveInterfaceSyntax[]:addAll(interfaceSyntaxValues)
         boundSyntax = syntax
         let typeIdentity = DeclarationIdentity(
             SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
@@ -549,7 +556,8 @@ class {
                 allFields,
                 arrayGetter,
                 arraySetter,
-                publishedFields
+                publishedFields,
+                methodTypeResolver(syntax)
             ).statements()
             if (syntax.inferredReturnType) {
                 let inferred = firstReturnType(bound)
@@ -581,7 +589,7 @@ class {
                 returnType = value.semanticType
             }
             var TypeConversion conversion = TypeConversions.classify(
-                value.semanticType, returnType
+                value.semanticType, returnType, hierarchy: typeHierarchy
             )
             if (!conversion.applicable && value.semanticType.kind() == "unknown") {
                 conversion = TypeConversion(
@@ -665,7 +673,7 @@ class {
             if (statement.class.isOfType(BoundReturnStatement.class)) {
                 let returned = (BoundReturnStatement)statement
                 var TypeConversion conversion = TypeConversions.classify(
-                    returned.value.semanticType, returnType
+                    returned.value.semanticType, returnType, hierarchy: typeHierarchy
                 )
                 let declaredStringReturn = returnType.kind() == "user-class" &&
                     returned.value.semanticType.value() == SemanticTypes.stringType().value() &&
@@ -751,7 +759,7 @@ class {
                     continue
                 }
                 var TypeConversion conversion = TypeConversions.classify(
-                    returned.value.semanticType, returnType
+                    returned.value.semanticType, returnType, hierarchy: typeHierarchy
                 )
                 let declaredStringReturn = returnType.kind() == "user-class" &&
                     returned.value.semanticType.value() == SemanticTypes.stringType().value() &&
@@ -1023,6 +1031,13 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
+            if (value.typeArgumentNames().isNotEmpty &&
+                (!value.receiver.class.isOfType(PrimitiveReferenceSyntax.class) ||
+                 value.namedArgumentValues().isNotEmpty ||
+                 locals.any({ _.name == ((PrimitiveReferenceSyntax)value.receiver).name }) ||
+                 fields.any({ _.name == ((PrimitiveReferenceSyntax)value.receiver).name }))) {
+                throw Exception("Explicit member type arguments require a positional static call")
+            }
             if (value.namedArgumentValues().isNotEmpty) {
                 let owner = expression(value.receiver, receiver, fields, locals)
                 let candidates = constructors.filter((candidate) =>
@@ -1082,12 +1097,83 @@ class {
                 let ownerName = ((PrimitiveReferenceSyntax)value.receiver).name
                 if (!locals.any({ _.name == ownerName }) &&
                     !fields.any({ _.name == ownerName })) {
-                    let staticCandidates = constructors.filter((candidate) =>
+                    var CallableSignature[] staticCandidates = constructors.filter((candidate) =>
                         candidate.callableKind.value == "static-method" &&
                         candidate.ownerType.declarationIdentity.name == ownerName &&
                         candidate.name == value.memberName
                     )
+                    if (value.typeArgumentNames().isNotEmpty) {
+                        let arguments = value.typeArgumentNames().map({ typeOf(_) })
+                        staticCandidates = staticCandidates.filter({ _.genericParameters().count == arguments.count }).map((candidate) => {
+                            let substitution = GenericSubstitution(candidate.genericParameters(), arguments)
+                            return CallableSignature(candidate.identity, candidate.name, candidate.callableKind,
+                                candidate.parameterTypes().map({ substitution.apply(_) }),
+                                substitution.apply(candidate.returnType), candidate.ownerType,
+                                candidate.optionalParameterCount, candidate.parameterNames())
+                        })
+                        if (staticCandidates.isEmpty) throw Exception("Explicit static type argument arity mismatch")
+                    }
                     if (staticCandidates.isNotEmpty) {
+                        if (value.argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) })) {
+                            let candidates = staticCandidates.filter({ _.parameterTypes().count == value.argumentValues().count })
+                            let checks = CallCheckResult[]
+                            let boundCalls = BoundCallExpression[]
+                            for (candidate in candidates) {
+                            try {
+                            let formals = SemanticType[]
+                            let actuals = SemanticType[]
+                            let arguments = BoundExpression[]
+                            var Int index
+                            for (argument in value.argumentValues()) {
+                                if (argument.class.isOfType(PrimitiveLambdaSyntax.class)) arguments.add(null)
+                                else {
+                                    let bound = expression(argument, receiver, fields, locals)
+                                    arguments.add(bound)
+                                    formals.add(candidate.parameterTypes()[index])
+                                    actuals.add(bound.semanticType)
+                                }
+                                index++
+                            }
+                            var GenericSubstitution substitution = GenericSubstitution(GenericParameterSemanticType[], SemanticType[])
+                            if (candidate.genericParameters().isNotEmpty) {
+                                let partial = GenericInference.inferPartial(GenericDeclaration(
+                                    candidate.identity.declaration, candidate.genericParameters(), candidate.returnType
+                                ), formals, actuals, value.range)
+                                if (!partial.inferred) throw Exception(partial.diagnostic.message)
+                                substitution = partial.substitution
+                            }
+                            index = 0
+                            for (argument in value.argumentValues()) {
+                                if (arguments[index] == null) {
+                                    let context = substitution.apply(candidate.parameterTypes()[index])
+                                    if (context.kind() != "function") throw Exception("Lambda argument requires function parameter")
+                                    let callbackLocals = LocalBinding[]:addAll(locals)
+                                    if (receiver) callbackLocals.add(LocalBinding("this", receiver.symbolIdentity,
+                                        genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
+                                    let bound = PrimitiveExpressionBinder().bindCallback(
+                                        (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
+                                        callbackLocals, constructors
+                                    )
+                                    if (!bound.succeeded) throw Exception(bound.diagnostic.message)
+                                    arguments[index] = bound.expression
+                                }
+                                index++
+                            }
+                            let checked = CallTypeChecker.check(candidate, null,
+                                arguments.map({ _.semanticType }), value.range)
+                            if (checked.valid) {
+                                checks.add(checked)
+                                boundCalls.add(BoundCallExpression(value.range, checked.semanticType, checked.target,
+                                    arguments, checked.argumentConversions()))
+                            }
+                            } catch (Exception error) {
+                                // Invalid contextual bodies reject only their owning candidate.
+                            }
+                            }
+                            let resolution = OverloadResolver.resolveChecked(value.memberName, candidates, checks, value.range)
+                            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+                            return boundCalls.firstOrNull({ _.target.identity.value == resolution.selected.identity.value })
+                        }
                         let arguments = BoundExpression[]
                         for (argument in value.argumentValues()) {
                             arguments.add(expression(argument, receiver, fields, locals))
@@ -2173,7 +2259,10 @@ class {
         type.kind() == "string" || type.kind() == "object" || type.kind() == "array" ||
         type.kind() == "user-class" || type.kind() == "generic-instance" || type.kind() == "function"
 
-    methodTypeOf(String name, PrimitiveFunctionSyntax method) -> SemanticType {
+    methodTypeOf(String name, PrimitiveFunctionSyntax method) -> SemanticType =>
+        methodTypeResolver(method).resolve(name)
+
+    methodTypeResolver(PrimitiveFunctionSyntax method) -> PrimitiveStructuralTypeResolver {
         let kind = method.staticMethod ? "static-method" : "instance-method"
         let identity = DeclarationIdentity(
             SyntaxIslandIdentity(method.range.snapshot, kind, method.range.startTokenIndex),
@@ -2185,13 +2274,14 @@ class {
         }
         return PrimitiveStructuralTypeResolver(
             callables: constructors, genericParameter: genericParameter,
-            receiverType: boundType, methodGenericParameters: generics
-        ).resolve(name)
+            receiverType: boundType, methodGenericParameters: generics, interfaces: interfaces,
+            implementationOwner: boundSyntax, implementationRange: method.range
+        )
     }
 
     typeOf(String name) -> SemanticType => PrimitiveStructuralTypeResolver(
         callables: constructors,
         genericParameter: genericParameter,
-        receiverType: boundType
+        receiverType: boundType, interfaces: interfaces
     ).resolve(name)
 }

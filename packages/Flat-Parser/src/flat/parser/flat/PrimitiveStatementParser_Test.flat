@@ -3,6 +3,27 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `parses direct array local`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-local"), "one")
+        let values = [token("Type", Token.Type.IDENTIFIER, 1), token("[", Token.Type.SYMBOL, 5),
+            token("]", Token.Type.SYMBOL, 6), token("list", Token.Type.IDENTIFIER, 8),
+            token("=", Token.Type.SYMBOL, 13), token("Type", Token.Type.IDENTIFIER, 15),
+            token("[", Token.Type.SYMBOL, 19), token("]", Token.Type.SYMBOL, 20)]
+        let parsed = PrimitiveStatementParser().parse(values, snapshot, 30).statements().first
+        let local = (PrimitiveLocalDeclarationSyntax)parsed
+        expect(local.name).toBe("list")
+        expect(local.declaredTypeName).toBe("Type[]")
+        expect(local.range.startTokenIndex).toBe(30)
+        expect(local.range.endTokenIndex).toBe(38)
+        var String failure
+        try {
+            PrimitiveStatementParser().parse(values.take(5), snapshot, 30)
+        } catch (Exception error) {
+            failure = error.message
+        }
+        expect(failure != null).toBe(true)
+    }
+
     test `parses receiver owned call as expression statement`() {
         let delegationSnapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:constructor-delegation-parse"), "revision:one"

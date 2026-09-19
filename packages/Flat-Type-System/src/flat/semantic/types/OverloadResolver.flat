@@ -27,6 +27,17 @@ class {
             let result = CallTypeChecker.check(candidate, receiverType, argumentTypes, range)
             if (result.valid) applicable.add(result)
         }
+        return resolveChecked(name, collected, applicable, range)
+    }
+
+    /** Ranks independently contextualized candidates using the normal conversion vectors. */
+    public static resolveChecked(String name, CallableSignature[] candidates,
+        CallCheckResult[] checks, SourceRange range) -> OverloadResolution {
+        if (!name || !candidates || !checks || checks.any({ !_ }) || !range) {
+            throw Exception("Contextual overload resolution requires candidates checks and range")
+        }
+        let collected = candidates.sort({ _a.identity.value.compareTo(_b.identity.value) })
+        let applicable = checks.filter({ _.valid })
         if (applicable.isEmpty) {
             return OverloadResolution(
                 collected,

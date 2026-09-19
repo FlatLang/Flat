@@ -15,7 +15,8 @@ class {
         PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[],
         BoundFunctionUnit[] rootContractFunctions = BoundFunctionUnit[],
         BoundTypeUnit boundParent = null,
-        BoundFieldUnit[] availableFields = BoundFieldUnit[]
+        BoundFieldUnit[] availableFields = BoundFieldUnit[],
+        TypeHierarchyComponent conversionHierarchy = null
     ) -> PrimitiveInheritanceBindingResult {
         if (!parentSyntax || !childSyntax || !availableConstructors ||
             availableConstructors.any({ !_ }) || !availableFields ||
@@ -32,12 +33,13 @@ class {
         let parent = boundParent ?: PrimitiveClassBinder().bind(
             parentSyntax, parentSnapshot,
             availableConstructors: availableConstructors,
-            availableFields: availableFields
+            availableFields: availableFields, interfaceSyntaxValues: interfaceSyntaxValues,
+            hierarchy: conversionHierarchy
         ).typeUnit
         let parentConstructor = constructorSignature(parent)
         let child = PrimitiveClassBinder().bind(
             childSyntax, childSnapshot, parentConstructor, parent.fieldUnits(),
-            availableConstructors, availableFields
+            availableConstructors, availableFields, interfaceSyntaxValues, conversionHierarchy
         ).typeUnit
         let hierarchy = TypeHierarchyComponent()
         hierarchy.add(TypeHierarchyDeclaration(

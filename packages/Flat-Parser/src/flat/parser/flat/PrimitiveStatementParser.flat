@@ -37,7 +37,7 @@ class {
 
     parseStatement(Int start, Int end) -> PrimitiveStatementSyntax {
         let first = tokens[start].value
-        if (first == "let" || first == "var" ||
+        if (first == "let" || first == "var" || directArrayLocal(start, end) ||
             (start + 2 < end && tokens[start].type == Token.Type.IDENTIFIER &&
                 tokens[start + 1].type == Token.Type.IDENTIFIER &&
                 tokens[start + 2].value == "=") ||
@@ -69,6 +69,15 @@ class {
             }
         }
         return parseAssignment(start, end)
+    }
+
+    directArrayLocal(Int start, Int end) -> Bool {
+        if (tokens[start].type != Token.Type.IDENTIFIER) return false
+        var Int cursor = start + 1
+        while (cursor + 1 < end && tokens[cursor].value == "[" &&
+            tokens[cursor + 1].value == "]") cursor += 2
+        return cursor > start + 1 && cursor + 1 < end &&
+            tokens[cursor].type == Token.Type.IDENTIFIER && tokens[cursor + 1].value == "="
     }
 
     parseLocal(Int start, Int end) -> PrimitiveStatementSyntax {

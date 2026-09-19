@@ -7,6 +7,21 @@ import flat/semantic/types
 
 /** Types immutable primitive syntax into reduced Bound expressions. */
 class {
+    var LocalBinding[] implicitParameters = LocalBinding[]
+    var Int implicitParameterIndex
+
+    /** Context supplies parameter types; call applicability validates the inferred result. */
+    public bindCallback(PrimitiveLambdaSyntax syntax, FunctionSemanticType context,
+        LocalBinding[] locals, CallableSignature[] callables) -> PrimitiveExpressionBindingResult {
+        try {
+            return PrimitiveExpressionBindingResult(expression: bindSyntax(syntax, locals, callables, context))
+        } catch (Exception error) {
+            return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
+                "semantic.primitive-expression", error.message, syntax.range
+            ))
+        }
+    }
+
     public bind(
         PrimitiveExpressionSyntax syntax,
         SemanticType requiredType = null,
@@ -43,7 +58,7 @@ class {
                     ))
                 }
             }
-            let expression = bindSyntax(syntax, locals, callables)
+            let expression = bindSyntax(syntax, locals, callables, requiredType)
             if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
             let conversion = TypeConversions.classify(
                 expression.semanticType, requiredType, explicit: explicitConversion
@@ -154,10 +169,14 @@ class {
     bindSyntax(
         PrimitiveExpressionSyntax syntax,
         LocalBinding[] locals,
-        CallableSignature[] callables
+        CallableSignature[] callables,
+        SemanticType requiredType = null
     ) -> BoundExpression {
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
+            if (value.typeArgumentNames().isNotEmpty) {
+                throw Exception("Explicit member type arguments require call instantiation")
+            }
             let namedArguments = value.namedArgumentValues()
             if (namedArguments.isNotEmpty) {
                 let positionalArguments = value.argumentValues()
@@ -480,6 +499,14 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
             let value = (PrimitiveReferenceSyntax)syntax
+            if (value.name == "_" && implicitParameters.isNotEmpty) {
+                if (implicitParameterIndex >= implicitParameters.count) {
+                    throw Exception("Too many implicit lambda parameter references")
+                }
+                let parameter = implicitParameters[implicitParameterIndex++]
+                return BoundReferenceExpression(value.range, parameter.semanticType,
+                    parameter.name, parameter.identity)
+            }
             let local = locals.reverse().firstOrNull({ _.name == value.name })
             if (!local) throw Exception("Unknown local '#{value.name}'")
             return BoundReferenceExpression(
@@ -537,6 +564,17 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
             let value = (PrimitiveLambdaSyntax)syntax
+            if (value.statementValues().isNotEmpty) {
+                throw Exception("Statement-bodied callback requires bound statement lambda support")
+            }
+            var FunctionSemanticType expected
+            if (requiredType && requiredType.kind() == "function") {
+                expected = (FunctionSemanticType)requiredType
+                if (value.parameterValues().isNotEmpty &&
+                    value.parameterValues().count != expected.parameterTypes().count) {
+                    throw Exception("Lambda parameter count does not match expected function")
+                }
+            }
             let parameters = BoundFunctionParameter[]
             let lambdaLocals = LocalBinding[]
             lambdaLocals.addAll(locals)
@@ -547,6 +585,9 @@ class {
                     throw Exception("Duplicate lambda parameter '#{parameter.name}'")
                 }
                 let type = namedType(parameter.typeName)
+                if (expected && type.value() != expected.parameterTypes()[parameterIndex].value()) {
+                    throw Exception("Lambda parameter type does not match expected function")
+                }
                 let identity = SymbolIdentity(
                     DeclarationIdentity(
                         SyntaxIslandIdentity(value.range.snapshot, "lambda", value.range.startTokenIndex),
@@ -558,9 +599,33 @@ class {
                 lambdaLocals.add(LocalBinding(parameter.name, identity, type))
                 parameterIndex++
             }
-            let body = value.emptyBody
-                ? BoundLiteralExpression(value.range, SemanticTypes.unitType(), "null")
-                : bindSyntax(value.body, lambdaLocals, callables)
+            let previousImplicitParameters = implicitParameters
+            let previousImplicitIndex = implicitParameterIndex
+            implicitParameters = LocalBinding[]
+            implicitParameterIndex = 0
+            if (expected && value.parameterValues().isEmpty) {
+                var Int index
+                for (type in expected.parameterTypes()) {
+                    let name = "_#{index + 1}"
+                    let identity = SymbolIdentity(DeclarationIdentity(
+                        SyntaxIslandIdentity(value.range.snapshot, "lambda", value.range.startTokenIndex),
+                        "lambda-parameter", name
+                    ), "lambda-parameter", index++)
+                    parameters.add(BoundFunctionParameter(name, identity, type))
+                    let local = LocalBinding(name, identity, type)
+                    implicitParameters.add(local)
+                    lambdaLocals.add(local)
+                }
+            }
+            var BoundExpression body
+            try {
+                body = value.emptyBody
+                    ? BoundLiteralExpression(value.range, SemanticTypes.unitType(), "null")
+                    : bindSyntax(value.body, lambdaLocals, callables)
+            } finally {
+                implicitParameters = previousImplicitParameters
+                implicitParameterIndex = previousImplicitIndex
+            }
             let parameterNames = value.parameterValues().map({ _.name })
             let captures = BoundReferenceExpression[]
             for (local in locals) {
@@ -574,7 +639,8 @@ class {
             }
             return BoundLambdaExpression(
                 value.range,
-                FunctionSemanticType(parameters.map({ _.semanticType }), body.semanticType),
+                FunctionSemanticType(parameters.map({ _.semanticType }), body.semanticType,
+                    expected ? expected.asyncFunction : false),
                 parameters, captures, body
             )
         }

@@ -5,13 +5,16 @@ import flat/compiler/models
 /** Immutable reduced interface method signature. */
 data class {
     var String[] parameterTypes
+    var Token[] implementationTokens
+    var SourceRange implementationRange
 
     public construct(
         visible String name,
         String[] parameterTypeNames,
         visible String returnTypeName,
         visible SourceRange range = null,
-        visible PrimitiveExpressionSyntax defaultValue = null
+        visible PrimitiveExpressionSyntax defaultValue = null,
+        Token[] bodyDeclarationTokens = Token[]
     ) {
         if (!name || name.trim().isEmpty || !parameterTypeNames ||
             parameterTypeNames.any((parameterTypeName) =>
@@ -20,8 +23,25 @@ data class {
             !returnTypeName || returnTypeName.trim().isEmpty) {
             throw Exception("Reduced interface method requires a complete signature")
         }
+        if (!bodyDeclarationTokens || bodyDeclarationTokens.any({ !_ }) ||
+            (bodyDeclarationTokens.isNotEmpty && !range)) {
+            throw Exception("Interface implementation requires tokens and source range")
+        }
+        implementationTokens = Token[]:addAll(bodyDeclarationTokens)
+        implementationRange = range
         parameterTypes = String[]
         parameterTypes.addAll(parameterTypeNames)
+    }
+
+    /** Parses only this owned member on demand; unsupported bodies fail at their source boundary. */
+    public implementation() -> PrimitiveFunctionSyntax {
+        if (implementationTokens.isEmpty) return null
+        try {
+            return PrimitiveFunctionParser().parse(implementationTokens,
+                implementationRange.snapshot, implementationRange.startTokenIndex).functionValues().first
+        } catch (Exception error) {
+            throw Exception("Trait implementation '#name' token #{implementationRange.startTokenIndex}: #{error.message}")
+        }
     }
 
     public parameterTypeNames() -> String[] => String[]:addAll(parameterTypes)

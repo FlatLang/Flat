@@ -4,12 +4,32 @@ import flat/compiler/models
 
 /** Structural generic argument inference with explicit constraint validation. */
 class {
+    public static inferPartial(
+        GenericDeclaration declaration,
+        SemanticType[] formalTypes,
+        SemanticType[] actualTypes,
+        SourceRange range
+    ) -> GenericInferenceResult {
+        return inferEvidence(declaration, formalTypes, actualTypes, range, null, false)
+    }
+
     public static infer(
         GenericDeclaration declaration,
         SemanticType[] formalTypes,
         SemanticType[] actualTypes,
         SourceRange range,
         TypeHierarchyComponent hierarchy = null
+    ) -> GenericInferenceResult {
+        return inferEvidence(declaration, formalTypes, actualTypes, range, hierarchy, true)
+    }
+
+    static inferEvidence(
+        GenericDeclaration declaration,
+        SemanticType[] formalTypes,
+        SemanticType[] actualTypes,
+        SourceRange range,
+        TypeHierarchyComponent hierarchy,
+        Bool complete
     ) -> GenericInferenceResult {
         if (!declaration || !formalTypes || !actualTypes || formalTypes.count != actualTypes.count || !range) {
             throw Exception("Generic inference requires declaration, aligned types, and range")
@@ -24,10 +44,16 @@ class {
             }
             index++
         }
-        if (inferred.any({ _ == null })) {
+        if (complete && inferred.any({ _ == null })) {
             return failed("type.generic-unresolved", "Not every generic parameter could be inferred", range)
         }
+        index = 0
+        while (index < parameters.count) {
+            if (inferred[index] == null) inferred[index] = parameters[index]
+            index++
+        }
         let substitution = GenericSubstitution(parameters, inferred)
+        if (!complete) return GenericInferenceResult(substitution)
         index = 0
         while (index < parameters.count) {
             let constraint = parameters[index].constraint

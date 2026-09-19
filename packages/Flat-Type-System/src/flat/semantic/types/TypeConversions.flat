@@ -18,6 +18,18 @@ class {
         if (fromType.value() == toType.value()) {
             return TypeConversion(fromType, toType, "identity", true, true, false, 0)
         }
+        if (fromType.kind() == "array" && toType.kind() == "generic-instance" && hierarchy) {
+            let distance = hierarchy.arrayDistance((ArraySemanticType)fromType,
+                (GenericInstanceSemanticType)toType)
+            if (distance >= 0) return TypeConversion(fromType, toType,
+                "reference-upcast", true, true, false, 10 + distance)
+        }
+        if (fromType.kind() == "generic-instance" && toType.kind() == "generic-instance" && hierarchy) {
+            let distance = hierarchy.genericDistance((GenericInstanceSemanticType)fromType,
+                (GenericInstanceSemanticType)toType)
+            if (distance > 0) return TypeConversion(fromType, toType,
+                "reference-upcast", true, true, false, 10 + distance)
+        }
         if (toType.kind() == "nullable") {
             let nullable = (NullableSemanticType)toType
             if (fromType.kind() == "null") {

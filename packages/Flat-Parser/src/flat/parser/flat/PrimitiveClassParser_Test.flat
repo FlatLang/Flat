@@ -4,6 +4,62 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `retains executable contract body`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:default-body"), "one")
+        let stream = Lexer().lex("trait Mapper<T> { public async map<Out>(async callback(T x) -> Out) -> Out { return callback(null); } }")
+        stream.emit("start")
+        let parsed = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let implementation = parsed.methodValues().first.implementation()
+        expect(implementation.name).toBe("map")
+        expect(implementation.asyncMethod).toBe(true)
+        expect(implementation.genericParameterNames()).toBe(["Out"])
+        expect(implementation.parameterValues().first.name).toBe("callback")
+        expect(implementation.statements().count).toBe(1)
+    }
+
+    async test `preserves ordered contract parameters`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:pair-contract"), "one")
+        let stream = Lexer().lex("trait Pair<Left, Right> implements Sequence<Right>, Other<Left[]> { size() -> Int }")
+        stream.emit("start")
+        let parsed = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.genericParameterNames()).toBe(["Left", "Right"])
+        expect(parsed.parentTypeNames()).toBe(["Sequence<Right>", "Other<Left[]>"])
+        let invalidSources = ["trait Pair<T,T> {}", "trait Pair<T,> {}", "trait Pair<> {}"]
+        for (source in invalidSources) {
+            let invalid = Lexer().lex(source)
+            invalid.emit("start")
+            var String failure
+            try { PrimitiveInterfaceParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+
+    async test `preserves nested implemented types`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-header"), "one")
+        let stream = Lexer().lex("class<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<E>>, PlusEqualsOperator<Array<E>, Array<E>> {}")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let parsed = PrimitiveClassParser().parse(tokens, snapshot, 7, "Array")
+        expect(parsed.implementedTypeNames()).toBe([
+            "List<E>", "OrderedList<E>", "PlusOperator<Array<E>,Array<E>>",
+            "PlusEqualsOperator<Array<E>,Array<E>>"
+        ])
+        expect(parsed.range.startTokenIndex).toBe(7)
+        let significant = tokens.filter((value) => value.type != Token.Type.WHITESPACE && value.type != Token.Type.COMMENT)
+        expect(parsed.range.endTokenIndex).toBe(7 + significant.count)
+        let invalidSources = ["class A implements I<> {}", "class A implements I<Box<Int> {}",
+            "class A implements I<Int,> {}", "class A implements I<Int>, {}"]
+        for (source in invalidSources) {
+            let invalid = Lexer().lex(source)
+            invalid.emit("start")
+            var String failure
+            try { PrimitiveClassParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+
     async test `keeps default lambda arrow inside method header`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:default-lambda-header"), "one")
         let stream = Lexer().lex(

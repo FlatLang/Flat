@@ -6,6 +6,34 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    test `contextually types async lambda parameters and captures`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-lambda"), "one")
+        let syntax = PrimitiveExpressionParser().parse([
+            token("lambda", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 7),
+            token("Int", Token.Type.IDENTIFIER, 8), token("value", Token.Type.IDENTIFIER, 12),
+            token(")", Token.Type.SYMBOL, 17), token("=>", Token.Type.SYMBOL, 19),
+            token("value", Token.Type.IDENTIFIER, 22), token("+", Token.Type.SYMBOL, 28),
+            token("captured", Token.Type.IDENTIFIER, 30)
+        ], snapshot)
+        let captured = LocalBinding("captured", SymbolIdentity(DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "local", 0), "local", "captured"
+        ), "local"), SemanticTypes.intType())
+        let expected = FunctionSemanticType([SemanticTypes.intType()], SemanticTypes.intType(), true)
+        let result = PrimitiveExpressionBinder().bind(syntax, requiredType: expected, locals: [captured])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        let type = (FunctionSemanticType)lambda.semanticType
+        expect(type.asyncFunction).toBe(true)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(captured.identity.value)
+        expect(lambda.parameterValues().first.semanticType.value()).toBe(SemanticTypes.intType().value())
+        expect(PrimitiveExpressionBinder().bind(syntax,
+            requiredType: FunctionSemanticType([SemanticTypes.boolType()], SemanticTypes.intType(), true),
+            locals: [captured]).succeeded).toBe(false)
+        expect(PrimitiveExpressionBinder().bind(syntax,
+            requiredType: FunctionSemanticType(SemanticType[], SemanticTypes.intType(), true),
+            locals: [captured]).succeeded).toBe(false)
+    }
+
     test `invokes local callback expression`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:callback-expression-call"), "revision:one"

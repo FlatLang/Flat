@@ -3,6 +3,47 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `separates member call after local initializer`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:adjacent-call"), "one")
+        let values = [
+            token("let", Token.Type.IDENTIFIER, 1, 1), token("array", Token.Type.IDENTIFIER, 5, 1),
+            token("=", Token.Type.SYMBOL, 11, 1), token("make", Token.Type.IDENTIFIER, 13, 1),
+            token("(", Token.Type.SYMBOL, 17, 1), token(")", Token.Type.SYMBOL, 18, 1),
+            token("Async", Token.Type.IDENTIFIER, 1, 3), token(".", Token.Type.SYMBOL, 6, 3),
+            token("all", Token.Type.IDENTIFIER, 7, 3), token("(", Token.Type.SYMBOL, 10, 3),
+            token("array", Token.Type.IDENTIFIER, 11, 3), token(")", Token.Type.SYMBOL, 16, 3),
+            token(".", Token.Type.SYMBOL, 5, 4), token("finish", Token.Type.IDENTIFIER, 6, 4),
+            token("(", Token.Type.SYMBOL, 12, 4), token(")", Token.Type.SYMBOL, 13, 4)
+        ]
+        let parsed = PrimitiveControlStatementParser().parse(values, snapshot, 20).statements()
+        expect(parsed.count).toBe(2)
+        expect(parsed.first.range.endTokenIndex).toBe(26)
+        expect(parsed.last.range.startTokenIndex).toBe(26)
+        expect(parsed.last.range.endTokenIndex).toBe(36)
+        var String failure
+        try {
+            PrimitiveControlStatementParser().parse(values.take(15), snapshot, 20)
+        } catch (Exception error) {
+            failure = error.message
+        }
+        expect(failure != null).toBe(true)
+    }
+
+    test `keeps multiline call arguments and continued operands`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:continued-call"), "one")
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("let", Token.Type.IDENTIFIER, 1, 1), token("value", Token.Type.IDENTIFIER, 5, 1),
+            token("=", Token.Type.SYMBOL, 11, 1), token("outer", Token.Type.IDENTIFIER, 13, 1),
+            token("(", Token.Type.SYMBOL, 18, 1), token("inner", Token.Type.IDENTIFIER, 3, 2),
+            token("(", Token.Type.SYMBOL, 8, 2), token(")", Token.Type.SYMBOL, 9, 2),
+            token(")", Token.Type.SYMBOL, 1, 3), token("+", Token.Type.SYMBOL, 3, 3),
+            token("next", Token.Type.IDENTIFIER, 3, 4), token("(", Token.Type.SYMBOL, 7, 4),
+            token(")", Token.Type.SYMBOL, 8, 4)
+        ], snapshot).statements()
+        expect(parsed.count).toBe(1)
+        expect(parsed.first.range.endTokenIndex).toBe(13)
+    }
+
     test `parses inline if return body`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:inline-if"), "revision:one"

@@ -329,6 +329,11 @@ class {
             syntax("Expected complete non-empty condition", open)
         }
         let end = index++
+        // Declaration expressions require their parentheses for name/initializer ownership.
+        if (tokens[start].value == "let" || tokens[start].value == "var") {
+            return PrimitiveExpressionParser().parse(
+                tokens.skip(open).take(index - open), snapshot, open + tokenIndexOffset)
+        }
         return PrimitiveExpressionParser().parse(
             tokens.skip(start).take(end - start),
             snapshot,
@@ -374,9 +379,10 @@ class {
             while (close < tokens.count && tokens[close].value != "]") close++
             return close + 1 < tokens.count && assignmentOperator(tokens[close + 1].value)
         }
+        if (next == "(") return true
         if (next == "." && tokenIndex + 3 < tokens.count) {
             let memberOperator = tokens[tokenIndex + 3].value
-            return memberOperator == "=" || memberOperator == "+=" || memberOperator == "-=" ||
+            return memberOperator == "(" || memberOperator == "=" || memberOperator == "+=" || memberOperator == "-=" ||
                 memberOperator == "*=" || memberOperator == "/=" || memberOperator == "%="
         }
         return next == "=" || next == "+=" || next == "-=" || next == "*=" ||
@@ -387,17 +393,31 @@ class {
         value == "=" || value == "+=" || value == "-=" || value == "*=" ||
             value == "/=" || value == "%="
 
+    expressionContinuation(String value) -> Bool =>
+        value == "=" || value == "." || value == "," || value == "return" ||
+        value == "+" || value == "-" || value == "*" || value == "/" ||
+        value == "%" || value == "&&" || value == "||" || value == "?" ||
+        value == ":" || value == "==" || value == "!=" || value == "<" ||
+        value == ">" || value == "<=" || value == ">=" || assignmentOperator(value)
+
     parseSimple() -> PrimitiveStatementSyntax {
         let start = index
         let line = tokens[start].location.lineNumber
         var Int braceDepth
+        var Int parenthesisDepth
+        var Int bracketDepth
         while (index < tokens.count) {
             let value = tokens[index].value
-            if (braceDepth == 0 && (value == ";" || value == "}" ||
-                (tokens[index].location.lineNumber > line &&
+            if (braceDepth == 0 && parenthesisDepth == 0 && bracketDepth == 0 && (value == ";" || value == "}" ||
+                (tokens[index].location.lineNumber > line && index > start &&
+                    !expressionContinuation(tokens[index - 1].value) &&
                     (controlStart(index) || statementStart(index))))) break
             if (value == "{") braceDepth++
             else if (value == "}") braceDepth--
+            else if (value == "(") parenthesisDepth++
+            else if (value == ")") parenthesisDepth--
+            else if (value == "[") bracketDepth++
+            else if (value == "]") bracketDepth--
             index++
         }
         if (index == start) {

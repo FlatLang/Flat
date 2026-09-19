@@ -7,6 +7,97 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+
+    async test `binds declared iterator loop`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:protocol-loop"), "one")
+        let stream = Lexer().lex("class Cursor { visible Bool hasNext => false visible Int stepNext => 42 } ")
+        stream.emit("start")
+        let cursor = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let ownerStream = Lexer().lex("class Values { visible Cursor iterator => Cursor() public run() -> Int { var Int sum = 0; for (value in this) { sum += value; } return sum; } }")
+        ownerStream.emit("start")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:protocol-values"), "one"))
+        expect(PrimitiveClassPartitionBinder().bind([cursor, owner]).typeUnits().count).toBe(2)
+    }
+
+    async test `binds declaration condition`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:condition-local"), "one")
+        let stream = Lexer().lex("class Value { static run() -> Bool { if (let found = true) { return found; } return false; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `binds explicit static type arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-static"), "one")
+        let stream = Lexer().lex("class Value { static echo<T>(T value) -> T { return value; } static run() -> Int { let value = 42; return Value.echo<Int>(value); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.intType().value())
+        let invalidSources = [
+            "class Value { static echo<T>(T value) -> T { return value; } static run() -> Int { let value = 42; return Value.echo<Bool>(value); } }",
+            "class Value { static echo<T>(T value) -> T { return value; } static run() -> Int { let value = 42; return Value.echo<Int,Int>(value); } }",
+            "class Value { static echo<T>(T value) -> T { return value; } static run() -> Int { let Value = 42; return Value.echo<Int>(Value); } }"
+        ]
+        for (source in invalidSources) {
+            let invalidStream = Lexer().lex(source)
+            invalidStream.emit("start")
+            let invalidSyntax = PrimitiveClassParser().parse(invalidStream.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try {
+                PrimitiveClassPartitionBinder().bind([invalidSyntax])
+            } catch (Exception error) {
+                failure = error.message
+            }
+            expect(failure != null).toBe(true)
+        }
+    }
+
+    async test `binds generic default`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-default"), "one")
+        let stream = Lexer().lex("trait Echo<T> { echo(T value) -> T { T local = value; return local; } }")
+        stream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let classStream = Lexer().lex("class Value implements Echo<Int> { run() -> Int { return echo(42); } }")
+        classStream.emit("start")
+        let syntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:generic-value"), "one"))
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], interfaceSyntaxValues: [contract]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "echo" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `binds default method`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-body"), "one")
+        let stream = Lexer().lex("trait Answer { read() -> Int { return 42; } }")
+        stream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let classStream = Lexer().lex("class Value implements Answer { run() -> Int { return read(); } }")
+        classStream.emit("start")
+        let syntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:value-body"), "one"))
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], interfaceSyntaxValues: [contract]).typeUnits().first
+        expect(bound.functionUnits().any({ _.name == "read" })).toBe(true)
+        let secondStream = Lexer().lex("trait Other { read() -> Int { return 7; } }")
+        secondStream.emit("start")
+        let other = PrimitiveInterfaceParser().parse(secondStream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:other-body"), "one"))
+        let conflictStream = Lexer().lex("class Conflict implements Answer, Other {}")
+        conflictStream.emit("start")
+        let conflict = PrimitiveClassParser().parse(conflictStream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([conflict], interfaceSyntaxValues: [contract, other]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure).toBe("Ambiguous trait default 'read' requires a class implementation")
+        let overrideStream = Lexer().lex("class Explicit implements Answer, Other { read() -> Int { return 9; } }")
+        overrideStream.emit("start")
+        let explicitSyntax = PrimitiveClassParser().parse(overrideStream.consumeAll<Token>("data"), snapshot)
+        let explicitBound = PrimitiveClassPartitionBinder().bind([explicitSyntax],
+            interfaceSyntaxValues: [contract, other]).typeUnits().first
+        expect(explicitBound.functionUnits().filter({ _.name == "read" }).count).toBe(1)
+    }
+
     async test `resolves published static call from instance method and respects local shadowing`() {
         let dependency = Lexer().lex("class Helpers { static read(Int value) -> Int { return value; } }")
         dependency.emit("start")
@@ -28,7 +119,73 @@ testable class {
         expect(failure != null).toBe(true)
     }
 
-    async test `isolates generic async mapping implicit callback frontier`() {
+    async test `returns array through registered declared parent`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-parent"), "one")
+        let contracts = Lexer().lex("trait Sequence<E> { size() -> Int }")
+        contracts.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(contracts.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Factory { read(Int[] values) -> Sequence<Int> { return values; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let arrayStream = Lexer().lex("class Buffer<E> implements Sequence<E> { size() -> Int { return 0; } }")
+        arrayStream.emit("start")
+        let arraySyntax = PrimitiveClassParser().parse(arrayStream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:buffer"), "one"))
+        let result = PrimitiveClassPartitionBinder().bind([syntax, arraySyntax],
+            interfaceSyntaxValues: [contract], arrayDeclaration: arraySyntax)
+        expect(result.typeUnits().firstOrNull({ _.identity.name == "Factory" })
+            .functionUnits().any({ _.name == "read" })).toBe(true)
+        let invalidSources = ["trait Sequence<E> implements Missing<E> {}",
+            "trait Sequence<E> implements Sequence<E> {}"]
+        for (source in invalidSources) {
+            let invalid = Lexer().lex(source)
+            invalid.emit("start")
+            let invalidContract = PrimitiveInterfaceParser().parse(invalid.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try { PrimitiveClassPartitionBinder().bind([syntax, arraySyntax],
+                interfaceSyntaxValues: [invalidContract], arrayDeclaration: arraySyntax) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+
+    async test `binds declared collection result`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-identity"), "one")
+        let traitStream = Lexer().lex("trait Sequence<E> { size() -> Int }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Factory { static empty<Out>() -> Sequence<Out> { return null; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:factory"), "one"))
+        let types = PrimitiveClassPartitionBinder().bind([syntax], interfaceSyntaxValues: [contract]).typeUnits()
+        let method = types.first.functionUnits().firstOrNull({ _.name == "empty" })
+        let result = (GenericInstanceSemanticType)method.returnType
+        expect(result.declarationType.declarationIdentity.declarationKind).toBe("interface")
+        expect(result.declarationType.declarationIdentity.name).toBe("Sequence")
+    }
+
+    async test `contextual overloads isolate invalid callback candidates and report ambiguity`() {
+        let sources = [
+            "class Value { static pick(Int x, async f(Int x) -> Int) -> Int { return 1; } static pick(Int x, async f(Bool x) -> Int) -> Int { return 2; } run() -> Int { return Value.pick(1, { _ + 1 }); } }",
+            "class Value { static pick(Int x, async f(Int x) -> Int) -> Int { return 1; } static pick(Int x, async f(Bool x) -> Int) -> Int { return 2; } run() -> Int { return Value.pick(1, { 1 }); } }"
+        ]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-overload#index"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try { PrimitiveClassPartitionBinder().bind([syntax]) }
+            catch (Exception error) { failure = error.message }
+            if (index == 0) expect(failure == null).toBe(true)
+            else expect(failure.contains("ambiguous")).toBe(true)
+            index++
+        }
+    }
+
+    async test `binds generic async mapping implicit callback`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:map-parallel-body"), "one")
         let stream = Lexer().lex(
             "class List<Type> { toArray() -> Type[] { return null; } " +
@@ -43,10 +200,19 @@ testable class {
         dependency.emit("start")
         let asyncSyntax = PrimitiveClassParser().parse(dependency.consumeAll<Token>("data"),
             SourceSnapshotIdentity(SourceIdentity("memory:async-signature"), "one"))
+        let types = PrimitiveClassPartitionBinder().bind([syntax, asyncSyntax]).typeUnits()
+        expect(types.count).toBe(2)
+        let canonicalStream = Lexer().lex(
+            "class List<Type> { toArray() -> Type[] { return null; } " +
+            "public async mapParallel<Out>(async mapFunc(Type x, Int i, List<Type> list) -> Out, Int maxParallel = -1, async onAfterChunk(Int count) = {}) -> List<Out> { " +
+            "return Async.all(toArray(), { mapFunc(_, _, this) }, maxParallel, onAfterChunk); } }"
+        )
+        canonicalStream.emit("start")
+        let canonical = PrimitiveClassParser().parse(canonicalStream.consumeAll<Token>("data"), snapshot)
         var String failure
-        try { PrimitiveClassPartitionBinder().bind([syntax, asyncSyntax]) }
+        try { PrimitiveClassPartitionBinder().bind([canonical, asyncSyntax]) }
         catch (Exception error) { failure = error.message }
-        expect(failure.contains("Unknown local '_'")).toBe(true)
+        expect(failure.contains("cannot return")).toBe(true)
     }
 
     async test `binds canonical mapParallel signature and defaults`() {

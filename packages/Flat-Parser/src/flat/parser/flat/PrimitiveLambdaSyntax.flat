@@ -4,20 +4,27 @@ import flat/compiler/models
 
 /** Syntax-only expression lambda with explicit typed parameters. */
 data class extends PrimitiveExpressionSyntax {
+    var PrimitiveStatementSyntax[] statements
     var PrimitiveFunctionParameterSyntax[] parameters
     public construct(
         SourceRange range,
         PrimitiveFunctionParameterSyntax[] parameterValues,
         visible PrimitiveExpressionSyntax body,
-        visible Bool emptyBody = false
+        visible Bool emptyBody = false,
+        PrimitiveStatementSyntax[] statementValues = PrimitiveStatementSyntax[]
     ) {
         if (!range || !parameterValues || parameterValues.any({ !_ }) || !body) {
             throw Exception("Lambda syntax requires parameters and body")
         }
         super(range)
+        if (!statementValues || statementValues.any({ !_ }) ||
+            (emptyBody && statementValues.isNotEmpty)) throw Exception("Invalid lambda statements")
+        statements = PrimitiveStatementSyntax[]:addAll(statementValues)
         parameters = PrimitiveFunctionParameterSyntax[]
         parameters.addAll(parameterValues)
     }
+    public statementValues() -> PrimitiveStatementSyntax[] =>
+        PrimitiveStatementSyntax[]:addAll(statements)
     public parameterValues() -> PrimitiveFunctionParameterSyntax[] =>
         PrimitiveFunctionParameterSyntax[]:addAll(parameters)
     override public expressionKind() => "lambda"

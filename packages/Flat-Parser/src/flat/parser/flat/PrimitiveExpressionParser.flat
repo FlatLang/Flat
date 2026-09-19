@@ -181,6 +181,30 @@ class {
                     emptyBody: true
                 )
             }
+            let bodyStart = index
+            var Int cursor = index
+            var Int depth = 1
+            var Bool statementBody
+            while (cursor < tokens.count && depth > 0) {
+                let value = tokens[cursor].value
+                if (value == "{") depth++
+                else if (value == "}") depth--
+                if (depth == 1 && (value == "return" || value == ";" ||
+                    value == "let" || value == "var" || value == "if" ||
+                    value == "for" || value == "while")) statementBody = true
+                if (depth > 0) cursor++
+            }
+            if (depth != 0) syntax("Expected closing implicit lambda brace", cursor)
+            if (statementBody) {
+                let statements = PrimitiveControlStatementParser().parse(
+                    tokens.skip(bodyStart).take(cursor - bodyStart), snapshot,
+                    bodyStart + tokenIndexOffset
+                ).statements()
+                index = cursor + 1
+                return PrimitiveLambdaSyntax(range(start, index), PrimitiveFunctionParameterSyntax[],
+                    PrimitiveLiteralSyntax(range(start, index), Token.Type.NULL, "null"),
+                    statementValues: statements)
+            }
             let body = parseConditional()
             if (index >= tokens.count || tokens[index].value != "}") {
                 syntax("Expected closing implicit lambda brace", index)
@@ -236,6 +260,25 @@ class {
             return PrimitiveConstructionSyntax(call.range, typeName, call.argumentValues())
         }
         if (token.type == Token.Type.IDENTIFIER) {
+            if (index < tokens.count && tokens[index].value == "<") {
+                var Int cursor = index
+                var Int depth
+                var String elementType = token.value
+                while (cursor < tokens.count) {
+                    let part = tokens[cursor].value
+                    if (part == "<") depth++
+                    else if (part == ">") depth--
+                    elementType += part
+                    cursor++
+                    if (depth == 0) break
+                }
+                if (depth == 0 && cursor + 1 < tokens.count &&
+                    tokens[cursor].value == "[" && tokens[cursor + 1].value == "]") {
+                    index = cursor + 2
+                    return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(
+                        range(tokenIndex, index), elementType), true)
+                }
+            }
             if (index + 1 < tokens.count && tokens[index].value == "[" &&
                 tokens[index + 1].value == "]") {
                 index += 2
@@ -297,6 +340,7 @@ class {
                     syntax("Expected member name after '.'", index)
                 }
                 let member = tokens[index++].value
+                let typeArguments = memberTypeArguments()
                 if (index < tokens.count && tokens[index].value == "(") {
                     index++
                     let arguments = PrimitiveExpressionSyntax[]
@@ -335,7 +379,7 @@ class {
                     index++
                     expression = PrimitiveMemberCallSyntax(
                         range(tokenIndex, index), expression, member, arguments,
-                        namedArguments
+                        namedArguments, typeArguments
                     )
                 } else expression = PrimitiveMemberAccessSyntax(
                     range(tokenIndex, index), expression, member
@@ -380,6 +424,29 @@ class {
         return PrimitiveLiteralSyntax(
             range(tokenIndex, tokenIndex + 1), token.type, token.value
         )
+    }
+
+    memberTypeArguments() -> String[] {
+        let arguments = String[]
+        if (index >= tokens.count || tokens[index].value != "<") return arguments
+        var Int cursor = index + 1
+        var Int depth = 1
+        var String name = ""
+        while (cursor < tokens.count && depth > 0) {
+            let value = tokens[cursor].value
+            if (value == "<") depth++
+            else if (value == ">") depth--
+            if (depth == 0 || (depth == 1 && value == ",")) {
+                if (name.isEmpty) return String[]
+                arguments.add(name)
+                name = ""
+            } else name += value
+            cursor++
+        }
+        // A following call distinguishes type arguments from comparison operators.
+        if (depth != 0 || cursor >= tokens.count || tokens[cursor].value != "(") return String[]
+        index = cursor
+        return arguments
     }
 
     parsePostfix(
