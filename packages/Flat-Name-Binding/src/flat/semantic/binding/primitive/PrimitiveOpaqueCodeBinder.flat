@@ -293,7 +293,7 @@ class PrimitiveOpaqueCodeBinder {
                 )
             }
         }
-        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals)
+        let result = PrimitiveExpressionBinder().bind(syntax, locals: locals, callables: callables)
         if (!result.succeeded) throw Exception(result.diagnostic.message)
         return result.expression
     }

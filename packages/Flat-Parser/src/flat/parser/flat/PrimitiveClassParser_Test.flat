@@ -4,6 +4,90 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `preserves shorthand array setter`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-shorthand"), "one")
+        let stream = Lexer().lex("class Box { this[Int index] <=> data[index]\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let accessor = parsed.arrayOverrideValues().first
+        expect(accessor.getterValues().count).toBe(1)
+        expect(accessor.setterValues().first.statementKind()).toBe("array-assignment")
+    }
+
+    async test `parses conditional indexed property getter`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:indexed-property"), "one")
+        let stream = Lexer().lex("class Box { public Int first => count > 0 ? this[0] : null\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.methodValues().first.name).toBe("first")
+        let invalid = Lexer().lex("class Box { public Int first => count > 0 ? this[0] : }")
+        invalid.emit("start")
+        var String failure
+        try { PrimitiveClassParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+    }
+
+    async test `parses visible property with generic return type`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-property"), "one")
+        let stream = Lexer().lex("class Box<E> { override visible ArrayIterator<E> iterator => create()\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let invalid = Lexer().lex("class Box<E> { override visible ArrayIterator<E iterator => create() }")
+        invalid.emit("start")
+        var String failure
+        try { PrimitiveClassParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        expect(parsed.methodValues().first.returnTypeName).toBe("ArrayIterator<E>")
+    }
+
+    async test `parses neighboring boolean properties with unary getter`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-properties"), "one")
+        let stream = Lexer().lex("class Box { visible Bool isEmpty => count == 0\n" +
+            "visible Bool isNotEmpty => !isEmpty\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.methodValues().count).toBe(2)
+    }
+
+    async test `parses visible native mutable field in either modifier order`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-field"), "one")
+        let orders = ["native_array var", "var native_array"]
+        for (modifiers in orders) {
+            let stream = Lexer().lex("class Box { visible " + modifiers + " Int[] data; }")
+            stream.emit("start")
+            let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let field = parsed.fieldValues().first
+            expect(field.name).toBe("data")
+            expect(field.typeName).toBe("Int[]")
+            expect(field.mutableField).toBe(true)
+            expect(field.visibleField).toBe(true)
+            expect(field.range.startTokenIndex).toBe(3)
+        }
+    }
+
+    async test `mutable property modifiers do not leak to next field`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:property-field-boundary"), "one")
+        let stream = Lexer().lex("class Box { visible var Int count <=> count\n" +
+            "visible var Int position\nvisible native_array var Int[] data\n}")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.fieldValues().count).toBe(2)
+        expect(parsed.methodValues().first.name).toBe("count")
+    }
+
+    async test `rejects duplicate mutable field modifier`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-field-var"), "one")
+        let stream = Lexer().lex("class Box { visible var native_array var Int[] data; }")
+        stream.emit("start")
+        var String failure
+        try { PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        expect(failure.contains("Duplicate var field modifier")).toBe(true)
+    }
+
     async test `retains executable contract body`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:default-body"), "one")
         let stream = Lexer().lex("trait Mapper<T> { public async map<Out>(async callback(T x) -> Out) -> Out { return callback(null); } }")

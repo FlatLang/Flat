@@ -442,6 +442,14 @@ class {
         PrimitiveStatementSyntax[] syntaxStatements,
         Bool setter
     ) -> BoundFunctionUnit {
+        if (setter && syntax.elementTypeName == "inferred") {
+            if (!arrayGetter || arrayGetter.returnType.kind() == "unknown") {
+                throw Exception("Inferred array setter requires resolved getter")
+            }
+            arraySetter = CallableSignature(signature.identity, signature.name, signature.callableKind,
+                [signature.parameterTypes().first, arrayGetter.returnType], SemanticTypes.unitType(),
+                signature.ownerType)
+        }
         let identity = signature.identity.declaration
         let parameters = BoundFunctionParameter[]
         parameters.add(BoundFunctionParameter(
@@ -451,7 +459,7 @@ class {
         ))
         if (setter) parameters.add(BoundFunctionParameter(
             "value", SymbolIdentity(identity, "parameter", 1),
-            signature.parameterTypes().last
+            (syntax.elementTypeName == "inferred" ? arraySetter : signature).parameterTypes().last
         ))
         let locals = localBindings(parameters)
         let receiver = receiver(syntax.range, typeIdentity, type)
@@ -459,7 +467,7 @@ class {
         allFields.addAll(fields)
         allFields.addAll(inheritedFields)
         var CallableSignature effectiveSignature = signature
-        if (syntax.elementTypeName == "inferred") {
+        if (syntax.elementTypeName == "inferred" && !setter) {
             let inferredResult = PrimitiveControlStatementBinder().bind(
                 PrimitiveStatementSyntaxResult(syntaxStatements),
                 syntax.range.snapshot, locals, constructors, receiver, allFields,

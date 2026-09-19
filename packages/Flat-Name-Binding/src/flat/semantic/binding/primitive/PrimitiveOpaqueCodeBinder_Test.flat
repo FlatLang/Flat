@@ -7,6 +7,30 @@ import flat/semantic/types
 
 /** Focused binding coverage for selected opaque statements and interpolation. */
 testable class PrimitiveOpaqueCodeBinder_Test {
+    test `resolves declared member interpolation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:external-member"), "one")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")
+        let type = UserClassSemanticType(owner)
+        let method = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "method", 1), "instance-method", "add")
+        let signature = CallableSignature(SymbolIdentity(method, "instance-method"), "add",
+            CallableKind("instance-method"), [SemanticTypes.intType()], SemanticTypes.intType(), type)
+        let local = LocalBinding("box", SymbolIdentity(owner, "local"), type)
+        var String code = "return "
+        code += '#'
+        code += "{box.add(42)};"
+        let syntax = PrimitiveControlStatementParser().parse([
+            token("external", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 10),
+            token(code, Token.Type.CODE, 12), token("}", Token.Type.SYMBOL, 40)
+        ], snapshot)
+        let bound = PrimitiveControlStatementBinder().bind(syntax, snapshot, [local], [signature]).statements()
+        let object = (Object)bound.first
+        let statement = (BoundExternalStatement)object
+        let segments = statement.segmentValues()
+        let expressionObject = (Object)segments[1].value
+        let call = (BoundCallExpression)expressionObject
+        expect(call.target.identity.value).toBe(signature.identity.value)
+    }
+
     test `preserves callback await suppression evidence`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:suppress-await"), "one")
         let declaration = DeclarationIdentity(

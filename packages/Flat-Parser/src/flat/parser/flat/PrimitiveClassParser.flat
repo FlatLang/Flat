@@ -72,8 +72,7 @@ class {
         var Bool mutableField
         var Int fieldModifierStart = -1
         while (index < tokens.count && tokens[index].value != "}") {
-            if (isFunctionModifier(tokens[index].value) &&
-                tokens[index].value != "visible") {
+            if (isFunctionModifier(tokens[index].value) || tokens[index].value == "visible") {
                 let propertyStart = index
                 var Int propertyCursor = index
                 var Bool visibleProperty
@@ -85,12 +84,29 @@ class {
                     if (tokens[propertyCursor].value == "static") staticProperty = true
                     propertyCursor++
                 }
-                if (visibleProperty && propertyCursor + 2 < tokens.count &&
+                let typeStart = propertyCursor
+                if (visibleProperty && propertyCursor < tokens.count &&
+                    tokens[propertyCursor].type == Token.Type.IDENTIFIER) {
+                    propertyCursor++
+                    if (propertyCursor < tokens.count && tokens[propertyCursor].value == "<") {
+                        var Int depth
+                        while (propertyCursor < tokens.count) {
+                            let part = tokens[propertyCursor++].value
+                            if (part == "<") depth++
+                            else if (part == ">") depth--
+                            if (depth == 0) break
+                        }
+                    }
+                    while (propertyCursor + 1 < tokens.count &&
+                        tokens[propertyCursor].value == "[" && tokens[propertyCursor + 1].value == "]") {
+                        propertyCursor += 2
+                    }
+                }
+                if (visibleProperty && propertyCursor + 1 < tokens.count &&
                     tokens[propertyCursor].type == Token.Type.IDENTIFIER &&
-                    tokens[propertyCursor + 1].type == Token.Type.IDENTIFIER &&
-                    (tokens[propertyCursor + 2].value == "=>" ||
-                    tokens[propertyCursor + 2].value == "<=>")) {
-                    let returnType = tokens[propertyCursor++].value
+                    (tokens[propertyCursor + 1].value == "=>" ||
+                    tokens[propertyCursor + 1].value == "<=>")) {
+                    let returnType = tokens.skip(typeStart).take(propertyCursor - typeStart).map({ _.value }).join("")
                     let propertyName = tokens[propertyCursor++].value
                     propertyCursor++
                     let expressionStart = propertyCursor
@@ -198,13 +214,15 @@ class {
                     staticField = true
                     index++
                 }
-                if (index < tokens.count && tokens[index].value == "var") {
-                    mutableField = true
-                    index++
-                }
                 while (index < tokens.count &&
                     (tokens[index].value == "native_array" ||
-                     tokens[index].value == "native")) index++
+                     tokens[index].value == "native" || tokens[index].value == "var")) {
+                    if (tokens[index].value == "var") {
+                        if (mutableField) syntax("Duplicate var field modifier", index)
+                        mutableField = true
+                    }
+                    index++
+                }
             } else if (tokens[index].value == "static") {
                 fieldModifierStart = index
                 staticField = true
@@ -243,6 +261,10 @@ class {
                     [PrimitiveReturnSyntax(range(expressionStart, expressionEnd), value)]
                 ))
                 index = end
+                visibleField = false
+                staticField = false
+                mutableField = false
+                fieldModifierStart = -1
             } else if (index + 1 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER &&
                 (tokens[index + 1].type == Token.Type.IDENTIFIER ||
@@ -326,7 +348,8 @@ class {
         let typeName = identifier("Expected array override index type")
         let name = identifier("Expected array override index name")
         require("]")
-        if (index < tokens.count && tokens[index].value == "=>") {
+        if (index < tokens.count && (tokens[index].value == "=>" || tokens[index].value == "<=>")) {
+            let writable = tokens[index].value == "<=>"
             index++
             let expressionStart = index
             let end = declarationEnd(start)
@@ -334,6 +357,15 @@ class {
                 tokens.skip(expressionStart).take(end - expressionStart), snapshot,
                 expressionStart + tokenIndexOffset
             )
+            let setter = PrimitiveStatementSyntax[]
+            if (writable) {
+                if (!value.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
+                    syntax("Shorthand array setter requires indexed storage", expressionStart)
+                }
+                let target = (PrimitiveArrayAccessSyntax)value
+                setter.add(PrimitiveArrayAssignmentSyntax(value.range, target,
+                    PrimitiveReferenceSyntax(value.range, "value")))
+            }
             index = end
             return PrimitiveArrayOverrideSyntax(
                 range(start, end),
@@ -342,7 +374,7 @@ class {
                 ),
                 "inferred",
                 [PrimitiveReturnSyntax(range(expressionStart, end), value)],
-                PrimitiveStatementSyntax[]
+                setter
             )
         }
         require("->")
@@ -652,8 +684,7 @@ class {
                     value == "protected" || value == "visible" || value == "static" ||
                     value == "async" || value == "compiler_visible" ||
                     value == "external_name" || value == "override" ||
-                    (value == "this" && cursor > expressionStart &&
-                        cursor + 1 < tokens.count && tokens[cursor + 1].value == "[") ||
+                    (value == "this" && arrayOverrideHeaderAt(cursor)) ||
                     value == "constructor" ||
                     value == "construct" || typeBoundary ||
                     (value == "[" && cursor + 1 < tokens.count &&
@@ -717,6 +748,12 @@ class {
         return "<unknown>"
     }
 
+    arrayOverrideHeaderAt(Int cursor) -> Bool => cursor + 4 < tokens.count &&
+        tokens[cursor].value == "this" && tokens[cursor + 1].value == "[" &&
+        tokens[cursor + 2].type == Token.Type.IDENTIFIER &&
+        tokens[cursor + 3].type == Token.Type.IDENTIFIER &&
+        tokens[cursor + 4].value == "]"
+
     declarationEnd(Int start) -> Int {
         var Int cursor = start
         var Int headerParenthesisDepth
@@ -760,9 +797,7 @@ class {
                         value == "async" || value == "compiler_visible" ||
                         value == "external_name" || value == "visible" ||
                         value == "override" ||
-                        (value == "this" && cursor > expressionStart &&
-                            cursor + 1 < tokens.count &&
-                            tokens[cursor + 1].value == "[") ||
+                        (value == "this" && arrayOverrideHeaderAt(cursor)) ||
                         value == "constructor" || value == "construct" || value == "}")) break
                 cursor++
             }

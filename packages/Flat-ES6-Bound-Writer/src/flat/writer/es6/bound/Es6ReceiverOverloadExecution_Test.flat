@@ -358,6 +358,54 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    async test `shorthand indexed storage setter executes`() {
+        let stream = Lexer().lex("class Value { Int[] data; construct() { data = [1]; } " +
+            "this[Int index] <=> data[index]\n}")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:shorthand-setter"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let getter = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "getAt" }).identity.value)
+        let setter = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "setAt" }).identity.value)
+        let root = File(".flat-es6-shorthand-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "setter.js")
+        Es6ArtifactCommitter().commit(destination, code + "const value = new " + className +
+            "(); value." + setter + "(0,42); if(value." + getter + "(0)!==42) throw Error('setter');")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+    }
+
+    async test `external declared member executes`() {
+        var String source = "class Value { add(Int value) -> Int { return value; } " +
+            "run(Value box) -> Int { external { return "
+        source += '#'
+        source += "{box.add(42)}; } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:external-member-execute"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let methodName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "run" }).identity.value
+        )
+        let root = File(".flat-es6-external-member-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "member.js")
+        Es6ArtifactCommitter().commit(destination, code + "const value = new " + className +
+            "(); if(value." + methodName + "(value) !== 42) throw Error('member call');")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+    }
+
     async test `method generic sized array local executes`() {
         let stream = Lexer().lex("class Value { static make<Out>(Int size) -> Out[] { " +
             "let values = Array<Out>(size); return values; } }")
