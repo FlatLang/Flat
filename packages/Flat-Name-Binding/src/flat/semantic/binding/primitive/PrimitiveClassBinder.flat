@@ -1386,11 +1386,14 @@ class {
                     ))
                 } else normalizedArguments.add(argument)
             }
+            let receiverInstance = candidateReceiverType.kind() == "generic-instance" ?
+                (GenericInstanceSemanticType)candidateReceiverType : null
             let candidates = constructors.filter((candidate) =>
                 candidate.callableKind.value == "instance-method" &&
-                candidate.ownerType.value() == candidateReceiverType.value() &&
+                candidate.ownerType.value() == (receiverInstance ?
+                    receiverInstance.declarationType.value() : candidateReceiverType.value()) &&
                 candidate.name == value.memberName
-            )
+            ).map({ receiverInstance ? _.instantiateReceiver(receiverInstance) : _ })
             let resolution = OverloadResolver.resolve(
                 value.memberName, candidates, candidateReceiverType,
                 normalizedArguments.map({ _.semanticType }), value.range

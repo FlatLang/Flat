@@ -7,6 +7,24 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `instantiates generic receiver methods before overload selection`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-receiver-call"), "one")
+        let sources = ["class Box<E> { echo(E value) -> E { return value; } }",
+            "class Use { run(Box<Int> box) -> Int { return box.echo(42); } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        let method = units.last.functionUnits().firstOrNull({ _.name == "run" })
+        let statements = method.statements()
+        let statement = (Object)statements.first
+        let returned = (BoundReturnStatement)statement
+        expect(returned.value.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
     async test `declared array field literal selects native storage constructor`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-array-literal"), "one")
         let syntaxes = PrimitiveClassSyntax[]
