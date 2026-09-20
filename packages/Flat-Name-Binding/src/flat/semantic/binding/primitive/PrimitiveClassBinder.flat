@@ -1315,6 +1315,73 @@ class {
                 }
             }
             let owner = expression(value.receiver, receiver, fields, locals)
+            if (value.argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) }) &&
+                (owner.semanticType.kind() == "user-class" || owner.semanticType.kind() == "generic-instance")) {
+                let instance = owner.semanticType.kind() == "generic-instance" ?
+                    (GenericInstanceSemanticType)owner.semanticType : null
+                let candidates = constructors.filter((candidate) =>
+                    candidate.callableKind.value == "instance-method" &&
+                    candidate.name == value.memberName &&
+                    candidate.ownerType.value() == (instance ? instance.declarationType.value() : owner.semanticType.value()) &&
+                    candidate.parameterTypes().count == value.argumentValues().count
+                ).map({ instance ? _.instantiateReceiver(instance) : _ })
+                let checks = CallCheckResult[]
+                let boundCalls = BoundCallExpression[]
+                for (candidate in candidates) {
+                    try {
+                        let arguments = BoundExpression[]
+                        let formals = SemanticType[]
+                        let actuals = SemanticType[]
+                        var Int index
+                        for (argument in value.argumentValues()) {
+                            if (argument.class.isOfType(PrimitiveLambdaSyntax.class)) arguments.add(null)
+                            else {
+                                let bound = expression(argument, receiver, fields, locals)
+                                arguments.add(bound)
+                                formals.add(candidate.parameterTypes()[index])
+                                actuals.add(bound.semanticType)
+                            }
+                            index++
+                        }
+                        var GenericSubstitution substitution = GenericSubstitution(GenericParameterSemanticType[], SemanticType[])
+                        if (candidate.genericParameters().isNotEmpty) {
+                            let partial = GenericInference.inferPartial(GenericDeclaration(
+                                candidate.identity.declaration, candidate.genericParameters(), candidate.returnType
+                            ), formals, actuals, value.range)
+                            if (!partial.inferred) throw Exception(partial.diagnostic.message)
+                            substitution = partial.substitution
+                        }
+                        index = 0
+                        for (argument in value.argumentValues()) {
+                            if (arguments[index] == null) {
+                                let context = substitution.apply(candidate.parameterTypes()[index])
+                                if (context.kind() != "function") throw Exception("Lambda argument requires function parameter")
+                                let callbackLocals = LocalBinding[]:addAll(locals)
+                                if (receiver) callbackLocals.add(LocalBinding("this", receiver.symbolIdentity,
+                                    genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
+                                let bound = PrimitiveExpressionBinder().bindCallback(
+                                    (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
+                                    callbackLocals, constructors)
+                                if (!bound.succeeded) throw Exception(bound.diagnostic.message)
+                                arguments[index] = bound.expression
+                            }
+                            index++
+                        }
+                        let checked = CallTypeChecker.check(candidate, owner.semanticType,
+                            arguments.map({ _.semanticType }), value.range)
+                        if (checked.valid) {
+                            checks.add(checked)
+                            boundCalls.add(BoundCallExpression(value.range, checked.semanticType, checked.target,
+                                owner, arguments, checked.argumentConversions()))
+                        }
+                    } catch (Exception error) {
+                        // Contextual failure rejects this candidate, not unrelated overloads.
+                    }
+                }
+                let resolution = OverloadResolver.resolveChecked(value.memberName, candidates, checks, value.range)
+                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+                return boundCalls.firstOrNull({ _.target.identity.value == resolution.selected.identity.value })
+            }
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 arguments.add(expression(argument, receiver, fields, locals))

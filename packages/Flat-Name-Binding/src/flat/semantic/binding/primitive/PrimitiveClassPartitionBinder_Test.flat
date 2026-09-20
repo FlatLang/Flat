@@ -7,6 +7,20 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `contextual instance callback infers method result`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:instance-callback"), "one")
+        let sources = ["class Box<E> { map<Out>(E input, transform(E) -> Out) -> Out { return transform(input); } }",
+            "class Use { run(Box<Int> box) -> Int { return box.map(41, { _ + 1 }); } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        expect(units.last.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
     async test `instantiates generic receiver methods before overload selection`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-receiver-call"), "one")
         let sources = ["class Box<E> { echo(E value) -> E { return value; } }",
