@@ -7,6 +7,155 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `plain local assignment still rejects numeric narrowing`() {
+        let stream = Lexer().lex("class Box { static run() -> Int { var Int value = 7; value = 2.5; return value; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:plain-local-narrow"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try { PrimitiveClassBinder().bind(syntax, snapshot) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+    async test `local compound narrowing retains numeric cast evidence`() {
+        let stream = Lexer().lex("class Box { static run() -> Int { var Int value = -7; value -= 2.5; return value; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:local-compound-narrow"), "one")
+        let type = PrimitiveClassBinder().bind(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "run" })
+        let statementObject = method.statements()[1]
+        let assignment = (BoundAssignmentStatement)statementObject
+        expect(assignment.conversion.conversionKind).toBe("numeric-cast")
+    }
+    async test `compound field statement retains one receiver evaluation`() {
+        let stream = Lexer().lex("class Box { visible Int count; static run(func()->Box next) -> Int { next().count += 2; return 0; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:compound-receiver-once"), "one")
+        let type = PrimitiveClassBinder().bind(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "run" })
+        let statementObject = method.statements().first
+        expect(statementObject.unitKind()).toBe("expression")
+        let statement = (BoundExpressionStatement)statementObject
+        expect(statement.expression.expressionKind()).toBe("member-assignment-value")
+    }
+    async test `binds explicit local field assignment in static method`() {
+        let stream = Lexer().lex("class Box { visible Int count; static run(Box value) -> Int { value.count = 7; return (value.count += 2); } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-local-field-store"), "one")
+        let type = PrimitiveClassBinder().bind(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "run" })
+        let statementObject = method.statements().first
+        let assignment = (BoundMemberAssignmentStatement)statementObject
+        expect(assignment.target.memberName).toBe("count")
+        expect(assignment.target.receiver.expressionKind()).toBe("reference")
+    }
+    async test `safe field access publishes nullable selected field`() {
+        let stream = Lexer().lex("class Box { visible Int count; static run(Box value) -> Int { return value?.count ?: 0; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-field-binding"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let method = bound.functionUnits().firstOrNull({ _.name == "run" })
+        let statementObject = method.statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let expressionObject = returned.value
+        let fallback = (BoundBinaryExpression)expressionObject
+        expect(fallback.left.semanticType.kind()).toBe("nullable")
+    }
+    async test `safe syntax cannot silently bind as ordinary dereference`() {
+        let sources = ["class Box { read() -> Int { return 1; } static run(Box value) -> Int { return value?.read(); } }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-binding"), "one")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try { PrimitiveClassBinder().bind(syntax, snapshot) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+            expect(failure.contains("cannot return")).toBe(true)
+        }
+    }
+    async test `publishes lazy static getter semantics`() {
+        let stream = Lexer().lex("class Cache { visible static lazy Int value => 7 }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:lazy-binding"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassBinder().bind(syntax, snapshot).typeUnit
+        expect(bound.functionUnits().firstOrNull({ _.name == "value" }).lazyProperty).toBe(true)
+        let partition = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(partition.functionUnits().firstOrNull({ _.name == "value" }).lazyProperty).toBe(true)
+    }
+    async test `rejects scalar native storage in direct binding`() {
+        let sources = ["class Buffer { visible native_array Int data; }",
+            "class Buffer { construct(native_array Int data) {} }",
+            "class Buffer { run(native_array Int data) -> Void {} }",
+            "class Buffer { run() -> Void { native_array Int data; } }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:direct-native-storage"), "one")
+            var String failure
+            try { PrimitiveClassBinder().bind(
+                PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+            ) } catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+    async test `rejects invalid prefix update operands`() {
+        let sources = ["class Value { run(String i) -> String { return ++i; } }",
+            "class Value { run() -> Int { return ++42; } }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-prefix"), "one")
+            var String failure
+            try { PrimitiveClassBinder().bind(
+                PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+            ) } catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+    async test `binds prefix local update result`() {
+        let stream = Lexer().lex("class Value { run(Int i) -> Int { return ++i; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:prefix-local"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let statements = type.functionUnits().firstOrNull({ _.name == "run" }).statements()
+        let statement = (Object)statements.first
+        let returned = (BoundReturnStatement)statement
+        expect(returned.value.expressionKind()).toBe("assignment-value")
+    }
+    async test `instantiates own generic method receiver`() {
+        let stream = Lexer().lex("class Buffer<E> { construct(E value) {} echo(E value) -> E { return value; } run() -> Int { let buffer = Buffer<Int>(42); return buffer.echo(42); } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:own-generic-method"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let statements = type.functionUnits().firstOrNull({ _.name == "run" }).statements()
+        let statement = (Object)statements.last
+        let returned = (BoundReturnStatement)statement
+        expect(returned.value.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `instantiates own generic allocation`() {
+        let stream = Lexer().lex("class Buffer<E> { construct(E value) {} run() -> Void { let value = Buffer<Int>(42); } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:own-generic-allocation"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let method = type.functionUnits().firstOrNull({ _.name == "run" })
+        let statements = method.statements()
+        let statement = (Object)statements.first
+        let local = (BoundLocalDeclarationStatement)statement
+        expect(local.initializer.semanticType.kind()).toBe("generic-instance")
+        let call = (BoundCallExpression)local.initializer
+        expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.intType().value())
+    }
     async test `rejects named arguments rather than dropping them in structured returns`() {
         let calls = ["this.pick(1, ignored: 2)", "pick(1, ignored: 2)"]
         for (call in calls) {
@@ -360,10 +509,12 @@ testable class {
         let method = functions.last
         let statements = method.statements()
         let statementObject = (Object)statements.first
-        let assignment = (BoundMemberAssignmentStatement)statementObject
+        let expressionStatement = (BoundExpressionStatement)statementObject
+        let expressionObject = expressionStatement.expression
+        let assignment = (BoundMemberAssignmentValueExpression)expressionObject
 
         expect(assignment.target.memberName).toBe("value")
-        expect(assignment.value.expressionKind()).toBe("binary")
+        expect(assignment.operator).toBe("+")
     }
 
     test `binds non Bool receiver negation through explicit truthiness conversion`() {

@@ -1,6 +1,13 @@
 package flat/semantic/types
 
 testable class {
+    test `null fallback selects compatible nonnull result`() {
+        let range = TypeSystem_TestFixture().range()
+        let boolType = SemanticTypes.boolType()
+        expect(TypeOperations.binary("?:", SemanticTypes.nullType(), boolType, range).semanticType.value()).toBe(boolType.value())
+        expect(TypeOperations.binary("?:", NullableSemanticType(boolType), boolType, range).semanticType.value()).toBe(boolType.value())
+        expect(TypeOperations.binary("?:", boolType, SemanticTypes.intType(), range).valid).toBe(false)
+    }
     test `assignment and return checking apply explicit conversion semantics`() {
         let fixture = TypeSystem_TestFixture()
         let range = fixture.range()

@@ -8,6 +8,26 @@ import flat/semantic/types
 /** Types immutable primitive syntax into reduced Bound expressions. */
 class {
     var LocalBinding[] implicitParameters = LocalBinding[]
+    /** Local prefix updates store and yield the new value using the assignment-value contract. */
+    public static bindPrefixUpdate(SourceRange range, String operator, BoundExpression operand) -> BoundExpression {
+        if (!operand.class.isOfType(BoundReferenceExpression.class)) {
+            throw Exception("Prefix update requires a local reference")
+        }
+        let target = (BoundReferenceExpression)operand
+        if (!TypeOperations.unary("+", target.semanticType, range).valid) {
+            throw Exception("Prefix update requires a numeric local")
+        }
+        let operation = operator == "++" ? "+" : "-"
+        let one = BoundLiteralExpression(range, SemanticTypes.intType(), "1")
+        let typed = TypeOperations.binary(operation, target.semanticType, one.semanticType, range)
+        if (!typed.valid || typed.semanticType.value() != target.semanticType.value()) {
+            throw Exception("Prefix update requires a numeric local")
+        }
+        let updated = BoundBinaryExpression(range, typed.semanticType, operation, target, one)
+        return BoundAssignmentValueExpression(range, target.semanticType, target, updated,
+            TypeConversions.classify(updated.semanticType, target.semanticType))
+    }
+
     var Int implicitParameterIndex
 
     /** Context supplies parameter types; call applicability validates the inferred result. */
@@ -174,6 +194,7 @@ class {
     ) -> BoundExpression {
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
+            if (value.safeAccess) throw Exception("Safe member call requires null-propagating binding")
             if (value.typeArgumentNames().isNotEmpty) {
                 throw Exception("Explicit member type arguments require call instantiation")
             }
@@ -459,10 +480,12 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
             let value = (PrimitiveConstructionSyntax)syntax
+            let typeArguments = value.typeArgumentNames()
             let candidates = callables.filter((candidate) =>
                 candidate.callableKind.value == "constructor" &&
                 candidate.ownerType.declarationIdentity.name == value.typeName
-            )
+            ).map((candidate) => typeArguments.isEmpty ? candidate :
+                candidate.instantiateConstructor(typeArguments.map({ namedType(_) })))
             if (candidates.isEmpty) throw Exception("Unknown constructed type '#{value.typeName}'")
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
@@ -477,7 +500,8 @@ class {
                     candidate.parameterTypes(),
                     candidate.returnType,
                     candidate.ownerType,
-                    candidate.optionalParameterCount
+                    candidate.optionalParameterCount,
+                    candidate.parameterNames(), candidate.genericParameters(), candidate.ownerGenericDeclaration
                 )),
                 null,
                 arguments.map({ _.semanticType }),
@@ -665,9 +689,27 @@ class {
             if (elements.any({
                 !TypeConversions.classify(_.semanticType, elementType).applicable
             })) throw Exception("Array elements require a common type")
-            return BoundArrayExpression(
+            let storage = BoundArrayExpression(
                 value.range, ArraySemanticType(elementType), elements
             )
+            if (requiredType && requiredType.kind() == "generic-instance") {
+                let instance = (GenericInstanceSemanticType)requiredType
+                let candidates = callables.filter((candidate) =>
+                    candidate.callableKind.value == "constructor" && candidate.name == "Array" &&
+                    candidate.ownerType.declarationIdentity.value ==
+                        instance.declarationType.declarationIdentity.value
+                ).map({ _.instantiateConstructor(instance.typeArguments()) })
+                let count = BoundLiteralExpression(value.range, SemanticTypes.intType(), "#{elements.count}")
+                let resolution = OverloadResolver.resolve("Array", candidates, null,
+                    [storage.semanticType, count.semanticType], value.range)
+                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+                let checked = CallTypeChecker.check(resolution.selected, null,
+                    [storage.semanticType, count.semanticType], value.range)
+                if (!checked.valid) throw Exception(checked.diagnostic.message)
+                return BoundCallExpression(value.range, checked.semanticType, resolution.selected,
+                    [storage, count], checked.argumentConversions())
+            }
+            return storage
         }
         if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
             let value = (PrimitiveArrayAccessSyntax)syntax
@@ -768,6 +810,9 @@ class {
         if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
             let value = (PrimitiveUnarySyntax)syntax
             let operand = bindSyntax(value.operand, locals, callables)
+            if (value.operator == "++" || value.operator == "--") {
+                return bindPrefixUpdate(value.range, value.operator, operand)
+            }
             let typed = TypeOperations.unary(value.operator, operand.semanticType, value.range)
             if (!typed.valid) throw Exception(typed.diagnostic.message)
             return BoundUnaryExpression(

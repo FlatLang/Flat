@@ -23,6 +23,10 @@ class {
 
     public emitFunction(BoundFunctionUnit functionUnit, Int ordinal) -> Es6EmissionResult {
         if (!functionUnit) throw Exception("ES6 function unit is required")
+        if (functionUnit.lazyProperty) {
+            return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
+                "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
+        }
         let loweredFunction = CollectionControlLoweringPass().lower(functionUnit)
         let body = statements.emitAll(loweredFunction.statements())
         if (!body.emitted) return Es6EmissionResult(diagnostic: body.diagnostic)
@@ -51,6 +55,10 @@ class {
 
     public emitMethod(BoundFunctionUnit functionUnit) -> Es6CodeResult {
         if (!functionUnit) throw Exception("ES6 method unit is required")
+        if (functionUnit.lazyProperty) {
+            return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
+        }
         var Es6CodeResult body = statements.emitAll(functionUnit.statements())
         if (!body.emitted) return body
         let delegation = emitConstructorDelegation(functionUnit)
@@ -139,6 +147,10 @@ class {
 
     public emitType(BoundTypeUnit typeUnit, Int ordinal) -> Es6EmissionResult {
         if (!typeUnit) throw Exception("ES6 type unit is required")
+        if (typeUnit.functionUnits().any({ _.lazyProperty })) {
+            return Es6EmissionResult(diagnostic: Es6BackendDiagnostic(
+                "es6.unlowered-lazy-property", "Lazy properties require type lowering before emission"))
+        }
         let loweredFunctions = BoundFunctionUnit[]
         for (functionUnit in typeUnit.functionUnits()) {
             let lowered = CollectionControlLoweringPass().lower(functionUnit)

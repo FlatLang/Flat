@@ -1,7 +1,75 @@
 package flat/bound
 
+import flat/compiler/models
+import flat/semantic/types
+
 /** Lowers data classes and generic/reified/annotation metadata to ordinary type units. */
 class {
+    public static lowerLazyProperties(BoundTypeUnit input) -> BoundTypeUnit {
+        if (!input) throw Exception("Lazy lowering requires a bound type")
+        var BoundTypeUnit result = input
+        for (function in input.functionUnits()) {
+            if (function.lazyProperty) result = lowerLazyStaticProperty(result, function.identity)
+        }
+        return result
+    }
+    /** One property-scoped rewrite; initialization commits only after successful evaluation. */
+    public static lowerLazyStaticProperty(
+        BoundTypeUnit input, DeclarationIdentity getterIdentity
+    ) -> BoundTypeUnit {
+        if (!input || !getterIdentity) throw Exception("Lazy lowering requires owner and getter")
+        let getter = input.functionUnits().firstOrNull({ _.identity.value == getterIdentity.value })
+        if (!getter || !getter.staticFunction || getter.parameterValues().isNotEmpty ||
+            getter.constructorFunction || getter.abstractFunction || getter.asyncFunction ||
+            getter.externalName || getter.returnType.value() == "unit") {
+            throw Exception("Lazy static property requires a synchronous parameterless value getter")
+        }
+        let range = getter.range
+        let initializerIdentity = DeclarationIdentity(getter.identity.syntaxIdentity,
+            "lazy-initializer", getter.name)
+        let fields = input.fieldUnits()
+        // Reserve source-derived ordinals beyond this type's lexical range.
+        let valueIdentity = SymbolIdentity(input.identity, "field",
+            input.range.endTokenIndex + 1 + 2 * range.startTokenIndex)
+        let stateIdentity = SymbolIdentity(input.identity, "field", valueIdentity.ordinal + 1)
+        if (fields.any((field) => field.identity.value == valueIdentity.value || field.identity.value == stateIdentity.value) ||
+            input.functionUnits().any({ _.identity.value == initializerIdentity.value })) {
+            throw Exception("Lazy property storage already exists")
+        }
+        let boolType = SemanticTypes.boolType()
+        fields.add(BoundFieldUnit(getter.name + "$value", valueIdentity, getter.returnType, range,
+            staticField: true, mutableField: true))
+        fields.add(BoundFieldUnit(getter.name + "$initialized", stateIdentity, boolType, range,
+            initializer: BoundLiteralExpression(range, boolType, "false"),
+            staticField: true, mutableField: true))
+        let value = BoundReferenceExpression(range, getter.returnType, getter.name + "$value",
+            valueIdentity, staticOwner: input.identity)
+        let state = BoundReferenceExpression(range, boolType, getter.name + "$initialized",
+            stateIdentity, staticOwner: input.identity)
+        let conversion = TypeConversions.classify(getter.returnType, getter.returnType)
+        let returned = BoundReturnStatement(range, getter.returnType, value, conversion)
+        let signature = CallableSignature(SymbolIdentity(initializerIdentity, "static-method"),
+            getter.name + "$initialize", CallableKind("static-method"), SemanticType[],
+            getter.returnType, input.semanticType)
+        let body = BoundStatement[]
+        body.add(BoundIfStatement(range, state, [returned]))
+        body.add(BoundAssignmentStatement(range, value, BoundCallExpression(range,
+            getter.returnType, signature, BoundExpression[], TypeConversion[]), conversion))
+        body.add(BoundAssignmentStatement(range, state, BoundLiteralExpression(range, boolType, "true"),
+            TypeConversions.classify(boolType, boolType)))
+        body.add(returned)
+        let functions = BoundFunctionUnit[]
+        for (function in input.functionUnits()) {
+            if (function.identity.value == getter.identity.value) {
+                functions.add(BoundFunctionUnit(getter.identity, getter.name, getter.returnType,
+                    body, range, staticFunction: true))
+            } else functions.add(function)
+        }
+        functions.add(BoundFunctionUnit(initializerIdentity, getter.name + "$initialize",
+            getter.returnType, getter.statements(), range, staticFunction: true))
+        return BoundTypeUnit(input.identity, input.semanticType, functions, input.range,
+            input.metadata(), fields, input.parentType)
+    }
     public static lowerDataClass(BoundDataClassType input) -> BoundTypeUnit {
         if (!input) throw Exception("Data class lowering requires input")
         var BoundMetadataUnit[] metadata = MetadataLowering.lower(input.metadata())

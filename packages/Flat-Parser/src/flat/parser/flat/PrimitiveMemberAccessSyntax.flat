@@ -7,7 +7,8 @@ data class extends PrimitiveExpressionSyntax {
     public construct(
         SourceRange range,
         visible PrimitiveExpressionSyntax receiver,
-        visible String memberName
+        visible String memberName,
+        visible Bool safeAccess = false
     ) {
         if (!range || !receiver || !memberName || memberName.trim().count == 0) {
             throw Exception("Primitive member syntax requires receiver range and name")

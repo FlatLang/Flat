@@ -264,6 +264,8 @@ class {
         let catches = PrimitiveCatchSyntax[]
         while (index < tokens.count && tokens[index].value == "catch") {
             let catchStart = index++
+            let acceptsSoftExceptions = index < tokens.count && tokens[index].value == "all"
+            if (acceptsSoftExceptions) index++
             if (index >= tokens.count || tokens[index].value != "(") syntax("Expected catch parameter", index)
             index++
             if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) syntax("Expected catch type", index)
@@ -273,7 +275,7 @@ class {
             if (index >= tokens.count || tokens[index].value != ")") syntax("Expected closing catch parenthesis", index)
             index++
             let body = parseBody()
-            catches.add(PrimitiveCatchSyntax(range(catchStart, index), typeName, name, body))
+            catches.add(PrimitiveCatchSyntax(range(catchStart, index), typeName, name, body, acceptsSoftExceptions))
         }
         let finallyValues = PrimitiveStatementSyntax[]
         if (index < tokens.count && tokens[index].value == "finally") {
@@ -345,8 +347,14 @@ class {
         if (index >= tokens.count || tokens[index].value != "{") {
             let statementStart = index
             let line = tokens[index].location.lineNumber
-            while (index < tokens.count && tokens[index].value != "}" &&
-                tokens[index].location.lineNumber == line) index++
+            var Int braceDepth
+            while (index < tokens.count && tokens[index].location.lineNumber == line) {
+                let value = tokens[index].value
+                if (value == "}" && braceDepth == 0) break
+                if (value == "{") braceDepth++
+                else if (value == "}") braceDepth--
+                index++
+            }
             let parsed = PrimitiveStatementParser().parse(
                 tokens.skip(statementStart).take(index - statementStart), snapshot,
                 statementStart + tokenIndexOffset

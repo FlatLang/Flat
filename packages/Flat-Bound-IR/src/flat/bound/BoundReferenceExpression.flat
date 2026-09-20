@@ -8,12 +8,17 @@ data class extends BoundExpression {
         SourceRange range,
         SemanticType semanticType,
         visible String name,
-        visible SymbolIdentity symbolIdentity
+        visible SymbolIdentity symbolIdentity,
+        visible DeclarationIdentity staticOwner = null
     ) {
         if (!range || !semanticType || !name || !symbolIdentity) {
             throw Exception("Bound reference requires range, type, name, and symbol")
         }
-        super(range, semanticType)
+        if (staticOwner && (symbolIdentity.symbolKind != "field" ||
+            symbolIdentity.declaration.value != staticOwner.value)) {
+            throw Exception("Static reference requires its declaring field owner")
+        }
+        super(range, semanticType);
     }
     override public expressionKind() => "reference"
 }

@@ -67,6 +67,12 @@ data class {
                     canonicalField.staticField != field.staticField) {
                     throw Exception("Class overlay field must preserve canonical declaration shape")
                 }
+                fields[existingFieldIndex] = PrimitiveFieldSyntax(
+                    canonicalField.range, canonicalField.typeName, canonicalField.name,
+                    canonicalField.visibleField, canonicalField.initializer,
+                    canonicalField.staticField, canonicalField.mutableField,
+                    canonicalField.nativeArrayStorage || field.nativeArrayStorage
+                )
             } else fields.add(field)
         }
         let methods = methodValues()

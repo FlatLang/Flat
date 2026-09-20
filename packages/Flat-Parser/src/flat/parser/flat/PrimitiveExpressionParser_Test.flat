@@ -3,6 +3,48 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `class name shorthand does not erase safe navigation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-class-name"), "one")
+        let tokens = [token("value", Token.Type.IDENTIFIER, 1), token("?", Token.Type.SYMBOL, 6),
+            token(".", Token.Type.SYMBOL, 7), token("class", Token.Type.IDENTIFIER, 8),
+            token(".", Token.Type.SYMBOL, 13), token("name", Token.Type.IDENTIFIER, 14)]
+        let expression = PrimitiveExpressionParser().parse(tokens, snapshot)
+        expect(expression.expressionKind()).toBe("member-access")
+    }
+    test `retains safe access and safe call markers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-access"), "one")
+        let tokens = [token("value", Token.Type.IDENTIFIER, 1), token("?", Token.Type.SYMBOL, 6),
+            token(".", Token.Type.SYMBOL, 7), token("read", Token.Type.IDENTIFIER, 8),
+            token("(", Token.Type.SYMBOL, 12), token(")", Token.Type.SYMBOL, 13),
+            token("?", Token.Type.SYMBOL, 14), token(".", Token.Type.SYMBOL, 15),
+            token("name", Token.Type.IDENTIFIER, 16)]
+        let expression = PrimitiveExpressionParser().parse(tokens, snapshot, 10)
+        let access = (PrimitiveMemberAccessSyntax)expression
+        expect(access.safeAccess).toBe(true)
+        let receiverObject = access.receiver
+        let call = (PrimitiveMemberCallSyntax)receiverObject
+        expect(call.safeAccess).toBe(true)
+        expect(access.range.startTokenIndex).toBe(10)
+        expect(access.range.endTokenIndex).toBe(19)
+        var Bool rejected
+        try { PrimitiveExpressionParser().parse(tokens.take(3), snapshot) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+    test `parses null fallback and rejects missing operand`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:fallback"), "one")
+        let tokens = [token("null", Token.Type.IDENTIFIER, 1),
+            token("?:", Token.Type.SYMBOL, 6), token("false", Token.Type.BOOL, 9)]
+        let expression = PrimitiveExpressionParser().parse(tokens, snapshot, 10)
+        let binary = (PrimitiveBinarySyntax)expression
+        expect(binary.operator).toBe("?:")
+        expect(binary.range.startTokenIndex).toBe(10)
+        expect(binary.range.endTokenIndex).toBe(13)
+        var Bool rejected
+        try { PrimitiveExpressionParser().parse(tokens.take(2), snapshot) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
     test `reports duplicate receiver call label with source offset`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:duplicate-member-label"), "one")
         var String failure
@@ -388,9 +430,9 @@ testable class {
         ], snapshot)
         let call = (PrimitiveMemberCallSyntax)parsed
 
-        expect(call.receiver.expressionKind()).toBe("array")
-        let receiver = (PrimitiveEmptyArrayConstructionSyntax)call.receiver
-        expect(receiver.elementTypeName).toBe("Char")
+        expect(call.receiver.expressionKind()).toBe("construction")
+        let receiver = (PrimitiveConstructionSyntax)call.receiver
+        expect(receiver.typeArgumentNames()).toBe(["Char"])
         expect(call.memberName).toBe("add")
     }
 
@@ -456,7 +498,7 @@ testable class {
         let call = (PrimitiveMemberCallSyntax)expression
 
         expect(call.memberName).toBe("join")
-        expect(call.receiver.expressionKind()).toBe("array-construction")
+        expect(call.receiver.expressionKind()).toBe("construction")
     }
 
     test `parses generic array allocation`() {
@@ -469,10 +511,10 @@ testable class {
             token("(", Token.Type.SYMBOL, 12), token("count", Token.Type.IDENTIFIER, 13),
             token(")", Token.Type.SYMBOL, 18)
         ], snapshot)
-        let allocation = (PrimitiveArrayConstructionSyntax)expression
+        let allocation = (PrimitiveConstructionSyntax)expression
 
-        expect(allocation.elementTypeName).toBe("Char")
-        expect(allocation.size.expressionKind()).toBe("reference")
+        expect(allocation.typeArgumentNames()).toBe(["Char"])
+        expect(allocation.argumentValues().first.expressionKind()).toBe("reference")
     }
 
     test `parses fixed size array construction`() {

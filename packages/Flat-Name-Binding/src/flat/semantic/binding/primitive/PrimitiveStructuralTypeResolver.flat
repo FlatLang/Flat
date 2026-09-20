@@ -35,6 +35,13 @@ class {
         }
     }
 
+    public resolveNativeArrayStorage(String name) -> SemanticType {
+        if (!name || !name.endsWith("[]")) {
+            throw Exception("Native array storage requires an array type")
+        }
+        return ArraySemanticType(resolve(name.substring(0, name.count - 2)))
+    }
+
     public resolve(String name) -> SemanticType {
         if (!name || name.trim().isEmpty) throw Exception("Reduced type name is required")
         if (name.startsWith("async ")) {
@@ -54,7 +61,16 @@ class {
             }
         }
         if (name.endsWith("[]")) {
-            return ArraySemanticType(resolve(name.substring(0, name.count - 2)))
+            let element = resolve(name.substring(0, name.count - 2))
+            let hasArrayDeclaration = syntaxes.any({ _.name == "Array" }) ||
+                (receiverType && receiverType.declarationIdentity.name == "Array") ||
+                callables.any((candidate) => candidate.callableKind.value == "constructor" &&
+                    candidate.ownerType.declarationIdentity.name == "Array")
+            if (hasArrayDeclaration) {
+                let declaration = (Object)resolve("Array")
+                return GenericInstanceSemanticType((UserClassSemanticType)declaration, [element])
+            }
+            return ArraySemanticType(element)
         }
         if (open >= 0) return functionType(name, open)
         let methodParameter = methodParameters.firstOrNull({ _.name == name })

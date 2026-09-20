@@ -11,7 +11,8 @@ data class {
         visible Bool visibleField = false,
         visible PrimitiveExpressionSyntax initializer = null,
         visible Bool staticField = false,
-        visible Bool mutableField = false
+        visible Bool mutableField = false,
+        visible Bool nativeArrayStorage = false
     ) {
         if (!range || !typeName || typeName.trim().count == 0 ||
             !name || name.trim().count == 0) {

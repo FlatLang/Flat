@@ -58,6 +58,18 @@ class {
         SourceRange range
     ) -> TypedOperationResult {
         if (errorType(leftType) || errorType(rightType)) return recovered()
+        if (operator == "?:") {
+            if (leftType.kind() == "null") return TypedOperationResult(rightType)
+            let retained = leftType.kind() == "nullable" ?
+                ((NullableSemanticType)leftType).underlyingType : leftType
+            if (TypeConversions.classify(rightType, retained).applicable) {
+                return TypedOperationResult(retained)
+            }
+            if (TypeConversions.classify(retained, rightType).applicable) {
+                return TypedOperationResult(rightType)
+            }
+            return invalid("type.binary", "Null fallback requires compatible operands", range)
+        }
         if ((operator == "&&" || operator == "||") &&
             leftType.value() == "primitive:Bool" && rightType.value() == "primitive:Bool") {
             return TypedOperationResult(SemanticTypes.boolType())

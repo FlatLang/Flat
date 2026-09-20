@@ -9,7 +9,8 @@ data class {
         visible SourceRange range,
         visible String typeName,
         visible String name,
-        PrimitiveStatementSyntax[] statements
+        PrimitiveStatementSyntax[] statements,
+        visible Bool acceptsSoftExceptions = false
     ) {
         if (!range || !typeName || !name || !statements || statements.any({ !_ })) {
             throw Exception("Catch syntax requires range parameter and body")

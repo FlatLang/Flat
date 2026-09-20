@@ -4,6 +4,105 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `parses adjacent metadata properties before static member`() {
+        let source = "class Meta { visible String location\n" +
+            "visible String package => location.substring(0, location.lastIndexOf(\"/\", defaultReturnValue: 0))\n" +
+            "visible String name => location.substring(location.lastIndexOf(\"/\") + 1)\n" +
+            "visible String rootName => location.substring(Math.max(location.lastIndexOf(\"/\"), location.lastIndexOf(\".\")) + 1)\n" +
+            "visible static lazy Int ALL => 0\n}"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:metadata-properties"), "one")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.methodValues().count).toBe(4)
+        expect(parsed.methodValues().last.lazyProperty).toBe(true)
+        expect(parsed.methodValues().first.lazyProperty).toBe(false)
+    }
+    async test `preserves parameter storage independently of type`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:parameter-storage"), "one")
+        let stream = Lexer().lex("class Buffer { construct(native_array Int[] data, Int[] other) {} run(native_array Int[] data, Int[] other) -> Void {} }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let constructorParameters = parsed.constructorValues().first.parameterValues()
+        let methodParameters = parsed.methodValues().first.parameterValues()
+        expect(constructorParameters.first.nativeArrayStorage).toBe(true)
+        expect(constructorParameters.last.nativeArrayStorage).toBe(false)
+        expect(methodParameters.first.nativeArrayStorage).toBe(true)
+        expect(methodParameters.last.nativeArrayStorage).toBe(false)
+        expect(constructorParameters.first.typeName).toBe("Int[]")
+        expect(methodParameters.first.typeName).toBe("Int[]")
+    }
+    async test `parses indexed member assignment`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:member-index-write"), "one")
+        let stream = Lexer().lex("array.data[count - i] = element")
+        stream.emit("start")
+        let parsed = PrimitiveStatementParser().parse(stream.consumeAll<Token>("data"), snapshot).statements().first
+        let assignment = (PrimitiveArrayAssignmentSyntax)parsed
+        expect(assignment.target.receiver.expressionKind()).toBe("member-access")
+    }
+    async test `parses reduction conditional callback`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:reduce-conditional"), "one")
+        let stream = Lexer().lexInterpolated("class Buffer { run(Int count) -> String { if (count > 0)\nreturn reduce({ _acc + (_i > 0 ? delimiter : \"\") + _x }, \"\")\nreturn \"\"; } }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.methodValues().count).toBe(1)
+    }
+    async test `preserves declared generic allocation arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-allocation"), "one")
+        let sources = ["Array<Int>(data, count)", "Array<Int>(count)", "Buffer<Int>(data, count)"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            expect(parsed.class.isOfType(PrimitiveConstructionSyntax.class)).toBe(true)
+            let construction = (PrimitiveConstructionSyntax)parsed
+            expect(construction.typeArgumentNames()).toBe(["Int"])
+            expect(construction.argumentValues().count).toBe(source == "Array<Int>(count)" ? 1 : 2)
+        }
+        let invalid = Lexer().lex("Array<>(data, count)")
+        invalid.emit("start")
+        var String failure
+        try { PrimitiveExpressionParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+    }
+    async test `preserves explicit generic constructor arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-construction"), "one")
+        let stream = Lexer().lex("new Buffer<Int>(data, count)")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let construction = (PrimitiveConstructionSyntax)parsed
+        expect(construction.argumentValues().count).toBe(2)
+        expect(construction.typeArgumentNames()).toBe(["Int"])
+        let invalid = Lexer().lex("new Buffer<>(data)")
+        invalid.emit("start")
+        var String failure
+        try { PrimitiveExpressionParser().parse(invalid.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+    }
+
+    async test `separates unmodified method after expression body`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:method-boundary"), "one")
+        let stream = Lexer().lex("class Box { public replaceLast(Int value) => replaceAt(value)\n" +
+            "shiftRight(Int left, Int right) => this { } }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let methods = parsed.methodValues()
+        expect(methods.count).toBe(2)
+        expect(methods[0].range.endTokenIndex).toBe(methods[1].range.startTokenIndex)
+    }
+
+    async test `parses receiver returning method chain`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:receiver-chain"), "one")
+        let stream = Lexer().lex("class Box { addAll(Int value) => this:accept(value) }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = parsed.methodValues().first
+        expect(method.returnTypeName).toBe("this")
+        expect(method.statements().count).toBe(2)
+    }
+
     async test `preserves shorthand array setter`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-shorthand"), "one")
         let stream = Lexer().lex("class Box { this[Int index] <=> data[index]\n}")
@@ -1021,6 +1120,8 @@ testable class {
         expect(merged.fieldValues().first.name).toBe("data")
         expect(merged.fieldValues().first.typeName).toBe("Char[]")
         expect(merged.fieldValues().first.range.snapshot).toBe(snapshot)
+        expect(merged.fieldValues().first.nativeArrayStorage).toBe(true)
+        expect(canonical.fieldValues().first.nativeArrayStorage).toBe(false)
     }
 
     test `parses target field native representation modifiers`() {

@@ -9,7 +9,8 @@ data class {
     public construct(
         visible SourceRange range,
         visible BoundReferenceExpression local,
-        BoundStatement[] statements
+        BoundStatement[] statements,
+        visible Bool acceptsSoftExceptions = false
     ) {
         if (!range || !local || !statements || statements.any({ !_ }) ||
             (local.semanticType.kind() != "string" && local.semanticType.kind() != "object" &&

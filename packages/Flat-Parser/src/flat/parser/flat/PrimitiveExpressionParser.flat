@@ -32,9 +32,25 @@ class {
         return expression
     }
 
+    safeMemberOperator() -> Bool => index < tokens.count &&
+        (tokens[index].value == "?." || (tokens[index].value == "?" &&
+            index + 1 < tokens.count && tokens[index + 1].value == "."))
+
+    consumeMemberOperator() -> Bool {
+        let safe = safeMemberOperator()
+        if (safe && tokens[index].value == "?") index++
+        index++
+        return safe
+    }
+
     parseConditional() -> PrimitiveExpressionSyntax {
         let start = index
         let condition = parseLevel(0)
+        if (index < tokens.count && tokens[index].value == "?:") {
+            index++
+            let fallback = parseConditional()
+            return PrimitiveBinarySyntax(range(start, index), "?:", condition, fallback)
+        }
         if (index >= tokens.count || tokens[index].value != "?") return condition
         index++
         let whenTrue = parseConditional()
@@ -77,7 +93,7 @@ class {
 
     parseUnary() -> PrimitiveExpressionSyntax {
         if (index < tokens.count) {
-            let unaryOperators = ["!", "+", "-", "~"]
+            let unaryOperators = ["!", "+", "-", "~", "++", "--"]
             if (unaryOperators.contains(tokens[index].value)) {
                 let start = index
                 let operator = tokens[index++].value
@@ -253,11 +269,12 @@ class {
                     range(tokenIndex, index), typeName, size
                 )
             }
+            let typeArguments = memberTypeArguments()
             if (index >= tokens.count || tokens[index].value != "(") {
                 syntax("Expected constructor arguments", index)
             }
             let call = (PrimitiveCallSyntax)parseCall(start: tokenIndex, name: typeName)
-            return PrimitiveConstructionSyntax(call.range, typeName, call.argumentValues())
+            return PrimitiveConstructionSyntax(call.range, typeName, call.argumentValues(), typeArguments)
         }
         if (token.type == Token.Type.IDENTIFIER) {
             if (index < tokens.count && tokens[index].value == "<") {
@@ -286,35 +303,22 @@ class {
                     range(tokenIndex, index), token.value
                 ), true)
             }
-            if (token.value == "Array" && index < tokens.count &&
-                tokens[index].value == "<") {
-                index++
-                if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
-                    syntax("Expected array element type", index)
+            if (index < tokens.count && tokens[index].value == "<") {
+                var Int cursor = index
+                var Int depth
+                while (cursor < tokens.count) {
+                    if (tokens[cursor].value == "<") depth++
+                    else if (tokens[cursor].value == ">") depth--
+                    cursor++
+                    if (depth == 0) break
                 }
-                let elementTypeName = tokens[index++].value
-                if (index >= tokens.count || tokens[index].value != ">") {
-                    syntax("Expected closing array element type", index)
-                }
-                index++
-                if (index >= tokens.count || tokens[index].value != "(") {
-                    syntax("Expected array allocation size", index)
-                }
-                index++
-                if (index < tokens.count && tokens[index].value == ")") {
-                    index++
-                    return parsePostfix(tokenIndex, PrimitiveEmptyArrayConstructionSyntax(
-                        range(tokenIndex, index), elementTypeName
+                if (depth == 0 && cursor < tokens.count && tokens[cursor].value == "(") {
+                    let typeArguments = memberTypeArguments()
+                    let call = (PrimitiveCallSyntax)parseCall(tokenIndex, token.value)
+                    return parsePostfix(tokenIndex, PrimitiveConstructionSyntax(
+                        call.range, token.value, call.argumentValues(), typeArguments
                     ), true)
                 }
-                let size = parseConditional()
-                if (index >= tokens.count || tokens[index].value != ")") {
-                    syntax("Expected closing array allocation parenthesis", index)
-                }
-                index++
-                return parsePostfix(tokenIndex, PrimitiveArrayConstructionSyntax(
-                    range(tokenIndex, index), elementTypeName, size
-                ))
             }
             var PrimitiveExpressionSyntax expression
             if (index < tokens.count && tokens[index].value == "(") {
@@ -322,7 +326,7 @@ class {
             } else expression = PrimitiveReferenceSyntax(
                 range(tokenIndex, tokenIndex + 1), token.value
             )
-            while (index < tokens.count && (tokens[index].value == "." || tokens[index].value == "[")) {
+            while (index < tokens.count && (tokens[index].value == "." || safeMemberOperator() || tokens[index].value == "[")) {
                 if (tokens[index].value == "[") {
                     index++
                     let accessIndex = parseConditional()
@@ -335,7 +339,7 @@ class {
                     )
                     continue
                 }
-                index++
+                let safeAccess = consumeMemberOperator()
                 if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
                     syntax("Expected member name after '.'", index)
                 }
@@ -379,10 +383,10 @@ class {
                     index++
                     expression = PrimitiveMemberCallSyntax(
                         range(tokenIndex, index), expression, member, arguments,
-                        namedArguments, typeArguments
+                        namedArguments, typeArguments, safeAccess
                     )
                 } else expression = PrimitiveMemberAccessSyntax(
-                    range(tokenIndex, index), expression, member
+                    range(tokenIndex, index), expression, member, safeAccess
                 )
             }
             if (index < tokens.count &&
@@ -394,10 +398,10 @@ class {
             }
             if (expression.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
                 let nameAccess = (PrimitiveMemberAccessSyntax)expression
-                if (nameAccess.memberName == "name" &&
+                if (!nameAccess.safeAccess && nameAccess.memberName == "name" &&
                     nameAccess.receiver.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
                     let classAccess = (PrimitiveMemberAccessSyntax)nameAccess.receiver
-                    if (classAccess.memberName == "class") {
+                    if (!classAccess.safeAccess && classAccess.memberName == "class") {
                         return PrimitiveClassNameSyntax(expression.range, classAccess.receiver)
                     }
                 }
@@ -455,7 +459,7 @@ class {
         Bool colonCall = false
     ) -> PrimitiveExpressionSyntax {
         var PrimitiveExpressionSyntax expression = initial
-        while (index < tokens.count && (tokens[index].value == "." ||
+        while (index < tokens.count && (tokens[index].value == "." || safeMemberOperator() ||
             (colonCall && tokens[index].value == ":") || tokens[index].value == "[")) {
             if (tokens[index].value == "[") {
                 index++
@@ -469,8 +473,7 @@ class {
                 )
                 continue
             }
-            if (tokens[index].value == ":") index++
-            else index++
+            let safeAccess = consumeMemberOperator()
             if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
                 syntax("Expected member name after '.'", index)
             }
@@ -481,7 +484,7 @@ class {
                     index++
                     expression = PrimitiveMemberCallSyntax(
                         range(tokenIndex, index), expression, member,
-                        PrimitiveExpressionSyntax[]
+                        PrimitiveExpressionSyntax[], safeAccess: safeAccess
                     )
                     continue
                 }
@@ -521,10 +524,10 @@ class {
                 index++
                 expression = PrimitiveMemberCallSyntax(
                     range(tokenIndex, index), expression, member, arguments,
-                    namedArguments
+                    namedArguments, safeAccess: safeAccess
                 )
             } else expression = PrimitiveMemberAccessSyntax(
-                range(tokenIndex, index), expression, member
+                range(tokenIndex, index), expression, member, safeAccess
             )
         }
         return expression

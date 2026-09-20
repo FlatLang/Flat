@@ -213,7 +213,7 @@ class {
             throw Exception("ES6 assignment requires statement and value")
         }
         if (!value.emitted) return value
-        let name = Es6NameMangler.mangle(statement.target.symbolIdentity.value)
+        let name = Es6ExpressionEmitter().emitReference(statement.target).code
         return Es6CodeResult(code: name + " = " + value.code + ";\n")
     }
 
@@ -225,6 +225,8 @@ class {
         if (!statement || !target || !value) {
             throw Exception("ES6 member assignment requires statement target and value")
         }
+        if (statement.compoundOperator) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+            "es6.unlowered-compound-store", "Compound field statement requires target-independent lowering"))
         if (!target.emitted) return target
         if (!value.emitted) return value
         return Es6CodeResult(code: target.code + " = " + value.code + ";\n")

@@ -2,8 +2,68 @@ package flat/writer/es6/bound
 
 import flat/semantic/types
 import flat/bound
+import flat/compiler/models
 
 testable class {
+    test `selected calls apply argument conversion evidence`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let intType = SemanticTypes.intType()
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "9.5")
+        let target = CallableSignature(fixture.symbol("function", "take", 1), "take", CallableKind("function"), [intType], intType)
+        let call = BoundCallExpression(fixture.range(), intType, target, null, [source],
+            [TypeConversions.classify(source.semanticType, intType, explicit: true)])
+        let emitted = Es6ExpressionOrchestrator().emit(call)
+        expect(emitted.code).toBe(Es6NameMangler.mangle(target.identity.declaration.value) + "(Math.trunc(9.5))")
+    }
+    test `assignment expressions apply storage conversion`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "-9.5")
+        let conversion = TypeConversions.classify(source.semanticType, SemanticTypes.intType(), explicit: true)
+        let local = BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "value", fixture.symbol("local", "value", 1))
+        let emitter = Es6ExpressionOrchestrator()
+        let assignment = BoundAssignmentValueExpression(fixture.range(), local.semanticType, local, source, conversion)
+        let declaration = BoundDeclarationValueExpression(fixture.range(), local.semanticType, local, source, conversion)
+        let expected = "(" + Es6NameMangler.mangle(local.symbolIdentity.value) + " = Math.trunc(-9.5))"
+        expect(emitter.emit(assignment).code).toBe(expected)
+        expect(emitter.emit(declaration).code).toBe(expected)
+    }
+    test `applies local store and return numeric conversion evidence`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "-9.5")
+        let conversion = TypeConversions.classify(source.semanticType, SemanticTypes.intType(), explicit: true)
+        let local = BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "value", fixture.symbol("local", "value", 1))
+        let emitter = Es6StatementOrchestrator()
+        expect(emitter.emit(BoundAssignmentStatement(fixture.range(), local, source, conversion)).code.contains("Math.trunc(-9.5)")).toBe(true)
+        expect(emitter.emit(BoundLocalDeclarationStatement(fixture.range(), local, source, conversion)).code.contains("Math.trunc(-9.5)")).toBe(true)
+        expect(emitter.emit(BoundReturnStatement(fixture.range(), SemanticTypes.intType(), source, conversion)).code).toBe("return Math.trunc(-9.5);\n")
+    }
+    test `emits numeric cast to Int with truncation`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "-9.5")
+        let conversion = TypeConversions.classify(source.semanticType, SemanticTypes.intType(), explicit: true)
+        let expression = BoundConversionExpression(fixture.range(), SemanticTypes.intType(), source, conversion)
+        expect(Es6ExpressionOrchestrator().emit(expression).code).toBe("Math.trunc(-9.5)")
+    }
+    test `rejects unlowered null fallback`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let value = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "0")
+        let result = Es6ExpressionOrchestrator().emit(BoundBinaryExpression(
+            fixture.range(), SemanticTypes.intType(), "?:", value, value))
+        expect(result.emitted).toBe(false)
+    }
+    test `qualifies static field references by owner`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = fixture.declaration("class", "Cache", 1)
+        let field = SymbolIdentity(owner, "field", 0)
+        let reference = BoundReferenceExpression(fixture.range(), SemanticTypes.intType(),
+            "cached", field, staticOwner: owner)
+        let expected = Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(field.value)
+        expect(Es6ExpressionOrchestrator().emit(reference).code).toBe(expected)
+        let literal = BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "7")
+        let assignment = BoundAssignmentStatement(fixture.range(), reference, literal,
+            TypeConversions.classify(literal.semanticType, reference.semanticType))
+        expect(Es6StatementOrchestrator().emit(assignment).code).toBe(expected + " = 7;\n")
+    }
     test `preserves async lambda emission`() {
         let fixture = Es6BoundWriter_TestFixture()
         let body = BoundLiteralExpression(fixture.range(), SemanticTypes.unitType(), "null")

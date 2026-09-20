@@ -1,6 +1,33 @@
 package flat/semantic/types
 
 testable class {
+    test `checks instantiated receiver arguments`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Buffer", 31)
+        let parameter = GenericParameterSemanticType(owner.declarationIdentity, "E", 0)
+        let signature = CallableSignature(fixture.symbolIdentity("add", "instance-method", 32),
+            "add", CallableKind("instance-method"), [parameter], parameter, owner,
+            ownerGenericDeclaration: GenericDeclaration(owner.declarationIdentity, [parameter], owner))
+        let receiver = GenericInstanceSemanticType(owner, [SemanticTypes.intType()])
+        let checked = CallTypeChecker.check(signature, receiver, [SemanticTypes.intType()], fixture.range())
+        expect(checked.valid).toBe(true)
+        expect(checked.semanticType.value()).toBe(SemanticTypes.intType().value())
+        expect(CallTypeChecker.check(signature, receiver, [SemanticTypes.boolType()], fixture.range()).valid).toBe(false)
+    }
+    test `instantiates owner parameters`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("Buffer", 31)
+        let parameter = GenericParameterSemanticType(owner.declarationIdentity, "E", 0)
+        let signature = CallableSignature(fixture.symbolIdentity("Buffer", "constructor", 32),
+            "Buffer", CallableKind("constructor"), [ArraySemanticType(parameter)], owner, owner,
+            ownerGenericDeclaration: GenericDeclaration(owner.declarationIdentity, [parameter], owner))
+        let selected = signature.instantiateConstructor([SemanticTypes.intType()])
+        expect(selected.parameterTypes()[0].value()).toBe("array:1:primitive:Int")
+        expect(selected.returnType.value()).toBe(GenericInstanceSemanticType(owner, [SemanticTypes.intType()]).value())
+        expect(selected.ownerType.value()).toBe(owner.value())
+        expect(selected.genericParameters().count).toBe(0)
+        expect(signature.parameterTypes()[0].value()).toBe(ArraySemanticType(parameter).value())
+    }
     test `partial inference preserves unresolved callback result`() {
         let fixture = TypeSystem_TestFixture()
         let identity = fixture.functionIdentity("map", 30)

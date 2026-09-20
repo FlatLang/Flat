@@ -22,7 +22,8 @@ data class {
         visible BoundConstructorDelegation constructorDelegation = null,
         visible Bool asyncFunction = false,
         visible String externalName = null,
-        visible Bool abstractFunction = false
+        visible Bool abstractFunction = false,
+        visible Bool lazyProperty = false
     ) {
         if (!identity || !name || !returnType || !statements || statements.any({ !_ }) || !range ||
             !parameterValues || parameterValues.any({ !_ }) ||
@@ -49,6 +50,10 @@ data class {
             constructorDelegation.target.ownerType == null ||
             constructorDelegation.target.ownerType.declarationIdentity.name != name)) {
             throw Exception("Only a same-source constructor can delegate on its receiver")
+        }
+        if (lazyProperty && (!staticFunction || parameterValues.isNotEmpty ||
+            abstractFunction || asyncFunction || externalName || returnType.value() == "unit")) {
+            throw Exception("Lazy property requires a synchronous static parameterless value getter")
         }
         body = BoundStatement[]
         body.addAll(statements)

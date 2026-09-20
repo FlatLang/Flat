@@ -70,6 +70,7 @@ class {
         var Bool visibleField
         var Bool staticField
         var Bool mutableField
+        var Bool nativeArrayStorage
         var Int fieldModifierStart = -1
         while (index < tokens.count && tokens[index].value != "}") {
             if (isFunctionModifier(tokens[index].value) || tokens[index].value == "visible") {
@@ -77,9 +78,14 @@ class {
                 var Int propertyCursor = index
                 var Bool visibleProperty
                 var Bool staticProperty
+                var Bool lazyProperty
                 while (propertyCursor < tokens.count &&
                     (isFunctionModifier(tokens[propertyCursor].value) ||
-                        tokens[propertyCursor].value == "visible")) {
+                        tokens[propertyCursor].value == "visible" || tokens[propertyCursor].value == "lazy")) {
+                    if (tokens[propertyCursor].value == "lazy") {
+                        if (lazyProperty) syntax("Duplicate lazy modifier", propertyCursor)
+                        lazyProperty = true
+                    }
                     if (tokens[propertyCursor].value == "visible") visibleProperty = true
                     if (tokens[propertyCursor].value == "static") staticProperty = true
                     propertyCursor++
@@ -124,7 +130,7 @@ class {
                         [PrimitiveReturnSyntax(
                             range(expressionStart, expressionEnd), value
                         )],
-                        staticMethod: staticProperty
+                        staticMethod: staticProperty, lazyProperty: lazyProperty
                     ))
                     index = end
                     continue
@@ -217,6 +223,7 @@ class {
                 while (index < tokens.count &&
                     (tokens[index].value == "native_array" ||
                      tokens[index].value == "native" || tokens[index].value == "var")) {
+                    if (tokens[index].value == "native_array") nativeArrayStorage = true
                     if (tokens[index].value == "var") {
                         if (mutableField) syntax("Duplicate var field modifier", index)
                         mutableField = true
@@ -311,11 +318,13 @@ class {
                 if (fields.any({ _.name == fieldName })) syntax("Duplicate field '#fieldName'", fieldStart)
                 fields.add(PrimitiveFieldSyntax(
                     range(fieldStart, index), typeName, fieldName,
-                    visibleField, initializer, staticField, mutableField
+                    visibleField, initializer, staticField, mutableField,
+                    nativeArrayStorage: nativeArrayStorage
                 ))
                 visibleField = false
                 staticField = false
                 mutableField = false
+                nativeArrayStorage = false
                 fieldModifierStart = -1
             } else {
                 let end = declarationEnd(index)
@@ -540,9 +549,13 @@ class {
                 privateParameter = true
                 index++
             }
+            var Bool nativeArrayStorage
             while (index < tokens.count &&
                 (tokens[index].value == "native_array" ||
-                 tokens[index].value == "native")) index++
+                 tokens[index].value == "native")) {
+                if (tokens[index].value == "native_array") nativeArrayStorage = true
+                index++
+            }
             var String typeName = identifier("Expected parameter type")
             if (index + 1 < tokens.count && tokens[index].value == "[" &&
                 tokens[index + 1].value == "]") {
@@ -574,7 +587,7 @@ class {
             }
             result.add(PrimitiveFunctionParameterSyntax(
                 range(start, index), typeName, name, defaultValue,
-                visibleParameter, privateParameter
+                visibleParameter, privateParameter, nativeArrayStorage
             ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++
@@ -659,6 +672,8 @@ class {
         var Int cursor = expressionStart
         while (cursor < tokens.count) {
             let value = tokens[cursor].value
+            if (parenthesisDepth == 0 && bracketDepth == 0 &&
+                methodHeaderAt(cursor, expressionStart)) return -1
             if (value == "(") parenthesisDepth++
             else if (value == ")") parenthesisDepth--
             else if (value == "[") bracketDepth++
@@ -748,6 +763,22 @@ class {
         return "<unknown>"
     }
 
+    methodHeaderAt(Int cursor, Int expressionStart) -> Bool {
+        if (cursor <= expressionStart || cursor + 1 >= tokens.count ||
+            tokens[cursor].type != Token.Type.IDENTIFIER || tokens[cursor + 1].value != "(" ||
+            tokens[cursor].location.lineNumber <= tokens[cursor - 1].location.lineNumber) return false
+        var Int end = cursor + 1
+        var Int depth
+        while (end < tokens.count) {
+            let part = tokens[end++].value
+            if (part == "(") depth++
+            else if (part == ")") depth--
+            if (depth == 0) break
+        }
+        return depth == 0 && end < tokens.count &&
+            (tokens[end].value == "=>" || tokens[end].value == "->" || tokens[end].value == "{")
+    }
+
     arrayOverrideHeaderAt(Int cursor) -> Bool => cursor + 4 < tokens.count &&
         tokens[cursor].value == "this" && tokens[cursor + 1].value == "[" &&
         tokens[cursor + 2].type == Token.Type.IDENTIFIER &&
@@ -787,6 +818,8 @@ class {
             var Int bracketDepth
             while (cursor < tokens.count) {
                 let value = tokens[cursor].value
+                if (parenthesisDepth == 0 && bracketDepth == 0 &&
+                    methodHeaderAt(cursor, expressionStart)) break
                 if (value == "(") parenthesisDepth++
                 else if (value == ")") parenthesisDepth--
                 else if (value == "[") bracketDepth++

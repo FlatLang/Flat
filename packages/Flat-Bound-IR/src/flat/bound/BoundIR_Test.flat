@@ -4,6 +4,196 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `narrowing compound field lowers through one receiver local`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Box", 1)
+        let receiver = BoundReferenceExpression(fixture.range(), UserClassSemanticType(owner), "box", fixture.symbol("local", "box", 2))
+        let target = BoundMemberAccessExpression(fixture.range(), SemanticTypes.intType(), receiver, "count", SymbolIdentity(owner, "field", 0))
+        let operand = BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "2.5")
+        let conversion = TypeConversions.classify(operand.semanticType, target.semanticType, explicit: true)
+        let assignment = BoundMemberAssignmentStatement(fixture.range(), target, operand, conversion, "+")
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 3), "run", SemanticTypes.unitType(), [assignment], fixture.range())
+        let statements = CollectionControlLoweringPass().lower(function).statements()
+        expect(statements.count).toBe(2)
+        expect(statements.first.unitKind()).toBe("local-declaration")
+        let statementObject = statements.last
+        let lowered = (BoundMemberAssignmentStatement)statementObject
+        expect(lowered.compoundOperator == null).toBe(true)
+        expect(lowered.conversion.conversionKind).toBe("numeric-cast")
+        expect(lowered.value.expressionKind()).toBe("binary")
+    }
+    test `lowers fallback inside member compound assignment`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let owner = fixture.declaration("class", "Box", 1)
+        let receiver = BoundReferenceExpression(fixture.range(), UserClassSemanticType(owner), "box", fixture.symbol("local", "box", 2))
+        let target = BoundMemberAccessExpression(fixture.range(), intType, receiver, "count", SymbolIdentity(owner, "field", 0))
+        let literal = BoundLiteralExpression(fixture.range(), intType, "1")
+        let fallback = BoundBinaryExpression(fixture.range(), intType, "?:", literal, literal)
+        let assignment = BoundMemberAssignmentValueExpression(fixture.range(), intType, target, "+", fallback,
+            TypeConversions.classify(intType, intType))
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 3), "run", intType,
+            [BoundReturnStatement(fixture.range(), intType, assignment, TypeConversions.classify(intType, intType))], fixture.range())
+        let statementObject = CollectionControlLoweringPass().lower(function).statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let assignmentObject = returned.value
+        let lowered = (BoundMemberAssignmentValueExpression)assignmentObject
+        expect(lowered.value.expressionKind()).toBe("function-invocation")
+        expect(lowered.target.memberIdentity.value).toBe(target.memberIdentity.value)
+    }
+    test `fallback array index retains captures and await scope`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let left = BoundReferenceExpression(fixture.range(), NullableSemanticType(intType), "left", fixture.symbol("local", "left", 1))
+        let array = BoundReferenceExpression(fixture.range(), ArraySemanticType(intType), "items", fixture.symbol("local", "items", 2))
+        let signature = FunctionSemanticType(SemanticType[], intType, asyncFunction: true)
+        let next = BoundReferenceExpression(fixture.range(), signature, "next", fixture.symbol("local", "next", 3))
+        let index = BoundFunctionInvocationExpression(fixture.range(), next, signature, BoundExpression[])
+        let access = BoundArrayAccessExpression(fixture.range(), intType, array, index)
+        let fallback = BoundBinaryExpression(fixture.range(), intType, "?:", left, access)
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 4), "run", intType,
+            [BoundReturnStatement(fixture.range(), intType, fallback, TypeConversions.classify(intType, intType))], fixture.range())
+        let statementObject = CollectionControlLoweringPass().lower(function).statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let invocationObject = returned.value
+        let invocation = (BoundFunctionInvocationExpression)invocationObject
+        let lambdaObject = invocation.functionValue
+        let lambda = (BoundLambdaExpression)lambdaObject
+        let typeObject = lambda.semanticType
+        let loweredSignature = (FunctionSemanticType)typeObject
+        expect(loweredSignature.asyncFunction).toBe(true)
+        expect(lambda.captureValues().count).toBe(2)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(array.symbolIdentity.value)
+        expect(lambda.captureValues().last.symbolIdentity.value).toBe(next.symbolIdentity.value)
+    }
+    test `fallback lowers to captured conditional invocation`() {
+        let fixture = BoundIR_TestFixture()
+        let intType = SemanticTypes.intType()
+        let nullable = NullableSemanticType(intType)
+        let left = BoundReferenceExpression(fixture.range(), nullable, "left", fixture.symbol("local", "left", 1))
+        let right = BoundReferenceExpression(fixture.range(), intType, "right", fixture.symbol("local", "right", 2))
+        let assignment = BoundAssignmentValueExpression(fixture.range(), intType, right, right,
+            TypeConversions.classify(intType, intType))
+        let fallback = BoundBinaryExpression(fixture.range(), intType, "?:", left, assignment)
+        let signature = FunctionSemanticType(SemanticType[], intType)
+        let wrapper = BoundLambdaExpression(fixture.range(), signature, BoundFunctionParameter[], [left, right], fallback)
+        let invoked = BoundFunctionInvocationExpression(fixture.range(), wrapper, signature, BoundExpression[])
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 3), "run", intType,
+            [BoundReturnStatement(fixture.range(), intType, invoked, TypeConversions.classify(intType, intType))], fixture.range())
+        let statementObject = CollectionControlLoweringPass().lower(function).statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let wrapperInvocationObject = returned.value
+        let wrapperInvocation = (BoundFunctionInvocationExpression)wrapperInvocationObject
+        let wrapperObject = wrapperInvocation.functionValue
+        let loweredWrapper = (BoundLambdaExpression)wrapperObject
+        expect(loweredWrapper.captureValues().count).toBe(2)
+        let invocationObject = loweredWrapper.body
+        let invocation = (BoundFunctionInvocationExpression)invocationObject
+        let lambdaObject = invocation.functionValue
+        let lambda = (BoundLambdaExpression)lambdaObject
+        expect(invocation.argumentValues().count).toBe(1)
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(right.symbolIdentity.value)
+    }
+    test `safe call lowering retains argument local capture`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Box", 1)
+        let ownerType = UserClassSemanticType(owner)
+        let intType = SemanticTypes.intType()
+        let resultType = NullableSemanticType(intType)
+        let receiver = BoundReferenceExpression(fixture.range(), ownerType, "box", fixture.symbol("local", "box", 2))
+        let argument = BoundReferenceExpression(fixture.range(), intType, "value", fixture.symbol("local", "value", 3))
+        let target = CallableSignature(fixture.symbol("instance-method", "read", 4), "read",
+            CallableKind("instance-method"), [intType], intType, ownerType)
+        let call = BoundCallExpression(fixture.range(), resultType, target, receiver, [argument],
+            [TypeConversions.classify(intType, intType)], safeAccess: true)
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 5), "run", resultType,
+            [BoundReturnStatement(fixture.range(), resultType, call, TypeConversions.classify(resultType, resultType))], fixture.range())
+        let statementObject = CollectionControlLoweringPass().lower(function).statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let invocationObject = returned.value
+        let invocation = (BoundFunctionInvocationExpression)invocationObject
+        let lambdaObject = invocation.functionValue
+        let lambda = (BoundLambdaExpression)lambdaObject
+        expect(lambda.captureValues().count).toBe(1)
+        expect(lambda.captureValues().first.symbolIdentity.value).toBe(argument.symbolIdentity.value)
+    }
+    test `safe field lowers to ordinary single argument invocation`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Box", 1)
+        let receiver = BoundReferenceExpression(fixture.range(), UserClassSemanticType(owner),
+            "box", fixture.symbol("local", "box", 2))
+        let resultType = NullableSemanticType(SemanticTypes.intType())
+        let access = BoundMemberAccessExpression(fixture.range(), resultType, receiver,
+            "count", SymbolIdentity(owner, "field"), safeAccess: true)
+        let function = BoundFunctionUnit(fixture.declaration("function", "read", 3), "read",
+            resultType, [BoundReturnStatement(fixture.range(), resultType, access,
+                TypeConversions.classify(resultType, resultType))], fixture.range())
+        let lowered = CollectionControlLoweringPass().lower(function)
+        let statementObject = lowered.statements().first
+        let returned = (BoundReturnStatement)statementObject
+        expect(returned.value.expressionKind()).toBe("function-invocation")
+        expect(access.safeAccess).toBe(true)
+        let local = BoundReferenceExpression(fixture.range(), resultType, "result", fixture.symbol("local", "result", 4))
+        let declaration = BoundLocalDeclarationStatement(fixture.range(), local, access,
+            TypeConversions.classify(resultType, resultType))
+        let conditional = BoundIfStatement(fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true"), [declaration])
+        let nested = BoundFunctionUnit(function.identity, function.name, resultType, [conditional], fixture.range())
+        let nestedObject = CollectionControlLoweringPass().lower(nested).statements().first
+        let loweredIf = (BoundIfStatement)nestedObject
+        let localObject = loweredIf.thenValues().first
+        let loweredLocal = (BoundLocalDeclarationStatement)localObject
+        expect(loweredLocal.initializer.expressionKind()).toBe("function-invocation")
+    }
+    test `lazy static lowering separates initialization from cached access`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Cache", 1)
+        let getter = fixture.declaration("static-method", "value", 2)
+        let valueType = SemanticTypes.boolType()
+        let method = BoundFunctionUnit(getter, "value", valueType, [
+            BoundReturnStatement(fixture.range(), valueType,
+                BoundLiteralExpression(fixture.range(), valueType, "false"),
+                TypeConversions.classify(valueType, valueType))
+        ], fixture.range(), staticFunction: true, lazyProperty: true)
+        let input = BoundTypeUnit(owner, UserClassSemanticType(owner), [method], fixture.range())
+        let lowered = TypeFeatureLowering.lowerLazyProperties(input)
+        expect(method.lazyProperty).toBe(true)
+        expect(lowered.functionUnits().first.lazyProperty).toBe(false)
+        expect(TypeFeatureLowering.lowerLazyProperties(lowered).fieldUnits().count).toBe(2)
+        expect(input.fieldUnits().count).toBe(0)
+        expect(lowered.fieldUnits().count).toBe(2)
+        expect(lowered.functionUnits().count).toBe(2)
+        let wrapper = lowered.functionUnits().first
+        expect(wrapper.identity.value).toBe(getter.value)
+        let conditionalObject = wrapper.statements().first
+        let conditional = (BoundIfStatement)conditionalObject
+        expect(conditional.condition.semanticType.value()).toBe("primitive:Bool")
+        let body = wrapper.statements()
+        expect(body.count).toBe(4)
+        let assignmentObject = body[1]
+        let assignment = (BoundAssignmentStatement)assignmentObject
+        expect(assignment.target.staticOwner.value).toBe(owner.value)
+        let initializedObject = body[2]
+        let initialized = (BoundAssignmentStatement)initializedObject
+        let initializedValue = initialized.value
+        let literal = (BoundLiteralExpression)initializedValue
+        expect(literal.sourceValue).toBe("true")
+    }
+    test `static reference retains field ownership`() {
+        let fixture = BoundIR_TestFixture()
+        let owner = fixture.declaration("class", "Cache", 1)
+        let field = SymbolIdentity(owner, "field", 0)
+        let reference = BoundReferenceExpression(fixture.range(), SemanticTypes.intType(),
+            "cached", field, staticOwner: owner)
+        expect(reference.staticOwner.value).toBe(owner.value)
+        var Bool rejected
+        try {
+            BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "cached",
+                field, staticOwner: fixture.declaration("class", "Other", 2))
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
     test `program type function statement and expression units retain explicit semantic evidence`() {
         let fixture = BoundIR_TestFixture()
         let intType = SemanticTypes.intType()

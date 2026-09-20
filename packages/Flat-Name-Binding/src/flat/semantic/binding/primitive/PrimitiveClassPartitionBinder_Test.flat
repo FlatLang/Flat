@@ -7,6 +7,68 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `declared array field literal selects native storage constructor`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-array-literal"), "one")
+        let syntaxes = PrimitiveClassSyntax[]
+        let sources = ["class Array<E> { construct(native_array E[] data, Int count) {} }",
+            "class Value { static Int[] items = [1, 2]; }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        let initializer = units.last.fieldUnits().first.initializer
+        expect(initializer.expressionKind()).toBe("call")
+        expect(initializer.semanticType.kind()).toBe("generic-instance")
+    }
+
+    async test `static methods still reject implicit instance field receivers`() {
+        let sources = ["class Box { visible Box child; static run() -> Box { return this.child; } }",
+            "class Box { visible Box child; static run() -> Box { return child.child; } }"]
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-invalid-receiver"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var Bool rejected
+            try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        }
+    }
+    async test `static method reads member of explicit generic call result`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-generic-result"), "one")
+        let sources = ["class Array<E> { visible Int count; construct(Int count) { this.count = count; } }",
+            "class Box { static make<Out>(Int size) -> Out[] { return Array<Out>(size); } " +
+            "static run() -> Int { return Box.make<Int>(3).count; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let types = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        let box = types.firstOrNull({ _.identity.name == "Box" })
+        let run = box.functionUnits().firstOrNull({ _.name == "run" })
+        let returnedObject = run.statements().first
+        let returned = (BoundReturnStatement)returnedObject
+        expect(returned.value.expressionKind()).toBe("member-access")
+    }
+    async test `binds declared sized generic array constructor`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-sized-array"), "one")
+        let sources = ["class Array<E> { construct(Int count, Int capacity = count) {} }",
+            "class Box { static make<Out>(Int size) -> Out[] { return Array<Out>(size); } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let types = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        let box = types.firstOrNull({ _.identity.name == "Box" })
+        expect(box.functionUnits().firstOrNull({ _.name == "make" }).returnType.kind()).toBe("generic-instance")
+    }
 
     async test `passes receiver callback`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-trait"), "one")
@@ -484,6 +546,110 @@ testable class {
 
         expect(call.target.ownerType.value()).toBe(items.semanticType.value())
         expect(call.receiver.semanticType.value()).toBe(items.semanticType.value())
+    }
+
+    async test `binds explicit owner type arguments`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-construction"), "one")
+        let buffer = Lexer().lex("class Buffer<E> { construct(E value) { } }")
+        buffer.emit("start")
+        let reader = Lexer().lex("class Reader { run() -> Void { let value = new Buffer<Int>(42); } }")
+        reader.emit("start")
+        let types = PrimitiveClassPartitionBinder().bind([
+            PrimitiveClassParser().parse(buffer.consumeAll<Token>("data"), snapshot),
+            PrimitiveClassParser().parse(reader.consumeAll<Token>("data"), snapshot)
+        ], snapshot).typeUnits()
+        let method = types.firstOrNull({ _.identity.name == "Reader" }).functionUnits().firstOrNull({ _.name == "run" })
+        let statements = method.statements()
+        let statement = (Object)statements.first
+        let local = (BoundLocalDeclarationStatement)statement
+        expect(local.initializer.semanticType.kind()).toBe("generic-instance")
+    }
+
+    async test `binds generic constructor call with defaulted capacity`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-capacity"), "one")
+        let stream = Lexer().lex("class Buffer<E> { construct(Int count, Int capacity = count) { increaseSize(capacity); } increaseSize() => this { increaseSize(3); } increaseSize(Int count) => this {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let types = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits()
+        expect(types.count).toBe(1)
+    }
+
+    async test `binds generic field through scoped local initializer`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-field-local"), "one")
+        let sources = ["class Box<E> { construct(visible E item) {} }",
+            "class Use { run(Box<Int> box) -> Int { let value = box.item; if (box.item > 0) { return box.item; } return value; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let types = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        let method = types.last.functionUnits().firstOrNull({ _.name == "run" })
+        let statements = method.statements()
+        let statement = (Object)statements.first
+        let local = (BoundLocalDeclarationStatement)statement
+        expect(local.initializer.semanticType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `resolves declared array shorthand separately from native storage`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-shorthand"), "one")
+        let stream = Lexer().lex("class Array<E> { construct() {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let resolver = PrimitiveStructuralTypeResolver(syntaxes: [syntax], snapshot: snapshot)
+        expect(resolver.resolve("Int[]").value()).toBe(resolver.resolve("Array<Int>").value())
+        expect(resolver.resolveNativeArrayStorage("Int[]").kind()).toBe("array")
+        expect(resolver.resolve("Int[][]").kind()).toBe("generic-instance")
+    }
+
+    async test `rejects scalar native array storage`() {
+        let sources = ["class Buffer { visible native_array Int data; }",
+            "class Buffer { construct(native_array Int data) {} }",
+            "class Buffer { run(native_array Int data) -> Void {} }"]
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-native-storage"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+            catch (Exception error) { failure = error.message }
+            if (!failure) throw Exception("Native storage accepted: #source")
+        }
+    }
+
+    async test `publishes generic stored field types`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-fields"), "one")
+        let stream = Lexer().lex("class Buffer<E> { E item; construct(private E[] data) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(type.fieldUnits().first.semanticType.kind()).toBe("generic-parameter")
+        expect(type.fieldUnits().last.semanticType.kind()).toBe("array")
+    }
+
+    async test `publishes generic owner constructor parameter scope`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-constructor-scope"), "one")
+        let stream = Lexer().lex("class Buffer<E> { construct(E[] data, Int count) { } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let constructor = type.functionUnits().first
+        expect(constructor.parameterValues().first.semanticType.kind()).toBe("array")
+    }
+
+    async test `publishes inferred indexed storage accessors to consumers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:inferred-accessor-consumer"), "one")
+        let first = Lexer().lex("class Items { Int[] data; this[Int index] <=> data[index]\n}")
+        first.emit("start")
+        let second = Lexer().lex("class Reader { read(Items items) -> Int { items[0] = 42; return items[0]; } }")
+        second.emit("start")
+        let types = PrimitiveClassPartitionBinder().bind([
+            PrimitiveClassParser().parse(first.consumeAll<Token>("data"), snapshot),
+            PrimitiveClassParser().parse(second.consumeAll<Token>("data"), snapshot)
+        ], snapshot).typeUnits()
+        expect(types.count).toBe(2)
     }
 
     async test `selects projected receiver array accessor by owner`() {

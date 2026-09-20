@@ -10,6 +10,125 @@ import flat/parser/flat
 import flat/writer/es6/bound
 
 testable class {
+    async test `compound call receiver executes once`() {
+        let identity = "memory:compound-call-receiver"
+        let source = "class Box { visible Int count; static run(func()->Box next) -> Int { next().count += 2.5; var Int result = -7; result -= 2.5; return result; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Box")
+        let method = syntax.methodValues().last
+        let target = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex), "static-method", "run")
+        let code = FlatEs6SourceCompiler().compile(CompilerSource(identity, source))
+        let call = Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(target.value)
+        let field = Es6NameMangler.mangle(SymbolIdentity(owner, "field", 0).value)
+        let root = File(".flat-compiler-compound-receiver-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "let calls=0;const box={" + field + ":7};const result=" + call +
+            "(()=>{calls++;return box;});console.log(calls,box." + field + ",result);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("1 9 -9\n")
+    }
+    async test `parsed safe call skips captured callback argument for null receiver`() {
+        let identity = "memory:safe-field-execution"
+        let source = "class Box { visible Int count; read(Int argument) -> Int { return argument; } static async read(Box value, async func(Int)->Int next) -> Int { " +
+            "if (true) { let storage = Box(); storage.count = 7; storage.count += 2; let result = true ? (value?.read(next(0 ?: 9)) ?: (storage.count += next(0 ?: 9))) : 7; return result + storage.count; } return 7; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Box")
+        let method = syntax.methodValues().last
+        let target = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex), "static-method", "read")
+        let code = FlatEs6SourceCompiler().compile(CompilerSource(identity, source))
+        let call = Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(target.value)
+        let field = Es6NameMangler.mangle(SymbolIdentity(owner, "field", 0).value)
+        let root = File(".flat-compiler-safe-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "(async()=>{let calls=0; const next=async(value)=>{calls++;return value+3;}; console.log(await " + call + "(null,next),calls); console.log(await " + call + "(new " + Es6NameMangler.mangle(owner.value) + "(),next),calls);})();\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("24 1\n12 2\n")
+    }
+    async test `executes null fallback without treating false as null`() {
+        let identity = "memory:fallback-execution"
+        let source = "class Value { static run() -> Bool { return false ?: true; } " +
+            "static missing() -> Bool { return null ?: true; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let code = FlatEs6SourceCompiler().compile(CompilerSource(identity, source))
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Value")
+        var String calls = ""
+        for (method in syntax.methodValues()) {
+            let target = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex), "static-method", method.name)
+            calls += "console.log(" + Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(target.value) + "());\n"
+        }
+        let root = File(".flat-compiler-fallback-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + calls)
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("false\ntrue\n")
+    }
+    async test `executes method generic declared array construction`() {
+        let identity = "memory:declared-array-execution"
+        let source = "class Array<E> { visible Int count; construct(Int count, Int capacity = count) { this.count = count; } } " +
+            "class Box { static make<Out>(Int size) -> Out[] { return Array<Out>(size); } " +
+            "static run() -> Int { return Box.make<Int>(3).count; } }"
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        let boxPartition = partitions.last
+        let box = PrimitiveClassParser().parse(boxPartition.tokenValues(), snapshot, boxPartition.startTokenIndex)
+        let typeIdentity = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", box.range.startTokenIndex), "class", "Box")
+        let run = box.methodValues().firstOrNull({ _.name == "run" })
+        let methodIdentity = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method", run.range.startTokenIndex), "static-method", "run")
+        let root = File(".flat-compiler-declared-array-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" + Es6NameMangler.mangle(typeIdentity.value) + "." + Es6NameMangler.mangle(methodIdentity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("3\n")
+    }
+    async test `compiler lowers parsed lazy static properties`() {
+        let identity = "memory:lazy-source"
+        let source = "class Cache { visible static lazy Int value => 7 }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Cache")
+        let getter = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method",
+            syntax.methodValues().first.range.startTokenIndex), "static-method", "value")
+        let input = CompilerSource(identity, source)
+        let codes = [FlatEs6SourceCompiler().compile(input), FlatEs6PackageLinker().link([input])]
+        for (code in codes) {
+            let root = File(".flat-compiler-lazy-test-#{Time.currentTimeMillis}")
+            Es6ArtifactFiles.ensureDirectory(root)
+            let destination = File(root, "program.js")
+            let call = Es6NameMangler.mangle(typeIdentity.value) + "." + Es6NameMangler.mangle(getter.value) + "()"
+            Es6ArtifactCommitter().commit(destination, code + "console.log(" + call + "); console.log(" + call + ");\n")
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            Es6ArtifactFiles.remove(root)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("7\n7\n")
+        }
+    }
     async test `compiler CLI matches glob source exclusions`() {
         let excluded = File("#{System.workingDirectory}/packages/Flat-Parser/src/flat/example_Test.flat")
         let included = File("#{System.workingDirectory}/packages/Flat-Parser/src/flat/example.flat")
@@ -1304,6 +1423,16 @@ testable class {
 
     async test `package linker executes unchanged range iterator`() {
         let code = FlatEs6PackageLinker().link([
+                CompilerSource("flat/meta/Class.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/meta/Class.flat"))),
+                CompilerSource("flat/operators/PlusOperator.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/operators/PlusOperator.flat"))),
+                CompilerSource("flat/operators/PlusEqualsOperator.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/operators/PlusEqualsOperator.flat"))),
+                CompilerSource("flat/datastruct/list/OrderedList.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/datastruct/list/OrderedList.flat"))),
+                CompilerSource("flat/datastruct/list/ArrayIterator.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/datastruct/list/ArrayIterator.flat"))),
                 CompilerSource("flat/datastruct/list/Array.flat", Es6ArtifactFiles.read(File(
                     "../Flat-Core/src/flat/datastruct/list/Array.flat"))),
                 CompilerSource("flat/async/Async.flat", Es6ArtifactFiles.read(File(
@@ -1486,6 +1615,22 @@ testable class {
                 CompilerSource(
                     "flat/String.js.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.js.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/List.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/List.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/Array.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/Array.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/Array.js.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/Array.js.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/ArrayIterator.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/ArrayIterator.flat"))
                 ),
                 CompilerSource(
                     "flat/datastruct/list/StringCharArray.flat",

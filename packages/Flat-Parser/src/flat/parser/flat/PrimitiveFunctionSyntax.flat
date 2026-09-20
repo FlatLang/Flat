@@ -19,7 +19,8 @@ data class {
         visible Bool asyncMethod = false,
         visible String externalName = null,
         visible Bool abstractMethod = false,
-        String[] genericParameterNameValues = String[]
+        String[] genericParameterNameValues = String[],
+        visible Bool lazyProperty = false
     ) {
         if (!range || !name || name.trim().count == 0 || !parameterValues ||
             parameterValues.any({ !_ }) || !returnTypeName ||

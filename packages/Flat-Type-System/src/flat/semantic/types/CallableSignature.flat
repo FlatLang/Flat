@@ -17,7 +17,9 @@ data class {
         visible UserClassSemanticType ownerType = null,
         visible Int optionalParameterCount = 0,
         String[] names = String[],
-        GenericParameterSemanticType[] genericParameterValues = GenericParameterSemanticType[]
+        GenericParameterSemanticType[] genericParameterValues = GenericParameterSemanticType[],
+        visible GenericDeclaration ownerGenericDeclaration = null,
+        visible GenericInstanceSemanticType ownerInstance = null
     ) {
         if (!identity || !name || name.trim().count == 0 || !callableKind ||
             !parameterTypes || parameterTypes.any({ !_ }) || !returnType ||
@@ -34,8 +36,24 @@ data class {
         if (callableKind.value != "function" && !ownerType) {
             throw Exception("Method and constructor callables require an owning type")
         }
+        if (ownerInstance && (!ownerType || !ownerGenericDeclaration ||
+            ownerInstance.declarationType.value() != ownerType.value() ||
+            ownerInstance.typeArguments().count != ownerGenericDeclaration.genericParameters().count)) {
+            throw Exception("Instantiated owner must match callable declaration and arity")
+        }
+        if (ownerGenericDeclaration && (!ownerType ||
+            ownerGenericDeclaration.identity != ownerType.declarationIdentity)) {
+            throw Exception("Owner generic declaration must belong to the callable owner")
+        }
         if (callableKind.value == "constructor" && returnType.value() != ownerType.value()) {
-            throw Exception("Constructor return type must be its owning type")
+            if (returnType.kind() != "generic-instance") {
+                throw Exception("Constructor return type must be its owning type")
+            }
+            let instance = (GenericInstanceSemanticType)returnType
+            if (!ownerGenericDeclaration || instance.declarationType.value() != ownerType.value() ||
+                instance.typeArguments().count != ownerGenericDeclaration.genericParameters().count) {
+                throw Exception("Constructor instance must match its generic owner")
+            }
         }
         if (!genericParameterValues || genericParameterValues.any({ !_ })) {
             throw Exception("Callable generic parameters must be valid")
@@ -53,6 +71,33 @@ data class {
         parameters.addAll(parameterTypes)
         namesStore = String[]
         namesStore.addAll(names)
+    }
+
+    /** Instantiate class parameters without reassigning them to the constructor declaration. */
+    public instantiateConstructor(SemanticType[] typeArguments) -> CallableSignature {
+        if (callableKind.value != "constructor" || !ownerGenericDeclaration || !typeArguments ||
+            typeArguments.count != ownerGenericDeclaration.genericParameters().count) {
+            throw Exception("Constructor instantiation requires aligned owner type arguments")
+        }
+        let substitution = GenericSubstitution(ownerGenericDeclaration.genericParameters(), typeArguments)
+        return CallableSignature(identity, name, callableKind,
+            parameters.map({ substitution.apply(_) }),
+            GenericInstanceSemanticType(ownerType, typeArguments), ownerType,
+            optionalParameterCount, parameterNames(), genericParameters(), ownerGenericDeclaration)
+    }
+
+    public receiverType() -> SemanticType => ownerInstance ?: ownerType
+
+    public instantiateReceiver(GenericInstanceSemanticType receiver) -> CallableSignature {
+        if (!ownerGenericDeclaration || !receiver ||
+            receiver.declarationType.value() != ownerType.value() ||
+            receiver.typeArguments().count != ownerGenericDeclaration.genericParameters().count) {
+            throw Exception("Receiver instantiation requires matching owner arguments")
+        }
+        let substitution = GenericSubstitution(ownerGenericDeclaration.genericParameters(), receiver.typeArguments())
+        return CallableSignature(identity, name, callableKind, parameters.map({ substitution.apply(_) }),
+            substitution.apply(returnType), ownerType, optionalParameterCount, parameterNames(),
+            genericParameters(), ownerGenericDeclaration, receiver)
     }
 
     public genericParameters() -> GenericParameterSemanticType[] {

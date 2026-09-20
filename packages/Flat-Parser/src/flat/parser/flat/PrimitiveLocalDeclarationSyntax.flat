@@ -8,7 +8,8 @@ data class extends PrimitiveStatementSyntax {
         visible Bool mutable,
         visible String name,
         visible PrimitiveExpressionSyntax initializer = null,
-        visible String declaredTypeName = null
+        visible String declaredTypeName = null,
+        visible Bool nativeArrayStorage = false
     ) {
         if (!range || !name || (!initializer && !declaredTypeName) || declaredTypeName == "") {
             throw Exception("Primitive local syntax requires name and initializer or explicit type")

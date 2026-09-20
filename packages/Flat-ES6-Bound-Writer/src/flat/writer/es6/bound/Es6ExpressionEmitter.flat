@@ -53,7 +53,9 @@ class {
 
     public emitReference(BoundReferenceExpression expression) -> Es6CodeResult {
         if (!expression) throw Exception("ES6 reference emission requires an expression")
-        return Es6CodeResult(code: Es6NameMangler.mangle(expression.symbolIdentity.value))
+        let field = Es6NameMangler.mangle(expression.symbolIdentity.value)
+        return Es6CodeResult(code: expression.staticOwner ?
+            Es6NameMangler.mangle(expression.staticOwner.value) + "." + field : field)
     }
 
     public emitUnary(
@@ -75,6 +77,10 @@ class {
         }
         if (!left.emitted) return left
         if (!right.emitted) return right
+        if (expression.operator == "?:") {
+            return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                "es6.unlowered-fallback", "Null fallback requires target-independent lowering"))
+        }
         return Es6CodeResult(code: "(" + left.code + " " + expression.operator + " " + right.code + ")")
     }
 
@@ -102,6 +108,10 @@ class {
         if (!receiver.emitted) return receiver
         let String receiverCode = receiver.code
         let member = Es6NameMangler.mangle(expression.memberIdentity.value)
+        if (expression.safeAccess) {
+            return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                "es6.unlowered-safe-field", "Safe field access requires target-independent lowering"))
+        }
         return Es6CodeResult(code: receiverCode + "." + member)
     }
 
@@ -113,6 +123,10 @@ class {
             throw Exception("ES6 conversion emission requires expression and value")
         }
         if (!value.emitted) return value
+        if (expression.conversion.conversionKind == "numeric-cast" &&
+            expression.semanticType.value() == "primitive:Int") {
+            return Es6CodeResult(code: "Math.trunc(" + value.code + ")")
+        }
         if (expression.conversion.conversionKind == "numeric-unboxing") {
             return Es6CodeResult(code: "Number(" + value.code + ")")
         }

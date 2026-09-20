@@ -112,7 +112,12 @@ class PrimitiveOpaqueCodeBinder {
                 )
                 var BoundExpression projected = value
                 var String rendering = "identity"
-                if (path.count == 3 && root.semanticType.kind() == "user-class") {
+                if (path.count == 2 && root.semanticType.kind() == "generic-instance") {
+                    let access = PrimitiveMemberAccessSyntax(piece.range,
+                        PrimitiveReferenceSyntax(piece.range, root.name), path[1])
+                    projected = PrimitiveClassBinder().bindScopedExpression(
+                        access, receiver, fields, locals, callables, availableFields: availableFields)
+                } else if (path.count == 3 && root.semanticType.kind() == "user-class") {
                     let field = ownerField(
                         root.semanticType, path[1], fields, availableFields
                     )

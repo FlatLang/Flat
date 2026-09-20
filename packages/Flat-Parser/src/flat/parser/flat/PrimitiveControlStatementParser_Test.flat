@@ -375,6 +375,22 @@ testable class {
         expect(rejected).toBe(3)
     }
 
+    test `preserves catch all soft exception policy`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:catch-all"), "one")
+        let parsed = PrimitiveControlStatementParser().parse([
+            token("try", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 5),
+            token("}", Token.Type.SYMBOL, 6), token("catch", Token.Type.IDENTIFIER, 8),
+            token("all", Token.Type.IDENTIFIER, 14), token("(", Token.Type.SYMBOL, 18),
+            token("Exception", Token.Type.IDENTIFIER, 19), token("e", Token.Type.IDENTIFIER, 29),
+            token(")", Token.Type.SYMBOL, 30), token("{", Token.Type.SYMBOL, 32),
+            token("}", Token.Type.SYMBOL, 33)
+        ], snapshot)
+        let statements = parsed.statements()
+        let valueObject = (Object)statements.first
+        let value = (PrimitiveTrySyntax)valueObject
+        expect(value.catchValues().first.acceptsSoftExceptions).toBe(true)
+    }
+
     test `parses try catch finally throw and rejects incomplete exception control`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-exception"), "revision:one"
@@ -397,6 +413,7 @@ testable class {
         let value = (PrimitiveTrySyntax)valueObject
         let catches = value.catchValues()
         expect(catches.first.name).toBe("error")
+        expect(catches.first.acceptsSoftExceptions).toBe(false)
         expect(value.finallyValues().count).toBe(1)
         var Int rejected
         try {

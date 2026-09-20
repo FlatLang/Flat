@@ -10,7 +10,180 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    async test `selected call conversions evaluate arguments once in order`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let intType = SemanticTypes.intType()
+        let doubleType = SemanticTypes.doubleType()
+        let first = BoundNativeCallExpression(fixture.range(), doubleType, "first", BoundExpression[])
+        let second = BoundNativeCallExpression(fixture.range(), doubleType, "second", BoundExpression[])
+        let target = CallableSignature(fixture.symbol("function", "take", 1), "take",
+            CallableKind("function"), [intType, intType], intType)
+        let conversion = TypeConversions.classify(doubleType, intType, explicit: true)
+        let call = BoundCallExpression(fixture.range(), intType, target, null,
+            [first, second], [conversion, conversion])
+        let emitted = Es6ExpressionOrchestrator().emit(call)
+        expect(emitted.emitted).toBe(true)
+        let name = Es6NameMangler.mangle(target.identity.declaration.value)
+        let root = File(".flat-es6-call-conversion-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination,
+            "const order=[];globalThis.first=()=>{order.push(1);return -9.5;};" +
+            "globalThis.second=()=>{order.push(2);return 4.9;};function " + name +
+            "(a,b){if(a!==-9||b!==4)throw Error('argument conversion lost');return a+b;}" +
+            "console.log(" + emitted.code + ",order.join(','));")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("-5 1,2\n")
+    }
+
+    async test `assignment expression returns and stores narrowed value`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let source = BoundLiteralExpression(fixture.range(), SemanticTypes.doubleType(), "-9.5")
+        let local = BoundReferenceExpression(fixture.range(), SemanticTypes.intType(), "value", fixture.symbol("local", "value", 1))
+        let conversion = TypeConversions.classify(source.semanticType, local.semanticType, explicit: true)
+        let expression = BoundAssignmentValueExpression(fixture.range(), local.semanticType, local, source, conversion)
+        let code = Es6ExpressionOrchestrator().emit(expression).code
+        let name = Es6NameMangler.mangle(local.symbolIdentity.value)
+        let root = File(".flat-es6-assignment-cast-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, "let " + name + "=0;console.log(" + code + "," + name + ");\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("-9 -9\n")
+    }
+    async test `fallback awaits array index only for null left`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let intType = SemanticTypes.intType()
+        let left = BoundReferenceExpression(fixture.range(), NullableSemanticType(intType), "left", fixture.symbol("local", "left", 1))
+        let array = BoundReferenceExpression(fixture.range(), ArraySemanticType(intType), "items", fixture.symbol("local", "items", 2))
+        let signature = FunctionSemanticType(SemanticType[], intType, asyncFunction: true)
+        let next = BoundReferenceExpression(fixture.range(), signature, "next", fixture.symbol("local", "next", 3))
+        let access = BoundArrayAccessExpression(fixture.range(), intType, array,
+            BoundFunctionInvocationExpression(fixture.range(), next, signature, BoundExpression[]))
+        let fallback = BoundBinaryExpression(fixture.range(), intType, "?:", left, access)
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 4), "run", intType,
+            [BoundReturnStatement(fixture.range(), intType, fallback, TypeConversions.classify(intType, intType))], fixture.range())
+        let statementObject = CollectionControlLoweringPass().lower(function).statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let emitted = Es6ExpressionOrchestrator().emit(returned.value)
+        let leftName = Es6NameMangler.mangle(left.symbolIdentity.value)
+        let arrayName = Es6NameMangler.mangle(array.symbolIdentity.value)
+        let nextName = Es6NameMangler.mangle(next.symbolIdentity.value)
+        let root = File(".flat-es6-array-fallback-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination,
+            "(async()=>{let calls=0; let " + leftName + "=0; const " + arrayName + "=[42]; const " + nextName +
+            "=async()=>{calls++;return 0;}; console.log(" + emitted.code + ",calls); " + leftName +
+            "=null; console.log(" + emitted.code + ",calls);})();\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("0 0\n42 1\n")
+    }
+    async test `safe field returns null or value with one receiver evaluation`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = fixture.declaration("class", "Box", 1)
+        let field = SymbolIdentity(owner, "field", 0)
+        let receiver = BoundReferenceExpression(fixture.range(), UserClassSemanticType(owner),
+            "box", fixture.symbol("local", "box", 2))
+        let access = BoundMemberAccessExpression(fixture.range(), NullableSemanticType(SemanticTypes.intType()),
+            receiver, "count", field, safeAccess: true)
+        expect(Es6ExpressionEmitter().emitMemberAccess(access, Es6CodeResult(code: "read()")).diagnostic.code).toBe("es6.unlowered-safe-field")
+        let function = BoundFunctionUnit(fixture.declaration("function", "readSafe", 3), "readSafe",
+            access.semanticType, [BoundReturnStatement(fixture.range(), access.semanticType, access,
+                TypeConversions.classify(access.semanticType, access.semanticType))], fixture.range())
+        let lowered = CollectionControlLoweringPass().lower(function)
+        let statementObject = lowered.statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let emitted = Es6ExpressionOrchestrator().emit(returned.value)
+        let code = emitted.code.replace(Es6NameMangler.mangle(receiver.symbolIdentity.value), "read()")
+        let root = File(".flat-es6-safe-field-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, "let calls=0; let value=null; function read(){calls++;return value;}\n" +
+            "console.log(" + code + ",calls); value={" + Es6NameMangler.mangle(field.value) + ":0};\n" +
+            "console.log(" + code + ",calls);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("null 1\n0 2\n")
+    }
+    async test `null fallback evaluates left once and fallback only when needed`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let boolType = SemanticTypes.boolType()
+        let signature = FunctionSemanticType(SemanticType[], boolType)
+        let left = BoundReferenceExpression(fixture.range(), signature, "left", fixture.symbol("local", "left", 1))
+        let right = BoundReferenceExpression(fixture.range(), signature, "right", fixture.symbol("local", "right", 2))
+        let expression = BoundBinaryExpression(fixture.range(), boolType, "?:",
+            BoundFunctionInvocationExpression(fixture.range(), left, signature, BoundExpression[]),
+            BoundFunctionInvocationExpression(fixture.range(), right, signature, BoundExpression[]))
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 3), "run", boolType,
+            [BoundReturnStatement(fixture.range(), boolType, expression, TypeConversions.classify(boolType, boolType))], fixture.range())
+        let statementObject = CollectionControlLoweringPass().lower(function).statements().first
+        let returned = (BoundReturnStatement)statementObject
+        let emitted = Es6ExpressionOrchestrator().emit(returned.value)
+        let leftName = Es6NameMangler.mangle(left.symbolIdentity.value)
+        let rightName = Es6NameMangler.mangle(right.symbolIdentity.value)
+        let root = File(".flat-es6-fallback-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination,
+            "let reads=0, fallbacks=0; let " + leftName + "=()=>{reads++;return false;}; let " + rightName + "=()=>{fallbacks++;return true;};\n" +
+            "console.log(" + emitted.code + ", reads, fallbacks);\n" +
+            leftName + "=()=>{reads++;return null;}; console.log(" + emitted.code + ", reads, fallbacks);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("false 1 0\ntrue 2 1\n")
+    }
+    async test `lowered lazy static getter defers caches false and retries throws`() {
+        executeLazy(false)
+        executeLazy(true)
+    }
+
+    async executeLazy(Bool nullValue) {
+        let fixture = Es6BoundWriter_TestFixture()
+        let owner = fixture.declaration("class", "LazyCache", 1)
+        let getter = fixture.declaration("static-method", "value", 2)
+        let boolType = nullValue ? SemanticTypes.objectType() : SemanticTypes.boolType()
+        let result = nullValue ? "null" : "false"
+        let body = BoundStatement[]
+        body.add(BoundExternalStatement(fixture.range(), "es6", [BoundExternalCodeSegment(
+            fixture.range(), "globalThis.attempts++; if (globalThis.attempts === 1) throw new Error('retry'); return " + result + ";"
+        )]))
+        let method = BoundFunctionUnit(getter, "value", boolType, body, fixture.range(),
+            staticFunction: true, lazyProperty: true)
+        let input = BoundTypeUnit(owner, UserClassSemanticType(owner), [method], fixture.range())
+        expect(Es6UnitOrchestrator().emitType(input, 0).diagnostic.code).toBe("es6.unlowered-lazy-property")
+        let lowered = TypeFeatureLowering.lowerLazyProperties(input)
+        let emitted = Es6UnitOrchestrator().emitType(lowered, 0)
+        let call = Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(getter.value) + "()"
+        let root = File(".flat-es6-lazy-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "lazy.js")
+        Es6ArtifactCommitter().commit(destination, "globalThis.attempts = 0;\n" + emitted.fragment.code +
+            "console.log(globalThis.attempts); try { " + call + "; } catch (e) {}\n" +
+            "console.log(globalThis.attempts); console.log(" + call + "); console.log(" + call +
+            "); console.log(globalThis.attempts);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("0\n1\n" + result + "\n" + result + "\n2\n")
+    }
     async test `parsed throw catch finally executes under Node`() {
+        executeCatch(false)
+    }
+
+    async test `parsed catch all executes under Node`() {
+        executeCatch(true)
+    }
+
+    async executeCatch(Bool acceptsSoftExceptions) {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:exception-execute"), "revision:one"
         )
@@ -18,7 +191,8 @@ testable class {
             token("try", Token.Type.IDENTIFIER, 1), token("{", Token.Type.SYMBOL, 5),
             token("throw", Token.Type.IDENTIFIER, 7), token("'failure'", Token.Type.STRING, 13),
             token(";", Token.Type.SYMBOL, 22), token("}", Token.Type.SYMBOL, 24),
-            token("catch", Token.Type.IDENTIFIER, 26), token("(", Token.Type.SYMBOL, 32),
+            token("catch", Token.Type.IDENTIFIER, 26), token(acceptsSoftExceptions ? "all" : " ", acceptsSoftExceptions ? Token.Type.IDENTIFIER : Token.Type.WHITESPACE, 32),
+            token("(", Token.Type.SYMBOL, 36),
             token("String", Token.Type.IDENTIFIER, 33), token("error", Token.Type.IDENTIFIER, 40),
             token(")", Token.Type.SYMBOL, 45), token("{", Token.Type.SYMBOL, 47),
             token("return", Token.Type.IDENTIFIER, 49), token("error", Token.Type.IDENTIFIER, 56),
@@ -29,6 +203,9 @@ testable class {
             token(";", Token.Type.SYMBOL, 90), token("}", Token.Type.SYMBOL, 92)
         ], snapshot)
         let statements = PrimitiveControlStatementBinder().bind(syntax, snapshot).statements()
+        let tryObject = (Object)statements.first
+        let boundTry = (BoundTryStatement)tryObject
+        expect(boundTry.catchValues().first.acceptsSoftExceptions).toBe(acceptsSoftExceptions)
         let range = syntax.statements().first.range
         let identity = DeclarationIdentity(
             SyntaxIslandIdentity(snapshot, "function", 1), "function", "run"

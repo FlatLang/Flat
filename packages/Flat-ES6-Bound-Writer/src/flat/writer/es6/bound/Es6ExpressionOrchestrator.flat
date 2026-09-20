@@ -58,7 +58,8 @@ class {
         if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
             let value = (BoundDeclarationValueExpression)expression
             return expressions.emitDeclarationValue(
-                expressions.emitReference(value.local), emit(value.value)
+                expressions.emitReference(value.local), emit(BoundConversionExpression(
+                    value.range, value.local.semanticType, value.value, value.storageConversion))
             )
         }
         if (expression.class.isOfType(BoundPostfixUpdateExpression.class)) {
@@ -70,7 +71,8 @@ class {
         if (expression.class.isOfType(BoundAssignmentValueExpression.class)) {
             let value = (BoundAssignmentValueExpression)expression
             return expressions.emitAssignmentValue(
-                expressions.emitReference(value.target), emit(value.value)
+                expressions.emitReference(value.target), emit(BoundConversionExpression(
+                    value.range, value.target.semanticType, value.value, value.storageConversion))
             )
         }
         if (expression.class.isOfType(BoundMemberAssignmentValueExpression.class)) {
@@ -201,7 +203,19 @@ class {
     }
 
     emitCall(BoundCallExpression expression) -> Es6CodeResult {
-        let arguments = emitArguments(expression.argumentValues())
+        if (expression.safeAccess) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+            "es6.unlowered-safe-call", "Safe call requires target-independent lowering"))
+        let values = expression.argumentValues()
+        let conversions = expression.argumentConversions()
+        let converted = BoundExpression[]
+        var Int index
+        while (index < values.count) {
+            let conversion = conversions[index]
+            converted.add(BoundConversionExpression(values[index].range,
+                conversion.toType, values[index], conversion))
+            index++
+        }
+        let arguments = emitArguments(converted)
         if (!arguments.emitted) return arguments
         let kind = expression.target.callableKind.value
         let identity = expression.target.identity.declaration.value

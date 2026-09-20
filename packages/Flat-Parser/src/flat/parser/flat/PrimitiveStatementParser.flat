@@ -59,6 +59,15 @@ class {
         if (first == "native") return PrimitiveExpressionStatementSyntax(
             range(start, end), expression(start, end)
         )
+        var Int assignmentCursor = start
+        var Int assignmentDepth
+        while (assignmentCursor < end) {
+            let value = tokens[assignmentCursor].value
+            if (value == "(" || value == "[" || value == "{") assignmentDepth++
+            else if (value == ")" || value == "]" || value == "}") assignmentDepth--
+            else if (assignmentDepth == 0 && assignmentOperator(value)) return parseAssignment(start, end)
+            assignmentCursor++
+        }
         if (start + 1 < end &&
             (tokens[start + 1].value == "(" ||
                 (tokens[start + 1].value == "." && start + 3 < end &&
@@ -83,19 +92,18 @@ class {
 
     parseLocal(Int start, Int end) -> PrimitiveStatementSyntax {
         var Int declarationStart = start
-        var Bool directTyped
-        if (tokens[start].value == "native" && start + 1 < end && tokens[start + 1].value == "var") {
+        var Bool nativeArrayStorage
+        var Bool mutable
+        while (declarationStart < end &&
+            (tokens[declarationStart].value == "native" ||
+             tokens[declarationStart].value == "native_array" ||
+             tokens[declarationStart].value == "var" ||
+             tokens[declarationStart].value == "let")) {
+            if (tokens[declarationStart].value == "native_array") nativeArrayStorage = true
+            if (tokens[declarationStart].value == "var") mutable = true
             declarationStart++
-        } else if (tokens[start].value == "native_array") {
-            declarationStart++
-            while (declarationStart < end &&
-                (tokens[declarationStart].value == "native" ||
-                 tokens[declarationStart].value == "var")) declarationStart++
-            declarationStart--
-        } else if (tokens[start].value != "let" && tokens[start].value != "var") {
-            directTyped = true
-            declarationStart--
         }
+        declarationStart--
         if (end - declarationStart < 2 ||
             tokens[declarationStart + 1].type != Token.Type.IDENTIFIER) {
             syntax("Local declaration requires a name or type", start, end)
@@ -119,8 +127,8 @@ class {
         var PrimitiveExpressionSyntax initializer
         if (assignment < end) initializer = expression(assignment + 1, end)
         return PrimitiveLocalDeclarationSyntax(
-            range(start, end), !directTyped && tokens[declarationStart].value == "var", name,
-            initializer, declaredTypeName
+            range(start, end), mutable, name,
+            initializer, declaredTypeName, nativeArrayStorage: nativeArrayStorage
         )
     }
 
@@ -136,23 +144,25 @@ class {
     }
 
     parseAssignment(Int start, Int end) -> PrimitiveStatementSyntax {
-        if (end - start >= 6 && tokens[start].type == Token.Type.IDENTIFIER &&
-            tokens[start + 1].value == "[") {
-            var Int close = start + 2
-            while (close < end && tokens[close].value != "]") close++
-            if (close < end - 1 && assignmentOperator(tokens[close + 1].value)) {
-                let receiver = PrimitiveReferenceSyntax(
-                    range(start, start + 1), tokens[start].value
-                )
-                let target = PrimitiveArrayAccessSyntax(
-                    range(start, close + 1), receiver,
-                    expression(start + 2, close)
-                )
-                return PrimitiveArrayAssignmentSyntax(
-                    range(start, end), target, expression(close + 2, end),
-                    tokens[close + 1].value
-                )
+        var Int cursor = start
+        var Int depth
+        while (cursor < end) {
+            let value = tokens[cursor].value
+            if (value == "[" || value == "(") depth++
+            else if (value == "]" || value == ")") depth--
+            else if (depth == 0 && assignmentOperator(value)) {
+                let target = expression(start, cursor)
+                if (target.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                    return PrimitiveMemberAssignmentSyntax(range(start, end),
+                        (PrimitiveMemberAccessSyntax)target, expression(cursor + 1, end), value)
+                }
+                if (target.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
+                    return PrimitiveArrayAssignmentSyntax(range(start, end),
+                        (PrimitiveArrayAccessSyntax)target, expression(cursor + 1, end), value)
+                }
+                break
             }
+            cursor++
         }
         if (end - start >= 5 && tokens[start].type == Token.Type.IDENTIFIER &&
             tokens[start + 1].value == "." && tokens[start + 2].type == Token.Type.IDENTIFIER &&

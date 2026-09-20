@@ -14,19 +14,26 @@ data class extends BoundExpression {
         visible CallableSignature target,
         visible BoundExpression receiver,
         BoundExpression[] argumentValues,
-        TypeConversion[] argumentConversions
+        TypeConversion[] argumentConversions,
+        visible Bool safeAccess = false
     ) {
         if (!range || !semanticType || !target || !argumentValues || !argumentConversions ||
             argumentValues.count != argumentConversions.count ||
-            target.returnType.value() != semanticType.value()) {
+            (!safeAccess && target.returnType.value() != semanticType.value()) ||
+            (safeAccess && (semanticType.kind() != "nullable" ||
+                (target.returnType.value() != semanticType.value() &&
+                    target.returnType.value() != ((NullableSemanticType)semanticType).underlyingType.value())))) {
             throw Exception("Bound call requires target, result type, and aligned arguments/conversions")
         }
         let instanceCall = target.callableKind.value == "instance-method"
         if (instanceCall != (receiver != null)) {
             throw Exception("Bound instance calls require exactly one receiver")
         }
+        if (safeAccess && !instanceCall) throw Exception("Safe call requires an instance target")
+        let receiverType = receiver && safeAccess && receiver.semanticType.kind() == "nullable" ?
+            ((NullableSemanticType)receiver.semanticType).underlyingType : receiver ? receiver.semanticType : null
         if (receiver && (!target.ownerType ||
-            !TypeConversions.classify(receiver.semanticType, target.ownerType).applicable)) {
+            !TypeConversions.classify(receiverType, target.receiverType()).applicable)) {
             throw Exception("Bound call receiver is incompatible with selected target")
         }
         var Int index

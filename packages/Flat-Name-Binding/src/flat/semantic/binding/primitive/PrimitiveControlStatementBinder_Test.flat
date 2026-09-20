@@ -7,6 +7,31 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `binds compound for advance with scoped step`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:compound-for"), "one")
+        let stream = Lexer().lex("var Int step = 2; for (var Int i = 0; i < 6; i += step) { continue; }")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let statements = PrimitiveControlStatementBinder().bind(syntax, snapshot).statements()
+        let loopObject = (Object)statements.last
+        let loop = (BoundForEachStatement)loopObject
+        expect(loop.advance().first.unitKind()).toBe("assignment")
+    }
+    async test `rejects invalid compound for advance`() {
+        let sources = ["for (var Int i = 0; i < 6; i += true) {}",
+            "var Int j = 0; for (var Int i = 0; i < 6; j += 2) {}"]
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-compound-for"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try { PrimitiveControlStatementBinder().bind(syntax, snapshot) }
+            catch (Exception error) { failure = error.message }
+            expect(failure != null).toBe(true)
+        }
+    }
+
     test `binds C style for mechanics and loop local scope`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-c-style-for-bind"), "revision:one"

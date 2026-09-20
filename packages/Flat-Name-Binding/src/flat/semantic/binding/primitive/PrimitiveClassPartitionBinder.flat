@@ -250,14 +250,16 @@ class {
                 let classGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
                     ownerIdentity, syntax.genericParameterName, 0
                 ) : null
-                var SemanticType[] parameterTypes = method.parameterValues().map({
-                    signatureType(_.typeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range)
-                })
+                var SemanticType[] parameterTypes = method.parameterValues().map((parameter) =>
+                    signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics,
+                        syntax, method.range, parameter.nativeArrayStorage)
+                )
                 if (syntax.name == "String") {
                     parameterTypes = SemanticType[]
                     for (parameter in method.parameterValues()) {
                         parameterTypes.add(parameter.typeName == "String" ? owner :
-                            signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics))
+                            signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics,
+                                nativeArrayStorage: parameter.nativeArrayStorage))
                     }
                 }
                 let declaredStringResult = syntax.name == "String" &&
@@ -306,7 +308,8 @@ class {
                     CallableKind(method.staticMethod ? "static-method" : "instance-method"),
                     parameterTypes, returnType, owner,
                     method.parameterValues().filter({ _.defaultValue != null }).count,
-                    method.parameterValues().map({ _.name }), methodGenerics
+                    method.parameterValues().map({ _.name }), methodGenerics,
+                    classGeneric ? GenericDeclaration(owner.declarationIdentity, [classGeneric], owner) : null
                 ))
                 ordinal++
             }
@@ -326,6 +329,8 @@ class {
                 "class", syntax.name
             )
             let type = UserClassSemanticType(typeIdentity)
+            let classGeneric = syntax.genericParameterName ?
+                GenericParameterSemanticType(typeIdentity, syntax.genericParameterName, 0) : null
             for (constructor in syntax.constructorValues()) {
                 let constructorIdentity = DeclarationIdentity(
                     SyntaxIslandIdentity(
@@ -342,7 +347,8 @@ class {
                 var Bool optionalStarted
                 for (parameter in constructor.parameterValues()) {
                     parameterTypes.add(signatureType(
-                        parameter.typeName, syntaxes, snapshot
+                        parameter.typeName, syntaxes, snapshot, classGeneric,
+                        nativeArrayStorage: parameter.nativeArrayStorage
                     ))
                     if (parameter.defaultValue) {
                         optionalStarted = true
@@ -359,7 +365,8 @@ class {
                     type,
                     type,
                     optionalCount,
-                    constructor.parameterValues().map({ _.name })
+                    constructor.parameterValues().map({ _.name }),
+                    ownerGenericDeclaration: classGeneric ? GenericDeclaration(typeIdentity, [classGeneric], type) : null
                 ))
             }
         }
@@ -443,9 +450,31 @@ class {
             let indexType = signatureType(
                 override.indexParameter.typeName, syntaxes, snapshot
             )
-            let elementType = override.elementTypeName == "inferred"
+            var SemanticType elementType = override.elementTypeName == "inferred"
                 ? SemanticTypes.unknownType()
                 : signatureType(override.elementTypeName, syntaxes, snapshot)
+            if (override.elementTypeName == "inferred" && override.getterValues().count == 1) {
+                let statement = override.getterValues().first
+                if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                    let returned = (PrimitiveReturnSyntax)statement
+                    if (returned.value && returned.value.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
+                        let access = (PrimitiveArrayAccessSyntax)returned.value
+                        if (access.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                            let reference = (PrimitiveReferenceSyntax)access.receiver
+                            let field = syntax.fieldValues().firstOrNull({ _.name == reference.name })
+                            if (field) {
+                                let classGeneric = syntax.genericParameterName ?
+                                    GenericParameterSemanticType(ownerIdentity, syntax.genericParameterName, 0) : null
+                                let storage = signatureType(field.typeName, syntaxes, snapshot, classGeneric)
+                                if (storage.kind() == "array") {
+                                    let array = (ArraySemanticType)storage
+                                    elementType = array.elementType
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if (override.getterValues().isNotEmpty) {
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
@@ -486,6 +515,9 @@ class {
                 SyntaxIslandIdentity(syntaxSnapshot, "class", syntax.range.startTokenIndex),
                 "class", syntax.name
             )
+            let classGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
+                ownerIdentity, syntax.genericParameterName, 0
+            ) : null
             var Int ordinal
             for (field in syntax.fieldValues()) {
                 let fieldRange = SourceRange(
@@ -494,7 +526,7 @@ class {
                 )
                 result.add(BoundFieldUnit(
                     field.name, SymbolIdentity(ownerIdentity, "field", ordinal),
-                    signatureType(field.typeName, syntaxes, snapshot), fieldRange,
+                    signatureType(field.typeName, syntaxes, snapshot, classGeneric, nativeArrayStorage: field.nativeArrayStorage), fieldRange,
                     field.visibleField, staticField: field.staticField,
                     mutableField: field.mutableField
                 ))
@@ -517,7 +549,7 @@ class {
                 )
                 result.add(BoundFieldUnit(
                     parameter.name, SymbolIdentity(ownerIdentity, "field", ordinal),
-                    signatureType(parameter.typeName, syntaxes, snapshot), parameterRange,
+                    signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, nativeArrayStorage: parameter.nativeArrayStorage), parameterRange,
                     parameter.visibleParameter
                 ))
                 ordinal++
@@ -533,7 +565,8 @@ class {
         GenericParameterSemanticType classGeneric = null,
         GenericParameterSemanticType[] methodGenerics = GenericParameterSemanticType[],
         PrimitiveClassSyntax implementationOwner = null,
-        SourceRange implementationRange = null
+        SourceRange implementationRange = null,
+        Bool nativeArrayStorage = false
     ) -> SemanticType {
         var String normalized = name
         while (normalized.startsWith("native")) {
@@ -542,11 +575,12 @@ class {
                 normalized = normalized.substring("_array".count)
             }
         }
-        return PrimitiveStructuralTypeResolver(
+        let resolver = PrimitiveStructuralTypeResolver(
             syntaxes: syntaxes, snapshot: snapshot,
             genericParameter: classGeneric, methodGenericParameters: methodGenerics,
             interfaces: interfaces, implementationOwner: implementationOwner,
             implementationRange: implementationRange
-        ).resolve(normalized)
+        )
+        return nativeArrayStorage ? resolver.resolveNativeArrayStorage(normalized) : resolver.resolve(normalized)
     }
 }

@@ -1,6 +1,7 @@
 package flat/compiler
 
 import flat/lexer
+import flat/bound
 import flat/compiler/models
 import flat/parser/flat
 import flat/semantic/binding/primitive
@@ -50,7 +51,7 @@ class {
             let overlay = source.identity.endsWith(".js.flat")
             let partitions = FlatSourceTypePartitioner(
                 maxTypeTokens: maxTokensPerSource, maxTypes: maxTypes
-            ).partition(tokens, snapshot, overlay ? "js" : null)
+            ).partition(tokens, snapshot, "js")
             for (partition in partitions) {
                 if (!packageName) packageName = partition.packageName
                 if (partition.declarationKind != "class" &&
@@ -114,7 +115,7 @@ class {
         let fragments = Es6ArtifactFragment[]
         var Int index
         while (index < types.count) {
-            let emitted = Es6UnitOrchestrator().emitType(types[index], index)
+            let emitted = Es6UnitOrchestrator().emitType(TypeFeatureLowering.lowerLazyProperties(types[index]), index)
             if (!emitted.emitted) {
                 throw Exception("#{emitted.diagnostic.code}: #{emitted.diagnostic.message}")
             }

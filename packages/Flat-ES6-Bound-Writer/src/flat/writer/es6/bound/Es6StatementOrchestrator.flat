@@ -91,28 +91,35 @@ class {
         if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
             let value = (BoundLocalDeclarationStatement)statement
             if (!value.initializer) return statements.emitUninitializedLocal(value)
-            return statements.emitInitializedLocal(value, expressions.emit(value.initializer))
+            return statements.emitInitializedLocal(value, expressions.emit(BoundConversionExpression(
+                value.range, value.local.semanticType, value.initializer, value.conversion)))
         }
         if (statement.class.isOfType(BoundArrayAssignmentStatement.class)) {
             let value = (BoundArrayAssignmentStatement)statement
             return statements.emitAssignmentValue(
-                expressions.emit(value.target), expressions.emit(value.value)
+                expressions.emit(value.target), expressions.emit(BoundConversionExpression(
+                    value.range, value.target.semanticType, value.value, value.conversion))
             )
         }
         if (statement.class.isOfType(BoundAssignmentStatement.class)) {
             let value = (BoundAssignmentStatement)statement
-            return statements.emitAssignment(value, expressions.emit(value.value))
+            return statements.emitAssignment(value, expressions.emit(BoundConversionExpression(
+                value.range, value.target.semanticType, value.value, value.conversion)))
         }
         if (statement.class.isOfType(BoundMemberAssignmentStatement.class)) {
             let value = (BoundMemberAssignmentStatement)statement
+            if (value.compoundOperator) return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
+                "es6.unlowered-compound-store", "Compound field statement requires target-independent lowering"))
             return statements.emitMemberAssignment(
-                value, expressions.emit(value.target), expressions.emit(value.value)
+                value, expressions.emit(value.target), expressions.emit(BoundConversionExpression(
+                    value.range, value.target.semanticType, value.value, value.conversion))
             )
         }
         if (statement.class.isOfType(BoundReturnStatement.class)) {
             let value = (BoundReturnStatement)statement
             if (!value.value) return statements.emitVoidReturn(value)
-            return statements.emitReturn(value, expressions.emit(value.value))
+            return statements.emitReturn(value, expressions.emit(BoundConversionExpression(
+                value.range, value.requiredType, value.value, value.conversion)))
         }
         return Es6CodeResult(diagnostic: Es6BackendDiagnostic(
             "es6.unsupported-statement",

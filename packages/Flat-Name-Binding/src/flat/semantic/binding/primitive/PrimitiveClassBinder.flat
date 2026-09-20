@@ -72,10 +72,13 @@ class {
             })) constructors.add(CallableSignature(
                 SymbolIdentity(constructorIdentity, "constructor"), syntax.name,
                 CallableKind("constructor"),
-                constructorSyntax.parameterValues().map({ typeOf(_.typeName) }),
+                constructorSyntax.parameterValues().map((parameter) => typeOf(parameter.typeName, parameter.nativeArrayStorage)),
                 type, type,
                 constructorSyntax.parameterValues().filter({ _.defaultValue != null }).count,
-                constructorSyntax.parameterValues().map({ _.name })
+                constructorSyntax.parameterValues().map({ _.name }),
+                ownerGenericDeclaration: genericParameter ? GenericDeclaration(
+                    typeIdentity, [genericParameter], type
+                ) : null
             ))
             constructorSignatureIndex++
         }
@@ -122,12 +125,13 @@ class {
                 ),
                 methodKind, method.name
             )
-            var SemanticType[] parameterTypes = method.parameterValues().map({ methodTypeOf(_.typeName, method) })
+            var SemanticType[] parameterTypes = method.parameterValues().map((parameter) => parameter.nativeArrayStorage ?
+                methodTypeResolver(method).resolveNativeArrayStorage(parameter.typeName) : methodTypeOf(parameter.typeName, method))
             if (syntax.name == "String") {
                 parameterTypes = SemanticType[]
                 for (parameter in method.parameterValues()) {
                     parameterTypes.add(parameter.typeName == "String" ? type :
-                        typeOf(parameter.typeName))
+                        typeOf(parameter.typeName, parameter.nativeArrayStorage))
                 }
             }
             let declaredStringResult = syntax.name == "String" &&
@@ -168,7 +172,8 @@ class {
                 SymbolIdentity(methodIdentity, methodKind), method.name,
                 CallableKind(methodKind), parameterTypes, methodReturnType, type,
                 method.parameterValues().filter({ _.defaultValue != null }).count,
-                method.parameterValues().map({ _.name }), methodGenerics
+                method.parameterValues().map({ _.name }), methodGenerics,
+                genericParameter ? GenericDeclaration(typeIdentity, [genericParameter], type) : null
             ))
         }
         let fields = BoundFieldUnit[]
@@ -196,7 +201,7 @@ class {
                 snapshot, field.range.startTokenIndex, field.range.endTokenIndex,
                 field.range.start, field.range.end
             )
-            var SemanticType fieldType = typeOf(field.typeName)
+            var SemanticType fieldType = typeOf(field.typeName, field.nativeArrayStorage)
             var BoundExpression initializer
             if (field.initializer) {
                 let untyped = PrimitiveExpressionBinder().bind(
@@ -227,7 +232,7 @@ class {
         for (parameter in fieldParameters) {
             fields.add(BoundFieldUnit(
                 parameter.name, SymbolIdentity(typeIdentity, "field", fieldIndex),
-                typeOf(parameter.typeName), parameter.range, parameter.visibleParameter
+                typeOf(parameter.typeName, parameter.nativeArrayStorage), parameter.range, parameter.visibleParameter
             ))
             fieldIndex++
         }
@@ -504,6 +509,23 @@ class {
         BoundFieldUnit[] inheritedFields,
         Int ordinal
     ) -> BoundFunctionUnit {
+        let previousResolver = scopedTypeResolver
+        scopedTypeResolver = methodTypeResolver(syntax)
+        try {
+            return bindMethodBody(syntax, typeIdentity, type, fields, inheritedFields, ordinal)
+        } finally {
+            scopedTypeResolver = previousResolver
+        }
+    }
+
+    bindMethodBody(
+        PrimitiveFunctionSyntax syntax,
+        DeclarationIdentity typeIdentity,
+        UserClassSemanticType type,
+        BoundFieldUnit[] fields,
+        BoundFieldUnit[] inheritedFields,
+        Int ordinal
+    ) -> BoundFunctionUnit {
         let methodKind = syntax.staticMethod ? "static-method" : "instance-method"
         let identity = DeclarationIdentity(
             SyntaxIslandIdentity(syntax.range.snapshot, methodKind, syntax.range.startTokenIndex),
@@ -639,7 +661,8 @@ class {
             staticFunction: syntax.staticMethod,
             asyncFunction: syntax.asyncMethod,
             externalName: syntax.externalName,
-            abstractFunction: syntax.abstractMethod
+            abstractFunction: syntax.abstractMethod,
+            lazyProperty: syntax.lazyProperty
         )
     }
 
@@ -862,6 +885,9 @@ class {
             let type = receiverType &&
                 receiverType.declarationIdentity.name == "String" &&
                 value.typeName == "String" ? receiverType :
+                value.nativeArrayStorage ? (method ?
+                    methodTypeResolver(method).resolveNativeArrayStorage(value.typeName) :
+                    typeOf(value.typeName, true)) :
                 method ? methodTypeOf(value.typeName, method) : typeOf(value.typeName)
             var BoundExpression defaultValue
             if (value.defaultValue) {
@@ -932,8 +958,15 @@ class {
         CallableSignature[] callables,
         CallableSignature scopedArrayGetter = null,
         CallableSignature scopedArraySetter = null,
-        PrimitiveStructuralTypeResolver typeResolver = null
+        PrimitiveStructuralTypeResolver typeResolver = null,
+        BoundFieldUnit[] availableFields = BoundFieldUnit[]
     ) -> BoundExpression {
+        if (!availableFields || availableFields.any({ !_ })) {
+            throw Exception("Scoped expression requires valid published fields")
+        }
+        let previousFields = publishedFields
+        publishedFields = BoundFieldUnit[]
+        publishedFields.addAll(availableFields)
         let previousConstructors = constructors
         let previousTypeResolver = scopedTypeResolver
         scopedTypeResolver = typeResolver
@@ -951,6 +984,7 @@ class {
             return expression(syntax, receiver, fields, locals)
         } finally {
             constructors = previousConstructors
+            publishedFields = previousFields
             scopedTypeResolver = previousTypeResolver
             boundType = previousBoundType
             arrayGetter = previousArrayGetter
@@ -966,22 +1000,54 @@ class {
         SemanticType requiredType = null
     ) -> BoundExpression {
         if (!syntax) throw Exception("Reduced method expression syntax is required")
+        if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class) &&
+            ((PrimitiveMemberAccessSyntax)syntax).safeAccess) {
+            let access = (PrimitiveMemberAccessSyntax)syntax
+            let owner = expression(access.receiver, receiver, fields, locals)
+            let ownerType = owner.semanticType.kind() == "nullable" ?
+                ((NullableSemanticType)owner.semanticType).underlyingType : owner.semanticType
+            let candidates = BoundFieldUnit[]
+            candidates.addAll(fields)
+            candidates.addAll(publishedFields)
+            let field = candidates.firstOrNull((candidate) =>
+                !candidate.staticField && candidate.name == access.memberName &&
+                ownerType.value() == "class:#{candidate.identity.declaration.value}")
+            if (!field) throw Exception("Safe member requires a resolved instance field")
+            let resultType = field.semanticType.kind() == "nullable" ? field.semanticType :
+                NullableSemanticType(field.semanticType)
+            return BoundMemberAccessExpression(access.range, resultType, owner,
+                field.name, field.identity, safeAccess: true)
+        }
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class) &&
+            ((PrimitiveMemberCallSyntax)syntax).safeAccess) {
+            let call = (PrimitiveMemberCallSyntax)syntax
+            if (call.namedArgumentValues().isNotEmpty || call.typeArgumentNames().isNotEmpty) {
+                throw Exception("Safe call requires positional arguments without explicit type arguments")
+            }
+            let owner = expression(call.receiver, receiver, fields, locals)
+            let ownerType = owner.semanticType.kind() == "nullable" ?
+                ((NullableSemanticType)owner.semanticType).underlyingType : owner.semanticType
+            let arguments = BoundExpression[]
+            for (argument in call.argumentValues()) arguments.add(expression(argument, receiver, fields, locals))
+            let candidates = constructors.filter((candidate) =>
+                candidate.callableKind.value == "instance-method" && candidate.name == call.memberName)
+            let resolution = OverloadResolver.resolve(call.memberName, candidates, ownerType,
+                arguments.map({ _.semanticType }), call.range)
+            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
+            let target = resolution.selected
+            let checked = CallTypeChecker.check(target, ownerType, arguments.map({ _.semanticType }), call.range)
+            if (!checked.valid) throw Exception(checked.diagnostic.message)
+            let resultType = checked.semanticType.kind() == "nullable" ? checked.semanticType :
+                NullableSemanticType(checked.semanticType)
+            return BoundCallExpression(call.range, resultType, target, owner, arguments,
+                checked.argumentConversions(), safeAccess: true)
+        }
         if (requiredType && syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
             let bound = PrimitiveExpressionBinder().bind(
                 syntax, requiredType: requiredType, locals: locals, callables: constructors
             )
             if (!bound.succeeded) throw Exception(bound.diagnostic.message)
             return bound.expression
-        }
-        if (!receiver && syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
-            let access = (PrimitiveMemberAccessSyntax)syntax
-            if (!access.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
-                throw Exception("Static method cannot access an instance receiver")
-            }
-            let receiverName = ((PrimitiveReferenceSyntax)access.receiver).name
-            if (!locals.any({ _.name == receiverName }) && access.memberName != "class") {
-                throw Exception("Static method cannot access an instance receiver")
-            }
         }
         if (!receiver && syntax.class.isOfType(PrimitiveClassNameSyntax.class)) {
             throw Exception("Static method cannot access an instance receiver")
@@ -1503,7 +1569,10 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveMemberAssignmentValueSyntax.class)) {
             let value = (PrimitiveMemberAssignmentValueSyntax)syntax
-            let target = member(value.target, receiver, fields)
+            let targetObject = expression(value.target, receiver, fields, locals)
+            if (!targetObject.class.isOfType(BoundMemberAccessExpression.class)) throw Exception("Member assignment value requires a stored field")
+            let target = (BoundMemberAccessExpression)targetObject
+            if (target.safeAccess) throw Exception("Safe member assignment is not supported")
             let operand = expression(value.value, receiver, fields, locals)
             let operator = compoundOperator(value.assignmentOperator)
             let typed = TypeOperations.binary(
@@ -1646,6 +1715,9 @@ class {
         if (syntax.class.isOfType(PrimitiveUnarySyntax.class)) {
             let value = (PrimitiveUnarySyntax)syntax
             let operand = expression(value.operand, receiver, fields, locals)
+            if (value.operator == "++" || value.operator == "--") {
+                return PrimitiveExpressionBinder.bindPrefixUpdate(value.range, value.operator, operand)
+            }
             if (value.operator == "!") {
                 if (receiver) {
                     let operandTypeValue = operand.semanticType.value()
@@ -1818,6 +1890,7 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
             let value = (PrimitiveConstructionSyntax)syntax
+            let typeArguments = value.typeArgumentNames()
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 if (argument.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
@@ -1842,7 +1915,8 @@ class {
             let candidates = constructors.filter((candidate) =>
                 candidate.callableKind.value == "constructor" &&
                 candidate.name == value.typeName
-            )
+            ).map((candidate) => typeArguments.isEmpty ? candidate :
+                candidate.instantiateConstructor(typeArguments.map({ typeOf(_) })))
             let resolution = OverloadResolver.resolve(
                 value.typeName, candidates, null,
                 arguments.map({ _.semanticType }), value.range
@@ -2134,6 +2208,33 @@ class {
                     field.name, field.identity
                 )
             }
+            if (projectedReceiver.semanticType.kind() == "generic-instance") {
+                let instanceObject = (Object)projectedReceiver.semanticType
+                let instance = (GenericInstanceSemanticType)instanceObject
+                let field = publishedFields.firstOrNull((candidate) =>
+                    instance.declarationType.value() == "class:#{candidate.identity.declaration.value}" &&
+                    candidate.name == access.memberName)
+                let owner = constructors.firstOrNull((candidate) =>
+                    candidate.ownerType && candidate.ownerType.value() == instance.declarationType.value() &&
+                    candidate.ownerGenericDeclaration != null)
+                if (field && owner) {
+                    let substitution = GenericSubstitution(
+                        owner.ownerGenericDeclaration.genericParameters(), instance.typeArguments())
+                    return BoundMemberAccessExpression(access.range,
+                        substitution.apply(field.semanticType), projectedReceiver, field.name, field.identity)
+                }
+                let property = constructors.firstOrNull((candidate) =>
+                    candidate.callableKind.value == "instance-method" &&
+                    candidate.ownerType.value() == instance.declarationType.value() &&
+                    candidate.name == access.memberName && candidate.parameterTypes().isEmpty)
+                if (property) {
+                    let target = property.instantiateReceiver(instance)
+                    let checked = CallTypeChecker.check(target, instance, SemanticType[], access.range)
+                    if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    return BoundCallExpression(access.range, checked.semanticType, target,
+                        projectedReceiver, BoundExpression[], checked.argumentConversions())
+                }
+            }
             if (projectedReceiver.semanticType.kind() == "user-class") {
                 let field = publishedFields.firstOrNull((candidate) =>
                     projectedReceiver.semanticType.value() ==
@@ -2163,6 +2264,11 @@ class {
                     )
                 }
             }
+            let ownedField = fields.firstOrNull((field) =>
+                field.name == access.memberName && projectedReceiver.semanticType.value() ==
+                    "class:#{field.identity.declaration.value}")
+            if (ownedField) return BoundMemberAccessExpression(access.range, ownedField.semanticType,
+                projectedReceiver, ownedField.name, ownedField.identity)
             let inherited = locals.firstOrNull((field) =>
                 field.identity.symbolKind == "field" && field.name == access.memberName
             )
@@ -2294,9 +2400,10 @@ class {
         )
     }
 
-    typeOf(String name) -> SemanticType => scopedTypeResolver ? scopedTypeResolver.resolve(name) : PrimitiveStructuralTypeResolver(
-        callables: constructors,
-        genericParameter: genericParameter,
-        receiverType: boundType, interfaces: interfaces
-    ).resolve(name)
+    typeOf(String name, Bool nativeArrayStorage = false) -> SemanticType {
+        let resolver = scopedTypeResolver ?: PrimitiveStructuralTypeResolver(
+            callables: constructors, genericParameter: genericParameter,
+            receiverType: boundType, interfaces: interfaces)
+        return nativeArrayStorage ? resolver.resolveNativeArrayStorage(name) : resolver.resolve(name)
+    }
 }

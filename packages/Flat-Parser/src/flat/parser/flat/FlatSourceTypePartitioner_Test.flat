@@ -154,6 +154,16 @@ testable class {
         expect(selected.first.tokenValues().any({ _.value == "run" })).toBe(true)
     }
 
+    async test `selects negated target members`() {
+        let stream = Lexer().lex("class Sample { [Target not c] run() {} [Target not js] other() {} }")
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:negated-target"), "one")
+        let selected = FlatSourceTypePartitioner().partition(tokens, snapshot, "js")
+        expect(selected.first.tokenValues().any({ _.value == "run" })).toBe(true)
+        expect(selected.first.tokenValues().any({ _.value == "other" })).toBe(false)
+    }
+
     async test `preserves adjacent bodyless member boundaries`() {
         let source = "package flat/test class Bool { " +
             "public compare(Bool other) => value == other ? 0 : -1 " +

@@ -9,12 +9,19 @@ data class extends BoundStatement {
         SourceRange range,
         visible BoundMemberAccessExpression target,
         visible BoundExpression value,
-        visible TypeConversion conversion
+        visible TypeConversion conversion,
+        visible String compoundOperator = null
     ) {
         if (!range || !target || !value || !conversion || !conversion.applicable ||
-            conversion.fromType.value() != value.semanticType.value() ||
+            (!compoundOperator && conversion.fromType.value() != value.semanticType.value()) ||
             conversion.toType.value() != target.semanticType.value()) {
             throw Exception("Bound member assignment requires consistent target and conversion")
+        }
+        if (compoundOperator) {
+            let typed = TypeOperations.binary(compoundOperator, target.semanticType, value.semanticType, range)
+            if (!typed.valid || typed.semanticType.value() != conversion.fromType.value()) {
+                throw Exception("Compound member assignment requires operation conversion evidence")
+            }
         }
         super(range)
     }

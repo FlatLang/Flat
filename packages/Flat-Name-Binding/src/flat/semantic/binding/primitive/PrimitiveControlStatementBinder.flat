@@ -120,7 +120,9 @@ class {
                 )
                 var SemanticType localType = initialized.semanticType
                 if (value.initializer.declaredTypeName) {
-                    localType = loopLocalType(value.initializer.declaredTypeName)
+                    localType = value.initializer.nativeArrayStorage ?
+                        currentTypeResolver.resolveNativeArrayStorage(value.initializer.declaredTypeName) :
+                        loopLocalType(value.initializer.declaredTypeName)
                 }
                 var TypeConversion conversion = TypeConversions.classify(
                     initialized.semanticType, localType
@@ -148,13 +150,20 @@ class {
                 let condition = bindCondition(
                     value.condition, loopLocals, callables, receiver, fields
                 )
-                if (value.advance.name != value.initializer.name ||
-                    value.advance.assignmentOperator != "=") {
+                if (value.advance.name != value.initializer.name) {
                     throw Exception("For advance must assign the loop local")
                 }
-                let advanced = classExpression(
+                var BoundExpression advanced = classExpression(
                     value.advance.value, receiver, fields, loopLocals, callables
                 )
+                if (value.advance.assignmentOperator != "=") {
+                    let operator = binaryOperator(value.advance.assignmentOperator)
+                    let operation = TypeOperations.binary(
+                        operator, localType, advanced.semanticType, value.advance.range)
+                    if (!operation.valid) throw Exception(operation.diagnostic.message)
+                    advanced = BoundBinaryExpression(value.advance.range,
+                        operation.semanticType, operator, local, advanced)
+                }
                 var TypeConversion advanceConversion = TypeConversions.classify(
                     advanced.semanticType, localType
                 )
@@ -391,7 +400,8 @@ class {
                     catchLocals.add(LocalBinding(caught.name, identity, catchType))
                     catches.add(BoundCatchClause(
                         caught.range, local,
-                        bindStatements(caught.statements(), snapshot, catchLocals, callables, receiver, fields)
+                        bindStatements(caught.statements(), snapshot, catchLocals, callables, receiver, fields),
+                        acceptsSoftExceptions: caught.acceptsSoftExceptions
                     ))
                     catchIndex++
                 }
@@ -475,8 +485,19 @@ class {
                 ))
             } else if (statement.class.isOfType(PrimitiveMemberAssignmentSyntax.class)) {
                 let value = (PrimitiveMemberAssignmentSyntax)statement
-                if (!receiver) throw Exception("Member assignment requires an instance receiver")
-                let target = member(value.target, receiver, fields)
+                var BoundExpression targetObject
+                if (value.target.receiver.class.isOfType(PrimitiveReferenceSyntax.class) &&
+                    ((PrimitiveReferenceSyntax)value.target.receiver).name == "this") {
+                    if (!receiver) throw Exception("Member assignment requires an instance receiver")
+                    targetObject = member(value.target, receiver, fields)
+                } else {
+                    targetObject = classExpression(value.target, receiver, fields, scopeLocals, callables)
+                }
+                if (!targetObject.class.isOfType(BoundMemberAccessExpression.class)) {
+                    throw Exception("Member assignment requires a stored field")
+                }
+                let target = (BoundMemberAccessExpression)targetObject
+                if (target.safeAccess) throw Exception("Safe member assignment is not supported")
                 let operand = classExpression(
                     value.value, receiver, fields, scopeLocals, callables
                 )
@@ -487,9 +508,17 @@ class {
                         operator, target.semanticType, expression.semanticType, value.range
                     )
                     if (!operation.valid) throw Exception(operation.diagnostic.message)
-                    expression = BoundBinaryExpression(
-                        value.range, operation.semanticType, operator, target, expression
-                    )
+                    let storage = TypeConversions.classify(operation.semanticType, target.semanticType)
+                    if (storage.applicable && operation.semanticType.value() == target.semanticType.value()) {
+                        result.add(BoundExpressionStatement(value.range,
+                            BoundMemberAssignmentValueExpression(value.range, operation.semanticType,
+                                target, operator, operand, storage)))
+                        continue
+                    }
+                    let narrowed = TypeConversions.classify(operation.semanticType, target.semanticType, explicit: true)
+                    if (!narrowed.applicable) throw Exception("Member assignment type mismatch")
+                    result.add(BoundMemberAssignmentStatement(value.range, target, operand, narrowed, operator))
+                    continue
                 }
                 let conversion = TypeConversions.classify(
                     expression.semanticType, target.semanticType,
@@ -577,7 +606,8 @@ class {
                     throw Exception("Duplicate local '#{value.name}'")
                 }
                 var SemanticType semanticType = value.declaredTypeName ?
-                    localType(value.declaredTypeName, callables, receiver) :
+                    (value.nativeArrayStorage ? currentTypeResolver.resolveNativeArrayStorage(value.declaredTypeName) :
+                        localType(value.declaredTypeName, callables, receiver)) :
                     SemanticTypes.unknownType()
                 var BoundExpression initialized
                 if (value.initializer) {
@@ -585,7 +615,7 @@ class {
                         ? classExpression(value.initializer, receiver, fields, scopeLocals, callables)
                         : PrimitiveClassBinder().bindScopedExpression(
                         value.initializer, receiver, fields, scopeLocals, callables,
-                        currentArrayGetter, currentArraySetter, currentTypeResolver
+                        currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields
                     )
                     if (!value.declaredTypeName) semanticType = initialized.semanticType
                 }
@@ -757,6 +787,20 @@ class {
                 )
             }
         }
+        if (syntax.class.isOfType(PrimitiveMemberAssignmentValueSyntax.class)) {
+            let value = (PrimitiveMemberAssignmentValueSyntax)syntax
+            let targetObject = classExpression(value.target, receiver, fields, locals, callables)
+            if (!targetObject.class.isOfType(BoundMemberAccessExpression.class)) throw Exception("Member assignment value requires a stored field")
+            let target = (BoundMemberAccessExpression)targetObject
+            if (target.safeAccess) throw Exception("Safe member assignment is not supported")
+            let operand = classExpression(value.value, receiver, fields, locals, callables)
+            let operator = binaryOperator(value.assignmentOperator)
+            let typed = TypeOperations.binary(operator, target.semanticType, operand.semanticType, value.range)
+            if (!typed.valid) throw Exception(typed.diagnostic.message)
+            let conversion = TypeConversions.classify(typed.semanticType, target.semanticType)
+            if (!conversion.applicable) throw Exception("Member assignment value type mismatch")
+            return BoundMemberAssignmentValueExpression(value.range, typed.semanticType, target, operator, operand, conversion)
+        }
         if (syntax.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
             let value = (PrimitiveMemberAccessSyntax)syntax
             if (value.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
@@ -785,6 +829,11 @@ class {
             let projectedReceiver = classExpression(
                 value.receiver, receiver, fields, locals, callables
             )
+            if (projectedReceiver.semanticType.kind() == "generic-instance") {
+                return PrimitiveClassBinder().bindScopedExpression(
+                    syntax, receiver, fields, locals, callables,
+                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields)
+            }
             if (projectedReceiver.semanticType.kind() == "array") {
                 if (value.memberName == "data") {
                     return BoundNativeArrayDataExpression(value.range, projectedReceiver)
@@ -819,7 +868,12 @@ class {
                 }
             }
             if (projectedReceiver.semanticType.kind() == "user-class") {
-                let field = currentAvailableFields.firstOrNull((candidate) =>
+                var BoundFieldUnit field = currentAvailableFields.firstOrNull((candidate) =>
+                    projectedReceiver.semanticType.value() ==
+                        "class:#{candidate.identity.declaration.value}" &&
+                    candidate.name == value.memberName
+                )
+                if (!field) field = fields.firstOrNull((candidate) =>
                     projectedReceiver.semanticType.value() ==
                         "class:#{candidate.identity.declaration.value}" &&
                     candidate.name == value.memberName
@@ -844,6 +898,7 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
             let value = (PrimitiveConstructionSyntax)syntax
+            let typeArguments = value.typeArgumentNames()
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 if (argument.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
@@ -870,7 +925,8 @@ class {
             let candidates = callables.filter((candidate) =>
                 candidate.callableKind.value == "constructor" &&
                 candidate.ownerType.declarationIdentity.name == value.typeName
-            )
+            ).map((candidate) => typeArguments.isEmpty ? candidate :
+                candidate.instantiateConstructor(typeArguments.map({ currentTypeResolver.resolve(_) })))
             let resolution = OverloadResolver.resolve(
                 value.typeName, candidates, null,
                 arguments.map({ _.semanticType }), value.range
@@ -937,6 +993,9 @@ class {
             let operand = classExpression(
                 value.operand, receiver, fields, locals, callables
             )
+            if (value.operator == "++" || value.operator == "--") {
+                return PrimitiveExpressionBinder.bindPrefixUpdate(value.range, value.operator, operand)
+            }
             let typed = TypeOperations.unary(
                 value.operator, operand.semanticType, value.range
             )
@@ -1229,6 +1288,7 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {
             let value = (PrimitiveConstructionSyntax)syntax
+            let typeArguments = value.typeArgumentNames()
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 arguments.add(classExpression(
@@ -1238,7 +1298,8 @@ class {
             let candidates = callables.filter((candidate) =>
                 candidate.callableKind.value == "constructor" &&
                 candidate.name == value.typeName
-            )
+            ).map((candidate) => typeArguments.isEmpty ? candidate :
+                candidate.instantiateConstructor(typeArguments.map({ currentTypeResolver.resolve(_) })))
             if (candidates.isNotEmpty) {
                 let resolution = OverloadResolver.resolve(
                     value.typeName, candidates, null,

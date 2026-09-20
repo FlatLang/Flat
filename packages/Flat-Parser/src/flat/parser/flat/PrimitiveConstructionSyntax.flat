@@ -5,11 +5,13 @@ import flat/compiler/models
 /** Syntax-only constructor invocation. */
 data class extends PrimitiveExpressionSyntax {
     var PrimitiveExpressionSyntax[] arguments
+    var String[] typeArguments
 
     public construct(
         SourceRange range,
         visible String typeName,
-        PrimitiveExpressionSyntax[] argumentValues
+        PrimitiveExpressionSyntax[] argumentValues,
+        String[] typeArgumentNames = String[]
     ) {
         if (!range || !typeName || typeName.trim().count == 0 || !argumentValues ||
             argumentValues.any({ !_ })) {
@@ -17,8 +19,14 @@ data class extends PrimitiveExpressionSyntax {
         }
         super(range)
         arguments = PrimitiveExpressionSyntax[]
+        if (!typeArgumentNames || typeArgumentNames.any((name) => !name || name.trim().count == 0)) {
+            throw Exception("Construction type arguments require nonempty names")
+        }
+        typeArguments = String[]
+        typeArguments.addAll(typeArgumentNames)
         arguments.addAll(argumentValues)
     }
+    public typeArgumentNames() -> String[] => String[]:addAll(typeArguments)
     public argumentValues() -> PrimitiveExpressionSyntax[] =>
         PrimitiveExpressionSyntax[]:addAll(arguments)
     override public expressionKind() => "construction"

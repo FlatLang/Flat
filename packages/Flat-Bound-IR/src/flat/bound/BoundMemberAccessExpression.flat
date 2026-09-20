@@ -9,10 +9,14 @@ data class extends BoundExpression {
         SemanticType semanticType,
         visible BoundExpression receiver,
         visible String memberName,
-        visible SymbolIdentity memberIdentity
+        visible SymbolIdentity memberIdentity,
+        visible Bool safeAccess = false
     ) {
         if (!range || !semanticType || !receiver || !memberName || !memberIdentity) {
             throw Exception("Bound member access requires receiver, member, and type")
+        }
+        if (safeAccess && semanticType.kind() != "nullable") {
+            throw Exception("Safe field access requires a nullable result")
         }
         super(range, semanticType)
     }

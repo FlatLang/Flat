@@ -79,7 +79,8 @@ class {
                 )
             }
             let conversion = TypeConversions.classify(
-                expression.semanticType, local.semanticType
+                expression.semanticType, local.semanticType,
+                explicit: value.assignmentOperator != "="
             )
             if (!conversion.applicable) {
                 throw Exception("Cannot assign '#{expression.semanticType.value()}' to '#{local.semanticType.value()}'")

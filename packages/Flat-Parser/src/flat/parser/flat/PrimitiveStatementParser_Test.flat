@@ -3,6 +3,35 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `retains native array storage after var native modifiers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:storage-order"), "one")
+        let values = [token("var", Token.Type.IDENTIFIER, 1),
+            token("native", Token.Type.IDENTIFIER, 5), token("native_array", Token.Type.IDENTIFIER, 12),
+            token("Char", Token.Type.IDENTIFIER, 25), token("[", Token.Type.SYMBOL, 29),
+            token("]", Token.Type.SYMBOL, 30), token("chars", Token.Type.IDENTIFIER, 32)]
+        let parsed = PrimitiveStatementParser().parse(values, snapshot, 30).statements().first
+        let local = (PrimitiveLocalDeclarationSyntax)parsed
+        expect(local.nativeArrayStorage).toBe(true)
+        expect(local.mutable).toBe(true)
+        expect(local.declaredTypeName).toBe("Char[]")
+        expect(local.range.startTokenIndex).toBe(30)
+        expect(local.range.endTokenIndex).toBe(37)
+    }
+
+    test `parses call receiver compound field statement`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:call-field-store"), "one")
+        let parsed = PrimitiveStatementParser().parse([
+            token("next", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token(")", Token.Type.SYMBOL, 6), token(".", Token.Type.SYMBOL, 7),
+            token("count", Token.Type.IDENTIFIER, 8), token("+=", Token.Type.SYMBOL, 14),
+            token("2", Token.Type.INTEGER, 17)
+        ], snapshot, 30).statements().first
+        let assignment = (PrimitiveMemberAssignmentSyntax)parsed
+        expect(assignment.target.receiver.class.isOfType(PrimitiveCallSyntax.class)).toBe(true)
+        expect(assignment.assignmentOperator).toBe("+=")
+        expect(assignment.range.startTokenIndex).toBe(30)
+        expect(assignment.range.endTokenIndex).toBe(37)
+    }
     test `parses native storage local`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-local"), "one")
         let parsed = PrimitiveStatementParser().parse([
@@ -96,6 +125,7 @@ testable class {
 
         expect(local.name).toBe("buf")
         expect(local.declaredTypeName).toBe("Char[]")
+        expect(local.nativeArrayStorage).toBe(true)
     }
 
     test `parses array element assignment with indexed value`() {

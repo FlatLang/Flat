@@ -214,8 +214,10 @@ class {
                     annotationEnd++
                 }
                 if (annotationEnd >= result.count) break
-                let targetMatches = preserveTarget && annotationEnd > index + 2 &&
-                    result[index + 2].value == preserveTarget
+                let targetMatches = preserveTarget &&
+                    ((annotationEnd == index + 3 && result[index + 2].value == preserveTarget) ||
+                     (annotationEnd == index + 4 && result[index + 2].value == "not" &&
+                      result[index + 3].value != preserveTarget))
                 if (targetMatches) {
                     var Int annotationCursor = index
                     while (annotationCursor <= annotationEnd) {

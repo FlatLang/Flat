@@ -69,6 +69,27 @@ class {
                     staticMethod, false, asyncMethod, externalName, false, genericNames
                 )
             }
+            if (index + 1 < tokens.count && tokens[index].value == "this" &&
+                tokens[index + 1].value == ":") {
+                let receiverStart = index
+                index += 2
+                let callStart = index
+                let callExpression = PrimitiveExpressionParser().parse(
+                    tokens.skip(callStart), snapshot, callStart + tokenIndexOffset
+                )
+                if (!callExpression.class.isOfType(PrimitiveCallSyntax.class)) {
+                    syntax("Receiver-return shorthand requires one method call", callStart)
+                }
+                let call = (PrimitiveCallSyntax)callExpression
+                let receiver = PrimitiveReferenceSyntax(range(receiverStart, receiverStart + 1), "this")
+                index = tokens.count
+                let invocation = PrimitiveMemberCallSyntax(range(receiverStart, index), receiver,
+                    call.name, call.argumentValues(), call.namedArgumentValues())
+                return PrimitiveFunctionSyntax(range(start, index), name, parameters, "this", [
+                    PrimitiveExpressionStatementSyntax(invocation.range, invocation),
+                    PrimitiveReturnSyntax(receiver.range, receiver)
+                ], staticMethod, false, asyncMethod, externalName, false, genericNames)
+            }
             let expressionStart = index
             if (expressionStart >= tokens.count) syntax("Expected method expression", index)
             let bodyStart = fallbackBodyStart(expressionStart)
@@ -226,8 +247,10 @@ class {
                 index++
             }
             if (index < tokens.count && tokens[index].value == "var") index++
+            var Bool nativeArrayStorage
             while (index < tokens.count &&
                 (tokens[index].value == "native_array" || tokens[index].value == "native")) {
+                if (tokens[index].value == "native_array") nativeArrayStorage = true
                 index++
             }
             var String typeName
@@ -294,7 +317,8 @@ class {
                 )
             }
             parameters.add(PrimitiveFunctionParameterSyntax(
-                range(start, index), typeName, name, defaultValue
+                range(start, index), typeName, name, defaultValue,
+                nativeArrayStorage: nativeArrayStorage
             ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++

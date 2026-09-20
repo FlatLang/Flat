@@ -15,6 +15,7 @@ testable class {
     async test `grouped conditional field access executes under Node`() {
         let stream = Lexer().lex(
             "class Value { Int count; construct(Int input) { count = input; } " +
+                "prefix(Int value) -> Int { return ++value * 10 + --value; } " +
                 "select(Bool choose, Value other) -> Int { return ((choose) ? (this) : other).count; } " +
                 "grouped(Value other) -> Int { return (other).count; } " +
                 "identity(Value other) -> Value { return (other); } " +
@@ -69,12 +70,14 @@ testable class {
         let branchName = Es6NameMangler.mangle(
             type.functionUnits().firstOrNull({ _.name == "branch" }).identity.value
         )
+        let prefixName = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "prefix" }).identity.value)
         let root = File(".flat-es6-grouped-field-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "grouped.js")
         Es6ArtifactCommitter().commit(destination,
             emitted.fragment.code + "const left = new " + className + "(41); const right = new " +
                 className + "(42); console.log(left." + selectName + "(true, right)); " +
+                "if (left." + prefixName + "(2) !== 32) throw new Error('prefix update value/order failed'); " +
                 "console.log(left." + selectName + "(false, right)); " +
                 "if (left." + groupedName + "(right) !== 42) throw new Error('grouped reference failed'); " +
                 "if (left." + identityName + "(right) !== right) throw new Error('grouping changed identity'); " +
@@ -356,6 +359,28 @@ testable class {
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("z\n")
         Es6ArtifactFiles.remove(root)
+    }
+
+    async test `receiver return shorthand ignores call result`() {
+        let stream = Lexer().lex("class Value { Int count; accept(Int value) -> Int { count = value; return 7; } " +
+            "chain(Int value) => this:accept(value)\n read() -> Int { return count; } }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:receiver-return"), "one")
+        let type = PrimitiveClassBinder().bind(
+            PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot), snapshot
+        ).typeUnit
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let className = Es6NameMangler.mangle(type.identity.value)
+        let chain = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "chain" }).identity.value)
+        let read = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "read" }).identity.value)
+        let root = File(".flat-es6-receiver-return-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "chain.js")
+        Es6ArtifactCommitter().commit(destination, code + "const value = new " + className +
+            "(); if(value." + chain + "(42)!==value || value." + read + "()!==42) throw Error('receiver return');")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
     }
 
     async test `shorthand indexed storage setter executes`() {
