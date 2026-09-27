@@ -10,6 +10,33 @@ import flat/parser/flat
 import flat/writer/es6/bound
 
 testable class {
+    async test `package linker emits real data declaration with source owned identity`() {
+        let identity = "flat/meta/Field.flat"
+        let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/meta/Field.flat"))
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Field"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Field"
+        )
+        let root = File(".flat-compiler-data-declaration-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(new " +
+            Es6NameMangler.mangle(owner.value) + "('seen') !== null);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+    }
+
     async test `compound call receiver executes once`() {
         let identity = "memory:compound-call-receiver"
         let source = "class Box { visible Int count; static run(func()->Box next) -> Int { next().count += 2.5; var Int result = -7; result -= 2.5; return result; } }"
@@ -298,6 +325,42 @@ testable class {
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("true\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `package linker executes mutable expression property storage`() {
+        let identity = "flat/test/Counter.flat"
+        let source = "package flat/test class Counter { visible var Int count <=> count " +
+            "construct(Int initial) { this.count = initial; } " +
+            "public read() -> Int { return count; } }"
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot
+        ).first
+        let type = PrimitiveClassParser().parse(
+            syntax.tokenValues(), snapshot, syntax.startTokenIndex, "Counter"
+        )
+        let typeIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", type.range.startTokenIndex), "class", "Counter"
+        )
+        let name = Es6NameMangler.mangle(typeIdentity.value)
+        let getter = Es6NameMangler.mangle(DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "instance-method", type.methodValues().first.range.startTokenIndex),
+            "instance-method", "count"
+        ).value)
+        let root = File(".flat-compiler-property-storage-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination,
+            code + "console.log(new " + name + "(7)." + getter + "());\n")
+        let response = System.execute(
+            ["node", destination.normalizedLocation], silent: true, shell: false
+        )
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("7\n")
         Es6ArtifactFiles.remove(root)
     }
 
@@ -1580,6 +1643,49 @@ testable class {
     async test `package linker compiles and executes unchanged String overlay`() {
         let identity = "flat/String.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/String.flat"))
+        let stringStream = Lexer().lexInterpolated(source)
+        stringStream.emit("start")
+        let stringSnapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stringPartition = FlatSourceTypePartitioner().partition(
+            stringStream.consumeAll<Token>("data"), stringSnapshot, "js"
+        ).first
+        let stringSyntax = PrimitiveClassParser().parse(
+            stringPartition.tokenValues(), stringSnapshot, stringPartition.startTokenIndex, "String"
+        )
+        expect(stringSyntax.methodValues().filter({ _.name == "indexOf" }).count).toBe(3)
+        let indexMethods = stringSyntax.methodValues().filter({ _.name == "indexOf" })
+        expect(indexMethods[0].parameterValues().count).toBe(6)
+        expect(indexMethods[1].parameterValues().count).toBe(6)
+        expect(indexMethods[1].parameterValues().first.typeName).toBe("Char[]")
+        let trimmed = stringSyntax.methodValues().filter({ _.name == "trimStart" })
+        expect(trimmed.count).toBe(3)
+        expect(trimmed[1].statements().first.statementKind()).toBe("while")
+        expect(trimmed[1].statements().first.range.startTokenIndex).toBe(1080)
+        expect(trimmed[1].parameterValues().last.typeName).toBe("Char[]")
+        let body = trimmed[1].statements()
+        let loopObject = (Object)body.first
+        let loop = (PrimitiveWhileSyntax)loopObject
+        let conditionObject = (Object)loop.condition
+        let condition = (PrimitiveBinarySyntax)conditionObject
+        expect(condition.right.expressionKind()).toBe("member-call")
+        let callObject = (Object)condition.right
+        let call = (PrimitiveMemberCallSyntax)callObject
+        expect(call.argumentValues().first.expressionKind()).toBe("array-access")
+        expect(stringSyntax.fieldValues().firstOrNull({ _.name == "chars" }).typeName)
+            .toBe("StringCharArray")
+        let arrayIdentity = "flat/datastruct/list/Array.flat"
+        let arraySource = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/Array.flat"))
+        let arrayStream = Lexer().lexInterpolated(arraySource)
+        arrayStream.emit("start")
+        let arraySnapshot = SourceSnapshotIdentity(SourceIdentity(arrayIdentity), "compiler-input")
+        let arrayPartition = FlatSourceTypePartitioner().partition(
+            arrayStream.consumeAll<Token>("data"), arraySnapshot, "js"
+        ).first
+        let arraySyntax = PrimitiveClassParser().parse(
+            arrayPartition.tokenValues(), arraySnapshot, arrayPartition.startTokenIndex, "Array"
+        )
+        let addMethod = arraySyntax.methodValues().firstOrNull({ _.name == "add" })
+        expect(addMethod != null).toBe(true)
         let code = FlatEs6PackageLinker().link([
                 CompilerSource(
                     "flat/Object.flat",

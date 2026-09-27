@@ -6,6 +6,19 @@ import flat/io/File
 import flat/io/FileReader
 
 testable class {
+    async test `partitions data declaration retaining modifier and token range`() {
+        let stream = Lexer().lex("package flat/meta\ndata class Field { construct(visible String name) {} }")
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:data-class-partition"), "one")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        expect(partitions.count).toBe(1)
+        expect(partitions.first.declarationKind).toBe("class")
+        expect(partitions.first.tokenValues().first.value).toBe("data")
+        let parsed = PrimitiveClassParser().parse(partitions.first.tokenValues(), snapshot,
+            partitions.first.startTokenIndex, "Field")
+        expect(parsed.range.startTokenIndex).toBe(partitions.first.startTokenIndex)
+    }
+
     async test `partitions range dependency sources independently`() {
         let names = ["IntRange", "IntRangeIterator", "Iterable", "Iterator", "List"]
         for (name in names) {

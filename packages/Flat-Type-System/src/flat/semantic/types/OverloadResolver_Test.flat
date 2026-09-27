@@ -1,6 +1,54 @@
 package flat/semantic/types
 
 testable class {
+    test `infers constructor owner arguments through generic instance parameter`() {
+        let fixture = TypeSystem_TestFixture()
+        let array = fixture.userType("Array", 2)
+        let iterator = fixture.userType("Iterator", 3)
+        let element = GenericParameterSemanticType(iterator.declarationIdentity, "E", 0)
+        let arrayElement = GenericParameterSemanticType(array.declarationIdentity, "T", 0)
+        let signature = CallableSignature(
+            fixture.symbolIdentity("Iterator", "constructor", 4), "Iterator",
+            CallableKind("constructor"), [GenericInstanceSemanticType(array, [element])],
+            iterator, iterator, ownerGenericDeclaration: GenericDeclaration(
+                iterator.declarationIdentity, [element], iterator
+            )
+        )
+        let actual = GenericInstanceSemanticType(array, [arrayElement])
+        let direct = CallTypeChecker.check(signature, null, [actual], fixture.range())
+        expect(direct.valid).toBe(true)
+        expect(direct.target.returnType.value()).toBe(
+            GenericInstanceSemanticType(iterator, [arrayElement]).value()
+        )
+        let result = OverloadResolver.resolve("Iterator", [signature], null, [actual], fixture.range())
+        expect(result.resolved).toBe(true)
+        expect(result.selected.returnType.value()).toBe(
+            GenericInstanceSemanticType(iterator, [arrayElement]).value()
+        )
+        let constructor = CallableSignature(
+            fixture.symbolIdentity("Iterator", "constructor", 6), "Iterator",
+            CallableKind("constructor"), [SemanticTypes.intType()], iterator, iterator,
+            ownerGenericDeclaration: GenericDeclaration(
+                iterator.declarationIdentity, [element], iterator
+            )
+        )
+        let ranked = OverloadResolver.resolve("Iterator", [signature, constructor], null,
+            [actual], fixture.range())
+        expect(ranked.resolved).toBe(true)
+        expect(ranked.selected.returnType.value()).toBe(result.selected.returnType.value())
+        let unresolved = OverloadResolver.resolve("Iterator", [constructor], null,
+            [SemanticTypes.intType()], fixture.range())
+        expect(unresolved.resolved).toBe(false)
+        expect(unresolved.diagnostic.code).toBe("type.call-no-match")
+        let reversed = OverloadResolver.resolve("Iterator", [constructor, signature], null,
+            [actual], fixture.range())
+        expect(reversed.selected.returnType.value()).toBe(ranked.selected.returnType.value())
+        expect(signature.returnType.value()).toBe(iterator.value())
+        let unrelated = GenericInstanceSemanticType(fixture.userType("Other", 5), [arrayElement])
+        expect(OverloadResolver.resolve("Iterator", [signature], null, [unrelated], fixture.range())
+            .diagnostic.code).toBe("type.call-no-match")
+    }
+
     test `overload ranking prefers exact then lower conversion vectors`() {
         let fixture = TypeSystem_TestFixture()
         let exact = fixture.signature(

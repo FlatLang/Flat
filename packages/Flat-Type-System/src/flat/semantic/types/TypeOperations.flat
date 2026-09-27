@@ -88,6 +88,12 @@ class {
             return TypedOperationResult(SemanticTypes.boolType())
         }
         if (operator == "==" || operator == "!=") {
+            // A generic value may be compared with null without allowing null to be
+            // assigned to its (possibly non-nullable) instantiated type.
+            if ((leftType.kind() == "generic-parameter" && rightType.kind() == "null") ||
+                (leftType.kind() == "null" && rightType.kind() == "generic-parameter")) {
+                return TypedOperationResult(SemanticTypes.boolType())
+            }
             let forward = TypeConversions.classify(leftType, rightType)
             let reverse = TypeConversions.classify(rightType, leftType)
             if (forward.applicable || reverse.applicable) {

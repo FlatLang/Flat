@@ -117,6 +117,44 @@ testable class {
         expect(redundantSafe.diagnostic.code).toBe("type.redundant-safe-access")
     }
 
+    test `root declaration bounds generic receivers but sibling declarations do not`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Root", 1)
+        let sibling = fixture.userType("Sibling", 2)
+        let parameter = GenericParameterSemanticType(fixture.functionIdentity("run"), "E", 0)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(sibling, "class", [root]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        expect(TypeConversions.classify(parameter, root, hierarchy: hierarchy).applicable).toBe(true)
+        expect(TypeConversions.classify(parameter, sibling, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(parameter, root).applicable).toBe(false)
+        let unregistered = TypeHierarchyComponent()
+        unregistered.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        unregistered.add(TypeHierarchyDeclaration(sibling, "class", [root]))
+        unregistered.seal()
+        expect(TypeConversions.classify(parameter, root, hierarchy: unregistered).applicable).toBe(false)
+    }
+
+    test `generic value converts to Object for declared Object methods`() {
+        let fixture = TypeSystem_TestFixture()
+        let generic = GenericParameterSemanticType(fixture.functionIdentity("generic"), "E", 0)
+        expect(TypeConversions.classify(generic, SemanticTypes.objectType()).applicable).toBe(true)
+        expect(TypeConversions.classify(generic, SemanticTypes.intType()).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), generic).applicable).toBe(false)
+    }
+
+    test `unconstrained generic value permits null comparison without implicit null conversion`() {
+        let fixture = TypeSystem_TestFixture()
+        let generic = GenericParameterSemanticType(fixture.functionIdentity("map"), "E", 0)
+        let range = fixture.range()
+        expect(TypeOperations.binary("==", generic, SemanticTypes.nullType(), range).valid).toBe(true)
+        expect(TypeOperations.binary("!=", SemanticTypes.nullType(), generic, range).valid).toBe(true)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), generic).applicable).toBe(false)
+        expect(TypeOperations.binary("==", SemanticTypes.intType(), SemanticTypes.nullType(), range).valid).toBe(false)
+    }
+
     test `equality requires a conversion path including explicit nullability`() {
         let fixture = TypeSystem_TestFixture()
         let range = fixture.range()

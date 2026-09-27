@@ -25,6 +25,10 @@ class {
         index = 0
         let start = index
         var Bool abstractClass
+        if (index < tokens.count && tokens[index].value == "data") {
+            index++
+            if (index >= tokens.count || tokens[index].value != "class") syntax("Expected 'class'", index)
+        }
         if (index < tokens.count && tokens[index].value == "abstract") {
             abstractClass = true
             index++
@@ -114,6 +118,18 @@ class {
                     tokens[propertyCursor + 1].value == "<=>")) {
                     let returnType = tokens.skip(typeStart).take(propertyCursor - typeStart).map({ _.value }).join("")
                     let propertyName = tokens[propertyCursor++].value
+                    let storedProperty = tokens[propertyCursor].value == "<=>" &&
+                        tokens.skip(propertyStart).take(typeStart - propertyStart)
+                            .any({ _.value == "var" })
+                    if (storedProperty) {
+                        if (fields.any({ _.name == propertyName })) {
+                            syntax("Duplicate field '#propertyName'", propertyStart)
+                        }
+                        fields.add(PrimitiveFieldSyntax(
+                            range(propertyStart, propertyCursor), returnType, propertyName,
+                            true, mutableField: true
+                        ))
+                    }
                     propertyCursor++
                     let expressionStart = propertyCursor
                     let fallbackEnd = fallbackBodyEnd(expressionStart)
@@ -133,6 +149,11 @@ class {
                         staticMethod: staticProperty, lazyProperty: lazyProperty
                     ))
                     index = end
+                    visibleField = false
+                    staticField = false
+                    mutableField = false
+                    nativeArrayStorage = false
+                    fieldModifierStart = -1
                     continue
                 }
             }
@@ -252,6 +273,16 @@ class {
                 let propertyStart = index
                 let returnType = tokens[index++].value
                 let propertyName = tokens[index++].value
+                let storedProperty = tokens[index].value == "<=>" && mutableField
+                if (storedProperty) {
+                    if (fields.any({ _.name == propertyName })) {
+                        syntax("Duplicate field '#propertyName'", propertyStart)
+                    }
+                    fields.add(PrimitiveFieldSyntax(
+                        range(fieldModifierStart >= 0 ? fieldModifierStart : propertyStart, index),
+                        returnType, propertyName, visibleField, mutableField: true
+                    ))
+                }
                 index++
                 let expressionStart = index
                 let fallbackEnd = fallbackBodyEnd(expressionStart)

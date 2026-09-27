@@ -7,6 +7,40 @@ import flat/semantic/types
 
 /** Focused binding coverage for selected opaque statements and interpolation. */
 testable class PrimitiveOpaqueCodeBinder_Test {
+    test `binds source-owned field and null interpolation in constructor`() {
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:external-constructor-owner"), "one"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", 4), "class", "Buffer"
+        )
+        let range = SourceRange(snapshot, 0, 4,
+            Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 5))
+        let receiver = BoundReferenceExpression(
+            range, UserClassSemanticType(owner), "this", SymbolIdentity(owner, "receiver")
+        )
+        let data = BoundFieldUnit("data", SymbolIdentity(owner, "field", 0),
+            ArraySemanticType(SemanticTypes.intType()), range)
+        let count = LocalBinding("count", SymbolIdentity(owner, "parameter"),
+            SemanticTypes.intType())
+        let syntax = result([
+            PrimitiveExternalCodeSegmentSyntax(range, "new Array(", String[]),
+            PrimitiveExternalCodeSegmentSyntax(range, "", ["data"]),
+            PrimitiveExternalCodeSegmentSyntax(range, "", ["count"]),
+            PrimitiveExternalCodeSegmentSyntax(range, "", ["null"])
+        ], range, "constructor interpolation", "js")
+        let bound = PrimitiveControlStatementBinder().bind(
+            syntax, snapshot, [count], receiver: receiver, fields: [data],
+            availableFields: [data]
+        ).statements()
+        let object = (Object)bound.first
+        let value = (BoundExternalStatement)object
+        let segments = value.segmentValues()
+        expect(segments[1].value.expressionKind()).toBe("member-access")
+        expect(segments[2].value.expressionKind()).toBe("reference")
+        expect(segments[3].value.semanticType.kind()).toBe("null")
+    }
+
     test `resolves declared member interpolation`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:external-member"), "one")
         let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Box")

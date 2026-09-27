@@ -9,7 +9,8 @@ class {
         CallableSignature[] candidates,
         SemanticType receiverType,
         SemanticType[] argumentTypes,
-        SourceRange range
+        SourceRange range,
+        TypeHierarchyComponent hierarchy = null
     ) -> OverloadResolution {
         if (!name || name.trim().count == 0 || !candidates ||
             candidates.any({ !_ }) || !argumentTypes || !range) {
@@ -24,7 +25,7 @@ class {
         }
         let applicable = CallCheckResult[]
         for (candidate in collected) {
-            let result = CallTypeChecker.check(candidate, receiverType, argumentTypes, range)
+            let result = CallTypeChecker.check(candidate, receiverType, argumentTypes, range, hierarchy)
             if (result.valid) applicable.add(result)
         }
         return resolveChecked(name, collected, applicable, range)

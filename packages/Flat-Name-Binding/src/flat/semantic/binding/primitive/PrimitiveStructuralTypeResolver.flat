@@ -77,24 +77,12 @@ class {
         if (methodParameter) return methodParameter
         if (implementationOwner && implementationRange) {
             for (implemented in implementationOwner.implementedTypeNames()) {
-                let genericStart = implemented.indexOf("<", defaultReturnValue: -1)
-                if (genericStart < 0) continue
-                let contract = interfaces.firstOrNull({ _.name == implemented.substring(0, genericStart) })
-                if (!contract || contract.methodValues().none((member) =>
-                    member.range && member.range.snapshot == implementationRange.snapshot &&
-                    member.range.startTokenIndex == implementationRange.startTokenIndex)) continue
-                let names = contract.genericParameterNames()
-                let arguments = splitTypes(implemented.substring(genericStart + 1, implemented.count - 1))
-                if (names.count != arguments.count) throw Exception("Trait implementation generic arity mismatch")
-                var Int parameterIndex
-                while (parameterIndex < names.count) {
-                    if (names[parameterIndex] == name) return PrimitiveStructuralTypeResolver(
-                        syntaxes: syntaxes, callables: callables, snapshot: snapshot,
-                        genericParameter: genericParameter, receiverType: receiverType,
-                        interfaces: interfaces
-                    ).resolve(arguments[parameterIndex])
-                    parameterIndex++
-                }
+                let resolved = traitParameter(implemented, name, String[])
+                if (resolved) return PrimitiveStructuralTypeResolver(
+                    syntaxes: syntaxes, callables: callables, snapshot: snapshot,
+                    genericParameter: genericParameter, receiverType: receiverType,
+                    interfaces: interfaces
+                ).resolve(resolved)
             }
         }
         if (genericParameter && name == genericParameter.name) return genericParameter
@@ -161,6 +149,45 @@ class {
             throw Exception("Invalid reduced function type '#name'")
         }
         return FunctionSemanticType(parameters, returnType)
+    }
+
+    /** Follow the source member's owner through instantiated interface edges. */
+    traitParameter(String implemented, String name, String[] path) -> String {
+        let open = implemented.indexOf("<", defaultReturnValue: -1)
+        let contractName = open < 0 ? implemented : implemented.substring(0, open)
+        let contract = interfaces.firstOrNull({ _.name == contractName })
+        if (!contract) return null
+        if (path.contains(contractName)) throw Exception("Cyclic trait inheritance '#contractName'")
+        let arguments = open < 0 ? String[] :
+            splitTypes(implemented.substring(open + 1, implemented.count - 1))
+        let names = contract.genericParameterNames()
+        if (names.count != arguments.count) throw Exception("Trait implementation generic arity mismatch")
+        if (contract.methodValues().any((member) => member.range &&
+            member.range.snapshot == implementationRange.snapshot &&
+            member.range.startTokenIndex == implementationRange.startTokenIndex)) {
+            let position = names.indexOf(name, defaultReturnValue: -1)
+            if (position < 0) return null
+            return arguments[position]
+        }
+        let visited = String[]:addAll(path)
+        visited.add(contractName)
+        for (parentName in contract.parentTypeNames()) {
+            let parentOpen = parentName.indexOf("<", defaultReturnValue: -1)
+            if (parentOpen < 0) {
+                let found = traitParameter(parentName, name, visited)
+                if (found) return found
+                continue
+            }
+            let instantiated = String[]
+            for (argument in splitTypes(parentName.substring(parentOpen + 1, parentName.count - 1))) {
+                let position = names.indexOf(argument, defaultReturnValue: -1)
+                instantiated.add(position < 0 ? argument : arguments[position])
+            }
+            let found = traitParameter(parentName.substring(0, parentOpen) +
+                "<" + instantiated.join(",") + ">", name, visited)
+            if (found) return found
+        }
+        return null
     }
 
     matchingClose(String value, Int open) -> Int {

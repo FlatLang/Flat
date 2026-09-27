@@ -4,6 +4,18 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `accepts generic root call only with checked receiver conversion evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let root = UserClassSemanticType(fixture.declaration("class", "Root", 1))
+        let generic = GenericParameterSemanticType(fixture.declaration("class", "Box", 2), "E", 0)
+        let receiver = BoundReferenceExpression(fixture.range(), generic, "item", fixture.symbol("local", "item", 3))
+        let target = CallableSignature(fixture.symbol("instance-method", "equals", 4), "equals",
+            CallableKind("instance-method"), SemanticType[], SemanticTypes.boolType(), root)
+        let conversion = TypeConversion(generic, root, "reference-upcast", true, true, false, 10)
+        let call = BoundCallExpression(fixture.range(), SemanticTypes.boolType(), target, receiver,
+            BoundExpression[], TypeConversion[], false, conversion)
+        expect(call.receiver.semanticType.value()).toBe(generic.value())
+    }
     test `narrowing compound field lowers through one receiver local`() {
         let fixture = BoundIR_TestFixture()
         let owner = fixture.declaration("class", "Box", 1)

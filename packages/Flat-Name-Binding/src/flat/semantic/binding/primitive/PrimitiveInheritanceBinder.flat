@@ -64,7 +64,7 @@ class {
         parentContracts.addAll(normalizeParent(rootInstanceFunctions))
         let childFunctions = normalizeChild(
             child.functionUnits(), parentContracts, childSyntax,
-            interfaceSyntaxValues
+            interfaceSyntaxValues, availableConstructors, child.semanticType
         )
         return PrimitiveInheritanceBindingResult(
             BoundTypeUnit(
@@ -118,7 +118,9 @@ class {
         BoundFunctionUnit[] functions,
         BoundFunctionUnit[] parentFunctions,
         PrimitiveClassSyntax childSyntax,
-        PrimitiveInterfaceSyntax[] interfaceSyntaxValues
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues,
+        CallableSignature[] availableConstructors,
+        UserClassSemanticType childType
     ) -> BoundFunctionUnit[] {
         let result = BoundFunctionUnit[]
         for (function in functions) {
@@ -132,7 +134,8 @@ class {
                     function.name, childSyntax, interfaceSyntaxValues
                 )
                 if (interfaceMethod) {
-                    validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues)
+                    validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues,
+                        availableConstructors, childType)
                 }
                 result.add(copy(function, function.staticFunction ? null : function.identity.value))
                 continue
@@ -159,7 +162,8 @@ class {
                     function.name, childSyntax, interfaceSyntaxValues
                 )
                 if (interfaceMethod) {
-                    validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues)
+                    validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues,
+                        availableConstructors, childType)
                     result.add(copy(function, function.identity.value))
                     continue
                 }
@@ -191,7 +195,9 @@ class {
     validateInterfaceMethod(
         BoundFunctionUnit function,
         PrimitiveClassSyntax childSyntax,
-        PrimitiveInterfaceSyntax[] interfaceSyntaxValues
+        PrimitiveInterfaceSyntax[] interfaceSyntaxValues,
+        CallableSignature[] availableConstructors,
+        UserClassSemanticType childType
     ) {
         let implementedNames = childSyntax.implementedTypeNames()
         for (implementedName in implementedNames) {
@@ -202,23 +208,42 @@ class {
             if (!syntax) continue
             let method = syntax.methodValues().firstOrNull({ _.name == function.name })
             if (!method) continue
-            var String[] parameterNames = method.parameterTypeNames()
-            if (syntax.genericParameterName && genericStart >= 0) {
-                let argument = implementedName.substring(genericStart + 1, implementedName.count - 1)
-                parameterNames = parameterNames.map({
-                    _ == syntax.genericParameterName ? argument : _
-                })
+            let contractParameters = GenericParameterSemanticType[]
+            let contractIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(syntax.range.snapshot, "interface", syntax.range.startTokenIndex),
+                "interface", syntax.name
+            )
+            for (name in syntax.genericParameterNames()) {
+                contractParameters.add(GenericParameterSemanticType(contractIdentity, name, contractParameters.count))
             }
+            let resolver = PrimitiveStructuralTypeResolver(
+                callables: availableConstructors, receiverType: childType,
+                methodGenericParameters: contractParameters,
+                interfaces: interfaceSyntaxValues
+            )
+            let typeArguments = SemanticType[]
+            if (contractParameters.isNotEmpty) {
+                if (genericStart < 0) throw Exception("Interface generic arguments are required")
+                let argumentNames = implementedName.substring(genericStart + 1, implementedName.count - 1)
+                let arguments = PrimitiveStructuralTypeResolver(
+                    callables: availableConstructors, receiverType: childType,
+                    genericParameter: childSyntax.genericParameterName ? GenericParameterSemanticType(
+                        childType.declarationIdentity, childSyntax.genericParameterName, 0
+                    ) : null, interfaces: interfaceSyntaxValues
+                ).resolve("#{syntax.name}<#{argumentNames}>")
+                let instance = (GenericInstanceSemanticType)arguments
+                typeArguments.addAll(instance.typeArguments())
+            }
+            if (contractParameters.count != typeArguments.count) throw Exception("Interface generic arity mismatch")
+            let substitution = GenericSubstitution(contractParameters, typeArguments)
+            let parameterNames = method.parameterTypeNames()
             if (parameterNames.count != function.parameterValues().count) {
                 throw Exception("Invalid interface method '#{function.name}'")
             }
             var Int index
             while (index < parameterNames.count) {
-                let boundTypeValue = function.parameterValues()[index].semanticType.value()
-                let interfaceType = interfaceTypeValue(
-                    parameterNames[index], function, childSyntax
-                )
-                if (boundTypeValue != interfaceType) {
+                let expected = substitution.apply(resolver.resolve(parameterNames[index]))
+                if (function.parameterValues()[index].semanticType.value() != expected.value()) {
                     throw Exception("Invalid interface method '#{function.name}'")
                 }
                 index++
@@ -226,19 +251,6 @@ class {
             return
         }
         throw Exception("Child method '#{function.name}' must override a parent or interface method")
-    }
-
-    interfaceTypeValue(
-        String name,
-        BoundFunctionUnit function,
-        PrimitiveClassSyntax childSyntax
-    ) -> String {
-        if (name == childSyntax.name) return function.parameterValues().first.semanticType.value()
-        if (name == "Int") return SemanticTypes.intType().value()
-        if (name == "Bool") return SemanticTypes.boolType().value()
-        if (name == "String") return SemanticTypes.stringType().value()
-        if (name == "Object") return SemanticTypes.objectType().value()
-        throw Exception("Unknown interface type '#name'")
     }
 
     sameParameters(

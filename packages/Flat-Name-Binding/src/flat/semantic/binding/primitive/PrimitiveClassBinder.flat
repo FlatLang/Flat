@@ -89,6 +89,9 @@ class {
             let indexType = typeOf(override.indexParameter.typeName)
             let elementType = override.elementTypeName == "inferred"
                 ? SemanticTypes.unknownType() : typeOf(override.elementTypeName)
+            let ownerGenerics = genericParameter ? GenericDeclaration(
+                typeIdentity, [genericParameter], type
+            ) : null
             if (override.getterValues().isNotEmpty) {
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
@@ -98,7 +101,8 @@ class {
                 )
                 arrayGetter = CallableSignature(
                     SymbolIdentity(identity, "array-getter"), "getAt",
-                    CallableKind("instance-method"), [indexType], elementType, type
+                    CallableKind("instance-method"), [indexType], elementType, type,
+                    ownerGenericDeclaration: ownerGenerics
                 )
                 constructors.add(arrayGetter)
             }
@@ -112,7 +116,7 @@ class {
                 arraySetter = CallableSignature(
                     SymbolIdentity(identity, "array-setter"), "setAt",
                     CallableKind("instance-method"), [indexType, elementType],
-                    SemanticTypes.unitType(), type
+                    SemanticTypes.unitType(), type, ownerGenericDeclaration: ownerGenerics
                 )
                 constructors.add(arraySetter)
             }
@@ -148,11 +152,21 @@ class {
                 methodStatements.first.class.isOfType(PrimitiveReturnSyntax.class)) {
                 let inferredObject = (Object)methodStatements.first
                 let inferredSyntax = (PrimitiveReturnSyntax)inferredObject
-                if (inferredSyntax.value) {
-                    let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
-                    if (inferred.succeeded) {
-                        inferredMethodReturn = inferred.expression.semanticType
+                if (inferredSyntax.value &&
+                    inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                    let reference = (PrimitiveReferenceSyntax)inferredSyntax.value
+                    var Int parameterIndex
+                    for (parameter in method.parameterValues()) {
+                        if (parameter.name == reference.name) {
+                            inferredMethodReturn = parameterTypes[parameterIndex]
+                            break
+                        }
+                        parameterIndex++
                     }
+                }
+                if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
+                    let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
+                    if (inferred.succeeded) inferredMethodReturn = inferred.expression.semanticType
                 }
             }
             let methodReturnType = method.inferredReturnType
@@ -1043,8 +1057,9 @@ class {
                 checked.argumentConversions(), safeAccess: true)
         }
         if (requiredType && syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
-            let bound = PrimitiveExpressionBinder().bind(
-                syntax, requiredType: requiredType, locals: locals, callables: constructors
+            let bound = PrimitiveExpressionBinder().bindCallback(
+                (PrimitiveLambdaSyntax)syntax, (FunctionSemanticType)requiredType,
+                locals, constructors, typeHierarchy
             )
             if (!bound.succeeded) throw Exception(bound.diagnostic.message)
             return bound.expression
@@ -1233,7 +1248,7 @@ class {
                                         genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
                                     let bound = PrimitiveExpressionBinder().bindCallback(
                                         (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
-                                        callbackLocals, constructors
+                                        callbackLocals, constructors, typeHierarchy
                                     )
                                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                                     arguments[index] = bound.expression
@@ -1361,7 +1376,7 @@ class {
                                     genericParameter ? GenericInstanceSemanticType(boundType, [genericParameter]) : receiver.semanticType))
                                 let bound = PrimitiveExpressionBinder().bindCallback(
                                     (PrimitiveLambdaSyntax)argument, (FunctionSemanticType)context,
-                                    callbackLocals, constructors)
+                                    callbackLocals, constructors, typeHierarchy)
                                 if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                                 arguments[index] = bound.expression
                             }
@@ -1592,26 +1607,36 @@ class {
                 )
             }
             let index = expression(value.index, receiver, fields, locals)
-            if (indexedReceiver.semanticType.kind() == "user-class") {
+            if (indexedReceiver.semanticType.kind() == "user-class" ||
+                indexedReceiver.semanticType.kind() == "generic-instance") {
                 let indexedType = indexedReceiver.semanticType
+                let indexedOwner = indexedType.kind() == "generic-instance"
+                    ? ((GenericInstanceSemanticType)indexedType).declarationType.value()
+                    : indexedType.value()
                 var CallableSignature getter
-                if (arrayGetter &&
-                    arrayGetter.ownerType.value() == indexedType.value()) {
+                if (arrayGetter && arrayGetter.ownerType.value() == indexedOwner) {
                     getter = arrayGetter
                 } else getter = constructors.firstOrNull((candidate) =>
                     candidate.identity.symbolKind == "array-getter" &&
-                    candidate.ownerType.value() == indexedType.value()
+                    candidate.ownerType.value() == indexedOwner
                 )
                 if (getter) {
                     let checked = CallTypeChecker.check(
                         getter, indexedType, [index.semanticType], value.range
                     )
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    let selected = indexedType.kind() == "generic-instance" &&
+                        getter.ownerGenericDeclaration ? getter.instantiateReceiver(
+                            (GenericInstanceSemanticType)indexedType
+                        ) : getter
                     return BoundCallExpression(
-                        value.range, checked.semanticType, getter, indexedReceiver,
+                        value.range, checked.semanticType, selected, indexedReceiver,
                         [index], checked.argumentConversions()
                     )
                 }
+            }
+            if (indexedReceiver.semanticType.kind() != "array") {
+                throw Exception("Array access requires an array or indexed class receiver")
             }
             let typeObject = (Object)indexedReceiver.semanticType
             var ArraySemanticType arrayType
@@ -1727,11 +1752,8 @@ class {
                 }
                 if (!falseConversion.applicable &&
                     whenFalse.semanticType.kind() == "null" &&
-                    (requiredType.kind() == "user-class" ||
-                     requiredType.kind() == "string" ||
-                     requiredType.kind() == "object" ||
-                     requiredType.kind() == "array" ||
-                     requiredType.kind() == "function")) {
+                    (referenceType(requiredType) ||
+                     requiredType.kind() == "generic-parameter")) {
                     falseConversion = TypeConversion(
                         whenFalse.semanticType, requiredType,
                         "null", true, true, false, 1
@@ -1987,6 +2009,14 @@ class {
                 candidate.name == value.typeName
             ).map((candidate) => typeArguments.isEmpty ? candidate :
                 candidate.instantiateConstructor(typeArguments.map({ typeOf(_) })))
+            if (candidates.isEmpty && value.typeName == "Array" &&
+                typeArguments.count == 1 && arguments.count == 1) {
+                if (arguments.first.semanticType.value() != SemanticTypes.intType().value()) {
+                    throw Exception("Array construction size requires Int")
+                }
+                return BoundArrayExpression(value.range,
+                    ArraySemanticType(typeOf(typeArguments.first)), arguments.first)
+            }
             let resolution = OverloadResolver.resolve(
                 value.typeName, candidates, null,
                 arguments.map({ _.semanticType }), value.range
@@ -2100,12 +2130,24 @@ class {
                 candidate.ownerType.value() == receiver.semanticType.value()
             )
             let arguments = BoundExpression[]
+            let constructorCall = constructors.any((candidate) =>
+                candidate.callableKind.value == "constructor" && candidate.name == value.name
+            )
             var Int suppliedIndex
             for (argument in value.argumentValues()) {
                 let requiredArgumentType = possibleInstanceCandidates.count == 1 &&
                     suppliedIndex < possibleInstanceCandidates.first.parameterTypes().count
                     ? possibleInstanceCandidates.first.parameterTypes()[suppliedIndex] : null
-                arguments.add(expression(
+                if (argument.class.isOfType(PrimitiveReferenceSyntax.class) &&
+                    ((PrimitiveReferenceSyntax)argument).name == "this" && receiver &&
+                    genericParameter && constructorCall &&
+                    (locals.reverse().firstOrNull({ _.name == "this" }) == null ||
+                        locals.reverse().firstOrNull({ _.name == "this" }).identity == receiver.symbolIdentity)) {
+                    arguments.add(BoundReferenceExpression(
+                        argument.range, GenericInstanceSemanticType(boundType, [genericParameter]),
+                        "this", receiver.symbolIdentity
+                    ))
+                } else arguments.add(expression(
                     argument, receiver, fields, locals, requiredArgumentType
                 ))
                 suppliedIndex++

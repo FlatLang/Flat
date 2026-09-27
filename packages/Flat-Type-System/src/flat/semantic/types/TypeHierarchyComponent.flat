@@ -5,6 +5,13 @@ class {
     var TypeHierarchyDeclaration[] declarations = TypeHierarchyDeclaration[]
     var TypeHierarchyDiagnostic[] diagnosticValues = TypeHierarchyDiagnostic[]
     var UserClassSemanticType arrayDeclaration
+    var UserClassSemanticType rootDeclaration
+
+    /** Registers the source-declared universal root of this component. */
+    public registerRootDeclaration(UserClassSemanticType declaration) {
+        if (sealed || !declaration || rootDeclaration) throw Exception("Root declaration must be registered once before sealing")
+        rootDeclaration = declaration
+    }
 
     /** Registers the language array declaration explicitly, never by its spelling. */
     public registerArrayDeclaration(UserClassSemanticType declaration) {
@@ -85,6 +92,12 @@ class {
             diagnosticValues.add(TypeHierarchyDiagnostic("type.hierarchy-missing-array", arrayDeclaration,
                 "Registered array declaration is not present in this component"))
         }
+        if (rootDeclaration && (!find(rootDeclaration) ||
+            find(rootDeclaration).declarationKind != "class" ||
+            find(rootDeclaration).directParents().isNotEmpty)) {
+            diagnosticValues.add(TypeHierarchyDiagnostic("type.hierarchy-invalid-root", rootDeclaration,
+                "Registered root declaration must be a declared parentless class"))
+        }
         for (declaration in declarations) {
             if (inCycle(declaration.semanticType)) {
                 diagnosticValues.add(TypeHierarchyDiagnostic(
@@ -105,6 +118,14 @@ class {
         let result = TypeHierarchyDiagnostic[]
         result.addAll(diagnosticValues)
         return result
+    }
+
+    /** The sealed component identifies its source-declared root, not a type spelling. */
+    public isRootClass(UserClassSemanticType type) -> Bool {
+        requireValid()
+        let declaration = find(type)
+        return declaration && rootDeclaration && rootDeclaration.value() == type.value() &&
+            declaration.declarationKind == "class" && declaration.directParents().isEmpty
     }
 
     public distance(

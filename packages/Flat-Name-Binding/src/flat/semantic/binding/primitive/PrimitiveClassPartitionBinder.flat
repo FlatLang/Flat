@@ -42,6 +42,19 @@ class {
 
         let hierarchy = arrayDeclaration
             ? arrayHierarchy(arrayDeclaration, syntaxValues, snapshot) : null
+        let rootSyntax = effectiveSyntaxValues.firstOrNull({ _.name == "Object" })
+        var TypeHierarchyComponent rootHierarchy
+        if (rootSyntax) {
+            let rootIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot ?: rootSyntax.range.snapshot,
+                    "class", rootSyntax.range.startTokenIndex), "class", rootSyntax.name)
+            let root = UserClassSemanticType(rootIdentity)
+            rootHierarchy = TypeHierarchyComponent()
+            rootHierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+            rootHierarchy.registerRootDeclaration(root)
+            rootHierarchy.seal()
+            if (!rootHierarchy.valid) throw Exception("Invalid reduced root hierarchy")
+        }
         let constructorSignatures = constructorSignatures(effectiveSyntaxValues, snapshot)
         constructorSignatures.addAll(methodSignatures(effectiveSyntaxValues, snapshot))
         constructorSignatures.addAll(inheritedMethodSignatures(
@@ -60,13 +73,18 @@ class {
                     index++
                     continue
                 }
+                if (awaitInferredMember(syntax, effectiveSyntaxValues,
+                    constructorSignatures, declaredFields, boundNames)) {
+                    index++
+                    continue
+                }
                 if (!syntax.parentName) {
                     let syntaxSnapshot = snapshot ?: syntax.range.snapshot
                     result.add(PrimitiveClassBinder().bind(
                         syntax, syntaxSnapshot,
                         availableConstructors: constructorSignatures,
                         availableFields: declaredFields,
-                        interfaceSyntaxValues: interfaces, hierarchy: hierarchy ?: (
+                        interfaceSyntaxValues: interfaces, hierarchy: rootHierarchy ?: hierarchy ?: (
                             syntax.implementedTypeNames().isNotEmpty && syntax.implementedTypeNames().all({ _.contains("<") })
                                 ? arrayHierarchy(syntax, effectiveSyntaxValues, snapshot, false) : null)
                     ).typeUnit)
@@ -82,7 +100,7 @@ class {
                         interfaceSyntaxValues,
                         rootContract ? rootContract.functionUnits() : BoundFunctionUnit[],
                         boundParent,
-                        declaredFields, hierarchy
+                        declaredFields, rootHierarchy ?: hierarchy
                     )
                     var Int parentIndex
                     while (result[parentIndex].identity.name != parentSyntax.name) parentIndex++
@@ -90,6 +108,28 @@ class {
                     result.add(inherited.childType)
                     boundNames.add(syntax.name)
                     progressed = true
+                }
+                if (boundNames.contains(syntax.name)) {
+                    let justBound = result.firstOrNull({ _.identity.name == syntax.name })
+                    for (function in justBound.functionUnits()) {
+                        var Int signatureIndex
+                        while (signatureIndex < constructorSignatures.count) {
+                            let signature = constructorSignatures[signatureIndex]
+                            if (signature.ownerType &&
+                                signature.ownerType.value() == justBound.semanticType.value() &&
+                                signature.identity.declaration.value == function.identity.value &&
+                                signature.returnType.kind() == "unknown" &&
+                                function.returnType.kind() != "unknown") {
+                                constructorSignatures[signatureIndex] = CallableSignature(
+                                    signature.identity, signature.name, signature.callableKind,
+                                    signature.parameterTypes(), function.returnType, signature.ownerType,
+                                    signature.optionalParameterCount, signature.parameterNames(),
+                                    signature.genericParameters(), signature.ownerGenericDeclaration
+                                )
+                            }
+                            signatureIndex++
+                        }
+                    }
                 }
                 index++
             }
@@ -107,6 +147,144 @@ class {
             }
         }
         return PrimitiveClassPartitionBindingResult(result)
+    }
+
+    /** Defer only a consumer that selects an unpublished inferred owner member. */
+    awaitInferredMember(
+        PrimitiveClassSyntax syntax, PrimitiveClassSyntax[] syntaxes,
+        CallableSignature[] signatures, BoundFieldUnit[] fields, String[] boundNames
+    ) -> Bool {
+        for (method in syntax.methodValues()) {
+            for (statement in method.statements()) {
+                if (awaitInStatement(statement, syntax, method, syntaxes,
+                    signatures, fields, boundNames)) return true
+            }
+        }
+        return false
+    }
+
+    awaitInStatement(
+        PrimitiveStatementSyntax statement, PrimitiveClassSyntax syntax,
+        PrimitiveFunctionSyntax method, PrimitiveClassSyntax[] syntaxes,
+        CallableSignature[] signatures, BoundFieldUnit[] fields, String[] boundNames
+    ) -> Bool {
+        if (statement.class.isOfType(PrimitiveWhileSyntax.class)) {
+            let value = (PrimitiveWhileSyntax)statement
+            if (awaitInExpression(value.condition, syntax, method, syntaxes,
+                signatures, fields, boundNames)) return true
+            for (nested in value.bodyValues()) {
+                if (awaitInStatement(nested, syntax, method, syntaxes,
+                    signatures, fields, boundNames)) return true
+            }
+        }
+        if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
+            let value = (PrimitiveIfSyntax)statement
+            if (awaitInExpression(value.condition, syntax, method, syntaxes,
+                signatures, fields, boundNames)) return true
+            for (nested in value.thenValues()) {
+                if (awaitInStatement(nested, syntax, method, syntaxes,
+                    signatures, fields, boundNames)) return true
+            }
+            for (nested in value.elseValues()) {
+                if (awaitInStatement(nested, syntax, method, syntaxes,
+                    signatures, fields, boundNames)) return true
+            }
+        }
+        if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+            let value = (PrimitiveReturnSyntax)statement
+            if (value.value && awaitInExpression(value.value, syntax, method,
+                syntaxes, signatures, fields, boundNames)) return true
+        }
+        if (statement.class.isOfType(PrimitiveExpressionStatementSyntax.class)) {
+            let value = (PrimitiveExpressionStatementSyntax)statement
+            return awaitInExpression(value.expression, syntax, method,
+                syntaxes, signatures, fields, boundNames)
+        }
+        if (statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class)) {
+            let value = (PrimitiveLocalDeclarationSyntax)statement
+            return value.initializer && awaitInExpression(value.initializer, syntax,
+                method, syntaxes, signatures, fields, boundNames)
+        }
+        return false
+    }
+
+    awaitInExpression(
+        PrimitiveExpressionSyntax expression, PrimitiveClassSyntax syntax,
+        PrimitiveFunctionSyntax method, PrimitiveClassSyntax[] syntaxes,
+        CallableSignature[] signatures, BoundFieldUnit[] fields, String[] boundNames
+    ) -> Bool {
+        if (expression.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let value = (PrimitiveBinarySyntax)expression
+            return awaitInExpression(value.left, syntax, method, syntaxes,
+                signatures, fields, boundNames) || awaitInExpression(value.right,
+                    syntax, method, syntaxes, signatures, fields, boundNames)
+        }
+        if (expression.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+            let call = (PrimitiveMemberCallSyntax)expression
+            if (awaitInExpression(call.receiver, syntax, method, syntaxes,
+                signatures, fields, boundNames)) return true
+            for (argument in call.argumentValues()) {
+                if (awaitInExpression(argument, syntax, method, syntaxes,
+                    signatures, fields, boundNames)) return true
+            }
+            if (call.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let reference = (PrimitiveReferenceSyntax)call.receiver
+                let parameter = method.parameterValues().firstOrNull({ _.name == reference.name })
+                var SemanticType type
+                if (parameter) {
+                    let resolver = PrimitiveStructuralTypeResolver(
+                        syntaxes: syntaxes, interfaces: interfaces,
+                        genericParameter: syntax.genericParameterName ? GenericParameterSemanticType(
+                            DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot,
+                                "class", syntax.range.startTokenIndex), "class", syntax.name),
+                            syntax.genericParameterName, 0) : null,
+                        methodGenericParameters: method.genericParameterNames().map((name) =>
+                            GenericParameterSemanticType(DeclarationIdentity(
+                                SyntaxIslandIdentity(method.range.snapshot,
+                                    method.staticMethod ? "static-method" : "instance-method",
+                                    method.range.startTokenIndex),
+                                method.staticMethod ? "static-method" : "instance-method",
+                                method.name), name, 0)
+                        )
+                    )
+                    type = resolver.resolve(parameter.typeName)
+                } else if (method.parameterValues().none({ _.name == reference.name })) {
+                    let field = fields.firstOrNull((candidate) =>
+                        candidate.name == reference.name &&
+                        candidate.identity.declaration.value ==
+                            DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot,
+                                "class", syntax.range.startTokenIndex), "class", syntax.name).value)
+                    if (field) type = field.semanticType
+                }
+                if (type) {
+                    let owner = type.kind() == "generic-instance"
+                        ? ((GenericInstanceSemanticType)type).declarationType : type
+                    if (signatures.any((candidate) => candidate.ownerType &&
+                        candidate.ownerType.value() == owner.value() &&
+                        candidate.name == call.memberName &&
+                        candidate.returnType.kind() == "unknown" &&
+                        !boundNames.contains(candidate.ownerType.declarationIdentity.name))) {
+                        return true
+                    }
+                }
+            }
+        }
+        if (expression.class.isOfType(PrimitiveConditionalSyntax.class)) {
+            let value = (PrimitiveConditionalSyntax)expression
+            return awaitInExpression(value.condition, syntax, method, syntaxes,
+                signatures, fields, boundNames) || awaitInExpression(value.whenTrue,
+                    syntax, method, syntaxes, signatures, fields, boundNames) ||
+                awaitInExpression(value.whenFalse, syntax, method, syntaxes,
+                    signatures, fields, boundNames)
+        }
+        if (expression.class.isOfType(PrimitiveCallSyntax.class)) {
+            let value = (PrimitiveCallSyntax)expression
+            for (argument in value.argumentValues()) {
+                if (awaitInExpression(argument, syntax, method, syntaxes,
+                    signatures, fields, boundNames)) return true
+            }
+        }
+        return false
     }
 
     /** Seals the selected array's direct interface component, not the whole package. */
@@ -185,27 +363,164 @@ class {
     withTraitImplementations(PrimitiveClassSyntax syntax) -> PrimitiveClassSyntax {
         let methods = syntax.methodValues()
         for (name in syntax.implementedTypeNames()) {
-            let genericStart = name.indexOf("<", defaultReturnValue: -1)
-            let contractName = genericStart < 0 ? name : name.substring(0, genericStart)
-            let contract = interfaces.firstOrNull({ _.name == contractName })
-            if (!contract) continue
-            for (member in contract.methodValues()) {
-                if (syntax.methodValues().any((method) => method.name == member.name &&
-                    method.parameterValues().map({ _.typeName }) == member.parameterTypeNames())) continue
-                let implementation = member.implementation()
-                if (!implementation) continue
-                if (methods.any((method) => method.name == member.name &&
-                    method.parameterValues().map({ _.typeName }) == member.parameterTypeNames())) {
-                    throw Exception("Ambiguous trait default '#{member.name}' requires a class implementation")
-                }
-                methods.add(implementation)
-            }
+            publishTraitDefaults(syntax, name, methods, String[])
         }
         if (methods.count == syntax.methodValues().count) return syntax
         return PrimitiveClassSyntax(syntax.range, syntax.name, syntax.genericParameterName,
             syntax.parentName, syntax.fieldValues(), syntax.constructorValue, methods,
             syntax.implementedTypeNames(), syntax.abstractClass,
             syntax.arrayOverrideValues(), syntax.constructorValues())
+    }
+
+    /** Resolve each contract edge before publishing defaults; the path bounds cycles to this partition. */
+    publishTraitDefaults(PrimitiveClassSyntax syntax, String implementedName,
+        PrimitiveFunctionSyntax[] methods, String[] path) {
+        let open = implementedName.indexOf("<", defaultReturnValue: -1)
+        let contractName = open < 0 ? implementedName : implementedName.substring(0, open)
+        let contract = interfaces.firstOrNull({ _.name == contractName })
+        if (!contract) return
+        if (path.contains(contractName)) throw Exception("Cyclic trait inheritance '#contractName'")
+        let visited = String[]:addAll(path)
+        visited.add(contractName)
+        let arguments = open < 0 ? String[] :
+            splitOverrideTypes(implementedName.substring(open + 1, implementedName.count - 1))
+        let parameters = contract.genericParameterNames()
+        if (arguments.count != parameters.count) throw Exception("Trait implementation generic arity mismatch")
+        for (member in contract.methodValues()) {
+            let implementation = member.implementation()
+            if (!implementation || syntax.methodValues().any((method) =>
+                overridesTraitMethod(syntax, implementedName, contract, method, member))) continue
+            if (methods.any((method) => method.name == member.name &&
+                method.range.snapshot == implementation.range.snapshot &&
+                method.range.startTokenIndex == implementation.range.startTokenIndex)) continue
+            if (methods.any((method) =>
+                overridesTraitMethod(syntax, implementedName, contract, method, member))) {
+                throw Exception("Ambiguous trait default '#{member.name}' requires a class implementation")
+            }
+            methods.add(implementation)
+        }
+        for (parentName in contract.parentTypeNames()) {
+            let parentOpen = parentName.indexOf("<", defaultReturnValue: -1)
+            if (parentOpen < 0) {
+                publishTraitDefaults(syntax, parentName, methods, visited)
+                continue
+            }
+            let instantiated = String[]
+            for (argument in splitOverrideTypes(parentName.substring(
+                parentOpen + 1, parentName.count - 1))) {
+                let position = parameters.indexOf(argument, defaultReturnValue: -1)
+                instantiated.add(position < 0 ? argument : arguments[position])
+            }
+            publishTraitDefaults(syntax,
+                parentName.substring(0, parentOpen) + "<" + instantiated.join(",") + ">",
+                methods, visited)
+        }
+    }
+
+    /** Compare instantiated trait parameters with a class declaration. A callback may
+     * specialize a self-typed trait parameter to its implementing class. */
+    overridesTraitMethod(PrimitiveClassSyntax syntax, String implementedName,
+        PrimitiveInterfaceSyntax contract, PrimitiveFunctionSyntax method,
+        PrimitiveInterfaceMethodSyntax member) -> Bool {
+        if (method.name != member.name ||
+            method.parameterValues().count != member.parameterTypeNames().count) return false
+        let genericStart = implementedName.indexOf("<", defaultReturnValue: -1)
+        let arguments = genericStart < 0 ? String[] :
+            splitOverrideTypes(implementedName.substring(genericStart + 1, implementedName.count - 1))
+        let parameters = contract.genericParameterNames()
+        if (arguments.count != parameters.count) return false
+        let memberGenerics = member.implementation()?.genericParameterNames() ?: String[]
+        let methodGenerics = method.genericParameterNames()
+        if (memberGenerics.count != methodGenerics.count) return false
+        let memberTypes = member.parameterTypeNames()
+        let methodParameters = method.parameterValues()
+        var Int index
+        while (index < memberTypes.count) {
+            if (!sameOverrideType(memberTypes[index], methodParameters[index].typeName,
+                contract.name, syntax.name, parameters, arguments,
+                memberGenerics, methodGenerics)) return false
+            index++
+        }
+        return true
+    }
+
+    sameOverrideType(String traitType, String classType, String traitName,
+        String className, String[] parameters, String[] arguments,
+        String[] memberGenerics, String[] methodGenerics) -> Bool {
+        var Int index
+        while (index < parameters.count) {
+            if (traitType == parameters[index]) return classType == arguments[index]
+            index++
+        }
+        index = 0
+        while (index < memberGenerics.count) {
+            if (traitType == memberGenerics[index]) return classType == methodGenerics[index]
+            index++
+        }
+        if (traitType == classType) return true
+        let traitOpen = traitType.indexOf("<", defaultReturnValue: -1)
+        let classOpen = classType.indexOf("<", defaultReturnValue: -1)
+        if (traitOpen >= 0 && classOpen >= 0 && traitType.endsWith(">") && classType.endsWith(">")) {
+            let traitBase = traitType.substring(0, traitOpen)
+            let classBase = classType.substring(0, classOpen)
+            if (traitBase != classBase &&
+                !(traitBase == traitName && classBase == className)) return false
+            let traitArgs = splitOverrideTypes(traitType.substring(traitOpen + 1, traitType.count - 1))
+            let classArgs = splitOverrideTypes(classType.substring(classOpen + 1, classType.count - 1))
+            if (traitArgs.count != classArgs.count) return false
+            index = 0
+            while (index < traitArgs.count) {
+                if (!sameOverrideType(traitArgs[index], classArgs[index], traitName,
+                    className, parameters, arguments, memberGenerics, methodGenerics)) return false
+                index++
+            }
+            return true
+        }
+        let traitFunction = traitType.indexOf("(", defaultReturnValue: -1)
+        let classFunction = classType.indexOf("(", defaultReturnValue: -1)
+        if (traitFunction < 0 || classFunction < 0) return false
+        // The parser retains the callback parameter name for trait signatures,
+        // while class function types use the canonical "func" marker.
+        let traitPrefix = traitType.substring(0, traitFunction)
+        let classPrefix = classType.substring(0, classFunction)
+        if (classPrefix != "func" && traitPrefix != classPrefix) return false
+        let traitClose = traitType.lastIndexOf(")", defaultReturnValue: -1)
+        let classClose = classType.lastIndexOf(")", defaultReturnValue: -1)
+        if (traitClose < 0 || classClose < 0) return false
+        let traitArgs = splitOverrideTypes(traitType.substring(traitFunction + 1, traitClose))
+        let classArgs = splitOverrideTypes(classType.substring(classFunction + 1, classClose))
+        if (traitArgs.count != classArgs.count ||
+            !sameOverrideType(traitType.substring(traitClose + 1),
+                classType.substring(classClose + 1), traitName, className,
+                parameters, arguments, memberGenerics, methodGenerics)) return false
+        index = 0
+        while (index < traitArgs.count) {
+            if (!sameOverrideType(traitArgs[index], classArgs[index], traitName,
+                className, parameters, arguments, memberGenerics, methodGenerics)) return false
+            index++
+        }
+        return true
+    }
+
+    splitOverrideTypes(String value) -> String[] {
+        let result = String[]
+        if (value.isEmpty) return result
+        var Int start
+        var Int depth
+        var Int index
+        while (index < value.count) {
+            let character = value.substring(index, index + 1)
+            if (character == "(" || character == "<") depth++
+            else if (character == ")" ||
+                (character == ">" && (index == 0 || value.substring(index - 1, index) != "-"))) depth--
+            else if (character == "," && depth == 0) {
+                result.add(value.substring(start, index))
+                start = index + 1
+            }
+            index++
+        }
+        result.add(value.substring(start))
+        return result
     }
 
     withImplicitRootParent(
@@ -276,11 +591,21 @@ class {
                     methodStatements.first.class.isOfType(PrimitiveReturnSyntax.class)) {
                     let inferredObject = (Object)methodStatements.first
                     let inferredSyntax = (PrimitiveReturnSyntax)inferredObject
-                    if (inferredSyntax.value) {
-                        let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
-                        if (inferred.succeeded) {
-                            inferredMethodReturn = inferred.expression.semanticType
+                    if (inferredSyntax.value &&
+                        inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                        let reference = (PrimitiveReferenceSyntax)inferredSyntax.value
+                        var Int parameterIndex
+                        for (parameter in method.parameterValues()) {
+                            if (parameter.name == reference.name) {
+                                inferredMethodReturn = parameterTypes[parameterIndex]
+                                break
+                            }
+                            parameterIndex++
                         }
+                    }
+                    if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
+                        let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
+                        if (inferred.succeeded) inferredMethodReturn = inferred.expression.semanticType
                     }
                 }
                 let returnType = method.inferredReturnType
@@ -447,12 +772,18 @@ class {
                 "class", syntax.name
             )
             let owner = UserClassSemanticType(ownerIdentity)
+            let classGeneric = syntax.genericParameterName ? GenericParameterSemanticType(
+                ownerIdentity, syntax.genericParameterName, 0
+            ) : null
+            let ownerGenerics = classGeneric ? GenericDeclaration(
+                ownerIdentity, [classGeneric], owner
+            ) : null
             let indexType = signatureType(
                 override.indexParameter.typeName, syntaxes, snapshot
             )
             var SemanticType elementType = override.elementTypeName == "inferred"
                 ? SemanticTypes.unknownType()
-                : signatureType(override.elementTypeName, syntaxes, snapshot)
+                : signatureType(override.elementTypeName, syntaxes, snapshot, classGeneric)
             if (override.elementTypeName == "inferred" && override.getterValues().count == 1) {
                 let statement = override.getterValues().first
                 if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
@@ -463,9 +794,8 @@ class {
                             let reference = (PrimitiveReferenceSyntax)access.receiver
                             let field = syntax.fieldValues().firstOrNull({ _.name == reference.name })
                             if (field) {
-                                let classGeneric = syntax.genericParameterName ?
-                                    GenericParameterSemanticType(ownerIdentity, syntax.genericParameterName, 0) : null
-                                let storage = signatureType(field.typeName, syntaxes, snapshot, classGeneric)
+                                let storage = signatureType(field.typeName, syntaxes, snapshot,
+                                    classGeneric, nativeArrayStorage: field.nativeArrayStorage)
                                 if (storage.kind() == "array") {
                                     let array = (ArraySemanticType)storage
                                     elementType = array.elementType
@@ -484,7 +814,8 @@ class {
                 )
                 result.add(CallableSignature(
                     SymbolIdentity(identity, "array-getter"), "getAt",
-                    CallableKind("instance-method"), [indexType], elementType, owner
+                    CallableKind("instance-method"), [indexType], elementType, owner,
+                    ownerGenericDeclaration: ownerGenerics
                 ))
             }
             if (override.setterValues().isNotEmpty) {
@@ -497,7 +828,7 @@ class {
                 result.add(CallableSignature(
                     SymbolIdentity(identity, "array-setter"), "setAt",
                     CallableKind("instance-method"), [indexType, elementType],
-                    SemanticTypes.unitType(), owner
+                    SemanticTypes.unitType(), owner, ownerGenericDeclaration: ownerGenerics
                 ))
             }
         }

@@ -1,6 +1,19 @@
 package flat/semantic/types
 
 testable class {
+    test `rejects invalid registered generic root at seal`() {
+        let fixture = TypeSystem_TestFixture()
+        let parent = fixture.userType("Parent", 1)
+        let child = fixture.userType("Child", 2)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(parent, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(child, "class", [parent]))
+        hierarchy.registerRootDeclaration(child)
+        hierarchy.seal()
+        expect(hierarchy.valid).toBe(false)
+        expect(hierarchy.diagnostics().first.code).toBe("type.hierarchy-invalid-root")
+    }
+
     test `substitutes declared generic parents without erasing arguments`() {
         let fixture = TypeSystem_TestFixture()
         let sequence = fixture.userType("Sequence", 1)

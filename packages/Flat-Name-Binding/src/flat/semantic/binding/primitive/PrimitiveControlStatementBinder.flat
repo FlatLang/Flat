@@ -427,13 +427,15 @@ class {
                 )
                 if (target.class.isOfType(BoundCallExpression.class)) {
                     let getterCall = (BoundCallExpression)target
+                    let indexedType = getterCall.receiver.semanticType
+                    let indexedOwner = indexedType.kind() == "generic-instance"
+                        ? ((GenericInstanceSemanticType)indexedType).declarationType.value()
+                        : indexedType.value()
                     var CallableSignature setter = currentArraySetter
-                    if (!setter || setter.ownerType.value() !=
-                        getterCall.receiver.semanticType.value()) {
+                    if (!setter || setter.ownerType.value() != indexedOwner) {
                         setter = callables.firstOrNull((candidate) =>
                             candidate.identity.symbolKind == "array-setter" &&
-                            candidate.ownerType.value() ==
-                                getterCall.receiver.semanticType.value()
+                            candidate.ownerType.value() == indexedOwner
                         )
                     }
                     if (!setter || !getterCall.receiver) {
@@ -457,9 +459,13 @@ class {
                         value.range
                     )
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    let selected = indexedType.kind() == "generic-instance" &&
+                        setter.ownerGenericDeclaration ? setter.instantiateReceiver(
+                            (GenericInstanceSemanticType)indexedType
+                        ) : setter
                     result.add(BoundExpressionStatement(
                         value.range, BoundCallExpression(
-                            value.range, checked.semanticType, setter,
+                            value.range, checked.semanticType, selected,
                             getterCall.receiver,
                             [getterCall.argumentValues().first, expression],
                             checked.argumentConversions()
@@ -927,6 +933,15 @@ class {
                 candidate.ownerType.declarationIdentity.name == value.typeName
             ).map((candidate) => typeArguments.isEmpty ? candidate :
                 candidate.instantiateConstructor(typeArguments.map({ currentTypeResolver.resolve(_) })))
+            if (candidates.isEmpty && value.typeName == "Array" &&
+                typeArguments.count == 1 && arguments.count == 1) {
+                if (arguments.first.semanticType.value() != SemanticTypes.intType().value()) {
+                    throw Exception("Array construction size requires Int")
+                }
+                return BoundArrayExpression(value.range,
+                    ArraySemanticType(currentTypeResolver.resolve(typeArguments.first)),
+                    arguments.first)
+            }
             let resolution = OverloadResolver.resolve(
                 value.typeName, candidates, null,
                 arguments.map({ _.semanticType }), value.range
@@ -950,36 +965,33 @@ class {
             let index = classExpression(
                 value.index, receiver, fields, locals, callables
             )
-            if (target.semanticType.kind() != "array" &&
-                value.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
-                let receiverName = ((PrimitiveReferenceSyntax)value.receiver).name
-                let publishedField = currentAvailableFields.firstOrNull((candidate) =>
-                    candidate.name == receiverName &&
-                    candidate.semanticType.kind() == "array"
-                )
-                if (publishedField && receiver) {
-                    target = BoundMemberAccessExpression(
-                        value.receiver.range, publishedField.semanticType, receiver,
-                        publishedField.name, publishedField.identity
-                    )
-                }
-            }
-            if (target.semanticType.kind() == "user-class") {
+            if (target.semanticType.kind() == "user-class" ||
+                target.semanticType.kind() == "generic-instance") {
                 let indexedType = target.semanticType
+                let indexedOwner = indexedType.kind() == "generic-instance"
+                    ? ((GenericInstanceSemanticType)indexedType).declarationType.value()
+                    : indexedType.value()
                 let getter = callables.firstOrNull((candidate) =>
                     candidate.identity.symbolKind == "array-getter" &&
-                    candidate.ownerType.value() == indexedType.value()
+                    candidate.ownerType.value() == indexedOwner
                 )
                 if (getter) {
                     let checked = CallTypeChecker.check(
                         getter, indexedType, [index.semanticType], value.range
                     )
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    let selected = indexedType.kind() == "generic-instance" &&
+                        getter.ownerGenericDeclaration ? getter.instantiateReceiver(
+                            (GenericInstanceSemanticType)indexedType
+                        ) : getter
                     return BoundCallExpression(
-                        value.range, checked.semanticType, getter, target,
+                        value.range, checked.semanticType, selected, target,
                         [index], checked.argumentConversions()
                     )
                 }
+            }
+            if (target.semanticType.kind() != "array") {
+                throw Exception("Array access requires an array or indexed class receiver")
             }
             let typeObject = (Object)target.semanticType
             var ArraySemanticType arrayType
@@ -1263,11 +1275,15 @@ class {
                     ))
                 } else normalizedArguments.add(argument)
             }
+            let instance = owner.semanticType.kind() == "generic-instance" ?
+                (GenericInstanceSemanticType)owner.semanticType : null
+            let ownerType = instance ? instance.declarationType.value() : owner.semanticType.value()
             let candidates = callables.filter((candidate) =>
                 candidate.callableKind.value == "instance-method" &&
-                candidate.ownerType.value() == owner.semanticType.value() &&
+                candidate.ownerType.value() == ownerType &&
                 candidate.name == value.memberName
-            )
+            ).map((candidate) => instance && candidate.ownerGenericDeclaration
+                ? candidate.instantiateReceiver(instance) : candidate)
             if (candidates.isNotEmpty) {
                 let resolution = OverloadResolver.resolve(
                     value.memberName, candidates, owner.semanticType,
@@ -1291,7 +1307,18 @@ class {
             let typeArguments = value.typeArgumentNames()
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
-                arguments.add(classExpression(
+                if (argument.class.isOfType(PrimitiveReferenceSyntax.class) && receiver &&
+                    ((PrimitiveReferenceSyntax)argument).name == "this" &&
+                    currentTypeResolver.genericParameter &&
+                    receiver.semanticType.kind() == "user-class") {
+                    arguments.add(BoundReferenceExpression(
+                        argument.range,
+                        GenericInstanceSemanticType(
+                            (UserClassSemanticType)receiver.semanticType,
+                            [currentTypeResolver.genericParameter]
+                        ), "this", receiver.symbolIdentity
+                    ))
+                } else arguments.add(classExpression(
                     argument, receiver, fields, locals, callables
                 ))
             }
@@ -1300,6 +1327,15 @@ class {
                 candidate.name == value.typeName
             ).map((candidate) => typeArguments.isEmpty ? candidate :
                 candidate.instantiateConstructor(typeArguments.map({ currentTypeResolver.resolve(_) })))
+            if (candidates.isEmpty && value.typeName == "Array" &&
+                typeArguments.count == 1 && arguments.count == 1) {
+                if (arguments.first.semanticType.value() != SemanticTypes.intType().value()) {
+                    throw Exception("Array construction size requires Int")
+                }
+                return BoundArrayExpression(value.range,
+                    ArraySemanticType(currentTypeResolver.resolve(typeArguments.first)),
+                    arguments.first)
+            }
             if (candidates.isNotEmpty) {
                 let resolution = OverloadResolver.resolve(
                     value.typeName, candidates, null,

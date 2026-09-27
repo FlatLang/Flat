@@ -124,6 +124,25 @@ testable class {
         expect(method.dispatchIdentity).toBe(null)
     }
 
+    async test `rejects mismatched callback signature on implemented trait`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-signature"), "one")
+        let parentStream = Lexer().lex("class Parent {}")
+        parentStream.emit("start")
+        let parent = PrimitiveClassParser().parse(parentStream.consumeAll<Token>("data"), snapshot)
+        let childStream = Lexer().lex("class Child extends Parent implements Contract { any(anyFunc(Bool x) -> Bool) -> Bool { return false; } }")
+        childStream.emit("start")
+        let child = PrimitiveClassParser().parse(childStream.consumeAll<Token>("data"), snapshot)
+        let contractStream = Lexer().lex("trait Contract { any(anyFunc(Int x) -> Bool) -> Bool }")
+        contractStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(contractStream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try {
+            PrimitiveInheritanceBinder().bind(parent, child, snapshot,
+                interfaceSyntaxValues: [contract])
+        } catch (Exception error) { rejected = error.message.contains("Invalid interface method 'any'") }
+        expect(rejected).toBe(true)
+    }
+
     test `preserves inheritance metadata`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:inheritance-interface-metadata"), "revision:one"

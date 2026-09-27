@@ -29,10 +29,13 @@ class {
     }
 
     var Int implicitParameterIndex
+    var TypeHierarchyComponent currentHierarchy
 
     /** Context supplies parameter types; call applicability validates the inferred result. */
     public bindCallback(PrimitiveLambdaSyntax syntax, FunctionSemanticType context,
-        LocalBinding[] locals, CallableSignature[] callables) -> PrimitiveExpressionBindingResult {
+        LocalBinding[] locals, CallableSignature[] callables,
+        TypeHierarchyComponent hierarchy = null) -> PrimitiveExpressionBindingResult {
+        currentHierarchy = hierarchy
         try {
             return PrimitiveExpressionBindingResult(expression: bindSyntax(syntax, locals, callables, context))
         } catch (Exception error) {
@@ -316,17 +319,19 @@ class {
             }
             let resolution = OverloadResolver.resolve(
                 value.memberName, candidates, receiver.semanticType,
-                arguments.map({ _.semanticType }), value.range
+                arguments.map({ _.semanticType }), value.range, currentHierarchy
             )
             if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
             let target = resolution.selected
             let checked = CallTypeChecker.check(
-                target, receiver.semanticType, arguments.map({ _.semanticType }), value.range
+                target, receiver.semanticType, arguments.map({ _.semanticType }), value.range,
+                currentHierarchy
             )
             if (!checked.valid) throw Exception(checked.diagnostic.message)
             return BoundCallExpression(
                 value.range, checked.semanticType, target, receiver,
-                arguments, checked.argumentConversions()
+                arguments, checked.argumentConversions(), false,
+                TypeConversions.classify(receiver.semanticType, target.receiverType(), hierarchy: currentHierarchy)
             )
         }
         if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) {
@@ -486,6 +491,15 @@ class {
                 candidate.ownerType.declarationIdentity.name == value.typeName
             ).map((candidate) => typeArguments.isEmpty ? candidate :
                 candidate.instantiateConstructor(typeArguments.map({ namedType(_) })))
+            if (candidates.isEmpty && value.typeName == "Array" &&
+                typeArguments.count == 1 && value.argumentValues().count == 1) {
+                let size = bindSyntax(value.argumentValues().first, locals, callables)
+                if (size.semanticType.value() != SemanticTypes.intType().value()) {
+                    throw Exception("Array construction size requires Int")
+                }
+                return BoundArrayExpression(value.range,
+                    ArraySemanticType(namedType(typeArguments.first)), size)
+            }
             if (candidates.isEmpty) throw Exception("Unknown constructed type '#{value.typeName}'")
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
@@ -523,6 +537,18 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
             let value = (PrimitiveReferenceSyntax)syntax
+            if (value.name == "_x" && implicitParameters.isNotEmpty &&
+                !locals.any({ _.name == "_x" })) {
+                let parameter = implicitParameters.first
+                return BoundReferenceExpression(value.range, parameter.semanticType,
+                    parameter.name, parameter.identity)
+            }
+            if (value.name == "_i" && implicitParameters.count > 1 &&
+                !locals.any({ _.name == "_i" })) {
+                let parameter = implicitParameters[1]
+                return BoundReferenceExpression(value.range, parameter.semanticType,
+                    parameter.name, parameter.identity)
+            }
             if (value.name == "_" && implicitParameters.isNotEmpty) {
                 if (implicitParameterIndex >= implicitParameters.count) {
                     throw Exception("Too many implicit lambda parameter references")
@@ -714,10 +740,14 @@ class {
         if (syntax.class.isOfType(PrimitiveArrayAccessSyntax.class)) {
             let value = (PrimitiveArrayAccessSyntax)syntax
             let receiver = bindSyntax(value.receiver, locals, callables)
-            if (receiver.semanticType.kind() == "user-class") {
+            if (receiver.semanticType.kind() == "user-class" ||
+                receiver.semanticType.kind() == "generic-instance") {
+                let indexedOwner = receiver.semanticType.kind() == "generic-instance"
+                    ? ((GenericInstanceSemanticType)receiver.semanticType).declarationType.value()
+                    : receiver.semanticType.value()
                 let getter = callables.firstOrNull((candidate) =>
                     candidate.identity.symbolKind == "array-getter" &&
-                    candidate.ownerType.value() == receiver.semanticType.value()
+                    candidate.ownerType.value() == indexedOwner
                 )
                 if (getter) {
                     let index = bindSyntax(value.index, locals, callables)
@@ -725,8 +755,12 @@ class {
                         getter, receiver.semanticType, [index.semanticType], value.range
                     )
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    let selected = receiver.semanticType.kind() == "generic-instance" &&
+                        getter.ownerGenericDeclaration ? getter.instantiateReceiver(
+                            (GenericInstanceSemanticType)receiver.semanticType
+                        ) : getter
                     return BoundCallExpression(
-                        value.range, checked.semanticType, getter, receiver,
+                        value.range, checked.semanticType, selected, receiver,
                         [index], checked.argumentConversions()
                     )
                 }

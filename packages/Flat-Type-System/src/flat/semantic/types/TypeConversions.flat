@@ -18,6 +18,10 @@ class {
         if (fromType.value() == toType.value()) {
             return TypeConversion(fromType, toType, "identity", true, true, false, 0)
         }
+        if (fromType.kind() == "generic-parameter" && toType.kind() == "user-class" && hierarchy &&
+            hierarchy.isRootClass((UserClassSemanticType)toType)) {
+            return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10)
+        }
         if (fromType.kind() == "user-class" && toType.kind() == "generic-instance" && hierarchy) {
             let distance = hierarchy.concreteGenericDistance((UserClassSemanticType)fromType,
                 (GenericInstanceSemanticType)toType)
@@ -142,7 +146,8 @@ class {
 
     static isReference(SemanticType type) -> Bool {
         return type.kind() == "string" || type.kind() == "object" || type.kind() == "array" ||
-            type.kind() == "user-class" || type.kind() == "function"
+            type.kind() == "user-class" || type.kind() == "generic-instance" ||
+            type.kind() == "generic-parameter" || type.kind() == "function"
     }
 
     static rank(SemanticType type) => -1 {

@@ -35,6 +35,15 @@ class PrimitiveOpaqueCodeBinder {
                 ))
             } else {
                 let path = piece.pathValues()
+                if (path.count == 1 && path.first == "null") {
+                    pieces.add(BoundExternalCodeSegment(
+                        piece.range, "", BoundLiteralExpression(
+                            piece.range, SemanticTypes.nullType(), "null"
+                        ), "identity"
+                    ))
+                    pieceIndex++
+                    continue
+                }
                 var LocalBinding root
                 var Int candidateIndex = locals.count - 1
                 while (candidateIndex >= 0 && !root) {
@@ -236,10 +245,14 @@ class PrimitiveOpaqueCodeBinder {
             let index = bindExpression(
                 access.index, locals, receiver, fields, callables
             )
-            if (projectedReceiver.semanticType.kind() == "user-class") {
+            if (projectedReceiver.semanticType.kind() == "user-class" ||
+                projectedReceiver.semanticType.kind() == "generic-instance") {
+                let indexedOwner = projectedReceiver.semanticType.kind() == "generic-instance"
+                    ? ((GenericInstanceSemanticType)projectedReceiver.semanticType).declarationType.value()
+                    : projectedReceiver.semanticType.value()
                 let getter = callables.firstOrNull((candidate) =>
                     candidate.identity.symbolKind == "array-getter" &&
-                    candidate.ownerType.value() == projectedReceiver.semanticType.value()
+                    candidate.ownerType.value() == indexedOwner
                 )
                 if (getter) {
                     let checked = CallTypeChecker.check(
@@ -247,8 +260,12 @@ class PrimitiveOpaqueCodeBinder {
                         [index.semanticType], access.range
                     )
                     if (!checked.valid) throw Exception(checked.diagnostic.message)
+                    let selected = projectedReceiver.semanticType.kind() == "generic-instance" &&
+                        getter.ownerGenericDeclaration ? getter.instantiateReceiver(
+                            (GenericInstanceSemanticType)projectedReceiver.semanticType
+                        ) : getter
                     return BoundCallExpression(
-                        access.range, checked.semanticType, getter, projectedReceiver,
+                        access.range, checked.semanticType, selected, projectedReceiver,
                         [index], checked.argumentConversions()
                     )
                 }

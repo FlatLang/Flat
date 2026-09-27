@@ -4,6 +4,31 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `parses reduced data declaration with constructor fields`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:reduced-data-class"), "one")
+        let stream = Lexer().lex("data class Field { construct(visible String name) {} }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.name).toBe("Field")
+        expect(parsed.range.startTokenIndex).toBe(0)
+        expect(parsed.constructorValue.parameterValues().first.name).toBe("name")
+        let invalid = Lexer().lex("data trait Field { }")
+        invalid.emit("start")
+        var String diagnostic
+        try {
+            PrimitiveClassParser().parse(invalid.consumeAll<Token>("data"), snapshot)
+        } catch (Exception error) {
+            diagnostic = error.message
+        }
+        expect(diagnostic.contains("Expected 'class'")).toBe(true)
+        let reordered = Lexer().lex("abstract data class Field { }")
+        reordered.emit("start")
+        var String reorderedDiagnostic
+        try { PrimitiveClassParser().parse(reordered.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { reorderedDiagnostic = error.message }
+        expect(reorderedDiagnostic != null).toBe(true)
+    }
+
     async test `parses adjacent metadata properties before static member`() {
         let source = "class Meta { visible String location\n" +
             "visible String package => location.substring(0, location.lastIndexOf(\"/\", defaultReturnValue: 0))\n" +
@@ -172,7 +197,9 @@ testable class {
             "visible var Int position\nvisible native_array var Int[] data\n}")
         stream.emit("start")
         let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        expect(parsed.fieldValues().count).toBe(2)
+        expect(parsed.fieldValues().count).toBe(3)
+        expect(parsed.fieldValues().first.name).toBe("count")
+        expect(parsed.fieldValues().first.mutableField).toBe(true)
         expect(parsed.methodValues().first.name).toBe("count")
     }
 
@@ -189,6 +216,12 @@ testable class {
 
     async test `retains executable contract body`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:default-body"), "one")
+        let expressionStream = Lexer().lex("trait List<Type> { public contains(Type value) => any({ _x == null && value == null || _x != null && _x.equals(value) }) }")
+        expressionStream.emit("start")
+        let expression = PrimitiveInterfaceParser().parse(expressionStream.consumeAll<Token>("data"), snapshot)
+        expect(expression.methodValues().first.implementation() != null).toBe(true)
+        expect(expression.methodValues().first.implementation().statements().first.statementKind()).toBe("return")
+        expect(expression.methodValues().first.implementation().inferredReturnType).toBe(true)
         let stream = Lexer().lex("trait Mapper<T> { public async map<Out>(async callback(T x) -> Out) -> Out { return callback(null); } }")
         stream.emit("start")
         let parsed = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)

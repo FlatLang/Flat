@@ -15,7 +15,8 @@ data class extends BoundExpression {
         visible BoundExpression receiver,
         BoundExpression[] argumentValues,
         TypeConversion[] argumentConversions,
-        visible Bool safeAccess = false
+        visible Bool safeAccess = false,
+        visible TypeConversion receiverConversion = null
     ) {
         if (!range || !semanticType || !target || !argumentValues || !argumentConversions ||
             argumentValues.count != argumentConversions.count ||
@@ -33,7 +34,10 @@ data class extends BoundExpression {
         let receiverType = receiver && safeAccess && receiver.semanticType.kind() == "nullable" ?
             ((NullableSemanticType)receiver.semanticType).underlyingType : receiver ? receiver.semanticType : null
         if (receiver && (!target.ownerType ||
-            !TypeConversions.classify(receiverType, target.receiverType()).applicable)) {
+            !(receiverConversion ? receiverConversion.applicable &&
+                receiverConversion.fromType.value() == receiverType.value() &&
+                receiverConversion.toType.value() == target.receiverType().value() :
+                TypeConversions.classify(receiverType, target.receiverType()).applicable))) {
             throw Exception("Bound call receiver is incompatible with selected target")
         }
         var Int index

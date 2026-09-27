@@ -1,6 +1,31 @@
 package flat/semantic/types
 
 testable class {
+    test `generic root receiver call requires registered hierarchy`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Root", 1)
+        let child = fixture.userType("Child", 2)
+        let generic = GenericParameterSemanticType(fixture.functionIdentity("run"), "E", 0)
+        let rootMethod = CallableSignature(fixture.symbolIdentity("root-match", "instance-method", 10),
+            "match", CallableKind("instance-method"), [SemanticTypes.objectType()],
+            SemanticTypes.boolType(), root)
+        let childMethod = CallableSignature(fixture.symbolIdentity("child-match", "instance-method", 11),
+            "match", CallableKind("instance-method"), [SemanticTypes.objectType()],
+            SemanticTypes.boolType(), child)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(child, "class", [root]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        let selected = OverloadResolver.resolve("match", [rootMethod, childMethod], generic,
+            [generic], fixture.range(), hierarchy)
+        expect(selected.resolved).toBe(true)
+        expect(selected.selected.identity.value).toBe(rootMethod.identity.value)
+        let unregistered = OverloadResolver.resolve("match", [rootMethod, childMethod], generic,
+            [generic], fixture.range())
+        expect(unregistered.resolved).toBe(false)
+    }
+
     test `ranks contextual call checks independent of candidate order`() {
         let fixture = TypeSystem_TestFixture()
         let exact = CallableSignature(fixture.symbolIdentity("exact", "function"), "pick",

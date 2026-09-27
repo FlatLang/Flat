@@ -229,7 +229,7 @@ class {
             }
             methods.add(PrimitiveInterfaceMethodSyntax(
                 methodName, parameterTypes, returnType, range(memberStart, index), defaultValue,
-                bracedBody ? tokens.skip(memberStart).take(index - memberStart) : Token[]
+                (bracedBody || defaultValue) ? tokens.skip(memberStart).take(index - memberStart) : Token[]
             ))
         }
         require("}")
