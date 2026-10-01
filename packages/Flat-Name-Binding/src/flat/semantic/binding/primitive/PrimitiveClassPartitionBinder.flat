@@ -263,7 +263,10 @@ class {
                         candidate.ownerType.value() == owner.value() &&
                         candidate.name == call.memberName &&
                         candidate.returnType.kind() == "unknown" &&
-                        !boundNames.contains(candidate.ownerType.declarationIdentity.name))) {
+                        !boundNames.contains(candidate.ownerType.declarationIdentity.name) &&
+                        candidate.ownerType.declarationIdentity.value !=
+                            DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot,
+                                "class", syntax.range.startTokenIndex), "class", syntax.name).value)) {
                         return true
                     }
                 }
@@ -671,10 +674,17 @@ class {
                 var Int optionalCount
                 var Bool optionalStarted
                 for (parameter in constructor.parameterValues()) {
-                    parameterTypes.add(signatureType(
+                    let parameterType = signatureType(
                         parameter.typeName, syntaxes, snapshot, classGeneric,
                         nativeArrayStorage: parameter.nativeArrayStorage
-                    ))
+                    )
+                    parameterTypes.add(parameter.defaultValue &&
+                        parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
+                        ((PrimitiveLiteralSyntax)parameter.defaultValue).sourceValue == "null" &&
+                        (parameterType.kind() == "array" || parameterType.kind() == "user-class" ||
+                        parameterType.kind() == "generic-instance" || parameterType.kind() == "string" ||
+                        parameterType.kind() == "object" || parameterType.kind() == "function")
+                        ? NullableSemanticType(parameterType) : parameterType)
                     if (parameter.defaultValue) {
                         optionalStarted = true
                         optionalCount++
@@ -874,13 +884,23 @@ class {
                 }
             }
             for (parameter in constructorFields) {
+                if (syntax.fieldValues().any({ _.name == parameter.name })) continue
                 let parameterRange = SourceRange(
                     syntaxSnapshot, parameter.range.startTokenIndex, parameter.range.endTokenIndex,
                     parameter.range.start, parameter.range.end
                 )
+                let parameterType = signatureType(parameter.typeName, syntaxes, snapshot,
+                    classGeneric, nativeArrayStorage: parameter.nativeArrayStorage)
+                let nullableDefault = parameter.defaultValue &&
+                    parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
+                    ((PrimitiveLiteralSyntax)parameter.defaultValue).sourceValue == "null"
                 result.add(BoundFieldUnit(
                     parameter.name, SymbolIdentity(ownerIdentity, "field", ordinal),
-                    signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, nativeArrayStorage: parameter.nativeArrayStorage), parameterRange,
+                    nullableDefault && (parameterType.kind() == "array" ||
+                        parameterType.kind() == "user-class" || parameterType.kind() == "generic-instance" ||
+                        parameterType.kind() == "string" || parameterType.kind() == "object" ||
+                        parameterType.kind() == "function")
+                        ? NullableSemanticType(parameterType) : parameterType, parameterRange,
                     parameter.visibleParameter
                 ))
                 ordinal++

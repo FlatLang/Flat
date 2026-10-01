@@ -45,6 +45,182 @@ testable class {
             .toBe(SemanticTypes.boolType().value())
     }
 
+    async test `published inferred result of another source feeds typed array`() {
+        let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:published-result-owner"), "one")
+        let readerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:published-result-reader"), "one")
+        let ownerStream = Lexer().lex("class Owner { public Int value => 1 public read() => value }")
+        ownerStream.emit("start")
+        let readerStream = Lexer().lex("class Reader { public collect(Owner owner) -> Int[] { let values = Int[]; values.add(owner.read()); return values; } }")
+        readerStream.emit("start")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
+        let reader = PrimitiveClassParser().parse(readerStream.consumeAll<Token>("data"), readerSnapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([reader, owner]).typeUnits()
+        expect(bound.firstOrNull({ _.identity.name == "Reader" }).functionUnits()
+            .firstOrNull({ _.name == "collect" }).name).toBe("collect")
+    }
+
+    async test `nested published metadata resolves its declared location`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:metadata-location"), "one")
+        let classStream = Lexer().lex("class Metadata { visible String location; }")
+        classStream.emit("start")
+        let errorStream = Lexer().lex("class Problem { visible Metadata class; public matches(Problem e, Metadata expected) -> Bool { return e.class.location == expected.location; } }")
+        errorStream.emit("start")
+        let ownerSyntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"), snapshot)
+        let consumerSyntax = PrimitiveClassParser().parse(errorStream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([consumerSyntax, ownerSyntax], snapshot).typeUnits()
+        expect(bound.firstOrNull({ _.identity.name == "Problem" }).functionUnits()
+            .firstOrNull({ _.name == "matches" }).returnType.value())
+            .toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `parses nested catch metadata access`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:catch-access-shape"), "one")
+        let stream = Lexer().lex("class Exception { construct() {} public matches(Class expected) -> Bool { try { throw this; } catch (Exception e) { if (e.class.location == expected.location) { return true; } } return false; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let selected = syntax.methodValues().firstOrNull({ _.name == "matches" })
+        let statements = selected.statements()
+        let attemptObject = (Object)statements.first
+        let attempt = (PrimitiveTrySyntax)attemptObject
+        let catchStatements = attempt.catchValues().first.statements()
+        let conditionObject = (Object)catchStatements.first
+        let condition = (PrimitiveIfSyntax)conditionObject
+        let comparison = (PrimitiveBinarySyntax)condition.condition
+        expect(comparison.left.expressionKind()).toBe("member-access")
+        let access = (PrimitiveMemberAccessSyntax)comparison.left
+        expect(access.memberName).toBe("location")
+        expect(access.receiver.expressionKind()).toBe("member-access")
+        let inner = (PrimitiveMemberAccessSyntax)access.receiver
+        expect(inner.memberName).toBe("class")
+        expect(inner.receiver.expressionKind()).toBe("reference")
+        let reference = (PrimitiveReferenceSyntax)inner.receiver
+        expect(reference.name).toBe("e")
+        expect(inner.range.startTokenIndex < access.range.startTokenIndex).toBe(false)
+        expect(inner.range.endTokenIndex < access.range.endTokenIndex).toBe(true)
+        expect(inner.range.startTokenIndex).toBe(31)
+        expect(access.range.startTokenIndex).toBe(31)
+    }
+
+    async test `parsed static catch uses source owned metadata location`() {
+        let classSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:catch-metadata-class"), "one")
+        let exceptionSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:catch-metadata-binding"), "one")
+        let classStream = Lexer().lex("class Class { construct(visible String location) {} }")
+        classStream.emit("start")
+        let exceptionStream = Lexer().lex("class Exception { construct() {} public static matches(Class expected) -> Bool { try { throw Exception(); } catch (Exception e) { if (e.class.location == expected.location) { return true; } } return false; } }")
+        exceptionStream.emit("start")
+        let classSyntax = PrimitiveClassParser().parse(classStream.consumeAll<Token>("data"), classSnapshot)
+        let exceptionSyntax = PrimitiveClassParser().parse(exceptionStream.consumeAll<Token>("data"), exceptionSnapshot)
+        let units = PrimitiveClassPartitionBinder().bind([exceptionSyntax, classSyntax]).typeUnits()
+        let boundException = units.firstOrNull({ _.identity.name == "Exception" })
+        let boundMatch = boundException.functionUnits().firstOrNull({ _.name == "matches" })
+        expect(boundMatch.returnType.value()).toBe(SemanticTypes.boolType().value())
+        expect(boundMatch.statements().count > 0).toBe(true)
+    }
+
+    async test `source owned metadata access does not infer a built in Class`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-metadata-contract"), "one")
+        let stream = Lexer().lex("class Sample { construct() {} public static read(Sample value) -> String { return value.class.location; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try {
+            PrimitiveClassPartitionBinder().bind([syntax])
+        } catch (Exception error) {
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+    }
+
+    async test `source owned self inferred method remains ready`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:self-owned-readiness"), "one")
+        let stream = Lexer().lex("class Sample { public get() => true public read(Sample value) -> Bool { if (value.get()) { return true; } return false; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let types = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits()
+        expect(types.first.functionUnits().firstOrNull({ _.name == "read" }).returnType.value())
+            .toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `explicit storage and visible constructor parameter share field identity`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:matching-explicit-storage"), "one")
+        let stream = Lexer().lex("class Meta { visible String location; construct(visible String location) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.fieldUnits().filter({ _.name == "location" }).count).toBe(1)
+        expect(bound.fieldUnits().first.name).toBe("location")
+    }
+
+    async test `mismatched explicit storage and constructor parameter is rejected`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:mismatched-explicit-storage"), "one")
+        let stream = Lexer().lex("class Meta { visible Int location; construct(visible String location) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String message
+        try { PrimitiveClassPartitionBinder().bind([syntax]) }
+        catch (Exception error) { message = error.message }
+        expect(message).toBe("Constructor parameter conflicts with field 'location'")
+    }
+
+    async test `native array null constructor default has nullable parameter type`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-native-default"), "one")
+        let stream = Lexer().lex("class Meta { construct(visible Int[] values = null) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        let parameter = bound.functionUnits().first.parameterValues().first
+        expect(parameter.semanticType.kind()).toBe("nullable")
+        expect(bound.fieldUnits().first.semanticType.value()).toBe(parameter.semanticType.value())
+    }
+
+    async test `explicit native array field matches nullable constructor default`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-nullable-storage"), "one")
+        let stream = Lexer().lex("class Meta { visible Int[] values; construct(visible Int[] values = null) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.fieldUnits().count).toBe(1)
+        expect(bound.fieldUnits().first.semanticType.value()).toBe(
+            bound.functionUnits().first.parameterValues().first.semanticType.value()
+        )
+    }
+
+    async test `nonreference constructor null default is rejected`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-null-default"), "one")
+        let stream = Lexer().lex("class Meta { construct(visible Int count = null) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try { PrimitiveClassPartitionBinder().bind([syntax]) }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+    }
+
+    async test `named String overload selects typed source owned member`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-string-self"), "one")
+        let stream = Lexer().lex("class String { public lastIndexOf(Char search, Int defaultReturnValue = -1) -> Int { return 1; } public lastIndexOf(String search, Int defaultReturnValue = -1) -> Int { return 2; } public read() -> Int { return this.lastIndexOf(\"/\", defaultReturnValue: 0); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "read" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `named String overload selects source owned method across snapshots`() {
+        let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-string-owner"), "one")
+        let readerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-string-reader"), "one")
+        let ownerStream = Lexer().lex("class String { public lastIndexOf(Char search, Int defaultReturnValue = -1) -> Int { return 1; } public lastIndexOf(String search, Int defaultReturnValue = -1) -> Int { return 2; } }")
+        ownerStream.emit("start")
+        let readerStream = Lexer().lex("class Reader { construct(visible String location) {} read() -> Int { return location.lastIndexOf(\"/\", defaultReturnValue: 0); } }")
+        readerStream.emit("start")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
+        let reader = PrimitiveClassParser().parse(readerStream.consumeAll<Token>("data"), readerSnapshot)
+        let types = PrimitiveClassPartitionBinder().bind([reader, owner]).typeUnits()
+        expect(types.firstOrNull({ _.identity.name == "Reader" }).functionUnits()
+            .firstOrNull({ _.name == "read" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
     async test `unrelated inferred member does not delay consumer`() {
         let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:unrelated-owner"), "one")
         let readerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:unrelated-reader"), "one")
@@ -363,7 +539,7 @@ testable class {
 
     async test `generic fluent call uses inferred same-owner receiver`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-fluent"), "one")
-        let stream = Lexer().lex("class Bag<E> { construct() {} public clone() => Bag<E>() public plusEquals(E[] values) => this public plus(E[] other) => clone().plusEquals(other) }")
+        let stream = Lexer().lex("class Bag<E> { construct() {} public clone() => Bag<E>() public plusEquals(E[] values) -> Bag<E> { return Bag<E>(); } public plus(E[] other) => clone().plusEquals(other) }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
         let clone = syntax.methodValues().firstOrNull({ _.name == "clone" })
@@ -380,6 +556,106 @@ testable class {
             .toBe("generic-instance")
     }
 
+    async test `generic fluent inferred calls do not depend on method order`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-fluent-reversed"), "one")
+        let stream = Lexer().lex("class Bag<E> { construct() {} public plus(E[] other) => clone().plusEquals(other) public plusEquals(E[] values) -> Bag<E> { return Bag<E>(); } public clone() => Bag<E>() }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "plus" }).returnType.kind())
+            .toBe("generic-instance")
+    }
+
+    async test `generic collection foreach instantiates iterator protocol`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-protocol"), "one")
+        let sources = [
+            "class Bag<E> { public iterator() -> Cursor<E> { return Cursor<E>(); } public addAll(Bag<E> values) { for (element in values) { add(element); } } public add(E value) {} }",
+            "class Cursor<E> { construct() {} public hasNext() => false public stepNext() -> E { return value; } visible E value }"
+        ]
+        let syntaxes = PrimitiveClassSyntax[]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        expect(units.first.functionUnits().any({ _.name == "addAll" })).toBe(true)
+    }
+
+    async test `generic contains result remains Bool in negated structured condition`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:negated-contains"), "one")
+        let stream = Lexer().lex("class Bag<E> { public addUnique(E element) { if (!contains(element)) { add(element); } } public contains(E element) => element != null public add(E element) {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "addUnique" }).name).toBe("addUnique")
+    }
+
+    async test `unknown inferred call is not accepted as Bool`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:unknown-bool"), "one")
+        let stream = Lexer().lex("class Bag { public check() { if (!missing()) { return; } } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("missing")).toBe(true)
+    }
+
+    async test `structured static calls select declared owner and respect shadowing`() {
+        let sources = [
+            "class Math { public static max(Int a, Int b) -> Int { return a > b ? a : b; } }",
+            "class Bag { visible var Int count; visible var Int position; public add() { count = Math.max(position, count); } }"
+        ]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-owner:#{index}"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot))
+            index++
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes).typeUnits()
+        expect(units.firstOrNull({ _.identity.name == "Bag" }).functionUnits()
+            .firstOrNull({ _.name == "add" }).name).toBe("add")
+    }
+
+    async test `structured same-owner call rejects null for unconstrained generic`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-call"), "one")
+        let stream = Lexer().lex("class Bag<E> { public add(E value) {} public add(Int index, E value) { add(null); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("No overload of 'add'")).toBe(true)
+    }
+
+    async test `binds decrement in counted reverse iteration`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:decrement-for"), "one")
+        let stream = Lexer().lex("class Bag { public countDown() -> Int { var Int result = 0; for (var Int i = 3; i >= 0; i--) { result = result + i; } return result; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "countDown" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `structured foreign source field lookup uses receiver declaration`() {
+        let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:structured-field-owner"), "one")
+        let consumerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:structured-field-consumer"), "one")
+        let ownerStream = Lexer().lex("class Detail { visible String location; }")
+        ownerStream.emit("start")
+        let consumerStream = Lexer().lex("class Reader { public static check(Detail detail) -> String { return detail.location; } }")
+        consumerStream.emit("start")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
+        let consumer = PrimitiveClassParser().parse(consumerStream.consumeAll<Token>("data"), consumerSnapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([consumer, owner]).typeUnits()
+        expect(bound.firstOrNull({ _.identity.name == "Reader" }).functionUnits()
+            .firstOrNull({ _.name == "check" }).returnType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
     async test `conditional nullable generic collection result retains owner type`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-conditional"), "one")
         let stream = Lexer().lex("class Bag<E> { visible Int count; visible native_array var E[] data; this[Int index] <=> data[index] public E first => count > 0 ? this[0] : null }")
@@ -388,6 +664,65 @@ testable class {
         let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
         expect(bound.functionUnits().firstOrNull({ _.name == "first" }).returnType.kind())
             .toBe("generic-parameter")
+    }
+
+    async test `generic owner this satisfies its instantiated callback formal`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-callback-this"), "one")
+        let stream = Lexer().lex("class Bag<E> { public each(func(E value, Bag<E> owner) -> Bool callback) -> Bool { var E value; return callback(value, this); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "each" }).returnType.value())
+            .toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `generic owner collected removed values preserve element type`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-removed-values"), "one")
+        let stream = Lexer().lex("class Bag<E> { visible native_array var E[] data; this[Int index] <=> data[index] public remove(Int index) -> E { return data[index]; } public removeWhere(func(E value, Int index, Bag<E> owner) -> Bool callback) -> E[] { let removed = E[]; for (var Int i = 2; i >= 0; i--) { if (callback(this[i], i, this)) { removed.add(remove(i)); } } return removed; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "removeWhere" }).name)
+            .toBe("removeWhere")
+    }
+
+    async test `publishes inferred result of selected same-owner overload`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:inferred-overload-result"), "one")
+        let stream = Lexer().lex("class Bag { public Int first => 1 public take(Int index) => take(index, 1).first public take(Int index, Int count = 1) -> Bag { return this; } public use() -> Int { var Int result = take(0); return result; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "use" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `generic inferred overload result flows to typed collection`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-inferred-overload-result"), "one")
+        let stream = Lexer().lex("class Bag<E> { public E first => data[0] visible native_array var E[] data public take(Int index) => take(index, 1).first public take(Int index, Int count = 1) -> Bag<E> { return Bag<E>(); } public use() -> E[] { let removed = E[]; removed.add(take(0)); return removed; } construct() {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "use" }).name).toBe("use")
+    }
+
+    async test `same owner inferred overload nested in array add keeps generic result`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-nested-overload"), "one")
+        let stream = Lexer().lex("class Bag<E> { visible native_array var E[] data public remove(Int index) -> E { return data[index]; } public removeAtIndex(Int index) => removeAtIndex(index, 1) public removeAtIndex(Int index, Int count = 1) -> E { return remove(index); } public use() -> E[] { let removed = E[]; removed.add(removeAtIndex(0)); return removed; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "use" }).name).toBe("use")
+    }
+
+    async test `unresolved member on call result fails instead of using owner field`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:unresolved-call-member"), "one")
+        let stream = Lexer().lex("class Bag { visible Int first; public other() -> Int { return 1; } public read() => other().first }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("Reduced field access requires 'this'")).toBe(true)
     }
 
     async test `infers owner generic constructor through a source-owned array receiver`() {

@@ -105,7 +105,11 @@ class<E> implements List<E>, OrderedList<E>, PlusOperator<Array<E>, Array<E>>, P
             increaseSize(index + 1)
         }
 
-        add(null)
+        if (position >= capacity) {
+            increaseSize()
+        }
+
+        position = position + 1
 
         shiftRight(index, position)
 

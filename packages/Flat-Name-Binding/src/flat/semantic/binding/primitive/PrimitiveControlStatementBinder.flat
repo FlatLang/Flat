@@ -153,9 +153,10 @@ class {
                 if (value.advance.name != value.initializer.name) {
                     throw Exception("For advance must assign the loop local")
                 }
-                var BoundExpression advanced = classExpression(
-                    value.advance.value, receiver, fields, loopLocals, callables
-                )
+                var BoundExpression advanced = value.advance.assignmentOperator == "++" ||
+                    value.advance.assignmentOperator == "--" ?
+                    BoundLiteralExpression(value.advance.range, SemanticTypes.intType(), "1") :
+                    classExpression(value.advance.value, receiver, fields, loopLocals, callables)
                 if (value.advance.assignmentOperator != "=") {
                     let operator = binaryOperator(value.advance.assignmentOperator)
                     let operation = TypeOperations.binary(
@@ -384,7 +385,7 @@ class {
                 var Int catchIndex
                 while (catchIndex < value.catchValues().count) {
                     let caught = value.catchValues()[catchIndex]
-                    let catchType = exceptionType(caught.typeName)
+                    let catchType = exceptionType(caught.typeName, callables)
                     let identity = SymbolIdentity(
                         DeclarationIdentity(
                             SyntaxIslandIdentity(snapshot, "catch", caught.range.startTokenIndex),
@@ -835,6 +836,24 @@ class {
             let projectedReceiver = classExpression(
                 value.receiver, receiver, fields, locals, callables
             )
+            if (value.memberName == "class" &&
+                value.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let metadata = callables.filter((candidate) =>
+                    candidate.callableKind.value == "constructor" &&
+                    candidate.ownerType.declarationIdentity.name == "Class")
+                let declaredField = currentAvailableFields.firstOrNull((candidate) =>
+                    candidate.name == value.memberName &&
+                    projectedReceiver.semanticType.value() ==
+                        "class:#{candidate.identity.declaration.value}")
+                if (!declaredField && metadata.count == 1 &&
+                    projectedReceiver.class.isOfType(BoundReferenceExpression.class)) {
+                    let reference = (BoundReferenceExpression)projectedReceiver
+                    return BoundMemberAccessExpression(
+                        value.range, metadata.first.ownerType, projectedReceiver,
+                        value.memberName, reference.symbolIdentity
+                    )
+                }
+            }
             if (projectedReceiver.semanticType.kind() == "generic-instance") {
                 return PrimitiveClassBinder().bindScopedExpression(
                     syntax, receiver, fields, locals, callables,
@@ -888,6 +907,11 @@ class {
                     value.range, field.semanticType, projectedReceiver,
                     field.name, field.identity
                 )
+            }
+            if (value.receiver.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                return PrimitiveClassBinder().bindScopedExpression(
+                    syntax, receiver, fields, locals, callables,
+                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields)
             }
         }
         if (syntax.class.isOfType(PrimitiveArrayConstructionSyntax.class)) {
@@ -1380,8 +1404,24 @@ class {
                     throw Exception("Callback argument count mismatch")
                 var Int argumentIndex
                 while (argumentIndex < invocationArguments.count) {
-                    let argument = invocationArguments[argumentIndex]
+                    var BoundExpression argument = invocationArguments[argumentIndex]
                     let target = functionType.parameterTypes()[argumentIndex]
+                    if (receiver && argument.class.isOfType(BoundReferenceExpression.class) &&
+                        ((BoundReferenceExpression)argument).symbolIdentity.value == receiver.symbolIdentity.value &&
+                        target.kind() == "generic-instance" &&
+                        receiver.semanticType.kind() == "user-class") {
+                        let instance = (GenericInstanceSemanticType)target
+                        if (instance.declarationType.value() == receiver.semanticType.value() &&
+                            currentTypeResolver.genericParameter &&
+                            instance.typeArguments().count == 1 &&
+                            instance.typeArguments().first.value() ==
+                                currentTypeResolver.genericParameter.value()) {
+                            argument = BoundReferenceExpression(
+                                argument.range, instance, receiver.name, receiver.symbolIdentity
+                            )
+                            invocationArguments[argumentIndex] = argument
+                        }
+                    }
                     let conversion = TypeConversions.classify(argument.semanticType, target, hierarchy: currentHierarchy)
                     if (!conversion.applicable) throw Exception("Callback argument #argumentIndex cannot convert '#{argument.semanticType.value()}' to '#{target.value()}'")
                     if (argument.semanticType.value() != target.value()) invocationArguments[argumentIndex] =
@@ -1515,6 +1555,8 @@ class {
     }
 
     binaryOperator(String assignmentOperator) -> String {
+        if (assignmentOperator == "++") return "+"
+        if (assignmentOperator == "--") return "-"
         if (assignmentOperator == "+=") return "+"
         if (assignmentOperator == "-=") return "-"
         if (assignmentOperator == "*=") return "*"
@@ -1523,18 +1565,30 @@ class {
         throw Exception("Unsupported member compound assignment operator '#assignmentOperator'")
     }
 
-    exceptionType(String name) -> SemanticType {
+    exceptionType(String name, CallableSignature[] callables) -> SemanticType {
         if (name == "String") return SemanticTypes.stringType()
-        if (name == "Object" || name == "Exception") return SemanticTypes.objectType()
+        if (name == "Object") return SemanticTypes.objectType()
+        if (name == "Exception") {
+            let declarations = callables.filter((candidate) =>
+                candidate.callableKind.value == "constructor" &&
+                candidate.ownerType.declarationIdentity.name == name)
+            if (declarations.count == 1) return declarations.first.ownerType
+            return SemanticTypes.objectType()
+        }
         throw Exception("Catch type '#name' is not throwable")
     }
 
     protocolProperty(BoundExpression owner, String name, SourceRange range,
         CallableSignature[] callables) -> BoundExpression {
+        let declaration = owner.semanticType.kind() == "generic-instance"
+            ? ((GenericInstanceSemanticType)owner.semanticType).declarationType : owner.semanticType
         let candidates = callables.filter((candidate) =>
             candidate.callableKind.value == "instance-method" &&
-            candidate.ownerType.value() == owner.semanticType.value() &&
-            candidate.name == name && candidate.parameterTypes().isEmpty)
+            candidate.ownerType.value() == declaration.value() &&
+            candidate.name == name && candidate.parameterTypes().isEmpty
+        ).map((candidate) => owner.semanticType.kind() == "generic-instance" &&
+            candidate.ownerGenericDeclaration ? candidate.instantiateReceiver(
+                (GenericInstanceSemanticType)owner.semanticType) : candidate)
         if (candidates.count != 1) throw Exception("Iterator protocol requires one '#name' property on '#{owner.semanticType.value()}'")
         let checked = CallTypeChecker.check(candidates.first, owner.semanticType, SemanticType[], range)
         if (!checked.valid) throw Exception(checked.diagnostic.message)

@@ -49,6 +49,31 @@ testable class {
             .diagnostic.code).toBe("type.call-no-match")
     }
 
+    test `exact arity outranks otherwise identical defaulted overload`() {
+        let fixture = TypeSystem_TestFixture()
+        let exact = CallableSignature(
+            fixture.symbolIdentity("take", "function", 11), "take", CallableKind("function"),
+            [SemanticTypes.intType()], SemanticTypes.intType()
+        )
+        let defaulted = CallableSignature(
+            fixture.symbolIdentity("take", "function", 12), "take", CallableKind("function"),
+            [SemanticTypes.intType(), SemanticTypes.intType()], SemanticTypes.intType(),
+            optionalParameterCount: 1
+        )
+        let forward = OverloadResolver.resolve(
+            "take", [defaulted, exact], null, [SemanticTypes.intType()], fixture.range()
+        )
+        let reversed = OverloadResolver.resolve(
+            "take", [exact, defaulted], null, [SemanticTypes.intType()], fixture.range()
+        )
+        expect(forward.selected).toBe(exact)
+        expect(reversed.selected).toBe(exact)
+        expect(OverloadResolver.resolve(
+            "take", [exact, defaulted], null,
+            [SemanticTypes.intType(), SemanticTypes.intType()], fixture.range()
+        ).selected).toBe(defaulted)
+    }
+
     test `overload ranking prefers exact then lower conversion vectors`() {
         let fixture = TypeSystem_TestFixture()
         let exact = fixture.signature(

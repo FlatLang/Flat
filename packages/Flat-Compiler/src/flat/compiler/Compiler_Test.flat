@@ -515,10 +515,13 @@ testable class {
         let identity = "flat/exception/Exception.flat"
         let stackIdentity = "flat/exception/StackTrace.flat"
         let code = FlatEs6PackageLinker().link([
-            CompilerSource(
-                identity,
-                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
-            ),
+            CompilerSource("flat/meta/Function.flat", Es6ArtifactFiles.read(File(
+                "../Flat-Core/src/flat/meta/Function.flat"))),
+            CompilerSource("flat/meta/Class.flat", Es6ArtifactFiles.read(File(
+                "../Flat-Core/src/flat/meta/Class.flat"))),
+            CompilerSource("flat/meta/Field.flat", Es6ArtifactFiles.read(File(
+                "../Flat-Core/src/flat/meta/Field.flat"))),
+            CompilerSource(identity, Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))),
             CompilerSource(
                 stackIdentity,
                 Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
@@ -554,6 +557,31 @@ testable class {
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("true\nforwarded\n")
         Es6ArtifactFiles.remove(root)
+    }
+
+    async test `executes reverse counted loop with decrement`() {
+        let identity = "memory:reverse-counted-loop"
+        let source = "class Counter { public static sum() -> Int { var Int total = 0; for (var Int i = 3; i >= 0; i--) { total = total + i; } return total; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let method = syntax.methodValues().first
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Counter")
+        let target = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "sum")
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let root = File(".flat-compiler-reverse-loop-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(target.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("6\n")
     }
 
     async test `executes empty callback with undefined result`() {
@@ -929,6 +957,12 @@ testable class {
         let exceptionIdentity = "flat/exception/Exception.flat"
         let stackIdentity = "flat/exception/StackTrace.flat"
         let code = FlatEs6PackageLinker().link([
+            CompilerSource("flat/meta/Function.flat", Es6ArtifactFiles.read(File(
+                "../Flat-Core/src/flat/meta/Function.flat"))),
+            CompilerSource("flat/meta/Class.flat", Es6ArtifactFiles.read(File(
+                "../Flat-Core/src/flat/meta/Class.flat"))),
+            CompilerSource("flat/meta/Field.flat", Es6ArtifactFiles.read(File(
+                "../Flat-Core/src/flat/meta/Field.flat"))),
             CompilerSource(
                 identity,
                 Es6ArtifactFiles.read(File(
@@ -1486,6 +1520,12 @@ testable class {
 
     async test `package linker executes unchanged range iterator`() {
         let code = FlatEs6PackageLinker().link([
+                CompilerSource("flat/meta/Function.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/meta/Function.flat"))),
+                CompilerSource("flat/meta/Field.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/meta/Field.flat"))),
+                CompilerSource("flat/Math.flat", Es6ArtifactFiles.read(File(
+                    "../Flat-Core/src/flat/Math.flat"))),
                 CompilerSource("flat/meta/Class.flat", Es6ArtifactFiles.read(File(
                     "../Flat-Core/src/flat/meta/Class.flat"))),
                 CompilerSource("flat/operators/PlusOperator.flat", Es6ArtifactFiles.read(File(
@@ -1695,6 +1735,10 @@ testable class {
                     "flat/exception/Exception.flat",
                     "package flat/exception class Exception { " +
                         "construct(String message = \"\") {} }"
+                ),
+                CompilerSource(
+                    "flat/Math.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Math.flat"))
                 ),
                 CompilerSource(
                     "flat/primitive/number/Char.flat",

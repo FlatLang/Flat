@@ -91,6 +91,7 @@ class {
             if (leftConversions[index].cost < rightConversions[index].cost) better = true
             index++
         }
-        return better
+        if (better) return true
+        return left.target.parameterTypes().count < right.target.parameterTypes().count
     }
 }

@@ -1,6 +1,15 @@
 package flat/datastruct/list
 
 testable class {
+    test `indexed insertion shifts a full array without creating an element`() {
+        let value = Array<String>():addAll(["first", "last"])
+        value.add(1, "middle")
+        expect(value.count).toBe(3)
+        expect(value[0]).toBe("first")
+        expect(value[1]).toBe("middle")
+        expect(value[2]).toBe("last")
+    }
+
     test `can join with ellipse`() {
         let value = Array<String>():addAll(["1", "2", "3"])
 
