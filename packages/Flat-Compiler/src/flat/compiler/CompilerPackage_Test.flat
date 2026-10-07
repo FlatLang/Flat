@@ -1,0 +1,190 @@
+package flat/compiler
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/compiler/models
+import flat/lexer
+import flat/parser/flat
+import flat/writer/es6/bound
+
+/** Public package API acceptance, separate from direct linker feature tests. */
+testable class {
+    realSources() -> CompilerSource[] {
+        CompilerSource[] values = [
+        CompilerSource("flat/primitive/number/Char.flat", Es6ArtifactFiles.read(
+            File("../Flat-Core/src/flat/primitive/number/Char.flat"))),
+        CompilerSource("flat/primitive/number/Number.flat", Es6ArtifactFiles.read(
+            File("../Flat-Core/src/flat/primitive/number/Number.flat"))),
+        CompilerSource("flat/primitive/number/Integer.flat", Es6ArtifactFiles.read(
+            File("../Flat-Core/src/flat/primitive/number/Integer.flat"))),
+        CompilerSource("flat/primitive/Primitive.flat", Es6ArtifactFiles.read(
+            File("../Flat-Core/src/flat/primitive/Primitive.flat")))
+        ]
+        return values
+    }
+
+    async test `public package API executes unchanged production Char behavior`() {
+        let sources = realSources()
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(
+            MemoryCompilerSourceProvider(sources), sink, "core/characters.js"
+        )
+        let summary = session.completion.get()
+        expect(summary.sourceCount).toBe(4)
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.cancelled).toBe(false)
+        expect(summary.packageDiagnostic == null).toBe(true)
+        expect(session.artifacts.closed).toBe(true)
+        expect(session.diagnostics.closed).toBe(true)
+        expect(session.progress.closed).toBe(true)
+        expect(sink.artifacts().count).toBe(1)
+        expect(sink.artifacts().first.identity).toBe("core/characters.js")
+
+        // Derive invocation names from unchanged source identities, not generated text.
+        let source = sources.first
+        let stream = Lexer().lexInterpolated(source.text)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Char"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Char"
+        )
+        var PrimitiveFunctionSyntax whitespace
+        var PrimitiveFunctionSyntax repeat
+        for (method in syntax.methodValues()) {
+            if (method.name == "isWhitespace" && method.staticMethod) whitespace = method
+            if (method.name == "repeat" && method.staticMethod) repeat = method
+        }
+        let whitespaceIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", whitespace.range.startTokenIndex),
+            "static-method", "isWhitespace"
+        )
+        let repeatIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", repeat.range.startTokenIndex),
+            "static-method", "repeat"
+        )
+        let className = Es6NameMangler.mangle(owner.value)
+        let whitespaceName = Es6NameMangler.mangle(whitespaceIdentity.value)
+        let repeatName = Es6NameMangler.mangle(repeatIdentity.value)
+        let root = File(".flat-compiler-package-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, sink.artifacts().first.code +
+            "console.log(" + className + "." + whitespaceName + "(' '));\n" +
+            "console.log(" + className + "." + whitespaceName + "('\\t'));\n" +
+            "console.log(" + className + "." + whitespaceName + "('x'));\n" +
+            "console.log(" + className + "." + repeatName + "('a', 3));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\ntrue\nfalse\naaa\n")
+    }
+
+    async test `package artifact is independent of provider order`() {
+        let sources = realSources()
+        let forward = MemoryCompilerArtifactSink()
+        let backward = MemoryCompilerArtifactSink()
+        let compiler = Compiler()
+        let first = compiler.compilePackage(MemoryCompilerSourceProvider(sources), forward, "core.js")
+        CompilerSource[] reversed = [sources[3], sources[2], sources[1], sources[0]]
+        let second = compiler.compilePackage(MemoryCompilerSourceProvider(reversed), backward, "core.js")
+        expect(first.completion.get().diagnosticCount).toBe(0)
+        expect(second.completion.get().diagnosticCount).toBe(0)
+        expect(forward.artifacts().first.identity).toBe(backward.artifacts().first.identity)
+        expect(forward.artifacts().first.code).toBe(backward.artifacts().first.code)
+    }
+
+    async test `package source capacity and duplicate identities reject without artifacts`() {
+        let sources = realSources()
+        let bounded = Compiler(CompilerEngine(packageLinker: FlatEs6PackageLinker(maxSources: 3)))
+        let sink = MemoryCompilerArtifactSink()
+        var Bool capacityRejected
+        try {
+            bounded.compilePackage(MemoryCompilerSourceProvider(sources), sink, "core.js")
+        } catch (Exception error) { capacityRejected = true }
+        expect(capacityRejected).toBe(true)
+        expect(sink.artifacts().count).toBe(0)
+        var Bool duplicateRejected
+        try {
+            CompilerSource[] duplicates = [sources.first, sources.first]
+            Compiler().compilePackage(MemoryCompilerSourceProvider(duplicates), sink, "core.js")
+        } catch (Exception error) { duplicateRejected = true }
+        expect(duplicateRejected).toBe(true)
+        expect(sink.artifacts().count).toBe(0)
+        var Bool emptyRejected
+        try {
+            Compiler().compilePackage(MemoryCompilerSourceProvider(CompilerSource[]), sink, "core.js")
+        } catch (Exception error) { emptyRejected = true }
+        expect(emptyRejected).toBe(true)
+    }
+
+    async test `package artifact identity cannot escape sink root`() {
+        let sources = MemoryCompilerSourceProvider(realSources())
+        String[] unsafeIdentities = ["", "/core.js", "../core.js", "core/../out.js", "./core.js",
+            "core//out.js", "core/", "C:/core.js", "core\\out.js"]
+        for (identity in unsafeIdentities) {
+            let sink = MemoryCompilerArtifactSink()
+            var Bool rejected
+            try {
+                Compiler().compilePackage(sources, sink, identity)
+            } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(sink.artifacts().count).toBe(0)
+        }
+    }
+
+    test `legacy summary constructor has no retained package diagnostic`() {
+        let summary = CompilationSummary(2, 2, 0, false)
+        expect(summary.packageDiagnostic == null).toBe(true)
+    }
+
+    async test `missing package source returns diagnostic without partial artifact`() {
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(MissingPackageSourceProvider(), sink, "core.js")
+        let summary = session.completion.get()
+        expect(summary.sourceCount).toBe(1)
+        expect(summary.packageDiagnostic).toBe("Failed to compile package 'core.js': Missing source 'missing.flat'")
+        expect(summary.artifactCount).toBe(0)
+        expect(summary.diagnosticCount).toBe(1)
+        expect(sink.artifacts().count).toBe(0)
+        expect(session.diagnostics.closed).toBe(true)
+        expect(session.artifacts.closed).toBe(true)
+        expect(session.progress.closed).toBe(true)
+    }
+
+    async test `package link failure returns diagnostic without partial artifact`() {
+        let sources = realSources()
+        sources.add(CompilerSource("broken.flat", "class Broken {"))
+        var String expectedDiagnostic
+        try {
+            FlatEs6PackageLinker().link(sources)
+        } catch (Exception error) {
+            expectedDiagnostic = "Failed to compile package 'core.js': #{error.message}"
+        }
+        expect(expectedDiagnostic != null).toBe(true)
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), sink, "core.js")
+        let summary = session.completion.get()
+        expect(summary.sourceCount).toBe(5)
+        expect(summary.packageDiagnostic).toBe(expectedDiagnostic)
+        expect(summary.artifactCount).toBe(0)
+        expect(summary.diagnosticCount).toBe(1)
+        expect(sink.artifacts().count).toBe(0)
+        expect(session.completion.completed).toBe(true)
+    }
+}
+
+/** Test-only provider exercising an identity whose source cannot be loaded. */
+class MissingPackageSourceProvider extends CompilerSourceProvider {
+    override public identities() -> String[] {
+        String[] values = ["missing.flat"]
+        return values
+    }
+}

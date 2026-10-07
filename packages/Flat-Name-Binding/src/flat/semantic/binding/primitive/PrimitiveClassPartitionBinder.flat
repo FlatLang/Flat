@@ -49,11 +49,14 @@ class {
                 SyntaxIslandIdentity(snapshot ?: rootSyntax.range.snapshot,
                     "class", rootSyntax.range.startTokenIndex), "class", rootSyntax.name)
             let root = UserClassSemanticType(rootIdentity)
-            rootHierarchy = TypeHierarchyComponent()
-            rootHierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
-            rootHierarchy.registerRootDeclaration(root)
-            rootHierarchy.seal()
-            if (!rootHierarchy.valid) throw Exception("Invalid reduced root hierarchy")
+            if (hierarchy) rootHierarchy = hierarchy
+            else {
+                rootHierarchy = TypeHierarchyComponent()
+                rootHierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+                rootHierarchy.registerRootDeclaration(root)
+                rootHierarchy.seal()
+                if (!rootHierarchy.valid) throw Exception("Invalid reduced root hierarchy")
+            }
         }
         let constructorSignatures = constructorSignatures(effectiveSyntaxValues, snapshot)
         constructorSignatures.addAll(methodSignatures(effectiveSyntaxValues, snapshot))
@@ -327,6 +330,17 @@ class {
         hierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
             genericParameters: parameters, genericParents: templates))
         if (registerArray) hierarchy.registerArrayDeclaration(type)
+        // Keep both language contracts in this scoped component: selecting a
+        // separate root-only component would erase registered array conversions.
+        let rootSyntax = syntaxes.firstOrNull({ _.name == "Object" })
+        if (rootSyntax) {
+            let root = UserClassSemanticType(DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot ?: rootSyntax.range.snapshot,
+                    "class", rootSyntax.range.startTokenIndex), "class", rootSyntax.name))
+            if (root.value() != type.value())
+                hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+            hierarchy.registerRootDeclaration(root)
+        }
         hierarchy.seal()
         if (!hierarchy.valid) throw Exception("Invalid array interface hierarchy")
         return hierarchy
@@ -611,13 +625,15 @@ class {
                         if (inferred.succeeded) inferredMethodReturn = inferred.expression.semanticType
                     }
                 }
-                let returnType = method.inferredReturnType
+                let declaredReturnType = method.inferredReturnType
                     ? (declaredStringResult ? owner : inferredMethodReturn)
                     : method.returnTypeName == "this" ||
                         (syntax.name == "String" && method.name == "replace" &&
                          method.returnTypeName == "String")
                         ? owner :
                     signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range)
+                let returnType = PrimitiveStructuralTypeResolver().fallbackResultType(
+                    method, declaredReturnType)
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(
                         method.range.snapshot,

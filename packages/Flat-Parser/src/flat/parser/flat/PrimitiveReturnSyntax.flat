@@ -2,10 +2,15 @@ package flat/parser/flat
 
 import flat/compiler/models
 
+/** Immutable return syntax. arrowFallback identifies only the terminal result
+ * synthesized from an arrow expression followed by a braced control body.
+ * It preserves source provenance; it does not decide semantic nullability.
+ */
 data class extends PrimitiveStatementSyntax {
     public construct(
         SourceRange range,
-        visible PrimitiveExpressionSyntax value = null
+        visible PrimitiveExpressionSyntax value = null,
+        visible Bool arrowFallback = false
     ) {
         if (!range) throw Exception("Primitive return syntax requires range")
         super(range)

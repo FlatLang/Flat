@@ -7,7 +7,9 @@ import flat/io/FancyOutputStream
 import flat/compiler/Compiler
 
 [TestSuite [
-    Compiler_Test
+    Compiler_Test,
+    CompilerPackage_Test,
+    CompilerCli_Test
 ]]
 class {
     public static async main(String[] args) {

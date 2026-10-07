@@ -96,17 +96,17 @@ class {
             var Int expressionEnd = tokens.count
             if (bodyStart >= 0) expressionEnd = bodyStart
             index = expressionEnd
-            let statement = expressionBodyStatement(expressionStart, expressionEnd)
+            let statement = expressionBodyStatement(expressionStart, expressionEnd, bodyStart >= 0)
             var String inferredType = "String"
             if (statement.class.isOfType(PrimitiveMemberAssignmentSyntax.class)) {
                 inferredType = "Unknown"
             }
             let statements = PrimitiveStatementSyntax[]
-            statements.add(statement)
             if (bodyStart >= 0) {
                 index = bodyStart + 1
                 statements.addAll(parseBracedBody())
             }
+            statements.add(statement)
             return PrimitiveFunctionSyntax(
                 range(start, index), name, parameters, inferredType,
                 statements,
@@ -135,9 +135,10 @@ class {
             let bodyStart = fallbackBodyStart(expressionStart)
             if (bodyStart >= 0) {
                 index = bodyStart + 1
+                let fallback = expressionBodyStatement(expressionStart, bodyStart, true)
                 let statements = PrimitiveStatementSyntax[]
-                statements.add(expressionBodyStatement(expressionStart, bodyStart))
                 statements.addAll(parseBracedBody())
+                statements.add(fallback)
                 return PrimitiveFunctionSyntax(
                     range(start, index), name, parameters, returnType, statements,
                     staticMethod, false, asyncMethod, externalName, false, genericNames
@@ -177,7 +178,8 @@ class {
 
     expressionBodyStatement(
         Int expressionStart,
-        Int expressionEnd = -1
+        Int expressionEnd = -1,
+        Bool arrowFallback = false
     ) -> PrimitiveStatementSyntax {
         let values = expressionEnd < 0 ? tokens.skip(expressionStart) :
             tokens.skip(expressionStart).take(expressionEnd - expressionStart)
@@ -205,7 +207,8 @@ class {
             values, snapshot, expressionStart + tokenIndexOffset
         )
         return PrimitiveReturnSyntax(
-            range(expressionStart, expressionEnd < 0 ? index : expressionEnd), expression
+            range(expressionStart, expressionEnd < 0 ? index : expressionEnd), expression,
+            arrowFallback
         )
     }
 

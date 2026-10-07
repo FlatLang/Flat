@@ -511,22 +511,62 @@ testable class {
         expect(rejected).toBe(2)
     }
 
+    // This is a bounded fixture dependency closure, not whole-project discovery.
+    // Class metadata uses String.lastIndexOf; String in turn needs its real JS
+    // overlay, character storage, collections, numeric and operator contracts.
+    realExceptionSources() -> CompilerSource[] {
+        let identities = [
+            "flat/Object.flat",
+            "flat/Object.js.flat",
+            "flat/Math.flat",
+            "flat/meta/Function.flat",
+            "flat/meta/Class.flat",
+            "flat/meta/Field.flat",
+            "flat/exception/Exception.flat",
+            "flat/exception/StackTrace.flat",
+            "flat/datastruct/list/NoSuchElementException.flat",
+            "flat/String.flat",
+            "flat/String.js.flat",
+            "flat/primitive/Primitive.flat",
+            "flat/primitive/number/Number.flat",
+            "flat/primitive/number/Integer.flat",
+            "flat/primitive/number/Char.flat",
+            "flat/datastruct/Comparable.flat",
+            "flat/operators/PlusOperator.flat",
+            "flat/operators/PlusEqualsOperator.flat",
+            "flat/operators/MinusOperator.flat",
+            "flat/operators/MinusEqualsOperator.flat",
+            "flat/operators/MultiplyOperator.flat",
+            "flat/operators/MultiplyEqualsOperator.flat",
+            "flat/datastruct/list/Iterable.flat",
+            "flat/datastruct/list/Iterator.flat",
+            "flat/datastruct/list/List.flat",
+            "flat/datastruct/list/OrderedList.flat",
+            "flat/datastruct/list/Array.flat",
+            "flat/datastruct/list/Array.js.flat",
+            "flat/datastruct/list/ArrayIterator.flat",
+            "flat/datastruct/list/StringCharArray.flat",
+            "flat/datastruct/list/StringCharArray.js.flat",
+            "flat/datastruct/list/IntRange.flat",
+            "flat/datastruct/list/IntRangeIterator.flat",
+            "flat/async/Async.flat",
+            "flat/async/Async.js.flat"
+        ]
+        let sources = CompilerSource[]
+        File parent = File("../Flat-Core/src")
+        for (identity in identities) {
+            File file = File(parent, identity)
+            String text = Es6ArtifactFiles.read(file)
+            CompilerSource source = CompilerSource(identity, text)
+            sources.add(source)
+        }
+        return sources
+    }
+
     async test `package linker executes real Exception constructor and StackTrace under Node`() {
         let identity = "flat/exception/Exception.flat"
         let stackIdentity = "flat/exception/StackTrace.flat"
-        let code = FlatEs6PackageLinker().link([
-            CompilerSource("flat/meta/Function.flat", Es6ArtifactFiles.read(File(
-                "../Flat-Core/src/flat/meta/Function.flat"))),
-            CompilerSource("flat/meta/Class.flat", Es6ArtifactFiles.read(File(
-                "../Flat-Core/src/flat/meta/Class.flat"))),
-            CompilerSource("flat/meta/Field.flat", Es6ArtifactFiles.read(File(
-                "../Flat-Core/src/flat/meta/Field.flat"))),
-            CompilerSource(identity, Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))),
-            CompilerSource(
-                stackIdentity,
-                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
-            )
-        ])
+        let code = FlatEs6PackageLinker().link(realExceptionSources())
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
         let exceptionType = DeclarationIdentity(
             SyntaxIslandIdentity(snapshot, "class", 4), "class", "Exception"
@@ -549,13 +589,19 @@ testable class {
                 "('forwarded');\nconsole.log(value." +
                 Es6NameMangler.mangle(stackField.value) + " instanceof " +
                 Es6NameMangler.mangle(stackType.value) + ");\nconsole.log(value." +
-                Es6NameMangler.mangle(messageField.value) + ");\n"
+                Es6NameMangler.mangle(messageField.value) + ");\n" +
+                "let defaultValue = new " + Es6NameMangler.mangle(exceptionType.value) + "();\n" +
+                "console.log(defaultValue." + Es6NameMangler.mangle(messageField.value) + ");\n" +
+                "console.log(defaultValue." + Es6NameMangler.mangle(stackField.value) +
+                " instanceof " + Es6NameMangler.mangle(stackType.value) + ");\n" +
+                "console.log(defaultValue." + Es6NameMangler.mangle(stackField.value) +
+                " !== value." + Es6NameMangler.mangle(stackField.value) + ");\n"
         )
         let response = System.execute(
             ["node", destination.normalizedLocation], silent: true, shell: false
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("true\nforwarded\n")
+        expect(response.stdout.join("")).toBe("true\nforwarded\n\ntrue\ntrue\n")
         Es6ArtifactFiles.remove(root)
     }
 
@@ -956,28 +1002,7 @@ testable class {
         let identity = "flat/datastruct/list/NoSuchElementException.flat"
         let exceptionIdentity = "flat/exception/Exception.flat"
         let stackIdentity = "flat/exception/StackTrace.flat"
-        let code = FlatEs6PackageLinker().link([
-            CompilerSource("flat/meta/Function.flat", Es6ArtifactFiles.read(File(
-                "../Flat-Core/src/flat/meta/Function.flat"))),
-            CompilerSource("flat/meta/Class.flat", Es6ArtifactFiles.read(File(
-                "../Flat-Core/src/flat/meta/Class.flat"))),
-            CompilerSource("flat/meta/Field.flat", Es6ArtifactFiles.read(File(
-                "../Flat-Core/src/flat/meta/Field.flat"))),
-            CompilerSource(
-                identity,
-                Es6ArtifactFiles.read(File(
-                    "../Flat-Core/src/flat/datastruct/list/NoSuchElementException.flat"
-                ))
-            ),
-            CompilerSource(
-                exceptionIdentity,
-                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
-            ),
-            CompilerSource(
-                stackIdentity,
-                Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/StackTrace.flat"))
-            )
-        ])
+        let code = FlatEs6PackageLinker().link(realExceptionSources())
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
         let stream = Lexer().lexInterpolated(
             Es6ArtifactFiles.read(File(
@@ -1003,19 +1028,33 @@ testable class {
             SyntaxIslandIdentity(exceptionSnapshot, "class", 4), "class", "Exception"
         )
         let messageField = SymbolIdentity(exceptionType, "field", 1)
+        let stackField = SymbolIdentity(exceptionType, "field", 0)
+        let stackType = DeclarationIdentity(
+            SyntaxIslandIdentity(
+                SourceSnapshotIdentity(SourceIdentity(stackIdentity), "compiler-input"), "class", 4
+            ), "class", "StackTrace"
+        )
         let root = File(".flat-compiler-no-such-element-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "program.js")
         Es6ArtifactCommitter().commit(
             destination,
             code + "let value = new " + Es6NameMangler.mangle(typeIdentity.value) +
-                "();\nconsole.log(value." + Es6NameMangler.mangle(messageField.value) + ");\n"
+                "();\nconsole.log(value." + Es6NameMangler.mangle(messageField.value) + ");\n" +
+                "let explicitValue = new " + Es6NameMangler.mangle(typeIdentity.value) +
+                "('custom');\nconsole.log(explicitValue." +
+                Es6NameMangler.mangle(messageField.value) + ");\n" +
+                "console.log(value instanceof " + Es6NameMangler.mangle(exceptionType.value) + ");\n" +
+                "console.log(value." + Es6NameMangler.mangle(stackField.value) +
+                " instanceof " + Es6NameMangler.mangle(stackType.value) + ");\n" +
+                "console.log(value." + Es6NameMangler.mangle(stackField.value) +
+                " !== explicitValue." + Es6NameMangler.mangle(stackField.value) + ");\n"
         )
         let response = System.execute(
             ["node", destination.normalizedLocation], silent: true, shell: false
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("No such element\n")
+        expect(response.stdout.join("")).toBe("No such element\ncustom\ntrue\ntrue\ntrue\n")
         Es6ArtifactFiles.remove(root)
     }
 
@@ -1769,6 +1808,18 @@ testable class {
                 CompilerSource(
                     "flat/datastruct/list/List.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/List.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/OrderedList.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/OrderedList.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/Iterable.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/Iterable.flat"))
+                ),
+                CompilerSource(
+                    "flat/datastruct/list/Iterator.flat",
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/datastruct/list/Iterator.flat"))
                 ),
                 CompilerSource(
                     "flat/datastruct/list/Array.flat",

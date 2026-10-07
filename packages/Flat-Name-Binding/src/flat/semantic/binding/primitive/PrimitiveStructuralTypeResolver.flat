@@ -35,6 +35,23 @@ class {
         }
     }
 
+    /** A source-declared null fallback makes a generic result an absence-bearing
+     * contract. Ordinary null returns never change a declaration's result type.
+     */
+    public fallbackResultType(PrimitiveFunctionSyntax method, SemanticType declaredType) -> SemanticType {
+        if (declaredType.kind() != "generic-parameter") return declaredType
+        for (statement in method.statements()) {
+            if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                let returned = (PrimitiveReturnSyntax)statement
+                if (returned.arrowFallback && returned.value &&
+                    returned.value.class.isOfType(PrimitiveLiteralSyntax.class) &&
+                    ((PrimitiveLiteralSyntax)returned.value).sourceValue == "null")
+                    return NullableSemanticType(declaredType)
+            }
+        }
+        return declaredType
+    }
+
     public resolveNativeArrayStorage(String name) -> SemanticType {
         if (!name || !name.endsWith("[]")) {
             throw Exception("Native array storage requires an array type")

@@ -6,9 +6,89 @@ import flat/eventstream
 class {
     public construct(
         visible Executor executor = InlineExecutor(),
-        visible FlatEs6SourceCompiler sourceCompiler = FlatEs6SourceCompiler()
+        visible FlatEs6SourceCompiler sourceCompiler = FlatEs6SourceCompiler(),
+        visible FlatEs6PackageLinker packageLinker = FlatEs6PackageLinker()
     ) {
-        if (!executor || !sourceCompiler) throw Exception("Compiler engine requires executor and source compiler")
+        if (!executor || !sourceCompiler || !packageLinker) {
+            throw Exception("Compiler engine requires executor, source compiler and package linker")
+        }
+    }
+
+    /**
+     * One finite package partition is the named signature/linking barrier required
+     * by FlatEs6PackageLinker. Source count and each source's characters are bounded;
+     * no project discovery or compiler semantics are performed here.
+     * Like compile(), this currently returns a completed session, not an active
+     * session-first lifecycle. Concurrent observation/cancellation remains future work.
+     */
+    public async compilePackage(
+        CompilerSourceProvider sources,
+        CompilerArtifactSink artifacts,
+        String artifactIdentity
+    ) -> CompilerSession {
+        if (!sources || !artifacts) {
+            throw Exception("Package compilation requires source provider and artifact sink")
+        }
+        validatePackageArtifactIdentity(artifactIdentity)
+        let identities = sources.identities()
+        if (!identities || identities.count == 0 || identities.count > packageLinker.maxSources ||
+            identities.any((identity) => !identity || identity.trim().count == 0)) {
+            throw Exception("Package compilation requires nonempty bounded source identities")
+        }
+        let ordered = identities.sort({ _a.compareTo(_b) })
+        var Int index = 1
+        while (index < ordered.count) {
+            if (ordered[index - 1] == ordered[index]) {
+                throw Exception("Package compilation requires unique source identities")
+            }
+            index++
+        }
+        let session = CompilerSession()
+        var Int artifactCount
+        var Int diagnosticCount
+        var String packageDiagnostic
+        try {
+            let values = CompilerSource[]
+            for (identity in ordered) {
+                let source = sources.load(identity)
+                if (!source) throw Exception("Missing source '#identity'")
+                if (source.identity != identity) {
+                    throw Exception("Loaded source identity does not match '#identity'")
+                }
+                if (source.text.count > packageLinker.maxSourceCharacters) {
+                    throw Exception("Package source '#identity' exceeds configured character capacity")
+                }
+                values.add(source)
+            }
+            let code = packageLinker.link(values)
+            let artifact = CompilerArtifact(artifactIdentity, code)
+            artifacts.write(artifact)
+            session.artifacts.send(artifact)
+            session.progress.publish("Compiled package artifact #artifactIdentity")$
+            artifactCount = 1
+        } catch (Exception error) {
+            diagnosticCount = 1
+            packageDiagnostic = "Failed to compile package '#artifactIdentity': #{error.message}"
+            session.diagnostics.publish(packageDiagnostic)$
+        }
+        session.diagnostics.close()
+        session.progress.close()
+        session.artifacts.close()
+        session.completion.complete(CompilationSummary(
+            ordered.count, artifactCount, diagnosticCount, session.cancelled, packageDiagnostic
+        ))
+        return session
+    }
+
+    validatePackageArtifactIdentity(String identity) {
+        if (!identity || identity.startsWith("/") || identity.endsWith("/") ||
+            identity.contains("\\") || identity.contains(":") || identity.contains("//")) {
+            throw Exception("Package artifact requires safe relative path")
+        }
+        let components = identity.split("/")
+        if (components.any((component) => component.count == 0 || component == "." || component == "..")) {
+            throw Exception("Package artifact requires safe relative path components")
+        }
     }
 
     public async compile(

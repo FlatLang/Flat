@@ -19,6 +19,7 @@
         "https://github.com/FlatLang/Flat-Parser.git": "master",
         "https://github.com/FlatLang/Java-Parser.git": "master",
         "https://github.com/FlatLang/Flat-Compiler-Models.git": "master",
+        "https://github.com/FlatLang/Flat-Project-Loading.git": "master",
         "https://github.com/FlatLang/Flat-Flat-Writer.git": "master",
         "https://github.com/FlatLang/Flat-ES6-Writer.git": "master",
         "https://github.com/FlatLang/Time.git": "master",

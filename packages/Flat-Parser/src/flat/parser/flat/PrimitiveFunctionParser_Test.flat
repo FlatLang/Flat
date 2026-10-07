@@ -56,7 +56,12 @@ testable class {
         ], snapshot)
         let method = parsed.functionValues().first
 
-        expect(method.statements().map({ _.statementKind() })).toBe(["return", "switch"])
+        expect(method.statements().map({ _.statementKind() })).toBe(["switch", "return"])
+        let fallbackObject = method.statements().last
+        let fallback = (PrimitiveReturnSyntax)fallbackObject
+        expect(fallback.arrowFallback).toBe(true)
+        expect(fallback.range.startTokenIndex).toBe(4)
+        expect(fallback.range.endTokenIndex).toBe(5)
     }
 
     test `parses multiple functions parameters calls recursion and ranges`() {
@@ -280,7 +285,10 @@ testable class {
         ], snapshot).functionValues().first
 
         expect(parsed.statements().count).toBe(2)
-        expect(parsed.statements().last.statementKind()).toBe("if")
+        expect(parsed.statements().first.statementKind()).toBe("if")
+        let fallbackObject = parsed.statements().last
+        let fallback = (PrimitiveReturnSyntax)fallbackObject
+        expect(fallback.arrowFallback).toBe(true)
     }
 
     test `parses expression fallback followed by braced body`() {
@@ -298,6 +306,14 @@ testable class {
         ], snapshot).functionValues().first
 
         expect(parsed.statements().count).toBe(2)
+        let bodyObject = parsed.statements().first
+        let fallbackObject = parsed.statements().last
+        let bodyReturn = (PrimitiveReturnSyntax)bodyObject
+        let fallback = (PrimitiveReturnSyntax)fallbackObject
+        expect(((PrimitiveLiteralSyntax)bodyReturn.value).sourceValue).toBe("true")
+        expect(((PrimitiveLiteralSyntax)fallback.value).sourceValue).toBe("false")
+        expect(bodyReturn.arrowFallback).toBe(false)
+        expect(fallback.arrowFallback).toBe(true)
     }
 
     test `parses receiver compound expression body as member assignment`() {
@@ -447,6 +463,58 @@ testable class {
             ], snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(3)
+    }
+
+    test `explicit fallback retains provenance while ordinary and expression returns do not`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-fallback"), "revision:one")
+        let parsed = PrimitiveFunctionParser().parse([
+            token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token(")", Token.Type.SYMBOL, 6), token("->", Token.Type.SYMBOL, 8),
+            token("E", Token.Type.IDENTIFIER, 11), token("=>", Token.Type.SYMBOL, 13),
+            token("null", Token.Type.NULL, 16), token("{", Token.Type.SYMBOL, 21),
+            token("return", Token.Type.IDENTIFIER, 23), token("null", Token.Type.NULL, 30),
+            token(";", Token.Type.SYMBOL, 34), token("}", Token.Type.SYMBOL, 36)
+        ], snapshot).functionValues().first
+        expect(parsed.returnTypeName).toBe("E")
+        expect(parsed.inferredReturnType).toBe(false)
+        let bodyObject = parsed.statements().first
+        let fallbackObject = parsed.statements().last
+        let bodyReturn = (PrimitiveReturnSyntax)bodyObject
+        let fallback = (PrimitiveReturnSyntax)fallbackObject
+        expect(bodyReturn.arrowFallback).toBe(false)
+        expect(fallback.arrowFallback).toBe(true)
+        expect(fallback.range.startTokenIndex).toBe(6)
+        expect(fallback.range.endTokenIndex).toBe(7)
+        expect(bodyReturn.range.startTokenIndex).toBe(8)
+        let expressionOnly = PrimitiveFunctionParser().parse([
+            token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token(")", Token.Type.SYMBOL, 6), token("=>", Token.Type.SYMBOL, 8),
+            token("null", Token.Type.NULL, 11)
+        ], snapshot).functionValues().first
+        let expressionObject = expressionOnly.statements().first
+        let expressionReturn = (PrimitiveReturnSyntax)expressionObject
+        expect(expressionReturn.arrowFallback).toBe(false)
+    }
+
+    test `rejects fallback missing expression and unterminated body`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-fallback"), "revision:one")
+        var Int rejected
+        try {
+            PrimitiveFunctionParser().parse([
+                token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token(")", Token.Type.SYMBOL, 6), token("=>", Token.Type.SYMBOL, 8),
+                token("{", Token.Type.SYMBOL, 11), token("}", Token.Type.SYMBOL, 12)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        try {
+            PrimitiveFunctionParser().parse([
+                token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+                token(")", Token.Type.SYMBOL, 6), token("->", Token.Type.SYMBOL, 8),
+                token("E", Token.Type.IDENTIFIER, 11), token("=>", Token.Type.SYMBOL, 13),
+                token("null", Token.Type.NULL, 16), token("{", Token.Type.SYMBOL, 21)
+            ], snapshot)
+        } catch (Exception error) { rejected++ }
+        expect(rejected).toBe(2)
     }
 
     token(String value, Int type, Int column) -> Token {

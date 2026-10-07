@@ -5,6 +5,8 @@ import flat/parser/flat
 import flat/bound
 import flat/lexer/Lexer
 import flat/semantic/types
+import flat/io/File
+import flat/io/FileReader
 
 testable class {
     async test `publishes inferred member result before reverse-ordered consumer`() {
@@ -676,6 +678,134 @@ testable class {
             .toBe(SemanticTypes.boolType().value())
     }
 
+    async test `callback parameter shadows unpublished same-owner method`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-readiness-shadow"), "one")
+        let stream = Lexer().lex(
+            "class Value { public use(func() -> Int read) -> Int { return read(); } " +
+            "public read() => use({ 42 }) }"
+        )
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "use" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `local callback shadows unpublished same-owner method in nested scope`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:local-readiness-shadow"), "one")
+        let stream = Lexer().lex(
+            "class Value { public use(func() -> Int callback) -> Int { let read = callback; " +
+            "if (true) { return read(); } return 0; } public read() => use({ 42 }) }"
+        )
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "use" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `typed overload does not await unrelated inferred overload`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:typed-overload-readiness"), "one")
+        let stream = Lexer().lex(
+            "class Value { public use() -> Int { let result = read(42); return result; } " +
+            "public read(Int value) -> Int { return value; } public read(String value) => use() }"
+        )
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "use" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `nested collection add awaits inferred same-owner removal overload`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-removal-overload"), "one")
+        let stream = Lexer().lex(
+            "class Bag<E> { visible native_array var E[] data; this[Int index] <=> data[index] " +
+            "public E first => data[0] " +
+            "public collect() -> E[] { let removed = E[]; " +
+            "for (var Int i = 2; i >= 0; i--) { removed.add(take(i)); } return removed; } " +
+            "public take(Int index) => take(index, 1).first " +
+            "public take(Int index, Int count) -> Bag<E> { return Bag<E>(); } construct() {} }"
+        )
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "take" }).returnType.kind())
+            .toBe("generic-parameter")
+        expect(bound.functionUnits().firstOrNull({ _.name == "collect" }).name).toBe("collect")
+    }
+
+    async test `source Array removal calls await inferred overload beside declared contract`() {
+        let reader = FileReader(File("../Flat-Core/src/flat/datastruct/list/Array.flat"))
+        let source = reader.readString()
+        reader.close()
+        let snapshot = SourceSnapshotIdentity(
+            SourceIdentity("flat/datastruct/list/Array.flat"), "collection-binding-regression"
+        )
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let original = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Array"
+        )
+        let removeWhere = original.methodValues().firstOrNull({ _.name == "removeWhere" })
+        expect(removeWhere != null).toBe(true)
+        expect(removeWhere.parameterValues().first.name).toBe("func")
+        expect(removeWhere.parameterValues().first.typeName).toBe("func(E,Int,Array<E>)->Bool")
+        expect(removeWhere.returnTypeName).toBe("E[]")
+
+        // Preserve the tested bodies and ranges. The two-argument dependency is
+        // declaration scaffolding: full unchanged collection execution belongs
+        // to Compiler integration, not this method-readiness regression.
+        let ownerStream = Lexer().lex(
+            "class Array<E> { visible var Int count; visible native_array var E[] data; " +
+            "this[Int index] <=> data[index] construct() {} public E first => data[0] }"
+        )
+        ownerStream.emit("start")
+        let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-removal-owner"), "one")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
+        let methods = owner.methodValues()
+        methods.add(removeWhere)
+        let removalOverloads = original.methodValues().filter({ _.name == "removeAtIndex" })
+        let inferredRemoval = removalOverloads.firstOrNull({ _.parameterValues().count == 1 })
+        let declaredRemoval = removalOverloads.firstOrNull({ _.parameterValues().count == 2 })
+        methods.add(inferredRemoval)
+        methods.add(PrimitiveFunctionSyntax(
+            declaredRemoval.range, declaredRemoval.name, declaredRemoval.parameterValues(),
+            declaredRemoval.returnTypeName, PrimitiveStatementSyntax[]
+        ))
+        let array = PrimitiveClassSyntax(
+            owner.range, owner.name, owner.genericParameterName, owner.parentName,
+            owner.fieldValues(), owner.constructorValue, methods,
+            arrayOverrideValues: owner.arrayOverrideValues(),
+            constructorValues: owner.constructorValues()
+        )
+        let rootSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:collection-root"), "one")
+        let rootStream = Lexer().lex("class Object {}")
+        rootStream.emit("start")
+        let root = PrimitiveClassParser().parse(rootStream.consumeAll<Token>("data"), rootSnapshot)
+        for (order in 0..3) {
+            let syntaxes = PrimitiveClassSyntax[]
+            if (order == 1) syntaxes.add(root)
+            syntaxes.add(array)
+            if (order == 2) syntaxes.add(root)
+            let bound = PrimitiveClassPartitionBinder().bind(syntaxes, arrayDeclaration: array)
+                .typeUnits().firstOrNull({ _.identity.name == "Array" })
+            let method = bound.functionUnits().firstOrNull({ _.name == "removeWhere" })
+            expect(method.returnType.kind()).toBe("generic-instance")
+            expect(method.range.startTokenIndex).toBe(removeWhere.range.startTokenIndex)
+            let statements = method.statements()
+            let returnedObject = (Object)statements[statements.count - 1]
+            let returned = (BoundReturnStatement)returnedObject
+            expect(returned.requiredType.value()).toBe(method.returnType.value())
+            expect(returned.conversion.applicable).toBe(true)
+            expect(returned.conversion.fromType.value()).toBe(returned.value.semanticType.value())
+            expect(returned.conversion.toType.value()).toBe(method.returnType.value())
+        }
+    }
+
     async test `generic owner collected removed values preserve element type`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-removed-values"), "one")
         let stream = Lexer().lex("class Bag<E> { visible native_array var E[] data; this[Int index] <=> data[index] public remove(Int index) -> E { return data[index]; } public removeWhere(func(E value, Int index, Bag<E> owner) -> Bool callback) -> E[] { let removed = E[]; for (var Int i = 2; i >= 0; i--) { if (callback(this[i], i, this)) { removed.add(remove(i)); } } return removed; } }")
@@ -1181,6 +1311,31 @@ testable class {
         expect(statement.value.semanticType.kind()).toBe("null")
         expect(parameters[1].defaultValue.semanticType.value()).toBe("primitive:Int")
         expect(parameters[2].defaultValue.semanticType.value()).toBe(parameters[2].semanticType.value())
+    }
+
+    async test `generic null fallback retains absence without permitting plain null return`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-fallback"), "one")
+        let stream = Lexer().lex(
+            "class Bag<E> { public find(E value, Bool found) -> E => null { " +
+            "if (found) { return value; } } public relay(E value) => find(value, true) }"
+        )
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        let method = bound.functionUnits().firstOrNull({ _.name == "find" })
+        expect(method.returnType.kind()).toBe("nullable")
+        let nullableObject = (Object)method.returnType
+        let nullable = (NullableSemanticType)nullableObject
+        expect(nullable.underlyingType.kind()).toBe("generic-parameter")
+        expect(bound.functionUnits().firstOrNull({ _.name == "relay" }).returnType.value())
+            .toBe(method.returnType.value())
+        let invalid = Lexer().lex("class Bag<E> { public find() -> E { return null; } }")
+        invalid.emit("start")
+        let invalidSyntax = PrimitiveClassParser().parse(invalid.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([invalidSyntax]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("cannot return 'null'")).toBe(true)
     }
 
     async test `rejects null return for unconstrained generic parameter`() {

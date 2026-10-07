@@ -1,0 +1,130 @@
+package flat/compiler
+
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/compiler/models
+import flat/lexer
+import flat/parser/flat
+import flat/writer/es6/bound
+
+/** Public CLI library acceptance; production sources are never rewritten. */
+testable class {
+    realArguments(File output) -> String[] {
+        String[] values = [
+            "flatc", "../Flat-Core/src/flat/primitive/number/Char.flat",
+            "-l", "../Flat-Core/src/flat/primitive/number/Number.flat",
+            "-l", "../Flat-Core/src/flat/primitive/number/Integer.flat",
+            "-l", "../Flat-Core/src/flat/primitive/Primitive.flat",
+            "-target", "es6", "-library", "-o", output.normalizedLocation
+        ]
+        return values
+    }
+
+    async test `CLI compiles unchanged production sources into an executable inspected library`() {
+        let root = File(".flat-compiler-cli-library-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let output = File(root, "characters.js")
+        expect(CompilerCli.run(realArguments(output))).toBe(0)
+        expect(output.isFile).toBe(true)
+        let code = Es6ArtifactFiles.read(output)
+        expect(code.count > 0).toBe(true)
+        expect(code.indexOf("require.main === module")).toBe(-1)
+
+        let file = File("../Flat-Core/src/flat/primitive/number/Char.flat")
+        let identity = file.normalizedLocation
+        let source = Es6ArtifactFiles.read(file)
+        let stream = Lexer().lexInterpolated(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Char"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Char"
+        )
+        let whitespace = syntax.methodValues().firstOrNull((method) => method.staticMethod && method.name == "isWhitespace")
+        let repeat = syntax.methodValues().firstOrNull((method) => method.staticMethod && method.name == "repeat")
+        let whitespaceIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", whitespace.range.startTokenIndex),
+            "static-method", "isWhitespace"
+        )
+        let repeatIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", repeat.range.startTokenIndex),
+            "static-method", "repeat"
+        )
+        let className = Es6NameMangler.mangle(owner.value)
+        let runner = File(root, "inspect.js")
+        Es6ArtifactCommitter().commit(runner, code +
+            "console.log(" + className + "." + Es6NameMangler.mangle(whitespaceIdentity.value) + "(' '));\n" +
+            "console.log(" + className + "." + Es6NameMangler.mangle(whitespaceIdentity.value) + "('x'));\n" +
+            "console.log(" + className + "." + Es6NameMangler.mangle(repeatIdentity.value) + "('a', 3));\n")
+        let response = System.execute(["node", runner.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\nfalse\naaa\n")
+    }
+
+    async test `CLI preserves previous artifact on package failure and publishes no partial output`() {
+        let root = File(".flat-compiler-cli-failure-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let bad = File(root, "Broken.flat")
+        Es6ArtifactCommitter().commit(bad, "not valid Flat syntax")
+        let output = File(root, "library.js")
+        Es6ArtifactCommitter().commit(output, "previous artifact\n")
+        let arguments = realArguments(output)
+        arguments.add(bad.normalizedLocation)
+        expect(CompilerCli.run(arguments)).toBe(1)
+        expect(Es6ArtifactFiles.read(output)).toBe("previous artifact\n")
+        let absent = File(root, "absent.js")
+        let failedArguments = realArguments(absent)
+        failedArguments.add(bad.normalizedLocation)
+        expect(CompilerCli.run(failedArguments)).toBe(1)
+        expect(absent.exists).toBe(false)
+        expect(root.getChildFiles(true).count).toBe(2)
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `CLI directory exclusion aliases retain library output policy`() {
+        let root = File(".flat-compiler-cli-exclusion-test-#{Time.currentTimeMillis}")
+        let sources = File(root, "src")
+        let destination = File(root, "dist")
+        Es6ArtifactFiles.ensureDirectory(sources)
+        let bad = File(sources, "Broken.flat")
+        Es6ArtifactCommitter().commit(bad, "not valid Flat syntax")
+        Es6ArtifactCommitter().commit(File(sources, "StackTrace.flat"), Es6ArtifactFiles.read(
+            File("../Flat-Core/src/flat/exception/StackTrace.flat")
+        ))
+        expect(CompilerCli.matchesExclusion(bad.normalizedLocation, bad)).toBe(true)
+        expect(CompilerCli.matchesExclusion(bad.normalizedLocation, File(sources, "StackTrace.flat"))).toBe(false)
+        expect(CompilerCli.run([
+            "flatc", sources.normalizedLocation, "--exclude", bad.normalizedLocation,
+            "--target", "es6", "-library", "-d", destination.normalizedLocation
+        ])).toBe(0)
+        expect(File(destination, "library.js").isFile).toBe(true)
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `CLI rejects unsupported executable target runtime and ambiguous short target`() {
+        let root = File(".flat-compiler-cli-options-test-#{Time.currentTimeMillis}")
+        let output = File(root, "program.js")
+        let source = "../Flat-Core/src/flat/exception/StackTrace.flat"
+        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-main", "flat/exception/StackTrace", "-o", output.normalizedLocation])).toBe(1)
+        expect(CompilerCli.run(["flatc", source, "-target", "java", "-library", "-o", output.normalizedLocation])).toBe(1)
+        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-target-runtime", "browser", "-o", output.normalizedLocation])).toBe(1)
+        expect(CompilerCli.run(["flatc", source, "-t", "es6", "-library", "-o", output.normalizedLocation])).toBe(1)
+        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-default-import", "flat/Object", "-o", output.normalizedLocation])).toBe(1)
+        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library", "-threads", "2", "-o", output.normalizedLocation])).toBe(1)
+        expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library"])).toBe(1)
+        expect(output.exists).toBe(false)
+        if (root.exists) Es6ArtifactFiles.remove(root)
+    }
+
+    async test `CLI help remains successful without source or output`() {
+        expect(CompilerCli.run(["flatc", "help"])).toBe(0)
+        expect(CompilerCli.run(["flatc", "help", "--all"])).toBe(0)
+    }
+}

@@ -169,12 +169,14 @@ class {
                     if (inferred.succeeded) inferredMethodReturn = inferred.expression.semanticType
                 }
             }
-            let methodReturnType = method.inferredReturnType
+            let declaredMethodReturnType = method.inferredReturnType
                 ? (declaredStringResult ? type : inferredMethodReturn)
                 : method.returnTypeName == "this" ||
                     (syntax.name == "String" && method.name == "replace" &&
                      method.returnTypeName == "String")
                     ? type : methodTypeOf(method.returnTypeName, method)
+            let methodReturnType = PrimitiveStructuralTypeResolver().fallbackResultType(
+                method, declaredMethodReturnType)
             let existing = constructors.firstOrNull({
                 _.identity.declaration.value == methodIdentity.value
             })
@@ -297,35 +299,9 @@ class {
                 }
                 let method = methods[methodIndex]
                 var Bool pending
+                let shadowed = method.parameterValues().map({ _.name })
                 for (statement in method.statements()) {
-                    if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
-                        let condition = ((PrimitiveIfSyntax)statement).condition
-                        if (condition.class.isOfType(PrimitiveUnarySyntax.class)) {
-                            let operand = ((PrimitiveUnarySyntax)condition).operand
-                            if (operand.class.isOfType(PrimitiveCallSyntax.class)) {
-                                let call = (PrimitiveCallSyntax)operand
-                                pending = methods.any((provider) => provider.name == call.name &&
-                                    constructors.any((candidate) =>
-                                        candidate.ownerType && candidate.ownerType.value() == type.value() &&
-                                        candidate.name == call.name && candidate.returnType.kind() == "unknown"))
-                            }
-                        }
-                    }
-                    if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
-                        let returned = (PrimitiveReturnSyntax)statement
-                        if (returned.value && returned.value.class.isOfType(PrimitiveMemberCallSyntax.class)) {
-                            let call = (PrimitiveMemberCallSyntax)returned.value
-                            if (call.receiver.class.isOfType(PrimitiveCallSyntax.class)) {
-                                let ownerCall = (PrimitiveCallSyntax)call.receiver
-                                pending = constructors.any((candidate) =>
-                                    candidate.ownerType && candidate.ownerType.value() == type.value() &&
-                                    candidate.name == ownerCall.name &&
-                                    candidate.returnType.kind() == "unknown" &&
-                                    methods.any({ _.name == ownerCall.name })
-                                )
-                            }
-                        }
-                    }
+                    if (awaitSameOwnerStatement(statement, type, shadowed)) pending = true
                 }
                 if (pending) {
                     methodIndex++
@@ -591,6 +567,102 @@ class {
         )
     }
 
+    /** Scoped readiness for calls in for/while/if bodies, returns, and local initializers.
+     * Other syntax remains on the existing binding path; this is not a package barrier.
+     */
+    awaitSameOwnerStatement(PrimitiveStatementSyntax statement, UserClassSemanticType type,
+        String[] shadowed) -> Bool {
+        if (statement.class.isOfType(PrimitiveForSyntax.class)) {
+            let loop = (PrimitiveForSyntax)statement
+            let scope = String[]:addAll(shadowed)
+            if (loop.initializer) {
+                if (awaitSameOwnerExpression(loop.initializer.initializer, type, scope)) return true
+                scope.add(loop.initializer.name)
+            }
+            if (awaitSameOwnerExpression(loop.condition, type, scope) ||
+                (loop.advance && awaitSameOwnerExpression(loop.advance.value, type, scope))) return true
+            for (nested in loop.bodyValues()) {
+                if (awaitSameOwnerStatement(nested, type, scope)) return true
+            }
+        }
+        if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
+            let branch = (PrimitiveIfSyntax)statement
+            if (awaitSameOwnerExpression(branch.condition, type, shadowed)) return true
+            let thenScope = String[]:addAll(shadowed)
+            for (nested in branch.thenValues()) {
+                if (awaitSameOwnerStatement(nested, type, thenScope)) return true
+            }
+            let elseScope = String[]:addAll(shadowed)
+            for (nested in branch.elseValues()) {
+                if (awaitSameOwnerStatement(nested, type, elseScope)) return true
+            }
+        }
+        if (statement.class.isOfType(PrimitiveWhileSyntax.class)) {
+            let loop = (PrimitiveWhileSyntax)statement
+            if (awaitSameOwnerExpression(loop.condition, type, shadowed)) return true
+            let scope = String[]:addAll(shadowed)
+            for (nested in loop.bodyValues()) {
+                if (awaitSameOwnerStatement(nested, type, scope)) return true
+            }
+        }
+        if (statement.class.isOfType(PrimitiveExpressionStatementSyntax.class))
+            return awaitSameOwnerExpression(((PrimitiveExpressionStatementSyntax)statement).expression, type, shadowed)
+        if (statement.class.isOfType(PrimitiveReturnSyntax.class))
+            return awaitSameOwnerExpression(((PrimitiveReturnSyntax)statement).value, type, shadowed)
+        if (statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class)) {
+            let local = (PrimitiveLocalDeclarationSyntax)statement
+            let pending = awaitSameOwnerExpression(local.initializer, type, shadowed)
+            shadowed.add(local.name)
+            return pending
+        }
+        return false
+    }
+
+    awaitSameOwnerExpression(PrimitiveExpressionSyntax value, UserClassSemanticType type,
+        String[] shadowed) -> Bool {
+        if (!value) return false
+        if (value.class.isOfType(PrimitiveCallSyntax.class)) {
+            let call = (PrimitiveCallSyntax)value
+            let candidates = constructors.filter((candidate) => candidate.ownerType &&
+                candidate.ownerType.value() == type.value() &&
+                candidate.callableKind.value == "instance-method" && candidate.name == call.name &&
+                call.argumentValues().count + call.namedArgumentValues().count >=
+                    candidate.parameterTypes().count - candidate.optionalParameterCount &&
+                call.argumentValues().count + call.namedArgumentValues().count <=
+                    candidate.parameterTypes().count)
+            // A local owns lookup. A typed overload must be allowed to resolve
+            // without waiting for an unrelated inferred-return counterpart.
+            let exactCandidates = candidates.filter({ _.parameterTypes().count ==
+                call.argumentValues().count + call.namedArgumentValues().count })
+            let readyCandidates = exactCandidates.isNotEmpty ? exactCandidates : candidates
+            if (!shadowed.contains(call.name) && readyCandidates.isNotEmpty &&
+                readyCandidates.all({ _.returnType.kind() == "unknown" })) return true
+            for (argument in call.argumentValues()) {
+                if (awaitSameOwnerExpression(argument, type, shadowed)) return true
+            }
+            for (argument in call.namedArgumentValues()) {
+                if (awaitSameOwnerExpression(argument.value, type, shadowed)) return true
+            }
+        }
+        if (value.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+            let call = (PrimitiveMemberCallSyntax)value
+            if (awaitSameOwnerExpression(call.receiver, type, shadowed)) return true
+            for (argument in call.argumentValues()) {
+                if (awaitSameOwnerExpression(argument, type, shadowed)) return true
+            }
+        }
+        if (value.class.isOfType(PrimitiveMemberAccessSyntax.class))
+            return awaitSameOwnerExpression(((PrimitiveMemberAccessSyntax)value).receiver, type, shadowed)
+        if (value.class.isOfType(PrimitiveUnarySyntax.class))
+            return awaitSameOwnerExpression(((PrimitiveUnarySyntax)value).operand, type, shadowed)
+        if (value.class.isOfType(PrimitiveBinarySyntax.class)) {
+            let binary = (PrimitiveBinarySyntax)value
+            return awaitSameOwnerExpression(binary.left, type, shadowed) ||
+                awaitSameOwnerExpression(binary.right, type, shadowed)
+        }
+        return false
+    }
+
     bindMethod(
         PrimitiveFunctionSyntax syntax,
         DeclarationIdentity typeIdentity,
@@ -652,7 +724,8 @@ class {
              syntax.returnTypeName == "String")
             ? type
             : methodTypeOf(syntax.returnTypeName, syntax)
-        var SemanticType returnType = declaredReturnType
+        var SemanticType returnType = PrimitiveStructuralTypeResolver().fallbackResultType(
+            syntax, declaredReturnType)
         let statements = BoundStatement[]
         let opaqueLocals = LocalBinding[]
         opaqueLocals.addAll(locals)
