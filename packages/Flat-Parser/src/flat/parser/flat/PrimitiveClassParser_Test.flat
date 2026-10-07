@@ -4,6 +4,87 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `postfix dollar intent survives adjacent statements and returned identifier`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:no-await-body"), "one")
+        let stream = Lexer().lex("class Worker { public run() -> Future { read()$; source.read()$; return pending$; } }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let statements = parsed.methodValues().first.statements()
+        expect(statements.count).toBe(3)
+        let firstObject = statements[0]
+        let firstStatement = (PrimitiveExpressionStatementSyntax)firstObject
+        let firstExpression = firstStatement.expression
+        let firstCall = (PrimitiveCallSyntax)firstExpression
+        expect(firstCall.suppressImplicitAwait).toBe(true)
+        let secondObject = statements[1]
+        let secondStatement = (PrimitiveExpressionStatementSyntax)secondObject
+        let secondExpression = secondStatement.expression
+        let secondCall = (PrimitiveMemberCallSyntax)secondExpression
+        expect(secondCall.suppressImplicitAwait).toBe(true)
+        let returnedObject = statements[2]
+        let returned = (PrimitiveReturnSyntax)returnedObject
+        let returnValue = returned.value
+        let reference = (PrimitiveReferenceSyntax)returnValue
+        expect(reference.suppressImplicitAwait).toBe(true)
+    }
+
+    async test `parses generic qualified and nested field types beside existing members`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-fields"), "one")
+        let source = "class Session { " +
+            "visible BoundedTopic<String> diagnostics; " +
+            "var Future.CompletableFuture<CompilationSummary> completion; " +
+            "HashMap<String,Array<Int>>[] values; " +
+            "Int count; public size() -> Int { return 1; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 7)
+        let fields = parsed.fieldValues()
+        expect(fields.count).toBe(4)
+        expect(fields[0].typeName).toBe("BoundedTopic<String>")
+        expect(fields[0].name).toBe("diagnostics")
+        expect(fields[0].visibleField).toBe(true)
+        expect(fields[1].typeName).toBe("Future.CompletableFuture<CompilationSummary>")
+        expect(fields[1].mutableField).toBe(true)
+        expect(fields[2].typeName).toBe("HashMap<String,Array<Int>>[]")
+        expect(fields[3].typeName).toBe("Int")
+        expect(fields[0].range.snapshot.value).toBe(snapshot.value)
+        expect(fields[0].range.startTokenIndex).toBe(10)
+        expect(fields[0].range.endTokenIndex).toBe(17)
+        expect(fields[1].range.startTokenIndex).toBe(17)
+        expect(parsed.methodValues().count).toBe(1)
+    }
+
+    async test `generic field types preserve initializer and following declaration`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-initializer"), "one")
+        let stream = Lexer().lex("class Session { visible BoundedTopic<String> diagnostics = BoundedTopic<String>(4); visible Int count; }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(parsed.fieldValues().count).toBe(2)
+        expect(parsed.fieldValues().first.initializer.class.isOfType(PrimitiveConstructionSyntax.class)).toBe(true)
+        expect(parsed.fieldValues().last.name).toBe("count")
+    }
+
+    async test `rejects empty incomplete and malformed generic field types with diagnostics`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-generic-fields"), "one")
+        let sources = [
+            "class Session { Box<> value; }",
+            "class Session { Box<String value; }",
+            "class Session { Box<String,> value; }",
+            "class Session { Box<String Int> value; }",
+            "class Session { Future.<String> value; }",
+            "class Session { Box<String> ; }"
+        ]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            var String diagnostic
+            try { PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+            catch (Exception error) { diagnostic = error.message }
+            expect(diagnostic != null).toBe(true)
+            expect(diagnostic.contains("token")).toBe(true)
+        }
+    }
+
     async test `parses reduced data declaration with constructor fields`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:reduced-data-class"), "one")
         let stream = Lexer().lex("data class Field { construct(visible String name) {} }")

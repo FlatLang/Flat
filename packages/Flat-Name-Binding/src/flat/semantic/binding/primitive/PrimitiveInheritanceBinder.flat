@@ -16,14 +16,17 @@ class {
         BoundFunctionUnit[] rootContractFunctions = BoundFunctionUnit[],
         BoundTypeUnit boundParent = null,
         BoundFieldUnit[] availableFields = BoundFieldUnit[],
-        TypeHierarchyComponent conversionHierarchy = null
+        TypeHierarchyComponent conversionHierarchy = null,
+        PrimitiveResolvedDeclarationContext parentContext = null,
+        PrimitiveResolvedDeclarationContext childContext = null
     ) -> PrimitiveInheritanceBindingResult {
         if (!parentSyntax || !childSyntax || !availableConstructors ||
             availableConstructors.any({ !_ }) || !availableFields ||
             availableFields.any({ !_ }) || !interfaceSyntaxValues ||
             interfaceSyntaxValues.any({ !_ }) || !rootContractFunctions ||
             rootContractFunctions.any({ !_ }) ||
-            childSyntax.parentName != parentSyntax.name ||
+            (childContext ? childContext.resolve(childSyntax.parentName, childSyntax.range).value !=
+                childContext.classIdentity(parentSyntax).value : childSyntax.parentName != parentSyntax.name) ||
             (parentSyntax.parentName && !boundParent) ||
             (boundParent && boundParent.identity.name != parentSyntax.name)) {
             throw Exception("Reduced inheritance requires one declared root parent and matching child")
@@ -34,12 +37,12 @@ class {
             parentSyntax, parentSnapshot,
             availableConstructors: availableConstructors,
             availableFields: availableFields, interfaceSyntaxValues: interfaceSyntaxValues,
-            hierarchy: conversionHierarchy
+            hierarchy: conversionHierarchy, resolvedContext: parentContext
         ).typeUnit
         let parentConstructor = constructorSignature(parent)
         let child = PrimitiveClassBinder().bind(
             childSyntax, childSnapshot, parentConstructor, parent.fieldUnits(),
-            availableConstructors, availableFields, interfaceSyntaxValues, conversionHierarchy
+            availableConstructors, availableFields, interfaceSyntaxValues, conversionHierarchy, childContext
         ).typeUnit
         let hierarchy = TypeHierarchyComponent()
         hierarchy.add(TypeHierarchyDeclaration(

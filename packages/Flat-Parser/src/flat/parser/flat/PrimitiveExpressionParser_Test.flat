@@ -3,6 +3,53 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `postfix dollar preserves typed call member and reference intent and ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:no-implicit-await"), "one")
+        let callTokens = [token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
+            token(")", Token.Type.SYMBOL, 6), token("$", Token.Type.SYMBOL, 7)]
+        let callObject = PrimitiveExpressionParser().parse(callTokens, snapshot, 10)
+        let call = (PrimitiveCallSyntax)callObject
+        expect(call.suppressImplicitAwait).toBe(true)
+        expect(call.range.startTokenIndex).toBe(10)
+        expect(call.range.endTokenIndex).toBe(14)
+        let ordinaryObject = PrimitiveExpressionParser().parse(callTokens.take(3), snapshot)
+        let ordinary = (PrimitiveCallSyntax)ordinaryObject
+        expect(ordinary.suppressImplicitAwait).toBe(false)
+        let memberObject = PrimitiveExpressionParser().parse([
+            token("source", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 7),
+            token("read", Token.Type.IDENTIFIER, 8), token("(", Token.Type.SYMBOL, 12),
+            token(")", Token.Type.SYMBOL, 13), token("$", Token.Type.SYMBOL, 14)
+        ], snapshot)
+        let member = (PrimitiveMemberCallSyntax)memberObject
+        expect(member.suppressImplicitAwait).toBe(true)
+        expect(member.memberName).toBe("read")
+        expect(member.range.endTokenIndex).toBe(6)
+        let referenceObject = PrimitiveExpressionParser().parse([
+            token("pending", Token.Type.IDENTIFIER, 1), token("$", Token.Type.SYMBOL, 8)
+        ], snapshot)
+        let reference = (PrimitiveReferenceSyntax)referenceObject
+        expect(reference.suppressImplicitAwait).toBe(true)
+        expect(reference.name).toBe("pending")
+        expect(reference.range.endTokenIndex).toBe(2)
+    }
+
+    test `postfix dollar rejects literals duplicate suffix and missing operand`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-no-await"), "one")
+        expectNoAwaitRejected([token("1", Token.Type.INTEGER, 1), token("$", Token.Type.SYMBOL, 2)], snapshot)
+        expectNoAwaitRejected([token("value", Token.Type.IDENTIFIER, 1), token("$", Token.Type.SYMBOL, 6), token("$", Token.Type.SYMBOL, 7)], snapshot)
+        expectNoAwaitRejected([token("$", Token.Type.SYMBOL, 1)], snapshot)
+        expectNoAwaitRejected([token("a", Token.Type.IDENTIFIER, 1), token("+", Token.Type.SYMBOL, 2),
+            token("b", Token.Type.IDENTIFIER, 3), token("$", Token.Type.SYMBOL, 4)], snapshot)
+    }
+
+    expectNoAwaitRejected(Token[] tokens, SourceSnapshotIdentity snapshot) {
+        var String diagnostic
+        try { PrimitiveExpressionParser().parse(tokens, snapshot) }
+        catch (Exception error) { diagnostic = error.message }
+        expect(diagnostic != null).toBe(true)
+        expect(diagnostic.contains("token")).toBe(true)
+    }
+
     test `class name shorthand does not erase safe navigation`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-class-name"), "one")
         let tokens = [token("value", Token.Type.IDENTIFIER, 1), token("?", Token.Type.SYMBOL, 6),

@@ -101,6 +101,140 @@ testable class {
         expect(forward.artifacts().first.code).toBe(backward.artifacts().first.code)
     }
 
+    namespaceSources(String imports) -> CompilerSource[] {
+        CompilerSource[] sources = [
+            CompilerSource("alpha/Widget.flat", "package alpha\nclass Widget { public value() -> Int { return 11; } }"),
+            CompilerSource("beta/Widget.flat", "package beta\nclass Widget { public value() -> Int { return 22; } }"),
+            CompilerSource("app/Consumer.flat", "package app\n" + imports +
+                "\nclass Consumer { public static run() -> Int { let value = Widget(); return value.value(); } }")
+        ]
+        return sources
+    }
+
+    async test `package namespaces execute explicitly imported same name declaration deterministically`() {
+        let sources = namespaceSources("import beta/Widget")
+        let compiler = Compiler()
+        let forward = MemoryCompilerArtifactSink()
+        let backward = MemoryCompilerArtifactSink()
+        let first = compiler.compilePackage(MemoryCompilerSourceProvider(sources), forward, "namespace.js")
+        CompilerSource[] reversed = [sources[2], sources[1], sources[0]]
+        let second = compiler.compilePackage(MemoryCompilerSourceProvider(reversed), backward, "namespace.js")
+        expect(first.completion.get().diagnosticCount).toBe(0)
+        expect(second.completion.get().diagnosticCount).toBe(0)
+        expect(forward.artifacts().count).toBe(1)
+        expect(forward.artifacts().first.code).toBe(backward.artifacts().first.code)
+
+        let source = sources[2]
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
+        let stream = Lexer().lex(source.text)
+        stream.emit("start")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        expect(partition.packageName).toBe("app")
+        expect(partition.importNames()).toBe(["beta/Widget"])
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Consumer"
+        )
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "Consumer")
+        let method = syntax.methodValues().first
+        let entry = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "run")
+        let root = File(".flat-compiler-namespace-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let output = File(root, "program.js")
+        Es6ArtifactCommitter().commit(output, forward.artifacts().first.code +
+            "console.log(" + Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(entry.value) + "());\n")
+        let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("22\n")
+    }
+
+    async test `missing explicit import does not select an unrelated same name declaration`() {
+        let sources = namespaceSources("import missing/Widget")
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), sink, "namespace.js")
+        let summary = session.completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.artifactCount).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+        expect(summary.packageDiagnostic.contains("missing/Widget")).toBe(true)
+        expect(summary.packageDiagnostic.contains("app/Consumer.flat")).toBe(true)
+    }
+
+    async test `conflicting explicit imports diagnose canonical ambiguity independent of source order`() {
+        let sources = namespaceSources("import alpha/Widget\nimport beta/Widget")
+        let forward = MemoryCompilerArtifactSink()
+        let backward = MemoryCompilerArtifactSink()
+        let compiler = Compiler()
+        let first = compiler.compilePackage(MemoryCompilerSourceProvider(sources), forward, "namespace.js")
+        CompilerSource[] reversed = [sources[2], sources[1], sources[0]]
+        let second = compiler.compilePackage(MemoryCompilerSourceProvider(reversed), backward, "namespace.js")
+        let diagnostic = first.completion.get().packageDiagnostic
+        expect(first.completion.get().diagnosticCount).toBe(1)
+        expect(second.completion.get().packageDiagnostic).toBe(diagnostic)
+        expect(forward.artifacts().count).toBe(0)
+        expect(backward.artifacts().count).toBe(0)
+        expect(diagnostic.toLowerCase().contains("ambiguous")).toBe(true)
+        expect(diagnostic.contains("app/Consumer.flat")).toBe(true)
+        let alpha = diagnostic.indexOf("alpha/Widget", defaultReturnValue: -1)
+        let beta = diagnostic.indexOf("beta/Widget", defaultReturnValue: -1)
+        expect(alpha >= 0).toBe(true)
+        expect(beta > alpha).toBe(true)
+    }
+
+    async test `source import forms retain typed diagnostics and actual consumer location`() {
+        String[] importForms = ["import static beta/Widget", "import beta/Widget as Chosen"]
+        for (importText in importForms) {
+            let sources = namespaceSources(importText)
+            let sink = MemoryCompilerArtifactSink()
+            let session = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), sink, "namespace.js")
+            let summary = session.completion.get()
+            expect(summary.diagnosticCount).toBe(1)
+            expect(summary.artifactCount).toBe(0)
+            expect(sink.artifacts().count).toBe(0)
+            let code = importText.contains("static")
+                ? "binding.import-static-unsupported" : "binding.import-alias-unsupported"
+            expect(summary.packageDiagnostic.contains(code)).toBe(true)
+            expect(summary.packageDiagnostic.contains("beta/Widget")).toBe(true)
+            expect(summary.packageDiagnostic.contains("app/Consumer.flat:2:1")).toBe(true)
+        }
+    }
+
+    async test `package parsing failure stops loading unrelated later source text`() {
+        let provider = TrackingPackageSourceProvider()
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(provider, sink, "core.js")
+        let summary = session.completion.get()
+        expect(summary.sourceCount).toBe(2)
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.artifactCount).toBe(0)
+        expect(provider.loaded.count).toBe(1)
+        expect(provider.loaded.first).toBe("a-broken.flat")
+        expect(sink.artifacts().count).toBe(0)
+    }
+
+    async test `configured package capacity accepts more than sixty four sources deterministically`() {
+        let sources = CompilerSource[]
+        var Int index
+        while (index < 65) {
+            sources.add(CompilerSource("source-#{index}.flat", "class Type#{index} {}"))
+            index++
+        }
+        let compiler = Compiler(CompilerEngine(packageLinker: FlatEs6PackageLinker(maxSources: 65)))
+        let forward = MemoryCompilerArtifactSink()
+        let backward = MemoryCompilerArtifactSink()
+        let first = compiler.compilePackage(MemoryCompilerSourceProvider(sources), forward, "types.js")
+        let reversed = sources.sort({ _b.identity.compareTo(_a.identity) })
+        let second = compiler.compilePackage(MemoryCompilerSourceProvider(reversed), backward, "types.js")
+        expect(first.completion.get().sourceCount).toBe(65)
+        expect(first.completion.get().diagnosticCount).toBe(0)
+        expect(second.completion.get().diagnosticCount).toBe(0)
+        expect(forward.artifacts().first.code).toBe(backward.artifacts().first.code)
+    }
+
     async test `package source capacity and duplicate identities reject without artifacts`() {
         let sources = realSources()
         let bounded = Compiler(CompilerEngine(packageLinker: FlatEs6PackageLinker(maxSources: 3)))
@@ -178,6 +312,19 @@ testable class {
         expect(summary.diagnosticCount).toBe(1)
         expect(sink.artifacts().count).toBe(0)
         expect(session.completion.completed).toBe(true)
+    }
+}
+
+/** Test-only provider proving that parse failure does not preload the partition. */
+class TrackingPackageSourceProvider extends CompilerSourceProvider {
+    visible String[] loaded = String[]
+    override public identities() -> String[] {
+        String[] values = ["a-broken.flat", "z-later.flat"]
+        return values
+    }
+    override public load(String identity) -> CompilerSource {
+        loaded.add(identity)
+        return CompilerSource(identity, identity == "a-broken.flat" ? "class Broken {" : "class Later {}")
     }
 }
 

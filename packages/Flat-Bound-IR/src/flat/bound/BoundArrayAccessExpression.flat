@@ -9,12 +9,23 @@ data class extends BoundExpression {
         SourceRange range,
         SemanticType semanticType,
         visible BoundExpression receiver,
-        visible BoundExpression index
+        visible BoundExpression index,
+        visible SymbolIdentity nativeStorageDeclaration = null
     ) {
         if (!range || !semanticType || !receiver || !index ||
             receiver.semanticType.kind() != "array" ||
             index.semanticType.value() != SemanticTypes.intType().value()) {
             throw Exception("Bound array access requires array receiver and Int index")
+        }
+        if (nativeStorageDeclaration && (
+            (!receiver.class.isOfType(BoundReferenceExpression.class) &&
+                !receiver.class.isOfType(BoundMemberAccessExpression.class)) ||
+            (receiver.class.isOfType(BoundReferenceExpression.class) &&
+                ((BoundReferenceExpression)receiver).symbolIdentity.value != nativeStorageDeclaration.value) ||
+            (receiver.class.isOfType(BoundMemberAccessExpression.class) &&
+                (((BoundMemberAccessExpression)receiver).safeAccess ||
+                ((BoundMemberAccessExpression)receiver).memberIdentity.value != nativeStorageDeclaration.value)))) {
+            throw Exception("Native array provenance requires the resolved storage declaration")
         }
         super(range, semanticType)
     }

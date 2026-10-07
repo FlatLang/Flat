@@ -193,6 +193,81 @@ testable class {
         expect(airship.flatJsonLocation).toBe("res/test/valid-flat.json")
     }
 
+    test async `forwards Flat executable package arguments without legacy options`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let source = airship.getSourceForPackage("main").copy(dependencies: Array<Dependency>())
+        let args = airship.installService.getFlatcInstallArguments("main", source)
+
+        expect(args.contains(airship.packageLocation.normalizedLocation + "/src")).toBe(true)
+        expect(args[args.indexOf("-target") + 1]).toBe("es6")
+        expect(args[args.indexOf("-d") + 1]).toBe(airship.packageLocation.normalizedLocation + "/" + source.outDirectory)
+        expect(args[args.indexOf("-o") + 1]).toBe(source.outFile)
+        expect(args[args.indexOf("-main") + 1]).toBe(source.mainClass)
+        expect(args.contains("-library")).toBe(false)
+        expect(args.contains("-app-props")).toBe(false)
+        expect(args.contains("-install-dir")).toBe(false)
+        expect(args.contains("-parallel")).toBe(false)
+    }
+
+    test async `forwards Flat library package dependencies and exclusions`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let packages = airship.getWorkspacePackagesDirectory()
+        let dependency = LocalDependency(packages.normalizedLocation + "/Flat")
+        let source = airship.getSourceForPackage("main").copy(mainClass: null, dependencies: [dependency])
+        let args = airship.installService.getFlatcInstallArguments("main", source)
+        let response = airship.dependencyService.getDependenciesForSource("main", source, download: false)
+
+        expect(args.contains("-library")).toBe(true)
+        expect(args.contains("-main")).toBe(false)
+        expect(args[args.indexOf("-o") + 1]).toBe(source.outFile)
+        for (resolved in response.dependencies) {
+            for (location in airship.dependencyService.getDependencySourceLocations(resolved, "main")) {
+                expect(args.contains(location)).toBe(true)
+                expect(args[args.indexOf(location) - 1]).toBe("-l")
+            }
+        }
+        let current = LocalDependency(airship.packageLocation.normalizedLocation)
+        let excluded = airship.dependencyService.getDependencySourceGlobLocation(current, "test")
+        expect(args.contains(excluded)).toBe(true)
+        expect(args[args.indexOf(excluded) - 1]).toBe("-x")
+    }
+
+    test async `selects the workspace Flat compiler artifact rather than the global bin`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let command = airship.installService.getFlatCompilerCommand()
+        let packages = airship.getWorkspacePackagesDirectory()
+
+        expect(command[0]).toBe("node")
+        expect(command[1]).toBe(packages.normalizedLocation + "/Flat-Compiler/dist/es6/index.js")
+        expect(command.contains(Airship.flatHome + "/bin/flatc")).toBe(false)
+    }
+
+    test async `rejects unsupported Flat target runtime before selecting the compiler`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6", "-r", "node"])
+        let source = airship.getSourceForPackage("main").copy(dependencies: Array<Dependency>())
+
+        expectAsync(async { airship.installService.getFlatcInstallArguments("main", source) })
+            .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler target-runtime selection is not supported")
+    }
+
+    test async `forwards Flat library directory-only output`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let source = airship.getSourceForPackage("main").copy(mainClass: null, outFile: null, dependencies: Array<Dependency>())
+        let args = airship.installService.getFlatcInstallArguments("main", source)
+
+        expect(args.contains("-library")).toBe(true)
+        expect(args.contains("-d")).toBe(true)
+        expect(args.contains("-o")).toBe(false)
+    }
+
+    test async `rejects unsupported Flat default imports before selecting the compiler`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let source = airship.getSourceForPackage("main").copy(defaultExports: [DefaultExport("flat/io", false)], dependencies: Array<Dependency>())
+
+        expectAsync(async { airship.installService.getFlatcInstallArguments("main", source) })
+            .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler default imports are not supported")
+    }
+
     test `preserves declared Git transport`() {
         let ssh = GitDependency("git@github.com:FlatLang/Test.git", "master")
         let https = GitDependency("https://github.com/FlatLang/Test.git", "master")

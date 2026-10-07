@@ -12,6 +12,8 @@ import flat/semantic/types
  */
 class {
     var PrimitiveInterfaceSyntax[] interfaces
+    var PrimitiveResolvedDeclarationContext signatureContext
+    var SourceRange signatureLookupRange
 
     public bind(
         PrimitiveClassSyntax[] syntaxValues,
@@ -152,6 +154,125 @@ class {
         return PrimitiveClassPartitionBindingResult(result)
     }
 
+    /** Seal only the caller-admitted finite declaration component, never the project.
+     * Synchronous: capacity is checked before signatures; failure publishes no partial result.
+     * No pending work queue or interruptible cancellation is introduced.
+     */
+    public bindContexts(
+        PrimitiveSourceBindingContext[] contexts,
+        Int maxTypes = 256,
+        DeclarationIdentity arrayDeclaration = null,
+        Int maxContexts = 256,
+        Int maxImportsPerContext = 256
+    ) -> PrimitiveClassPartitionBindingResult {
+        if (!contexts || contexts.any({ !_ }) || maxTypes <= 0 || maxContexts <= 0 ||
+            maxImportsPerContext <= 0 || contexts.count > maxContexts) {
+            throw Exception("Context binding requires a bounded declaration component")
+        }
+        let ordered = contexts.sort({ _a.snapshot.value.compareTo(_b.snapshot.value) })
+        let syntaxes = PrimitiveClassSyntax[]
+        let contracts = PrimitiveInterfaceSyntax[]
+        for (source in ordered) {
+            if (source.importValues().count > maxImportsPerContext ||
+                syntaxes.count + contracts.count + source.classValues().count + source.interfaceValues().count > maxTypes) {
+                throw Exception("Context binding exceeds configured declaration or import capacity")
+            }
+            syntaxes.addAll(source.classValues())
+            contracts.addAll(source.interfaceValues())
+        }
+        let signatures = CallableSignature[]
+        let fields = BoundFieldUnit[]
+        let effectiveSyntaxes = PrimitiveClassSyntax[]
+        try {
+            for (source in ordered) {
+                signatureContext = PrimitiveResolvedDeclarationContext(source, ordered)
+                for (syntax in source.classValues()) {
+                    let found = signatureContext.candidates(source.namespaceName.isEmpty ? syntax.name :
+                        "#{source.namespaceName}/#{syntax.name}")
+                    if (found.count > 1) signatureContext.fail("binding.namespace-duplicate", syntax.name, syntax.range, found)
+                }
+                signatureContext.validateImports()
+                interfaces = contracts
+                for (original in source.classValues()) {
+                    let syntax = withTraitImplementations(original)
+                    effectiveSyntaxes.add(syntax)
+                    signatureLookupRange = syntax.range
+                    signatures.addAll(constructorSignatures([syntax], null))
+                    signatures.addAll(methodSignatures([syntax], null))
+                    signatures.addAll(arrayAccessorSignatures([syntax], null))
+                    fields.addAll(fieldUnits([syntax], null))
+                }
+            }
+        } finally {
+            signatureContext = null
+            signatureLookupRange = null
+        }
+        var TypeHierarchyComponent contextHierarchy
+        if (arrayDeclaration) {
+            let selected = effectiveSyntaxes.firstOrNull((syntax) =>
+                DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot, "class", syntax.range.startTokenIndex), "class", syntax.name).value == arrayDeclaration.value
+            )
+            if (!selected) throw Exception("Selected Array declaration is outside the admitted component")
+            let source = ordered.firstOrNull((candidate) => candidate.classValues().any((syntax) =>
+                syntax.range.snapshot == selected.range.snapshot && syntax.range.startTokenIndex == selected.range.startTokenIndex))
+            let scope = PrimitiveResolvedDeclarationContext(source, ordered)
+            contextHierarchy = arrayHierarchy(selected, effectiveSyntaxes, null, context: scope)
+        }
+        let units = BoundTypeUnit[]
+        let completed = String[]
+        while (units.count < syntaxes.count) {
+            var Bool progressed
+            for (source in ordered) {
+                let scope = PrimitiveResolvedDeclarationContext(source, ordered)
+                for (original in source.classValues()) {
+                    let identity = scope.classIdentity(original)
+                    let syntax = effectiveSyntaxes.firstOrNull({ scope.classIdentity(_).value == identity.value })
+                    if (completed.contains(identity.value)) continue
+                    var Bool waiting
+                    try {
+                        signatureContext = scope
+                        waiting = awaitInferredMember(syntax, effectiveSyntaxes, signatures, fields, completed)
+                    } finally { signatureContext = null }
+                    if (waiting) continue
+                    let parentIdentity = syntax.parentName ? scope.resolve(syntax.parentName, syntax.range) : null
+                    if (parentIdentity && !completed.contains(parentIdentity.value)) continue
+                    if (parentIdentity) {
+                        let parentSyntax = scope.classFor(parentIdentity)
+                        let parentUnit = units.firstOrNull({ _.identity.value == parentIdentity.value })
+                        let inherited = PrimitiveInheritanceBinder().bind(parentSyntax, syntax,
+                            availableConstructors: signatures, interfaceSyntaxValues: contracts,
+                            boundParent: parentUnit, availableFields: fields, conversionHierarchy: contextHierarchy,
+                            parentContext: scope.scopeFor(parentIdentity), childContext: scope)
+                        units.add(inherited.childType)
+                    } else units.add(PrimitiveClassBinder().bind(syntax, source.snapshot,
+                        availableConstructors: signatures, availableFields: fields,
+                        interfaceSyntaxValues: contracts, hierarchy: contextHierarchy, resolvedContext: scope).typeUnit)
+                    let justBound = units.last
+                    var Int signatureIndex
+                    while (signatureIndex < signatures.count) {
+                        let signature = signatures[signatureIndex]
+                        let function = justBound.functionUnits().firstOrNull({ _.identity.value == signature.identity.declaration.value })
+                        if (function && signature.ownerType.value() == justBound.semanticType.value() &&
+                            signature.returnType.kind() == "unknown" && function.returnType.kind() != "unknown") {
+                            signatures[signatureIndex] = CallableSignature(signature.identity, signature.name,
+                                signature.callableKind, signature.parameterTypes(), function.returnType, signature.ownerType,
+                                signature.optionalParameterCount, signature.parameterNames(), signature.genericParameters(),
+                                signature.ownerGenericDeclaration, signature.ownerInstance)
+                        }
+                        signatureIndex++
+                    }
+                    completed.add(identity.value)
+                    progressed = true
+                }
+            }
+            if (!progressed) throw Exception("Missing or cyclic resolved parent in admitted declaration component")
+        }
+        if (arrayDeclaration && units.none({ _.identity.value == arrayDeclaration.value })) {
+            throw Exception("Selected Array declaration is outside the admitted component")
+        }
+        return PrimitiveClassPartitionBindingResult(units)
+    }
+
     /** Defer only a consumer that selects an unpublished inferred owner member. */
     awaitInferredMember(
         PrimitiveClassSyntax syntax, PrimitiveClassSyntax[] syntaxes,
@@ -248,7 +369,7 @@ class {
                                     method.range.startTokenIndex),
                                 method.staticMethod ? "static-method" : "instance-method",
                                 method.name), name, 0)
-                        )
+                        ), declarationContext: signatureContext, lookupRange: parameter.range
                     )
                     type = resolver.resolve(parameter.typeName)
                 } else if (method.parameterValues().none({ _.name == reference.name })) {
@@ -266,7 +387,8 @@ class {
                         candidate.ownerType.value() == owner.value() &&
                         candidate.name == call.memberName &&
                         candidate.returnType.kind() == "unknown" &&
-                        !boundNames.contains(candidate.ownerType.declarationIdentity.name) &&
+                        !boundNames.contains(signatureContext ? candidate.ownerType.declarationIdentity.value :
+                            candidate.ownerType.declarationIdentity.name) &&
                         candidate.ownerType.declarationIdentity.value !=
                             DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot,
                                 "class", syntax.range.startTokenIndex), "class", syntax.name).value)) {
@@ -295,17 +417,20 @@ class {
 
     /** Seals the selected array's direct interface component, not the whole package. */
     arrayHierarchy(PrimitiveClassSyntax array, PrimitiveClassSyntax[] syntaxes,
-        SourceSnapshotIdentity snapshot, Bool registerArray = true) -> TypeHierarchyComponent {
+        SourceSnapshotIdentity snapshot, Bool registerArray = true,
+        PrimitiveResolvedDeclarationContext context = null) -> TypeHierarchyComponent {
         if (!syntaxes.any({ Object.referenceEquals(_, array) }) || (registerArray && !array.genericParameterName)) {
             throw Exception("Array declaration must be a generic class in the bound partition")
         }
         let resolvedType = PrimitiveStructuralTypeResolver(
-            syntaxes: syntaxes, snapshot: snapshot, interfaces: interfaces
+            syntaxes: syntaxes, snapshot: snapshot, interfaces: interfaces,
+            declarationContext: context, lookupRange: array.range
         ).resolve(array.name)
         let type = (UserClassSemanticType)resolvedType
         let parameter = array.genericParameterName ? GenericParameterSemanticType(type.declarationIdentity, array.genericParameterName, 0) : null
         let resolver = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, snapshot: snapshot,
-            interfaces: interfaces, genericParameter: parameter)
+            interfaces: interfaces, genericParameter: parameter,
+            declarationContext: context, lookupRange: array.range)
         let parents = UserClassSemanticType[]
         let templates = GenericInstanceSemanticType[]
         let hierarchy = TypeHierarchyComponent()
@@ -315,12 +440,14 @@ class {
             if (parent.kind() != "generic-instance") throw Exception("Array interface requires generic arguments")
             let instance = (GenericInstanceSemanticType)parent
             let declaration = instance.declarationType
-            let contract = interfaces.firstOrNull({ _.name == declaration.declarationIdentity.name })
+            let contract = context ? context.interfaceFor(declaration.declarationIdentity) :
+                interfaces.firstOrNull({ _.name == declaration.declarationIdentity.name })
             if (!contract || instance.typeArguments().count != contract.genericParameterNames().count) {
                 throw Exception("Array interface type argument count must match its declaration")
             }
             if (!parents.any({ _.value() == declaration.value() })) {
-                publishInterface(contract, declaration, syntaxes, snapshot, hierarchy, published)
+                publishInterface(contract, declaration, syntaxes, snapshot, hierarchy, published,
+                    context ? context.scopeFor(declaration.declarationIdentity) : null)
                 parents.add(declaration)
             }
             templates.add(instance)
@@ -348,7 +475,8 @@ class {
 
     publishInterface(PrimitiveInterfaceSyntax contract, UserClassSemanticType declaration,
         PrimitiveClassSyntax[] syntaxes, SourceSnapshotIdentity snapshot,
-        TypeHierarchyComponent hierarchy, String[] published) {
+        TypeHierarchyComponent hierarchy, String[] published,
+        PrimitiveResolvedDeclarationContext context = null) {
         if (published.contains(declaration.value())) return
         published.add(declaration.value())
         let parameters = GenericParameterSemanticType[]
@@ -356,7 +484,8 @@ class {
             parameters.add(GenericParameterSemanticType(declaration.declarationIdentity, name, parameters.count))
         }
         let resolver = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, snapshot: snapshot,
-            interfaces: interfaces, methodGenericParameters: parameters)
+            interfaces: interfaces, methodGenericParameters: parameters,
+            declarationContext: context, lookupRange: contract.range)
         let parents = UserClassSemanticType[]
         let templates = GenericInstanceSemanticType[]
         for (name in contract.parentTypeNames()) {
@@ -364,13 +493,15 @@ class {
             if (resolved.kind() != "generic-instance") throw Exception("Inherited interface requires generic arguments")
             let instance = (GenericInstanceSemanticType)resolved
             let parent = instance.declarationType
-            let parentSyntax = interfaces.firstOrNull({ _.name == parent.declarationIdentity.name })
+            let parentSyntax = context ? context.interfaceFor(parent.declarationIdentity) :
+                interfaces.firstOrNull({ _.name == parent.declarationIdentity.name })
             if (!parentSyntax || parentSyntax.genericParameterNames().count != instance.typeArguments().count) {
                 throw Exception("Inherited interface type argument count must match declaration")
             }
             if (!parents.any({ _.value() == parent.value() })) parents.add(parent)
             templates.add(instance)
-            publishInterface(parentSyntax, parent, syntaxes, snapshot, hierarchy, published)
+            publishInterface(parentSyntax, parent, syntaxes, snapshot, hierarchy, published,
+                context ? context.scopeFor(parent.declarationIdentity) : null)
         }
         hierarchy.add(TypeHierarchyDeclaration(declaration, "interface", parents,
             genericParameters: parameters, genericParents: templates))
@@ -394,7 +525,8 @@ class {
         PrimitiveFunctionSyntax[] methods, String[] path) {
         let open = implementedName.indexOf("<", defaultReturnValue: -1)
         let contractName = open < 0 ? implementedName : implementedName.substring(0, open)
-        let contract = interfaces.firstOrNull({ _.name == contractName })
+        let contract = signatureContext ? signatureContext.interfaceFor(
+            signatureContext.resolve(contractName, syntax.range)) : interfaces.firstOrNull({ _.name == contractName })
         if (!contract) return
         if (path.contains(contractName)) throw Exception("Cyclic trait inheritance '#contractName'")
         let visited = String[]:addAll(path)
@@ -885,7 +1017,7 @@ class {
                     field.name, SymbolIdentity(ownerIdentity, "field", ordinal),
                     signatureType(field.typeName, syntaxes, snapshot, classGeneric, nativeArrayStorage: field.nativeArrayStorage), fieldRange,
                     field.visibleField, staticField: field.staticField,
-                    mutableField: field.mutableField
+                    mutableField: field.mutableField, nativeArrayStorage: field.nativeArrayStorage
                 ))
                 ordinal++
             }
@@ -917,8 +1049,7 @@ class {
                         parameterType.kind() == "string" || parameterType.kind() == "object" ||
                         parameterType.kind() == "function")
                         ? NullableSemanticType(parameterType) : parameterType, parameterRange,
-                    parameter.visibleParameter
-                ))
+                    parameter.visibleParameter, nativeArrayStorage: parameter.nativeArrayStorage                ))
                 ordinal++
             }
         }
@@ -946,7 +1077,10 @@ class {
             syntaxes: syntaxes, snapshot: snapshot,
             genericParameter: classGeneric, methodGenericParameters: methodGenerics,
             interfaces: interfaces, implementationOwner: implementationOwner,
-            implementationRange: implementationRange
+            implementationRange: implementationRange,
+            declarationContext: signatureContext && implementationRange ?
+                signatureContext.scopeForSnapshot(implementationRange.snapshot) : signatureContext,
+            lookupRange: implementationRange ?: signatureLookupRange
         )
         return nativeArrayStorage ? resolver.resolveNativeArrayStorage(normalized) : resolver.resolve(normalized)
     }

@@ -251,6 +251,11 @@ class {
                     }
                     index++
                 }
+            } else if (tokens[index].value == "var") {
+                if (mutableField) syntax("Duplicate var field modifier", index)
+                if (fieldModifierStart < 0) fieldModifierStart = index
+                mutableField = true
+                index++
             } else if (tokens[index].value == "static") {
                 fieldModifierStart = index
                 staticField = true
@@ -303,19 +308,15 @@ class {
                 staticField = false
                 mutableField = false
                 fieldModifierStart = -1
-            } else if (index + 1 < tokens.count &&
-                tokens[index].type == Token.Type.IDENTIFIER &&
-                (tokens[index + 1].type == Token.Type.IDENTIFIER ||
-                 (index + 3 < tokens.count && tokens[index + 1].value == "[" &&
-                    tokens[index + 2].value == "]" &&
-                    tokens[index + 3].type == Token.Type.IDENTIFIER))) {
+            } else if (fieldTypeEnd(index) > index &&
+                fieldTypeEnd(index) < tokens.count &&
+                tokens[fieldTypeEnd(index)].type == Token.Type.IDENTIFIER) {
                 let fieldStart = fieldModifierStart >= 0 ? fieldModifierStart : index
-                var String typeName = tokens[index++].value
-                if (index + 1 < tokens.count && tokens[index].value == "[" &&
-                    tokens[index + 1].value == "]") {
-                    typeName += "[]"
-                    index += 2
-                }
+                let typeEnd = fieldTypeEnd(index)
+                let typeName = PrimitiveFunctionParser().parseTypeTokens(
+                    tokens.skip(index).take(typeEnd - index), snapshot
+                )
+                index = typeEnd
                 let fieldName = tokens[index++].value
                 var PrimitiveExpressionSyntax initializer
                 if (index < tokens.count && tokens[index].value == "=") {
@@ -877,6 +878,36 @@ class {
             cursor++
         }
         if (depth != 0) syntax("Unterminated method", start)
+        return cursor
+    }
+
+    /** Locate a finite field type; signature grammar validates its spelling. */
+    fieldTypeEnd(Int start) -> Int {
+        if (start >= tokens.count || tokens[start].type != Token.Type.IDENTIFIER) return start
+        var Int cursor = start + 1
+        while (cursor < tokens.count && tokens[cursor].value == ".") {
+            cursor++
+            if (cursor >= tokens.count || tokens[cursor].type != Token.Type.IDENTIFIER) {
+                syntax("Expected qualified field type name", cursor)
+            }
+            cursor++
+        }
+        if (cursor < tokens.count && tokens[cursor].value == "<") {
+            let genericStart = cursor
+            var Int depth
+            while (cursor < tokens.count) {
+                let value = tokens[cursor++].value
+                if (value == "<") depth++
+                else if (value == ">") depth--
+                if (depth == 0) break
+                if (value == ";" || value == "}" || value == "=") {
+                    syntax("Expected closing generic field type argument list", genericStart)
+                }
+            }
+            if (depth != 0) syntax("Expected closing generic field type argument list", genericStart)
+        }
+        while (cursor + 1 < tokens.count && tokens[cursor].value == "[" &&
+            tokens[cursor + 1].value == "]") cursor += 2
         return cursor
     }
 

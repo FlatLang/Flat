@@ -1,0 +1,23 @@
+package flat/bound
+
+import flat/compiler/models
+import flat/semantic/types
+
+/** Vacates an explicitly declared native storage slot; never converts null to its element type. */
+data class extends BoundStatement {
+    public construct(SourceRange range, visible BoundArrayAccessExpression target) {
+        if (!range || !target || !target.nativeStorageDeclaration ||
+            range.snapshot != target.range.snapshot) {
+            throw Exception("Native storage clear requires declaration provenance and operation range")
+        }
+        let receiverType = target.receiver.semanticType
+        let typeObject = (Object)receiverType
+        var ArraySemanticType arrayType
+        arrayType = (ArraySemanticType)typeObject
+        if (target.semanticType.value() != arrayType.elementType.value()) {
+            throw Exception("Native storage clear requires same-source operation range and element type")
+        }
+        super(range)
+    }
+    override public unitKind() => "native-array-clear"
+}

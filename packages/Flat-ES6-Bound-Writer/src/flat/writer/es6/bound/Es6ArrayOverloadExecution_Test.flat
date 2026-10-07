@@ -11,6 +11,61 @@ import flat/semantic/types
 import flat/bound
 
 testable class {
+    async test `condition guards distinguish generic presence and Bool values`() {
+        let source = "class Guards<E> { visible var Int calls; " +
+            "check(func() -> E map) -> Bool { if (let value = map()) { return true; } return false; } " +
+            "flag(Bool value) -> Bool { if (value) { return true; } return false; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:condition-guards-execute"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let emission = Es6UnitOrchestrator().emitType(type, 0)
+        if (!emission.emitted) throw Exception(emission.diagnostic.message)
+        let name = Es6NameMangler.mangle(type.identity.value)
+        let check = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "check" }).identity.value)
+        let flag = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "flag" }).identity.value)
+        let root = File(".flat-es6-condition-guards-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "guards.js")
+        Es6ArtifactCommitter().commit(destination, emission.fragment.code +
+            "const g = new " + name + "(); let calls = 0; const out = [null,undefined,0,false,'',{}].map(v => g." +
+            check + "(() => { calls++; return v; })); out.push(calls,g." + flag + "(false),g." + flag + "(true)); console.log(JSON.stringify(out));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("[false,false,true,true,true,true,6,false,true]\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `native storage shiftRight and shiftLeft execute without nullable elements`() {
+        let source = "class Buffer<E> { visible native_array E[] data; " +
+            "shiftRight(Int left, Int right) => this { var Int i = right - 1; " +
+            "while (i > left) { data[i] = data[i - 1]; i--; } data[left] = null; } " +
+            "shiftLeft(Int left, Int right) => this { for (i in left..right) { " +
+            "data[i - 1] = data[i]; } data[right - 1] = null; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-shifts-execute"), "one")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let emission = Es6UnitOrchestrator().emitType(type, 0)
+        if (emission.diagnostic) throw Exception(emission.diagnostic.message)
+        let name = Es6NameMangler.mangle(type.identity.value)
+        let right = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "shiftRight" }).identity.value)
+        let left = Es6NameMangler.mangle(type.functionUnits().firstOrNull({ _.name == "shiftLeft" }).identity.value)
+        let storage = Es6NameMangler.mangle(type.fieldUnits().first.identity.value)
+        let root = File(".flat-es6-native-shifts-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "native-shifts.js")
+        Es6ArtifactCommitter().commit(destination, emission.fragment.code +
+            "const b = new " + name + "(); b." + storage + " = [1,2,3,4]; b." + right + "(1,4); " +
+            "console.log(JSON.stringify(b." + storage + ")); b." + left + "(2,4); console.log(JSON.stringify(b." + storage + "));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("[1,null,2,3]\n[1,2,3,null]\n")
+        Es6ArtifactFiles.remove(root)
+    }
+
     async test `array access and selected overload execute under Node`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:array-overload-execute"), "revision:one"

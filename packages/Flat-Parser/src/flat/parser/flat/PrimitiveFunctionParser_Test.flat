@@ -3,6 +3,26 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `type spelling entry reuses nested qualified signature grammar`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:qualified-type"), "one")
+        let parsed = PrimitiveFunctionParser().parseTypeTokens([
+            token("Future", Token.Type.IDENTIFIER, 1), token(".", Token.Type.SYMBOL, 7),
+            token("CompletableFuture", Token.Type.IDENTIFIER, 8), token("<", Token.Type.SYMBOL, 25),
+            token("CompilationSummary", Token.Type.IDENTIFIER, 26), token(">", Token.Type.SYMBOL, 44),
+            token("[", Token.Type.SYMBOL, 45), token("]", Token.Type.SYMBOL, 46)
+        ], snapshot)
+        expect(parsed).toBe("Future.CompletableFuture<CompilationSummary>[]")
+        var String diagnostic
+        try {
+            PrimitiveFunctionParser().parseTypeTokens([
+                token("Box", Token.Type.IDENTIFIER, 1), token("<", Token.Type.SYMBOL, 4),
+                token(">", Token.Type.SYMBOL, 5)
+            ], snapshot)
+        } catch (Exception error) { diagnostic = error.message }
+        expect(diagnostic.contains("Expected generic type argument")).toBe(true)
+        expect(diagnostic.contains("token 2")).toBe(true)
+    }
+
     test `parses representation modified structural parameter`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:representation-parameter"), "revision:one"

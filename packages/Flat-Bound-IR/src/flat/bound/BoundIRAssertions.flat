@@ -116,7 +116,7 @@ class {
 
     public static assertReducedSubset(BoundFunctionUnit function) {
         let allowed = [
-            "expression", "assignment", "array-assignment", "local-declaration", "return", "while",
+            "expression", "assignment", "array-assignment", "native-array-clear", "local-declaration", "return", "while",
             "label", "branch", "conditional-branch"
         ]
         for (kind in statementKinds(function)) {

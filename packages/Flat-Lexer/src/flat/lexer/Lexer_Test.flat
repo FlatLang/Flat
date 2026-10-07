@@ -6,6 +6,41 @@ import flat/compiler/models/Token
 import static flat/lexer/TestUtils_Test.TestUtils
 
 testable class {
+    async test `dollar separates identifier suffix with exact adjacent ranges`() {
+        let stream = Lexer().lex("pending$;next")
+        stream.emit("start")
+        let values = stream.consumeAll<Token>("data")
+        expect(values.map({ _.value })).toBe(["pending", "$", ";", "next"])
+        expect(values[0].type).toBe(Token.Type.IDENTIFIER)
+        expect(values[1].type).toBe(Token.Type.SYMBOL)
+        expect(values[0].location.column).toBe(1)
+        expect(values[0].endColumn).toBe(8)
+        expect(values[1].location.column).toBe(8)
+        expect(values[1].endColumn).toBe(9)
+        expect(values[2].location.column).toBe(9)
+        expect(values[3].location.column).toBe(10)
+    }
+
+    async test `dollar delimiter preserves quoted escaped and interpolation contents`() {
+        let sources = ["\"price$\"", "\"price\\$\"", "'\u0024'"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let values = stream.consumeAll<Token>("data")
+            expect(values.count).toBe(1)
+            expect(values.first.value).toBe(source)
+        }
+        var String interpolation = "\"value "
+        interpolation += '#'
+        interpolation += "{pending$}\""
+        let stream = Lexer().lex(interpolation)
+        stream.emit("start")
+        let values = stream.consumeAll<Token>("data")
+        expect(values.count).toBe(1)
+        expect(values.first.value).toBe(interpolation)
+        expect(values.first.type).toBe(Token.Type.STRING)
+    }
+
     async test `lexes floating point literal as one typed token`() {
         let stream = Lexer().lex("0.5")
         stream.emit("start")

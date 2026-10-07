@@ -4,6 +4,51 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `native clear requires declaration provenance and preserves element type`() {
+        let fixture = BoundIR_TestFixture()
+        let element = SemanticTypes.intType()
+        let storage = fixture.symbol("local", "storage", 1)
+        let receiver = BoundReferenceExpression(fixture.range(), ArraySemanticType(element), "storage", storage)
+        let index = BoundLiteralExpression(fixture.range(), element, "0")
+        let target = BoundArrayAccessExpression(fixture.range(), element, receiver, index,
+            nativeStorageDeclaration: storage)
+        let clear = BoundNativeArrayClearStatement(fixture.range(), target)
+        expect(clear.unitKind()).toBe("native-array-clear")
+        expect(clear.target.semanticType.value()).toBe(element.value())
+        var String failure
+        try {
+            BoundNativeArrayClearStatement(fixture.range(),
+                BoundArrayAccessExpression(fixture.range(), element, receiver, index))
+        } catch (Exception error) { failure = error.message }
+        if (!failure) throw Exception("Native clear accepted ordinary array target")
+    }
+
+    test `foreign storage identity survives clear lowering inside while`() {
+        let fixture = BoundIR_TestFixture()
+        let foreign = SourceSnapshotIdentity(SourceIdentity("memory:parent-storage"), "one")
+        let storage = SymbolIdentity(DeclarationIdentity(
+            SyntaxIslandIdentity(foreign, "class", 0), "class", "Parent"), "field", 0)
+        let element = SemanticTypes.intType()
+        let receiver = BoundReferenceExpression(fixture.range(), ArraySemanticType(element), "data", storage)
+        let target = BoundArrayAccessExpression(fixture.range(), element, receiver,
+            BoundLiteralExpression(fixture.range(), element, "0"), nativeStorageDeclaration: storage)
+        let clear = BoundNativeArrayClearStatement(fixture.range(), target)
+        let loop = BoundWhileStatement(fixture.range(),
+            BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "false"), [clear])
+        let function = BoundFunctionUnit(fixture.declaration("function", "clear", 1), "clear",
+            SemanticTypes.unitType(), [loop], fixture.range())
+        let lowered = CollectionControlLoweringPass().lower(function)
+        BoundIRAssertions.assertReducedSubset(lowered)
+        let loweredStatements = lowered.statements()
+        var BoundWhileStatement loweredLoop
+        loweredLoop = (BoundWhileStatement)loweredStatements.first
+        let loweredBody = loweredLoop.bodyValues()
+        var BoundNativeArrayClearStatement loweredClear
+        loweredClear = (BoundNativeArrayClearStatement)loweredBody.first
+        expect(loweredClear.target.nativeStorageDeclaration.value).toBe(storage.value)
+        expect(loweredClear.target.semanticType.value()).toBe(element.value())
+    }
+
     test `accepts generic root call only with checked receiver conversion evidence`() {
         let fixture = BoundIR_TestFixture()
         let root = UserClassSemanticType(fixture.declaration("class", "Root", 1))

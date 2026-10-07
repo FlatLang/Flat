@@ -11,7 +11,8 @@ data class extends PrimitiveExpressionSyntax {
         SourceRange range,
         visible String name,
         PrimitiveExpressionSyntax[] argumentValues,
-        PrimitiveMixedNamedArgumentSyntax[] namedArgumentValues = PrimitiveMixedNamedArgumentSyntax[]
+        PrimitiveMixedNamedArgumentSyntax[] namedArgumentValues = PrimitiveMixedNamedArgumentSyntax[],
+        visible Bool suppressImplicitAwait = false
     ) {
         if (!range || !name || name.trim().count == 0 || !argumentValues ||
             argumentValues.any({ !_ }) || !namedArgumentValues ||

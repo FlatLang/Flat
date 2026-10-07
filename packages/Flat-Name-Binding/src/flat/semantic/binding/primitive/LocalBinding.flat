@@ -7,7 +7,8 @@ data class {
     public construct(
         visible String name,
         visible SymbolIdentity identity,
-        visible SemanticType semanticType
+        visible SemanticType semanticType,
+        visible Bool nativeArrayStorage = false
     ) {
         if (!name || !identity || !semanticType) {
             throw Exception("Local binding requires name identity and type")

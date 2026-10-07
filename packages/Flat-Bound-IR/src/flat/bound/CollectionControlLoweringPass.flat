@@ -52,6 +52,10 @@ class extends BoundFunctionLoweringPass {
         } else if (statement.class.isOfType(BoundExpressionStatement.class)) {
             let value = (BoundExpressionStatement)statement
             output.add(BoundExpressionStatement(value.range, lowerExpression(value.expression)))
+        } else if (statement.class.isOfType(BoundNativeArrayClearStatement.class)) {
+            let value = (BoundNativeArrayClearStatement)statement
+            output.add(BoundNativeArrayClearStatement(value.range,
+                (BoundArrayAccessExpression)lowerExpression(value.target)))
         } else if (statement.class.isOfType(BoundArrayAssignmentStatement.class)) {
             let value = (BoundArrayAssignmentStatement)statement
             output.add(BoundArrayAssignmentStatement(
@@ -322,8 +326,8 @@ class extends BoundFunctionLoweringPass {
             let value = (BoundArrayAccessExpression)expression
             return BoundArrayAccessExpression(
                 value.range, value.semanticType,
-                lowerExpression(value.receiver), lowerExpression(value.index)
-            )
+                lowerExpression(value.receiver), lowerExpression(value.index),
+                nativeStorageDeclaration: value.nativeStorageDeclaration            )
         }
         if (expression.class.isOfType(BoundRichCollectionExpression.class)) {
             return lowerExpression(((BoundRichCollectionExpression)expression).canonicalExpression)

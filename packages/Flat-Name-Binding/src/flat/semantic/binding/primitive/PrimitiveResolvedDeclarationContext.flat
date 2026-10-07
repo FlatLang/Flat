@@ -1,0 +1,128 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+import flat/semantic/types
+import flat/semantic/binding/BindingDiagnostic
+
+/** One immutable owner-local declaration view within a finite admitted component. */
+class {
+    var PrimitiveSourceBindingContext[] sources
+    visible PrimitiveSourceBindingContext owner
+
+    public construct(PrimitiveSourceBindingContext owner, PrimitiveSourceBindingContext[] contexts) {
+        if (!owner || !contexts || contexts.any({ !_ })) throw Exception("Resolved declaration scope requires sources")
+        this.owner = owner
+        sources = PrimitiveSourceBindingContext[]:addAll(contexts)
+    }
+
+    public classIdentity(PrimitiveClassSyntax syntax) -> DeclarationIdentity => DeclarationIdentity(
+        SyntaxIslandIdentity(syntax.range.snapshot, "class", syntax.range.startTokenIndex), "class", syntax.name)
+
+    public interfaceIdentity(PrimitiveInterfaceSyntax syntax) -> DeclarationIdentity => DeclarationIdentity(
+        SyntaxIslandIdentity(syntax.range.snapshot, "interface", syntax.range.startTokenIndex), "interface", syntax.name)
+
+    public candidates(String qualifiedName) -> DeclarationIdentity[] {
+        let result = DeclarationIdentity[]
+        for (source in sources) {
+            for (syntax in source.classValues()) {
+                let qualified = source.namespaceName.isEmpty ? syntax.name : "#{source.namespaceName}/#{syntax.name}"
+                if (qualified == qualifiedName) result.add(classIdentity(syntax))
+            }
+            for (syntax in source.interfaceValues()) {
+                let qualified = source.namespaceName.isEmpty ? syntax.name : "#{source.namespaceName}/#{syntax.name}"
+                if (qualified == qualifiedName) result.add(interfaceIdentity(syntax))
+            }
+        }
+        return result.sort({ _a.value.compareTo(_b.value) })
+    }
+
+    /** Match a class first, otherwise expand exactly the admitted namespace, as Flat imports do. */
+    importCandidates(String importedName) -> DeclarationIdentity[] {
+        let exact = candidates(importedName)
+        if (exact.isNotEmpty) return exact
+        let result = DeclarationIdentity[]
+        for (source in sources) {
+            if (source.namespaceName != importedName) continue
+            for (syntax in source.classValues()) result.add(classIdentity(syntax))
+            for (syntax in source.interfaceValues()) result.add(interfaceIdentity(syntax))
+        }
+        return result.sort({ _a.value.compareTo(_b.value) })
+    }
+
+    public fail(String code, String name, SourceRange range, DeclarationIdentity[] candidates = DeclarationIdentity[]) {
+        throw PrimitiveContextBindingException(BindingDiagnostic(code, name,
+            SyntaxIslandIdentity(range.snapshot, "binding-context", range.startTokenIndex), range,
+            candidates.map({ _.value })))
+    }
+
+    public validateImports() {
+        let imports = owner.importValues().sort({ _a.range.startTokenIndex - _b.range.startTokenIndex })
+        for (value in imports) {
+            if (value.staticImport) fail("binding.import-static-unsupported", value.importedName, value.range)
+            if (value.alias != null) fail("binding.import-alias-unsupported", value.importedName, value.range)
+            if (value.importedName.contains("*")) fail("binding.import-wildcard-unsupported", value.importedName, value.range)
+            let found = importCandidates(value.importedName)
+            if (found.isEmpty) fail("binding.import-unresolved", value.importedName, value.range)
+            for (selected in found) {
+                let conflicts = DeclarationIdentity[]
+                for (other in imports) {
+                    for (identity in importCandidates(other.importedName)) {
+                        if (identity.name == selected.name && conflicts.none({ _.value == identity.value })) {
+                            conflicts.add(identity)
+                        }
+                    }
+                }
+                if (conflicts.count > 1) fail("binding.import-ambiguous", selected.name, value.range,
+                    conflicts.sort({ _a.value.compareTo(_b.value) }))
+            }
+        }
+    }
+
+    public resolve(String name, SourceRange range) -> DeclarationIdentity {
+        var DeclarationIdentity[] found = DeclarationIdentity[]
+        if (name.contains("/")) found = candidates(name)
+        else {
+            found = candidates(owner.namespaceName.isEmpty ? name : "#{owner.namespaceName}/#name")
+            if (found.isEmpty) {
+                for (value in owner.importValues()) {
+                    for (identity in importCandidates(value.importedName)) {
+                        if (identity.name == name && found.none({ _.value == identity.value })) found.add(identity)
+                    }
+                }
+            }
+        }
+        if (found.isEmpty) fail("binding.type-unresolved", name, range)
+        if (found.count != 1) fail("binding.import-ambiguous", name, range, found)
+        return found.first
+    }
+
+    public classFor(DeclarationIdentity identity) -> PrimitiveClassSyntax {
+        for (source in sources) {
+            let syntax = source.classValues().firstOrNull({ classIdentity(_).value == identity.value })
+            if (syntax) return syntax
+        }
+        return null
+    }
+
+    public interfaceFor(DeclarationIdentity identity) -> PrimitiveInterfaceSyntax {
+        for (source in sources) {
+            let syntax = source.interfaceValues().firstOrNull({ interfaceIdentity(_).value == identity.value })
+            if (syntax) return syntax
+        }
+        return null
+    }
+
+    public scopeForSnapshot(SourceSnapshotIdentity snapshot) -> PrimitiveResolvedDeclarationContext {
+        let source = sources.firstOrNull({ _.snapshot == snapshot })
+        return source ? PrimitiveResolvedDeclarationContext(source, sources) : this
+    }
+
+    public scopeFor(DeclarationIdentity identity) -> PrimitiveResolvedDeclarationContext {
+        let source = sources.firstOrNull((candidate) =>
+            candidate.classValues().any((syntax) => classIdentity(syntax).value == identity.value) ||
+            candidate.interfaceValues().any((syntax) => interfaceIdentity(syntax).value == identity.value))
+        if (!source) throw Exception("Resolved declaration requires an admitted owner")
+        return PrimitiveResolvedDeclarationContext(source, sources)
+    }
+}

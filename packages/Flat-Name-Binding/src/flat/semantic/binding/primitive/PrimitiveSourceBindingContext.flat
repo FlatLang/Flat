@@ -1,0 +1,34 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+import flat/parser/flat
+
+/** Immutable ownership of canonical declarations and actual source imports. */
+data class {
+    var PrimitiveClassSyntax[] classes
+    var PrimitiveInterfaceSyntax[] interfaces
+    var PrimitiveBindingImport[] imports
+
+    public construct(
+        visible String namespaceName,
+        visible SourceSnapshotIdentity snapshot,
+        PrimitiveClassSyntax[] classValues,
+        PrimitiveInterfaceSyntax[] interfaceValues = PrimitiveInterfaceSyntax[],
+        PrimitiveBindingImport[] importValues = PrimitiveBindingImport[]
+    ) {
+        if (namespaceName == null || !snapshot || !classValues || !interfaceValues || !importValues ||
+            classValues.any((value) => !value || value.range.snapshot != snapshot) ||
+            interfaceValues.any((value) => !value || value.range.snapshot != snapshot) ||
+            importValues.any((value) => !value || value.range.snapshot != snapshot)) {
+            throw Exception("Source binding context requires canonical declaration snapshots and actual imports")
+        }
+        // Merged members retain their own real snapshots; only canonical owner ranges are checked.
+        classes = PrimitiveClassSyntax[]:addAll(classValues)
+        interfaces = PrimitiveInterfaceSyntax[]:addAll(interfaceValues)
+        imports = PrimitiveBindingImport[]:addAll(importValues)
+    }
+
+    public classValues() -> PrimitiveClassSyntax[] => PrimitiveClassSyntax[]:addAll(classes)
+    public interfaceValues() -> PrimitiveInterfaceSyntax[] => PrimitiveInterfaceSyntax[]:addAll(interfaces)
+    public importValues() -> PrimitiveBindingImport[] => PrimitiveBindingImport[]:addAll(imports)
+}

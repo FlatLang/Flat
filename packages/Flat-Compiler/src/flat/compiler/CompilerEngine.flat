@@ -1,6 +1,7 @@
 package flat/compiler
 
 import flat/eventstream
+import flat/semantic/binding/primitive/PrimitiveContextBindingException
 
 /** In-process deterministic compiler execution separated from CLI parsing. */
 class {
@@ -17,7 +18,8 @@ class {
     /**
      * One finite package partition is the named signature/linking barrier required
      * by FlatEs6PackageLinker. Source count and each source's characters are bounded;
-     * no project discovery or compiler semantics are performed here.
+     * loading/parsing is source-scoped; only syntax crosses the signature boundary.
+     * No project discovery or compiler semantics are performed here.
      * Like compile(), this currently returns a completed session, not an active
      * session-first lifecycle. Concurrent observation/cancellation remains future work.
      */
@@ -48,19 +50,7 @@ class {
         var Int diagnosticCount
         var String packageDiagnostic
         try {
-            let values = CompilerSource[]
-            for (identity in ordered) {
-                let source = sources.load(identity)
-                if (!source) throw Exception("Missing source '#identity'")
-                if (source.identity != identity) {
-                    throw Exception("Loaded source identity does not match '#identity'")
-                }
-                if (source.text.count > packageLinker.maxSourceCharacters) {
-                    throw Exception("Package source '#identity' exceeds configured character capacity")
-                }
-                values.add(source)
-            }
-            let code = packageLinker.link(values)
+            let code = packageLinker.linkSources(sources, ordered)
             let artifact = CompilerArtifact(artifactIdentity, code)
             artifacts.write(artifact)
             session.artifacts.send(artifact)
@@ -68,7 +58,17 @@ class {
             artifactCount = 1
         } catch (Exception error) {
             diagnosticCount = 1
-            packageDiagnostic = "Failed to compile package '#artifactIdentity': #{error.message}"
+            var String message = error.message
+            if (error.class.isOfType(PrimitiveContextBindingException.class)) {
+                let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
+                message = "#{diagnostic.code}: #{diagnostic.name} at " +
+                    "#{diagnostic.range.snapshot.source.value}:#{diagnostic.range.start.lineNumber}:" +
+                    "#{diagnostic.range.start.column}"
+                if (diagnostic.candidateValues.count > 0) {
+                    message += " [#{diagnostic.candidateValues.join(", ")}]"
+                }
+            }
+            packageDiagnostic = "Failed to compile package '#artifactIdentity': #message"
             session.diagnostics.publish(packageDiagnostic)$
         }
         session.diagnostics.close()

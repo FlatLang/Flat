@@ -70,7 +70,7 @@ class {
                 let value = (PrimitiveIfSyntax)statement
                 let conditionLocals = LocalBinding[]:addAll(scopeLocals)
                 let condition = bindCondition(
-                    value.condition, conditionLocals, callables, receiver, fields
+                    value.condition, conditionLocals, callables, receiver, fields, result
                 )
                 if (condition.class.isOfType(BoundDeclarationValueExpression.class)) {
                     let declaration = (BoundDeclarationValueExpression)condition
@@ -475,6 +475,16 @@ class {
                     continue
                 }
                 let targetExpression = (BoundArrayAccessExpression)target
+                if (value.assignmentOperator == "=" && expressionValue.semanticType.kind() == "null") {
+                    let storage = nativeStorageIdentity(targetExpression.receiver, scopeLocals, fields)
+                    if (storage) {
+                        result.add(BoundNativeArrayClearStatement(value.range, BoundArrayAccessExpression(
+                            targetExpression.range, targetExpression.semanticType,
+                            targetExpression.receiver, targetExpression.index,
+                            nativeStorageDeclaration: storage)))
+                        continue
+                    }
+                }
                 var BoundExpression expression = expressionValue
                 if (value.assignmentOperator != "=") {
                     expression = BoundBinaryExpression(
@@ -636,7 +646,8 @@ class {
                 let local = BoundReferenceExpression(
                     value.range, semanticType, value.name, identity
                 )
-                scopeLocals.add(LocalBinding(value.name, identity, semanticType))
+                scopeLocals.add(LocalBinding(value.name, identity, semanticType,
+                    nativeArrayStorage: value.nativeArrayStorage))
                 var TypeConversion initializerConversion
                 if (initialized) {
                     initializerConversion = TypeConversions.classify(
@@ -1346,9 +1357,12 @@ class {
                     argument, receiver, fields, locals, callables
                 ))
             }
+            let resolvedOwner = currentTypeResolver.declarationContext ?
+                currentTypeResolver.declarationContext.resolve(value.typeName, value.range) : null
             let candidates = callables.filter((candidate) =>
                 candidate.callableKind.value == "constructor" &&
-                candidate.name == value.typeName
+                (resolvedOwner ? candidate.ownerType.declarationIdentity.value == resolvedOwner.value :
+                    candidate.name == value.typeName)
             ).map((candidate) => typeArguments.isEmpty ? candidate :
                 candidate.instantiateConstructor(typeArguments.map({ currentTypeResolver.resolve(_) })))
             if (candidates.isEmpty && value.typeName == "Array" &&
@@ -1522,6 +1536,23 @@ class {
         return arrayRepresentation && type.kind() != "array" ? ArraySemanticType(type) : type
     }
 
+    /** Authority follows the resolved declaration, never a matching identifier spelling or alias. */
+    nativeStorageIdentity(BoundExpression expression, LocalBinding[] locals, BoundFieldUnit[] fields) -> SymbolIdentity {
+        var SymbolIdentity identity
+        if (expression.class.isOfType(BoundReferenceExpression.class)) {
+            identity = ((BoundReferenceExpression)expression).symbolIdentity
+            let local = locals.firstOrNull({ _.identity.value == identity.value })
+            if (local && local.nativeArrayStorage) return identity
+        } else if (expression.class.isOfType(BoundMemberAccessExpression.class)) {
+            let member = (BoundMemberAccessExpression)expression
+            if (member.safeAccess) return null
+            identity = member.memberIdentity
+        }
+        if (!identity) return null
+        let field = fields.firstOrNull({ _.identity.value == identity.value })
+        return field && field.nativeArrayStorage ? identity : null
+    }
+
     member(
         PrimitiveMemberAccessSyntax syntax,
         BoundReferenceExpression receiver,
@@ -1601,13 +1632,58 @@ class {
         LocalBinding[] locals,
         CallableSignature[] callables,
         BoundReferenceExpression receiver,
-        BoundFieldUnit[] fields
+        BoundFieldUnit[] fields,
+        BoundStatement[] conditionSetup = null
     ) -> BoundExpression {
-        let expression = classExpression(syntax, receiver, fields, locals, callables)
-        let conversion = TypeConversions.classify(
-            expression.semanticType, SemanticTypes.boolType()
-        )
-        if (!conversion.applicable) throw Exception("Control condition requires Bool")
-        return expression
+        var BoundExpression expression = classExpression(syntax, receiver, fields, locals, callables)
+        if (expression.class.isOfType(BoundDeclarationValueExpression.class) && conditionSetup) {
+            let declaration = (BoundDeclarationValueExpression)expression
+            conditionSetup.add(BoundLocalDeclarationStatement(declaration.range, declaration.local,
+                declaration.value, declaration.storageConversion))
+            let localObject = (Object)declaration.local
+            expression = (BoundExpression)localObject
+        }
+        let type = expression.semanticType
+        if (type.value() == SemanticTypes.boolType().value()) return expression
+        if (type.kind() == "generic-parameter" || type.kind() == "nullable" ||
+            type.kind() == "user-class" || type.kind() == "generic-instance" ||
+            type.kind() == "object" || type.kind() == "string" || type.kind() == "array" ||
+            type.kind() == "function") {
+            var BoundExpression compared = expression
+            if (type.kind() != "generic-parameter" && type.kind() != "nullable") {
+                let lifted = NullableSemanticType(type)
+                compared = BoundConversionExpression(expression.range, lifted, expression,
+                    TypeConversions.classify(type, lifted))
+            }
+            let present = BoundBinaryExpression(expression.range, SemanticTypes.boolType(), "!=", compared,
+                BoundLiteralExpression(expression.range, SemanticTypes.nullType(), "null"))
+            if (type.kind() == "nullable") {
+                let nullable = (NullableSemanticType)type
+                if (nullable.underlyingType.value() == SemanticTypes.boolType().value()) {
+                    if (!conditionSetup) throw Exception("Nullable Bool condition requires scoped evaluation")
+                    // The declaration path already captured the initializer once.
+                    if (!expression.class.isOfType(BoundReferenceExpression.class)) {
+                        let identity = SymbolIdentity(DeclarationIdentity(
+                            SyntaxIslandIdentity(expression.range.snapshot, "condition-value", expression.range.startTokenIndex),
+                            "condition-value", "condition"), "local")
+                        let local = BoundReferenceExpression(expression.range, type, "condition", identity)
+                        conditionSetup.add(BoundLocalDeclarationStatement(expression.range, local, expression,
+                            TypeConversions.classify(type, type)))
+                        let retainedObject = (Object)local
+                        expression = (BoundExpression)retainedObject
+                        let retainedPresent = BoundBinaryExpression(expression.range, SemanticTypes.boolType(), "!=", expression,
+                            BoundLiteralExpression(expression.range, SemanticTypes.nullType(), "null"))
+                        let retainedValue = BoundConversionExpression(expression.range, SemanticTypes.boolType(), expression,
+                            TypeConversions.classify(type, SemanticTypes.boolType(), explicit: true))
+                        return BoundBinaryExpression(expression.range, SemanticTypes.boolType(), "&&", retainedPresent, retainedValue)
+                    }
+                    let value = BoundConversionExpression(expression.range, SemanticTypes.boolType(), expression,
+                        TypeConversions.classify(type, SemanticTypes.boolType(), explicit: true))
+                    return BoundBinaryExpression(expression.range, SemanticTypes.boolType(), "&&", present, value)
+                }
+            }
+            return present
+        }
+        throw Exception("Control condition requires Bool")
     }
 }

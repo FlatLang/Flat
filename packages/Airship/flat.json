@@ -29,6 +29,17 @@
         "https://github.com/FlatLang/Thread.git": "master"
       }
     },
+    "char-inspection-test": {
+      "mainClass": "flat/airship/CharInspection",
+      "source": "test/flat/airship/CharInspection.flat",
+      "outFile": "char-inspection-test.js",
+      "dependencies": {
+        "https://github.com/FlatLang/Flat-Lexer.git": "master",
+        "https://github.com/FlatLang/Flat-Parser.git": "master",
+        "https://github.com/FlatLang/Flat-Compiler-Models.git": "master",
+        "https://github.com/FlatLang/Flat-ES6-Bound-Writer.git": "master"
+      }
+    },
     "test": {
       "mainClass": "flat/airship/Airship_TestSuite",
       "source": "src/**/*_Test*.flat",

@@ -27,8 +27,32 @@ class {
         tokenIndexOffset = sourceTokenIndexOffset
         containingRange = expressionContainingRange
         index = 0
-        let expression = parseConditional()
+        var Token suffix
+        if (tokens.count > 0 && tokens.last.value == "$") {
+            suffix = tokens.last
+            tokens = tokens.take(tokens.count - 1)
+            if (tokens.isEmpty) syntax("Postfix $ requires an identifier or call", 0)
+        }
+        var PrimitiveExpressionSyntax expression = parseConditional()
         if (index != tokens.count) syntax("Unexpected token '#{tokens[index].value}'", index)
+        if (suffix) {
+            let suffixRange = SourceRange(snapshot, expression.range.startTokenIndex,
+                tokens.count + 1 + tokenIndexOffset, expression.range.start,
+                Location(lineNumber: suffix.endLineNumber, column: suffix.endColumn))
+            if (expression.class.isOfType(PrimitiveCallSyntax.class)) {
+                let call = (PrimitiveCallSyntax)expression
+                expression = PrimitiveCallSyntax(suffixRange, call.name, call.argumentValues(),
+                    call.namedArgumentValues(), true)
+            } else if (expression.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+                let call = (PrimitiveMemberCallSyntax)expression
+                expression = PrimitiveMemberCallSyntax(suffixRange, call.receiver, call.memberName,
+                    call.argumentValues(), call.namedArgumentValues(), call.typeArgumentNames(),
+                    call.safeAccess, true)
+            } else if (expression.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let reference = (PrimitiveReferenceSyntax)expression
+                expression = PrimitiveReferenceSyntax(suffixRange, reference.name, true)
+            } else syntax("Postfix $ requires an identifier or call", tokens.count)
+        }
         return expression
     }
 

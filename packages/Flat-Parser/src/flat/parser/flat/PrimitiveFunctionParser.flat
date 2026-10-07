@@ -332,12 +332,36 @@ class {
         return parameters
     }
 
+    /** Parse one finite type spelling using the same grammar as method signatures. */
+    public parseTypeTokens(Token[] tokenValues, SourceSnapshotIdentity sourceSnapshot) -> String {
+        if (!tokenValues || tokenValues.isEmpty || !sourceSnapshot) {
+            throw Exception("Primitive type parsing requires tokens and snapshot")
+        }
+        tokens = tokenValues.filter({
+            let type = _.type
+            return type != Token.Type.WHITESPACE && type != Token.Type.COMMENT
+        })
+        snapshot = sourceSnapshot
+        tokenIndexOffset = 0
+        index = 0
+        let result = parseTypeName("Expected field type")
+        if (index != tokens.count) syntax("Unexpected trailing type token", index)
+        return result
+    }
+
     parseTypeName(String message) -> String {
         var String result = requireIdentifier(message)
+        while (index < tokens.count && tokens[index].value == ".") {
+            index++
+            result += "." + requireIdentifier("Expected qualified type name")
+        }
         if (index < tokens.count && tokens[index].value == "<") {
             result += "<"
             index++
             var Bool firstGeneric = true
+            if (index >= tokens.count || tokens[index].value == ">") {
+                syntax("Expected generic type argument", index)
+            }
             while (index < tokens.count && tokens[index].value != ">") {
                 if (!firstGeneric) {
                     require(",", "Expected generic type argument separator")

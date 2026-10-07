@@ -17,7 +17,9 @@ class {
         GenericParameterSemanticType[] methodGenericParameters = GenericParameterSemanticType[],
         visible PrimitiveInterfaceSyntax[] interfaces = PrimitiveInterfaceSyntax[],
         visible PrimitiveClassSyntax implementationOwner = null,
-        visible SourceRange implementationRange = null
+        visible SourceRange implementationRange = null,
+        visible PrimitiveResolvedDeclarationContext declarationContext = null,
+        visible SourceRange lookupRange = null
     ) {
         methodParameters = GenericParameterSemanticType[]
         if (!methodGenericParameters || methodGenericParameters.any({ !_ })) {
@@ -132,6 +134,9 @@ class {
             )) arguments.add(resolve(argument))
             return GenericInstanceSemanticType(declarationType, arguments)
         }
+        if (declarationContext) {
+            return UserClassSemanticType(declarationContext.resolve(name, lookupRange ?: implementationRange))
+        }
         let callable = callables.firstOrNull((candidate) =>
             candidate.callableKind.value == "constructor" &&
             candidate.ownerType.declarationIdentity.name == name
@@ -172,7 +177,9 @@ class {
     traitParameter(String implemented, String name, String[] path) -> String {
         let open = implemented.indexOf("<", defaultReturnValue: -1)
         let contractName = open < 0 ? implemented : implemented.substring(0, open)
-        let contract = interfaces.firstOrNull({ _.name == contractName })
+        let contract = declarationContext ? declarationContext.interfaceFor(
+            declarationContext.resolve(contractName, implementationRange ?: lookupRange)) :
+            interfaces.firstOrNull({ _.name == contractName })
         if (!contract) return null
         if (path.contains(contractName)) throw Exception("Cyclic trait inheritance '#contractName'")
         let arguments = open < 0 ? String[] :

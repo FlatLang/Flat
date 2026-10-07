@@ -1,0 +1,11 @@
+package flat/semantic/binding/primitive
+
+import flat/semantic/binding/BindingDiagnostic
+
+/** Typed synchronous namespace-binding failure; no partial result is published. */
+class extends Exception {
+    public construct(visible BindingDiagnostic diagnostic) {
+        if (!diagnostic) throw Exception("Context binding failure requires a diagnostic")
+        super("#{diagnostic.code}: #{diagnostic.name}")
+    }
+}

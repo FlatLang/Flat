@@ -811,7 +811,8 @@ testable class {
             "class Value { " +
                 "validate(Int start, Int end, Bool fail = false) => true { " +
                 "if (fail) { return false; } } " +
-                "run() -> Bool { return !validate(0, 1, true); } }"
+                "run() -> Bool { return !validate(0, 1, true); } " +
+                "runFallback() -> Bool { return !validate(0, 1, false); } }"
         )
         stream.emit("start")
         let snapshot = SourceSnapshotIdentity(
@@ -825,19 +826,29 @@ testable class {
         let runName = Es6NameMangler.mangle(
             type.functionUnits().firstOrNull({ _.name == "run" }).identity.value
         )
+        let fallbackName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "runFallback" }).identity.value
+        )
+        let validateName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "validate" }).identity.value
+        )
         let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
         let root = File(".flat-es6-inferred-predicate-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "inferred-predicate.js")
         Es6ArtifactCommitter().commit(
             destination,
-            code + "console.log(new " + className + "()." + runName + "());\n"
+            code + "const value = new " + className + "();\n" +
+                "console.log(value." + runName + "());\n" +
+                "console.log(value." + fallbackName + "());\n" +
+                "console.log(value." + validateName + "(0, 1, true));\n" +
+                "console.log(value." + validateName + "(0, 1, false));\n"
         )
         let response = System.execute(
             ["node", destination.normalizedLocation], silent: true, shell: false
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("")).toBe("false\n")
+        expect(response.stdout.join("")).toBe("true\nfalse\nfalse\ntrue\n")
         Es6ArtifactFiles.remove(root)
     }
 

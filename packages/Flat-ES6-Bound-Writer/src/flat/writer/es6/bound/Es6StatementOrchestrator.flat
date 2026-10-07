@@ -94,6 +94,10 @@ class {
             return statements.emitInitializedLocal(value, expressions.emit(BoundConversionExpression(
                 value.range, value.local.semanticType, value.initializer, value.conversion)))
         }
+        if (statement.class.isOfType(BoundNativeArrayClearStatement.class)) {
+            let value = (BoundNativeArrayClearStatement)statement
+            return statements.emitAssignmentValue(expressions.emit(value.target), Es6CodeResult("null"))
+        }
         if (statement.class.isOfType(BoundArrayAssignmentStatement.class)) {
             let value = (BoundArrayAssignmentStatement)statement
             return statements.emitAssignmentValue(

@@ -1,0 +1,18 @@
+package flat/semantic/binding/primitive
+
+import flat/compiler/models
+
+/** Actual source import metadata; unsupported forms are diagnosed by binding. */
+data class {
+    public construct(
+        visible String importedName,
+        visible SourceRange range,
+        visible Bool staticImport = false,
+        visible String alias = null
+    ) {
+        if (!importedName || importedName.trim().isEmpty || !range ||
+            (alias != null && alias.trim().isEmpty)) {
+            throw Exception("Binding import requires a name and actual source range")
+        }
+    }
+}

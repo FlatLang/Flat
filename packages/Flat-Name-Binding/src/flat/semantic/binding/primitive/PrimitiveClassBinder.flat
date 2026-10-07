@@ -18,6 +18,9 @@ class {
     var TypeHierarchyComponent typeHierarchy
     var PrimitiveStructuralTypeResolver scopedTypeResolver
 
+    var PrimitiveResolvedDeclarationContext declarationContext
+    var SourceRange declarationLookupRange
+
     public bind(
         PrimitiveClassSyntax syntax,
         SourceSnapshotIdentity snapshot,
@@ -26,7 +29,8 @@ class {
         CallableSignature[] availableConstructors = CallableSignature[],
         BoundFieldUnit[] availableFields = BoundFieldUnit[],
         PrimitiveInterfaceSyntax[] interfaceSyntaxValues = PrimitiveInterfaceSyntax[],
-        TypeHierarchyComponent hierarchy = null
+        TypeHierarchyComponent hierarchy = null,
+        PrimitiveResolvedDeclarationContext resolvedContext = null
     ) -> PrimitiveClassBindingResult {
         if (!syntax || !snapshot || !inheritedFields || inheritedFields.any({ !_ }) ||
             !availableConstructors || availableConstructors.any({ !_ }) ||
@@ -34,10 +38,14 @@ class {
             !interfaceSyntaxValues || interfaceSyntaxValues.any({ !_ })) {
             throw Exception("Primitive class binding requires syntax snapshot and inherited fields")
         }
+        declarationContext = resolvedContext
+        declarationLookupRange = syntax.range
         if ((syntax.parentName != null) != (parentConstructor != null) ||
             (!parentConstructor && inheritedFields.isNotEmpty) ||
             (parentConstructor && (parentConstructor.callableKind.value != "constructor" ||
-                parentConstructor.ownerType.declarationIdentity.name != syntax.parentName))) {
+                (resolvedContext ? parentConstructor.ownerType.declarationIdentity.value !=
+                    resolvedContext.resolve(syntax.parentName, syntax.range).value :
+                    parentConstructor.ownerType.declarationIdentity.name != syntax.parentName)))) {
             throw Exception("Primitive class parent requires its selected constructor signature")
         }
         typeHierarchy = hierarchy
@@ -250,7 +258,8 @@ class {
             }
             fields.add(BoundFieldUnit(
                 field.name, identity, fieldType, fieldRange,
-                field.visibleField, initializer, field.staticField, field.mutableField
+                field.visibleField, initializer, field.staticField, field.mutableField,
+                nativeArrayStorage: field.nativeArrayStorage
             ))
             fieldIndex++
         }
@@ -261,8 +270,8 @@ class {
                     nullDefault(parameter) ? NullableSemanticType(
                         typeOf(parameter.typeName, parameter.nativeArrayStorage)
                     ) : typeOf(parameter.typeName, parameter.nativeArrayStorage),
-                    parameter.range, parameter.visibleParameter
-                ))
+                    parameter.range, parameter.visibleParameter,
+                    nativeArrayStorage: parameter.nativeArrayStorage                ))
                 fieldIndex++
             }
         }
@@ -549,7 +558,8 @@ class {
             effectiveSignature = CallableSignature(
                 signature.identity, signature.name, signature.callableKind,
                 signature.parameterTypes(), inferredType, signature.ownerType,
-                signature.optionalParameterCount, signature.parameterNames()
+                signature.optionalParameterCount, signature.parameterNames(),
+                signature.genericParameters(), signature.ownerGenericDeclaration, signature.ownerInstance
             )
             arrayGetter = effectiveSignature
         }
@@ -672,11 +682,17 @@ class {
         Int ordinal
     ) -> BoundFunctionUnit {
         let previousResolver = scopedTypeResolver
+        let previousContext = declarationContext
+        let previousRange = declarationLookupRange
         scopedTypeResolver = methodTypeResolver(syntax)
+        declarationContext = scopedTypeResolver.declarationContext
+        declarationLookupRange = syntax.range
         try {
             return bindMethodBody(syntax, typeIdentity, type, fields, inheritedFields, ordinal)
         } finally {
             scopedTypeResolver = previousResolver
+            declarationContext = previousContext
+            declarationLookupRange = previousRange
         }
     }
 
@@ -1133,8 +1149,14 @@ class {
         publishedFields.addAll(availableFields)
         let previousConstructors = constructors
         let previousTypeResolver = scopedTypeResolver
+        let previousDeclarationContext = declarationContext
+        let previousLookupRange = declarationLookupRange
+        if (typeResolver) declarationContext = typeResolver.declarationContext
+        declarationLookupRange = syntax.range
         scopedTypeResolver = typeResolver
         let previousBoundType = boundType
+        let previousGenericParameter = genericParameter
+        if (typeResolver) genericParameter = typeResolver.genericParameter
         let previousArrayGetter = arrayGetter
         let previousArraySetter = arraySetter
         constructors = callables
@@ -1150,7 +1172,10 @@ class {
             constructors = previousConstructors
             publishedFields = previousFields
             scopedTypeResolver = previousTypeResolver
+            declarationContext = previousDeclarationContext
+            declarationLookupRange = previousLookupRange
             boundType = previousBoundType
+            genericParameter = previousGenericParameter
             arrayGetter = previousArrayGetter
             arraySetter = previousArraySetter
         }
@@ -1840,14 +1865,14 @@ class {
                     candidate.ownerType.value() == indexedOwner
                 )
                 if (getter) {
-                    let checked = CallTypeChecker.check(
-                        getter, indexedType, [index.semanticType], value.range
-                    )
-                    if (!checked.valid) throw Exception(checked.diagnostic.message)
                     let selected = indexedType.kind() == "generic-instance" &&
                         getter.ownerGenericDeclaration ? getter.instantiateReceiver(
                             (GenericInstanceSemanticType)indexedType
                         ) : getter
+                    let checked = CallTypeChecker.check(
+                        selected, indexedType, [index.semanticType], value.range
+                    )
+                    if (!checked.valid) throw Exception(checked.diagnostic.message)
                     return BoundCallExpression(
                         value.range, checked.semanticType, selected, indexedReceiver,
                         [index], checked.argumentConversions()
@@ -2161,12 +2186,22 @@ class {
             let value = (PrimitiveReferenceSyntax)syntax
             let local = locals.firstOrNull({ _.name == value.name })
             if (local) {
+                if (value.name == "this" && genericParameter && receiver &&
+                    local.identity.value == receiver.symbolIdentity.value) {
+                    return BoundReferenceExpression(value.range,
+                        GenericInstanceSemanticType(boundType, [genericParameter]), local.name, local.identity)
+                }
                 return BoundReferenceExpression(
                     value.range, local.semanticType, local.name, local.identity
                 )
             }
             if (value.name == "this") {
                 if (!receiver) throw Exception("Static method cannot reference 'this'")
+                if (genericParameter) {
+                    return BoundReferenceExpression(value.range,
+                        GenericInstanceSemanticType(boundType, [genericParameter]),
+                        receiver.name, receiver.symbolIdentity)
+                }
                 return receiver
             }
             let field = fields.firstOrNull({ _.name == value.name })
@@ -2223,9 +2258,11 @@ class {
                 }
                 arguments.add(expression(argument, receiver, fields, locals))
             }
+            let resolvedOwner = declarationContext ? declarationContext.resolve(value.typeName, value.range) : null
             let candidates = constructors.filter((candidate) =>
                 candidate.callableKind.value == "constructor" &&
-                candidate.name == value.typeName
+                (resolvedOwner ? candidate.ownerType.declarationIdentity.value == resolvedOwner.value :
+                    candidate.name == value.typeName)
             ).map((candidate) => typeArguments.isEmpty ? candidate :
                 candidate.instantiateConstructor(typeArguments.map({ typeOf(_) })))
             if (candidates.isEmpty && value.typeName == "Array" &&
@@ -2266,6 +2303,18 @@ class {
                     invocationArguments.add(expression(
                         argument, receiver, fields, locals
                     ))
+                }
+                if (invocationArguments.count != functionType.parameterTypes().count)
+                    throw Exception("Callback argument count mismatch")
+                var Int argumentIndex
+                while (argumentIndex < invocationArguments.count) {
+                    let argument = invocationArguments[argumentIndex]
+                    let target = functionType.parameterTypes()[argumentIndex]
+                    let conversion = TypeConversions.classify(argument.semanticType, target, hierarchy: typeHierarchy)
+                    if (!conversion.applicable) throw Exception("Callback argument #argumentIndex cannot convert '#{argument.semanticType.value()}' to '#{target.value()}'")
+                    if (argument.semanticType.value() != target.value()) invocationArguments[argumentIndex] =
+                        BoundConversionExpression(argument.range, target, argument, conversion)
+                    argumentIndex++
                 }
                 return BoundFunctionInvocationExpression(
                     value.range,
@@ -2371,9 +2420,13 @@ class {
                 ))
                 suppliedIndex++
             }
+            let resolvedConstructor = declarationContext && constructorCall ?
+                declarationContext.resolve(value.name, value.range) : null
             let nonInstanceCandidates = constructors.filter((candidate) =>
                 candidate.name == value.name &&
-                candidate.callableKind.value != "instance-method"
+                candidate.callableKind.value != "instance-method" &&
+                (!resolvedConstructor || candidate.callableKind.value != "constructor" ||
+                    candidate.ownerType.declarationIdentity.value == resolvedConstructor.value)
             )
             let instanceCandidates = constructors.filter((candidate) =>
                 candidate.name == value.name &&
@@ -2715,6 +2768,7 @@ class {
     }
 
     declaredClassType(String name) -> UserClassSemanticType {
+        if (declarationContext) return UserClassSemanticType(declarationContext.resolve(name, declarationLookupRange))
         if (name == boundType.declarationIdentity.name) return boundType
         let callable = constructors.firstOrNull((candidate) =>
             candidate.ownerType.declarationIdentity.name == name
@@ -2748,14 +2802,17 @@ class {
         return PrimitiveStructuralTypeResolver(
             callables: constructors, genericParameter: genericParameter,
             receiverType: boundType, methodGenericParameters: generics, interfaces: interfaces,
-            implementationOwner: boundSyntax, implementationRange: method.range
+            implementationOwner: boundSyntax, implementationRange: method.range,
+            declarationContext: declarationContext ? declarationContext.scopeForSnapshot(method.range.snapshot) : null,
+            lookupRange: method.range
         )
     }
 
     typeOf(String name, Bool nativeArrayStorage = false) -> SemanticType {
         let resolver = scopedTypeResolver ?: PrimitiveStructuralTypeResolver(
             callables: constructors, genericParameter: genericParameter,
-            receiverType: boundType, interfaces: interfaces)
+            receiverType: boundType, interfaces: interfaces,
+            declarationContext: declarationContext, lookupRange: declarationLookupRange)
         return nativeArrayStorage ? resolver.resolveNativeArrayStorage(name) : resolver.resolve(name)
     }
 }

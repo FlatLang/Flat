@@ -13,8 +13,12 @@ data class {
         visible Bool visibleField = false,
         visible BoundExpression initializer = null,
         visible Bool staticField = false,
-        visible Bool mutableField = false
+        visible Bool mutableField = false,
+        visible Bool nativeArrayStorage = false
     ) {
+        if (nativeArrayStorage && semanticType.kind() != "array") {
+            throw Exception("Native storage field requires an array type")
+        }
         if (!name || !identity || !semanticType || !range ||
             (initializer && initializer.semanticType.kind() != "null" && !TypeConversions.classify(
                 initializer.semanticType, semanticType

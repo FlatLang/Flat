@@ -4,7 +4,7 @@ import flat/compiler/models
 
 /** Immutable syntax-only identifier reference. */
 data class extends PrimitiveExpressionSyntax {
-    public construct(SourceRange range, visible String name) {
+    public construct(SourceRange range, visible String name, visible Bool suppressImplicitAwait = false) {
         if (!range || !name || name.trim().count == 0) {
             throw Exception("Primitive reference syntax requires range and name")
         }

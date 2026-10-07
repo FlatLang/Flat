@@ -58,15 +58,10 @@ class {
             "native" =>
             "java" => return
             "flat" => {
-                let package = "git@github.com:FlatLang/Flat-Compiler"
-                let dependency = dependencyService.getDependencyFromPackage(package)
-                let flatc = File("#{Airship.flatHome}/bin/flatc")
-
-                if (!dependencyService.isDependencyInstalled(dependency)) {
-                    Airship(["get", package]):run()
-                }
-                if (!flatc.exists) {
-                    Airship(["install", "flatc", "-f", dependency.getLocation(), "--flatc-runtime", "java"]):run()
+                let command = getFlatCompilerCommand()
+                if (!File(command[1]).isFile) {
+                    let dependency = getFlatCompilerDependency()
+                    throw ExecutionFailureException("Flat compiler artifact is not installed at #{command[1]}; bootstrap it with airship --use-links -f #{dependency.getLocation()} --flatc-runtime java install flatc -t es6")
                 }
             }
             default => throw ExecutionFailureException("Invalid flatc runtime \"#{runtime}\"")
@@ -101,10 +96,30 @@ class {
     getOutputDirectory(PackageSource source) => File("#{airship.packageLocation.normalizedLocation}/#{source.outDirectory}")
 
     public async getInstallCommand(String installationTarget, PackageSource source, Dependency[] dependencies) -> String[] {
-        return getFlatcExecutableCommand(dependencies).plus(getFlatcExecutableArguments(installationTarget, source))
+        let arguments = getFlatcExecutableArguments(installationTarget, source)
+        return getFlatcExecutableCommand(dependencies).plus(arguments)
     }
 
-    getFlatcExecutableCommand(Dependency[] dependencies) -> String[] {
+    async getFlatCompilerDependency() -> Dependency {
+        let dependency = dependencyService.getDependencyFromPackage("https://github.com/FlatLang/Flat-Compiler.git")
+        return dependencyService.resolveDependency(dependency)
+    }
+
+    public async getFlatCompilerCommand() -> String[] {
+        let dependency = getFlatCompilerDependency()
+        let packageFile = File("#{dependency.getLocation()}/flat.json")
+        if (!packageFile.isFile) {
+            throw ExecutionFailureException("Flat compiler package is not installed at #{dependency.getLocation()}; install or link Flat-Compiler first")
+        }
+        let compiler = Airship(["-f", dependency.getLocation(), "-t", "es6"], airship)
+        let source = compiler.getSourceForPackage("flatc")
+        if (!source?.mainClass || !source.outFile) {
+            throw ExecutionFailureException("Flat compiler package must declare an executable flatc source with an output file")
+        }
+        return ["node", "#{compiler.packageLocation.normalizedLocation}/#{source.outDirectory}/#{source.outFile}"]
+    }
+
+    async getFlatcExecutableCommand(Dependency[] dependencies) -> String[] {
         if (let jar = cliArgs.flatcJarValueArg.value) {
             return ["java", "-jar", jar]
         }
@@ -130,11 +145,7 @@ class {
                     "#{flat.getLocation()}/target/flatc.jar",
                 ]
             }
-            "flat" => {
-                return [
-                    "#{Airship.flatHome}/bin/flatc",
-                ]
-            }
+            "flat" => return getFlatCompilerCommand()
             default => {
                 throw ExecutionFailureException("Invalid flatc runtime \"#{runtime}\"")
             }
@@ -316,26 +327,56 @@ class {
     }
 
     public async getFlatcInstallArguments(String installationTarget, PackageSource source) -> String[] {
+        if (cliArgs.targetRuntimeArg.enabled) {
+            throw ExecutionFailureException("Flat compiler target-runtime selection is not supported")
+        }
+        if (source.defaultExports.count > 0) {
+            throw ExecutionFailureException("Flat compiler default imports are not supported")
+        }
         let args = String[]
-
         let currentDependency = dependencyService.getDependencyFromPackage("local:#{airship.packageLocation.normalizedLocation}")
         let sourceLocations = dependencyService.getDependencySourceLocations(currentDependency, installationTarget)
         let excludeSources = dependencyService.getDependencyExclusions(currentDependency, installationTarget)
         let excludeSource = installationTarget == "test" ? null : dependencyService.getDependencySourceGlobLocation(currentDependency, "test")
-        let canonicalSourceLocations = sourceLocations.mapParallel({ File(_).getCanonicalPath() }).unique()
 
-        log.trace("Adding source locations: #{sourceLocations}")
         args.addAll(sourceLocations)
+        args.addAll(["-target", airship.target ?: "es6", "-d", getOutputDirectory(source).location])
+        if (source.outFile) {
+            args.addAll(["-o", source.outFile])
+        }
+        if (source.mainClass) {
+            args.addAll(["-main", source.mainClass])
+        } else {
+            args.add("-library")
+        }
 
-        log.trace("Adding source exclusions: #{excludeSources}")
+        // Installation owns dependency acquisition; command construction must not fetch.
+        let response = dependencyService.getDependenciesForSource(installationTarget, source, download: false)
+        for (dependency in response.dependencies) {
+            let dependencySource = dependency.airship.getSourceForPackage(installationTarget, dependency.airship.package.defaultSource)
+            if (dependencySource?.defaultExports.count > 0) {
+                throw ExecutionFailureException("Flat compiler default imports are not supported")
+            }
+            for (location in dependencyService.getDependencySourceLocations(dependency, installationTarget)) {
+                if (!sourceLocations.contains(location)) {
+                    args.addAll(["-l", location])
+                }
+            }
+            for (excluded in dependencyService.getDependencyExclusions(dependency, installationTarget)) {
+                args.addAll(["-x", excluded])
+            }
+            if (installationTarget != "test") {
+                if (let excluded = dependencyService.getDependencySourceGlobLocation(dependency, "test")) {
+                    args.addAll(["-x", excluded])
+                }
+            }
+        }
+
         excludeSources.forEach({ args.addAll(["-x", _]) })
-
         if (excludeSource) {
             args.addAll(["-x", excludeSource])
         }
-
         args.addAll(airship.cliArgs.propagationArgs.values)
-
         return args
     }
 
@@ -351,10 +392,10 @@ class {
 
         let dependencies = installDependencies(package, source)
 
+        let cmd = getInstallCommand(package, source, dependencies)
+
         checkInstallTarget()
         checkInstallCompiler()
-
-        let cmd = getInstallCommand(package, source, dependencies)
 
         if (airship.debug) {
             Console.writeLine(cmd.map({ System.sanitizeCliArgument(_) }).join(" "))

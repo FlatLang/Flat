@@ -40,7 +40,7 @@ OPTIONS:
     --purge                            Uninstall the dependency from the disk
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship setup`
 
@@ -55,7 +55,7 @@ OPTIONS:
     --reinstall    Reinstall the Airship CLI package
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship install`
 
@@ -72,7 +72,7 @@ OPTIONS:
     --link    Link the Flat package to the location in $FLAT_HOME/packages
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship get`
 
@@ -86,7 +86,7 @@ ARGUMENTS:
     <dependency>    The dependencies to get
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship uninstall`
 
@@ -104,7 +104,7 @@ OPTIONS:
               $FLAT_HOME/packages
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship reinstall`
 
@@ -121,7 +121,7 @@ OPTIONS:
     --link    Link the Flat package to the location in $FLAT_HOME/packages
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship update`
 
@@ -135,7 +135,7 @@ ARGUMENTS:
     <installationTarget>    The installation target to update the dependencies for
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship run`
 
@@ -149,7 +149,7 @@ ARGUMENTS:
     <script>    The name of the script to run
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship init`
 
@@ -163,7 +163,7 @@ ARGUMENTS:
     <packageName>    The name of the package to initialize
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship create`
 
@@ -178,7 +178,7 @@ ARGUMENTS:
     <pipelineArg>    An argument to pass to the pipeline creation
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship bin`
 
@@ -192,7 +192,7 @@ ARGUMENTS:
     <binary>    The name of the binary to create
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship add`
 
@@ -206,7 +206,7 @@ ARGUMENTS:
     <dependency>    The dependency to add
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship remove`
 
@@ -220,7 +220,7 @@ ARGUMENTS:
     <dependency>    The dependency to remove
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship help`
 
@@ -237,7 +237,7 @@ OPTIONS:
     --all    Print all the help information recursively for an argument, command, or option
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship --target`
 
@@ -251,7 +251,7 @@ ARGUMENTS:
     <target>    The language to compile the package to
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship --target-runtime`
 
@@ -265,7 +265,7 @@ ARGUMENTS:
     <runtime>    The language runtime to compile the package for
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship --file`
 
@@ -279,7 +279,7 @@ ARGUMENTS:
     <file>    The flat.json file location to use
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship --source`
 
@@ -293,7 +293,7 @@ ARGUMENTS:
     <sourceValue>    The source to target. e.g. main/test
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship --flatc-runtime`
 
@@ -307,7 +307,43 @@ ARGUMENTS:
     <runtime>    The flatc runtime to compile the package with
 ```
 
------------------------------------------------------------------------------------------------
+For `--flatc-runtime flat`, Airship resolves the installed `Flat-Compiler` package
+through the usual workspace/link rules (`--use-links`) and runs its ES6 `flatc`
+source artifact with Node. It does not substitute a global `flatc` binary, fetch
+an absent compiler, or bootstrap it implicitly. Bootstrap the selected package
+explicitly with the legacy runtime first:
+
+```bash
+airship --use-links -f packages/Flat-Compiler --flatc-runtime java install flatc -t es6
+```
+
+Airship forwards sources, dependency sources, exclusions, target, output directory
+and filename, and `-main` or `-library` according to the package source. Executable
+packages require compiler support for `-main`; forwarding alone does not provide
+an executable bootstrap. Target-runtime selection and default imports are rejected
+until the Flat compiler supports those contracts.
+
+The four-file Char execution integration is
+`python3 packages/Airship/test/char_integration.py`. Build prerequisites are:
+
+```bash
+airship --use-links --sync -f packages/Airship install -t es6
+airship --use-links --sync -f packages/Airship install char-inspection-test -t es6
+airship --use-links --sync -f packages/Flat-Compiler install flatc -t es6
+```
+
+The harness uses temporary manifests and unchanged production-file symlinks
+outside the checkout. Compilation and inspection execution route through Airship.
+The `char-inspection-test` source has test-only lexer, parser, identity-model and
+ES6 name-mangler dependencies: these reproduce the existing Compiler acceptance
+probe using stable identities rather than guessing private emitted names. They
+are not Airship production dependencies. The probe writes a distinct temporary
+`inspect.js`, preserves the original library bytes, and asserts `true`, `false`,
+`aaa` for unchanged Char whitespace/repeat behavior. The four-file token
+materialization is a test-only, single-source identity derivation, not a compiler
+pipeline barrier. Temporary files are cleaned on success and failure.
+
+---
 
 `airship publish`
 
@@ -325,7 +361,7 @@ OPTIONS:
     --push    Push the release commit and tag
 ```
 
------------------------------------------------------------------------------------------------
+---
 
 `airship publish --bump`
 

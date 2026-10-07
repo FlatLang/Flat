@@ -7,7 +7,7 @@ class {
             kind == "assignment" || kind == "member-assignment" || kind == "return" || kind == "continue" || kind == "if" ||
             kind == "switch" || kind == "foreach" ||
             kind == "while" || kind == "throw" || kind == "try" ||
-            kind == "array-assignment"
+            kind == "array-assignment" || kind == "native-array-clear"
     }
 
     public static supportsExpression(String kind) -> Bool {

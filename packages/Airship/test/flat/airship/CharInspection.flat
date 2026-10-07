@@ -1,0 +1,43 @@
+package flat/airship
+
+import flat/io
+import flat/lexer
+import flat/parser/flat
+import flat/compiler/models
+import flat/writer/es6/bound
+
+/** Test-only adapter: use compiler identities, never guess emitted symbol names. */
+class {
+    public static async main(String[] args) {
+        if (args.count != 4) throw Exception("Expected Char source, library artifact, and inspection destination")
+        let file = File(args[1])
+        let stream = Lexer().lexInterpolated(Es6ArtifactFiles.read(file))
+        stream.emit("start")
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(file.normalizedLocation), "compiler-input")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Char"
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Char"
+        )
+        let whitespace = syntax.methodValues().firstOrNull((method) => method.staticMethod && method.name == "isWhitespace")
+        let repeat = syntax.methodValues().firstOrNull((method) => method.staticMethod && method.name == "repeat")
+        let whitespaceIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", whitespace.range.startTokenIndex),
+            "static-method", "isWhitespace"
+        )
+        let repeatIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", repeat.range.startTokenIndex),
+            "static-method", "repeat"
+        )
+        let className = Es6NameMangler.mangle(owner.value)
+        let code = Es6ArtifactFiles.read(File(args[2]))
+        Es6ArtifactFiles.write(File(args[3]), code +
+            "console.log(" + className + "." + Es6NameMangler.mangle(whitespaceIdentity.value) + "(' '));\n" +
+            "console.log(" + className + "." + Es6NameMangler.mangle(whitespaceIdentity.value) + "('x'));\n" +
+            "console.log(" + className + "." + Es6NameMangler.mangle(repeatIdentity.value) + "('a', 3));\n")
+    }
+}
