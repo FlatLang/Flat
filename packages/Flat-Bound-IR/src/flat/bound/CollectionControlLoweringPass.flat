@@ -79,6 +79,30 @@ class extends BoundFunctionLoweringPass {
             let value = (BoundIfStatement)statement
             output.add(BoundIfStatement(value.range, lowerExpression(value.condition),
                 lowerStatements(value.thenValues()), lowerStatements(value.elseValues())))
+        } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
+            let value = (BoundSwitchStatement)statement
+            let cases = BoundSwitchCase[]
+            for (caseValue in value.caseValues()) {
+                cases.add(BoundSwitchCase(
+                    caseValue.range, lowerExpression(caseValue.label),
+                    lowerStatements(caseValue.statementValues()),
+                    caseValue.defaultCase, caseValue.fallsThrough
+                ))
+            }
+            output.add(BoundSwitchStatement(value.range, lowerExpression(value.value), cases))
+        } else if (statement.class.isOfType(BoundTryStatement.class)) {
+            let value = (BoundTryStatement)statement
+            let catches = BoundCatchClause[]
+            for (caught in value.catchValues()) {
+                catches.add(BoundCatchClause(
+                    caught.range, caught.local, lowerStatements(caught.statements()),
+                    caught.acceptsSoftExceptions
+                ))
+            }
+            output.add(BoundTryStatement(
+                value.range, lowerStatements(value.tryValues()), catches,
+                lowerStatements(value.finallyValues())
+            ))
         } else if (statement.class.isOfType(BoundWhileStatement.class)) {
             let value = (BoundWhileStatement)statement
             output.add(BoundWhileStatement(value.range, lowerExpression(value.condition),

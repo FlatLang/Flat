@@ -213,23 +213,223 @@ testable class {
         let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
         let packages = airship.getWorkspacePackagesDirectory()
         let dependency = LocalDependency(packages.normalizedLocation + "/Flat")
+        let writer = LocalDependency(packages.normalizedLocation + "/Flat-ES6")
         let source = airship.getSourceForPackage("main").copy(mainClass: null, dependencies: [dependency])
         let args = airship.installService.getFlatcInstallArguments("main", source)
-        let response = airship.dependencyService.getDependenciesForSource("main", source, download: false)
+        let response = airship.dependencyService.getCompilationDependencies(source, download: false)
 
         expect(args.contains("-library")).toBe(true)
         expect(args.contains("-main")).toBe(false)
         expect(args[args.indexOf("-o") + 1]).toBe(source.outFile)
+        expect(response.dependencies.any({ _.getLocation() == dependency.getLocation() })).toBe(true)
+        // Assert the actual selected production edges, not an assumed target
+        // override. Resolution is local-only and does not acquire dependencies.
+        for (edge in airship.dependencyService.getCompilationDependencyPackage(dependency).package.mainSource.dependencies) {
+            let resolved = airship.dependencyService.resolveDependency(edge)
+            expect(response.dependencies.any({ _.getLocation() == resolved.getLocation() })).toBe(true)
+        }
         for (resolved in response.dependencies) {
-            for (location in airship.dependencyService.getDependencySourceLocations(resolved, "main")) {
+            let selected = airship.dependencyService.getCompilationDependencyPackage(resolved)
+            let production = selected.package.mainSource
+            if (production) {
+                let location = resolved.getLocation() + "/" + production.source
                 expect(args.contains(location)).toBe(true)
                 expect(args[args.indexOf(location) - 1]).toBe("-l")
+                for (exclusion in production.excludedSources) {
+                    let excluded = resolved.getLocation() + "/" + exclusion.location
+                    expect(args.contains(excluded)).toBe(true)
+                    expect(args[args.indexOf(excluded) - 1]).toBe("-x")
+                }
+                let testSource = selected.package.testSource?.source
+                if (testSource?.contains("*")) {
+                    let excluded = selected.packageLocation.normalizedLocation + "/" + testSource
+                    expect(args.contains(excluded)).toBe(true)
+                    expect(args[args.indexOf(excluded) - 1]).toBe("-x")
+                }
+            } else {
+                // Build-only packages such as Flat-ES6 have no Flat source.
+                // The legacy location helper synthesizes /src from null;
+                // compilation must not forward that nonexistent source root.
+                expect(args.contains(resolved.getLocation() + "/src")).toBe(false)
             }
         }
+        expect(airship.dependencyService.getCompilationDependencyPackage(writer).package.mainSource).toBe(null)
+        expect(response.dependencies.any({ _.getLocation() == writer.getLocation() })).toBe(true)
+        expect(args.contains(writer.getLocation() + "/src")).toBe(false)
         let current = LocalDependency(airship.packageLocation.normalizedLocation)
         let excluded = airship.dependencyService.getDependencySourceGlobLocation(current, "test")
         expect(args.contains(excluded)).toBe(true)
         expect(args[args.indexOf(excluded) - 1]).toBe("-x")
+    }
+
+    test async `compilation metadata and closure remain isolated across targets`() {
+        let root = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let packages = root.getWorkspacePackagesDirectory()
+        let location = packages.normalizedLocation + "/Flat"
+        let dependency = LocalDependency(location)
+        // Prime the same path through Dependency.airship: Flat defaults to JS.
+        let defaults = dependency.airship
+        let defaultMain = defaults.package.mainSource
+        expect(defaults.target).toBe("js")
+        expect(defaultMain.dependencies.any({ _.name == "Flat-JS" })).toBe(true)
+        expect(defaultMain.dependencies.any({ _.name == "Flat-ES6" })).toBe(false)
+
+        let es6 = Airship(["-f", location, "--use-links", "-t", "es6"])
+        let es6Main = es6.package.mainSource
+        expect(es6.target).toBe("es6")
+        expect(es6Main.dependencies.any({ _.name == "Flat-ES6" })).toBe(true)
+        // ES6 also includes the JS override by Airship's documented selection.
+        expect(es6Main.dependencies.any({ _.name == "Flat-JS" })).toBe(true)
+
+        let source = root.getSourceForPackage("main").copy(
+            dependencies: [dependency], defaultExports: Array<DefaultExport>()
+        )
+        let es6Closure = root.dependencyService.getCompilationDependencies(source, download: false)
+        expect(es6Closure.dependencies.any({ _.getLocation() == packages.normalizedLocation + "/Flat-ES6" })).toBe(true)
+        expect(es6Closure.dependencies.any({ _.getLocation() == packages.normalizedLocation + "/Flat-JS" })).toBe(true)
+
+        let js = Airship(["-f", location, "--use-links", "-t", "js"])
+        expect(js.target).toBe("js")
+        expect(js.package.mainSource.dependencies.any({ _.name == "Flat-JS" })).toBe(true)
+        expect(js.package.mainSource.dependencies.any({ _.name == "Flat-ES6" })).toBe(false)
+        let jsClosure = js.dependencyService.getCompilationDependencies(
+            js.package.mainSource, download: false
+        )
+        expect(jsClosure.dependencies.any({ _.getLocation() == packages.normalizedLocation + "/Flat-JS" })).toBe(true)
+        expect(jsClosure.dependencies.any({ _.getLocation() == packages.normalizedLocation + "/Flat-ES6" })).toBe(false)
+        // A later target request must not mutate already selected metadata.
+        expect(defaultMain.dependencies.any({ _.name == "Flat-ES6" })).toBe(false)
+        expect(es6Main.dependencies.any({ _.name == "Flat-ES6" })).toBe(true)
+        expect(defaults.target).toBe("js")
+        expect(es6.target).toBe("es6")
+        let browser = Airship(["-f", location, "--use-links", "-t", "es6", "-r", "browser"])
+        expect(browser.targetRuntime).toBe("browser")
+        expect(browser.dependencyService.getCompilationDependencyPackage(dependency).targetRuntime).toBe("browser")
+        expect(root.dependencyService.getCompilationDependencyPackage(dependency).targetRuntime).toBe("node")
+        expect(es6.targetRuntime).toBe("node")
+        expect(Object.referenceEquals(browser.package, es6.package)).toBe(false)
+        // Invalidating one manifest identity clears every selected context.
+        Airship.clearCache(es6)
+        let reloadedEs6 = Airship(["-f", location, "--use-links", "-t", "es6"])
+        let reloadedJs = Airship(["-f", location, "--use-links", "-t", "js"])
+        let reloadedBrowser = Airship(["-f", location, "--use-links", "-t", "es6", "-r", "browser"])
+        expect(Object.referenceEquals(reloadedEs6.package, es6.package)).toBe(false)
+        expect(Object.referenceEquals(reloadedJs.package, js.package)).toBe(false)
+        expect(Object.referenceEquals(reloadedBrowser.package, browser.package)).toBe(false)
+        expect(reloadedEs6.package.mainSource.dependencies.any({ _.name == "Flat-ES6" })).toBe(true)
+        expect(reloadedJs.package.mainSource.dependencies.any({ _.name == "Flat-ES6" })).toBe(false)
+    }
+
+    test async `Flat root tests include only dependency production source closure`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let packages = airship.getWorkspacePackagesDirectory()
+        let dependency = LocalDependency(packages.normalizedLocation + "/CoLorIzer")
+        let testOnly = LocalDependency(packages.normalizedLocation + "/Flat")
+        let production = LocalDependency(packages.normalizedLocation + "/Flat-Java-Compiler")
+        let child = airship.dependencyService.getCompilationDependencyPackage(dependency)
+        let productionPackage = airship.dependencyService.getCompilationDependencyPackage(production)
+        let productionMain = productionPackage.package.mainSource
+        let testOnlyPackage = airship.dependencyService.getCompilationDependencyPackage(testOnly)
+        let testOnlyMain = testOnlyPackage.package.mainSource
+        let main = child.package.mainSource
+        let tests = child.package.testSource
+        testOnlyPackage.package.mainSource = testOnlyMain.copy(dependencies: Array<Dependency>())
+        productionPackage.package.mainSource = productionMain.copy(dependencies: [dependency])
+        // Reuse installed package metadata as an in-memory fixture. No package
+        // files are changed, and cached metadata is restored even on red.
+        child.package.mainSource = main.copy(
+            dependencies: [production],
+            excludedSources: [ExcludedSource("src/production-excluded.flat")]
+        )
+        child.package.testSource = tests.copy(
+            dependencies: [production, testOnly],
+            excludedSources: [ExcludedSource("src/test-excluded.flat")]
+        )
+        try {
+            let source = airship.getSourceForPackage("test").copy(
+                dependencies: [dependency], defaultExports: Array<DefaultExport>()
+            )
+            let closure = airship.dependencyService.getCompilationDependencies(source, download: false)
+            expect(closure.dependencies.count).toBe(2)
+            expect(closure.dependencies.filter({ _.getLocation() == dependency.getLocation() }).count).toBe(1)
+            expect(closure.dependencies.filter({ _.getLocation() == production.getLocation() }).count).toBe(1)
+            expect(closure.dependencies.any({ _.getLocation() == testOnly.getLocation() })).toBe(false)
+            // Installation still follows the requested dependency test source.
+            let installation = airship.dependencyService.getDependenciesForSource("test", source, download: false)
+            expect(installation.dependencies.any({ _.getLocation() == testOnly.getLocation() })).toBe(true)
+            let args = airship.installService.getFlatcInstallArguments("test", source)
+            let root = airship.packageLocation.normalizedLocation
+            let location = child.packageLocation.normalizedLocation
+
+            expect(args.contains(root + "/src")).toBe(true)
+            expect(args.contains(root + "/" + source.source)).toBe(true)
+            expect(args[args.indexOf("-main") + 1]).toBe(source.mainClass)
+            expect(args.contains(location + "/" + main.source)).toBe(true)
+            expect(args[args.indexOf(location + "/" + main.source) - 1]).toBe("-l")
+            // A test glob must be excluded, not passed as dependency input.
+            expect(args.contains(location + "/" + tests.source)).toBe(true)
+            expect(args[args.indexOf(location + "/" + tests.source) - 1]).toBe("-x")
+            expect(args.contains(location + "/src/production-excluded.flat")).toBe(true)
+            expect(args[args.indexOf(location + "/src/production-excluded.flat") - 1]).toBe("-x")
+            expect(args.contains(location + "/src/test-excluded.flat")).toBe(false)
+            expect(args.contains(production.getLocation() + "/src")).toBe(true)
+            expect(args[args.indexOf(production.getLocation() + "/src") - 1]).toBe("-l")
+            expect(args.contains(testOnly.getLocation() + "/src")).toBe(false)
+            expect(args[args.indexOf(root + "/" + source.source) - 1] == "-x").toBe(false)
+        } finally {
+            child.package.mainSource = main
+            child.package.testSource = tests
+            testOnlyPackage.package.mainSource = testOnlyMain
+            productionPackage.package.mainSource = productionMain
+        }
+    }
+
+    test async `Flat dependency default imports are selected from production not tests`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let packages = airship.getWorkspacePackagesDirectory()
+        let dependency = LocalDependency(packages.normalizedLocation + "/CoLorIzer")
+        let child = airship.dependencyService.getCompilationDependencyPackage(dependency)
+        let main = child.package.mainSource
+        let tests = child.package.testSource
+        child.package.mainSource = main.copy(
+            dependencies: Array<Dependency>(), defaultExports: Array<DefaultExport>()
+        )
+        child.package.testSource = tests.copy(
+            dependencies: Array<Dependency>(),
+            defaultExports: [DefaultExport("flat/test/Test", true)]
+        )
+        try {
+            let source = airship.getSourceForPackage("test").copy(
+                dependencies: [dependency], defaultExports: Array<DefaultExport>()
+            )
+            // Dependency test exports are irrelevant, so must not reject root
+            // compilation. Production exports remain explicitly unsupported.
+            let args = airship.installService.getFlatcInstallArguments("test", source)
+            expect(args.contains("-default-static-import")).toBe(false)
+            child.package.mainSource = child.package.mainSource.copy(
+                defaultExports: [DefaultExport("flat/test/Test", true)]
+            )
+            child.package.testSource = child.package.testSource.copy(
+                defaultExports: Array<DefaultExport>()
+            )
+            expectAsync(async { airship.installService.getFlatcInstallArguments("test", source) })
+                .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler default imports are not supported")
+        } finally {
+            child.package.mainSource = main
+            child.package.testSource = tests
+        }
+    }
+
+    test async `Flat root test dependencies retain Test production default import rejection`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let packages = airship.getWorkspacePackagesDirectory()
+        let dependency = LocalDependency(packages.normalizedLocation + "/Test")
+        let source = airship.getSourceForPackage("test").copy(
+            dependencies: [dependency], defaultExports: Array<DefaultExport>()
+        )
+        expect(airship.dependencyService.getCompilationDependencyPackage(dependency).package.mainSource.defaultExports.count > 0).toBe(true)
+        expectAsync(async { airship.installService.getFlatcInstallArguments("test", source) })
+            .toThrowWithMessage(ExecutionFailureException.class, "Flat compiler default imports are not supported")
     }
 
     test async `selects the workspace Flat compiler artifact rather than the global bin`() {

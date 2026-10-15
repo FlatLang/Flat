@@ -7,6 +7,113 @@ import flat/lexer/Lexer
 import flat/semantic/types
 
 testable class {
+    async test `while continue retains loop context inside try`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:while-try-continue"), "one")
+        let stream = Lexer().lex("while (true) { try { continue; } finally { let done = 1; } }")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let statements = result.statements()
+        let loopObject = (Object)statements.first
+        let loop = (BoundWhileStatement)loopObject
+        let loopBody = loop.bodyValues()
+        let guardedObject = (Object)loopBody.first
+        let guarded = (BoundTryStatement)guardedObject
+        expect(guarded.tryValues().count).toBe(1)
+        expect(guarded.tryValues().first.unitKind()).toBe("continue")
+        expect(guarded.tryValues().first.range.snapshot).toBe(snapshot)
+        expect(guarded.catchValues().count).toBe(0)
+        expect(guarded.finallyValues().count).toBe(1)
+    }
+
+    async test `while continue retains loop context inside catch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:while-catch-continue"), "one")
+        let stream = Lexer().lex("while (true) { try { throw \"failure\"; } catch (String error) { continue; } }")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let statements = result.statements()
+        let loopObject = (Object)statements.first
+        let loop = (BoundWhileStatement)loopObject
+        let loopBody = loop.bodyValues()
+        let guardedObject = (Object)loopBody.first
+        let guarded = (BoundTryStatement)guardedObject
+        expect(guarded.tryValues().first.unitKind()).toBe("throw")
+        expect(guarded.catchValues().count).toBe(1)
+        let caught = guarded.catchValues().first
+        expect(caught.local.semanticType.value()).toBe("builtin:String")
+        expect(caught.statements().count).toBe(1)
+        expect(caught.statements().first.unitKind()).toBe("continue")
+        expect(caught.statements().first.range.snapshot).toBe(snapshot)
+    }
+
+    async test `while continue retains loop context inside finally`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:while-finally-continue"), "one")
+        let stream = Lexer().lex("while (true) { try { let work = 1; } finally { continue; } }")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let result = PrimitiveControlStatementBinder().bind(syntax, snapshot)
+        let statements = result.statements()
+        let loopObject = (Object)statements.first
+        let loop = (BoundWhileStatement)loopObject
+        let loopBody = loop.bodyValues()
+        let guardedObject = (Object)loopBody.first
+        let guarded = (BoundTryStatement)guardedObject
+        expect(guarded.tryValues().count).toBe(1)
+        expect(guarded.finallyValues().count).toBe(1)
+        expect(guarded.finallyValues().first.unitKind()).toBe("continue")
+        expect(guarded.finallyValues().first.range.snapshot).toBe(snapshot)
+    }
+
+    async test `nested while inside guarded foreach owns its continues`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-while-continue"), "one")
+        let stream = Lexer().lex("for (i in 0..2) { try { while (true) { " +
+            "try { continue; } catch (String error) { continue; } finally { continue; } " +
+            "} } finally { let done = 1; } }")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let binder = PrimitiveControlStatementBinder()
+        // The inner while resets the foreach cleanup target, without removing either loop.
+        expect(binder.controlDiagnostic(syntax.statements()) == null).toBe(true)
+        let result = binder.bind(syntax, snapshot)
+        let outerStatements = result.statements()
+        let outerObject = (Object)outerStatements.first
+        let outer = (BoundForEachStatement)outerObject
+        let outerBody = outer.body()
+        let outerGuardObject = (Object)outerBody.first
+        let outerGuard = (BoundTryStatement)outerGuardObject
+        let guardedBody = outerGuard.tryValues()
+        let innerObject = (Object)guardedBody.first
+        let inner = (BoundWhileStatement)innerObject
+        let innerBody = inner.bodyValues()
+        let innerGuardObject = (Object)innerBody.first
+        let innerGuard = (BoundTryStatement)innerGuardObject
+        expect(innerGuard.tryValues().first.unitKind()).toBe("continue")
+        expect(innerGuard.catchValues().first.statements().first.unitKind()).toBe("continue")
+        expect(innerGuard.finallyValues().first.unitKind()).toBe("continue")
+        expect(outer.body().count).toBe(1)
+        expect(outerGuard.finallyValues().count).toBe(1)
+        expect(inner.bodyValues().count).toBe(1)
+        expect(innerGuard.range.snapshot).toBe(snapshot)
+    }
+
+    async test `continue outside lexical loop is rejected even after nested loop`() {
+        let sources = ["continue;",
+            "try { while (true) { continue; } continue; } finally { let done = 1; }",
+            "try { let work = 1; } catch (String error) { continue; }",
+            "try { let work = 1; } finally { continue; }"]
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:outside-loop-continue"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            var String failure
+            try { PrimitiveControlStatementBinder().bind(syntax, snapshot) }
+            catch (Exception error) { failure = error.message }
+            expect(failure).toBe("Continue requires an enclosing loop")
+        }
+    }
+
     async test `binds compound for advance with scoped step`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:compound-for"), "one")
         let stream = Lexer().lex("var Int step = 2; for (var Int i = 0; i < 6; i += step) { continue; }")

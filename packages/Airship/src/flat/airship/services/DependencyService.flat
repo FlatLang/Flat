@@ -36,6 +36,23 @@ class {
         return dependency
     }
 
+    // Select dependency metadata using this compilation's propagated context.
+    public getCompilationDependencyPackage(Dependency dependency) -> Airship {
+        let resolved = resolveDependency(dependency)
+        return getDependencyPackageAt(resolved.getLocation(), airship.targetRuntime)
+    }
+
+    getDependencyPackageAt(String location, String compilationRuntime = null) -> Airship {
+        let args = ["-f", location]
+        airship.propagateArgs(args)
+        // Preserve effective runtime selection even when inherited from the
+        // parent's manifest rather than an explicit CLI flag.
+        if (!cliArgs.targetRuntimeArg.enabled && compilationRuntime) {
+            args.addAll(["-r", compilationRuntime])
+        }
+        return Airship(args, airship)
+    }
+
     public getDependencySourceLocations(Dependency dependency, String installationTarget = "main") -> String[] {
         let resolvedDependency = resolveDependency(dependency)
         if (!resolvedDependency.isFlatPackage()) {
@@ -131,23 +148,46 @@ class {
         Bool: download = true,
         Bool: recursive = true
     ) -> DependenciesResponse {
-        return getDependenciesForSource(
+        return collectDependencies(
             installationTarget,
             source,
             download,
             recursive,
             DependenciesResponse(),
-            HashSet()
+            HashSet(),
+            null
         )
     }
 
-    async getDependenciesForSource(
-        String installationTarget,
+    // Compile the chosen root source, including its test-only dependencies when
+    // selected by the caller, against dependency production sources only.
+    // Command construction uses the default download:false; installation owns
+    // acquisition. Packages without a main source contribute no further edges.
+    public async getCompilationDependencies(
+        PackageSource rootSource,
+        Bool: download = false
+    ) -> DependenciesResponse {
+        return collectDependencies(
+            "main",
+            rootSource,
+            download,
+            true,
+            DependenciesResponse(),
+            HashSet(),
+            "main"
+        )
+    }
+
+    // A null fallback target preserves installation's legacy defaultSource
+    // fallback. Compilation explicitly selects main for both lookup and fallback.
+    async collectDependencies(
+        String dependencySourceTarget,
         PackageSource source,
-        Bool download = true,
-        Bool recursive = true,
+        Bool download,
+        Bool recursive,
         DependenciesResponse response,
-        HashSet<String> dependenciesAdded
+        HashSet<String> dependenciesAdded,
+        String dependencyFallbackTarget
     ) -> DependenciesResponse {
         if (!source?.dependencies) {
             return response
@@ -192,23 +232,24 @@ class {
 
                 dependenciesAdded.add(location)
 
-                let args = ["-f", location]
+                let childship = getDependencyPackageAt(location,
+                    dependencyFallbackTarget ? airship.targetRuntime : null)
 
-                airship.propagateArgs(args)
-
-                let childship = Airship(args, airship)
-
-                let packageSource = childship.getSourceForPackage(installationTarget, childship.package.defaultSource)
+                let fallbackSource = dependencyFallbackTarget
+                    ? childship.getSourceForPackage(dependencyFallbackTarget)
+                    : childship.package.defaultSource
+                let packageSource = childship.getSourceForPackage(dependencySourceTarget, fallbackSource)
                 log.trace("Found source for #{childship.packageLocation.normalizedLocation} with source #packageSource")
 
                 if (packageSource && recursive) {
-                    getDependenciesForSource(
-                        installationTarget,
+                    collectDependencies(
+                        dependencySourceTarget,
                         packageSource,
                         download,
                         recursive,
                         response,
-                        dependenciesAdded
+                        dependenciesAdded,
+                        dependencyFallbackTarget
                     )
                 }
             })

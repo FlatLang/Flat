@@ -10,6 +10,98 @@ import flat/parser/flat
 import flat/writer/es6/bound
 
 testable class {
+    async test `package linker executes while continue through try catch and finally`() {
+        let identity = "memory:while-guarded-continue-execution"
+        let source = "class GuardedContinue { public static run(Int mode) -> Int {\n" +
+            "var Int i = 0; var Int result = 0;\n" +
+            "while (i < 3) {\n" +
+            "i++;\ntry {\n" +
+            "result = result * 10 + i;\n" +
+            "if (mode == 0) { continue; }\n" +
+            "if (mode == 1) { throw \"stop\"; }\n" +
+            "} catch (String error) {\n" +
+            "result = result * 10 + 4; continue;\n" +
+            "} finally {\n" +
+            "result = result * 10 + 5;\n" +
+            "if (mode == 2) { continue; }\n" +
+            "}\nresult = result * 10 + 6;\n" +
+            "}\nreturn result;\n} }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "GuardedContinue")
+        let method = syntax.methodValues().firstOrNull({ _.name == "run" })
+        let methodIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex), "static-method", "run")
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let call = Es6NameMangler.mangle(owner.value) + "." + Es6NameMangler.mangle(methodIdentity.value)
+        let root = File(".flat-compiler-while-guarded-continue-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code +
+            "console.log(" + call + "(0));\n" +
+            "console.log(" + call + "(1));\n" +
+            "console.log(" + call + "(2));\n" +
+            "console.log(" + call + "(3));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        // Finally executes on every path; continue skips the post-try digit only.
+        expect(response.stdout.join("")).toBe("152535\n145245345\n152535\n156256356\n")
+    }
+
+    async test `package linker executes foreach inside switch and exception containers once in order`() {
+        let identity = "memory:container-foreach-execution"
+        let source = "class ContainerLoops {\n" +
+            "public static switched(Int mode) -> Int {\n" +
+            "var Int result = 0;\n" +
+            "switch mode {\n" +
+            "0 => for (i in 0..3) result = result * 10 + i + 1;\n" +
+            "default => for (i in 3..5) result = result * 10 + i + 1;\n" +
+            "}\nreturn result;\n}\n" +
+            "public static guarded(Bool fail) -> Int {\n" +
+            "var Int result = 0;\n" +
+            "try {\n" +
+            "for (i in 0..3) { result = result * 10 + i + 1; " +
+            "if (fail && i == 1) { throw \"stop\"; } }\n" +
+            "} catch (String error) {\n" +
+            "for (i in 2..4) { result = result * 10 + i + 1; }\n" +
+            "} finally {\n" +
+            "for (i in 4..6) { result = result * 10 + i + 1; }\n" +
+            "}\nreturn result;\n}\n}"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "ContainerLoops")
+        let switched = syntax.methodValues().firstOrNull({ _.name == "switched" })
+        let guarded = syntax.methodValues().firstOrNull({ _.name == "guarded" })
+        let switchedIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", switched.range.startTokenIndex), "static-method", "switched")
+        let guardedIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", guarded.range.startTokenIndex), "static-method", "guarded")
+        let code = FlatEs6PackageLinker().link([CompilerSource(identity, source)])
+        let ownerName = Es6NameMangler.mangle(owner.value)
+        let switchedCall = ownerName + "." + Es6NameMangler.mangle(switchedIdentity.value)
+        let guardedCall = ownerName + "." + Es6NameMangler.mangle(guardedIdentity.value)
+        let root = File(".flat-compiler-container-foreach-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code +
+            "console.log(" + switchedCall + "(0));\n" +
+            "console.log(" + switchedCall + "(1));\n" +
+            "console.log(" + guardedCall + "(false));\n" +
+            "console.log(" + guardedCall + "(true));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        // Digits expose skipped, duplicated, reordered, or incorrectly resumed iterations.
+        expect(response.stdout.join("")).toBe("123\n45\n12356\n123456\n")
+    }
+
     async test `package linker emits real data declaration with source owned identity`() {
         let identity = "flat/meta/Field.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/meta/Field.flat"))
@@ -552,7 +644,12 @@ testable class {
         return sources
     }
 
-    realExceptionSources() -> CompilerSource[] {
+    /** Finite real-source closure shared by exception, range, and String execution fixtures.
+     * Numeric wrappers are declarations, not intrinsic scalar aliases: List.min/max
+     * require Long's fields, and wrapper bodies reference the other numeric classes.
+     * Their ES6 overlays and the declared String/Array storage graph remain intact.
+     */
+    realCoreExecutionSources(CompilerSource[] supplied = CompilerSource[]) -> CompilerSource[] {
         let identities = [
             "flat/Object.flat",
             "flat/Object.js.flat",
@@ -569,6 +666,19 @@ testable class {
             "flat/primitive/number/Number.flat",
             "flat/primitive/number/Integer.flat",
             "flat/primitive/number/Char.flat",
+            "flat/primitive/number/Long.flat",
+            "flat/primitive/number/Long.js.flat",
+            "flat/primitive/number/Int.flat",
+            "flat/primitive/number/Int.js.flat",
+            "flat/primitive/number/Double.flat",
+            "flat/primitive/number/Double.js.flat",
+            "flat/primitive/number/Float.flat",
+            "flat/primitive/number/Float.js.flat",
+            "flat/primitive/number/Byte.flat",
+            "flat/primitive/number/Short.flat",
+            "flat/primitive/number/RealNumber.flat",
+            "flat/primitive/Bool.flat",
+            "flat/Math.js.flat",
             "flat/datastruct/Comparable.flat",
             "flat/operators/PlusOperator.flat",
             "flat/operators/PlusEqualsOperator.flat",
@@ -590,21 +700,33 @@ testable class {
             "flat/async/Async.flat",
             "flat/async/Async.js.flat"
         ]
+        // This explicit fixture boundary stays within the linker's existing 64-source limit.
+        expect(identities.count <= 64).toBe(true)
         let sources = CompilerSource[]
         File parent = File("../Flat-Core/src")
         for (identity in identities) {
+            expect(sources.none({ _.identity == identity })).toBe(true)
             File file = File(parent, identity)
             String text = Es6ArtifactFiles.read(file)
             CompilerSource source = CompilerSource(identity, text)
             sources.add(source)
         }
-        return admitCoreDependencies(sources)
+        for (source in supplied) {
+            let existing = sources.firstOrNull({ _.identity == source.identity })
+            if (existing) {
+                expect(source.text).toBe(existing.text)
+            } else {
+                expect(sources.count < 64).toBe(true)
+                sources.add(source)
+            }
+        }
+        return sources
     }
 
     async test `package linker executes real Exception constructor and StackTrace under Node`() {
         let identity = "flat/exception/Exception.flat"
         let stackIdentity = "flat/exception/StackTrace.flat"
-        let code = FlatEs6PackageLinker().link(realExceptionSources())
+        let code = FlatEs6PackageLinker().link(realCoreExecutionSources())
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
         let exceptionType = DeclarationIdentity(
             SyntaxIslandIdentity(snapshot, "class", 4), "class", "Exception"
@@ -1040,7 +1162,7 @@ testable class {
         let identity = "flat/datastruct/list/NoSuchElementException.flat"
         let exceptionIdentity = "flat/exception/Exception.flat"
         let stackIdentity = "flat/exception/StackTrace.flat"
-        let code = FlatEs6PackageLinker().link(realExceptionSources())
+        let code = FlatEs6PackageLinker().link(realCoreExecutionSources())
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
         let stream = Lexer().lexInterpolated(
             Es6ArtifactFiles.read(File(
@@ -1596,7 +1718,7 @@ testable class {
     }
 
     async test `package linker executes unchanged range iterator`() {
-        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
+        let code = FlatEs6PackageLinker().link(realCoreExecutionSources([
                 CompilerSource("flat/meta/Function.flat", Es6ArtifactFiles.read(File(
                     "../Flat-Core/src/flat/meta/Function.flat"))),
                 CompilerSource("flat/meta/Field.flat", Es6ArtifactFiles.read(File(
@@ -1803,15 +1925,14 @@ testable class {
         )
         let addMethod = arraySyntax.methodValues().firstOrNull({ _.name == "add" })
         expect(addMethod != null).toBe(true)
-        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
+        let code = FlatEs6PackageLinker().link(realCoreExecutionSources([
                 CompilerSource(
                     "flat/Object.flat",
-                    "package flat class Object { Long hashCodeLong => 0 }"
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/Object.flat"))
                 ),
                 CompilerSource(
                     "flat/exception/Exception.flat",
-                    "package flat/exception class Exception { " +
-                        "construct(String message = \"\") {} }"
+                    Es6ArtifactFiles.read(File("../Flat-Core/src/flat/exception/Exception.flat"))
                 ),
                 CompilerSource(
                     "flat/Math.flat",

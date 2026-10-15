@@ -159,25 +159,28 @@ class {
         flatLockJsonFile = flatJsonFile.getParent().getChild("flat-lock.json")
         packageLocation = flatJsonFile.getParent()
 
-        if (packageCache.containsKey(flatJsonFile.normalizedLocation)) {
+        // Resolve override selection before consulting cached metadata. A path
+        // alone cannot identify a package loaded for different targets/runtimes.
+        let HashMap<String, Object> map = flatJsonFile.isFile ? JsonDeserializer().parseObject(flatJsonFile) : null
+        if (map) {
+            let String defaultTarget = (String)map["defaultTarget"]
+            target = target ?: defaultTarget
+            targetRuntime = cliArgs.targetRuntimeArg["runtime"].value ?: getDefaultTargetRuntime((String)map["defaultTargetRuntime"])
+        }
+        let contextTarget = target ?: ""
+        let contextRuntime = targetRuntime ?: ""
+        let cacheKey = "#{flatJsonFile.normalizedLocation.count}:#{flatJsonFile.normalizedLocation}" +
+            "#{contextTarget.count}:#{contextTarget}#{contextRuntime.count}:#{contextRuntime}" +
+            ":#{System.OS.toLowerCase()}:#{isCoreLibrary()}:#{cliArgs.useLinksArg.enabled}"
+
+        if (packageCache.containsKey(cacheKey)) {
             log.trace("Airship has already been created for #{flatJsonFile.normalizedLocation}. Using sources from existing package")
 
-            let airship = packageCache[flatJsonFile.normalizedLocation]
-
-            target = target ?: airship.target
+            let airship = packageCache[cacheKey]
             package = airship.package
         } else {
             if (flatJsonFile.isFile) {
                 log.trace("Parsing \"#{flatJsonFile.normalizedLocation}\" ...")
-                let timer = Timer():start()
-                let map = JsonDeserializer().parseObject(flatJsonFile)
-                timer.stop()
-                log.trace("Parsing \"#{flatJsonFile.normalizedLocation}\" took #{timer.duration}ms")
-
-                let String defaultTarget = (String)map["defaultTarget"]
-                target = target ?: defaultTarget
-                targetRuntime = cliArgs.targetRuntimeArg["runtime"].value ?: getDefaultTargetRuntime((String)map["defaultTargetRuntime"])
-
                 let overrideFlatJsonFiles = getFlatJsonOverrides(packageLocation)
 
                 log.debug("Found overrideFlatJsonFiles: #{overrideFlatJsonFiles}")
@@ -195,7 +198,7 @@ class {
                 log.debug("No flat.json file at location \"#{flatJsonFile.nativeLocation}\"")
             }
 
-            packageCache[flatJsonFile.normalizedLocation] = this
+            packageCache[cacheKey] = this
         }
     }
 
@@ -215,11 +218,12 @@ class {
     }
 
     public static clearCache(String flatJsonLocation) {
-        packageCache.remove(flatJsonLocation)
+        let canonicalPath = File(flatJsonLocation).getCanonicalFileSync().normalizedLocation
+        packageCache.removeWhere({ _.value.flatJsonFile.normalizedLocation == canonicalPath })
     }
 
     public static clearCache(Airship airship) {
-        packageCache.removeWhere({ _.key == airship.flatJsonLocation })
+        clearCache(airship.flatJsonFile.normalizedLocation)
     }
 
     checkHelpCommand() {

@@ -3,6 +3,183 @@ package flat/bound
 import flat/semantic/types
 
 testable class {
+    test `collection lowering descends into immutable switch cases`() {
+        let fixture = BoundIR_TestFixture()
+        let value = BoundLiteralExpression(fixture.range(1, 2), SemanticTypes.intType(), "1")
+        let sharedLabel = BoundLiteralExpression(fixture.range(2, 3), SemanticTypes.intType(), "0")
+        let label = BoundLiteralExpression(fixture.range(3, 4), SemanticTypes.intType(), "1")
+        let caseLoop = containerForeach(fixture, 10)
+        let defaultLoop = containerForeach(fixture, 20)
+        let shared = BoundSwitchCase(fixture.range(2, 3), sharedLabel, BoundStatement[], false, true)
+        let selected = BoundSwitchCase(fixture.range(3, 19), label, containerBody(fixture, caseLoop, 10))
+        let fallback = BoundSwitchCase(fixture.range(20, 29), null, containerBody(fixture, defaultLoop, 20), true)
+        let switched = BoundSwitchStatement(fixture.range(1, 30), value, [shared, selected, fallback])
+        let input = BoundFunctionUnit(fixture.declaration("function", "switchLoops", 1),
+            "switchLoops", SemanticTypes.unitType(), [switched], fixture.range(0, 31))
+
+        let output = CollectionControlLoweringPass().lower(input)
+        expect(output.identity).toBe(input.identity)
+        expect(output.name).toBe(input.name)
+        expect(output.returnType).toBe(input.returnType)
+        expect(output.range).toBe(input.range)
+        expect(output.statements().count).toBe(1)
+        let outputStatements = output.statements()
+        let loweredObject = (Object)outputStatements.first
+        let lowered = (BoundSwitchStatement)loweredObject
+        expect(lowered.range).toBe(switched.range)
+        expect(lowered.value).toBe(value)
+        expect(lowered.value.semanticType).toBe(value.semanticType)
+        let cases = lowered.caseValues()
+        expect(cases.count).toBe(3)
+        let originals = switched.caseValues()
+        var Int index
+        while (index < cases.count) {
+            expect(cases[index].range).toBe(originals[index].range)
+            expect(cases[index].label).toBe(originals[index].label)
+            expect(cases[index].defaultCase).toBe(originals[index].defaultCase)
+            expect(cases[index].fallsThrough).toBe(originals[index].fallsThrough)
+            index++
+        }
+        expect(cases.first.statementValues().count).toBe(0)
+        expectContainerForeach(selected.statementValues(), cases[1].statementValues(), caseLoop)
+        expectContainerForeach(fallback.statementValues(), cases[2].statementValues(), defaultLoop)
+        expect(input.statements().first).toBe(switched)
+    }
+
+    test `collection lowering descends into immutable try catch and finally bodies`() {
+        let fixture = BoundIR_TestFixture()
+        let tryLoop = containerForeach(fixture, 10)
+        let catchLoop = containerForeach(fixture, 20)
+        let softLoop = containerForeach(fixture, 30)
+        let finallyLoop = containerForeach(fixture, 40)
+        let local = BoundReferenceExpression(fixture.range(50, 51), SemanticTypes.stringType(),
+            "error", fixture.symbol("catch", "error", 50))
+        let softLocal = BoundReferenceExpression(fixture.range(51, 52), SemanticTypes.objectType(),
+            "soft", fixture.symbol("catch", "soft", 51))
+        let caught = BoundCatchClause(fixture.range(20, 29), local, containerBody(fixture, catchLoop, 20))
+        let softCaught = BoundCatchClause(fixture.range(30, 39), softLocal,
+            containerBody(fixture, softLoop, 30), acceptsSoftExceptions: true)
+        let guarded = BoundTryStatement(fixture.range(1, 53), containerBody(fixture, tryLoop, 10),
+            [caught, softCaught], containerBody(fixture, finallyLoop, 40))
+        let input = BoundFunctionUnit(fixture.declaration("function", "guardedLoops", 1),
+            "guardedLoops", SemanticTypes.unitType(), [guarded], fixture.range(0, 54))
+
+        let output = CollectionControlLoweringPass().lower(input)
+        expect(output.identity).toBe(input.identity)
+        expect(output.name).toBe(input.name)
+        expect(output.returnType).toBe(input.returnType)
+        expect(output.range).toBe(input.range)
+        expect(output.statements().count).toBe(1)
+        let outputStatements = output.statements()
+        let loweredObject = (Object)outputStatements.first
+        let lowered = (BoundTryStatement)loweredObject
+        expect(lowered.range).toBe(guarded.range)
+        expectContainerForeach(guarded.tryValues(), lowered.tryValues(), tryLoop)
+        expectContainerForeach(guarded.finallyValues(), lowered.finallyValues(), finallyLoop)
+        let catches = lowered.catchValues()
+        let originals = guarded.catchValues()
+        expect(catches.count).toBe(2)
+        var Int index
+        while (index < catches.count) {
+            expect(catches[index].range).toBe(originals[index].range)
+            expect(catches[index].local).toBe(originals[index].local)
+            expect(catches[index].local.symbolIdentity).toBe(originals[index].local.symbolIdentity)
+            expect(catches[index].local.semanticType).toBe(originals[index].local.semanticType)
+            expect(catches[index].acceptsSoftExceptions).toBe(originals[index].acceptsSoftExceptions)
+            index++
+        }
+        expectContainerForeach(caught.statements(), catches[0].statements(), catchLoop)
+        expectContainerForeach(softCaught.statements(), catches[1].statements(), softLoop)
+        expect(input.statements().first).toBe(guarded)
+    }
+
+    test `collection lowering reduces switch control and labels inside try`() {
+        let fixture = BoundIR_TestFixture()
+        let value = BoundLiteralExpression(fixture.range(1, 2), SemanticTypes.intType(), "1")
+        let label = BoundLiteralExpression(fixture.range(2, 3), SemanticTypes.intType(), "1")
+        let switched = BoundSwitchStatement(fixture.range(1, 4),
+            BoundRichCollectionExpression(value.range, value.semanticType, "match", value),
+            [BoundSwitchCase(label.range,
+                BoundRichCollectionExpression(label.range, label.semanticType, "match", label),
+                BoundStatement[])])
+        let cleanup = BoundExpressionStatement(fixture.range(4, 5), value)
+        let guarded = BoundTryStatement(fixture.range(0, 6), [switched], BoundCatchClause[], [cleanup])
+        let input = BoundFunctionUnit(fixture.declaration("function", "nestedSwitch", 1),
+            "nestedSwitch", SemanticTypes.unitType(), [guarded], fixture.range(0, 7))
+
+        let statements = CollectionControlLoweringPass().lower(input).statements()
+        let guardedObject = (Object)statements.first
+        let loweredGuard = (BoundTryStatement)guardedObject
+        let tryBody = loweredGuard.tryValues()
+        let switchObject = (Object)tryBody.first
+        let loweredSwitch = (BoundSwitchStatement)switchObject
+        expect(loweredGuard.range).toBe(guarded.range)
+        expect(loweredGuard.finallyValues()).toBe([cleanup])
+        expect(loweredSwitch.range).toBe(switched.range)
+        expect(loweredSwitch.value).toBe(value)
+        expect(loweredSwitch.caseValues().first.label).toBe(label)
+        expect(switched.value.expressionKind()).toBe("match")
+        expect(switched.caseValues().first.label.expressionKind()).toBe("match")
+        expect(guarded.tryValues().first).toBe(switched)
+    }
+
+    containerForeach(BoundIR_TestFixture fixture, Int ordinal) -> BoundForEachStatement {
+        let type = SemanticTypes.intType()
+        let initialize = BoundExpressionStatement(fixture.range(ordinal, ordinal + 1),
+            BoundLiteralExpression(fixture.range(ordinal, ordinal + 1), type, "0"))
+        let literal = BoundLiteralExpression(fixture.range(ordinal + 2, ordinal + 3), type, "7")
+        let body = BoundExpressionStatement(literal.range,
+            BoundRichCollectionExpression(literal.range, type, "match", literal))
+        let advance = BoundExpressionStatement(fixture.range(ordinal + 4, ordinal + 5),
+            BoundLiteralExpression(fixture.range(ordinal + 4, ordinal + 5), type, "1"))
+        return BoundForEachStatement(fixture.range(ordinal, ordinal + 6), [initialize],
+            BoundLiteralExpression(fixture.range(ordinal + 1, ordinal + 2), SemanticTypes.boolType(), "true"),
+            [body], [advance], "loop:#ordinal", "exit:#ordinal")
+    }
+
+    containerBody(BoundIR_TestFixture fixture, BoundForEachStatement loop, Int ordinal) -> BoundStatement[] {
+        let before = BoundExpressionStatement(fixture.range(ordinal + 6, ordinal + 7),
+            BoundLiteralExpression(fixture.range(ordinal + 6, ordinal + 7), SemanticTypes.intType(), "2"))
+        let after = BoundExpressionStatement(fixture.range(ordinal + 7, ordinal + 8),
+            BoundLiteralExpression(fixture.range(ordinal + 7, ordinal + 8), SemanticTypes.intType(), "3"))
+        return [before, loop, after]
+    }
+
+    expectContainerForeach(BoundStatement[] original, BoundStatement[] lowered, BoundForEachStatement loop) {
+        expect(original.count).toBe(3)
+        expect(original[1]).toBe(loop)
+        expect(original[1].unitKind()).toBe("foreach")
+        expect(lowered.map({ _.unitKind() })).toBe(["expression", "expression", "while", "expression"])
+        expect(lowered.first).toBe(original.first)
+        expect(lowered[1]).toBe(loop.initialization().first)
+        expect(lowered.last).toBe(original.last)
+        let whileObject = (Object)lowered[2]
+        let canonical = (BoundWhileStatement)whileObject
+        expect(canonical.range).toBe(loop.range)
+        expect(canonical.condition).toBe(loop.condition)
+        expect(canonical.condition.semanticType.value()).toBe("primitive:Bool")
+        let body = canonical.bodyValues()
+        expect(body.count).toBe(2)
+        expect(body.first.range).toBe(loop.body().first.range)
+        expect(body.last).toBe(loop.advance().first)
+        let expressionObject = (Object)body.first
+        let expression = (BoundExpressionStatement)expressionObject
+        expect(expression.expression.expressionKind()).toBe("literal")
+        expect(expression.expression.range).toBe(loop.body().first.range)
+        expect(expression.expression.semanticType.value()).toBe("primitive:Int")
+        let literalObject = (Object)expression.expression
+        let literal = (BoundLiteralExpression)literalObject
+        expect(literal.sourceValue).toBe("7")
+        // Lowering must not rewrite the published input loop or its rich child.
+        expect(loop.initialization().count).toBe(1)
+        expect(loop.advance().count).toBe(1)
+        expect(loop.body().count).toBe(1)
+        let originalStatements = loop.body()
+        let originalObject = (Object)originalStatements.first
+        let originalBody = (BoundExpressionStatement)originalObject
+        expect(originalBody.expression.expressionKind()).toBe("match")
+    }
+
     test `type metadata and foreign call lowering is structural`() {
         let fixture = BoundIR_TestFixture()
         let unitType = SemanticTypes.unitType()

@@ -334,10 +334,16 @@ class {
             throw ExecutionFailureException("Flat compiler default imports are not supported")
         }
         let args = String[]
-        let currentDependency = dependencyService.getDependencyFromPackage("local:#{airship.packageLocation.normalizedLocation}")
-        let sourceLocations = dependencyService.getDependencySourceLocations(currentDependency, installationTarget)
-        let excludeSources = dependencyService.getDependencyExclusions(currentDependency, installationTarget)
-        let excludeSource = installationTarget == "test" ? null : dependencyService.getDependencySourceGlobLocation(currentDependency, "test")
+        let sourceLocations = String[]
+        if (airship.package.mainSource) {
+            sourceLocations.add(airship.packageLocation.normalizedLocation + "/" + airship.package.mainSource.source)
+        }
+        let selectedLocation = airship.packageLocation.normalizedLocation + "/" + source.source
+        if (!sourceLocations.contains(selectedLocation)) sourceLocations.add(selectedLocation)
+        let excludeSources = source.excludedSources.map({ airship.packageLocation.normalizedLocation + "/" + _.location })
+        let testSource = airship.package.testSource?.source
+        let excludeSource = installationTarget != "test" && testSource?.contains("*")
+            ? airship.packageLocation.normalizedLocation + "/" + testSource : null
 
         args.addAll(sourceLocations)
         args.addAll(["-target", airship.target ?: "es6", "-d", getOutputDirectory(source).location])
@@ -351,24 +357,25 @@ class {
         }
 
         // Installation owns dependency acquisition; command construction must not fetch.
-        let response = dependencyService.getDependenciesForSource(installationTarget, source, download: false)
+        let response = dependencyService.getCompilationDependencies(source, download: false)
         for (dependency in response.dependencies) {
-            let dependencySource = dependency.airship.getSourceForPackage(installationTarget, dependency.airship.package.defaultSource)
-            if (dependencySource?.defaultExports.count > 0) {
+            if (!dependency.isFlatPackage()) continue
+            let selectedPackage = dependencyService.getCompilationDependencyPackage(dependency)
+            let dependencySource = selectedPackage.package.mainSource
+            if (!dependencySource) continue
+            if (dependencySource.defaultExports.count > 0) {
                 throw ExecutionFailureException("Flat compiler default imports are not supported")
             }
-            for (location in dependencyService.getDependencySourceLocations(dependency, installationTarget)) {
-                if (!sourceLocations.contains(location)) {
-                    args.addAll(["-l", location])
-                }
+            let location = selectedPackage.packageLocation.normalizedLocation + "/" + dependencySource.source
+            if (!sourceLocations.contains(location)) {
+                args.addAll(["-l", location])
             }
-            for (excluded in dependencyService.getDependencyExclusions(dependency, installationTarget)) {
-                args.addAll(["-x", excluded])
+            for (exclusion in dependencySource.excludedSources) {
+                args.addAll(["-x", selectedPackage.packageLocation.normalizedLocation + "/" + exclusion.location])
             }
-            if (installationTarget != "test") {
-                if (let excluded = dependencyService.getDependencySourceGlobLocation(dependency, "test")) {
-                    args.addAll(["-x", excluded])
-                }
+            let dependencyTests = selectedPackage.package.testSource?.source
+            if (dependencyTests?.contains("*")) {
+                args.addAll(["-x", selectedPackage.packageLocation.normalizedLocation + "/" + dependencyTests])
             }
         }
 

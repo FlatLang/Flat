@@ -442,16 +442,16 @@ class {
                     catchLocals.add(LocalBinding(caught.name, identity, catchType))
                     catches.add(BoundCatchClause(
                         caught.range, local,
-                        bindStatements(caught.statements(), snapshot, catchLocals, callables, receiver, fields),
+                        bindStatements(caught.statements(), snapshot, catchLocals, callables, receiver, fields, loopBody),
                         acceptsSoftExceptions: caught.acceptsSoftExceptions
                     ))
                     catchIndex++
                 }
                 result.add(BoundTryStatement(
                     value.range,
-                    bindStatements(value.tryValues(), snapshot, scopeLocals, callables, receiver, fields),
+                    bindStatements(value.tryValues(), snapshot, scopeLocals, callables, receiver, fields, loopBody),
                     catches,
-                    bindStatements(value.finallyValues(), snapshot, scopeLocals, callables, receiver, fields)
+                    bindStatements(value.finallyValues(), snapshot, scopeLocals, callables, receiver, fields, loopBody)
                 ))
             } else if (statement.class.isOfType(PrimitiveThrowSyntax.class)) {
                 let value = (PrimitiveThrowSyntax)statement
