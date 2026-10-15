@@ -67,7 +67,7 @@ class {
         parentContracts.addAll(normalizeParent(rootInstanceFunctions))
         let childFunctions = normalizeChild(
             child.functionUnits(), parentContracts, childSyntax,
-            interfaceSyntaxValues, availableConstructors, child.semanticType
+            interfaceSyntaxValues, availableConstructors, child.semanticType, childContext
         )
         return PrimitiveInheritanceBindingResult(
             BoundTypeUnit(
@@ -111,7 +111,7 @@ class {
         for (function in functions) {
             result.add(copy(function,
                 function.constructorFunction || function.staticFunction
-                    ? null : function.identity.value
+                    ? null : function.dispatchIdentity ?: function.identity.value
             ))
         }
         return result
@@ -123,7 +123,8 @@ class {
         PrimitiveClassSyntax childSyntax,
         PrimitiveInterfaceSyntax[] interfaceSyntaxValues,
         CallableSignature[] availableConstructors,
-        UserClassSemanticType childType
+        UserClassSemanticType childType,
+        PrimitiveResolvedDeclarationContext context = null
     ) -> BoundFunctionUnit[] {
         let result = BoundFunctionUnit[]
         for (function in functions) {
@@ -138,7 +139,7 @@ class {
                 )
                 if (interfaceMethod) {
                     validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues,
-                        availableConstructors, childType)
+                        availableConstructors, childType, context)
                 }
                 result.add(copy(function, function.staticFunction ? null : function.identity.value))
                 continue
@@ -166,7 +167,7 @@ class {
                 )
                 if (interfaceMethod) {
                     validateInterfaceMethod(function, childSyntax, interfaceSyntaxValues,
-                        availableConstructors, childType)
+                        availableConstructors, childType, context)
                     result.add(copy(function, function.identity.value))
                     continue
                 }
@@ -200,7 +201,8 @@ class {
         PrimitiveClassSyntax childSyntax,
         PrimitiveInterfaceSyntax[] interfaceSyntaxValues,
         CallableSignature[] availableConstructors,
-        UserClassSemanticType childType
+        UserClassSemanticType childType,
+        PrimitiveResolvedDeclarationContext context = null
     ) {
         let implementedNames = childSyntax.implementedTypeNames()
         for (implementedName in implementedNames) {
@@ -209,7 +211,10 @@ class {
                 implementedName.substring(0, genericStart)
             let syntax = interfaceSyntaxValues.firstOrNull({ _.name == interfaceName })
             if (!syntax) continue
-            let method = syntax.methodValues().firstOrNull({ _.name == function.name })
+            let method = syntax.methodValues().firstOrNull((candidate) => candidate.name == function.name &&
+                candidate.range && candidate.range.snapshot == function.range.snapshot &&
+                candidate.range.startTokenIndex == function.range.startTokenIndex) ?:
+                syntax.methodValues().firstOrNull({ _.name == function.name })
             if (!method) continue
             let contractParameters = GenericParameterSemanticType[]
             let contractIdentity = DeclarationIdentity(
@@ -219,10 +224,23 @@ class {
             for (name in syntax.genericParameterNames()) {
                 contractParameters.add(GenericParameterSemanticType(contractIdentity, name, contractParameters.count))
             }
+            let visibleParameters = GenericParameterSemanticType[]:addAll(contractParameters)
+            let implementation = method.implementation()
+            let declaredMethod = childSyntax.methodValues().firstOrNull((candidate) => candidate.name == function.name &&
+                candidate.range.startTokenIndex == function.range.startTokenIndex)
+            if (implementation && declaredMethod) {
+                let expectedNames = implementation.genericParameterNames()
+                let actualNames = declaredMethod.genericParameterNames()
+                if (expectedNames.count != actualNames.count) throw Exception("Invalid interface method '#{function.name}'")
+                var Int ordinal
+                for (name in expectedNames) visibleParameters.add(GenericParameterSemanticType(
+                    function.identity, name, ordinal++))
+            }
             let resolver = PrimitiveStructuralTypeResolver(
                 callables: availableConstructors, receiverType: childType,
-                methodGenericParameters: contractParameters,
-                interfaces: interfaceSyntaxValues
+                methodGenericParameters: visibleParameters,
+                interfaces: interfaceSyntaxValues, declarationContext: context,
+                lookupRange: method.range
             )
             let typeArguments = SemanticType[]
             if (contractParameters.isNotEmpty) {
@@ -246,7 +264,9 @@ class {
             var Int index
             while (index < parameterNames.count) {
                 let expected = substitution.apply(resolver.resolve(parameterNames[index]))
-                if (function.parameterValues()[index].semanticType.value() != expected.value()) {
+                if (function.parameterValues()[index].semanticType.value() != expected.value() &&
+                    !sameSelfCallback(expected, function.parameterValues()[index].semanticType,
+                        syntax.name, childType.declarationIdentity.name)) {
                     throw Exception("Invalid interface method '#{function.name}'")
                 }
                 index++
@@ -254,6 +274,26 @@ class {
             return
         }
         throw Exception("Child method '#{function.name}' must override a parent or interface method")
+    }
+
+    sameSelfCallback(SemanticType expected, SemanticType actual, String contractName, String childName) -> Bool {
+        if (expected.kind() != "function" || actual.kind() != "function") return false
+        let required = (FunctionSemanticType)expected
+        let supplied = (FunctionSemanticType)actual
+        if (required.returnType.value() != supplied.returnType.value() || required.asyncFunction != supplied.asyncFunction ||
+            required.parameterTypes().count != supplied.parameterTypes().count) return false
+        var Int index
+        for (parameter in required.parameterTypes()) {
+            let replacement = supplied.parameterTypes()[index++]
+            if (parameter.value() == replacement.value()) continue
+            if (parameter.kind() != "generic-instance" || replacement.kind() != "generic-instance") return false
+            let parent = (GenericInstanceSemanticType)parameter
+            let child = (GenericInstanceSemanticType)replacement
+            if (parent.declarationType.declarationIdentity.name != contractName ||
+                child.declarationType.declarationIdentity.name != childName ||
+                parent.typeArguments().map({ _.value() }) != child.typeArguments().map({ _.value() })) return false
+        }
+        return true
     }
 
     sameParameters(

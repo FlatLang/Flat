@@ -3,7 +3,8 @@ package flat/parser/flat
 import flat/compiler/models
 
 /** Immutable syntax-only function parameter. */
-data class {
+class {
+    var String[] retainedCallbackParameterNames
     public construct(
         visible SourceRange range,
         visible String typeName,
@@ -11,11 +12,21 @@ data class {
         visible PrimitiveExpressionSyntax defaultValue = null,
         visible Bool visibleParameter = false,
         visible Bool privateParameter = false,
-        visible Bool nativeArrayStorage = false
+        visible Bool nativeArrayStorage = false,
+        String[] callbackNamesValue = null
     ) {
+        retainedCallbackParameterNames = String[]
+        if (callbackNamesValue) {
+            for (callbackName in callbackNamesValue) retainedCallbackParameterNames.add(callbackName)
+        }
         if (!range || !typeName || typeName.trim().count == 0 ||
             !name || name.trim().count == 0) {
             throw Exception("Primitive function parameter requires range, type, and name")
         }
+    }
+    public callbackParameterNames() -> String[] {
+        let result = String[]
+        for (name in retainedCallbackParameterNames) result.add(name)
+        return result
     }
 }

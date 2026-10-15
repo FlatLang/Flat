@@ -4,6 +4,62 @@ import flat/compiler/models
 import flat/semantic/types
 
 testable class {
+    test `foreach continuation stays in nearest loop`() {
+        let fixture = BoundIR_TestFixture()
+        let condition = BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true")
+        let advance = BoundExpressionStatement(fixture.range(8, 9), BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1"))
+        let innerAdvance = BoundExpressionStatement(fixture.range(6, 7), BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "2"))
+        let continuation = BoundContinueStatement(fixture.range(4, 5))
+        let inner = BoundForEachStatement(fixture.range(), BoundStatement[], condition, [continuation], [innerAdvance], "inner", "inner-exit")
+        let outer = BoundForEachStatement(fixture.range(), BoundStatement[], condition,
+            [inner, BoundIfStatement(fixture.range(), condition, [continuation], BoundStatement[])], [advance], "outer", "outer-exit")
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 1), "run", SemanticTypes.unitType(), [outer], fixture.range())
+        let loweredObject = (Object)CollectionControlLoweringPass().lower(function).statements().first
+        let lowered = (BoundWhileStatement)loweredObject
+        let body = lowered.bodyValues()
+        let innerObject = (Object)body[0]
+        let innerLoop = (BoundWhileStatement)innerObject
+        expect(innerLoop.bodyValues().count).toBe(3)
+        expect(innerLoop.bodyValues().first.range).toBe(innerAdvance.range)
+        let branchObject = (Object)body[1]
+        let branch = (BoundIfStatement)branchObject
+        expect(branch.thenValues().count).toBe(2)
+        expect(branch.thenValues().first.range).toBe(advance.range)
+        expect(inner.body().count).toBe(1)
+        expect(outer.body().count).toBe(2)
+    }
+
+    test `foreach rejects cleanup crossing continue`() {
+        let fixture = BoundIR_TestFixture()
+        let condition = BoundLiteralExpression(fixture.range(), SemanticTypes.boolType(), "true")
+        let continuation = BoundContinueStatement(fixture.range())
+        let cleanup = BoundExpressionStatement(fixture.range(), BoundLiteralExpression(fixture.range(), SemanticTypes.intType(), "1"))
+        let guarded = BoundTryStatement(fixture.range(), [continuation], BoundCatchClause[], [cleanup])
+        let loop = BoundForEachStatement(fixture.range(), BoundStatement[], condition, [guarded], [cleanup], "loop", "exit")
+        let function = BoundFunctionUnit(fixture.declaration("function", "run", 1), "run", SemanticTypes.unitType(), [loop], fixture.range())
+        var Bool rejected
+        try { CollectionControlLoweringPass().lower(function) }
+        catch (Exception error) { rejected = error.message.contains("cleanup-aware") }
+        expect(rejected).toBe(true)
+    }
+
+    test `checked conversion evidence`() {
+        let fixture = BoundIR_TestFixture()
+        let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 1))
+        let child = UserClassSemanticType(fixture.declaration("class", "Child", 2))
+        let operand = BoundLiteralExpression(fixture.range(), parent, "null")
+        let evidence = TypeConversion(parent, child, "checked-reference-cast", true, false, false, 20)
+        let converted = BoundConversionExpression(fixture.range(), child, operand, evidence)
+        expect(converted.conversion.conversionKind).toBe("checked-reference-cast")
+        expect(converted.value).toBe(operand)
+        var Bool rejected
+        try {
+            BoundConversionExpression(fixture.range(), parent, operand, evidence)
+        } catch (Exception error) {
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+    }
     test `native clear requires declaration provenance and preserves element type`() {
         let fixture = BoundIR_TestFixture()
         let element = SemanticTypes.intType()

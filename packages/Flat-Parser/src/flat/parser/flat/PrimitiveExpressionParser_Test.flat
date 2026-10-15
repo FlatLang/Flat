@@ -1,8 +1,71 @@
 package flat/parser/flat
 
 import flat/compiler/models
+import flat/lexer/Lexer
 
 testable class {
+    async test `trait property retains mutable storage marker`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-storage"), "one")
+        let stream = Lexer().lex("trait List { visible var Int count visible Int first }")
+        stream.emit("start")
+        let syntax = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        expect(syntax.methodValues().first.storageProperty).toBe(true)
+        expect(syntax.methodValues().last.storageProperty).toBe(false)
+    }
+
+    test `array literal trailing comma retains elements and closing range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-trailing"), "one")
+        let tokens = [token("[", Token.Type.SYMBOL, 1), token("1", Token.Type.INTEGER, 2),
+            token(",", Token.Type.SYMBOL, 3), token("2", Token.Type.INTEGER, 4),
+            token(",", Token.Type.SYMBOL, 5), token("]", Token.Type.SYMBOL, 6)]
+        let parsed = PrimitiveExpressionParser().parse(tokens, snapshot, 20)
+        let array = (PrimitiveArraySyntax)parsed
+        expect(array.elementValues().count).toBe(2)
+        expect(array.range.startTokenIndex).toBe(20)
+        expect(array.range.endTokenIndex).toBe(26)
+        expect(array.elementValues().last.range.endTokenIndex).toBe(24)
+    }
+
+    async test `array literal commas cannot introduce elisions`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-elision"), "one")
+        let invalidCases = ["[,]", "[1,,]", "[1,"]
+        var Int rejected
+        for (source in invalidCases) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+            try { PrimitiveExpressionParser().parse(tokens, snapshot) }
+            catch (Exception error) { rejected++ }
+        }
+        expect(rejected).toBe(3)
+    }
+
+    async test `colon call retains navigation intent distinct from dot`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:colon-intent"), "one")
+        let stream = Lexer().lex("Array<Char>():add('a')")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let object = (Object)parsed
+        let call = (PrimitiveMemberCallSyntax)object
+        expect(call.chainNavigation).toBe(true)
+        expect(call.range.startTokenIndex).toBe(0)
+        let dotStream = Lexer().lex("Array<Char>().add('a')")
+        dotStream.emit("start")
+        let dotObject = (Object)PrimitiveExpressionParser().parse(dotStream.consumeAll<Token>("data"), snapshot)
+        let dot = (PrimitiveMemberCallSyntax)dotObject
+        expect(dot.chainNavigation).toBe(false)
+    }
+
+    async test `colon requires a callable member`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-colon"), "one")
+        let stream = Lexer().lex("Array<Char>():")
+        stream.emit("start")
+        var String failure
+        try { PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+    }
+
     test `postfix dollar preserves typed call member and reference intent and ranges`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:no-implicit-await"), "one")
         let callTokens = [token("read", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 5),
@@ -807,7 +870,8 @@ testable class {
         try {
             PrimitiveExpressionParser().parse([
                 token("[", Token.Type.SYMBOL, 1), token("1", Token.Type.INTEGER, 2),
-                token(",", Token.Type.SYMBOL, 3), token("]", Token.Type.SYMBOL, 4)
+                token(",", Token.Type.SYMBOL, 3), token(",", Token.Type.SYMBOL, 4),
+                token("]", Token.Type.SYMBOL, 5)
             ], snapshot)
         } catch (Exception error) { rejected++ }
         expect(rejected).toBe(2)

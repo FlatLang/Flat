@@ -1,6 +1,7 @@
 package flat/writer/es6/bound
 
 import flat/bound
+import flat/semantic/types/UserClassSemanticType
 
 /** Emits literal/reference/member/conversion expressions for the first vertical slice. */
 class {
@@ -123,6 +124,12 @@ class {
             throw Exception("ES6 conversion emission requires expression and value")
         }
         if (!value.emitted) return value
+        if (expression.conversion.conversionKind == "checked-reference-cast") {
+            let target = (UserClassSemanticType)expression.semanticType
+            let name = Es6NameMangler.mangle(target.declarationIdentity.value)
+            return Es6CodeResult(code: "((value) => { if (value === null || value instanceof " + name +
+                ") return value; throw new TypeError('Invalid checked reference cast'); })(" + value.code + ")")
+        }
         if (expression.conversion.conversionKind == "numeric-cast" &&
             expression.semanticType.value() == "primitive:Int") {
             return Es6CodeResult(code: "Math.trunc(" + value.code + ")")

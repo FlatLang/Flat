@@ -8,12 +8,16 @@ import flat/semantic/binding/BindingDiagnostic
 /** One immutable owner-local declaration view within a finite admitted component. */
 class {
     var PrimitiveSourceBindingContext[] sources
+    var PrimitiveSourceBindingContext[] lexicalSources
     visible PrimitiveSourceBindingContext owner
 
-    public construct(PrimitiveSourceBindingContext owner, PrimitiveSourceBindingContext[] contexts) {
+    public construct(PrimitiveSourceBindingContext owner, PrimitiveSourceBindingContext[] contexts,
+        PrimitiveSourceBindingContext[] lexicalSources = PrimitiveSourceBindingContext[]) {
         if (!owner || !contexts || contexts.any({ !_ })) throw Exception("Resolved declaration scope requires sources")
         this.owner = owner
         sources = PrimitiveSourceBindingContext[]:addAll(contexts)
+        this.lexicalSources = PrimitiveSourceBindingContext[]:addAll(lexicalSources)
+        if (this.lexicalSources.isEmpty) this.lexicalSources.add(owner)
     }
 
     public classIdentity(PrimitiveClassSyntax syntax) -> DeclarationIdentity => DeclarationIdentity(
@@ -79,19 +83,40 @@ class {
         }
     }
 
-    public resolve(String name, SourceRange range) -> DeclarationIdentity {
-        var DeclarationIdentity[] found = DeclarationIdentity[]
-        if (name.contains("/")) found = candidates(name)
-        else {
-            found = candidates(owner.namespaceName.isEmpty ? name : "#{owner.namespaceName}/#name")
-            if (found.isEmpty) {
-                for (value in owner.importValues()) {
-                    for (identity in importCandidates(value.importedName)) {
-                        if (identity.name == name && found.none({ _.value == identity.value })) found.add(identity)
-                    }
+    /** Fixed language defaults from FileDeclaration.DEFAULT_IMPORTS; only real admitted declarations participate. */
+    defaultCandidates(String name) -> DeclarationIdentity[] {
+        let locations = ["flat/exception/ExceptionData", "flat/exception/Exception",
+            "flat/exception/DivideByZeroException", "flat/primitive/number/Number",
+            "flat/primitive/number/Byte", "flat/primitive/number/Short", "flat/primitive/number/Int",
+            "flat/primitive/number/Long", "flat/primitive/number/Float", "flat/primitive/number/Double",
+            "flat/primitive/Null", "flat/primitive/number/Char", "flat/primitive/Bool",
+            "flat/datastruct/list/List", "flat/datastruct/list/Array", "flat/datastruct/list/IntRange",
+            "flat/Math", "flat/Object", "flat/String", "flat/meta/Class", "flat/meta/Field", "flat/meta/Function"]
+        let result = DeclarationIdentity[]
+        for (location in locations) {
+            let slash = location.lastIndexOf("/", defaultReturnValue: -1)
+            if (location.substring(slash + 1) == name) result.addAll(candidates(location))
+        }
+        return result.sort({ _a.value.compareTo(_b.value) })
+    }
+
+    public visibleCandidates(String name) -> DeclarationIdentity[] {
+        if (name.contains("/")) return candidates(name)
+        let found = candidates(owner.namespaceName.isEmpty ? name : "#{owner.namespaceName}/#name")
+        if (found.isNotEmpty) return found
+        for (lexical in lexicalSources) {
+            for (value in lexical.importValues()) {
+                for (identity in importCandidates(value.importedName)) {
+                    if (identity.name == name && found.none({ _.value == identity.value })) found.add(identity)
                 }
             }
         }
+        if (found.isNotEmpty) return found.sort({ _a.value.compareTo(_b.value) })
+        return defaultCandidates(name)
+    }
+
+    public resolve(String name, SourceRange range) -> DeclarationIdentity {
+        let found = visibleCandidates(name)
         if (found.isEmpty) fail("binding.type-unresolved", name, range)
         if (found.count != 1) fail("binding.import-ambiguous", name, range, found)
         return found.first
@@ -115,7 +140,16 @@ class {
 
     public scopeForSnapshot(SourceSnapshotIdentity snapshot) -> PrimitiveResolvedDeclarationContext {
         let source = sources.firstOrNull({ _.snapshot == snapshot })
-        return source ? PrimitiveResolvedDeclarationContext(source, sources) : this
+        if (!source || source == owner) return this
+        // Only a retained member of this canonical owner contributes merged lexical imports.
+        let merged = owner.classValues().any((syntax) =>
+            syntax.methodValues().any((method) => method.range.snapshot == snapshot) ||
+            syntax.fieldValues().any((field) => field.range.snapshot == snapshot) ||
+            syntax.constructorValues().any((constructor) => constructor.range.snapshot == snapshot))
+        if (!merged) return PrimitiveResolvedDeclarationContext(source, sources)
+        let scopes = PrimitiveSourceBindingContext[]:addAll(lexicalSources)
+        if (scopes.none({ _.snapshot == source.snapshot })) scopes.add(source)
+        return PrimitiveResolvedDeclarationContext(source, sources, scopes)
     }
 
     public scopeFor(DeclarationIdentity identity) -> PrimitiveResolvedDeclarationContext {

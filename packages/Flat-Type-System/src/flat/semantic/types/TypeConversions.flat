@@ -69,6 +69,14 @@ class {
             return none(fromType, toType)
         }
         if (fromType.kind() == "null") {
+            // Legacy SyntaxUtils.isTypeCompatible accepts null for unspecialized
+            // generic parameters. Primitive specialization requires separate lowering.
+            if (toType.kind() == "generic-parameter") {
+                let parameter = (GenericParameterSemanticType)toType
+                if (!parameter.constraint) return TypeConversion(
+                    fromType, toType, "null-generic", true, true, false, 1
+                )
+            }
             return none(fromType, toType)
         }
         if (fromType.kind() == "primitive" && toType.kind() == "primitive") {
@@ -86,8 +94,12 @@ class {
                 (UserClassSemanticType)toType,
                 (UserClassSemanticType)fromType
             ) > 0) {
-                return TypeConversion(fromType, toType, "reference-cast", true, false, false, 20)
+                return TypeConversion(fromType, toType, "checked-reference-cast", true, false, false, 20)
             }
+        }
+        if (explicit && fromType.kind() == "user-class" && hierarchy &&
+            hierarchy.isRootClass((UserClassSemanticType)fromType) && isReference(toType)) {
+            return TypeConversion(fromType, toType, "checked-reference-cast", true, false, false, 20)
         }
         if (isReference(fromType) && toType.kind() == "object") {
             return TypeConversion(fromType, toType, "reference-upcast", true, true, false, 10)

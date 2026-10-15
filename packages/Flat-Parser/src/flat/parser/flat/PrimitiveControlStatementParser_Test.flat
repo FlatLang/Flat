@@ -208,6 +208,37 @@ testable class {
         expect(rejected).toBe(2)
     }
 
+    test `parses chained match labels with ranges`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:match-chain"), "one")
+        let values = [token("match", Token.Type.IDENTIFIER, 1), token("c", Token.Type.IDENTIFIER, 7),
+            token("{", Token.Type.SYMBOL, 9), token("'0'", Token.Type.CHAR, 11), token("=>", Token.Type.SYMBOL, 15),
+            token("'1'", Token.Type.CHAR, 18), token("=>", Token.Type.SYMBOL, 22),
+            token("continue", Token.Type.IDENTIFIER, 25), token("}", Token.Type.SYMBOL, 34)]
+        let statements = PrimitiveControlStatementParser().parse(values, snapshot, 50).statements()
+        let object = (Object)statements.first
+        let value = (PrimitiveSwitchSyntax)object
+        expect(value.range.startTokenIndex).toBe(50)
+        expect(value.range.endTokenIndex).toBe(59)
+        let cases = value.caseValues()
+        expect(cases.count).toBe(2)
+        expect(cases.first.range.startTokenIndex).toBe(53)
+        expect(cases.first.range.endTokenIndex).toBe(55)
+        expect(cases.first.fallsThrough).toBe(true)
+        expect(cases.last.statementValues().first.statementKind()).toBe("continue")
+    }
+
+    test `rejects incomplete chained match label`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:match-invalid"), "one")
+        let values = [token("match", Token.Type.IDENTIFIER, 1), token("c", Token.Type.IDENTIFIER, 7), token("{", Token.Type.SYMBOL, 9), token("'0'", Token.Type.CHAR, 11), token("=>", Token.Type.SYMBOL, 15), token("}", Token.Type.SYMBOL, 18)]
+        var Bool rejected
+        try {
+            PrimitiveControlStatementParser().parse(values, snapshot)
+        } catch (Exception error) {
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+    }
+
     test `parses switch cases fallthrough and return body`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:primitive-switch"), "revision:one"

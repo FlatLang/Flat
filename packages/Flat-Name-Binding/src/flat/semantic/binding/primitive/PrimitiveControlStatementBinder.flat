@@ -7,11 +7,48 @@ import flat/semantic/types
 
 /** Recursively binds structured control syntax with branch-local lexical scopes. */
 class {
+    var PrimitiveExpressionBinder currentExpressions
     var TypeHierarchyComponent currentHierarchy
     var PrimitiveStructuralTypeResolver currentTypeResolver
     var CallableSignature currentArrayGetter
     var CallableSignature currentArraySetter
     var BoundFieldUnit[] currentAvailableFields
+
+    /** Lexical target check before publishing bound statements; nested loops reset cleanup depth. */
+    public controlDiagnostic(PrimitiveStatementSyntax[] statements, Bool foreachTarget = false,
+        Int cleanupDepth = 0) -> PrimitiveExpressionDiagnostic {
+        for (statement in statements) {
+            if (statement.class.isOfType(PrimitiveContinueSyntax.class) && foreachTarget && cleanupDepth > 0) {
+                return PrimitiveExpressionDiagnostic("semantic.cleanup-crossing-continue",
+                    "Foreach continue through try/catch/finally is not supported", statement.range)
+            }
+            var PrimitiveExpressionDiagnostic diagnostic
+            if (statement.class.isOfType(PrimitiveForEachSyntax.class)) {
+                diagnostic = controlDiagnostic(((PrimitiveForEachSyntax)statement).bodyValues(), true, 0)
+            } else if (statement.class.isOfType(PrimitiveWhileSyntax.class)) {
+                diagnostic = controlDiagnostic(((PrimitiveWhileSyntax)statement).bodyValues(), false, 0)
+            } else if (statement.class.isOfType(PrimitiveForSyntax.class)) {
+                diagnostic = controlDiagnostic(((PrimitiveForSyntax)statement).bodyValues(), false, 0)
+            } else if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
+                let branch = (PrimitiveIfSyntax)statement
+                diagnostic = controlDiagnostic(branch.thenValues(), foreachTarget, cleanupDepth)
+                if (!diagnostic) diagnostic = controlDiagnostic(branch.elseValues(), foreachTarget, cleanupDepth)
+            } else if (statement.class.isOfType(PrimitiveSwitchSyntax.class)) {
+                for (branch in ((PrimitiveSwitchSyntax)statement).caseValues()) {
+                    if (!diagnostic) diagnostic = controlDiagnostic(branch.statementValues(), foreachTarget, cleanupDepth)
+                }
+            } else if (statement.class.isOfType(PrimitiveTrySyntax.class)) {
+                let guarded = (PrimitiveTrySyntax)statement
+                diagnostic = controlDiagnostic(guarded.tryValues(), foreachTarget, cleanupDepth + 1)
+                for (caught in guarded.catchValues()) {
+                    if (!diagnostic) diagnostic = controlDiagnostic(caught.statements(), foreachTarget, cleanupDepth + 1)
+                }
+                if (!diagnostic) diagnostic = controlDiagnostic(guarded.finallyValues(), foreachTarget, cleanupDepth + 1)
+            }
+            if (diagnostic) return diagnostic
+        }
+        return null
+    }
 
     public bind(
         PrimitiveStatementSyntaxResult syntax,
@@ -24,12 +61,16 @@ class {
         CallableSignature arraySetter = null,
         BoundFieldUnit[] availableFields = BoundFieldUnit[],
         PrimitiveStructuralTypeResolver typeResolver = null,
-        TypeHierarchyComponent hierarchy = null
+        TypeHierarchyComponent hierarchy = null,
+        PrimitiveExpressionBinder expressionBinder = null
     ) -> PrimitiveStatementBindingResult {
         if (!syntax || !snapshot || !locals || !callables || !fields ||
             !availableFields || availableFields.any({ !_ })) {
             throw Exception("Primitive control binding requires syntax snapshot, locals, callables, and fields")
         }
+        let diagnostic = controlDiagnostic(syntax.statements())
+        if (diagnostic) throw Exception("#{diagnostic.code} at #{diagnostic.range.startTokenIndex}..#{diagnostic.range.endTokenIndex}: #{diagnostic.message}")
+        currentExpressions = expressionBinder ?: PrimitiveExpressionBinder()
         currentHierarchy = hierarchy
         currentTypeResolver = typeResolver ?: PrimitiveStructuralTypeResolver(callables: callables)
         currentArrayGetter = arrayGetter
@@ -609,12 +650,15 @@ class {
                         value.range, target, expression, conversion
                     ))
                 } else {
-                    let bound = PrimitiveStatementBinder().bind(
-                        PrimitiveStatementSyntaxResult([statement]), snapshot,
-                        scopeLocals, callables
-                    )
-                    result.addAll(bound.statements())
-                    scopeLocals = bound.locals()
+                    let target = BoundReferenceExpression(value.range, local.semanticType, local.name, local.identity)
+                    let operand = classExpression(value.value, receiver, fields, scopeLocals, callables)
+                    let operator = binaryOperator(value.assignmentOperator)
+                    let operation = TypeOperations.binary(operator, target.semanticType, operand.semanticType, value.range)
+                    if (!operation.valid) throw Exception(operation.diagnostic.message)
+                    let expression = BoundBinaryExpression(value.range, operation.semanticType, operator, target, operand)
+                    let conversion = TypeConversions.classify(expression.semanticType, target.semanticType, explicit: true)
+                    if (!conversion.applicable) throw Exception("Compound assignment value type mismatch")
+                    result.add(BoundAssignmentStatement(value.range, target, expression, conversion))
                 }
             } else if (statement.class.isOfType(PrimitiveLocalDeclarationSyntax.class)) {
                 let value = (PrimitiveLocalDeclarationSyntax)statement
@@ -632,7 +676,7 @@ class {
                         ? classExpression(value.initializer, receiver, fields, scopeLocals, callables)
                         : PrimitiveClassBinder().bindScopedExpression(
                         value.initializer, receiver, fields, scopeLocals, callables,
-                        currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields
+                        currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy
                     )
                     if (!value.declaredTypeName) semanticType = initialized.semanticType
                 }
@@ -643,6 +687,11 @@ class {
                     ),
                     "local"
                 )
+                if (!value.initializer && value.declaredTypeName && currentTypeResolver &&
+                    currentTypeResolver.specializedNullLocal(value.declaredTypeName)) {
+                    if (semanticType.kind() != "nullable" && semanticType.kind() != "generic-parameter") semanticType = NullableSemanticType(semanticType)
+                    initialized = BoundLiteralExpression(value.range, SemanticTypes.nullType(), "null")
+                }
                 let local = BoundReferenceExpression(
                     value.range, semanticType, value.name, identity
                 )
@@ -758,6 +807,17 @@ class {
         LocalBinding[] locals,
         CallableSignature[] callables
     ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class) &&
+            ((PrimitiveMemberCallSyntax)syntax).memberName == "isOfType") {
+            return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals,
+                callables, currentArrayGetter, currentArraySetter, currentTypeResolver,
+                currentAvailableFields, currentHierarchy)
+        }
+        if (syntax.class.isOfType(PrimitiveInterpolatedStringSyntax.class)) {
+            return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals,
+                callables, currentArrayGetter, currentArraySetter, currentTypeResolver,
+                currentAvailableFields, currentHierarchy)
+        }
         if (syntax.class.isOfType(PrimitiveReferenceSyntax.class)) {
             let value = (PrimitiveReferenceSyntax)syntax
             let local = locals.reverse().firstOrNull({ _.name == value.name })
@@ -865,10 +925,18 @@ class {
                     )
                 }
             }
-            if (projectedReceiver.semanticType.kind() == "generic-instance") {
+            if (projectedReceiver.semanticType.value() == SemanticTypes.stringType().value()) {
+                let field = currentAvailableFields.firstOrNull((candidate) =>
+                    candidate.identity.declaration.name == "String" && candidate.visibleField &&
+                    !candidate.staticField && candidate.name == value.memberName)
+                if (field) return BoundMemberAccessExpression(value.range, field.semanticType,
+                    projectedReceiver, field.name, field.identity)
+            }
+            if (projectedReceiver.semanticType.kind() == "generic-instance" ||
+                projectedReceiver.semanticType.kind() == "user-class") {
                 return PrimitiveClassBinder().bindScopedExpression(
                     syntax, receiver, fields, locals, callables,
-                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields)
+                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy)
             }
             if (projectedReceiver.semanticType.kind() == "array") {
                 if (value.memberName == "data") {
@@ -922,7 +990,7 @@ class {
             if (value.receiver.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
                 return PrimitiveClassBinder().bindScopedExpression(
                     syntax, receiver, fields, locals, callables,
-                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields)
+                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy)
             }
         }
         if (syntax.class.isOfType(PrimitiveArrayConstructionSyntax.class)) {
@@ -1042,6 +1110,10 @@ class {
             )
             if (value.operator == "++" || value.operator == "--") {
                 return PrimitiveExpressionBinder.bindPrefixUpdate(value.range, value.operator, operand)
+            }
+            if (value.operator == "!") {
+                let absence = PrimitiveExpressionBinder.bindReferenceNegation(value.range, operand)
+                if (absence) return absence
             }
             let typed = TypeOperations.unary(
                 value.operator, operand.semanticType, value.range
@@ -1189,8 +1261,13 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class)) {
             let array = (PrimitiveEmptyArrayConstructionSyntax)syntax
-            return BoundArrayExpression(array.range,
-                ArraySemanticType(currentTypeResolver.resolve(array.elementTypeName)), BoundExpression[])
+            let type = currentTypeResolver.declarationContext ? currentTypeResolver.resolve(array.elementTypeName + "[]") :
+                ArraySemanticType(currentTypeResolver.resolve(array.elementTypeName))
+            if (type.kind() == "generic-instance") {
+                return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals, callables,
+                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy)
+            }
+            return BoundArrayExpression(array.range, (ArraySemanticType)type, BoundExpression[])
         }
         if (syntax.class.isOfType(PrimitiveDeclarationValueSyntax.class)) {
             let declaration = (PrimitiveDeclarationValueSyntax)syntax
@@ -1225,6 +1302,10 @@ class {
                                     candidate.optionalParameterCount, candidate.parameterNames())
                             })
                         }
+                        if (value.argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) })) {
+                            return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals, callables,
+                                currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy)
+                        }
                         let arguments = value.argumentValues().map({ classExpression(_, receiver, fields, locals, callables) })
                         let resolution = OverloadResolver.resolve(value.memberName, candidates, null,
                             arguments.map({ _.semanticType }), value.range)
@@ -1237,8 +1318,17 @@ class {
                     }
                 }
             }
+            if (value.argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) }) ||
+                value.receiver.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals, callables,
+                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy)
+            }
             if (value.typeArgumentNames().isNotEmpty) throw Exception("Explicit instance type arguments require call instantiation")
             if (value.namedArgumentValues().isNotEmpty) {
+                if (currentTypeResolver && currentTypeResolver.declarationContext)
+                    return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals,
+                        callables, currentArrayGetter, currentArraySetter, currentTypeResolver,
+                        currentAvailableFields, currentHierarchy)
                 let owner = classExpression(value.receiver, receiver, fields, locals, callables)
                 return bindStructuredNamedCall(value.range, value.memberName, owner,
                     value.argumentValues(), value.namedArgumentValues(), receiver, fields, locals, callables)
@@ -1246,6 +1336,12 @@ class {
             let owner = classExpression(
                 value.receiver, receiver, fields, locals, callables
             )
+            if (owner.semanticType.kind() == "generic-parameter" ||
+                (owner.semanticType.kind() == "generic-instance" && value.memberName == "set")) {
+                return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals,
+                    callables, currentArrayGetter, currentArraySetter, currentTypeResolver,
+                    currentAvailableFields, currentHierarchy)
+            }
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 arguments.add(classExpression(
@@ -1319,16 +1415,21 @@ class {
                 candidate.name == value.memberName
             ).map((candidate) => instance && candidate.ownerGenericDeclaration
                 ? candidate.instantiateReceiver(instance) : candidate)
+            if (candidates.isEmpty && owner.class.isOfType(BoundMemberAccessExpression.class)) {
+                return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals,
+                    callables, currentArrayGetter, currentArraySetter, currentTypeResolver,
+                    currentAvailableFields, currentHierarchy)
+            }
             if (candidates.isNotEmpty) {
                 let resolution = OverloadResolver.resolve(
                     value.memberName, candidates, owner.semanticType,
-                    normalizedArguments.map({ _.semanticType }), value.range
+                    normalizedArguments.map({ _.semanticType }), value.range, currentHierarchy
                 )
                 if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
                 let target = resolution.selected
                 let checked = CallTypeChecker.check(
                     target, owner.semanticType,
-                    normalizedArguments.map({ _.semanticType }), value.range
+                    normalizedArguments.map({ _.semanticType }), value.range, currentHierarchy
                 )
                 if (!checked.valid) throw Exception(checked.diagnostic.message)
                 return BoundCallExpression(
@@ -1393,6 +1494,11 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let value = (PrimitiveCallSyntax)syntax
+            if (value.argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) }) &&
+                !locals.any({ _.name == value.name }) && receiver) {
+                return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals, callables,
+                    currentArrayGetter, currentArraySetter, currentTypeResolver, currentAvailableFields, currentHierarchy)
+            }
             if (value.namedArgumentValues().isNotEmpty) {
                 if (locals.any({ _.name == value.name })) {
                     throw Exception("Named arguments for local '#{value.name}' require callable parameter binding")
@@ -1420,6 +1526,14 @@ class {
                 while (argumentIndex < invocationArguments.count) {
                     var BoundExpression argument = invocationArguments[argumentIndex]
                     let target = functionType.parameterTypes()[argumentIndex]
+                    if (receiver && argument.class.isOfType(BoundReferenceExpression.class) &&
+                        ((BoundReferenceExpression)argument).symbolIdentity.value == receiver.symbolIdentity.value &&
+                        currentTypeResolver.genericParameter && receiver.semanticType.kind() == "user-class") {
+                        argument = BoundReferenceExpression(argument.range,
+                            GenericInstanceSemanticType((UserClassSemanticType)receiver.semanticType,
+                                [currentTypeResolver.genericParameter]), receiver.name, receiver.symbolIdentity)
+                        invocationArguments[argumentIndex] = argument
+                    }
                     if (receiver && argument.class.isOfType(BoundReferenceExpression.class) &&
                         ((BoundReferenceExpression)argument).symbolIdentity.value == receiver.symbolIdentity.value &&
                         target.kind() == "generic-instance" &&
@@ -1501,7 +1615,7 @@ class {
                 )
             }
         }
-        let result = PrimitiveExpressionBinder().bind(
+        let result = currentExpressions.bind(
             syntax, locals: locals, callables: callables
         )
         if (!result.succeeded) {

@@ -4,6 +4,7 @@ import flat/lexer
 import flat/bound
 import flat/compiler/models
 import flat/parser/flat
+import flat/semantic/binding/BindingDiagnostic
 import flat/semantic/binding/primitive
 import flat/writer/es6/bound
 
@@ -185,6 +186,22 @@ class {
                 if (!merged) classes.add(parsed)
             }
             contexts.add(PrimitiveSourceBindingContext(namespaceName, snapshot, classes, interfaces, imports))
+        }
+        // Preserve the owning binder's source-ranged control diagnostic before
+        // partition binding can flatten it into an untyped method exception.
+        for (context in contexts) {
+            for (syntax in context.classValues()) {
+                for (method in syntax.methodValues()) {
+                    let diagnostic = PrimitiveControlStatementBinder().controlDiagnostic(method.statements())
+                    if (diagnostic) {
+                        throw PrimitiveContextBindingException(BindingDiagnostic(
+                            diagnostic.code, diagnostic.message,
+                            SyntaxIslandIdentity(diagnostic.range.snapshot, "control", diagnostic.range.startTokenIndex),
+                            diagnostic.range
+                        ))
+                    }
+                }
+            }
         }
         let types = PrimitiveClassPartitionBinder().bindContexts(
             contexts, maxTypes: maxTypes, arrayDeclaration: arrayDeclaration,

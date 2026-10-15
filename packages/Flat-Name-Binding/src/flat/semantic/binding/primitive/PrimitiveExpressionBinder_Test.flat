@@ -4,8 +4,77 @@ import flat/compiler/models
 import flat/parser/flat
 import flat/semantic/types
 import flat/bound
+import flat/lexer/Lexer
 
 testable class {
+    test `primitive dispatch preserves signature and rejection`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:primitive-dispatch"), "one")
+        let range = SourceRange(snapshot, 7, 8, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let owner = UserClassSemanticType(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 0), "class", "Int"))
+        let identity = SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method", 1), "static-method", "encode"), "static-method")
+        let signature = CallableSignature(identity, "encode", CallableKind("static-method"),
+            [SemanticTypes.intType(), SemanticTypes.boolType()], SemanticTypes.stringType(), owner)
+        let receiver = PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1")
+        let syntax = PrimitiveMemberCallSyntax(range, receiver, "encode", [PrimitiveLiteralSyntax(range, Token.Type.BOOL, "false")])
+        let result = PrimitiveExpressionBinder().bind(syntax, callables: [signature])
+        expect(result.succeeded).toBe(true)
+        let call = (BoundCallExpression)result.expression
+        expect(call.target.identity.value).toBe(identity.value)
+        expect(call.receiver).toBe(null)
+        expect(call.argumentValues().first.semanticType.value()).toBe(SemanticTypes.intType().value())
+        let invalidSyntax = PrimitiveMemberCallSyntax(range, receiver, "encode", [receiver])
+        let rejected = PrimitiveExpressionBinder().bind(invalidSyntax, callables: [signature])
+        expect(rejected.succeeded).toBe(false)
+        expect(rejected.diagnostic.range).toBe(range)
+        let missing = PrimitiveExpressionBinder().bind(syntax)
+        expect(missing.succeeded).toBe(false)
+        expect(missing.diagnostic.range).toBe(range)
+    }
+
+    async test `binds callback metadata`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-type-test"), "one")
+        let stream = Lexer().lex("{ _x.class.isOfType(String.class) }")
+        stream.emit("start")
+        let parsed = PrimitiveExpressionParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let syntax = (PrimitiveLambdaSyntax)parsed
+        let owner = UserClassSemanticType(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 100), "class", "String"))
+        let signature = CallableSignature(SymbolIdentity(owner.declarationIdentity, "constructor"), "String", CallableKind("constructor"), SemanticType[], owner, owner)
+        let result = PrimitiveExpressionBinder().bindCallback(syntax, FunctionSemanticType([SemanticTypes.objectType()], SemanticTypes.boolType()), LocalBinding[], [signature])
+        expect(result.succeeded).toBe(true)
+        let lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.body.class.isOfType(BoundTypeTestExpression.class)).toBe(true)
+    }
+
+    test `block callback rejects mismatched return and missing result`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:block-invalid"), "one")
+        let range = SourceRange(snapshot, 7, 8, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], PrimitiveLiteralSyntax(range, Token.Type.NULL, "null"),
+            statementValues: [PrimitiveReturnSyntax(range, PrimitiveLiteralSyntax(range, Token.Type.BOOL, "true"))])
+        let expected = FunctionSemanticType(SemanticType[], SemanticTypes.intType())
+        let result = PrimitiveExpressionBinder().bindCallback(syntax, expected, LocalBinding[], CallableSignature[])
+        expect(result.succeeded).toBe(false)
+        expect(result.diagnostic.range).toBe(range)
+        let incomplete = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], PrimitiveLiteralSyntax(range, Token.Type.NULL, "null"),
+            statementValues: [PrimitiveExpressionStatementSyntax(range, PrimitiveLiteralSyntax(range, Token.Type.INTEGER, "1"))])
+        let missing = PrimitiveExpressionBinder().bindCallback(incomplete, expected, LocalBinding[], CallableSignature[])
+        expect(missing.succeeded).toBe(false)
+        expect(missing.diagnostic.range).toBe(range)
+    }
+
+    test `statement capture excludes unrelated local`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:block-captures"), "one")
+        let range = SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let captured = LocalBinding("captured", SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "local", 1), "local", "captured"), "local"), SemanticTypes.intType())
+        let unused = LocalBinding("unused", SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "local", 2), "local", "unused"), "local"), SemanticTypes.intType())
+        let syntax = PrimitiveLambdaSyntax(range, PrimitiveFunctionParameterSyntax[], PrimitiveLiteralSyntax(range, Token.Type.NULL, "null"),
+            statementValues: [PrimitiveReturnSyntax(range, PrimitiveReferenceSyntax(range, "captured"))])
+        let result = PrimitiveExpressionBinder().bindCallback(syntax, FunctionSemanticType(SemanticType[], SemanticTypes.intType()), [captured, unused], CallableSignature[])
+        expect(result.succeeded).toBe(true)
+        var BoundLambdaExpression lambda
+        lambda = (BoundLambdaExpression)result.expression
+        expect(lambda.captureValues().map({ _.symbolIdentity.value })).toBe([captured.identity.value])
+    }
+
     test `contextually types async lambda parameters and captures`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:contextual-lambda"), "one")
         let syntax = PrimitiveExpressionParser().parse([

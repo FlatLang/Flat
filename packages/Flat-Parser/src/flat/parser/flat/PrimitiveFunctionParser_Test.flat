@@ -262,6 +262,7 @@ testable class {
         let parameter = method.parameterValues().first
         expect(parameter.name).toBe("next")
         expect(parameter.typeName).toBe("func(Int)->Int")
+        expect(parameter.callbackParameterNames().first).toBe("value")
         expect(parameter.range.startTokenIndex).toBe(2)
         expect(parameter.range.endTokenIndex).toBe(9)
     }

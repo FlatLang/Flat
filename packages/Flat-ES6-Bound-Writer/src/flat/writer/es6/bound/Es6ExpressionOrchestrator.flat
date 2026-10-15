@@ -35,7 +35,7 @@ class {
         }
         if (expression.class.isOfType(BoundReferenceExpression.class)) {
             let value = (BoundReferenceExpression)expression
-            if (value.name == "this" && value.symbolIdentity.symbolKind == "receiver") {
+            if (value.symbolIdentity.symbolKind == "receiver") {
                 return Es6CodeResult(code: "this")
             }
             return expressions.emitReference(value)
@@ -94,6 +94,11 @@ class {
             if (!body.emitted) return body
             let functionType = (FunctionSemanticType)value.semanticType
             let prefix = functionType.asyncFunction ? "async " : ""
+            if (value.statementValues().isNotEmpty) {
+                let statements = Es6StatementOrchestrator(expressions: this).emitAll(value.statementValues())
+                if (!statements.emitted) return statements
+                return Es6CodeResult(code: prefix + "(" + parameters.join(", ") + ") => {\n" + statements.code + "}")
+            }
             return Es6CodeResult(code: prefix + "(" + parameters.join(", ") + ") => " + body.code)
         }
         if (expression.class.isOfType(BoundFunctionValue.class)) {

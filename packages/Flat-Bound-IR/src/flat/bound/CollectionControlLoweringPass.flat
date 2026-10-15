@@ -27,6 +27,53 @@ class extends BoundFunctionLoweringPass {
         return output
     }
 
+    /** Advance only continues targeting this foreach; nested loops own their continues. */
+    continueBody(BoundStatement[] statements, BoundStatement[] advance) -> BoundStatement[] {
+        let result = BoundStatement[]
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundContinueStatement.class)) {
+                result.addAll(advance)
+                result.add(statement)
+            } else if (statement.class.isOfType(BoundIfStatement.class)) {
+                let branch = (BoundIfStatement)statement
+                result.add(BoundIfStatement(branch.range, branch.condition,
+                    continueBody(branch.thenValues(), advance), continueBody(branch.elseValues(), advance)))
+            } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
+                let branch = (BoundSwitchStatement)statement
+                let cases = BoundSwitchCase[]
+                for (caseValue in branch.caseValues()) cases.add(BoundSwitchCase(
+                    caseValue.range, caseValue.label, continueBody(caseValue.statementValues(), advance),
+                    caseValue.defaultCase, caseValue.fallsThrough))
+                result.add(BoundSwitchStatement(branch.range, branch.value, cases))
+            } else if (statement.class.isOfType(BoundTryStatement.class)) {
+                let guarded = (BoundTryStatement)statement
+                if (targetsContinue(guarded.tryValues()) || targetsContinue(guarded.finallyValues()) ||
+                    guarded.catchValues().any({ targetsContinue(_.statements()) })) {
+                    throw Exception("Foreach continue through try/catch/finally requires cleanup-aware loop lowering")
+                }
+                result.add(statement)
+            } else result.add(statement)
+        }
+        return result
+    }
+
+    targetsContinue(BoundStatement[] statements) -> Bool {
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundContinueStatement.class)) return true
+            if (statement.class.isOfType(BoundIfStatement.class)) {
+                let branch = (BoundIfStatement)statement
+                if (targetsContinue(branch.thenValues()) || targetsContinue(branch.elseValues())) return true
+            } else if (statement.class.isOfType(BoundSwitchStatement.class)) {
+                if (((BoundSwitchStatement)statement).caseValues().any({ targetsContinue(_.statementValues()) })) return true
+            } else if (statement.class.isOfType(BoundTryStatement.class)) {
+                let guarded = (BoundTryStatement)statement
+                if (targetsContinue(guarded.tryValues()) || targetsContinue(guarded.finallyValues()) ||
+                    guarded.catchValues().any({ targetsContinue(_.statements()) })) return true
+            }
+        }
+        return false
+    }
+
     lowerStatement(BoundStatement statement, BoundStatement[] output) {
         if (statement.class.isOfType(BoundIfStatement.class)) {
             let value = (BoundIfStatement)statement
@@ -43,8 +90,7 @@ class extends BoundFunctionLoweringPass {
         } else if (statement.class.isOfType(BoundForEachStatement.class)) {
             let loop = (BoundForEachStatement)statement
             for (initialization in loop.initialization()) lowerStatement(initialization, output)
-            let loweredBody = BoundStatement[]
-            for (bodyStatement in loop.body()) lowerStatement(bodyStatement, loweredBody)
+            let loweredBody = continueBody(lowerStatements(loop.body()), lowerStatements(loop.advance()))
             for (advance in loop.advance()) lowerStatement(advance, loweredBody)
             output.add(BoundWhileStatement(
                 loop.range, lowerExpression(loop.condition), loweredBody
@@ -284,7 +330,7 @@ class extends BoundFunctionLoweringPass {
             let typeObject = value.semanticType
             let signature = (FunctionSemanticType)typeObject
             return BoundLambdaExpression(value.range, signature, value.parameterValues(),
-                value.captureValues(), lowerExpression(value.body))
+                value.captureValues(), lowerExpression(value.body), lowerStatements(value.statementValues()))
         }
         if (expression.class.isOfType(BoundDeclarationValueExpression.class)) {
             let value = (BoundDeclarationValueExpression)expression

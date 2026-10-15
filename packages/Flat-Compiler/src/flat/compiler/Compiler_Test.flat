@@ -514,6 +514,44 @@ testable class {
     // This is a bounded fixture dependency closure, not whole-project discovery.
     // Class metadata uses String.lastIndexOf; String in turn needs its real JS
     // overlay, character storage, collections, numeric and operator contracts.
+    /** Explicit test-only real dependencies; no production discovery or source rewriting. */
+    public static coreDependencyIdentities() -> String[] {
+        String[] identities = [
+        "flat/datastruct/Comparable.flat",
+        "flat/primitive/Primitive.flat",
+        "flat/primitive/number/Integer.flat",
+        "flat/operators/PlusOperator.flat",
+        "flat/operators/PlusEqualsOperator.flat",
+        "flat/operators/MinusOperator.flat",
+        "flat/operators/MinusEqualsOperator.flat",
+        "flat/operators/MultiplyOperator.flat",
+        "flat/operators/MultiplyEqualsOperator.flat"
+        ]
+        return identities
+    }
+
+    public static admitCoreDependencies(CompilerSource[] supplied) -> CompilerSource[] {
+        let sources = CompilerSource[]:addAll(supplied)
+        let identities = coreDependencyIdentities()
+        if (supplied.any((source) => source.identity.startsWith("flat/datastruct/list/") ||
+            source.identity == "flat/String.flat" || source.identity == "flat/String.js.flat")) {
+            identities.addAll([
+                "flat/datastruct/list/Iterable.flat", "flat/datastruct/list/Iterator.flat",
+                "flat/datastruct/list/List.flat", "flat/datastruct/list/OrderedList.flat",
+                "flat/async/Async.flat", "flat/async/Async.js.flat"
+            ])
+        }
+        for (identity in identities) {
+            if (sources.none({ _.identity == identity })) {
+                File parent = File("../Flat-Core/src")
+                File file = File(parent, identity)
+                String text = Es6ArtifactFiles.read(file)
+                sources.add(CompilerSource(identity, text))
+            }
+        }
+        return sources
+    }
+
     realExceptionSources() -> CompilerSource[] {
         let identities = [
             "flat/Object.flat",
@@ -560,7 +598,7 @@ testable class {
             CompilerSource source = CompilerSource(identity, text)
             sources.add(source)
         }
-        return sources
+        return admitCoreDependencies(sources)
     }
 
     async test `package linker executes real Exception constructor and StackTrace under Node`() {
@@ -1273,7 +1311,7 @@ testable class {
     async test `package linker advances unchanged Number source`() {
         var String message
         try {
-            FlatEs6PackageLinker().link([
+            FlatEs6PackageLinker().link(admitCoreDependencies([
                 CompilerSource(
                     "flat/primitive/number/Number.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Number.flat"))
@@ -1282,7 +1320,7 @@ testable class {
                     "flat/primitive/Primitive.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
                 )
-            ])
+            ]))
         } catch (Exception error) { message = error.message }
         expect(message).toBe(null)
     }
@@ -1292,7 +1330,7 @@ testable class {
         let overlayIdentity = "flat/primitive/number/Double.js.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.flat"))
         let overlay = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.js.flat"))
-        let code = FlatEs6PackageLinker().link([
+        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
             CompilerSource(identity, source),
             CompilerSource(overlayIdentity, overlay),
             CompilerSource(
@@ -1307,7 +1345,7 @@ testable class {
                 "flat/primitive/Primitive.flat",
                 Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
             )
-        ])
+        ]))
         let sourceStream = Lexer().lex(source)
         sourceStream.emit("start")
         let sourceSnapshot = SourceSnapshotIdentity(
@@ -1370,7 +1408,7 @@ testable class {
         let overlayIdentity = "flat/primitive/number/Float.js.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Float.flat"))
         let overlay = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Float.js.flat"))
-        let code = FlatEs6PackageLinker().link([
+        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
             CompilerSource(identity, source),
             CompilerSource(overlayIdentity, overlay),
             CompilerSource(
@@ -1393,7 +1431,7 @@ testable class {
                 "flat/primitive/Primitive.flat",
                 Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
             )
-        ])
+        ]))
         let sourceStream = Lexer().lex(source)
         sourceStream.emit("start")
         let sourceSnapshot = SourceSnapshotIdentity(
@@ -1454,7 +1492,7 @@ testable class {
     async test `package linker compiles unchanged Byte numeric source`() {
         var String message
         try {
-            FlatEs6PackageLinker().link([
+            FlatEs6PackageLinker().link(admitCoreDependencies([
                 CompilerSource(
                     "flat/primitive/number/Byte.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Byte.flat"))
@@ -1471,7 +1509,7 @@ testable class {
                     "flat/primitive/Primitive.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
                 )
-            ])
+            ]))
         } catch (Exception error) { message = error.message }
         expect(message).toBe(null)
     }
@@ -1479,7 +1517,7 @@ testable class {
     async test `package linker compiles unchanged Short numeric source`() {
         var String message
         try {
-            FlatEs6PackageLinker().link([
+            FlatEs6PackageLinker().link(admitCoreDependencies([
                 CompilerSource(
                     "flat/primitive/number/Short.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Short.flat"))
@@ -1496,7 +1534,7 @@ testable class {
                     "flat/primitive/Primitive.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
                 )
-            ])
+            ]))
         } catch (Exception error) { message = error.message }
         expect(message).toBe(null)
     }
@@ -1504,7 +1542,7 @@ testable class {
     async test `package linker compiles and executes unchanged Char switch and repeat`() {
         let identity = "flat/primitive/number/Char.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Char.flat"))
-        let code = FlatEs6PackageLinker().link([
+        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
                 CompilerSource(identity, source),
                 CompilerSource(
                     "flat/primitive/number/Number.flat",
@@ -1518,7 +1556,7 @@ testable class {
                     "flat/primitive/Primitive.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/Primitive.flat"))
                 )
-            ])
+            ]))
         let stream = Lexer().lexInterpolated(source)
         stream.emit("start")
         let tokens = stream.consumeAll<Token>("data")
@@ -1558,7 +1596,7 @@ testable class {
     }
 
     async test `package linker executes unchanged range iterator`() {
-        let code = FlatEs6PackageLinker().link([
+        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
                 CompilerSource("flat/meta/Function.flat", Es6ArtifactFiles.read(File(
                     "../Flat-Core/src/flat/meta/Function.flat"))),
                 CompilerSource("flat/meta/Field.flat", Es6ArtifactFiles.read(File(
@@ -1629,7 +1667,7 @@ testable class {
                         "../Flat-Core/src/flat/datastruct/list/List.flat"
                     ))
                 )
-            ])
+            ]))
         let rangeIdentity = "flat/datastruct/list/IntRange.flat"
         let iteratorIdentity = "flat/datastruct/list/IntRangeIterator.flat"
         let rangeSnapshot = SourceSnapshotIdentity(
@@ -1765,7 +1803,7 @@ testable class {
         )
         let addMethod = arraySyntax.methodValues().firstOrNull({ _.name == "add" })
         expect(addMethod != null).toBe(true)
-        let code = FlatEs6PackageLinker().link([
+        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
                 CompilerSource(
                     "flat/Object.flat",
                     "package flat class Object { Long hashCodeLong => 0 }"
@@ -1853,7 +1891,7 @@ testable class {
                     "flat/async/Async.js.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/async/Async.js.flat"))
                 )
-            ])
+            ]))
         let stream = Lexer().lexInterpolated(source)
         stream.emit("start")
         let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")

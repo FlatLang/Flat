@@ -18,6 +18,16 @@ testable class {
             "-l", "../Flat-Core/src/flat/primitive/Primitive.flat",
             "-target", "es6", "-library", "-o", output.normalizedLocation
         ]
+        let dependencies = Compiler_Test.coreDependencyIdentities()
+        for (identity in dependencies) {
+            File parent = File("../Flat-Core/src")
+            File file = File(parent, identity)
+            String path = file.normalizedLocation
+            if (!values.contains(path)) {
+                values.add("-l")
+                values.add(path)
+            }
+        }
         return values
     }
 

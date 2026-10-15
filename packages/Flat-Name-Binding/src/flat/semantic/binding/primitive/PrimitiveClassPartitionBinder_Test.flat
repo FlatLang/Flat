@@ -623,15 +623,13 @@ testable class {
             .firstOrNull({ _.name == "add" }).name).toBe("add")
     }
 
-    async test `structured same-owner call rejects null for unconstrained generic`() {
+    async test `structured same-owner call accepts null for unconstrained generic`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-call"), "one")
         let stream = Lexer().lex("class Bag<E> { public add(E value) {} public add(Int index, E value) { add(null); } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        var String failure
-        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
-        catch (Exception error) { failure = error.message }
-        expect(failure.contains("No overload of 'add'")).toBe(true)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().filter({ _.name == "add" }).count).toBe(2)
     }
 
     async test `binds decrement in counted reverse iteration`() {
@@ -750,6 +748,719 @@ testable class {
         expect(failure.diagnostic.range).toBe(syntax.range)
     }
 
+    async test `sibling generic result is instantiated at its call site`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:sibling-generic-result"), "one")
+        let stream = Lexer().lex("class List<E> { public relay(E value) => identity(value) public identity<Out>(Out value) -> Out { return value; } public contains(E value) => any({ true }) public any(test(E value) -> Bool) => false }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, [syntax])]).typeUnits().first
+        let relay = unit.functionUnits().firstOrNull({ _.name == "relay" })
+        let identity = unit.functionUnits().firstOrNull({ _.name == "identity" })
+        expect(relay.returnType.kind()).toBe("generic-parameter")
+        expect(relay.returnType.value() == identity.returnType.value()).toBe(false)
+        expect(unit.functionUnits().firstOrNull({ _.name == "contains" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `same named method generics retain distinct owners across nested arrays`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:sibling-generic-array"), "one")
+        let stream = Lexer().lex("class List<E> { public relay<Out>(Out value) => collect(value) public collect<Out>(Out value) -> Out[] { let values = Out[]; values.add(value); return values; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, [syntax])]).typeUnits().first
+        let relay = unit.functionUnits().firstOrNull({ _.name == "relay" })
+        let collect = unit.functionUnits().firstOrNull({ _.name == "collect" })
+        expect(relay.returnType.value() == collect.returnType.value()).toBe(false)
+        expect(relay.returnType.value().contains("relay")).toBe(true)
+        expect(collect.returnType.value().contains("collect")).toBe(true)
+    }
+
+    async test `declared field access retains explicit receiver and owner visibility`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-field-owner"), "one")
+        let ownerStream = Lexer().lex("class Storage { visible Int value; Int secret; construct() { value = 7; secret = 9; } }")
+        ownerStream.emit("start")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), snapshot)
+        let readerStream = Lexer().lex("class Reader { visible Int value; read(Storage other) -> Int { return other.value; } }")
+        readerStream.emit("start")
+        let reader = PrimitiveClassParser().parse(readerStream.consumeAll<Token>("data"), snapshot)
+        let units = PrimitiveClassPartitionBinder().bind([reader, owner], snapshot).typeUnits()
+        let read = units.firstOrNull({ _.identity.name == "Reader" }).functionUnits().firstOrNull({ _.name == "read" })
+        let body = read.statements()
+        let returnedObject = (Object)body.first
+        let returned = (BoundReturnStatement)returnedObject
+        let accessObject = (Object)returned.value
+        let access = (BoundMemberAccessExpression)accessObject
+        expect(access.receiver.semanticType.value()).toBe(units.firstOrNull({ _.identity.name == "Storage" }).semanticType.value())
+        expect(access.semanticType.value()).toBe(SemanticTypes.intType().value())
+        let invalidStream = Lexer().lex("class Reader { read(Storage other) -> Int { return other.secret; } }")
+        invalidStream.emit("start")
+        let invalid = PrimitiveClassParser().parse(invalidStream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([invalid, owner], snapshot) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("not visible")).toBe(true)
+    }
+
+    async test `inherited property retains selected declaration on explicit receiver`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:inherited-property"), "one")
+        let parentStream = Lexer().lex("class Parent { construct() {} public Long hashCodeLong => 0 }")
+        parentStream.emit("start")
+        let parent = PrimitiveClassParser().parse(parentStream.consumeAll<Token>("data"), snapshot)
+        let childStream = Lexer().lex("class Child extends Parent { construct() {} }")
+        childStream.emit("start")
+        let child = PrimitiveClassParser().parse(childStream.consumeAll<Token>("data"), snapshot)
+        let readerStream = Lexer().lex("class Reader { read(Child other) -> Long { return other.hashCodeLong; } }")
+        readerStream.emit("start")
+        let reader = PrimitiveClassParser().parse(readerStream.consumeAll<Token>("data"), snapshot)
+        let units = PrimitiveClassPartitionBinder().bind([reader, child, parent], snapshot).typeUnits()
+        let read = units.firstOrNull({ _.identity.name == "Reader" }).functionUnits().firstOrNull({ _.name == "read" })
+        expect(read.returnType.value()).toBe(SemanticTypes.longType().value())
+        let body = read.statements()
+        let returnedObject = (Object)body.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        expect(call.receiver.semanticType.value()).toBe(units.firstOrNull({ _.identity.name == "Child" }).semanticType.value())
+        expect(call.target.identity.declaration.name).toBe("hashCodeLong")
+    }
+
+    async test `named array literal constructs declared collection without converting native storage`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-array-literal"), "one")
+        let arrayStream = Lexer().lex("class Array<E> { visible native_array var E[] data; construct(native_array E[] values, Int count) { data = values; } }")
+        arrayStream.emit("start")
+        let array = PrimitiveClassParser().parse(arrayStream.consumeAll<Token>("data"), snapshot)
+        let readerStream = Lexer().lex("class Reader { trim(Int start, Char[] values) -> Int { return start; } use(Char value) -> Int { return trim(0, values: [value]); } }")
+        readerStream.emit("start")
+        let reader = PrimitiveClassParser().parse(readerStream.consumeAll<Token>("data"), snapshot)
+        let units = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, [array, reader])]).typeUnits()
+        expect(units.firstOrNull({ _.identity.name == "Reader" }).functionUnits().firstOrNull({ _.name == "use" }).returnType.value()).toBe(SemanticTypes.intType().value())
+        let invalidStream = Lexer().lex("class Reader { trim(Int start, Char[] values) -> Int { return start; } use(native_array Char[] storage) -> Int { return trim(0, values: storage); } }")
+        invalidStream.emit("start")
+        let invalid = PrimitiveClassParser().parse(invalidStream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, [array, invalid])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("incompatible")).toBe(true)
+    }
+
+    async test `colon returns retained receiver while dot returns method result`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:chain-binding"), "one")
+        let stream = Lexer().lex("class Box<E> { construct() {} public add(Int value) -> Int { return value; } public chained() -> Box<Int> { return Box<Int>():add(3); } public dotted() -> Int { return Box<Int>().add(3); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "chained" }).returnType.kind()).toBe("generic-instance")
+        expect(unit.functionUnits().firstOrNull({ _.name == "dotted" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `named reduce callback aliases preserve numbered positions`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:reduce-names"), "one")
+        let stream = Lexer().lex("class Value { public apply(func(Int acc, Int x, Int i) -> Int) -> Int { return func(10, 3, 2); } public run() -> Int { return apply({ _acc + _x + _i + _2 }); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `declared String collection arguments preserve lexical identity`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:string-type-argument"), "one")
+        let stream = Lexer().lex("class String { construct() {} }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let arrayStream = Lexer().lex("class Array<E> { construct() {} }")
+        arrayStream.emit("start")
+        let array = PrimitiveClassParser().parse(arrayStream.consumeAll<Token>("data"), snapshot, 100)
+        let scope = PrimitiveResolvedDeclarationContext(PrimitiveSourceBindingContext("flat", snapshot, [syntax, array]),
+            [PrimitiveSourceBindingContext("flat", snapshot, [syntax, array])])
+        let resolver = PrimitiveStructuralTypeResolver(declarationContext: scope, lookupRange: syntax.range)
+        let bracketObject = (Object)resolver.resolve("String[]")
+        let bracket = (GenericInstanceSemanticType)bracketObject
+        expect(bracket.typeArguments().first.value()).toBe(UserClassSemanticType(scope.classIdentity(syntax)).value())
+        expect(resolver.resolve("Array<String>").value()).toBe(bracket.value())
+        expect(resolver.resolve("String").value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    async test `inherited generic fallback accepts null with named Bool callback`() {
+        let contexts = PrimitiveSourceBindingContext[]
+        let sources = [
+            "trait List<E> { public firstOr(E fallback, predicate(E x) -> Bool = {true}) -> E => fallback {} }",
+            "class Array<E> implements List<E> { public firstOrNull(predicate(E x) -> Bool = {true}) -> E => firstOr(null, predicate) }"
+        ]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-#{index++}"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            if (index == 1) {
+                let contract = PrimitiveInterfaceParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                contexts.add(PrimitiveSourceBindingContext("flat", snapshot, PrimitiveClassSyntax[], [contract]))
+            } else {
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+            }
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let method = units.last.functionUnits().firstOrNull({ _.name == "firstOrNull" })
+        expect(method.returnType.kind()).toBe("generic-parameter")
+        expect(method.statements().count).toBe(1)
+    }
+
+    async test `generic callback default null uses selected return contract`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-default-callback"), "one")
+        let stream = Lexer().lex("class Array<E> { public select<OUT>(predicate(E x) -> OUT = {null}) -> OUT { return predicate(null); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [syntax])]).typeUnits().first
+        let method = unit.functionUnits().firstOrNull({ _.name == "select" })
+        expect(method.returnType.kind()).toBe("generic-parameter")
+        expect(method.parameterValues().first.defaultValue.semanticType.value())
+            .toBe(method.parameterValues().first.semanticType.value())
+    }
+
+    async test `binds declared contract access`() {
+        let fixtureSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:contract-access"), "one")
+        let contractTokens = Lexer().lex("trait List<E> { visible E item }")
+        contractTokens.emit("start")
+        let listContract = PrimitiveInterfaceParser().parse(contractTokens.consumeAll<Token>("data"), fixtureSnapshot)
+        let classTokens = Lexer().lex("class Reader { public read<E>(List<E> other) -> E { return other.item; } }")
+        classTokens.emit("start")
+        let readerSyntax = PrimitiveClassParser().parse(classTokens.consumeAll<Token>("data"), fixtureSnapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", fixtureSnapshot, [readerSyntax], [listContract])
+        let result = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        expect(result.functionUnits().firstOrNull({ _.name == "read" }).returnType.kind()).toBe("generic-parameter")
+    }
+
+    async test `qualified static field selects published declaring owner`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:qualified-static-field"), "one")
+        let sources = ["class Limit { visible static Int MAX = 42; }", "class Reader { public read() -> Int { return Limit.MAX; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits()
+        let method = units.last.functionUnits().firstOrNull({ _.name == "read" })
+        expect(method.returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `overloaded receiver call selects callback context by argument shape`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:overload-callback-context"), "one")
+        let stream = Lexer().lex("class Bag<E> { public split(E delimiter) -> Bool => split({ _ == delimiter }) public split(test(E x) -> Bool) -> Bool => true }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [syntax])]).typeUnits().first
+        expect(unit.functionUnits().filter({ _.name == "split" }).count).toBe(2)
+    }
+
+    async test `structured member arguments use scoped generic inheritance`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structured-generic-argument"), "one")
+        let contractStream = Lexer().lex("trait List<E> { }")
+        contractStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(contractStream.consumeAll<Token>("data"), snapshot)
+        let sources = ["class Array<E> implements List<E> { public add(E value) {} }",
+            "class Reader { public run(Array<List<Int>> lists, Array<Int> values) -> Void { lists.add(values); } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset = 100
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, syntaxes, [contract])]).typeUnits().last
+        expect(unit.functionUnits().firstOrNull({ _.name == "run" }).returnType.kind()).toBe("void")
+    }
+
+    async test `structured builtin text count selects declared String field`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:text-count"), "one")
+        let sources = ["class String { visible Int count; }", "class Reader { public size(String text) -> Int { return text.count; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits().last
+        expect(unit.functionUnits().firstOrNull({ _.name == "size" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `named member argument fills declared leading and trailing defaults`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-default-order"), "one")
+        let stream = Lexer().lex("class Value { public choose(Int first = 1, Int: middle = 2, Int: last = 3) -> Int { return first + middle + last; } public run() -> Int { return this.choose(middle: 8); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [syntax])]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `reference negation lowers to absence while primitive negation rejects Int`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:reference-negation"), "one")
+        let stream = Lexer().lex("class Reader { public absent(Object value) -> Bool { return !value; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [syntax])]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "absent" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+        let invalidStream = Lexer().lex("class Reader { public invalid(Int value) -> Bool { return !value; } }")
+        invalidStream.emit("start")
+        let invalid = PrimitiveClassParser().parse(invalidStream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [invalid])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("Operator '!' is invalid")).toBe(true)
+    }
+
+    async test `binds metadata check in control flow`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structured-type-test"), "one")
+        let contractStream = Lexer().lex("trait List<E> { }")
+        contractStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(contractStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Reader { public check(Object value) -> Bool { if (!value.class.isOfType(List.class)) { return false; } return true; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "check" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `trait receiver call preserves inferred callback contract`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-call"), "one")
+        let traitTokens = Lexer().lex("trait List<E> { public contains(E value) => any({ true }) public any(test(E x) -> Bool) => false }")
+        traitTokens.emit("start")
+        let listContract = PrimitiveInterfaceParser().parse(traitTokens.consumeAll<Token>("data"), snapshot)
+        let sources = ["class Array<E> implements List<E> { }", "class Reader { public check<E>(List<E> values, E item) -> Bool { return values.contains(item); } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset = 100
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let context = PrimitiveSourceBindingContext("flat", snapshot, syntaxes, [listContract])
+        let result = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().last
+        expect(result.functionUnits().firstOrNull({ _.name == "check" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `retains generic null predicate evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-predicate"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public filter(test(E x) -> Bool) -> Bool => true public filterNull() -> Bool { return filter({ _ != null }); } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Range implements Items<Int> {}")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])
+        expect(PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().count).toBe(1)
+        let badStream = Lexer().lex("class Bad { public check(Int value) -> Bool => value != null }")
+        badStream.emit("start")
+        let bad = PrimitiveClassParser().parse(badStream.consumeAll<Token>("data"), snapshot, 200)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [bad])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("Operator '!=' is invalid")).toBe(true)
+        let callbackStream = Lexer().lex("class Direct { public filter(test(Int x) -> Bool) -> Bool => true public run() -> Bool { return filter({ _ != null }); } }")
+        callbackStream.emit("start")
+        let direct = PrimitiveClassParser().parse(callbackStream.consumeAll<Token>("data"), snapshot, 300)
+        failure = null
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [direct])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("Operator '!=' is invalid")).toBe(true)
+    }
+
+    async test `retains generic default null return contract`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-return"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public select(E value, Bool matches) -> E { if (matches) { return value; } return null; } public echo(E value) -> E { return value; } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Range implements Items<Int> {}")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "select" }).returnType.value()).toBe("nullable:primitive:Int")
+        expect(unit.functionUnits().firstOrNull({ _.name == "echo" }).returnType.value()).toBe("primitive:Int")
+        let badStream = Lexer().lex("class Bad { public read() -> Int { return null; } }")
+        badStream.emit("start")
+        let bad = PrimitiveClassParser().parse(badStream.consumeAll<Token>("data"), snapshot, 200)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [bad])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("cannot return")).toBe(true)
+        let callerStream = Lexer().lex("class Caller { public read(Range values) -> Int { return values.select(0, false); } }")
+        callerStream.emit("start")
+        let caller = PrimitiveClassParser().parse(callerStream.consumeAll<Token>("data"), snapshot, 300)
+        failure = null
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [syntax, caller], [contract])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("cannot return")).toBe(true)
+    }
+
+    async test `retains generic null forwarding contract`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:null-forward"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public or(E fallback, E value, Bool matches) -> E { if (matches) { return value; } return fallback; } public absent(E value, Bool matches) -> E { return or(null, value, matches); } public echo(E value) -> E { return value; } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Range implements Items<Int> {}")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "absent" }).returnType.value()).toBe("nullable:primitive:Int")
+        expect(unit.functionUnits().firstOrNull({ _.name == "or" }).parameterValues().first.semanticType.value()).toBe("nullable:primitive:Int")
+        expect(unit.functionUnits().firstOrNull({ _.name == "echo" }).returnType.value()).toBe("primitive:Int")
+        let badStream = Lexer().lex("class Bad { public echo(Int value) -> Int { return value; } public run() -> Int { return echo(null); } }")
+        badStream.emit("start")
+        let bad = PrimitiveClassParser().parse(badStream.consumeAll<Token>("data"), snapshot, 200)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [bad])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure != null).toBe(true)
+        let callerStream = Lexer().lex("class Caller { public read(Range values) -> Int { return values.absent(0, false); } }")
+        callerStream.emit("start")
+        let caller = PrimitiveClassParser().parse(callerStream.consumeAll<Token>("data"), snapshot, 300)
+        failure = null
+        try { PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, [syntax, caller], [contract])]) }
+        catch (Exception error) { failure = error.message }
+        expect(failure.contains("cannot return")).toBe(true)
+    }
+
+    async test `keeps inferred result owner scope`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:inferred-owner"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public relay(Box<Box<E>> value) -> Box<Box<E>> { return value; } public nested(Box<Box<E>> value) => relay(value) }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let sources = ["class Box<E> {}", "class Generic<E> implements Items<E> {}", "class Concrete implements Items<Int> {}"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset = 100
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let context = PrimitiveSourceBindingContext("flat", snapshot, syntaxes, [contract])
+        let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
+        let concrete = units.firstOrNull({ _.semanticType.declarationIdentity.name == "Concrete" })
+        let nested = concrete.functionUnits().firstOrNull({ _.name == "nested" })
+        expect(nested.returnType.value()).toBe(nested.parameterValues().first.semanticType.value())
+        expect(nested.returnType.value().contains("primitive:Int")).toBe(true)
+        expect(nested.returnType.value().contains("generic-parameter")).toBe(false)
+    }
+
+    async test `interpolation property stays with receiver owner`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:property-owner"), "one")
+        let sources = ["class Other { public first() -> Int => 1 }", "class Value { public first() -> Int => 2 public text() -> String => " + '"' + '#' + "first" + '"' + " }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits().last
+        expect(unit.functionUnits().firstOrNull({ _.name == "text" }).returnType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    async test `primitive callback uses declared static method`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:primitive-callback"), "one")
+        let sources = ["class Int { public static encode(Int value, Bool format = false, String tab = \"x\") -> String => \"ok\" }", "class Range { public map<Out>(callback(Int value) -> Out) -> Out => callback(1) public render(Bool format, String tab) -> String => map({ _.encode(format, tab) }) }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits().last
+        expect(unit.functionUnits().firstOrNull({ _.name == "render" }).returnType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    async test `explicit native array contract needs no constructor`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-array-contract"), "one")
+        let stream = Lexer().lex("class Factory { public static read() -> Sequence<Int> { return [2, 3]; } }")
+        stream.emit("start")
+        let factory = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bufferStream = Lexer().lex("class Buffer<E> implements Sequence<E> {}")
+        bufferStream.emit("start")
+        let buffer = PrimitiveClassParser().parse(bufferStream.consumeAll<Token>("data"), snapshot, 100)
+        let traitStream = Lexer().lex("trait Sequence<E> {}")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot, 200)
+        let result = PrimitiveClassPartitionBinder().bind([factory, buffer], interfaceSyntaxValues: [contract], arrayDeclaration: buffer)
+        let method = result.typeUnits().firstOrNull({ _.identity.name == "Factory" }).functionUnits().firstOrNull({ _.name == "read" })
+        let statements = method.statements()
+        let returnedObject = (Object)statements[0]
+        let returned = (BoundReturnStatement)returnedObject
+        expect(returned.value.semanticType.value()).toBe(method.returnType.value())
+        expect(returned.conversion.applicable).toBe(true)
+    }
+
+    async test `resolves callback metadata`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-metadata"), "one")
+        let sources = ["class String {}", "class Value { public apply(callback(Object value) -> Bool) -> Bool => callback(\"x\") public test() -> Bool => apply({ _.class.isOfType(String.class) }) }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let result = PrimitiveClassPartitionBinder().bind(syntaxes)
+        expect(result.typeUnits().last.functionUnits().firstOrNull({ _.name == "test" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `binds chained match continuation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:match-binding"), "one")
+        let stream = Lexer().lex("class Digits { public static count() -> Int { var Int n = 0; for (i in 0..3) { match i { 0 => 1 => continue } n++; } return n; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "count" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `diagnoses cleanup crossing continue range`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:cleanup-continue"), "one")
+        let stream = Lexer().lex("for (i in 0..2) { try { continue; } finally { let done = 1; } }")
+        stream.emit("start")
+        let syntax = PrimitiveControlStatementParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let diagnostic = PrimitiveControlStatementBinder().controlDiagnostic(syntax.statements())
+        expect(diagnostic.code).toBe("semantic.cleanup-crossing-continue")
+        expect(diagnostic.range.startTokenIndex).toBe(11)
+        expect(diagnostic.range.endTokenIndex).toBe(12)
+        expect(diagnostic.range.snapshot).toBe(snapshot)
+    }
+
+    async test `inferred member result follows sibling callable`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:sibling-result"), "one")
+        let stream = Lexer().lex("class Array<E> { construct() {} public unique(Array<E> values, E value) -> Bool { return !values.contains(value); } public contains(E value) => any({ true }) public any(test(E value) -> Bool) => false }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, [syntax])]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "contains" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `explicit generic prefix preserves inferred callback input`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:partial-explicit"), "one")
+        let stream = Lexer().lex("class Value { static async all<Out, In>(In value, async callback(In value) -> Out, Int limit, async after(Int count)) -> Out { return callback(value); } static async run() -> Bool { return Value.all<Bool>(1, { _ == 1 }, 2, {}); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `empty array local uses admitted declaration`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-empty-array"), "one")
+        let stream = Lexer().lex("class Array<E> { construct() {} public filter() -> E[] { let filtered = E[]; return filtered; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let context = PrimitiveSourceBindingContext("flat/datastruct/list", snapshot, [syntax])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "filter" }).returnType.kind()).toBe("generic-instance")
+    }
+
+    async test `override slot survives intermediate inheritance`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:three-level-slot"), "one")
+        let sources = ["class Object { construct() {} public text() -> Int { return 1; } }",
+            "class Primitive { construct() {} }",
+            "class Bool extends Primitive { construct() {} override public text() -> Int { return 3; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        expect(units.last.functionUnits().last.dispatchIdentity).toBe(units.first.functionUnits().last.dispatchIdentity)
+    }
+
+    async test `generic block callback infers returned type`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-block"), "one")
+        let stream = Lexer().lex("class Value { static async apply<Out>(async callback(Int value) -> Out) -> Out { return callback(1); } static async run() -> Int { return Value.apply({\n let result = 42\n return result\n }); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "run" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `contextual async statement callback`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:statement-callback"), "one")
+        let stream = Lexer().lex("class Value { static async invoke(async func(Int value), async callback(Int value)) -> Unit { return callback(1); } static async run(async func(Int value)) -> Int { Value.invoke(func, {\n func(_)\n return null\n }); return 0; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(unit.functionUnits().firstOrNull({ _.name == "run" }).asyncFunction).toBe(true)
+    }
+
+    async test `trait owner edges retain canonical imports`() {
+        let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/datastruct/list/Array.flat"), "compiler-input")
+        let memberSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/datastruct/list/OrderedList.flat"), "compiler-input")
+        let operatorSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/operators/PlusOperator.flat"), "compiler-input")
+        let baseStream = Lexer().lex("class Array<E> implements OrderedList<E>, PlusOperator<Array<E>, Array<E>> { construct() {} }")
+        baseStream.emit("start")
+        let owner = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), baseSnapshot)
+        let memberStream = Lexer().lex("trait OrderedList<Type> { public identity(Int index, Type element) -> Type { return element; } }")
+        memberStream.emit("start")
+        let member = PrimitiveInterfaceParser().parse(memberStream.consumeAll<Token>("data"), memberSnapshot)
+        let operatorStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        operatorStream.emit("start")
+        let operator = PrimitiveInterfaceParser().parse(operatorStream.consumeAll<Token>("data"), operatorSnapshot)
+        let empty = PrimitiveClassSyntax[]
+        let contexts = [PrimitiveSourceBindingContext("flat/datastruct/list", baseSnapshot, [owner],
+                importValues: [PrimitiveBindingImport("flat/operators", owner.range)]),
+            PrimitiveSourceBindingContext("flat/datastruct/list", memberSnapshot, empty, [member]),
+            PrimitiveSourceBindingContext("flat/operators", operatorSnapshot, empty, [operator])]
+        let scope = PrimitiveResolvedDeclarationContext(contexts[1], contexts)
+        let generic = GenericParameterSemanticType(PrimitiveResolvedDeclarationContext(contexts.first, contexts).classIdentity(owner), "E", 0)
+        let members = member.methodValues()
+        let implementation = members.first.implementation()
+        let resolver = PrimitiveStructuralTypeResolver(genericParameter: generic, interfaces: [member, operator],
+            implementationOwner: owner, implementationRange: implementation.range,
+            declarationContext: scope, lookupRange: implementation.range)
+        expect(resolver.resolve("Int").value()).toBe(SemanticTypes.intType().value())
+        expect(resolver.resolve("Type").value()).toBe(generic.value())
+    }
+
+    async test `declared Bool equals retains checked receiver cast evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-bool-equals"), "compiler-input")
+        let sources = ["class Object { construct() {} }", "class Primitive { construct() {} }",
+            "class Bool extends Primitive { construct(visible Bool value) {} public equals(Object other) -> Bool { return value == ((Bool)other); } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let context = PrimitiveSourceBindingContext("", snapshot, syntaxes)
+        let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
+        expect(units.last.functionUnits().firstOrNull({ _.name == "equals" }).returnType.value()).toBe(SemanticTypes.boolType().value())
+    }
+
+    async test `importless target member retains canonical operator imports`() {
+        let baseSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/datastruct/list/Array.flat"), "compiler-input")
+        let overlaySnapshot = SourceSnapshotIdentity(SourceIdentity("flat/datastruct/list/Array.js.flat"), "compiler-input")
+        let traitSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/operators/PlusOperator.flat"), "compiler-input")
+        let baseStream = Lexer().lex("class Array<E> { construct() {} }")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), baseSnapshot)
+        let overlayStream = Lexer().lex("class Array<E> { public identity(PlusOperator<Array<E>, Array<E>> value) -> Array<E> { return this; } }")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), overlaySnapshot)
+        let traitStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), traitSnapshot)
+        let empty = PrimitiveClassSyntax[]
+        let contexts = [PrimitiveSourceBindingContext("flat/datastruct/list", baseSnapshot, [base.mergedWith(overlay)],
+                importValues: [PrimitiveBindingImport("flat/operators", base.range)]),
+            PrimitiveSourceBindingContext("flat/datastruct/list", overlaySnapshot, empty),
+            PrimitiveSourceBindingContext("flat/operators", traitSnapshot, empty, [contract])]
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        expect(units.first.functionUnits().firstOrNull({ _.name == "identity" }).returnType.kind()).toBe("generic-instance")
+        expect(units.first.functionUnits().firstOrNull({ _.name == "identity" }).range.snapshot).toBe(overlaySnapshot)
+        let reversed = PrimitiveClassPartitionBinder().bindContexts(contexts.reverse()).typeUnits()
+        expect(reversed.map({ _.identity.value })).toBe(units.map({ _.identity.value }))
+        let conflictingSnapshot = SourceSnapshotIdentity(SourceIdentity("other/PlusOperator.flat"), "compiler-input")
+        let conflictingStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        conflictingStream.emit("start")
+        let conflicting = PrimitiveInterfaceParser().parse(conflictingStream.consumeAll<Token>("data"), conflictingSnapshot)
+        let collisions = PrimitiveSourceBindingContext[]
+        collisions.add(contexts.first)
+        collisions.add(PrimitiveSourceBindingContext("flat/datastruct/list", overlaySnapshot, empty,
+            importValues: [PrimitiveBindingImport("other", overlay.range)]))
+        collisions.add(contexts.last)
+        collisions.add(PrimitiveSourceBindingContext("other", conflictingSnapshot, empty, [conflicting]))
+        var PrimitiveContextBindingException failure
+        try { PrimitiveClassPartitionBinder().bindContexts(collisions) }
+        catch (PrimitiveContextBindingException error) { failure = error }
+        if (!failure) throw Exception("Overlay import collision accepted")
+        expect(failure.diagnostic.code).toBe("binding.import-ambiguous")
+        expect(failure.diagnostic.range.snapshot).toBe(overlaySnapshot)
+        let candidates = failure.diagnostic.candidateValues
+        failure = null
+        try { PrimitiveClassPartitionBinder().bindContexts(collisions.reverse()) }
+        catch (PrimitiveContextBindingException error) { failure = error }
+        if (!failure) throw Exception("Reverse overlay collision accepted")
+        expect(failure.diagnostic.candidateValues).toBe(candidates)
+    }
+
+    async test `resolves imported operator contract for generic owner`() {
+        let traitSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/operators/PlusOperator.flat"), "compiler-input")
+        let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("flat/primitive/Number.flat"), "compiler-input")
+        let traitStream = Lexer().lex("trait PlusOperator<In, Out> { public plus(In another) -> Out }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), traitSnapshot)
+        let ownerStream = Lexer().lex("class Number<E> implements PlusOperator<Number<E>, Number<E>> { construct() {} public plus(Number<E> another) -> Number<E> { return this; } }")
+        ownerStream.emit("start")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
+        let empty = PrimitiveClassSyntax[]
+        let contexts = [PrimitiveSourceBindingContext("flat/operators", traitSnapshot, empty, [contract]),
+            PrimitiveSourceBindingContext("flat/primitive", ownerSnapshot, [owner],
+                importValues: [PrimitiveBindingImport("flat/operators", owner.range)])]
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        expect(units.first.functionUnits().firstOrNull({ _.name == "plus" }).returnType.kind()).toBe("generic-instance")
+    }
+
+    async test `logical reference operands bind Bool guards and reject numeric operands`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:logical-reference"), "one")
+        let sources = ["class Object { construct() {} }",
+            "class Use { run(Object other, Bool enabled) -> Bool { return (other || enabled) && other; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let context = PrimitiveSourceBindingContext("", snapshot, syntaxes)
+        let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
+        let method = units.last.functionUnits().firstOrNull({ _.name == "run" })
+        let body = method.statements()
+        var BoundReturnStatement returned
+        returned = (BoundReturnStatement)body.first
+        var BoundBinaryExpression logical
+        logical = (BoundBinaryExpression)returned.value
+        expect(logical.left.semanticType.value()).toBe(SemanticTypes.boolType().value())
+        expect(logical.right.expressionKind()).toBe("binary")
+        let invalidStream = Lexer().lex("class Invalid { run(Int value) -> Bool { return value || true; } }")
+        invalidStream.emit("start")
+        let invalid = PrimitiveClassParser().parse(invalidStream.consumeAll<Token>("data"), snapshot)
+        var String failure
+        try { PrimitiveClassPartitionBinder().bind([invalid]) }
+        catch (Exception error) { failure = error.message }
+        if (!failure) throw Exception("Numeric logical operand accepted")
+    }
+
+    async test `language default Object selects admitted canonical identity not unrelated short name`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:default-object"), "one")
+        let sources = ["class Object { construct() {} }", "class Object { construct() {} }",
+            "class Use { take(Object value) -> Object { return value; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let contexts = [PrimitiveSourceBindingContext("flat", snapshot, [syntaxes[0]]),
+            PrimitiveSourceBindingContext("unrelated", snapshot, [syntaxes[1]]),
+            PrimitiveSourceBindingContext("consumer", snapshot, [syntaxes[2]])]
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let method = units.firstOrNull({ _.identity.name == "Use" }).functionUnits().firstOrNull({ _.name == "take" })
+        let canonical = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", syntaxes[0].range.startTokenIndex), "class", "Object")
+        expect(method.returnType.value()).toBe(UserClassSemanticType(canonical).value())
+    }
+
     async test `namespace import admits two types and diagnoses colliding explicit type`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:namespace-import"), "one")
         let sources = ["class First { construct() {} }", "class Second { construct() {} }",
@@ -786,21 +1497,46 @@ testable class {
     }
 
     async test `retains declared collection result through namespace binding`() {
-        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-array-shorthand"), "one")
-        let sources = ["class Array<E> { visible Int count; construct(Int count) { this.count = count; } }",
-            "class Box { static make<Out>(Int size) -> Out[] { return Array<Out>(size); } }"]
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-array-execution"), "compiler-input")
+        let source = "class Array<E> { visible Int count; construct(Int count, Int capacity = count) { this.count = count; } } " +
+            "class Box { static make<Out>(Int size) -> Out[] { return Array<Out>(size); } " +
+            "static run() -> Int { return Box.make<Int>(3).count; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
         let syntaxes = PrimitiveClassSyntax[]
-        var Int offset
-        for (source in sources) {
-            let stream = Lexer().lex(source)
-            stream.emit("start")
-            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
-            offset += 100
-        }
+        for (partition in partitions) syntaxes.add(PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex))
         let context = PrimitiveSourceBindingContext("", snapshot, syntaxes)
         let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
-        let method = units.last.functionUnits().firstOrNull({ _.name == "make" })
-        expect(method.returnType.kind()).toBe("generic-instance")
+        let legacy = PrimitiveClassPartitionBinder().bind(syntaxes).typeUnits()
+        let results = [units, legacy]
+        for (bound in results) {
+            let array = bound.first
+            let box = bound.last
+            let method = box.functionUnits().firstOrNull({ _.name == "make" })
+            expect(method.returnType.kind()).toBe("generic-instance")
+            let body = method.statements()
+            var BoundReturnStatement returned
+            returned = (BoundReturnStatement)body.first
+            var BoundCallExpression construction
+            construction = (BoundCallExpression)returned.value
+            expect(construction.expressionKind()).toBe("call")
+            expect(construction.target.callableKind.value).toBe("constructor")
+            expect(construction.target.ownerType.value()).toBe(array.semanticType.value())
+            expect(construction.target.returnType.value()).toBe(method.returnType.value())
+            expect(construction.target.optionalParameterCount).toBe(1)
+            expect(construction.argumentValues().count).toBe(1)
+            let run = box.functionUnits().firstOrNull({ _.name == "run" })
+            let runBody = run.statements()
+            var BoundReturnStatement runReturn
+            runReturn = (BoundReturnStatement)runBody.first
+            var BoundMemberAccessExpression field
+            field = (BoundMemberAccessExpression)runReturn.value
+            expect(field.expressionKind()).toBe("member-access")
+            expect(field.memberIdentity.value).toBe(array.fieldUnits().first.identity.value)
+            expect(field.receiver.semanticType.kind()).toBe("generic-instance")
+        }
     }
 
     async test `namespace designated Array supplies ordinary typed callback hierarchy`() {
@@ -1591,7 +2327,7 @@ testable class {
         expect(parameters[2].defaultValue.semanticType.value()).toBe(parameters[2].semanticType.value())
     }
 
-    async test `generic null fallback retains absence without permitting plain null return`() {
+    async test `generic null fallback and plain null return preserve generic contract`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-fallback"), "one")
         let stream = Lexer().lex(
             "class Bag<E> { public find(E value, Bool found) -> E => null { " +
@@ -1601,30 +2337,23 @@ testable class {
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
         let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
         let method = bound.functionUnits().firstOrNull({ _.name == "find" })
-        expect(method.returnType.kind()).toBe("nullable")
-        let nullableObject = (Object)method.returnType
-        let nullable = (NullableSemanticType)nullableObject
-        expect(nullable.underlyingType.kind()).toBe("generic-parameter")
+        expect(method.returnType.kind()).toBe("generic-parameter")
         expect(bound.functionUnits().firstOrNull({ _.name == "relay" }).returnType.value())
             .toBe(method.returnType.value())
         let invalid = Lexer().lex("class Bag<E> { public find() -> E { return null; } }")
         invalid.emit("start")
         let invalidSyntax = PrimitiveClassParser().parse(invalid.consumeAll<Token>("data"), snapshot)
-        var String failure
-        try { PrimitiveClassPartitionBinder().bind([invalidSyntax]) }
-        catch (Exception error) { failure = error.message }
-        expect(failure.contains("cannot return 'null'")).toBe(true)
+        let direct = PrimitiveClassPartitionBinder().bind([invalidSyntax]).typeUnits().first
+        expect(direct.functionUnits().firstOrNull({ _.name == "find" }).returnType.kind()).toBe("generic-parameter")
     }
 
-    async test `rejects null return for unconstrained generic parameter`() {
+    async test `accepts null return for unconstrained generic parameter`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-null-invalid"), "one")
         let stream = Lexer().lex("class Box { empty<Out>() -> Out { return null; } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        var String failure
-        try { PrimitiveClassPartitionBinder().bind([syntax], snapshot) }
-        catch (Exception error) { failure = error.message }
-        expect(failure.contains("cannot return 'null'")).toBe(true)
+        let bound = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        expect(bound.functionUnits().firstOrNull({ _.name == "empty" }).returnType.kind()).toBe("generic-parameter")
     }
 
     async test `preserves method generic scope in sized array initializer`() {
@@ -2036,9 +2765,9 @@ testable class {
         expect(read.returnType.kind()).toBe("generic-parameter")
     }
 
-    async test `ordinary generic array still rejects null element assignment`() {
+    async test `ordinary primitive array rejects null element assignment`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:ordinary-array-null"), "one")
-        let stream = Lexer().lex("class Buffer<E> { E[] data; " +
+        let stream = Lexer().lex("class Buffer { Int[] data; " +
             "clear(Int index) -> Void { data[index] = null; } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
@@ -2051,8 +2780,8 @@ testable class {
 
     async test `native storage shadowing and inferred aliases do not grant clear authority`() {
         let sources = [
-            "class Buffer<E> { visible native_array E[] data; clear(E[] data) -> Void { data[0] = null; } }",
-            "class Buffer<E> { visible native_array E[] data; clear() -> Void { let alias = data; alias[0] = null; } }"
+            "class Buffer { visible native_array Int[] data; clear(Int[] data) -> Void { data[0] = null; } }",
+            "class Buffer { visible native_array Int[] data; clear() -> Void { let alias = data; alias[0] = null; } }"
         ]
         for (source in sources) {
             let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:storage-authority"), "one")

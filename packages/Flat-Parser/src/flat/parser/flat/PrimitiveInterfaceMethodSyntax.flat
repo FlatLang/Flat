@@ -14,7 +14,8 @@ data class {
         visible String returnTypeName,
         visible SourceRange range = null,
         visible PrimitiveExpressionSyntax defaultValue = null,
-        Token[] bodyDeclarationTokens = Token[]
+        Token[] bodyDeclarationTokens = Token[],
+        visible Bool storageProperty = false
     ) {
         if (!name || name.trim().isEmpty || !parameterTypeNames ||
             parameterTypeNames.any((parameterTypeName) =>

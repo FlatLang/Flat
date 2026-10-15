@@ -5,6 +5,18 @@ import flat/bound
 import flat/compiler/models
 
 testable class {
+    test `checked reference emission`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let parent = UserClassSemanticType(fixture.declaration("class", "Parent", 1))
+        let child = UserClassSemanticType(fixture.declaration("class", "Child", 2))
+        let value = BoundLiteralExpression(fixture.range(), parent, "null")
+        let conversion = BoundConversionExpression(fixture.range(), child, value,
+            TypeConversion(parent, child, "checked-reference-cast", true, false, false, 20))
+        let emitted = Es6ExpressionEmitter().emitConversion(conversion, Es6CodeResult(code: "next()"))
+        let target = Es6NameMangler.mangle(child.declarationIdentity.value)
+        expect(emitted.code).toBe("((value) => { if (value === null || value instanceof " + target +
+            ") return value; throw new TypeError('Invalid checked reference cast'); })(next())")
+    }
     test `selected calls apply argument conversion evidence`() {
         let fixture = Es6BoundWriter_TestFixture()
         let intType = SemanticTypes.intType()

@@ -1,6 +1,17 @@
 package flat/semantic/types
 
 testable class {
+    test `null inhabits unconstrained generic parameters without permitting primitive null`() {
+        let fixture = TypeSystem_TestFixture()
+        let owner = fixture.userType("List", 31)
+        let element = GenericParameterSemanticType(owner.declarationIdentity, "E", 0)
+        let primitiveElement = GenericParameterSemanticType(owner.declarationIdentity, "N", 1, SemanticTypes.intType())
+        expect(TypeConversions.classify(SemanticTypes.nullType(), element).applicable).toBe(true)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), primitiveElement).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), SemanticTypes.intType()).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), NullableSemanticType(SemanticTypes.intType())).applicable).toBe(true)
+    }
+
     test `declared and literal types retain exact immutable source typing`() {
         let fixture = TypeSystem_TestFixture()
         let declared = DeclaredType("Int?", NullableSemanticType(SemanticTypes.intType()), fixture.range())
@@ -19,6 +30,19 @@ testable class {
         expect(character.semanticType.value()).toBe("primitive:Char")
         expect(bool.semanticType.value()).toBe("primitive:Bool")
         expect(nullValue.semanticType.kind()).toBe("null")
+    }
+
+    test `checks declared root cast contract`() {
+        let fixture = TypeSystem_TestFixture()
+        let root = fixture.userType("Object", 10)
+        let contract = fixture.userType("List", 20)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
+        hierarchy.add(TypeHierarchyDeclaration(contract, "interface", UserClassSemanticType[]))
+        hierarchy.registerRootDeclaration(root)
+        hierarchy.seal()
+        expect(TypeConversions.classify(root, contract, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(root, contract, explicit: true, hierarchy: hierarchy).conversionKind).toBe("checked-reference-cast")
     }
 
     test `identity numeric and explicit primitive conversions are classified`() {

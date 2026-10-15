@@ -7,6 +7,9 @@ import flat/semantic/types
 
 /** Types immutable primitive syntax into reduced Bound expressions. */
 class {
+    var SymbolIdentity[] specializedGenericParameters = SymbolIdentity[]
+    var FunctionSemanticType originalCallbackContract
+    var SourceRange originalCallbackRange
     var LocalBinding[] implicitParameters = LocalBinding[]
     /** Local prefix updates store and yield the new value using the assignment-value contract. */
     public static bindPrefixUpdate(SourceRange range, String operator, BoundExpression operand) -> BoundExpression {
@@ -32,9 +35,107 @@ class {
     var TypeHierarchyComponent currentHierarchy
 
     /** Context supplies parameter types; call applicability validates the inferred result. */
+    statementReferences(BoundStatement[] statements, String identity) -> Bool {
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundExpressionStatement.class) &&
+                boundReferences(((BoundExpressionStatement)statement).expression, identity)) return true
+            if (statement.class.isOfType(BoundReturnStatement.class)) {
+                let returned = (BoundReturnStatement)statement
+                if (returned.value && boundReferences(returned.value, identity)) return true
+            }
+            if (statement.class.isOfType(BoundLocalDeclarationStatement.class)) {
+                let local = (BoundLocalDeclarationStatement)statement
+                if (local.initializer && boundReferences(local.initializer, identity)) return true
+            }
+            if (statement.class.isOfType(BoundIfStatement.class)) {
+                let branch = (BoundIfStatement)statement
+                if (boundReferences(branch.condition, identity) || statementReferences(branch.thenValues(), identity) ||
+                    statementReferences(branch.elseValues(), identity)) return true
+            }
+            if (statement.class.isOfType(BoundWhileStatement.class)) {
+                let loop = (BoundWhileStatement)statement
+                if (boundReferences(loop.condition, identity) || statementReferences(loop.bodyValues(), identity)) return true
+            }
+        }
+        return false
+    }
+
+    boundReferences(BoundExpression expression, String identity) -> Bool {
+        if (expression.class.isOfType(BoundReferenceExpression.class))
+            return ((BoundReferenceExpression)expression).symbolIdentity.value == identity
+        if (expression.class.isOfType(BoundFunctionInvocationExpression.class)) {
+            let invocation = (BoundFunctionInvocationExpression)expression
+            return boundReferences(invocation.functionValue, identity) || invocation.argumentValues().any({ boundReferences(_, identity) })
+        }
+        if (expression.class.isOfType(BoundBinaryExpression.class)) {
+            let binary = (BoundBinaryExpression)expression
+            return boundReferences(binary.left, identity) || boundReferences(binary.right, identity)
+        }
+        if (expression.class.isOfType(BoundUnaryExpression.class)) return boundReferences(((BoundUnaryExpression)expression).operand, identity)
+        if (expression.class.isOfType(BoundConversionExpression.class)) return boundReferences(((BoundConversionExpression)expression).value, identity)
+        if (expression.class.isOfType(BoundMemberAccessExpression.class)) return boundReferences(((BoundMemberAccessExpression)expression).receiver, identity)
+        if (expression.class.isOfType(BoundCallExpression.class)) {
+            let call = (BoundCallExpression)expression
+            return (call.receiver && boundReferences(call.receiver, identity)) || call.argumentValues().any({ boundReferences(_, identity) })
+        }
+        if (expression.class.isOfType(BoundLambdaExpression.class)) return ((BoundLambdaExpression)expression).captureValues().any({ _.symbolIdentity.value == identity })
+        return false
+    }
+
+    statementReturns(BoundStatement[] statements) -> BoundReturnStatement[] {
+        let result = BoundReturnStatement[]
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundReturnStatement.class)) result.add((BoundReturnStatement)statement)
+            else if (statement.class.isOfType(BoundIfStatement.class)) {
+                let branch = (BoundIfStatement)statement
+                result.addAll(statementReturns(branch.thenValues()))
+                result.addAll(statementReturns(branch.elseValues()))
+            }
+        }
+        return result
+    }
+
+    terminalStatements(BoundStatement[] statements) -> Bool {
+        for (statement in statements) {
+            if (statement.class.isOfType(BoundReturnStatement.class) || statement.class.isOfType(BoundThrowStatement.class)) return true
+            if (statement.class.isOfType(BoundIfStatement.class)) {
+                let branch = (BoundIfStatement)statement
+                if (terminalStatements(branch.thenValues()) && terminalStatements(branch.elseValues())) return true
+            }
+        }
+        return false
+    }
+
+    /** Reference truth follows the language null-check contract, never unknown or numeric coercion. */
+    public static bindReferenceNegation(SourceRange range, BoundExpression operand) -> BoundExpression {
+        let kind = operand.semanticType.kind()
+        if (kind != "user-class" && kind != "generic-instance" && kind != "generic-parameter" &&
+            kind != "object" && kind != "string" && kind != "array" && kind != "function") return null
+        var BoundExpression compared = operand
+        if (kind != "generic-parameter") {
+            let lifted = NullableSemanticType(operand.semanticType)
+            compared = BoundConversionExpression(range, lifted, operand,
+                TypeConversions.classify(operand.semanticType, lifted))
+        }
+        return BoundBinaryExpression(range, SemanticTypes.boolType(), "==", compared,
+            BoundLiteralExpression(range, SemanticTypes.nullType(), "null"))
+    }
+
+    specializedNullOperand(BoundExpression operand) -> BoundExpression {
+        if (!operand.class.isOfType(BoundReferenceExpression.class)) return operand
+        let reference = (BoundReferenceExpression)operand
+        if (!specializedGenericParameters.contains(reference.symbolIdentity) || operand.semanticType.kind() != "primitive") return operand
+        let lifted = NullableSemanticType(operand.semanticType)
+        return BoundConversionExpression(operand.range, lifted, operand, TypeConversions.classify(operand.semanticType, lifted))
+    }
+
     public bindCallback(PrimitiveLambdaSyntax syntax, FunctionSemanticType context,
         LocalBinding[] locals, CallableSignature[] callables,
-        TypeHierarchyComponent hierarchy = null) -> PrimitiveExpressionBindingResult {
+        TypeHierarchyComponent hierarchy = null,
+        FunctionSemanticType originalContract = null) -> PrimitiveExpressionBindingResult {
+        originalCallbackContract = originalContract
+        originalCallbackRange = syntax.range
+        specializedGenericParameters = SymbolIdentity[]
         currentHierarchy = hierarchy
         try {
             return PrimitiveExpressionBindingResult(expression: bindSyntax(syntax, locals, callables, context))
@@ -42,6 +143,10 @@ class {
             return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
                 "semantic.primitive-expression", error.message, syntax.range
             ))
+        } finally {
+            originalCallbackContract = null
+            originalCallbackRange = null
+            specializedGenericParameters = SymbolIdentity[]
         }
     }
 
@@ -50,8 +155,10 @@ class {
         SemanticType requiredType = null,
         LocalBinding[] locals = LocalBinding[],
         CallableSignature[] callables = CallableSignature[],
-        Bool explicitConversion = false
+        Bool explicitConversion = false,
+        TypeHierarchyComponent hierarchy = null
     ) -> PrimitiveExpressionBindingResult {
+        currentHierarchy = hierarchy
         if (!syntax || !locals || !callables) throw Exception("Primitive binding requires syntax, locals, and callables")
         try {
             if (requiredType && requiredType.kind() == "function" &&
@@ -84,7 +191,7 @@ class {
             let expression = bindSyntax(syntax, locals, callables, requiredType)
             if (!requiredType) return PrimitiveExpressionBindingResult(expression: expression)
             let conversion = TypeConversions.classify(
-                expression.semanticType, requiredType, explicit: explicitConversion
+                expression.semanticType, requiredType, explicit: explicitConversion, hierarchy: currentHierarchy
             )
             if (!conversion.applicable) {
                 return PrimitiveExpressionBindingResult(diagnostic: PrimitiveExpressionDiagnostic(
@@ -195,6 +302,28 @@ class {
         CallableSignature[] callables,
         SemanticType requiredType = null
     ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class) &&
+            ((PrimitiveMemberCallSyntax)syntax).memberName == "isOfType") {
+            let call = (PrimitiveMemberCallSyntax)syntax
+            if (call.receiver.class.isOfType(PrimitiveMemberAccessSyntax.class) &&
+                ((PrimitiveMemberAccessSyntax)call.receiver).memberName == "class" &&
+                call.argumentValues().count == 1 &&
+                call.argumentValues().first.class.isOfType(PrimitiveMemberAccessSyntax.class)) {
+                let argumentValues = call.argumentValues()
+                let metadataObject = (Object)argumentValues.first
+                let metadata = (PrimitiveMemberAccessSyntax)metadataObject
+                if (metadata.memberName == "class" && metadata.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                    let name = ((PrimitiveReferenceSyntax)metadata.receiver).name
+                    let owners = callables.filter((candidate) => candidate.ownerType &&
+                        candidate.ownerType.declarationIdentity.name == name)
+                    if (owners.isNotEmpty && owners.all((candidate) => candidate.ownerType.value() == owners.first.ownerType.value())) {
+                        return BoundTypeTestExpression(call.range,
+                            bindSyntax(((PrimitiveMemberAccessSyntax)call.receiver).receiver, locals, callables),
+                            BoundTypeMetadataExpression(metadata.range, owners.first.ownerType))
+                    }
+                }
+            }
+        }
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
             let value = (PrimitiveMemberCallSyntax)syntax
             if (value.safeAccess) throw Exception("Safe member call requires null-propagating binding")
@@ -316,6 +445,28 @@ class {
             let arguments = BoundExpression[]
             for (argument in value.argumentValues()) {
                 arguments.add(bindSyntax(argument, locals, callables))
+            }
+            if (receiver.semanticType.kind() == "primitive") {
+                let primitiveName = ((PrimitiveSemanticType)receiver.semanticType).name
+                let staticCandidates = callables.filter((candidate) =>
+                    candidate.callableKind.value == "static-method" &&
+                    candidate.ownerType && candidate.ownerType.declarationIdentity.name == primitiveName &&
+                    candidate.name == value.memberName && candidate.parameterTypes().isNotEmpty &&
+                    candidate.parameterTypes().first.value() == receiver.semanticType.value()
+                )
+                if (staticCandidates.isNotEmpty) {
+                    let staticArguments = BoundExpression[]
+                    staticArguments.add(receiver)
+                    staticArguments.addAll(arguments)
+                    let staticResolution = OverloadResolver.resolve(value.memberName, staticCandidates, null,
+                        staticArguments.map({ _.semanticType }), value.range, currentHierarchy)
+                    if (!staticResolution.resolved) throw Exception(staticResolution.diagnostic.message)
+                    let staticChecked = CallTypeChecker.check(staticResolution.selected, null,
+                        staticArguments.map({ _.semanticType }), value.range, currentHierarchy)
+                    if (!staticChecked.valid) throw Exception(staticChecked.diagnostic.message)
+                    return BoundCallExpression(value.range, staticChecked.semanticType, staticChecked.target,
+                        staticArguments, staticChecked.argumentConversions())
+                }
             }
             let resolution = OverloadResolver.resolve(
                 value.memberName, candidates, receiver.semanticType,
@@ -614,9 +765,6 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
             let value = (PrimitiveLambdaSyntax)syntax
-            if (value.statementValues().isNotEmpty) {
-                throw Exception("Statement-bodied callback requires bound statement lambda support")
-            }
             var FunctionSemanticType expected
             if (requiredType && requiredType.kind() == "function") {
                 expected = (FunctionSemanticType)requiredType
@@ -656,32 +804,69 @@ class {
             if (expected && value.parameterValues().isEmpty) {
                 var Int index
                 for (type in expected.parameterTypes()) {
-                    let name = "_#{index + 1}"
+                    let names = expected.parameterNames()
+                    let name = names.count > index && names[index].isNotEmpty ? "_#{names[index]}" : "_#{index + 1}"
                     let identity = SymbolIdentity(DeclarationIdentity(
                         SyntaxIslandIdentity(value.range.snapshot, "lambda", value.range.startTokenIndex),
                         "lambda-parameter", name
                     ), "lambda-parameter", index++)
                     parameters.add(BoundFunctionParameter(name, identity, type))
+                    if (originalCallbackContract && originalCallbackRange == value.range && index <= originalCallbackContract.parameterTypes().count &&
+                        originalCallbackContract.parameterTypes()[index - 1].kind() == "generic-parameter") specializedGenericParameters.add(identity)
                     let local = LocalBinding(name, identity, type)
                     implicitParameters.add(local)
                     lambdaLocals.add(local)
+                    lambdaLocals.add(LocalBinding("_#{index}", identity, type))
                 }
             }
             var BoundExpression body
+            let statements = BoundStatement[]
             try {
-                body = value.emptyBody
+                if (value.statementValues().isNotEmpty) {
+                    if (!expected) throw Exception("Statement callback requires contextual function type");
+                    statements.addAll(PrimitiveControlStatementBinder().bind(
+                        PrimitiveStatementSyntaxResult(value.statementValues()), value.range.snapshot,
+                        lambdaLocals, callables, expressionBinder: this, hierarchy: currentHierarchy).statements())
+                    let returns = statementReturns(statements)
+                    var SemanticType resultType = expected.returnType
+                    if (resultType.kind() == "unknown" || resultType.kind() == "generic-parameter") {
+                        resultType = returns.isEmpty ? SemanticTypes.unitType() : returns.first.requiredType
+                    }
+                    for (returned in returns) {
+                        if (resultType.value() == SemanticTypes.unitType().value() && returned.requiredType.kind() == "null") continue
+                        if (returned.requiredType.value() != resultType.value()) {
+                            throw Exception("Callback return type mismatch at token #{returned.range.startTokenIndex}")
+                        }
+                    }
+                    if (resultType.value() != SemanticTypes.unitType().value() && !terminalStatements(statements)) {
+                        throw Exception("Callback may complete without returning a value")
+                    }
+                    body = BoundLiteralExpression(value.range, resultType, "null")
+                } else body = value.emptyBody
                     ? BoundLiteralExpression(value.range, SemanticTypes.unitType(), "null")
                     : bindSyntax(value.body, lambdaLocals, callables)
             } finally {
                 implicitParameters = previousImplicitParameters
                 implicitParameterIndex = previousImplicitIndex
             }
+            if (expected && expected.returnType.kind() == "unit" && body.semanticType.kind() != "unit" &&
+                value.statementValues().isEmpty) {
+                statements.add(BoundExpressionStatement(value.body.range, body))
+                body = BoundLiteralExpression(value.range, SemanticTypes.unitType(), "null")
+            }
+            if (expected && body.semanticType.kind() == "null" &&
+                expected.returnType.kind() == "generic-parameter") {
+                let conversion = TypeConversions.classify(body.semanticType, expected.returnType,
+                    hierarchy: currentHierarchy)
+                if (conversion.applicable) body = BoundConversionExpression(
+                    body.range, expected.returnType, body, conversion)
+            }
             let parameterNames = value.parameterValues().map({ _.name })
             let captures = BoundReferenceExpression[]
             for (local in locals) {
                 let selected = locals.reverse().firstOrNull({ _.name == local.name })
                 if (selected.identity.value == local.identity.value &&
-                    referencesName(value.body, local.name) && !parameterNames.contains(local.name)) {
+                    (referencesName(value.body, local.name) || statementReferences(statements, local.identity.value)) && !parameterNames.contains(local.name)) {
                     captures.add(BoundReferenceExpression(
                         value.range, local.semanticType, local.name, local.identity
                     ))
@@ -691,8 +876,7 @@ class {
                 value.range,
                 FunctionSemanticType(parameters.map({ _.semanticType }), body.semanticType,
                     expected ? expected.asyncFunction : false),
-                parameters, captures, body
-            )
+                parameters, captures, body, statements            )
         }
         if (syntax.class.isOfType(PrimitiveFunctionReferenceSyntax.class)) {
             let value = (PrimitiveFunctionReferenceSyntax)syntax
@@ -719,6 +903,8 @@ class {
                 value.range, ArraySemanticType(elementType), elements
             )
             if (requiredType && requiredType.kind() == "generic-instance") {
+                if (TypeConversions.classify(storage.semanticType, requiredType,
+                    hierarchy: currentHierarchy).applicable) return storage
                 let instance = (GenericInstanceSemanticType)requiredType
                 let candidates = callables.filter((candidate) =>
                     candidate.callableKind.value == "constructor" && candidate.name == "Array" &&
@@ -793,6 +979,16 @@ class {
                 }
                 let typeObject = (Object)local.semanticType
                 let functionType = (FunctionSemanticType)typeObject
+                if (arguments.count != functionType.parameterTypes().count) throw Exception("Callback argument count mismatch")
+                var Int argumentIndex
+                for (type in functionType.parameterTypes()) {
+                    let argument = arguments[argumentIndex]
+                    let conversion = TypeConversions.classify(argument.semanticType, type, hierarchy: currentHierarchy)
+                    if (!conversion.applicable) throw Exception("Callback argument type mismatch")
+                    if (argument.semanticType.value() != type.value()) arguments[argumentIndex] =
+                        BoundConversionExpression(argument.range, type, argument, conversion)
+                    argumentIndex++
+                }
                 return BoundFunctionInvocationExpression(
                     value.range,
                     BoundReferenceExpression(value.range, local.semanticType, local.name, local.identity),
@@ -832,10 +1028,15 @@ class {
             if (condition.semanticType.value() != SemanticTypes.boolType().value()) {
                 throw Exception("Conditional expression requires Bool condition")
             }
-            let whenTrue = bindSyntax(value.whenTrue, locals, callables)
-            let whenFalse = bindSyntax(value.whenFalse, locals, callables)
+            var BoundExpression whenTrue = bindSyntax(value.whenTrue, locals, callables)
+            var BoundExpression whenFalse = bindSyntax(value.whenFalse, locals, callables)
             if (whenTrue.semanticType.value() != whenFalse.semanticType.value()) {
-                throw Exception("Conditional expression branches require common type")
+                let common = SemanticTypes.objectType()
+                let trueConversion = TypeConversions.classify(whenTrue.semanticType, common, hierarchy: currentHierarchy)
+                let falseConversion = TypeConversions.classify(whenFalse.semanticType, common, hierarchy: currentHierarchy)
+                if (!trueConversion.applicable || !falseConversion.applicable) throw Exception("Conditional expression branches require common type")
+                whenTrue = BoundConversionExpression(value.whenTrue.range, common, whenTrue, trueConversion)
+                whenFalse = BoundConversionExpression(value.whenFalse.range, common, whenFalse, falseConversion)
             }
             return BoundConditionalExpression(
                 value.range, whenTrue.semanticType, condition, whenTrue, whenFalse
@@ -847,6 +1048,10 @@ class {
             if (value.operator == "++" || value.operator == "--") {
                 return bindPrefixUpdate(value.range, value.operator, operand)
             }
+            if (value.operator == "!") {
+                let absence = bindReferenceNegation(value.range, operand)
+                if (absence) return absence
+            }
             let typed = TypeOperations.unary(value.operator, operand.semanticType, value.range)
             if (!typed.valid) throw Exception(typed.diagnostic.message)
             return BoundUnaryExpression(
@@ -855,8 +1060,12 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
             let value = (PrimitiveBinarySyntax)syntax
-            let left = bindSyntax(value.left, locals, callables)
-            let right = bindSyntax(value.right, locals, callables)
+            var BoundExpression left = bindSyntax(value.left, locals, callables)
+            var BoundExpression right = bindSyntax(value.right, locals, callables)
+            if (value.operator == "==" || value.operator == "!=") {
+                if (right.semanticType.kind() == "null") left = specializedNullOperand(left)
+                if (left.semanticType.kind() == "null") right = specializedNullOperand(right)
+            }
             let typed = TypeOperations.binary(
                 value.operator, left.semanticType, right.semanticType, value.range
             )

@@ -21,7 +21,7 @@ testable class {
         CompilerSource("flat/primitive/Primitive.flat", Es6ArtifactFiles.read(
             File("../Flat-Core/src/flat/primitive/Primitive.flat")))
         ]
-        return values
+        return Compiler_Test.admitCoreDependencies(values)
     }
 
     async test `public package API executes unchanged production Char behavior`() {
@@ -31,7 +31,7 @@ testable class {
             MemoryCompilerSourceProvider(sources), sink, "core/characters.js"
         )
         let summary = session.completion.get()
-        expect(summary.sourceCount).toBe(4)
+        expect(summary.sourceCount).toBe(sources.count)
         expect(summary.artifactCount).toBe(1)
         expect(summary.diagnosticCount).toBe(0)
         expect(summary.cancelled).toBe(false)
@@ -93,7 +93,12 @@ testable class {
         let backward = MemoryCompilerArtifactSink()
         let compiler = Compiler()
         let first = compiler.compilePackage(MemoryCompilerSourceProvider(sources), forward, "core.js")
-        CompilerSource[] reversed = [sources[3], sources[2], sources[1], sources[0]]
+        let reversed = CompilerSource[]
+        var Int index = sources.count
+        while (index > 0) {
+            index--
+            reversed.add(sources[index])
+        }
         let second = compiler.compilePackage(MemoryCompilerSourceProvider(reversed), backward, "core.js")
         expect(first.completion.get().diagnosticCount).toBe(0)
         expect(second.completion.get().diagnosticCount).toBe(0)
@@ -293,6 +298,26 @@ testable class {
         expect(session.progress.closed).toBe(true)
     }
 
+    async test `cleanup crossing foreach continue returns source diagnostic without artifacts`() {
+        let identity = "app/Cleanup.flat"
+        let source = "class Cleanup { static run() -> Int {\n" +
+            "for (i in 0..2) { try { continue; } finally { let done = 1; } }\n" +
+            "return 0; } }"
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(
+            MemoryCompilerSourceProvider([CompilerSource(identity, source)]), sink, "cleanup.js"
+        )
+        let summary = session.completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.artifactCount).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+        expect(session.diagnostics.closed).toBe(true)
+        expect(session.artifacts.closed).toBe(true)
+        expect(summary.packageDiagnostic.contains("semantic.cleanup-crossing-continue")).toBe(true)
+        expect(summary.packageDiagnostic.contains("app/Cleanup.flat:2:25")).toBe(true)
+        expect(summary.packageDiagnostic.contains("Foreach continue through try/catch/finally")).toBe(true)
+    }
+
     async test `package link failure returns diagnostic without partial artifact`() {
         let sources = realSources()
         sources.add(CompilerSource("broken.flat", "class Broken {"))
@@ -306,7 +331,7 @@ testable class {
         let sink = MemoryCompilerArtifactSink()
         let session = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), sink, "core.js")
         let summary = session.completion.get()
-        expect(summary.sourceCount).toBe(5)
+        expect(summary.sourceCount).toBe(sources.count)
         expect(summary.packageDiagnostic).toBe(expectedDiagnostic)
         expect(summary.artifactCount).toBe(0)
         expect(summary.diagnosticCount).toBe(1)

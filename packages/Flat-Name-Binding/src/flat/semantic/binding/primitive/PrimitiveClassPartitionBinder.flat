@@ -194,7 +194,7 @@ class {
                 signatureContext.validateImports()
                 interfaces = contracts
                 for (original in source.classValues()) {
-                    let syntax = withTraitImplementations(original)
+                    let syntax = withTraitImplementations(withImplicitRootParent(original, syntaxes))
                     effectiveSyntaxes.add(syntax)
                     signatureLookupRange = syntax.range
                     signatures.addAll(constructorSignatures([syntax], null))
@@ -207,7 +207,91 @@ class {
             signatureContext = null
             signatureLookupRange = null
         }
+        for (source in ordered) {
+            let scope = PrimitiveResolvedDeclarationContext(source, ordered)
+            for (contract in source.interfaceValues()) {
+                let owner = UserClassSemanticType(scope.resolve(contract.name, contract.range))
+                let parameters = GenericParameterSemanticType[]
+                var Int ordinal
+                for (name in contract.genericParameterNames()) parameters.add(
+                    GenericParameterSemanticType(owner.declarationIdentity, name, ordinal++))
+                let resolver = PrimitiveStructuralTypeResolver(interfaces: contracts,
+                    methodGenericParameters: parameters, declarationContext: scope,
+                    lookupRange: contract.range)
+                for (member in contract.methodValues()) {
+                    if (member.parameterTypeNames().isNotEmpty) {
+                        let implementation = member.implementation()
+                        if (!implementation) continue
+                        let identity = DeclarationIdentity(SyntaxIslandIdentity(member.range.snapshot,
+                            "instance-method", member.range.startTokenIndex), "instance-method", member.name)
+                        let methodParameters = GenericParameterSemanticType[]
+                        for (name in implementation.genericParameterNames()) methodParameters.add(
+                            GenericParameterSemanticType(identity, name, methodParameters.count))
+                        let visibleParameters = GenericParameterSemanticType[]:addAll(parameters)
+                        visibleParameters.addAll(methodParameters)
+                        let memberResolver = PrimitiveStructuralTypeResolver(interfaces: contracts,
+                            methodGenericParameters: visibleParameters, declarationContext: scope,
+                            lookupRange: member.range)
+                        let selfArguments = SemanticType[]
+                        for (parameter in parameters) selfArguments.add(parameter)
+                        var SemanticType returnType = implementation.inferredReturnType ? SemanticTypes.unknownType() :
+                            implementation.returnTypeName == "this" ? (parameters.isEmpty ? owner : GenericInstanceSemanticType(owner, selfArguments)) :
+                            memberResolver.resolve(implementation.returnTypeName)
+                        if (returnType.kind() == "unknown") {
+                            var CallableSignature published
+                            for (candidate in signatures) {
+                                if (candidate.identity.declaration.value == identity.value && candidate.returnType.kind() != "unknown") published = candidate
+                            }
+                            if (published) {
+                                let ownerSyntax = scope.classFor(published.ownerType.declarationIdentity)
+                                var String implementedName
+                                if (ownerSyntax) {
+                                    for (name in ownerSyntax.implementedTypeNames()) {
+                                        if (name.startsWith("#{contract.name}<")) implementedName = name
+                                    }
+                                }
+                                if (ownerSyntax && ownerSyntax.genericParameterName && parameters.count == 1 &&
+                                    implementedName == "#{contract.name}<#{ownerSyntax.genericParameterName}>") {
+                                    returnType = GenericSubstitution([GenericParameterSemanticType(published.ownerType.declarationIdentity,
+                                        ownerSyntax.genericParameterName, 0)], [parameters.first]).apply(published.returnType)
+                                } else returnType = published.returnType
+                            }
+                        }
+                        let argumentTypes = SemanticType[]
+                        let argumentNames = String[]
+                        var Int optionalCount
+                        for (parameter in implementation.parameterValues()) {
+                            argumentTypes.add(memberResolver.resolve(parameter.typeName))
+                            argumentNames.add(parameter.name)
+                            if (parameter.defaultValue) optionalCount++
+                        }
+                        signatures.add(CallableSignature(SymbolIdentity(identity, "instance-method"), member.name,
+                            CallableKind("instance-method"), argumentTypes, returnType, owner,
+                            optionalCount, argumentNames, methodParameters,
+                            parameters.isEmpty ? null : GenericDeclaration(owner.declarationIdentity, parameters, owner)))
+                        continue
+                    }
+                    let identity = DeclarationIdentity(SyntaxIslandIdentity(member.range.snapshot,
+                        "instance-method", member.range.startTokenIndex), "instance-method", member.name)
+                    signatures.add(CallableSignature(SymbolIdentity(identity, "instance-method"),
+                        member.name, CallableKind("instance-method"), SemanticType[],
+                        resolver.resolve(member.returnTypeName), owner,
+                        ownerGenericDeclaration: parameters.isEmpty ? null :
+                            GenericDeclaration(owner.declarationIdentity, parameters, owner)))
+                }
+            }
+        }
         var TypeHierarchyComponent contextHierarchy
+        if (!arrayDeclaration) {
+            let canonical = ordered.firstOrNull((source) => source.namespaceName == "flat/datastruct/list" &&
+                source.classValues().any({ _.name == "Array" }))
+            let canonicalSyntax = canonical ? canonical.classValues().firstOrNull({ _.name == "Array" }) : null
+            let selected = canonicalSyntax ? effectiveSyntaxes.firstOrNull((syntax) =>
+                syntax.name == "Array" && syntax.range.snapshot == canonicalSyntax.range.snapshot &&
+                syntax.range.startTokenIndex == canonicalSyntax.range.startTokenIndex) : null
+            if (selected) contextHierarchy = arrayHierarchy(selected, effectiveSyntaxes, null,
+                context: PrimitiveResolvedDeclarationContext(canonical, ordered))
+        }
         if (arrayDeclaration) {
             let selected = effectiveSyntaxes.firstOrNull((syntax) =>
                 DeclarationIdentity(SyntaxIslandIdentity(syntax.range.snapshot, "class", syntax.range.startTokenIndex), "class", syntax.name).value == arrayDeclaration.value
@@ -217,6 +301,27 @@ class {
                 syntax.range.snapshot == selected.range.snapshot && syntax.range.startTokenIndex == selected.range.startTokenIndex))
             let scope = PrimitiveResolvedDeclarationContext(source, ordered)
             contextHierarchy = arrayHierarchy(selected, effectiveSyntaxes, null, context: scope)
+        }
+        if (!contextHierarchy) {
+            contextHierarchy = TypeHierarchyComponent()
+            for (source in ordered) {
+                let scope = PrimitiveResolvedDeclarationContext(source, ordered)
+                for (syntax in source.classValues()) {
+                    let type = UserClassSemanticType(scope.classIdentity(syntax))
+                    let parents = UserClassSemanticType[]
+                    if (syntax.parentName) parents.add(UserClassSemanticType(scope.resolve(syntax.parentName, syntax.range)))
+                    else if (syntax.name != "Object" && syntaxes.any({ _.name == "Object" })) {
+                        parents.add(UserClassSemanticType(scope.resolve("Object", syntax.range)))
+                    }
+                    let genericParameters = GenericParameterSemanticType[]
+                    if (syntax.genericParameterName) genericParameters.add(GenericParameterSemanticType(
+                        type.declarationIdentity, syntax.genericParameterName, 0))
+                    contextHierarchy.add(TypeHierarchyDeclaration(type, "class", parents,
+                        genericParameters: genericParameters))
+                }
+            }
+            contextHierarchy.seal()
+            if (!contextHierarchy.valid) throw Exception("Invalid source component hierarchy")
         }
         let units = BoundTypeUnit[]
         let completed = String[]
@@ -242,6 +347,7 @@ class {
                         let inherited = PrimitiveInheritanceBinder().bind(parentSyntax, syntax,
                             availableConstructors: signatures, interfaceSyntaxValues: contracts,
                             boundParent: parentUnit, availableFields: fields, conversionHierarchy: contextHierarchy,
+                            rootContractFunctions: units.firstOrNull({ _.identity.name == "Object" })?.functionUnits() ?: BoundFunctionUnit[],
                             parentContext: scope.scopeFor(parentIdentity), childContext: scope)
                         units.add(inherited.childType)
                     } else units.add(PrimitiveClassBinder().bind(syntax, source.snapshot,
@@ -350,6 +456,14 @@ class {
             for (argument in call.argumentValues()) {
                 if (awaitInExpression(argument, syntax, method, syntaxes,
                     signatures, fields, boundNames)) return true
+            }
+            if (call.receiver.class.isOfType(PrimitiveConstructionSyntax.class)) {
+                let construction = (PrimitiveConstructionSyntax)call.receiver
+                let target = syntaxes.firstOrNull({ _.name == construction.typeName })
+                if (target && signatures.any((candidate) => candidate.ownerType &&
+                    candidate.ownerType.declarationIdentity.name == target.name &&
+                    candidate.name == call.memberName && candidate.returnType.kind() == "unknown") &&
+                    !boundNames.contains(target.name) && target.name != syntax.name) return true
             }
             if (call.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
                 let reference = (PrimitiveReferenceSyntax)call.receiver
@@ -468,6 +582,30 @@ class {
                 hierarchy.add(TypeHierarchyDeclaration(root, "class", UserClassSemanticType[]))
             hierarchy.registerRootDeclaration(root)
         }
+        for (syntax in syntaxes) {
+            if (syntax.name == array.name || syntax.genericParameterName || syntax.implementedTypeNames().isEmpty) continue
+            let identity = DeclarationIdentity(SyntaxIslandIdentity(snapshot ?: syntax.range.snapshot,
+                "class", syntax.range.startTokenIndex), "class", syntax.name)
+            let scope = context ? context.scopeFor(identity) : null
+            let concreteResolver = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, snapshot: snapshot,
+                interfaces: interfaces, declarationContext: scope, lookupRange: syntax.range)
+            let concreteParents = GenericInstanceSemanticType[]
+            for (name in syntax.implementedTypeNames()) {
+                let resolved = concreteResolver.resolve(name)
+                if (resolved.kind() != "generic-instance") continue
+                let instance = (GenericInstanceSemanticType)resolved
+                let contract = scope ? scope.interfaceFor(instance.declarationType.declarationIdentity) :
+                    interfaces.firstOrNull({ _.name == instance.declarationType.declarationIdentity.name })
+                if (!contract) continue
+                publishInterface(contract, instance.declarationType, syntaxes, snapshot, hierarchy, published,
+                    scope ? scope.scopeFor(instance.declarationType.declarationIdentity) : null)
+                concreteParents.add(instance)
+            }
+            let directParents = UserClassSemanticType[]
+            for (parent in concreteParents) directParents.add(parent.declarationType)
+            hierarchy.add(TypeHierarchyDeclaration(UserClassSemanticType(identity), "class", directParents,
+                genericParents: concreteParents))
+        }
         hierarchy.seal()
         if (!hierarchy.valid) throw Exception("Invalid array interface hierarchy")
         return hierarchy
@@ -510,14 +648,45 @@ class {
     /** Publish default bodies before signatures, scoped to this finite class partition. */
     withTraitImplementations(PrimitiveClassSyntax syntax) -> PrimitiveClassSyntax {
         let methods = syntax.methodValues()
+        let fields = syntax.fieldValues()
         for (name in syntax.implementedTypeNames()) {
             publishTraitDefaults(syntax, name, methods, String[])
+            publishTraitStorage(syntax, name, fields, String[])
         }
-        if (methods.count == syntax.methodValues().count) return syntax
+        if (methods.count == syntax.methodValues().count && fields.count == syntax.fieldValues().count) return syntax
         return PrimitiveClassSyntax(syntax.range, syntax.name, syntax.genericParameterName,
-            syntax.parentName, syntax.fieldValues(), syntax.constructorValue, methods,
+            syntax.parentName, fields, syntax.constructorValue, methods,
             syntax.implementedTypeNames(), syntax.abstractClass,
             syntax.arrayOverrideValues(), syntax.constructorValues())
+    }
+
+    publishTraitStorage(PrimitiveClassSyntax syntax, String implementedName,
+        PrimitiveFieldSyntax[] fields, String[] path) {
+        let open = implementedName.indexOf("<", defaultReturnValue: -1)
+        let name = open < 0 ? implementedName : implementedName.substring(0, open)
+        if (path.contains(name)) throw Exception("Trait storage cycle '#name'")
+        let contract = interfaces.firstOrNull({ _.name == name })
+        if (!contract) return
+        let arguments = open < 0 ? String[] : splitOverrideTypes(implementedName.substring(open + 1, implementedName.count - 1))
+        let parameters = contract.genericParameterNames()
+        if (parameters.count != arguments.count) throw Exception("Trait storage generic arity mismatch")
+        for (member in contract.methodValues()) {
+            if (!member.storageProperty || fields.any({ _.name == member.name }) ||
+                syntax.methodValues().any({ _.name == member.name })) continue
+            var String typeName = member.returnTypeName
+            var Int index
+            for (parameter in parameters) typeName = typeName.replace(parameter, arguments[index++])
+            fields.add(PrimitiveFieldSyntax(member.range, typeName, member.name, true,
+                member.defaultValue, mutableField: true))
+        }
+        let visited = String[]:addAll(path)
+        visited.add(name)
+        for (parent in contract.parentTypeNames()) {
+            var String instantiated = parent
+            var Int index
+            for (parameter in parameters) instantiated = instantiated.replace(parameter, arguments[index++])
+            publishTraitStorage(syntax, instantiated, fields, visited)
+        }
     }
 
     /** Resolve each contract edge before publishing defaults; the path bounds cycles to this partition. */
@@ -718,6 +887,17 @@ class {
                     signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics,
                         syntax, method.range, parameter.nativeArrayStorage)
                 )
+                var Int provenanceIndex
+                for (parameter in method.parameterValues()) {
+                    parameterTypes[provenanceIndex] = PrimitiveStructuralTypeResolver(interfaces: interfaces).specializedParameterType(method, provenanceIndex, parameterTypes[provenanceIndex])
+                    provenanceIndex++
+                }
+                var Int callbackIndex
+                for (parameter in method.parameterValues()) {
+                    parameterTypes[callbackIndex] = PrimitiveStructuralTypeResolver().withCallbackNames(
+                        parameterTypes[callbackIndex], parameter.callbackParameterNames())
+                    callbackIndex++
+                }
                 if (syntax.name == "String") {
                     parameterTypes = SemanticType[]
                     for (parameter in method.parameterValues()) {
@@ -752,6 +932,41 @@ class {
                             parameterIndex++
                         }
                     }
+                    if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value &&
+                        inferredSyntax.value.class.isOfType(PrimitiveCallSyntax.class)) {
+                        let call = (PrimitiveCallSyntax)inferredSyntax.value
+                        let targets = syntax.methodValues().filter((candidate) => candidate.name == call.name &&
+                            candidate.parameterValues().count == call.argumentValues().count)
+                        let results = SemanticType[]
+                        for (target in targets) {
+                            // Generic results must be instantiated by typed call selection, not
+                            // copied into the caller's declaration scope during signature seeding.
+                            if (target.genericParameterNames().isNotEmpty) continue
+                            var SemanticType resultType = target.inferredReturnType ? SemanticTypes.unknownType() :
+                                signatureType(target.returnTypeName, syntaxes, snapshot, classGeneric, GenericParameterSemanticType[], syntax, target.range)
+                            if (resultType.kind() == "unknown") {
+                                var SemanticType literalResult
+                                var Bool conflictingLiteral
+                                for (statement in target.statements()) {
+                                    if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                                        let returned = (PrimitiveReturnSyntax)statement
+                                        if (returned.value && returned.value.class.isOfType(PrimitiveLiteralSyntax.class)) {
+                                            let typed = PrimitiveExpressionBinder().bind(returned.value)
+                                            if (typed.succeeded) {
+                                                if (literalResult && literalResult.value() != typed.expression.semanticType.value()) conflictingLiteral = true
+                                                literalResult = typed.expression.semanticType
+                                            }
+                                        }
+                                    }
+                                }
+                                if (literalResult && !conflictingLiteral) resultType = literalResult
+                            }
+                            resultType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(target, resultType)
+                            if (resultType.kind() != "unknown") results.add(resultType)
+                        }
+                        if (results.count == targets.count && results.isNotEmpty &&
+                            results.all({ _.value() == results.first.value() })) inferredMethodReturn = results.first
+                    }
                     if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
                         let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
                         if (inferred.succeeded) inferredMethodReturn = inferred.expression.semanticType
@@ -764,7 +979,7 @@ class {
                          method.returnTypeName == "String")
                         ? owner :
                     signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range)
-                let returnType = PrimitiveStructuralTypeResolver().fallbackResultType(
+                let returnType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(
                     method, declaredReturnType)
                 let identity = DeclarationIdentity(
                     SyntaxIslandIdentity(

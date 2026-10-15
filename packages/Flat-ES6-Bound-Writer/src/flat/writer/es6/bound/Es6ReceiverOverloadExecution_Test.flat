@@ -12,6 +12,360 @@ import flat/semantic/types
 
 /** Executes receiver-owned overload selection through generated ES6. */
 testable class {
+    async test `declared static field named defaults and reference absence execute`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:semantic-contract-execute"), "one")
+        let sources = ["class Limit { visible static Int MAX = 42; }",
+            "class Value { public choose(Int first = 1, Int: middle = 2, Int: last = 3) -> Int { return first + middle + last; } public run() -> Int { return this.choose(middle: 8) + Limit.MAX; } public absent(Object value) -> Bool { return !value; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits()
+        var String code = ""
+        for (unit in units) code += Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let unit = units.last
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let run = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "run" }).identity.value)
+        let absent = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "absent" }).identity.value)
+        let root = File(".flat-es6-contracts-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "contracts.js")
+        Es6ArtifactCommitter().commit(destination, code + "let v = new " + owner + "(); console.log(v." + run + "(),v." + absent + "(null),v." + absent + "({}));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("54 true false\n")
+    }
+
+    async test `executes owner scoped nested inference`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nested-inference-execute"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public relay(Box<Box<E>> value) -> Box<Box<E>> { return value; } public nested(Box<Box<E>> value) => relay(value) }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let sources = ["class Box<E> {}", "class Generic<E> implements Items<E> {}", "class Concrete implements Items<Int> {}"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset = 100
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let context = PrimitiveSourceBindingContext("flat", snapshot, syntaxes, [contract])
+        let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
+        var String code = ""
+        for (unit in units) code += Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let unit = units.firstOrNull({ _.semanticType.declarationIdentity.name == "Concrete" })
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "nested" }).identity.value)
+        let root = File(".flat-es6-nested-inference-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "nested.js")
+        Es6ArtifactCommitter().commit(destination, code + "let value = {nested:{value:0}}; console.log((new " + owner + "())." + method + "(value) === value);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+    }
+
+    async test `executes primitive static callback dispatch`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:primitive-static-execute"), "one")
+        let sources = ["class Int { public static encode(Int value, Bool format = false, String tab = \"x\") -> String => \"ok\" }", "class Range { public map<Out>(callback(Int value) -> Out) -> Out => callback(1) public render(Bool format, String tab) -> String => map({ _.encode(format, tab) }) }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits()
+        var String code = ""
+        for (unit in units) code += Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let unit = units.last
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "render" }).identity.value)
+        let root = File(".flat-es6-primitive-static-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "primitive.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log((new " + owner + "())." + method + "(false, 'x'));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("ok\n")
+    }
+
+    async test `executes explicit native array contract`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-array-execute"), "one")
+        let stream = Lexer().lex("class Factory { public static read() -> Sequence<Int> { return [2, 3]; } }")
+        stream.emit("start")
+        let factory = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let bufferStream = Lexer().lex("class Buffer<E> implements Sequence<E> {}")
+        bufferStream.emit("start")
+        let buffer = PrimitiveClassParser().parse(bufferStream.consumeAll<Token>("data"), snapshot, 100)
+        let traitStream = Lexer().lex("trait Sequence<E> {}")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot, 200)
+        let result = PrimitiveClassPartitionBinder().bind([factory, buffer], interfaceSyntaxValues: [contract], arrayDeclaration: buffer)
+        let unit = result.typeUnits().firstOrNull({ _.identity.name == "Factory" })
+        let method = unit.functionUnits().firstOrNull({ _.name == "read" })
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let root = File(".flat-es6-native-array-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "array.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" + Es6NameMangler.mangle(unit.identity.value) + "." + Es6NameMangler.mangle(method.identity.value) + "().join(','));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("2,3\n")
+    }
+
+    async test `executes nested continue and shared match`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:match-execute"), "one")
+        let stream = Lexer().lex("class Digits { public static count() -> Int { var Int n = 0; for (i in 0..3) { for (j in 0..3) { if (j == 0) { continue; } if (j == 2) { continue; } n += 10; } match i++ { 0 => 1 => n++; } } return n; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        let method = unit.functionUnits().firstOrNull({ _.name == "count" })
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let root = File(".flat-es6-match-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "match.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" + Es6NameMangler.mangle(unit.identity.value) + "." + Es6NameMangler.mangle(method.identity.value) + "());\n")
+        let harness = File(root, "bounded.js")
+        Es6ArtifactCommitter().commit(harness, "const r = require('child_process').spawnSync(process.execPath, [process.argv[2]], {encoding:'utf8', timeout:5000}); if (r.error) { console.error(r.error.message); process.exit(1); } process.stdout.write(r.stdout); process.stderr.write(r.stderr); process.exit(r.status === null ? 1 : r.status);\n")
+        let response = System.execute(["node", harness.normalizedLocation, destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("21\n")
+    }
+
+    async test `executes generic null forwarding`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:null-forward-execute"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public or(E fallback, E value, Bool matches) -> E { if (matches) { return value; } return fallback; } public absent(E value, Bool matches) -> E { return or(null, value, matches); } public echo(E value) -> E { return value; } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Range implements Items<Int> {}")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let absent = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "absent" }).identity.value)
+        let echo = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "echo" }).identity.value)
+        let root = File(".flat-es6-null-forward-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "forward.js")
+        Es6ArtifactCommitter().commit(destination, code + "let v = new " + owner + "(); console.log(v." + absent + "(0,false) === null,v." + absent + "(0,true),v." + echo + "(7));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true 0 7\n")
+    }
+
+    async test `executes specialized nullable generic return`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:generic-return-execute"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public select(E input, Bool matches) -> E { var E value; if (matches) { value = input; } if (input == 99) { return null; } return value; } public empty() -> E { var E value; return null; } public echo(E value) -> E { return value; } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Range implements Items<Int> {}")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let select = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "select" }).identity.value)
+        let echo = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "echo" }).identity.value)
+        let root = File(".flat-es6-generic-return-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "return.js")
+        Es6ArtifactCommitter().commit(destination, code + "let v = new " + owner + "(); console.log(v." + select + "(0,false) === null,v." + select + "(0,true),v." + echo + "(7));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true 0 7\n")
+    }
+
+    async test `executes specialized generic null predicate`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:specialized-null-execute"), "one")
+        let traitStream = Lexer().lex("trait Items<E> { public filter(test(E x) -> Bool) -> Bool { return test(0); } public filterNull() -> Bool { return filter({ _ != null }); } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Range implements Items<Int> {}")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [contract])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "filterNull" }).identity.value)
+        let root = File(".flat-es6-generic-null-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "predicate.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log((new " + owner + "())." + method + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true\n")
+    }
+
+    async test `executes inherited mutable storage`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:trait-storage-execute"), "one")
+        let traitStream = Lexer().lex("trait Sized { visible var Int count public read() -> Int => count }")
+        traitStream.emit("start")
+        let sized = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), snapshot)
+        let stream = Lexer().lex("class Value implements Sized { public construct() { count = 9; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, 100)
+        let context = PrimitiveSourceBindingContext("flat", snapshot, [syntax], [sized])
+        let unit = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "read" }).identity.value)
+        let root = File(".flat-es6-trait-storage-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "storage.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log((new " + owner + "())." + method + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("9\n")
+    }
+
+    async test `trailing comma array executes without an elided element`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:array-comma-execute"), "one")
+        let stream = Lexer().lex("class Value { public static read() -> Int { let values = [10, 20,]; return values.count + values[1]; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "read" }).identity.value)
+        let root = File(".flat-es6-array-comma-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "array.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" + owner + "." + method + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("22\n")
+    }
+
+    async test `colon invocation retains receiver once with dot result distinct`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:colon-execution"), "one")
+        let stream = Lexer().lex("class Box<E> { visible var Int count; construct() { count = 0; } public add(Int value) -> Int { count += value; return 99; } public static chained() -> Int { let box = Box<Int>():add(3); return box.count; } public static dotted() -> Int { return Box<Int>().add(3); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let chained = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "chained" }).identity.value)
+        let dotted = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "dotted" }).identity.value)
+        let root = File(".flat-es6-colon-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "colon.js")
+        Es6ArtifactFiles.write(destination, code + "console.log(" + owner + "." + chained + "()," + owner + "." + dotted + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("3 99\n")
+    }
+
+    async test `explicit generic prefix callback execution`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:explicit-prefix-execute"), "one")
+        let stream = Lexer().lex("class Value { static async all<Out, In>(In value, async callback(In value) -> Out, Int limit, async after(Int count)) -> Out { return callback(value); } static async run(Int input) -> Bool { return Value.all<Bool>(input, { _ == 1 }, 2, {}); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "run" }).identity.value)
+        let root = File(".flat-es6-prefix-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "prefix.js")
+        Es6ArtifactCommitter().commit(destination, code + "(async()=>{console.log(await " + owner + "." + method + "(1),await " + owner + "." + method + "(0));})();\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true false\n")
+    }
+
+    async test `three level virtual slot executes derived override`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:virtual-slot"), "one")
+        let sources = ["class Object { construct() {} public text() -> Int { return 1; } }",
+            "class Primitive { construct() {} }",
+            "class Bool extends Primitive { construct() {} override public text() -> Int { return 3; } }"]
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let units = PrimitiveClassPartitionBinder().bind(syntaxes, snapshot).typeUnits()
+        var String code = ""
+        var Int ordinal
+        for (unit in units) code += Es6UnitOrchestrator().emitType(unit, ordinal++).fragment.code
+        let slot = Es6NameMangler.mangle(units.first.functionUnits().last.dispatchIdentity)
+        let derived = Es6NameMangler.mangle(units.last.identity.value)
+        let root = File(".flat-es6-virtual-slot-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "slot.js")
+        Es6ArtifactCommitter().commit(destination, code + "const receiver=new " + derived + "();console.log(receiver." + slot + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("3\n")
+    }
+
+    async test `statement callback awaits captured invocation`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:statement-callback"), "one")
+        let stream = Lexer().lex("class Value { static async invoke(async func(Int value), async callback(Int value)) -> Unit { return callback(1); } static async run(async func(Int value)) -> Unit { return Value.invoke(func, {\n func(_)\n return null\n }); } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let code = Es6UnitOrchestrator().emitType(unit, 0).fragment.code
+        let owner = Es6NameMangler.mangle(unit.identity.value)
+        let method = Es6NameMangler.mangle(unit.functionUnits().firstOrNull({ _.name == "run" }).identity.value)
+        let root = File(".flat-es6-statement-callback-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "callback.js")
+        Es6ArtifactCommitter().commit(destination, code + "(async()=>{let calls=0;let completed=0;await " + owner + "." + method +
+            "(async value=>{calls++;await Promise.resolve();completed=value;});console.log(calls,completed);})();\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("1 1\n")
+    }
+
+    async test `checked cast runtime`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:checked-cast"), "one")
+        let parent = UserClassSemanticType(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 1), "class", "Parent"))
+        let child = UserClassSemanticType(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", 2), "class", "Child"))
+        let range = SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let operand = BoundLiteralExpression(range, parent, "null")
+        let expression = BoundConversionExpression(range, child, operand,
+            TypeConversion(parent, child, "checked-reference-cast", true, false, false, 20))
+        let code = Es6ExpressionEmitter().emitConversion(expression, Es6CodeResult(code: "next()")).code
+        let name = Es6NameMangler.mangle(child.declarationIdentity.value)
+        let root = File(".flat-es6-checked-cast-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "checked.js")
+        Es6ArtifactCommitter().commit(destination, "class " + name + " {}\nlet count=0; let current; function next(){count++;return current;}\n" +
+            "function cast(){return " + code + ";}\ncurrent=new " + name + "; console.log(cast()===current,count);\n" +
+            "current=null;console.log(cast()===null,count);\ncurrent={};try{cast();}catch(e){console.log(e instanceof TypeError,e.message,count);}")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("true 1\ntrue 2\ntrue Invalid checked reference cast 3\n")
+    }
     async test `grouped conditional field access executes under Node`() {
         let stream = Lexer().lex(
             "class Value { Int count; construct(Int input) { count = input; } " +
@@ -804,6 +1158,126 @@ testable class {
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
         expect(response.stdout.join("")).toBe("true\n")
         Es6ArtifactFiles.remove(root)
+    }
+
+    async test `namespace bound declared generic array count executes under Node`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:declared-array-execution"), "compiler-input")
+        let source = "class Array<E> { visible Int count; construct(Int count, Int capacity = count) { this.count = count; } } " +
+            "class Box { static make<Out>(Int size) -> Out[] { return Array<Out>(size); } " +
+            "static run() -> Int { return Box.make<Int>(3).count; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        let syntaxes = PrimitiveClassSyntax[]
+        for (partition in partitions) syntaxes.add(PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex))
+        let context = PrimitiveSourceBindingContext("", snapshot, syntaxes)
+        let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
+        let box = units.last
+        let run = box.functionUnits().firstOrNull({ _.name == "run" })
+        var String code = ""
+        var Int index
+        for (unit in units) {
+            let emitted = Es6UnitOrchestrator().emitType(unit, index)
+            if (!emitted.emitted) throw Exception(emitted.diagnostic.message)
+            code += emitted.fragment.code
+            index++
+        }
+        let root = File(".flat-es6-namespace-array-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" +
+            Es6NameMangler.mangle(box.identity.value) + "." + Es6NameMangler.mangle(run.identity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        if (response.stdout.join("") != "3\n") throw Exception("Declared array execution output: " + response.stdout.join("") + "\n" + code)
+        expect(response.stdout.join("")).toBe("3\n")
+    }
+
+    async test `logical reference guards preserve short circuit and evaluation once under Node`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:logical-guard-execution"), "one")
+        let source = "class Guard { visible var Int calls; construct() { calls = 0; } public left() -> Object { calls += 1; return null; } " +
+            "public right() -> Bool { calls += 10; return true; } " +
+            "public run() -> Int { let a = left() && right(); let b = right() || left(); return calls; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
+        let method = type.functionUnits().firstOrNull({ _.name == "run" })
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let root = File(".flat-es6-logical-guard-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(new " +
+            Es6NameMangler.mangle(type.identity.value) + "()." + Es6NameMangler.mangle(method.identity.value) + "());\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("11\n")
+    }
+
+    async test `declared Bool wrapper execution`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:bool-wrapper"), "one")
+        let syntaxes = PrimitiveClassSyntax[]
+        var Int offset
+        let sources = ["class Object { construct() {} }",
+            "class Bool extends Object { construct(public Bool value) {} public equals(Object other) -> Bool { return (other || !this) && other.class.isOfType(Bool.class) && value == ((Bool)other); } }"]
+        for (source in sources) {
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            syntaxes.add(PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot, offset))
+            offset += 100
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("", snapshot, syntaxes)]).typeUnits()
+        var String code = ""
+        var Int ordinal
+        for (unit in units) {
+            let emitted = Es6UnitOrchestrator().emitType(unit, ordinal++)
+            if (!emitted.emitted) throw Exception("Bool wrapper emission rejected")
+            code += emitted.fragment.code
+        }
+        let wrapper = units.firstOrNull({ _.identity.name == "Bool" })
+        let name = Es6NameMangler.mangle(wrapper.identity.value)
+        let rootName = Es6NameMangler.mangle(units.firstOrNull({ _.identity.name == "Object" }).identity.value)
+        let method = Es6NameMangler.mangle(wrapper.functionUnits().firstOrNull({ _.name == "equals" }).identity.value)
+        let root = File(".flat-es6-bool-wrapper-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "bool.js")
+        Es6ArtifactCommitter().commit(destination, code + "const yes=new " + name + "(true);const no=new " + name + "(false);\n" +
+            "console.log(yes." + method + "(yes),yes." + method + "(no),yes." + method + "(new " + rootName + "()),yes." + method + "(null));\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("true false false false\n")
+    }
+
+    async test `nullable Bool condition execution`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-bool"), "one")
+        let range = SourceRange(snapshot, 0, 1, Location(lineNumber: 1, column: 1), Location(lineNumber: 1, column: 2))
+        let nullable = NullableSemanticType(SemanticTypes.boolType())
+        let identity = SymbolIdentity(DeclarationIdentity(SyntaxIslandIdentity(snapshot, "local", 0), "local", "input"), "local")
+        let condition = PrimitiveDeclarationValueSyntax(range, "value", PrimitiveReferenceSyntax(range, "input"))
+        let result = PrimitiveControlStatementBinder().bind(PrimitiveStatementSyntaxResult([
+            PrimitiveIfSyntax(range, condition, PrimitiveStatementSyntax[], PrimitiveStatementSyntax[])
+        ]), snapshot, [LocalBinding("input", identity, nullable)])
+        let statements = result.statements()
+        var BoundIfStatement branch
+        branch = (BoundIfStatement)statements.last
+        var BoundLocalDeclarationStatement retained
+        retained = (BoundLocalDeclarationStatement)statements.first
+        let method = Es6NameMangler.mangle(retained.local.symbolIdentity.value)
+        let guard = Es6ExpressionOrchestrator().emit(branch.condition).code
+        let code = "function test(input){ const " + method + "=input;return " + guard + ";}\n"
+        let root = File(".flat-es6-nullable-bool-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "nullable.js")
+        Es6ArtifactCommitter().commit(destination, code + "let calls=0;function next(input){calls++;return input;}\n" +
+            "for(const input of [false,true,null]) console.log(test(next(input)),calls);\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("false 1\ntrue 2\nfalse 3\n")
     }
 
     async test `inferred predicate call executes under Node`() {

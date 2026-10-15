@@ -80,7 +80,8 @@ class {
         while (index < tokens.count && tokens[index].value != "}") {
             let memberStart = index
             while (index < tokens.count && modifier(tokens[index].value)) index++
-            if (index < tokens.count && tokens[index].value == "var") index++
+            let storageProperty = index < tokens.count && tokens[index].value == "var"
+            if (storageProperty) index++
             var Int propertyCursor = index
             var String propertyType
             if (propertyCursor < tokens.count &&
@@ -125,7 +126,8 @@ class {
                     )
                 }
                 methods.add(PrimitiveInterfaceMethodSyntax(
-                    methodName, String[], propertyType, range(memberStart, index), value
+                    methodName, String[], propertyType, range(memberStart, index), value,
+                    storageProperty: storageProperty
                 ))
                 continue
             }

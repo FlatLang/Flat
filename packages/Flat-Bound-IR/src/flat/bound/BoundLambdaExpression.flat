@@ -5,6 +5,7 @@ import flat/semantic/types
 
 /** Immutable typed expression lambda with explicit captures. */
 data class extends BoundExpression {
+    var BoundStatement[] statements
     var BoundFunctionParameter[] parameters
     var BoundReferenceExpression[] captures
     public construct(
@@ -12,19 +13,23 @@ data class extends BoundExpression {
         FunctionSemanticType semanticType,
         BoundFunctionParameter[] parameterValues,
         BoundReferenceExpression[] captureValues,
-        visible BoundExpression body
+        visible BoundExpression body,
+        BoundStatement[] statementValues = BoundStatement[]
     ) {
         if (!range || !semanticType || !parameterValues || parameterValues.any({ !_ }) ||
-            !captureValues || captureValues.any({ !_ }) || !body ||
+            !captureValues || captureValues.any({ !_ }) || !body || !statementValues ||
+            statementValues.any({ !_ }) ||
             body.semanticType.value() != semanticType.returnType.value()) {
             throw Exception("Bound lambda requires type parameters captures and body")
         }
         super(range, semanticType)
+        statements = BoundStatement[]:addAll(statementValues)
         parameters = BoundFunctionParameter[]
         parameters.addAll(parameterValues)
         captures = BoundReferenceExpression[]
         captures.addAll(captureValues)
     }
+    public statementValues() -> BoundStatement[] => BoundStatement[]:addAll(statements)
     public parameterValues() -> BoundFunctionParameter[] => BoundFunctionParameter[]:addAll(parameters)
     public captureValues() -> BoundReferenceExpression[] => BoundReferenceExpression[]:addAll(captures)
     override public expressionKind() => "lambda"

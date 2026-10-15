@@ -257,6 +257,7 @@ class {
                 index++
             }
             var String typeName
+            let callbackNames = String[]
             var String name
             if (index + 1 < tokens.count &&
                 tokens[index].type == Token.Type.IDENTIFIER &&
@@ -270,7 +271,7 @@ class {
                     if (!firstType) typeName += ","
                     typeName += parameterType
                     firstType = false
-                    if (index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER) index++
+                    callbackNames.add(index < tokens.count && tokens[index].type == Token.Type.IDENTIFIER ? tokens[index++].value : "")
                     if (index >= tokens.count || tokens[index].value != ",") break
                     index++
                     if (index >= tokens.count || tokens[index].value == ")") {
@@ -321,7 +322,7 @@ class {
             }
             parameters.add(PrimitiveFunctionParameterSyntax(
                 range(start, index), typeName, name, defaultValue,
-                nativeArrayStorage: nativeArrayStorage
+                nativeArrayStorage: nativeArrayStorage, callbackNamesValue: callbackNames
             ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++

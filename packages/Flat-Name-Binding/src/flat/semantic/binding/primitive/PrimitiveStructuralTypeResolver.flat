@@ -37,21 +37,139 @@ class {
         }
     }
 
-    /** A source-declared null fallback makes a generic result an absence-bearing
-     * contract. Ordinary null returns never change a declaration's result type.
-     */
-    public fallbackResultType(PrimitiveFunctionSyntax method, SemanticType declaredType) -> SemanticType {
-        if (declaredType.kind() != "generic-parameter") return declaredType
-        for (statement in method.statements()) {
-            if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
-                let returned = (PrimitiveReturnSyntax)statement
-                if (returned.arrowFallback && returned.value &&
-                    returned.value.class.isOfType(PrimitiveLiteralSyntax.class) &&
-                    ((PrimitiveLiteralSyntax)returned.value).sourceValue == "null")
-                    return NullableSemanticType(declaredType)
+    /** Original callback contract for a retained generic trait default, before concrete substitution. */
+    public defaultCallbackContract(CallableSignature target, Int index) -> FunctionSemanticType {
+        if (!implementationOwner || !implementationRange) return null
+        var Bool retained
+        for (contract in interfaces) {
+            if (contract.methodValues().any((member) => member.range &&
+                member.range.snapshot == implementationRange.snapshot && member.range.startTokenIndex == implementationRange.startTokenIndex)) retained = true
+        }
+        if (!retained) return null
+        for (contract in interfaces) {
+            for (member in contract.methodValues()) {
+                if (!member.range || member.range.snapshot != target.identity.declaration.syntaxIdentity.snapshot ||
+                    member.range.startTokenIndex != target.identity.declaration.syntaxIdentity.ordinal) continue
+                let implementation = member.implementation()
+                if (!implementation || index >= implementation.parameterValues().count) return null
+                let parameters = GenericParameterSemanticType[]
+                let owner = DeclarationIdentity(SyntaxIslandIdentity(contract.range.snapshot, "interface", contract.range.startTokenIndex), "interface", contract.name)
+                for (name in contract.genericParameterNames()) parameters.add(GenericParameterSemanticType(owner, name, parameters.count))
+                let original = PrimitiveStructuralTypeResolver(syntaxes: syntaxes, callables: callables,
+                    interfaces: interfaces, methodGenericParameters: parameters,
+                    declarationContext: declarationContext, lookupRange: member.range).resolve(implementation.parameterValues()[index].typeName)
+                return original.kind() == "function" ? (FunctionSemanticType)original : null
             }
         }
-        return declaredType
+        return null
+    }
+
+    /** Generic null acceptance is a type conversion, not a syntax-derived result type. */
+    public specializedParameterType(PrimitiveFunctionSyntax method, Int index, SemanticType type) -> SemanticType {
+        if (type.kind() == "nullable" || type.kind() == "generic-parameter") return type
+        for (contract in interfaces) {
+            if (!contract.methodValues().any((member) => member.range && member.range.snapshot == method.range.snapshot &&
+                member.range.startTokenIndex == method.range.startTokenIndex)) continue
+            let name = method.parameterValues()[index].typeName
+            if (!contract.genericParameterNames().contains(name)) return type
+            let sameName = contract.methodValues().filter({ _.name == method.name })
+            if (sameName.count != 1) return type
+            for (member in contract.methodValues()) {
+                let body = member.implementation()
+                if (body && forwardsNull(body.statements(), method.name, index)) return NullableSemanticType(type)
+            }
+        }
+        return type
+    }
+
+    forwardsNull(PrimitiveStatementSyntax[] statements, String target, Int index) -> Bool {
+        for (statement in statements) {
+            if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                let value = ((PrimitiveReturnSyntax)statement).value
+                if (value && value.class.isOfType(PrimitiveCallSyntax.class)) {
+                    let call = (PrimitiveCallSyntax)value
+                    if (call.name == target && index < call.argumentValues().count) {
+                        let argument = call.argumentValues()[index]
+                        if (argument.class.isOfType(PrimitiveLiteralSyntax.class) && ((PrimitiveLiteralSyntax)argument).sourceValue == "null") return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    genericForwardedReturn(PrimitiveFunctionSyntax method, SemanticType declaredType) -> Bool {
+        for (statement in method.statements()) {
+            if (!statement.class.isOfType(PrimitiveReturnSyntax.class)) continue
+            let value = ((PrimitiveReturnSyntax)statement).value
+            if (!value) continue
+            if (value.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let name = ((PrimitiveReferenceSyntax)value).name
+                var Int index
+                for (parameter in method.parameterValues()) {
+                    if (parameter.name == name && specializedParameterType(method, index, declaredType).kind() == "nullable") return true
+                    index++
+                }
+            }
+            if (value.class.isOfType(PrimitiveCallSyntax.class)) {
+                let call = (PrimitiveCallSyntax)value
+                for (contract in interfaces) {
+                    for (member in contract.methodValues()) {
+                        let target = member.implementation()
+                        if (!target || target.name != call.name || target.returnTypeName != method.returnTypeName) continue
+                        var Int index
+                        for (parameter in target.parameterValues()) {
+                            if (parameter.typeName == target.returnTypeName && forwardsNull(method.statements(), target.name, index)) return true
+                            index++
+                        }
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    /** Null return evidence belongs to the generic declaration, not to arbitrary primitive bodies. */
+    public fallbackResultType(PrimitiveFunctionSyntax method, SemanticType declaredType) -> SemanticType {
+        if (declaredType.kind() == "generic-parameter" || declaredType.kind() == "unknown" || declaredType.kind() == "nullable" ||
+            declaredType.kind() == "void" || declaredType.kind() == "unit") return declaredType
+        if (!originalGenericReturn(method) || (!hasNullReturn(method.statements()) && !genericForwardedReturn(method, declaredType))) return declaredType
+        return NullableSemanticType(declaredType)
+    }
+
+    public originalGenericReturn(PrimitiveFunctionSyntax method) -> Bool {
+        if (method.genericParameterNames().contains(method.returnTypeName)) return true
+        for (contract in interfaces) {
+            if (!contract.genericParameterNames().contains(method.returnTypeName)) continue
+            if (contract.methodValues().any((member) => member.range && member.range.snapshot == method.range.snapshot &&
+                member.range.startTokenIndex == method.range.startTokenIndex)) return true
+        }
+        return false
+    }
+
+    hasNullReturn(PrimitiveStatementSyntax[] statements) -> Bool {
+        for (statement in statements) {
+            if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                let returned = ((PrimitiveReturnSyntax)statement).value
+                if (returned && returned.class.isOfType(PrimitiveLiteralSyntax.class) &&
+                    ((PrimitiveLiteralSyntax)returned).sourceValue == "null") return true
+            }
+            if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
+                let branch = (PrimitiveIfSyntax)statement
+                if (hasNullReturn(branch.thenValues()) || hasNullReturn(branch.elseValues())) return true
+            }
+            if (statement.class.isOfType(PrimitiveWhileSyntax.class) && hasNullReturn(((PrimitiveWhileSyntax)statement).bodyValues())) return true
+            if (statement.class.isOfType(PrimitiveForEachSyntax.class) && hasNullReturn(((PrimitiveForEachSyntax)statement).bodyValues())) return true
+            if (statement.class.isOfType(PrimitiveForSyntax.class) && hasNullReturn(((PrimitiveForSyntax)statement).bodyValues())) return true
+        }
+        return false
+    }
+
+    public specializedNullLocal(String name) -> Bool {
+        if (!implementationOwner || !implementationRange) return false
+        let method = implementationOwner.methodValues().firstOrNull((candidate) =>
+            candidate.range.snapshot == implementationRange.snapshot && candidate.range.startTokenIndex == implementationRange.startTokenIndex)
+        return method && method.returnTypeName == name && originalGenericReturn(method) && hasNullReturn(method.statements())
     }
 
     public resolveNativeArrayStorage(String name) -> SemanticType {
@@ -67,7 +185,8 @@ class {
             let resolved = resolve(name.substring("async ".count))
             if (resolved.kind() != "function") throw Exception("Async type requires a function signature")
             let callback = (FunctionSemanticType)resolved
-            return FunctionSemanticType(callback.parameterTypes(), callback.returnType, asyncFunction: true)
+            return FunctionSemanticType(callback.parameterTypes(), callback.returnType, asyncFunction: true,
+                parameterNames: callback.parameterNames())
         }
         var Int open = name.indexOf("(", defaultReturnValue: -1)
         let firstGenericOpen = name.indexOf("<", defaultReturnValue: -1)
@@ -80,8 +199,9 @@ class {
             }
         }
         if (name.endsWith("[]")) {
-            let element = resolve(name.substring(0, name.count - 2))
-            let hasArrayDeclaration = syntaxes.any({ _.name == "Array" }) ||
+            let element = resolveTypeArgument(name.substring(0, name.count - 2))
+            let hasArrayDeclaration = (declarationContext && declarationContext.visibleCandidates("Array").isNotEmpty) ||
+                syntaxes.any({ _.name == "Array" }) ||
                 (receiverType && receiverType.declarationIdentity.name == "Array") ||
                 callables.any((candidate) => candidate.callableKind.value == "constructor" &&
                     candidate.ownerType.declarationIdentity.name == "Array")
@@ -96,7 +216,8 @@ class {
         if (methodParameter) return methodParameter
         if (implementationOwner && implementationRange) {
             for (implemented in implementationOwner.implementedTypeNames()) {
-                let resolved = traitParameter(implemented, name, String[])
+                let ownerContext = declarationContext ? declarationContext.scopeForSnapshot(implementationOwner.range.snapshot) : null
+                let resolved = traitParameter(implemented, name, String[], ownerContext)
                 if (resolved) return PrimitiveStructuralTypeResolver(
                     syntaxes: syntaxes, callables: callables, snapshot: snapshot,
                     genericParameter: genericParameter, receiverType: receiverType,
@@ -116,7 +237,11 @@ class {
         if (name == "Double") return SemanticTypes.doubleType()
         if (name == "Char") return SemanticTypes.charType()
         if (name == "String") return SemanticTypes.stringType()
-        if (name == "Object") return SemanticTypes.objectType()
+        if (name == "Object") {
+            if (declarationContext && declarationContext.visibleCandidates(name).isNotEmpty)
+                return UserClassSemanticType(declarationContext.resolve(name, lookupRange ?: implementationRange))
+            return SemanticTypes.objectType()
+        }
         if (name == "Void") return SemanticTypes.voidType()
         if (name == "Unit") return SemanticTypes.unitType()
         let genericOpen = name.indexOf("<", defaultReturnValue: -1)
@@ -131,7 +256,7 @@ class {
             let arguments = SemanticType[]
             for (argument in splitTypes(
                 name.substring(genericOpen + 1, name.count - 1)
-            )) arguments.add(resolve(argument))
+            )) arguments.add(resolveTypeArgument(argument))
             return GenericInstanceSemanticType(declarationType, arguments)
         }
         if (declarationContext) {
@@ -158,27 +283,46 @@ class {
         throw Exception("Unknown reduced type '#name'")
     }
 
+    /** Intrinsic scalar text and source-declared generic argument identities are distinct. */
+    resolveTypeArgument(String name) -> SemanticType {
+        if (name == "String" && declarationContext && declarationContext.visibleCandidates(name).isNotEmpty)
+            return UserClassSemanticType(declarationContext.resolve(name, lookupRange ?: implementationRange))
+        return resolve(name)
+    }
+
+    public withCallbackNames(SemanticType type, String[] names) -> SemanticType {
+        if (type.kind() != "function" || names.isEmpty) return type
+        let callback = (FunctionSemanticType)type
+        return FunctionSemanticType(callback.parameterTypes(), callback.returnType, callback.asyncFunction, names)
+    }
+
     functionType(String name, Int open) -> FunctionSemanticType {
         let close = matchingClose(name, open)
         if (close < 0) throw Exception("Unterminated reduced function type '#name'")
         let parameters = SemanticType[]
         let body = name.substring(open + 1, close)
-        for (part in splitTypes(body)) parameters.add(resolve(part))
+        let names = String[]
+        for (part in splitTypes(body)) {
+            let space = part.lastIndexOf(" ", defaultReturnValue: -1)
+            parameters.add(resolve(space < 0 ? part : part.substring(0, space)))
+            names.add(space < 0 ? "" : part.substring(space + 1))
+        }
         var SemanticType returnType = SemanticTypes.unitType()
         if (close + 2 < name.count && name.substring(close + 1, close + 3) == "->") {
             returnType = resolve(name.substring(close + 3))
         } else if (close != name.count - 1) {
             throw Exception("Invalid reduced function type '#name'")
         }
-        return FunctionSemanticType(parameters, returnType)
+        return FunctionSemanticType(parameters, returnType, parameterNames: names)
     }
 
     /** Follow the source member's owner through instantiated interface edges. */
-    traitParameter(String implemented, String name, String[] path) -> String {
+    traitParameter(String implemented, String name, String[] path,
+        PrimitiveResolvedDeclarationContext edgeContext = null) -> String {
         let open = implemented.indexOf("<", defaultReturnValue: -1)
         let contractName = open < 0 ? implemented : implemented.substring(0, open)
-        let contract = declarationContext ? declarationContext.interfaceFor(
-            declarationContext.resolve(contractName, implementationRange ?: lookupRange)) :
+        let contract = edgeContext ? edgeContext.interfaceFor(
+            edgeContext.resolve(contractName, implementationOwner.range)) :
             interfaces.firstOrNull({ _.name == contractName })
         if (!contract) return null
         if (path.contains(contractName)) throw Exception("Cyclic trait inheritance '#contractName'")
@@ -195,10 +339,11 @@ class {
         }
         let visited = String[]:addAll(path)
         visited.add(contractName)
+        let parentContext = edgeContext ? edgeContext.scopeForSnapshot(contract.range.snapshot) : null
         for (parentName in contract.parentTypeNames()) {
             let parentOpen = parentName.indexOf("<", defaultReturnValue: -1)
             if (parentOpen < 0) {
-                let found = traitParameter(parentName, name, visited)
+                let found = traitParameter(parentName, name, visited, parentContext)
                 if (found) return found
                 continue
             }
@@ -208,7 +353,7 @@ class {
                 instantiated.add(position < 0 ? argument : arguments[position])
             }
             let found = traitParameter(parentName.substring(0, parentOpen) +
-                "<" + instantiated.join(",") + ">", name, visited)
+                "<" + instantiated.join(",") + ">", name, visited, parentContext)
             if (found) return found
         }
         return null

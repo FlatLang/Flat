@@ -142,16 +142,16 @@ testable class {
         let generic = GenericParameterSemanticType(fixture.functionIdentity("generic"), "E", 0)
         expect(TypeConversions.classify(generic, SemanticTypes.objectType()).applicable).toBe(true)
         expect(TypeConversions.classify(generic, SemanticTypes.intType()).applicable).toBe(false)
-        expect(TypeConversions.classify(SemanticTypes.nullType(), generic).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), generic).applicable).toBe(true)
     }
 
-    test `unconstrained generic value permits null comparison without implicit null conversion`() {
+    test `unconstrained generic value permits null comparison and implicit null conversion`() {
         let fixture = TypeSystem_TestFixture()
         let generic = GenericParameterSemanticType(fixture.functionIdentity("map"), "E", 0)
         let range = fixture.range()
         expect(TypeOperations.binary("==", generic, SemanticTypes.nullType(), range).valid).toBe(true)
         expect(TypeOperations.binary("!=", SemanticTypes.nullType(), generic, range).valid).toBe(true)
-        expect(TypeConversions.classify(SemanticTypes.nullType(), generic).applicable).toBe(false)
+        expect(TypeConversions.classify(SemanticTypes.nullType(), generic).applicable).toBe(true)
         expect(TypeOperations.binary("==", SemanticTypes.intType(), SemanticTypes.nullType(), range).valid).toBe(false)
     }
 

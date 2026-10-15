@@ -33,7 +33,7 @@ class {
         let statements = PrimitiveStatementSyntax[]
         while (index < tokens.count && (!insideBody || tokens[index].value != "}")) {
             if (tokens[index].value == "if") statements.add(parseIf())
-            else if (tokens[index].value == "switch") statements.add(parseSwitch())
+            else if (tokens[index].value == "switch" || tokens[index].value == "match") statements.add(parseSwitch())
             else if (tokens[index].value == "while") statements.add(parseWhile())
             else if (tokens[index].value == "for") statements.add(parseFor())
             else if (tokens[index].value == "try") statements.add(parseTry())
@@ -105,8 +105,11 @@ class {
             while (index < tokens.count && tokens[index].value != "}" &&
                 !(index + 1 < tokens.count && tokens[index + 1].value == "=>")) index++
             let bodyTokens = tokens.skip(bodyStart).take(index - bodyStart)
-            let fallsThrough = bodyTokens.count == 1 &&
-                bodyTokens.first.value == "fallthrough"
+            let fallsThrough = bodyTokens.isEmpty || (bodyTokens.count == 1 &&
+                bodyTokens.first.value == "fallthrough")
+            if (bodyTokens.isEmpty && (index >= tokens.count || tokens[index].value == "}")) {
+                syntax("Switch case requires body after arrow", bodyStart)
+            }
             let statements = fallsThrough ? PrimitiveStatementSyntax[] :
                 PrimitiveControlStatementParser().parse(
                     bodyTokens, snapshot, bodyStart + tokenIndexOffset

@@ -3,6 +3,16 @@ package flat/semantic/types
 import flat/compiler/models
 
 testable class {
+    test `callback names are metadata independent of function type identity`() {
+        let named = FunctionSemanticType([SemanticTypes.intType()], SemanticTypes.boolType(), parameterNames: ["value"])
+        let unnamed = FunctionSemanticType([SemanticTypes.intType()], SemanticTypes.boolType())
+        expect(named.value()).toBe(unnamed.value())
+        let substituted = GenericSubstitution(GenericParameterSemanticType[], SemanticType[]).apply(named)
+        let functionObject = (Object)substituted
+        let callback = (FunctionSemanticType)functionObject
+        expect(callback.parameterNames().first).toBe("value")
+    }
+
     test `models every foundational semantic type with stable structural values`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:Types.flat"), "revision:1")
         let declaration = DeclarationIdentity(

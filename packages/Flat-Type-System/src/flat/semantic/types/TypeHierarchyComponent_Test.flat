@@ -1,6 +1,26 @@
 package flat/semantic/types
 
 testable class {
+    test `explicit declared downcast carries checked evidence only with hierarchy`() {
+        let fixture = TypeSystem_TestFixture()
+        let parent = fixture.userType("Parent", 1)
+        let child = fixture.userType("Child", 2)
+        let unrelated = fixture.userType("Other", 3)
+        let hierarchy = TypeHierarchyComponent()
+        hierarchy.add(fixture.hierarchyDeclaration(parent))
+        hierarchy.add(fixture.hierarchyDeclaration(child, parents: [parent]))
+        hierarchy.add(fixture.hierarchyDeclaration(unrelated))
+        hierarchy.seal()
+        let conversion = TypeConversions.classify(parent, child, explicit: true, hierarchy: hierarchy)
+        expect(conversion.applicable).toBe(true)
+        expect(conversion.implicit).toBe(false)
+        expect(conversion.conversionKind).toBe("checked-reference-cast")
+        expect(TypeConversions.classify(parent, child, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(parent, child, explicit: true).applicable).toBe(false)
+        expect(TypeConversions.classify(parent, unrelated, explicit: true, hierarchy: hierarchy).applicable).toBe(false)
+        expect(TypeConversions.classify(child, parent, hierarchy: hierarchy).conversionKind).toBe("reference-upcast")
+        expect(TypeConversions.classify(SemanticTypes.nullType(), child, explicit: true, hierarchy: hierarchy).applicable).toBe(false)
+    }
     test `rejects invalid registered generic root at seal`() {
         let fixture = TypeSystem_TestFixture()
         let parent = fixture.userType("Parent", 1)
@@ -67,7 +87,7 @@ testable class {
         expect(TypeConversions.classify(child, base, hierarchy: first).conversionKind)
             .toBe("reference-upcast")
         expect(TypeConversions.classify(base, child, explicit: true, hierarchy: first).conversionKind)
-            .toBe("reference-cast")
+            .toBe("checked-reference-cast")
         expect(TypeConversions.classify(base, child, hierarchy: first).applicable).toBe(false)
     }
 

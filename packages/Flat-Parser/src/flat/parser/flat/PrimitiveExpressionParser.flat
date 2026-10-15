@@ -347,6 +347,7 @@ class {
             var PrimitiveExpressionSyntax expression
             if (index < tokens.count && tokens[index].value == "(") {
                 expression = parseCall(tokenIndex, token.value)
+                if (token.value[0] >= 'A' && token.value[0] <= 'Z' && index < tokens.count && tokens[index].value == ":") return parsePostfix(tokenIndex, expression, true)
             } else expression = PrimitiveReferenceSyntax(
                 range(tokenIndex, tokenIndex + 1), token.value
             )
@@ -497,18 +498,22 @@ class {
                 )
                 continue
             }
+            let chainNavigation = tokens[index].value == ":"
             let safeAccess = consumeMemberOperator()
             if (index >= tokens.count || tokens[index].type != Token.Type.IDENTIFIER) {
                 syntax("Expected member name after '.'", index)
             }
             let member = tokens[index++].value
+            if (chainNavigation && (index >= tokens.count || tokens[index].value != "("))
+                syntax("Colon navigation requires a method call", index)
             if (index < tokens.count && tokens[index].value == "(") {
                 index++
                 if (index < tokens.count && tokens[index].value == ")") {
                     index++
                     expression = PrimitiveMemberCallSyntax(
                         range(tokenIndex, index), expression, member,
-                        PrimitiveExpressionSyntax[], safeAccess: safeAccess
+                        PrimitiveExpressionSyntax[], safeAccess: safeAccess,
+                        chainNavigation: chainNavigation
                     )
                     continue
                 }
@@ -548,7 +553,7 @@ class {
                 index++
                 expression = PrimitiveMemberCallSyntax(
                     range(tokenIndex, index), expression, member, arguments,
-                    namedArguments, safeAccess: safeAccess
+                    namedArguments, safeAccess: safeAccess, chainNavigation: chainNavigation
                 )
             } else expression = PrimitiveMemberAccessSyntax(
                 range(tokenIndex, index), expression, member, safeAccess
@@ -649,8 +654,12 @@ class {
             }
             if (tokens[index].value != ",") syntax("Expected array element separator", index)
             index++
-            if (index >= tokens.count || tokens[index].value == "]") {
+            if (index >= tokens.count) {
                 syntax("Expected array element after ','", index)
+            }
+            if (tokens[index].value == "]") {
+                index++
+                return PrimitiveArraySyntax(range(start, index), values)
             }
         }
     }
