@@ -15,6 +15,7 @@ import flat/io/FancyOutputStream
     Es6ArtifactPersistence_Test,
     Es6ArtifactOutput_Test,
     Es6HelloExecution_Test,
+    Es6EntrypointEmitter_Test,
     Es6UnitOrchestrator_Test,
     Es6EmissionCoordinator_Test,
     Es6PrimitiveExecution_Test,

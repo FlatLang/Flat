@@ -8,7 +8,7 @@ import flat/lexer
 import flat/parser/flat
 import flat/writer/es6/bound
 
-/** Public CLI library acceptance; production sources are never rewritten. */
+/** Public CLI library and executable acceptance; production sources are never rewritten. */
 testable class {
     realArguments(File output) -> String[] {
         String[] values = [
@@ -118,7 +118,7 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
-    async test `CLI rejects unsupported executable target runtime and ambiguous short target`() {
+    async test `CLI rejects missing main unsupported target runtime and ambiguous short target`() {
         let root = File(".flat-compiler-cli-options-test-#{Time.currentTimeMillis}")
         let output = File(root, "program.js")
         let source = "../Flat-Core/src/flat/exception/StackTrace.flat"
@@ -131,6 +131,146 @@ testable class {
         expect(CompilerCli.run(["flatc", source, "-target", "es6", "-library"])).toBe(1)
         expect(output.exists).toBe(false)
         if (root.exists) Es6ArtifactFiles.remove(root)
+    }
+
+    async test `CLI executable invokes unchanged production Char through the normal artifact`() {
+        let root = File(".flat-compiler-cli-real-main-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "Main.flat")
+            var String reference = ""
+            reference += '#'
+            reference += "{Char.repeat('a', 3)}"
+            Es6ArtifactCommitter().commit(source,
+                "package app\nimport flat/primitive/number/Char\nclass Main { public static main() { external js { console.log(" + reference + "); } } }")
+            let output = File(root, "dist/es6/index.js")
+            let arguments = String[]
+            for (argument in realArguments(output)) {
+                if (argument != "-library") arguments.add(argument)
+            }
+            arguments.addAll([source.normalizedLocation, "-main", "app/Main"])
+            expect(CompilerCli.run(arguments)).toBe(0)
+            let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("aaa\n")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `CLI invalid main does not replace a previous artifact`() {
+        let root = File(".flat-compiler-cli-invalid-main-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "Main.flat")
+            let output = File(root, "index.js")
+            String[] methods = ["public main() {}", "public static main(Int value) {}", "public static main() -> Int { return 1; }"]
+            for (method in methods) {
+                Es6ArtifactCommitter().commit(source, "package app\nclass Main { " + method + " }")
+                Es6ArtifactCommitter().commit(output, "previous artifact\n")
+                expect(CompilerCli.run(["flatc", source.normalizedLocation, "-target", "es6", "-main", "app/Main", "-o", output.normalizedLocation])).toBe(1)
+                expect(Es6ArtifactFiles.read(output)).toBe("previous artifact\n")
+            }
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `CLI executes no argument argument and async entrypoints without invoking imports`() {
+        let root = File(".flat-compiler-cli-entrypoint-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            String[] signatures = ["public static main()", "public static main(String[] args)", "public static async main(String[] args)"]
+            var String argumentReference = ""
+            argumentReference += '#'
+            argumentReference += "{args}"
+            String[] bodies = ["console.log('no-args');", "console.log(JSON.stringify(" + argumentReference + "));", "await Promise.resolve(); console.log(JSON.stringify(" + argumentReference + "));"]
+            var Int index
+            while (index < signatures.count) {
+                let source = File(root, "Main.flat")
+                Es6ArtifactCommitter().commit(source, "package app\nclass Main { " + signatures[index] + " { external js { " + bodies[index] + " } } }")
+                let output = File(root, "dist/es6/index.js")
+                expect(CompilerCli.run(["flatc", source.normalizedLocation, "-target", "es6",
+                    "-main", "app/Main", "-d", File(root, "dist/es6").normalizedLocation, "-o", "index.js"])).toBe(0)
+                let response = System.executeExact(["node", output.normalizedLocation, "hello", "two words"], silent: true, shell: false)
+                if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+                expect(response.stdout.join("")).toBe(index == 0 ? "no-args\n" : "[\"hello\",\"two words\"]\n")
+                let importer = File(root, "import.js")
+                Es6ArtifactCommitter().commit(importer, "require('./dist/es6/index.js');\n")
+                let imported = System.execute(["node", importer.normalizedLocation], silent: true, shell: false)
+                expect(imported.exitCode).toBe(0)
+                expect(imported.stdout.join("")).toBe("")
+                index++
+            }
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `CLI admits explicitly bounded packages beyond 64 sources and preserves normal Airship artifact placement`() {
+        let root = File(".flat-compiler-cli-package-test-#{Time.currentTimeMillis}")
+        let sources = File(root, "src")
+        Es6ArtifactFiles.ensureDirectory(sources)
+        try {
+            var Int index
+            while (index < 65) {
+                Es6ArtifactCommitter().commit(File(sources, "Unit#{index}.flat"),
+                    "package admission\nclass Unit#{index} { public static value() -> Int { return #{index}; } }")
+                index++
+            }
+            let outputDirectory = File(root, "dist/es6")
+            let output = File(outputDirectory, "index.js")
+            Es6ArtifactFiles.ensureDirectory(outputDirectory)
+            Es6ArtifactCommitter().commit(output, "previous artifact\n")
+            expect(CompilerCli.run([
+                "flatc", sources.normalizedLocation, "-target", "es6", "-library",
+                "-d", outputDirectory.normalizedLocation, "-o", "index.js"
+            ])).toBe(1)
+            expect(Es6ArtifactFiles.read(output)).toBe("previous artifact\n")
+            expect(CompilerCli.run([
+                "flatc", sources.normalizedLocation, "-target", "es6", "-library",
+                "-d", outputDirectory.normalizedLocation, "-o", "index.js", "--max-sources", "65"
+            ])).toBe(0)
+            expect(output.isFile).toBe(true)
+            expect(File(outputDirectory, "library.js").exists).toBe(false)
+            let code = Es6ArtifactFiles.read(output)
+            expect(code.count > 0).toBe(true)
+            let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `CLI exclusion glob resolves absolute dependency paths outside working directory`() {
+        let file = File("../Flat-Core/src/flat/datastruct/list/Array_Test.flat").getCanonicalFileSync()
+        let sourceRoot = File("../Flat-Core/src").getCanonicalFileSync()
+        expect(CompilerCli.matchesExclusion(sourceRoot.normalizedLocation + "/**/*_Test*.flat", sourceRoot)).toBe(false)
+        expect(CompilerCli.matchesExclusion(sourceRoot.normalizedLocation + "/**/*_Test*.flat",
+            File("src").getCanonicalFileSync())).toBe(false)
+        expect(CompilerCli.matchesExclusion(sourceRoot.normalizedLocation + "/**/*_Test*.flat", file)).toBe(true)
+        expect(CompilerCli.matchesExclusion(sourceRoot.normalizedLocation + "/**/*_Test*.flat",
+            File("../Flat-Core/src/flat/primitive/number/Char.flat").getCanonicalFileSync())).toBe(false)
+    }
+
+    async test `CLI selects only base and ES6 compatible target overlays`() {
+        let root = File(".flat-compiler-cli-overlay-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            Es6ArtifactCommitter().commit(File(root, "Base.flat"), "class Base {}")
+            Es6ArtifactCommitter().commit(File(root, "Javascript.js.flat"), "class Javascript {}")
+            Es6ArtifactCommitter().commit(File(root, "Ecma.es6.flat"), "class Ecma {}")
+            Es6ArtifactCommitter().commit(File(root, "Wrong.java.flat"), "not valid Flat syntax")
+            Es6ArtifactCommitter().commit(File(root, "Wrong.c.flat"), "not valid Flat syntax")
+            Es6ArtifactCommitter().commit(File(root, "Wrong.unknown.flat"), "not valid Flat syntax")
+            let output = File(root, "library.js")
+            expect(CompilerCli.run(["flatc", root.normalizedLocation, "-target", "es6", "-library",
+                "--max-sources", "3", "-o", output.normalizedLocation])).toBe(0)
+            expect(output.isFile).toBe(true)
+            expect(System.executeExact(["node", output.normalizedLocation], silent: true, shell: false).exitCode).toBe(0)
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
     }
 
     async test `CLI help remains successful without source or output`() {

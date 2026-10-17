@@ -12,6 +12,21 @@ import flat/extensions/SyntaxStringFunctions
 import flat/regex/RegexStringExtensions
 
 testable class {
+    test async `missing source lookup does not cache null or suppress later production fallback`() {
+        let airship = Airship(["--use-links", "-t", "es6"])
+        let main = airship.package.mainSource
+        expect(airship.getSourceForPackage("missing-bootstrap-group") == null).toBe(true)
+        expect(airship.package.sources.containsKey("missing-bootstrap-group")).toBe(false)
+        expect(airship.getSourceForPackage("missing-bootstrap-group", main)).toBe(main)
+        expect(airship.package.sources.containsKey("missing-bootstrap-group")).toBe(false)
+
+        let source = main.copy(dependencies: [LocalDependency(
+            airship.getWorkspacePackagesDirectory().normalizedLocation + "/System")])
+        let args = airship.installService.getLegacyInstallArguments("missing-bootstrap-group", source)
+        expect(args.contains("-default-import")).toBe(true)
+        expect(args.contains("flat/system/System")).toBe(true)
+    }
+
     test `can create`() {
         let airship = Airship(Array<String>())
 

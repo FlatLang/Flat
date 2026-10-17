@@ -1,6 +1,22 @@
 package flat/writer/es6/bound
 
 testable class {
+    test `equal length identities retain distinct code units`() {
+        expect(Es6NameMangler.mangle("A")).toBe("flat_65")
+        expect(Es6NameMangler.mangle("B")).toBe("flat_66")
+        expect(Es6NameMangler.mangle("π")).toBe("flat_960")
+        expect(Es6NameMangler.mangle("ab") != Es6NameMangler.mangle("ba")).toBe(true)
+        expect(Es6NameMangler.mangle("😀")).toBe("flat_55357_56832")
+        expect(Es6NameMangler.mangle("😀") != Es6NameMangler.mangle("😁")).toBe(true)
+        expect(Es6NameMangler.mangle("é") != Es6NameMangler.mangle("é")).toBe(true)
+        expect(Es6NameMangler.mangle("😀")).toBe(Es6NameMangler.mangle("😀"))
+        let units = Es6UnitEmitter()
+        expect(units.emitClass("A", String[]).startsWith("class flat_65 ")).toBe(true)
+        expect(units.emitClass("B", String[]).startsWith("class flat_66 ")).toBe(true)
+        expect(units.emitMethod("A", String[], "").startsWith("flat_65(")).toBe(true)
+        expect(units.emitMethod("B", String[], "").startsWith("flat_66(")).toBe(true)
+    }
+
     test `runtime ABI specifies modules objects metadata values and interop`() {
         let abi = Es6RuntimeAbi()
 

@@ -13,12 +13,13 @@ class {
         return engine.compile(sources, artifacts)
     }
 
-    /** Compile one caller-selected bounded package partition into one relative artifact. */
+    /** Compile one bounded package into a relative library or selected-main executable artifact. */
     public async compilePackage(
         CompilerSourceProvider sources,
         CompilerArtifactSink artifacts,
-        String artifactIdentity
+        String artifactIdentity,
+        String mainClass = null
     ) -> CompilerSession {
-        return engine.compilePackage(sources, artifacts, artifactIdentity)
+        return engine.compilePackage(sources, artifacts, artifactIdentity, mainClass)
     }
 }

@@ -1,0 +1,58 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/semantic/types
+
+/** Node CLI boundary for an already-selected bound declaration; never resolves overloads. */
+class {
+    public emit(BoundTypeUnit owner, BoundFunctionUnit selectedMain) -> Es6CodeResult {
+        if (!owner || !selectedMain) {
+            return failure("es6.entrypoint-owner", "Entrypoint requires a selected type and member")
+        }
+        // Require the published member itself, not a same-named replacement supplied by a caller.
+        if (!owner.functionUnits().any({ Object.referenceEquals(_, selectedMain) })) {
+            return failure("es6.entrypoint-owner", "Selected entrypoint is not a member of the selected type")
+        }
+        if (selectedMain.name != "main" || !selectedMain.staticFunction ||
+            selectedMain.abstractFunction || selectedMain.constructorFunction || selectedMain.lazyProperty) {
+            return failure("es6.entrypoint-kind", "Entrypoint must be a concrete static main method")
+        }
+        let parameters = selectedMain.parameterValues()
+        let returnType = selectedMain.returnType.value()
+        if (returnType != "unit" && returnType != "void") {
+            return failure("es6.entrypoint-signature", "Entrypoint must return unit or void")
+        }
+        var String arguments = ""
+        if (parameters.count == 1) {
+            let type = parameters[0].semanticType
+            if (type.kind() != "array") {
+                return failure("es6.entrypoint-signature", "Entrypoint arguments require a native String array")
+            }
+            let arrayType = (ArraySemanticType)type
+            if (arrayType.dimensions != 1 ||
+                arrayType.elementType.value() != SemanticTypes.stringType().value() || parameters[0].defaultValue) {
+                return failure("es6.entrypoint-signature", "Entrypoint arguments require exactly native String[]")
+            }
+            // ABI flat-es6-abi-1 uses native-array and native-string, not Flat wrapper objects.
+            arguments = "process.argv.slice(2)"
+        } else if (parameters.count != 0) {
+            return failure("es6.entrypoint-signature", "Entrypoint accepts no parameters or one native String[]")
+        }
+        let ownerName = Es6NameMangler.mangle(owner.identity.value)
+        let mainName = selectedMain.externalName ?: Es6NameMangler.mangle(
+            selectedMain.dispatchIdentity ?: selectedMain.identity.value
+        )
+        let call = ownerName + "." + mainName + "(" + arguments + ")"
+        return Es6CodeResult(code:
+            "if (require.main === module) {\n" +
+            "  Promise.resolve().then(() => " + call + ").catch(error => {\n" +
+            "    console.error(error && error.message ? error.message : String(error));\n" +
+            "    process.exitCode = 1;\n" +
+            "  });\n" +
+            "}\n"
+        )
+    }
+
+    failure(String code, String message) -> Es6CodeResult =>
+        Es6CodeResult(diagnostic: Es6BackendDiagnostic(code, message))
+}

@@ -506,7 +506,9 @@ class {
     }
 
     public getSourceForPackage(String installationTarget, PackageSource defaultSource = null) -> PackageSource {
-        return package.sources.getOrDefault(installationTarget, { defaultSource })
+        // Selection must not memoize absence/fallback into manifest state: a
+        // dependency can be queried for multiple source groups in one install.
+        return package.sources.containsKey(installationTarget) ? package.sources[installationTarget] : defaultSource
     }
 
     async checkFlatHome() => true {

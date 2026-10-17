@@ -167,9 +167,12 @@ class {
                  method.name == "transform")
             var SemanticType inferredMethodReturn = SemanticTypes.unknownType()
             let methodStatements = method.statements()
-            if (method.inferredReturnType && methodStatements.isNotEmpty &&
-                methodStatements.first.class.isOfType(PrimitiveReturnSyntax.class)) {
-                let inferredObject = (Object)methodStatements.first
+            let returnAnchor = methodStatements.isNotEmpty &&
+                methodStatements.first.class.isOfType(PrimitiveReturnSyntax.class)
+                ? methodStatements.first : methodStatements.isNotEmpty ? methodStatements.last : null
+            if (method.inferredReturnType && returnAnchor &&
+                returnAnchor.class.isOfType(PrimitiveReturnSyntax.class)) {
+                let inferredObject = (Object)returnAnchor
                 let inferredSyntax = (PrimitiveReturnSyntax)inferredObject
                 if (inferredSyntax.value &&
                     inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class)) {
@@ -647,7 +650,8 @@ class {
             let call = (PrimitiveCallSyntax)value
             let candidates = constructors.filter((candidate) => candidate.ownerType &&
                 candidate.ownerType.value() == type.value() &&
-                candidate.callableKind.value == "instance-method" && candidate.name == call.name &&
+                (candidate.callableKind.value == "instance-method" ||
+                    candidate.callableKind.value == "static-method") && candidate.name == call.name &&
                 call.argumentValues().count + call.namedArgumentValues().count >=
                     candidate.parameterTypes().count - candidate.optionalParameterCount &&
                 call.argumentValues().count + call.namedArgumentValues().count <=
@@ -797,7 +801,8 @@ class {
             if (statement.class.isOfType(PrimitiveExternalStatementSyntax.class)) {
                 statements.add(PrimitiveOpaqueCodeBinder().bind(
                     (PrimitiveExternalStatementSyntax)statement, opaqueLocals,
-                    receiver, allFields, constructors, publishedFields
+                    receiver, allFields, constructors, publishedFields,
+                    methodTypeResolver(syntax), typeHierarchy
                 ))
                 continue
             }
@@ -822,7 +827,7 @@ class {
             if (!conversion.applicable && type.declarationIdentity.name == "String" &&
                 returnType.value() == type.value() &&
                 value.semanticType.value() == SemanticTypes.stringType().value()) {
-                conversion = TypeConversion(
+                conversion = PrimitiveStringAdapter.unsupported(
                     value.semanticType, returnType,
                     "declared-string-return", true, false, true, 0
                 )
@@ -906,7 +911,7 @@ class {
                         candidate.ownerType.declarationIdentity.name == "String"
                     )
                 if (!conversion.applicable && declaredStringReturn) {
-                    conversion = TypeConversion(
+                    conversion = PrimitiveStringAdapter.unsupported(
                         returned.value.semanticType, returnType,
                         "declared-string-return", true, false, true, 0
                     )
@@ -992,7 +997,7 @@ class {
                         candidate.ownerType.declarationIdentity.name == "String"
                     )
                 if (!conversion.applicable && declaredStringReturn) {
-                    conversion = TypeConversion(
+                    conversion = PrimitiveStringAdapter.unsupported(
                         returned.value.semanticType, returnType,
                         "declared-string-return", true, false, true, 0
                     )
@@ -1113,7 +1118,7 @@ class {
                     receiverType.declarationIdentity.name == "String" &&
                     type.value() == receiverType.value() &&
                     defaultValue.semanticType.value() == SemanticTypes.stringType().value()) {
-                    conversion = TypeConversion(
+                    conversion = PrimitiveStringAdapter.unsupported(
                         defaultValue.semanticType, type,
                         "declared-string-default", true, false, true, 0
                     )
@@ -1400,7 +1405,7 @@ class {
                             candidate.parameterTypes()[argumentIndex].value() == candidateReceiverType.value()) {
                             argument = BoundConversionExpression(
                                 argument.range, candidateReceiverType, argument,
-                                TypeConversion(argument.semanticType, candidateReceiverType,
+                                PrimitiveStringAdapter.unsupported(argument.semanticType, candidateReceiverType,
                                     "declared-string-argument", true, false, true, 0)
                             )
                         }
@@ -1439,7 +1444,7 @@ class {
                         target.parameterTypes()[argumentIndex].value() == candidateReceiverType.value()) {
                         argument = BoundConversionExpression(
                             argument.range, candidateReceiverType, argument,
-                            TypeConversion(argument.semanticType, candidateReceiverType,
+                            PrimitiveStringAdapter.unsupported(argument.semanticType, candidateReceiverType,
                                 "declared-string-argument", true, false, true, 0)
                         )
                     }
@@ -1454,7 +1459,7 @@ class {
                 if (owner.semanticType.value() != candidateReceiverType.value()) {
                     callOwner = BoundConversionExpression(
                         value.receiver.range, candidateReceiverType, owner,
-                        TypeConversion(owner.semanticType, candidateReceiverType,
+                        PrimitiveStringAdapter.unsupported(owner.semanticType, candidateReceiverType,
                             "declared-string-receiver", true, false, true, 0)
                     )
                 }
@@ -1786,19 +1791,6 @@ class {
                 SemanticTypes.stringType().value() && boundType &&
                 boundType.declarationIdentity.name == "String"
                 ? boundType : owner.semanticType
-            let normalizedArguments = BoundExpression[]
-            for (argument in arguments) {
-                if (boundType && candidateReceiverType.value() == boundType.value() &&
-                    argument.semanticType.value() == SemanticTypes.stringType().value()) {
-                    normalizedArguments.add(BoundConversionExpression(
-                        argument.range, candidateReceiverType, argument,
-                        TypeConversion(
-                            argument.semanticType, candidateReceiverType,
-                            "declared-string-argument", true, false, true, 0
-                        )
-                    ))
-                } else normalizedArguments.add(argument)
-            }
             let receiverInstance = candidateReceiverType.kind() == "generic-instance" ?
                 (GenericInstanceSemanticType)candidateReceiverType : null
             let candidates = constructors.filter((candidate) =>
@@ -1807,31 +1799,15 @@ class {
                     receiverInstance.declarationType.value() : candidateReceiverType.value()) &&
                 candidate.name == value.memberName
             ).map({ receiverInstance ? _.instantiateReceiver(receiverInstance) : _ })
-            let resolution = OverloadResolver.resolve(
-                value.memberName, candidates, candidateReceiverType,
-                normalizedArguments.map({ _.semanticType }), value.range, typeHierarchy
-            )
-            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
-            let target = resolution.selected
-            let checked = CallTypeChecker.check(
-                target, candidateReceiverType,
-                normalizedArguments.map({ _.semanticType }), value.range, typeHierarchy
-            )
-            if (!checked.valid) throw Exception(checked.diagnostic.message)
             var BoundExpression callOwner = owner
             if (owner.semanticType.value() != candidateReceiverType.value()) {
-                callOwner = BoundConversionExpression(
-                    value.receiver.range, candidateReceiverType, owner,
-                    genericRoot ? TypeConversions.classify(owner.semanticType, candidateReceiverType, hierarchy: typeHierarchy) : TypeConversion(
-                        owner.semanticType, candidateReceiverType,
-                        "declared-string-receiver", true, false, true, 0
-                    )
-                )
+                if (genericRoot) {
+                    callOwner = BoundConversionExpression(value.receiver.range, candidateReceiverType, owner,
+                        TypeConversions.classify(owner.semanticType, candidateReceiverType, hierarchy: typeHierarchy))
+                } else callOwner = PrimitiveStringAdapter.wrap(owner, candidateReceiverType, declarationContext, constructors)
             }
-            return BoundCallExpression(
-                value.range, checked.semanticType, target, callOwner,
-                normalizedArguments, checked.argumentConversions()
-            )
+            return PrimitiveStringAdapter.call(value.memberName, candidates, callOwner,
+                arguments, declarationContext, constructors, typeHierarchy)
         }
         if (syntax.class.isOfType(PrimitivePostfixUpdateSyntax.class)) {
             let value = (PrimitivePostfixUpdateSyntax)syntax
@@ -2069,7 +2045,7 @@ class {
                     boundType.declarationIdentity.name == "String" &&
                     requiredType.value() == boundType.value() &&
                     whenTrue.semanticType.value() == SemanticTypes.stringType().value()) {
-                    trueConversion = TypeConversion(
+                    trueConversion = PrimitiveStringAdapter.unsupported(
                         whenTrue.semanticType, requiredType,
                         "declared-string-conditional", true, false, true, 0
                     )
@@ -2078,7 +2054,7 @@ class {
                     boundType.declarationIdentity.name == "String" &&
                     requiredType.value() == boundType.value() &&
                     whenFalse.semanticType.value() == SemanticTypes.stringType().value()) {
-                    falseConversion = TypeConversion(
+                    falseConversion = PrimitiveStringAdapter.unsupported(
                         whenFalse.semanticType, requiredType,
                         "declared-string-conditional", true, false, true, 0
                     )
@@ -2112,7 +2088,7 @@ class {
                     whenFalse.semanticType.value() == boundType.value()) {
                     whenTrue = BoundConversionExpression(
                         value.whenTrue.range, boundType, whenTrue,
-                        TypeConversion(
+                        PrimitiveStringAdapter.unsupported(
                             whenTrue.semanticType, boundType,
                             "declared-string-conditional", true, false, true, 0
                         )
@@ -2122,7 +2098,7 @@ class {
                     whenTrue.semanticType.value() == boundType.value()) {
                     whenFalse = BoundConversionExpression(
                         value.whenFalse.range, boundType, whenFalse,
-                        TypeConversion(
+                        PrimitiveStringAdapter.unsupported(
                             whenFalse.semanticType, boundType,
                             "declared-string-conditional", true, false, true, 0
                         )
@@ -2244,14 +2220,14 @@ class {
                 right.semanticType.value() == boundType.value()) {
                 left = BoundConversionExpression(
                     value.left.range, SemanticTypes.stringType(), left,
-                    TypeConversion(
+                    PrimitiveStringAdapter.unsupported(
                         left.semanticType, SemanticTypes.stringType(),
                         "declared-string-operator", true, false, true, 0
                     )
                 )
                 right = BoundConversionExpression(
                     value.right.range, SemanticTypes.stringType(), right,
-                    TypeConversion(
+                    PrimitiveStringAdapter.unsupported(
                         right.semanticType, SemanticTypes.stringType(),
                         "declared-string-operator", true, false, true, 0
                     )
@@ -2342,12 +2318,16 @@ class {
                 arguments.add(expression(argument, receiver, fields, locals))
             }
             let resolvedOwner = declarationContext ? declarationContext.resolve(value.typeName, value.range) : null
+            // Resolve the complete generic spelling so constructor arguments use
+            // the same identity contract as annotations (not scalar String).
+            let constructedType = declarationContext && typeArguments.isNotEmpty ?
+                (GenericInstanceSemanticType)typeOf(value.typeName + "<" + typeArguments.join(",") + ">") : null
             let candidates = constructors.filter((candidate) =>
                 candidate.callableKind.value == "constructor" &&
                 (resolvedOwner ? candidate.ownerType.declarationIdentity.value == resolvedOwner.value :
                     candidate.name == value.typeName)
             ).map((candidate) => typeArguments.isEmpty ? candidate :
-                candidate.instantiateConstructor(typeArguments.map({ typeOf(_) })))
+                candidate.instantiateConstructor(constructedType ? constructedType.typeArguments() : typeArguments.map({ typeOf(_) })))
             if (candidates.isEmpty && value.typeName == "Array" &&
                 typeArguments.count == 1 && arguments.count == 1) {
                 if (arguments.first.semanticType.value() != SemanticTypes.intType().value()) {
@@ -2541,7 +2521,7 @@ class {
                         parameterTypes[argumentIndex].value() == boundType.value()) {
                         callArguments.add(BoundConversionExpression(
                             argument.range, parameterTypes[argumentIndex], argument,
-                            TypeConversion(
+                            PrimitiveStringAdapter.unsupported(
                                 argument.semanticType, parameterTypes[argumentIndex],
                                 "declared-string-argument", true, false, true, 0
                             )

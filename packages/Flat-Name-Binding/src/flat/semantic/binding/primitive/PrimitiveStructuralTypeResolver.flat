@@ -221,7 +221,8 @@ class {
                 if (resolved) return PrimitiveStructuralTypeResolver(
                     syntaxes: syntaxes, callables: callables, snapshot: snapshot,
                     genericParameter: genericParameter, receiverType: receiverType,
-                    interfaces: interfaces
+                    interfaces: interfaces, declarationContext: ownerContext,
+                    lookupRange: implementationOwner.range
                 ).resolve(resolved)
             }
         }

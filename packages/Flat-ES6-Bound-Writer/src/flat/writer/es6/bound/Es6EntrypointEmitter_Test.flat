@@ -1,0 +1,149 @@
+package flat/writer/es6/bound
+
+import flat/bound
+import flat/compiler/models
+import flat/semantic/types
+import flat/io
+import flat/system
+import flat/time/Time
+
+testable class {
+    mainUnit(
+        SemanticType[] types = SemanticType[],
+        Bool staticFunction = true,
+        SemanticType returnType = SemanticTypes.unitType(),
+        String body = "return;",
+        Bool asyncFunction = false,
+        String externalName = null,
+        String name = "main"
+    ) -> BoundFunctionUnit {
+        let fixture = Es6BoundWriter_TestFixture()
+        let parameters = BoundFunctionParameter[]
+        var Int index
+        for (type in types) {
+            parameters.add(BoundFunctionParameter(
+                "arg#index", fixture.symbol("parameter", "arg#index", index + 10), type
+            ))
+            index++
+        }
+        return BoundFunctionUnit(
+            fixture.declaration("static-method", name, 1), name, returnType,
+            [BoundExternalStatement(fixture.range(), "es6", [
+                BoundExternalCodeSegment(fixture.range(), body)
+            ])], fixture.range(), parameters,
+            staticFunction: staticFunction, asyncFunction: asyncFunction,
+            externalName: externalName
+        )
+    }
+
+    owner(BoundFunctionUnit main) -> BoundTypeUnit {
+        let fixture = Es6BoundWriter_TestFixture()
+        let identity = fixture.declaration("class", "Main", 0)
+        return BoundTypeUnit(identity, UserClassSemanticType(identity), [main], fixture.range())
+    }
+
+    test `validates selected concrete static main without resolving overloads`() {
+        let emitter = Es6EntrypointEmitter()
+        let main = mainUnit()
+        expect(emitter.emit(owner(main), main).emitted).toBe(true)
+        let args = mainUnit([ArraySemanticType(SemanticTypes.stringType())])
+        expect(emitter.emit(owner(args), args).emitted).toBe(true)
+        let explicitVoid = mainUnit(returnType: SemanticTypes.voidType())
+        expect(emitter.emit(owner(explicitVoid), explicitVoid).emitted).toBe(true)
+        expect(emitter.emit(owner(main), args).diagnostic.code).toBe("es6.entrypoint-owner")
+        let instance = mainUnit(staticFunction: false)
+        expect(emitter.emit(owner(instance), instance).diagnostic.code).toBe("es6.entrypoint-kind")
+        let otherName = mainUnit(name: "run")
+        expect(emitter.emit(owner(otherName), otherName).diagnostic.code).toBe("es6.entrypoint-kind")
+        let fixture = Es6BoundWriter_TestFixture()
+        let abstractMain = BoundFunctionUnit(
+            fixture.declaration("instance-method", "main", 2), "main", SemanticTypes.unitType(),
+            BoundStatement[], fixture.range(), abstractFunction: true
+        )
+        expect(emitter.emit(owner(abstractMain), abstractMain).diagnostic.code).toBe("es6.entrypoint-kind")
+    }
+
+    invalidSignature(SemanticType[] signature) {
+        let main = mainUnit(signature)
+        expect(Es6EntrypointEmitter().emit(owner(main), main).diagnostic.code).toBe("es6.entrypoint-signature")
+    }
+
+    test `rejects incompatible signatures and wrapper representations`() {
+        let emitter = Es6EntrypointEmitter()
+        let fixture = Es6BoundWriter_TestFixture()
+        let wrapper = UserClassSemanticType(fixture.declaration("class", "String", 3))
+        invalidSignature([SemanticTypes.intType()])
+        invalidSignature([SemanticTypes.stringType()])
+        invalidSignature([ArraySemanticType(SemanticTypes.intType())])
+        invalidSignature([ArraySemanticType(SemanticTypes.stringType(), 2)])
+        invalidSignature([ArraySemanticType(wrapper)])
+        invalidSignature([ArraySemanticType(SemanticTypes.stringType()), SemanticTypes.intType()])
+        let returnsValue = mainUnit(returnType: SemanticTypes.intType())
+        expect(emitter.emit(owner(returnsValue), returnsValue).diagnostic.code).toBe("es6.entrypoint-signature")
+    }
+
+    async test `generated executable forwards arguments and import does not invoke main`() {
+        let fixture = Es6BoundWriter_TestFixture()
+        let argumentName = Es6NameMangler.mangle(fixture.symbol("parameter", "arg0", 10).value)
+        let main = mainUnit([ArraySemanticType(SemanticTypes.stringType())],
+            body: "console.log(JSON.stringify(" + argumentName + "));",
+            externalName: "selectedMain")
+        let root = File(".flat-es6-entrypoint-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "main.js")
+        let type = owner(main)
+        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code +
+            Es6EntrypointEmitter().emit(type, main).code
+        Es6ArtifactCommitter().commit(destination, code)
+        let response = System.executeExact(
+            ["node", destination.normalizedLocation, "alpha", "two words", "λ"],
+            silent: true, shell: false
+        )
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("[\"alpha\",\"two words\",\"λ\"]\n")
+        let imported = System.executeExact(["node", "-e",
+            "require('./" + destination.normalizedLocation + "')"], silent: true, shell: false)
+        expect(imported.exitCode).toBe(0)
+        expect(imported.stdout.join("")).toBe("")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `parameterless async main completes successfully under Node`() {
+        let main = mainUnit(body: "await Promise.resolve(); console.log('complete');", asyncFunction: true)
+        let type = owner(main)
+        let bootstrap = Es6EntrypointEmitter().emit(type, main)
+        let emitted = Es6UnitOrchestrator().emitType(type, 0)
+        expect(bootstrap.emitted).toBe(true)
+        expect(emitted.emitted).toBe(true)
+        let root = File(".flat-es6-entrypoint-async-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "main.js")
+        Es6ArtifactCommitter().commit(destination, emitted.fragment.code + bootstrap.code)
+        let response = System.executeExact(["node", destination.normalizedLocation], silent: true, shell: false)
+        expect(response.exitCode).toBe(0)
+        expect(response.stdout.join("")).toBe("complete\n")
+        expect(response.stderr.join("")).toBe("")
+        Es6ArtifactFiles.remove(root)
+    }
+
+    async test `CLI boundary reports sync throws and async rejections without unhandled failures`() {
+        var Int asyncValue = 0
+        while (asyncValue < 2) {
+            let main = mainUnit(body: "throw new Error('entrypoint failed');", asyncFunction: asyncValue == 1)
+            let type = owner(main)
+            let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code +
+                Es6EntrypointEmitter().emit(type, main).code
+            let root = File(".flat-es6-entrypoint-failure-#{Time.currentTimeMillis}")
+            Es6ArtifactFiles.ensureDirectory(root)
+            let destination = File(root, "main.js")
+            Es6ArtifactCommitter().commit(destination, code)
+            let response = System.executeExact(["node", "--unhandled-rejections=strict", destination.normalizedLocation],
+                silent: true, shell: false)
+            expect(response.exitCode).toBe(1)
+            expect(response.stdout.join("")).toBe("")
+            expect(response.stderr.join("")).toBe("entrypoint failed\n")
+            Es6ArtifactFiles.remove(root)
+            asyncValue++
+        }
+    }
+}

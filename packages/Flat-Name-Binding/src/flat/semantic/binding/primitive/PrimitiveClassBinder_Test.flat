@@ -362,24 +362,17 @@ testable class {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:declared-string-conditional"), "revision:one"
         )
-        let type = PrimitiveClassBinder().bind(
+        var Bool rejected
+        try {
+            let type = PrimitiveClassBinder().bind(
             PrimitiveClassParser().parse(
                 stream.consumeAll<Token>("data"), snapshot
             ), snapshot
         ).typeUnit
-        let method = type.functionUnits().firstOrNull({ _.name == "capitalize" })
-        let statements = method.statements()
-        let returnedObject = (Object)statements.first
-        let returned = (BoundReturnStatement)returnedObject
-        let conditionalObject = (Object)returned.value
-        let conditional = (BoundConditionalExpression)conditionalObject
-        let trueObject = (Object)conditional.whenTrue
-        let trueConversion = (BoundConversionExpression)trueObject
-
-        expect(conditional.semanticType.value()).toBe(type.semanticType.value())
-        expect(trueConversion.conversion.conversionKind)
-            .toBe("declared-string-conditional")
-        expect(trueConversion.range.snapshot).toBe(snapshot)
+        } catch (Exception error) {
+            rejected = error.message.contains("Text representation adapter unavailable")
+        }
+        expect(rejected).toBe(true)
     }
 
     async test `binds required Char conditional fallback with explicit conversion evidence`() {

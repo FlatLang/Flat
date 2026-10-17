@@ -1165,6 +1165,233 @@ testable class {
         expect(unit.functionUnits().firstOrNull({ _.name == "text" }).returnType.value()).toBe(SemanticTypes.stringType().value())
     }
 
+    async test `text adapter constructs canonical wrapper for substituted element`() {
+        let sources = ["class Object {}", "class String { public construct(String nativeText) {} }",
+            "class Array<E> { public construct() {} public add(E value) {} }",
+            "class Text { public split(String part) -> String[] { let strs = String[]; strs.add(part); return strs; } }"]
+        let contexts = PrimitiveSourceBindingContext[]
+        var DeclarationIdentity arrayIdentity
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:text-adapter-#index"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            if (syntax.name == "Array") arrayIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Array")
+            contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+            index++
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts, arrayDeclaration: arrayIdentity).typeUnits()
+        let method = units.firstOrNull({ _.identity.name == "Text" }).functionUnits().firstOrNull({ _.name == "split" })
+        let statements = method.statements()
+        let statementObject = (Object)statements[1]
+        let statement = (BoundExpressionStatement)statementObject
+        let callObject = (Object)statement.expression
+        let call = (BoundCallExpression)callObject
+        let supplied = call.argumentValues()
+        let wrappedObject = (Object)supplied.first
+        let wrapped = (BoundCallExpression)wrappedObject
+        expect(wrapped.target.callableKind.value).toBe("constructor")
+        expect(wrapped.target.ownerType.declarationIdentity.name).toBe("String")
+        expect(wrapped.argumentValues().count).toBe(1)
+        expect(wrapped.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    async test `text adapter rejects missing canonical constructor and unrelated owner`() {
+        let spaces = ["flat", "other"]
+        for (space in spaces) {
+            let sources = ["class Object {}", "class String {}",
+                "class Array<E> { public construct() {} public add(E value) {} }",
+                "class Text { public split(String part) -> String[] { let strs = String[]; strs.add(part); return strs; } }"]
+            let contexts = PrimitiveSourceBindingContext[]
+            var DeclarationIdentity arrayIdentity
+            var Int index
+            for (source in sources) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-adapter-#index"), "one")
+                let stream = Lexer().lex(source)
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                if (syntax.name == "Array") arrayIdentity = DeclarationIdentity(
+                    SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Array")
+                contexts.add(PrimitiveSourceBindingContext(space, snapshot, [syntax]))
+                index++
+            }
+            var Bool rejected
+            try {
+                PrimitiveClassPartitionBinder().bindContexts(contexts, arrayDeclaration: arrayIdentity)
+            } catch (Exception error) {
+                rejected = error.message.contains("No overload")
+            }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `String array construction and return annotation share argument identity`() {
+        let sources = ["class Object {}", "class String {}", "class Array<E> { public construct() {} }",
+            "class Text { public split() -> String[] { let strs = String[]; return strs; } }"]
+        let contexts = PrimitiveSourceBindingContext[]
+        var DeclarationIdentity arrayIdentity
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:string-array-#index"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            if (syntax.name == "Array") arrayIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Array")
+            contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+            index++
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts, arrayDeclaration: arrayIdentity).typeUnits()
+        let split = units.firstOrNull({ _.identity.name == "Text" }).functionUnits().firstOrNull({ _.name == "split" })
+        expect(split.returnType.kind()).toBe("generic-instance")
+        let reversed = PrimitiveClassPartitionBinder().bindContexts(contexts.reverse(), arrayDeclaration: arrayIdentity).typeUnits()
+        expect(reversed.count).toBe(units.count)
+    }
+
+    async test `selected array hierarchy keeps source String parent identity`() {
+        // Normal core declares Null extends String; expression String is a builtin,
+        // but this inheritance edge must target the admitted source declaration.
+        let sources = ["class Object {}", "class String {}", "class Null extends String {}", "class Array<E> {}"]
+        let contexts = PrimitiveSourceBindingContext[]
+        var DeclarationIdentity arrayIdentity
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:source-parent-#index"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            if (syntax.name == "Array") arrayIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Array")
+            contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+            index++
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts, arrayDeclaration: arrayIdentity).typeUnits()
+        expect(units.count).toBe(4)
+        let reversed = PrimitiveClassPartitionBinder().bindContexts(contexts.reverse(), arrayDeclaration: arrayIdentity).typeUnits()
+        expect(reversed.count).toBe(4)
+    }
+
+    async test `selected array hierarchy preserves projected root property`() {
+        let sources = ["class Object { visible Long hashCodeLong => 0 }", "class Chars {}",
+            "class Array<E> {}", "class Text { visible Chars chars; public Long hashCodeLong => chars.hashCodeLong }"]
+        let paths = ["memory:a/Object", "memory:b/Chars", "memory:c/Array", "memory:d/Text"]
+        let contexts = PrimitiveSourceBindingContext[]
+        var DeclarationIdentity arrayIdentity
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity(paths[index]), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            if (index == 2) arrayIdentity = DeclarationIdentity(
+                SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Array")
+            contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+            index++
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts, arrayDeclaration: arrayIdentity).typeUnits()
+        expect(units.firstOrNull({ _.identity.name == "Text" }).functionUnits()
+            .firstOrNull({ _.name == "hashCodeLong" }).returnType.value()).toBe(SemanticTypes.longType().value())
+        let reversed = PrimitiveClassPartitionBinder().bindContexts(contexts.reverse(), arrayDeclaration: arrayIdentity).typeUnits()
+        expect(reversed.firstOrNull({ _.identity.name == "Text" }).functionUnits()
+            .firstOrNull({ _.name == "hashCodeLong" }).returnType.value()).toBe(SemanticTypes.longType().value())
+    }
+
+    async test `terminal return anchor rejects mismatched branch return`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-terminal-anchor"), "one")
+        let stream = Lexer().lex("class Sorter { static helper(Int value) => value { if (value > 0) { return \"wrong\"; } } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        var Bool rejected
+        try {
+            PrimitiveClassPartitionBinder().bindContexts([
+                PrimitiveSourceBindingContext("flat", snapshot, [syntax])])
+        } catch (Exception error) {
+            rejected = error.message.contains("cannot return")
+        }
+        expect(rejected).toBe(true)
+    }
+
+    async test `anchored recursive static helper publishes terminal parameter result`() {
+        let sources = [
+            "class Sorter { static run(Int value) => helper(value) static helper(Int value) => value { if (value > 0) { helper(value - 1); } } }",
+            "class Sorter { static helper(Int value) => value { if (value > 0) { helper(value - 1); } } static run(Int value) => helper(value) }"]
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:anchored-static-recursion"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let type = PrimitiveClassPartitionBinder().bindContexts([
+                PrimitiveSourceBindingContext("flat", snapshot, [syntax])]).typeUnits().first
+            expect(type.functionUnits().firstOrNull({ _.name == "helper" }).returnType.value())
+                .toBe(SemanticTypes.intType().value())
+            expect(type.functionUnits().firstOrNull({ _.name == "run" }).returnType.value())
+                .toBe(SemanticTypes.intType().value())
+        }
+    }
+
+    async test `readiness preserves inherited generic parameter and callback scope`() {
+        let sources = [
+            "class Holder<E> { public read() -> Int => 1 }",
+            "trait Items<Type> { public inspect(Holder<Type> value) -> Int => value.read() public apply<Out>(Holder<Type> value, f(Holder<Type> x) -> Out) -> Out => f(value) public callback(Holder<Type> value) -> Int { return apply(value, { _.read() }); } }",
+            "class Range implements Items<Int> {}"]
+        let paths = ["memory:a/Holder", "memory:b/Items", "memory:c/Range"]
+        let contexts = PrimitiveSourceBindingContext[]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity(paths[index]), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let tokens = stream.consumeAll<Token>("data")
+            if (index == 1) {
+                let contract = PrimitiveInterfaceParser().parse(tokens, snapshot)
+                contexts.add(PrimitiveSourceBindingContext("flat", snapshot, PrimitiveClassSyntax[], [contract]))
+            } else {
+                let syntax = PrimitiveClassParser().parse(tokens, snapshot)
+                contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+            }
+            index++
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let range = units.firstOrNull({ _.identity.name == "Range" })
+        expect(range.functionUnits().firstOrNull({ _.name == "inspect" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+        expect(range.functionUnits().firstOrNull({ _.name == "callback" }).returnType.value())
+            .toBe(SemanticTypes.intType().value())
+        let reversed = PrimitiveClassPartitionBinder().bindContexts(contexts.reverse()).typeUnits()
+        expect(reversed.firstOrNull({ _.identity.name == "Range" }).functionUnits()
+            .firstOrNull({ _.name == "callback" }).returnType.value()).toBe(SemanticTypes.intType().value())
+    }
+
+    async test `callback inference waits for reverse ordered primitive static result`() {
+        let sources = [
+            "class Range { public map<Out>(callback(Int value) -> Out) -> Out => callback(1) public render(Bool format, String tab) => map({ _.encode(format, tab) }) public shadow(String _) => map({ _.encode(false, \"x\") }) }",
+            "class Int { public static encode(Int value, Bool format = false, String tab = \"x\") => toString(value) public static toString(Int value) => Long.toString(value) }",
+            "class Long { public static toString(Long value) -> String => \"ok\" }"]
+        let paths = ["memory:a/Range", "memory:z/Int", "memory:zz/Long"]
+        let contexts = PrimitiveSourceBindingContext[]
+        var Int index
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity(paths[index++]), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            contexts.add(PrimitiveSourceBindingContext("flat", snapshot, [syntax]))
+        }
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let range = units.firstOrNull({ _.identity.name == "Range" })
+        expect(range.functionUnits().firstOrNull({ _.name == "render" }).returnType.value())
+            .toBe(SemanticTypes.stringType().value())
+        expect(range.functionUnits().firstOrNull({ _.name == "shadow" }).returnType.value())
+            .toBe(SemanticTypes.stringType().value())
+        let reversed = PrimitiveClassPartitionBinder().bindContexts(contexts.reverse()).typeUnits()
+        expect(reversed.firstOrNull({ _.identity.name == "Range" }).functionUnits()
+            .firstOrNull({ _.name == "shadow" }).returnType.value()).toBe(SemanticTypes.stringType().value())
+        expect(reversed.firstOrNull({ _.identity.name == "Range" }).functionUnits()
+            .firstOrNull({ _.name == "render" }).returnType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
     async test `primitive callback uses declared static method`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:primitive-callback"), "one")
         let sources = ["class Int { public static encode(Int value, Bool format = false, String tab = \"x\") -> String => \"ok\" }", "class Range { public map<Out>(callback(Int value) -> Out) -> Out => callback(1) public render(Bool format, String tab) -> String => map({ _.encode(format, tab) }) }"]
@@ -1297,6 +1524,63 @@ testable class {
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
         let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
         expect(unit.functionUnits().firstOrNull({ _.name == "run" }).asyncFunction).toBe(true)
+    }
+
+    async test `source qualified call binds inside opaque interpolation`() {
+        let mainSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:external-main"), "one")
+        let charSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:external-char"), "one")
+        var String source = "class Main { static run() -> Unit { external { console.log("
+        source += '#'
+        source += "{Char.repeat('a', 3)}); } } }"
+        let mainStream = Lexer().lex(source)
+        mainStream.emit("start")
+        let main = PrimitiveClassParser().parse(mainStream.consumeAll<Token>("data"), mainSnapshot)
+        let charStream = Lexer().lex("class Char { static repeat(Char value, Int count) -> String { return \"aaa\"; } }")
+        charStream.emit("start")
+        let char = PrimitiveClassParser().parse(charStream.consumeAll<Token>("data"), charSnapshot)
+        let contexts = [PrimitiveSourceBindingContext("", mainSnapshot, [main]),
+            PrimitiveSourceBindingContext("", charSnapshot, [char])]
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+        let bound = units.firstOrNull({ _.identity.name == "Main" })
+        let method = bound.functionUnits().firstOrNull({ _.name == "run" })
+        expect(method.statements().first.unitKind()).toBe("external")
+    }
+
+    async test `trait substitution resolves imported concrete type in implementation source scope`() {
+        let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:consumer/Box.flat"), "one")
+        let traitSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:contracts/Items.flat"), "one")
+        let valueSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:domain/Value.flat"), "one")
+        let shadowSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:contracts/Value.flat"), "one")
+        let ownerStream = Lexer().lex("class Box implements Items<Value> { construct() {} }")
+        ownerStream.emit("start")
+        let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
+        let traitStream = Lexer().lex("trait Items<E> { public identity(E value) -> E { return value; } }")
+        traitStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(traitStream.consumeAll<Token>("data"), traitSnapshot)
+        let valueStream = Lexer().lex("class Value { construct() {} }")
+        valueStream.emit("start")
+        let value = PrimitiveClassParser().parse(valueStream.consumeAll<Token>("data"), valueSnapshot)
+        let shadowStream = Lexer().lex("class Value { construct() {} }")
+        shadowStream.emit("start")
+        let shadow = PrimitiveClassParser().parse(shadowStream.consumeAll<Token>("data"), shadowSnapshot)
+        let contexts = [PrimitiveSourceBindingContext("consumer", ownerSnapshot, [owner],
+                importValues: [PrimitiveBindingImport("contracts/Items", owner.range),
+                    PrimitiveBindingImport("domain/Value", owner.range)]),
+            PrimitiveSourceBindingContext("contracts", traitSnapshot, PrimitiveClassSyntax[], [contract]),
+            PrimitiveSourceBindingContext("domain", valueSnapshot, [value]),
+            PrimitiveSourceBindingContext("contracts", shadowSnapshot, [shadow])]
+        let ownerScope = PrimitiveResolvedDeclarationContext(contexts.first, contexts)
+        let scope = PrimitiveResolvedDeclarationContext(contexts[1], contexts)
+        let implementation = contract.methodValues().first.implementation()
+        let resolver = PrimitiveStructuralTypeResolver(interfaces: [contract],
+            implementationOwner: owner, implementationRange: implementation.range,
+            declarationContext: scope, lookupRange: implementation.range)
+        let expected = UserClassSemanticType(ownerScope.classIdentity(value))
+        expect(resolver.resolve("E").value()).toBe(expected.value())
+        let callback = (FunctionSemanticType)resolver.resolve("func(E)->E")
+        expect(callback.parameterTypes().first.value()).toBe(expected.value())
+        expect(callback.returnType.value()).toBe(expected.value())
+        expect(resolver.resolve("E[]").value()).toBe(ArraySemanticType(expected).value())
     }
 
     async test `trait owner edges retain canonical imports`() {

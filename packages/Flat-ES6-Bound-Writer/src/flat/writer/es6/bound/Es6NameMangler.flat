@@ -9,7 +9,8 @@ class {
         var String result = "flat"
         var Int index
         while (index < stableValue.count) {
-            result += "_" + index.toString()
+            let codeUnit = (Int)stableValue[index]
+            result += "_" + codeUnit.toString()
             index++
         }
         return result

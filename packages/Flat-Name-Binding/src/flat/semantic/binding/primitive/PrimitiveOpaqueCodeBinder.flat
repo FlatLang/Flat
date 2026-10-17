@@ -6,19 +6,28 @@ import flat/semantic/types
 
 /** Resolves opaque-code interpolation roots and selected ES6 runtime projections. */
 class PrimitiveOpaqueCodeBinder {
+    var PrimitiveStructuralTypeResolver currentTypeResolver
+    var TypeHierarchyComponent currentHierarchy
+    var BoundFieldUnit[] currentAvailableFields
+
     public bind(
         PrimitiveExternalStatementSyntax syntax,
         LocalBinding[] locals,
         BoundReferenceExpression receiver = null,
         BoundFieldUnit[] fields = BoundFieldUnit[],
         CallableSignature[] callables = CallableSignature[],
-        BoundFieldUnit[] availableFields = BoundFieldUnit[]
+        BoundFieldUnit[] availableFields = BoundFieldUnit[],
+        PrimitiveStructuralTypeResolver typeResolver = null,
+        TypeHierarchyComponent hierarchy = null
     ) -> BoundExternalStatement {
         if (!syntax || !locals || !fields || !availableFields ||
             availableFields.any({ !_ })) {
             throw Exception("Opaque-code binding requires input")
         }
         if (syntax.target != "js") throw Exception("Opaque target is unavailable")
+        currentTypeResolver = typeResolver
+        currentHierarchy = hierarchy
+        currentAvailableFields = availableFields
         let pieces = BoundExternalCodeSegment[]
         let syntaxPieces = syntax.segmentValues()
         var Int pieceIndex
@@ -201,6 +210,20 @@ class PrimitiveOpaqueCodeBinder {
         CallableSignature[] callables,
         Bool suppressAwait = false
     ) -> BoundExpression {
+        if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class)) {
+            let call = (PrimitiveMemberCallSyntax)syntax
+            if (call.receiver.class.isOfType(PrimitiveReferenceSyntax.class)) {
+                let ownerName = ((PrimitiveReferenceSyntax)call.receiver).name
+                if (!locals.any({ _.name == ownerName }) && !fields.any({ _.name == ownerName }) &&
+                    callables.any((candidate) => candidate.callableKind.value == "static-method" &&
+                        candidate.ownerType && candidate.ownerType.declarationIdentity.name == ownerName &&
+                        candidate.name == call.memberName)) {
+                    return PrimitiveClassBinder().bindScopedExpression(syntax, receiver, fields, locals,
+                        callables, typeResolver: currentTypeResolver,
+                        availableFields: currentAvailableFields, hierarchy: currentHierarchy)
+                }
+            }
+        }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
             let call = (PrimitiveCallSyntax)syntax
             let function = locals.reverse().firstOrNull({ _.name == call.name })

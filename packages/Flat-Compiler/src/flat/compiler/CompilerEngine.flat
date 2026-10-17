@@ -26,7 +26,8 @@ class {
     public async compilePackage(
         CompilerSourceProvider sources,
         CompilerArtifactSink artifacts,
-        String artifactIdentity
+        String artifactIdentity,
+        String mainClass = null
     ) -> CompilerSession {
         if (!sources || !artifacts) {
             throw Exception("Package compilation requires source provider and artifact sink")
@@ -50,7 +51,7 @@ class {
         var Int diagnosticCount
         var String packageDiagnostic
         try {
-            let code = packageLinker.linkSources(sources, ordered)
+            let code = packageLinker.linkSources(sources, ordered, mainClass: mainClass)
             let artifact = CompilerArtifact(artifactIdentity, code)
             artifacts.write(artifact)
             session.artifacts.send(artifact)

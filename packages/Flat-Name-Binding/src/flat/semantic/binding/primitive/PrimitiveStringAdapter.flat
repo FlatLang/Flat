@@ -1,0 +1,87 @@
+package flat/semantic/binding/primitive
+
+import flat/bound
+import flat/semantic/types
+
+/** Resolves scalar text representation changes before publishing bound calls. */
+class {
+    public static wrap(BoundExpression value, SemanticType required,
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables) -> BoundExpression {
+        if (value.semanticType.value() == required.value()) return value
+        if (value.semanticType.kind() == "nullable" || required.kind() == "nullable")
+            throw Exception("Nullable text adaptation requires single-evaluation null-preserving lowering")
+        if (value.semanticType.value() != SemanticTypes.stringType().value())
+            throw Exception("Text unwrapping requires a truthful native storage bridge")
+        let canonical = context ? context.candidates("flat/String") : null
+        if (!canonical || canonical.count != 1)
+            throw Exception("Text adaptation requires one canonical flat/String declaration")
+        let owner = UserClassSemanticType(canonical.first)
+        if (required.value() != owner.value())
+            throw Exception("Text adaptation cannot target a noncanonical String declaration")
+        let targets = callables.filter((candidate) => candidate.callableKind.value == "constructor" &&
+            candidate.ownerType.value() == owner.value() && candidate.returnType.value() == owner.value() &&
+            candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
+            candidate.parameterTypes().first.value() == SemanticTypes.stringType().value())
+        if (targets.count != 1)
+            throw Exception("Text adaptation requires one canonical native text constructor")
+        let checked = CallTypeChecker.check(targets.first, null, [value.semanticType], value.range)
+        if (!checked.valid) throw Exception(checked.diagnostic.message)
+        return BoundCallExpression(value.range, checked.semanticType, targets.first, null,
+            [value], checked.argumentConversions())
+    }
+
+    /** Ordinary overloads win before any representation-changing candidate. */
+    public static call(String name, CallableSignature[] candidates, BoundExpression receiver,
+        BoundExpression[] arguments, PrimitiveResolvedDeclarationContext context,
+        CallableSignature[] callables, TypeHierarchyComponent hierarchy) -> BoundCallExpression {
+        let range = receiver.range
+        let exact = OverloadResolver.resolve(name, candidates, receiver.semanticType,
+            arguments.map({ _.semanticType }), range, hierarchy)
+        if (exact.resolved) {
+            let checked = CallTypeChecker.check(exact.selected, receiver.semanticType,
+                arguments.map({ _.semanticType }), range, hierarchy)
+            return BoundCallExpression(range, checked.semanticType, checked.target, receiver,
+                arguments, checked.argumentConversions())
+        }
+        // An existing ambiguity must not be replaced by an adapter-selected call.
+        if (exact.applicableCandidates().isNotEmpty) throw Exception(exact.diagnostic.message)
+        let checks = CallCheckResult[]
+        let calls = BoundCallExpression[]
+        for (candidate in candidates) {
+            if (candidate.parameterTypes().count != arguments.count) continue
+            let adapted = BoundExpression[]
+            var Int index
+            var Bool rejected
+            for (argument in arguments) {
+                let required = candidate.parameterTypes()[index]
+                if (TypeConversions.classify(argument.semanticType, required, hierarchy: hierarchy).applicable) {
+                    adapted.add(argument)
+                } else {
+                    try {
+                        adapted.add(wrap(argument, required, context, callables))
+                    } catch (Exception error) {
+                        rejected = true
+                    }
+                }
+                index++
+            }
+            if (rejected) continue
+            let checked = CallTypeChecker.check(candidate, receiver.semanticType,
+                adapted.map({ _.semanticType }), range, hierarchy)
+            if (checked.valid) {
+                checks.add(checked)
+                calls.add(BoundCallExpression(range, checked.semanticType, checked.target,
+                    receiver, adapted, checked.argumentConversions()))
+            }
+        }
+        let selected = OverloadResolver.resolveChecked(name, candidates, checks, range)
+        if (!selected.resolved) throw Exception(selected.diagnostic.message)
+        return calls.firstOrNull({ _.target.identity.value == selected.selected.identity.value })
+    }
+
+    /** Never publish the old representation-changing no-op conversion markers. */
+    public static unsupported(SemanticType source, SemanticType target, String operation,
+        Bool applicable, Bool explicitConversion, Bool implicitConversion, Int rank) -> TypeConversion {
+        throw Exception("Text representation adapter unavailable for #operation: #{source.value()} to #{target.value()}")
+    }
+}

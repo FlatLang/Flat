@@ -10,6 +10,46 @@ import flat/writer/es6/bound
 
 /** Public package API acceptance, separate from direct linker feature tests. */
 testable class {
+    /** Requires separately bootstrapped flatc and Airship artifacts; never builds this suite recursively. */
+    async test `Airship Flat runtime builds a real package executable and Node runs its production dependency`() {
+        let airship = File("../Airship/dist/airship.js")
+        let compiler = File("dist/es6/index.js")
+        if (!airship.isFile || !compiler.isFile) {
+            throw Exception("Package executable acceptance requires explicit Airship and flatc bootstrap artifacts")
+        }
+        let root = File(".flat-compiler-airship-package-test-#{Time.currentTimeMillis}")
+        let sources = File(root, "src")
+        Es6ArtifactFiles.ensureDirectory(sources)
+        try {
+            // A normal package retains Airship's implicit real Flat-Core dependency.
+            // Do not trim dependency sources or replace production implementations.
+            Es6ArtifactCommitter().commit(File(root, "flat.json"),
+                "{\"name\":\"Compiler executable acceptance\",\"version\":\"0.1.0\",\"defaultTarget\":\"es6\",\"sources\":{\"main\":{\"source\":\"src\",\"mainClass\":\"app/Main\",\"dependencies\":{}}}}")
+            var String reference = ""
+            reference += '#'
+            reference += "{Char.repeat('a', 3)}"
+            Es6ArtifactCommitter().commit(File(sources, "Main.flat"),
+                "package app\nimport flat/primitive/number/Char\nclass Main { public static main() { external js { console.log(" + reference + "); } } }")
+            // Explicit finite acceptance budgets include the real core partition;
+            // production CLI defaults are neither bypassed nor raised globally.
+            let installed = System.execute([
+                "node", airship.normalizedLocation, "--use-links", "-f", root.normalizedLocation,
+                "--flatc-runtime", "flat", "install", "-t", "es6", "--",
+                "--max-sources", "128", "--max-types", "512"
+            ], silent: true, shell: false)
+            if (installed.exitCode != 0) {
+                throw Exception("Airship Flat runtime package install failed: " + installed.stdout.join("") + installed.stderr.join(""))
+            }
+            let output = File(root, "dist/es6/index.js")
+            expect(output.isFile).toBe(true)
+            let executed = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            if (executed.exitCode != 0) throw Exception(executed.stderr.join(""))
+            expect(executed.stdout.join("")).toBe("aaa\n")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     realSources() -> CompilerSource[] {
         CompilerSource[] values = [
         CompilerSource("flat/primitive/number/Char.flat", Es6ArtifactFiles.read(

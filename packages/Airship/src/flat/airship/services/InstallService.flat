@@ -414,7 +414,12 @@ class {
 
         log.debug("Executing command: #cmd")
 
-        let response = System.execute(cmd, silent: cliArgs.quietArg.enabled)
+        // Flat CLI owns source/exclusion glob interpretation. A shell must not
+        // expand an exclusion into positional source arguments before admission.
+        let flatRuntime = cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat"
+        let response = flatRuntime
+            ? System.executeExact(cmd, silent: cliArgs.quietArg.enabled, shell: false)
+            : System.execute(cmd, silent: cliArgs.quietArg.enabled)
 
         if (response.exitCode != 0) {
             throw FlatInstallationFailureException("Compilation failed: exit code #{response.exitCode}")

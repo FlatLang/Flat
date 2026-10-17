@@ -101,7 +101,7 @@ class {
                 let binder = PrimitiveOpaqueCodeBinder()
                 let opaque = binder.bind(
                     value, scopeLocals, receiver, fields, callables,
-                    currentAvailableFields
+                    currentAvailableFields, currentTypeResolver, currentHierarchy
                 )
                 result.add(opaque)
             } else if (statement.class.isOfType(PrimitiveContinueSyntax.class)) {
@@ -640,7 +640,7 @@ class {
                             candidate.ownerType.declarationIdentity.name == "String"
                         )
                     if (!conversion.applicable && declaredStringAssignment) {
-                        conversion = TypeConversion(
+                        conversion = PrimitiveStringAdapter.unsupported(
                             expression.semanticType, target.semanticType,
                             "declared-string-assignment", true, false, true, 0
                         )
@@ -711,7 +711,7 @@ class {
                             candidate.ownerType.declarationIdentity.name == "String"
                         )
                     if (!initializerConversion.applicable && declaredStringInitializer) {
-                        initializerConversion = TypeConversion(
+                        initializerConversion = PrimitiveStringAdapter.unsupported(
                             initialized.semanticType, semanticType,
                             "declared-string-initializer", true, false, true, 0
                         )
@@ -1190,7 +1190,7 @@ class {
                     candidate.ownerType.declarationIdentity.name == "String"
                 )
             if (!conversion.applicable && declaredStringAssignment) {
-                conversion = TypeConversion(
+                conversion = PrimitiveStringAdapter.unsupported(
                     assigned.semanticType, target.semanticType,
                     "declared-string-assignment-value", true, false, true, 0
                 )
@@ -1238,14 +1238,14 @@ class {
             if (declaredStringOperands) {
                 left = BoundConversionExpression(
                     value.left.range, SemanticTypes.stringType(), left,
-                    TypeConversion(
+                    PrimitiveStringAdapter.unsupported(
                         left.semanticType, SemanticTypes.stringType(),
                         "declared-string-operator", true, false, true, 0
                     )
                 )
                 right = BoundConversionExpression(
                     value.right.range, SemanticTypes.stringType(), right,
-                    TypeConversion(
+                    PrimitiveStringAdapter.unsupported(
                         right.semanticType, SemanticTypes.stringType(),
                         "declared-string-operator", true, false, true, 0
                     )
@@ -1387,25 +1387,6 @@ class {
                     "contains", arguments
                 )
             }
-            let normalizedArguments = BoundExpression[]
-            let declaredStringOwner = owner.semanticType.kind() == "user-class" &&
-                callables.any((candidate) =>
-                    candidate.ownerType &&
-                    candidate.ownerType.value() == owner.semanticType.value() &&
-                    candidate.ownerType.declarationIdentity.name == "String"
-                )
-            for (argument in arguments) {
-                if (declaredStringOwner &&
-                    argument.semanticType.value() == SemanticTypes.stringType().value()) {
-                    normalizedArguments.add(BoundConversionExpression(
-                        argument.range, owner.semanticType, argument,
-                        TypeConversion(
-                            argument.semanticType, owner.semanticType,
-                            "declared-string-argument", true, false, true, 0
-                        )
-                    ))
-                } else normalizedArguments.add(argument)
-            }
             let instance = owner.semanticType.kind() == "generic-instance" ?
                 (GenericInstanceSemanticType)owner.semanticType : null
             let ownerType = instance ? instance.declarationType.value() : owner.semanticType.value()
@@ -1421,21 +1402,8 @@ class {
                     currentAvailableFields, currentHierarchy)
             }
             if (candidates.isNotEmpty) {
-                let resolution = OverloadResolver.resolve(
-                    value.memberName, candidates, owner.semanticType,
-                    normalizedArguments.map({ _.semanticType }), value.range, currentHierarchy
-                )
-                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
-                let target = resolution.selected
-                let checked = CallTypeChecker.check(
-                    target, owner.semanticType,
-                    normalizedArguments.map({ _.semanticType }), value.range, currentHierarchy
-                )
-                if (!checked.valid) throw Exception(checked.diagnostic.message)
-                return BoundCallExpression(
-                    value.range, checked.semanticType, target, owner,
-                    normalizedArguments, checked.argumentConversions()
-                )
+                return PrimitiveStringAdapter.call(value.memberName, candidates, owner, arguments,
+                    currentTypeResolver ? currentTypeResolver.declarationContext : null, callables, currentHierarchy)
             }
         }
         if (syntax.class.isOfType(PrimitiveConstructionSyntax.class)) {

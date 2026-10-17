@@ -48,7 +48,8 @@ class {
     public async linkSources(
         CompilerSourceProvider provider,
         String[] identities,
-        DeclarationIdentity arrayDeclaration = null
+        DeclarationIdentity arrayDeclaration = null,
+        String mainClass = null
     ) -> String {
         if (!provider || !identities || identities.count > maxSources ||
             identities.any((identity) => !identity || identity.trim().count == 0)) {
@@ -62,7 +63,7 @@ class {
             }
             identityIndex++
         }
-        return linkSelected(provider, ordered, arrayDeclaration)
+        return linkSelected(provider, ordered, arrayDeclaration, mainClass: mainClass)
     }
 
     /** Direct array callers retain their supplied snapshots, even with shared identities. */
@@ -70,7 +71,8 @@ class {
         CompilerSourceProvider provider,
         String[] ordered,
         DeclarationIdentity arrayDeclaration,
-        CompilerSource[] suppliedSources = null
+        CompilerSource[] suppliedSources = null,
+        String mainClass = null
     ) -> String {
         let contexts = PrimitiveSourceBindingContext[]
         var Int typeCount
@@ -224,6 +226,27 @@ class {
         if (!assembly.assembled) {
             throw Exception("#{assembly.diagnostic.code}: #{assembly.diagnostic.message}")
         }
-        return assembly.code
+        var String entrypointCode = ""
+        if (mainClass) {
+            // Resolve a qualified declaration through the same immutable source
+            // contexts as binding; emitted names and source filenames are not APIs.
+            let declarations = PrimitiveResolvedDeclarationContext(contexts.first, contexts)
+            let candidates = declarations.candidates(mainClass)
+            if (candidates.count != 1) {
+                throw Exception("Executable main class '#mainClass' must resolve to exactly one declaration")
+            }
+            let owner = types.firstOrNull({ _.identity.value == candidates.first.value })
+            if (!owner) throw Exception("Executable main class '#mainClass' has no bound type")
+            let methods = owner.functionUnits().filter((method) => method.name == "main" && method.staticFunction)
+            if (methods.count != 1) {
+                throw Exception("Executable main class '#mainClass' requires exactly one static main method")
+            }
+            let entrypoint = Es6EntrypointEmitter().emit(owner, methods.first)
+            if (!entrypoint.emitted) {
+                throw Exception("#{entrypoint.diagnostic.code}: #{entrypoint.diagnostic.message}")
+            }
+            entrypointCode = entrypoint.code
+        }
+        return assembly.code + entrypointCode
     }
 }
