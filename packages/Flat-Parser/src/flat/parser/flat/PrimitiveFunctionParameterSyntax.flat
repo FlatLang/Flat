@@ -13,7 +13,8 @@ class {
         visible Bool visibleParameter = false,
         visible Bool privateParameter = false,
         visible Bool nativeArrayStorage = false,
-        String[] callbackNamesValue = null
+        String[] callbackNamesValue = null,
+        visible Bool nativeScalarStorage = false
     ) {
         retainedCallbackParameterNames = String[]
         if (callbackNamesValue) {

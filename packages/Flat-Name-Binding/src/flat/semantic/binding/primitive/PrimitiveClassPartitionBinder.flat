@@ -261,7 +261,7 @@ class {
                         let argumentNames = String[]
                         var Int optionalCount
                         for (parameter in implementation.parameterValues()) {
-                            argumentTypes.add(memberResolver.resolve(parameter.typeName))
+                            argumentTypes.add(memberResolver.resolveParameter(parameter))
                             argumentNames.add(parameter.name)
                             if (parameter.defaultValue) optionalCount++
                         }
@@ -496,7 +496,7 @@ class {
                         declarationContext: signatureContext ? signatureContext.scopeForSnapshot(method.range.snapshot) : null,
                         lookupRange: parameter.range
                     )
-                    type = resolver.resolve(parameter.typeName)
+                    type = resolver.resolveParameter(parameter)
                 } else if (method.parameterValues().none({ _.name == reference.name })) {
                     let field = fields.firstOrNull((candidate) =>
                         candidate.name == reference.name &&
@@ -963,7 +963,7 @@ class {
                 ) : null
                 var SemanticType[] parameterTypes = method.parameterValues().map((parameter) =>
                     signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics,
-                        syntax, method.range, parameter.nativeArrayStorage)
+                        syntax, method.range, parameter.nativeArrayStorage, parameter.nativeScalarStorage)
                 )
                 var Int provenanceIndex
                 for (parameter in method.parameterValues()) {
@@ -976,22 +976,6 @@ class {
                         parameterTypes[callbackIndex], parameter.callbackParameterNames())
                     callbackIndex++
                 }
-                if (syntax.name == "String") {
-                    parameterTypes = SemanticType[]
-                    for (parameter in method.parameterValues()) {
-                        parameterTypes.add(parameter.typeName == "String" ? owner :
-                            signatureType(parameter.typeName, syntaxes, snapshot, classGeneric, methodGenerics,
-                                nativeArrayStorage: parameter.nativeArrayStorage))
-                    }
-                }
-                let declaredStringResult = syntax.name == "String" &&
-                    (method.name == "plus" || method.name == "repeat" ||
-                     method.name == "trimStart" || method.name == "trimEnd" ||
-                     method.name == "trimEnds" || method.name == "toLowerCase" ||
-                     method.name == "toUpperCase" || method.name == "capitalize" ||
-                     method.name == "getStringBetween" || method.name == "surroundWith" ||
-                     method.name == "orElse" || method.name == "toString" ||
-                     method.name == "transform")
                 var SemanticType inferredMethodReturn = SemanticTypes.unknownType()
                 let methodStatements = method.statements()
                 let returnAnchor = methodStatements.isNotEmpty &&
@@ -1001,6 +985,8 @@ class {
                     returnAnchor.class.isOfType(PrimitiveReturnSyntax.class)) {
                     let inferredObject = (Object)returnAnchor
                     let inferredSyntax = (PrimitiveReturnSyntax)inferredObject
+                    if (inferredSyntax.value && inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class) &&
+                        ((PrimitiveReferenceSyntax)inferredSyntax.value).name == "this") inferredMethodReturn = owner
                     if (inferredSyntax.value &&
                         inferredSyntax.value.class.isOfType(PrimitiveReferenceSyntax.class)) {
                         let reference = (PrimitiveReferenceSyntax)inferredSyntax.value
@@ -1040,7 +1026,9 @@ class {
                                         }
                                     }
                                 }
-                                if (literalResult && !conflictingLiteral) resultType = literalResult
+                                if (literalResult && !conflictingLiteral) resultType = PrimitiveStructuralTypeResolver(
+                                    declarationContext: signatureContext ? signatureContext.scopeForSnapshot(target.range.snapshot) : null
+                                ).inferredExpressionResult(literalResult)
                             }
                             resultType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(target, resultType)
                             if (resultType.kind() != "unknown") results.add(resultType)
@@ -1049,16 +1037,23 @@ class {
                             results.all({ _.value() == results.first.value() })) inferredMethodReturn = results.first
                     }
                     if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
+                        let inferredResolver = PrimitiveStructuralTypeResolver(
+                            declarationContext: signatureContext ? signatureContext.scopeForSnapshot(method.range.snapshot) : null,
+                            implementationOwner: syntax, implementationRange: method.range)
+                        inferredMethodReturn = inferredResolver.constructorResult(inferredSyntax.value)
+                    }
+                    if (inferredMethodReturn.kind() == "unknown" && inferredSyntax.value) {
                         let inferred = PrimitiveExpressionBinder().bind(inferredSyntax.value)
-                        if (inferred.succeeded) inferredMethodReturn = inferred.expression.semanticType
+                        if (inferred.succeeded) inferredMethodReturn = PrimitiveStructuralTypeResolver(
+                            declarationContext: signatureContext ? signatureContext.scopeForSnapshot(method.range.snapshot) : null,
+                            implementationOwner: syntax, implementationRange: method.range
+                        ).inferredExpressionResult(inferred.expression.semanticType)
                     }
                 }
                 let declaredReturnType = method.inferredReturnType
-                    ? (declaredStringResult ? owner : inferredMethodReturn)
-                    : method.returnTypeName == "this" ||
-                        (syntax.name == "String" && method.name == "replace" &&
-                         method.returnTypeName == "String")
-                        ? owner :
+                    ? inferredMethodReturn
+                    : method.returnTypeName == "this"
+                    ? owner :
                     signatureType(method.returnTypeName, syntaxes, snapshot, classGeneric, methodGenerics, syntax, method.range)
                 let returnType = PrimitiveStructuralTypeResolver(interfaces: interfaces).fallbackResultType(
                     method, declaredReturnType)
@@ -1120,7 +1115,7 @@ class {
                 for (parameter in constructor.parameterValues()) {
                     let parameterType = signatureType(
                         parameter.typeName, syntaxes, snapshot, classGeneric,
-                        nativeArrayStorage: parameter.nativeArrayStorage
+                        nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage
                     )
                     parameterTypes.add(parameter.defaultValue &&
                         parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
@@ -1249,7 +1244,7 @@ class {
                             let field = syntax.fieldValues().firstOrNull({ _.name == reference.name })
                             if (field) {
                                 let storage = signatureType(field.typeName, syntaxes, snapshot,
-                                    classGeneric, nativeArrayStorage: field.nativeArrayStorage)
+                                    classGeneric, nativeArrayStorage: field.nativeArrayStorage, nativeScalarStorage: field.nativeScalarStorage)
                                 if (storage.kind() == "array") {
                                     let array = (ArraySemanticType)storage
                                     elementType = array.elementType
@@ -1311,7 +1306,7 @@ class {
                 )
                 result.add(BoundFieldUnit(
                     field.name, SymbolIdentity(ownerIdentity, "field", ordinal),
-                    signatureType(field.typeName, syntaxes, snapshot, classGeneric, nativeArrayStorage: field.nativeArrayStorage), fieldRange,
+                    signatureType(field.typeName, syntaxes, snapshot, classGeneric, nativeArrayStorage: field.nativeArrayStorage, nativeScalarStorage: field.nativeScalarStorage), fieldRange,
                     field.visibleField, staticField: field.staticField,
                     mutableField: field.mutableField, nativeArrayStorage: field.nativeArrayStorage
                 ))
@@ -1334,7 +1329,7 @@ class {
                     parameter.range.start, parameter.range.end
                 )
                 let parameterType = signatureType(parameter.typeName, syntaxes, snapshot,
-                    classGeneric, nativeArrayStorage: parameter.nativeArrayStorage)
+                    classGeneric, nativeArrayStorage: parameter.nativeArrayStorage, nativeScalarStorage: parameter.nativeScalarStorage)
                 let nullableDefault = parameter.defaultValue &&
                     parameter.defaultValue.class.isOfType(PrimitiveLiteralSyntax.class) &&
                     ((PrimitiveLiteralSyntax)parameter.defaultValue).sourceValue == "null"
@@ -1360,8 +1355,10 @@ class {
         GenericParameterSemanticType[] methodGenerics = GenericParameterSemanticType[],
         PrimitiveClassSyntax implementationOwner = null,
         SourceRange implementationRange = null,
-        Bool nativeArrayStorage = false
+        Bool nativeArrayStorage = false,
+        Bool nativeScalarStorage = false
     ) -> SemanticType {
+        if (nativeScalarStorage && name == "String") return SemanticTypes.stringType()
         var String normalized = name
         while (normalized.startsWith("native")) {
             normalized = normalized.substring("native".count)

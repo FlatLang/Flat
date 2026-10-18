@@ -93,6 +93,7 @@ class {
     parseLocal(Int start, Int end) -> PrimitiveStatementSyntax {
         var Int declarationStart = start
         var Bool nativeArrayStorage
+        var Bool nativeModifier
         var Bool mutable
         while (declarationStart < end &&
             (tokens[declarationStart].value == "native" ||
@@ -100,6 +101,7 @@ class {
              tokens[declarationStart].value == "var" ||
              tokens[declarationStart].value == "let")) {
             if (tokens[declarationStart].value == "native_array") nativeArrayStorage = true
+            if (tokens[declarationStart].value == "native") nativeModifier = true
             if (tokens[declarationStart].value == "var") mutable = true
             declarationStart++
         }
@@ -128,7 +130,9 @@ class {
         if (assignment < end) initializer = expression(assignment + 1, end)
         return PrimitiveLocalDeclarationSyntax(
             range(start, end), mutable, name,
-            initializer, declaredTypeName, nativeArrayStorage: nativeArrayStorage
+            initializer, declaredTypeName, nativeArrayStorage: nativeArrayStorage,
+            nativeScalarStorage: nativeModifier && !nativeArrayStorage &&
+                (!declaredTypeName || !declaredTypeName.endsWith("[]"))
         )
     }
 

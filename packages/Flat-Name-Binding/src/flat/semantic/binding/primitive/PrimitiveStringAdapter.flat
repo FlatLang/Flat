@@ -1,6 +1,7 @@
 package flat/semantic/binding/primitive
 
 import flat/bound
+import flat/compiler/models
 import flat/semantic/types
 
 /** Resolves scalar text representation changes before publishing bound calls. */
@@ -34,16 +35,16 @@ class {
     public static call(String name, CallableSignature[] candidates, BoundExpression receiver,
         BoundExpression[] arguments, PrimitiveResolvedDeclarationContext context,
         CallableSignature[] callables, TypeHierarchyComponent hierarchy,
-        Bool safeAccess = false) -> BoundCallExpression {
-        let range = receiver.range
-        let receiverType = safeAccess && receiver.semanticType.kind() == "nullable" ?
-            ((NullableSemanticType)receiver.semanticType).underlyingType : receiver.semanticType
+        Bool safeAccess = false, SourceRange callRange = null) -> BoundCallExpression {
+        let range = callRange ?: receiver.range
+        let receiverType = safeAccess && receiver && receiver.semanticType.kind() == "nullable" ?
+            ((NullableSemanticType)receiver.semanticType).underlyingType : receiver ? receiver.semanticType : null
         let exact = OverloadResolver.resolve(name, candidates, receiverType,
             arguments.map({ _.semanticType }), range, hierarchy)
         if (exact.resolved) {
             let checked = CallTypeChecker.check(exact.selected, receiverType,
                 arguments.map({ _.semanticType }), range, hierarchy)
-            return resolvedCall(checked, receiver, arguments, safeAccess)
+            return resolvedCall(checked, receiver, arguments, safeAccess, range, hierarchy)
         }
         // An existing ambiguity must not be replaced by an adapter-selected call.
         if (exact.applicableCandidates().isNotEmpty) throw Exception(exact.diagnostic.message)
@@ -73,7 +74,7 @@ class {
                 adapted.map({ _.semanticType }), range, hierarchy)
             if (checked.valid) {
                 checks.add(checked)
-                calls.add(resolvedCall(checked, receiver, adapted, safeAccess))
+                calls.add(resolvedCall(checked, receiver, adapted, safeAccess, range, hierarchy))
             }
         }
         let selected = OverloadResolver.resolveChecked(name, candidates, checks, range)
@@ -82,11 +83,77 @@ class {
     }
 
     static resolvedCall(CallCheckResult checked, BoundExpression receiver,
-        BoundExpression[] arguments, Bool safeAccess) -> BoundCallExpression {
+        BoundExpression[] arguments, Bool safeAccess, SourceRange range, TypeHierarchyComponent hierarchy) -> BoundCallExpression {
         let resultType = safeAccess && checked.semanticType.kind() != "nullable" ?
             NullableSemanticType(checked.semanticType) : checked.semanticType
-        return BoundCallExpression(receiver.range, resultType, checked.target, receiver,
-            arguments, checked.argumentConversions(), safeAccess: safeAccess)
+        let receiverType = receiver && safeAccess && receiver.semanticType.kind() == "nullable" ?
+            ((NullableSemanticType)receiver.semanticType).underlyingType : receiver ? receiver.semanticType : null
+        let receiverConversion = receiver ? TypeConversions.classify(receiverType, checked.target.receiverType(), hierarchy: hierarchy) : null
+        return BoundCallExpression(range, resultType, checked.target, receiver,
+            arguments, checked.argumentConversions(), safeAccess: safeAccess, receiverConversion: receiverConversion)
+    }
+
+    /** Resolve the source-declared canonical String addition contract, never a native coercion. */
+    public static plus(BoundExpression left, BoundExpression right,
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables,
+        TypeHierarchyComponent hierarchy) -> BoundCallExpression {
+        if (!context) return null
+        let strings = context.candidates("flat/String")
+        let operators = context.candidates("flat/operators/PlusOperator")
+        if (strings.count != 1 || operators.count != 1) return null
+        let ownerType = UserClassSemanticType(strings.first)
+        if (left.semanticType.value() != ownerType.value() && right.semanticType.value() != ownerType.value()) return null
+        let syntax = context.classFor(strings.first)
+        if (!syntax) return null
+        let scope = context.scopeFor(strings.first)
+        let resolver = PrimitiveStructuralTypeResolver(declarationContext: scope, lookupRange: syntax.range)
+        var Bool implemented
+        for (name in syntax.implementedTypeNames()) {
+            let type = resolver.resolve(name)
+            if (type.kind() != "generic-instance") continue
+            let contract = (GenericInstanceSemanticType)type
+            let arguments = contract.typeArguments()
+            if (contract.declarationType.declarationIdentity.value == operators.first.value &&
+                arguments.count == 2 && arguments.all({ _.value() == ownerType.value() })) {
+                implemented = true
+            }
+        }
+        if (!implemented) return null
+        let receiver = textOperand(left, ownerType, context, callables, hierarchy)
+        let argument = textOperand(right, ownerType, context, callables, hierarchy)
+        let candidates = callables.filter((candidate) => candidate.callableKind.value == "instance-method" &&
+            candidate.ownerType.value() == ownerType.value() && candidate.name == "plus" &&
+            candidate.returnType.value() == ownerType.value())
+        return call("plus", candidates, receiver, [argument], context, callables, hierarchy)
+    }
+
+    /** Primitive concatenation follows the source Char.toString(Char) contract. */
+    static textOperand(BoundExpression value, SemanticType required,
+        PrimitiveResolvedDeclarationContext context, CallableSignature[] callables,
+        TypeHierarchyComponent hierarchy) -> BoundExpression {
+        if (value.semanticType.value() == required.value()) return value
+        if (value.semanticType.kind() == "string") return wrap(value, required, context, callables)
+        if (value.semanticType.kind() == "generic-parameter") {
+            let roots = context.candidates("flat/Object")
+            if (roots.count != 1 || !hierarchy || !hierarchy.isRootClass(UserClassSemanticType(roots.first)))
+                throw Exception("Generic text conversion requires a registered canonical Object root")
+            let targets = callables.filter((candidate) => candidate.callableKind.value == "instance-method" &&
+                candidate.ownerType.declarationIdentity.value == roots.first.value &&
+                candidate.name == "toString" && candidate.returnType.value() == required.value() &&
+                candidate.parameterTypes().isEmpty)
+            return call("toString", targets, value, BoundExpression[], context, callables, hierarchy)
+        }
+        if (value.semanticType.value() != SemanticTypes.charType().value())
+            throw Exception("String addition requires a declared text conversion contract")
+        let declarations = context.candidates("flat/primitive/number/Char")
+        if (declarations.count != 1)
+            throw Exception("String addition requires one canonical Char declaration")
+        let candidates = callables.filter((candidate) => candidate.callableKind.value == "static-method" &&
+            candidate.ownerType.declarationIdentity.value == declarations.first.value &&
+            candidate.name == "toString" && candidate.returnType.value() == required.value() &&
+            candidate.parameterTypes().count == 1 && candidate.optionalParameterCount == 0 &&
+            candidate.parameterTypes().first.value() == SemanticTypes.charType().value())
+        return call("toString", candidates, null, [value], context, callables, hierarchy, callRange: value.range)
     }
 
     /** Never publish the old representation-changing no-op conversion markers. */

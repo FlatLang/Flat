@@ -172,6 +172,41 @@ class {
         return method && method.returnTypeName == name && originalGenericReturn(method) && hasNullReturn(method.statements())
     }
 
+    /** Constructor expressions have their declaration result independent of argument checking.
+     * Bodies still validate the selected constructor; signature seeding must not use the
+     * context-free intrinsic String fallback for a source-declared construction.
+     */
+    /** Source text literals infer the visible String contract; storage expressions stay native. */
+    public inferredExpressionResult(SemanticType type) -> SemanticType {
+        if (type.value() == SemanticTypes.stringType().value()) return resolve("String")
+        return type
+    }
+
+    public constructorResult(PrimitiveExpressionSyntax expression) -> SemanticType {
+        if (!expression || !declarationContext) return SemanticTypes.unknownType()
+        var String name
+        if (expression.class.isOfType(PrimitiveCallSyntax.class)) {
+            let call = (PrimitiveCallSyntax)expression
+            name = call.name
+            if (implementationOwner && implementationOwner.methodValues().any({ _.name == name }))
+                return SemanticTypes.unknownType()
+        } else if (expression.class.isOfType(PrimitiveConstructionSyntax.class)) {
+            let construction = (PrimitiveConstructionSyntax)expression
+            if (construction.typeArgumentNames().isNotEmpty) return SemanticTypes.unknownType()
+            name = construction.typeName
+        }
+        if (!name || declarationContext.visibleCandidates(name).isEmpty) return SemanticTypes.unknownType()
+        let declaration = declarationContext.resolve(name, expression.range)
+        let syntax = declarationContext.classFor(declaration)
+        if (!syntax || syntax.genericParameterName) return SemanticTypes.unknownType()
+        return UserClassSemanticType(declaration)
+    }
+
+    public resolveParameter(PrimitiveFunctionParameterSyntax parameter) -> SemanticType {
+        if (parameter.nativeScalarStorage && parameter.typeName == "String") return SemanticTypes.stringType()
+        return parameter.nativeArrayStorage ? resolveNativeArrayStorage(parameter.typeName) : resolve(parameter.typeName)
+    }
+
     public resolveNativeArrayStorage(String name) -> SemanticType {
         if (!name || !name.endsWith("[]")) {
             throw Exception("Native array storage requires an array type")
@@ -237,7 +272,11 @@ class {
         if (name == "Float") return SemanticTypes.floatType()
         if (name == "Double") return SemanticTypes.doubleType()
         if (name == "Char") return SemanticTypes.charType()
-        if (name == "String") return SemanticTypes.stringType()
+        if (name == "String") {
+            if (declarationContext && declarationContext.visibleCandidates(name).isNotEmpty)
+                return UserClassSemanticType(declarationContext.resolve(name, lookupRange ?: implementationRange))
+            return SemanticTypes.stringType()
+        }
         if (name == "Object") {
             if (declarationContext && declarationContext.visibleCandidates(name).isNotEmpty)
                 return UserClassSemanticType(declarationContext.resolve(name, lookupRange ?: implementationRange))

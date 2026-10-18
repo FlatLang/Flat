@@ -161,7 +161,8 @@ class {
                 )
                 var SemanticType localType = initialized.semanticType
                 if (value.initializer.declaredTypeName) {
-                    localType = value.initializer.nativeArrayStorage ?
+                    localType = value.initializer.nativeScalarStorage && value.initializer.declaredTypeName == "String" ?
+                        SemanticTypes.stringType() : value.initializer.nativeArrayStorage ?
                         currentTypeResolver.resolveNativeArrayStorage(value.initializer.declaredTypeName) :
                         loopLocalType(value.initializer.declaredTypeName)
                 }
@@ -665,7 +666,8 @@ class {
                     throw Exception("Duplicate local '#{value.name}'")
                 }
                 var SemanticType semanticType = value.declaredTypeName ?
-                    (value.nativeArrayStorage ? currentTypeResolver.resolveNativeArrayStorage(value.declaredTypeName) :
+                    (value.nativeScalarStorage && value.declaredTypeName == "String" ? SemanticTypes.stringType() :
+                        value.nativeArrayStorage ? currentTypeResolver.resolveNativeArrayStorage(value.declaredTypeName) :
                         localType(value.declaredTypeName, callables, receiver)) :
                     SemanticTypes.unknownType()
                 var BoundExpression initialized
@@ -700,19 +702,12 @@ class {
                     initializerConversion = TypeConversions.classify(
                         initialized.semanticType, semanticType
                     )
-                    let declaredStringInitializer = receiver &&
-                        semanticType.value() == receiver.semanticType.value() &&
-                        initialized.semanticType.value() == SemanticTypes.stringType().value() &&
-                        callables.any((candidate) =>
-                            candidate.ownerType &&
-                            candidate.ownerType.value() == receiver.semanticType.value() &&
-                            candidate.ownerType.declarationIdentity.name == "String"
-                        )
+                    let declaredStringInitializer = semanticType.kind() == "user-class" &&
+                        initialized.semanticType.kind() == "string"
                     if (!initializerConversion.applicable && declaredStringInitializer) {
-                        initializerConversion = PrimitiveStringAdapter.unsupported(
-                            initialized.semanticType, semanticType,
-                            "declared-string-initializer", true, false, true, 0
-                        )
+                        initialized = PrimitiveStringAdapter.wrap(initialized, semanticType,
+                            currentTypeResolver.declarationContext, callables)
+                        initializerConversion = TypeConversions.classify(initialized.semanticType, semanticType)
                     }
                 }
                 result.add(BoundLocalDeclarationStatement(
@@ -1166,7 +1161,7 @@ class {
             let target = BoundReferenceExpression(
                 value.range, local.semanticType, local.name, local.identity
             )
-            let assigned = classExpression(
+            var BoundExpression assigned = classExpression(
                 value.value, receiver, fields, locals, callables
             )
             var TypeConversion conversion = TypeConversions.classify(
@@ -1188,10 +1183,9 @@ class {
                     candidate.ownerType.declarationIdentity.name == "String"
                 )
             if (!conversion.applicable && declaredStringAssignment) {
-                conversion = PrimitiveStringAdapter.unsupported(
-                    assigned.semanticType, target.semanticType,
-                    "declared-string-assignment-value", true, false, true, 0
-                )
+                assigned = PrimitiveStringAdapter.wrap(assigned, target.semanticType,
+                    currentTypeResolver.declarationContext, callables)
+                conversion = TypeConversions.classify(assigned.semanticType, target.semanticType)
             }
             if (!conversion.applicable) throw Exception("Assignment value type mismatch")
             return BoundAssignmentValueExpression(
@@ -1200,21 +1194,29 @@ class {
         }
         if (syntax.class.isOfType(PrimitiveConditionalSyntax.class)) {
             let value = (PrimitiveConditionalSyntax)syntax
-            let condition = classExpression(
+            let condition = conditionValue(classExpression(
                 value.condition, receiver, fields, locals, callables
-            )
-            let whenTrue = classExpression(
+            ))
+            var BoundExpression whenTrue = classExpression(
                 value.whenTrue, receiver, fields, locals, callables
             )
-            let whenFalse = classExpression(
+            var BoundExpression whenFalse = classExpression(
                 value.whenFalse, receiver, fields, locals, callables
             )
-            if (condition.semanticType.value() != SemanticTypes.boolType().value() ||
-                whenTrue.semanticType.value() != whenFalse.semanticType.value()) {
-                throw Exception("Structured conditional requires Bool and common branch type")
-            }
+            if (whenTrue.semanticType.kind() == "string" && whenFalse.semanticType.kind() == "user-class")
+                whenTrue = PrimitiveStringAdapter.wrap(whenTrue, whenFalse.semanticType, currentTypeResolver.declarationContext, callables)
+            else if (whenFalse.semanticType.kind() == "string" && whenTrue.semanticType.kind() == "user-class")
+                whenFalse = PrimitiveStringAdapter.wrap(whenFalse, whenTrue.semanticType, currentTypeResolver.declarationContext, callables)
+            let joined = TypeOperations.conditional(condition.semanticType, whenTrue.semanticType, whenFalse.semanticType, value.range)
+            if (!joined.valid) throw Exception(joined.diagnostic.message)
+            let trueJoin = TypeConversions.classify(whenTrue.semanticType, joined.semanticType)
+            let falseJoin = TypeConversions.classify(whenFalse.semanticType, joined.semanticType)
+            if (trueJoin.conversionKind != "identity") whenTrue = BoundConversionExpression(
+                value.whenTrue.range, joined.semanticType, whenTrue, trueJoin)
+            if (falseJoin.conversionKind != "identity") whenFalse = BoundConversionExpression(
+                value.whenFalse.range, joined.semanticType, whenFalse, falseJoin)
             return BoundConditionalExpression(
-                value.range, whenTrue.semanticType, condition, whenTrue, whenFalse
+                value.range, joined.semanticType, condition, whenTrue, whenFalse
             )
         }
         if (syntax.class.isOfType(PrimitiveBinarySyntax.class)) {
@@ -1225,6 +1227,11 @@ class {
             var BoundExpression right = classExpression(
                 value.right, receiver, fields, locals, callables
             )
+            if (value.operator == "+") {
+                let resolved = PrimitiveStringAdapter.plus(left, right,
+                    currentTypeResolver ? currentTypeResolver.declarationContext : null, callables, currentHierarchy)
+                if (resolved) return resolved
+            }
             let declaredStringOperands = value.operator == "+" && receiver &&
                 left.semanticType.value() == receiver.semanticType.value() &&
                 right.semanticType.value() == receiver.semanticType.value() &&
@@ -1442,20 +1449,8 @@ class {
                     arguments.first)
             }
             if (candidates.isNotEmpty) {
-                let resolution = OverloadResolver.resolve(
-                    value.typeName, candidates, null,
-                    arguments.map({ _.semanticType }), value.range
-                )
-                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
-                let target = resolution.selected
-                let checked = CallTypeChecker.check(
-                    target, null, arguments.map({ _.semanticType }), value.range
-                )
-                if (!checked.valid) throw Exception(checked.diagnostic.message)
-                return BoundCallExpression(
-                    value.range, checked.semanticType, target,
-                    arguments, checked.argumentConversions()
-                )
+                return PrimitiveStringAdapter.call(value.typeName, candidates, null, arguments,
+                    currentTypeResolver.declarationContext, callables, currentHierarchy, callRange: value.range)
             }
         }
         if (syntax.class.isOfType(PrimitiveCallSyntax.class)) {
@@ -1543,20 +1538,8 @@ class {
                 candidate.name == value.name
             )
             if (constructorCandidates.isNotEmpty) {
-                let resolution = OverloadResolver.resolve(
-                    value.name, constructorCandidates, null,
-                    arguments.map({ _.semanticType }), value.range
-                )
-                if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
-                let target = resolution.selected
-                let checked = CallTypeChecker.check(
-                    target, null, arguments.map({ _.semanticType }), value.range
-                )
-                if (!checked.valid) throw Exception(checked.diagnostic.message)
-                return BoundCallExpression(
-                    value.range, checked.semanticType, target,
-                    arguments, checked.argumentConversions()
-                )
+                return PrimitiveStringAdapter.call(value.name, constructorCandidates, null, arguments,
+                    currentTypeResolver.declarationContext, callables, currentHierarchy, callRange: value.range)
             }
             let candidates = callables.filter((candidate) =>
                 candidate.name == value.name &&
@@ -1597,23 +1580,7 @@ class {
         CallableSignature[] callables,
         BoundReferenceExpression receiver
     ) -> SemanticType {
-        let arrayRepresentation = name.indexOf("native_array", defaultReturnValue: -1) >= 0
-        var String normalized = name
-        while (normalized.startsWith("native")) {
-            normalized = normalized.substring("native".count)
-            if (normalized.startsWith("_array")) {
-                normalized = normalized.substring("_array".count)
-            }
-        }
-        let declaredStringReceiver = name == "String" && receiver &&
-            receiver.semanticType.kind() == "user-class" && callables.any((candidate) =>
-                candidate.ownerType &&
-                candidate.ownerType.declarationIdentity.name == "String" &&
-                candidate.ownerType.value() == receiver.semanticType.value()
-            )
-        let type = declaredStringReceiver ? receiver.semanticType :
-            currentTypeResolver.resolve(normalized)
-        return arrayRepresentation && type.kind() != "array" ? ArraySemanticType(type) : type
+        return currentTypeResolver.resolve(name)
     }
 
     /** Authority follows the resolved declaration, never a matching identifier spelling or alias. */
@@ -1723,6 +1690,12 @@ class {
             let localObject = (Object)declaration.local
             expression = (BoundExpression)localObject
         }
+        return conditionValue(expression, conditionSetup)
+    }
+
+    /** Oracle reference conditions test presence; never target-language truthiness. */
+    public conditionValue(BoundExpression input, BoundStatement[] conditionSetup = null) -> BoundExpression {
+        var BoundExpression expression = input
         let type = expression.semanticType
         if (type.value() == SemanticTypes.boolType().value()) return expression
         if (type.kind() == "generic-parameter" || type.kind() == "nullable" ||

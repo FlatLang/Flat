@@ -3,6 +3,33 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `preserves native scalar method parameter range and positional syntax compatibility`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-scalar-method"), "one")
+        let parsed = PrimitiveFunctionParser().parse([
+            token("adapt", Token.Type.IDENTIFIER, 1), token("(", Token.Type.SYMBOL, 6),
+            token("native", Token.Type.IDENTIFIER, 7), token("String", Token.Type.IDENTIFIER, 14),
+            token("text", Token.Type.IDENTIFIER, 21), token(",", Token.Type.SYMBOL, 25),
+            token("String", Token.Type.IDENTIFIER, 27), token("ordinary", Token.Type.IDENTIFIER, 34),
+            token(")", Token.Type.SYMBOL, 42), token("->", Token.Type.SYMBOL, 44),
+            token("String", Token.Type.IDENTIFIER, 47), token("{", Token.Type.SYMBOL, 54),
+            token("return", Token.Type.IDENTIFIER, 56), token("ordinary", Token.Type.IDENTIFIER, 63),
+            token(";", Token.Type.SYMBOL, 71), token("}", Token.Type.SYMBOL, 73)
+        ], snapshot).functionValues().first
+        let parameter = parsed.parameterValues().first
+        expect(parameter.nativeScalarStorage).toBe(true)
+        expect(parameter.nativeArrayStorage).toBe(false)
+        expect(parameter.typeName).toBe("String")
+        expect(parameter.range.startTokenIndex).toBe(2)
+        expect(parameter.range.endTokenIndex).toBe(5)
+        expect(parameter.range.start.column).toBe(7)
+        expect(parameter.range.end.column).toBe(25)
+        expect(parsed.parameterValues().last.nativeScalarStorage).toBe(false)
+        let compatible = PrimitiveFunctionParameterSyntax(
+            parameter.range, "func(Int)->Int", "callback", null, false, false, false, ["value"]
+        )
+        expect(compatible.nativeScalarStorage).toBe(false)
+        expect(compatible.callbackParameterNames()).toBe(["value"])
+    }
     test `type spelling entry reuses nested qualified signature grammar`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:qualified-type"), "one")
         let parsed = PrimitiveFunctionParser().parseTypeTokens([

@@ -38,7 +38,8 @@ class {
                 throw Exception("Duplicate local '#{value.name}'")
             }
             if (!value.initializer) {
-                let semanticType = declaredType(value.declaredTypeName)
+                let semanticType = value.nativeScalarStorage && value.declaredTypeName == "String" ?
+                    SemanticTypes.stringType() : declaredType(value.declaredTypeName)
                 let identity = localIdentity(snapshot, statement, value.name)
                 let reference = BoundReferenceExpression(
                     value.range, semanticType, value.name, identity

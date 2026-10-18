@@ -71,7 +71,9 @@ data class {
                     canonicalField.range, canonicalField.typeName, canonicalField.name,
                     canonicalField.visibleField, canonicalField.initializer,
                     canonicalField.staticField, canonicalField.mutableField,
-                    canonicalField.nativeArrayStorage || field.nativeArrayStorage
+                    canonicalField.nativeArrayStorage || field.nativeArrayStorage,
+                    (canonicalField.nativeScalarStorage || field.nativeScalarStorage) &&
+                        !canonicalField.nativeArrayStorage && !field.nativeArrayStorage
                 )
             } else fields.add(field)
         }

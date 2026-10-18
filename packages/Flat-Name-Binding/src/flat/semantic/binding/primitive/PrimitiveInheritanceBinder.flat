@@ -171,7 +171,9 @@ class {
                     result.add(copy(function, function.identity.value))
                     continue
                 }
-                throw Exception("Invalid override '#{function.name}'")
+                throw Exception("Invalid override '#{function.name}' in '#{childType.value()}': " +
+                    "expected result '#{parent.returnType.value()}', actual '#{function.returnType.value()}', " +
+                    "matching parameters: #{sameParameters(parent.parameterValues(), function.parameterValues())}")
             }
             result.add(copy(normalizedFunction, parent.dispatchIdentity))
         }
@@ -250,7 +252,8 @@ class {
                     callables: availableConstructors, receiverType: childType,
                     genericParameter: childSyntax.genericParameterName ? GenericParameterSemanticType(
                         childType.declarationIdentity, childSyntax.genericParameterName, 0
-                    ) : null, interfaces: interfaceSyntaxValues
+                    ) : null, interfaces: interfaceSyntaxValues,
+                    declarationContext: context, lookupRange: childSyntax.range
                 ).resolve("#{syntax.name}<#{argumentNames}>")
                 let instance = (GenericInstanceSemanticType)arguments
                 typeArguments.addAll(instance.typeArguments())
@@ -263,7 +266,9 @@ class {
             }
             var Int index
             while (index < parameterNames.count) {
-                let expected = substitution.apply(resolver.resolve(parameterNames[index]))
+                let expectedParameter = implementation ?
+                    resolver.resolveParameter(implementation.parameterValues()[index]) : resolver.resolve(parameterNames[index])
+                let expected = substitution.apply(expectedParameter)
                 if (function.parameterValues()[index].semanticType.value() != expected.value() &&
                     !sameSelfCallback(expected, function.parameterValues()[index].semanticType,
                         syntax.name, childType.declarationIdentity.name)) {

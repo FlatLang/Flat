@@ -4,6 +4,30 @@ import flat/compiler/models
 
 /** Target-independent typing rules for the foundational expression subset. */
 class {
+    /** Strict Bool conditional join; conversions remain explicit in bound consumers. */
+    public static conditional(SemanticType conditionType, SemanticType trueType,
+        SemanticType falseType, SourceRange range) -> TypedOperationResult {
+        if (errorType(conditionType) || errorType(trueType) || errorType(falseType)) return recovered()
+        if (conditionType.value() != SemanticTypes.boolType().value())
+            return invalid("type.conditional-condition", "Conditional requires Bool", range)
+        if (trueType.value() == falseType.value()) return TypedOperationResult(trueType)
+        var SemanticType common
+        if (trueType.kind() == "nullable" && TypeConversions.classify(falseType, trueType).applicable) common = trueType
+        else if (falseType.kind() == "nullable" && TypeConversions.classify(trueType, falseType).applicable) common = falseType
+        else if (trueType.kind() == "null" || falseType.kind() == "null") {
+            let other = trueType.kind() == "null" ? falseType : trueType
+            try {
+                let lifted = NullableSemanticType(other)
+                if (TypeConversions.classify(trueType, lifted).applicable &&
+                    TypeConversions.classify(falseType, lifted).applicable) common = lifted
+            } catch (Exception error) {
+                return invalid("type.conditional-branches", "Conditional branches have no common type", range)
+            }
+        }
+        if (common) return TypedOperationResult(common)
+        return invalid("type.conditional-branches", "Conditional branches have no common type", range)
+    }
+
     public static assignment(
         SemanticType targetType,
         SemanticType valueType,

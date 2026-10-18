@@ -4,6 +4,96 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `retains native scalar field evidence through overlays without leaking modifiers`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-scalar-fields"), "one")
+        let stream = Lexer().lex("class Bridge { visible native String text; public static native Object handle; visible String ordinary; visible native_array native Char[] data; }")
+        stream.emit("start")
+        let parsed = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let fields = parsed.fieldValues()
+        expect(fields.map({ _.nativeScalarStorage })).toBe([true, true, false, false])
+        expect(fields.map({ _.nativeArrayStorage })).toBe([false, false, false, true])
+        expect(fields[1].staticField).toBe(true)
+        expect(fields[0].range.snapshot).toBe(snapshot)
+        expect(fields[0].range.startTokenIndex).toBe(3)
+        expect(fields[0].typeName).toBe("String")
+        let baseStream = Lexer().lex("class Bridge { visible String text; }")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        let merged = base.mergedWith(parsed)
+        expect(merged.fieldValues().first.nativeScalarStorage).toBe(true)
+        expect(merged.fieldValues().first.range).toBe(base.fieldValues().first.range)
+        expect(base.fieldValues().first.nativeScalarStorage).toBe(false)
+    }
+
+    async test `preserves scalar native parameter syntax separately from native arrays`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:scalar-native-parameters"), "one")
+        let source = "class Bridge { public construct(visible native String text, String ordinary) {} " +
+            "public adapt(String ordinary, native String text, var native String mutableText, " +
+            "native_array native Char[] data, native native_array Char[] reordered) -> String { return ordinary; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let tokens = stream.consumeAll<Token>("data").filter((item) =>
+            item.type != Token.Type.WS && item.type != Token.Type.COMMENT)
+        let parsed = PrimitiveClassParser().parse(tokens, snapshot)
+        let constructorParameters = parsed.constructorValues().first.parameterValues()
+        expect(constructorParameters[0].nativeScalarStorage).toBe(true)
+        expect(constructorParameters[0].visibleParameter).toBe(true)
+        expect(constructorParameters[0].nativeArrayStorage).toBe(false)
+        expect(constructorParameters[1].nativeScalarStorage).toBe(false)
+        let parameters = parsed.methodValues().first.parameterValues()
+        expect(parameters.map({ _.nativeScalarStorage })).toBe([false, true, true, false, false])
+        expect(parameters.map({ _.nativeArrayStorage })).toBe([false, false, false, true, true])
+        expect(parameters[1].typeName).toBe("String")
+        expect(parsed.methodValues().first.returnTypeName).toBe("String")
+        let parameterRange = parameters[1].range
+        expect(parameterRange.snapshot).toBe(snapshot)
+        expect(tokens[parameterRange.startTokenIndex].value).toBe("native")
+        expect(tokens[parameterRange.endTokenIndex - 1].value).toBe("text")
+        expect(parameterRange.start.column).toBe(tokens[parameterRange.startTokenIndex].location.column)
+
+        // Syntax containers copy their arrays but retain the immutable parameter evidence.
+        let reread = parsed.methodValues().first.parameterValues()
+        parameters.clear()
+        expect(reread[1].nativeScalarStorage).toBe(true)
+    }
+
+    async test `overlay copies retain native scalar constructor and method evidence`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:native-scalar-overlay"), "one")
+        let baseStream = Lexer().lex("class Bridge { public construct(String text) {} public adapt(String text) -> String { return text; } }")
+        baseStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        let overlayStream = Lexer().lex("class Bridge { public construct(private native String text) {} public adapt(native String text) -> String { return text; } }")
+        overlayStream.emit("start")
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), snapshot)
+        let merged = base.mergedWith(overlay)
+        expect(base.constructorValues().first.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(base.methodValues().first.parameterValues().first.nativeScalarStorage).toBe(false)
+        expect(merged.constructorValues().first.parameterValues().first.nativeScalarStorage).toBe(true)
+        expect(merged.constructorValues().first.parameterValues().first.privateParameter).toBe(true)
+        expect(merged.methodValues().first.parameterValues().first.nativeScalarStorage).toBe(true)
+        expect(merged.methodValues().first.parameterValues().first.range)
+            .toBe(overlay.methodValues().first.parameterValues().first.range)
+    }
+
+    async test `rejects incomplete native scalar constructor and method parameters`() {
+        let sources = [
+            "class Bridge { public construct(native String) {} }",
+            "class Bridge { public adapt(native) {} }"
+        ]
+        var Int rejected
+        for (source in sources) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:invalid-native-parameter"), "one")
+            let stream = Lexer().lex(source)
+            stream.emit("start")
+            try {
+                PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            } catch (Exception error) {
+                expect(error.message.contains("token")).toBe(true)
+                rejected++
+            }
+        }
+        expect(rejected).toBe(sources.count)
+    }
     async test `postfix dollar intent survives adjacent statements and returned identifier`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:no-await-body"), "one")
         let stream = Lexer().lex("class Worker { public run() -> Future { read()$; source.read()$; return pending$; } }")

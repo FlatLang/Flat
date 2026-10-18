@@ -1082,11 +1082,10 @@ testable class {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:for-clause-overload"), "revision:one"
         )
-        let type = PrimitiveClassBinder().bind(
-            PrimitiveClassParser().parse(
-                stream.consumeAll<Token>("data"), snapshot
-            ), snapshot
-        ).typeUnit
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let source = PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        let context = PrimitiveResolvedDeclarationContext(source, [source])
+        let type = PrimitiveClassBinder().bind(syntax, snapshot, resolvedContext: context).typeUnit
         let split = type.functionUnits().firstOrNull({ _.name == "split" })
         let statements = split.statements()
         let loopObject = (Object)statements[1]
@@ -1230,11 +1229,10 @@ testable class {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:string-parameter-method"), "revision:one"
         )
-        let type = PrimitiveClassBinder().bind(
-            PrimitiveClassParser().parse(
-                stream.consumeAll<Token>("data"), snapshot
-            ), snapshot
-        ).typeUnit
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let source = PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        let context = PrimitiveResolvedDeclarationContext(source, [source])
+        let type = PrimitiveClassBinder().bind(syntax, snapshot, resolvedContext: context).typeUnit
         let equals = type.functionUnits().firstOrNull({ _.name == "equalsIgnoreCase" })
         let statements = equals.statements()
         let returnedObject = (Object)statements.first

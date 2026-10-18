@@ -75,6 +75,7 @@ class {
         var Bool staticField
         var Bool mutableField
         var Bool nativeArrayStorage
+        var Bool nativeFieldModifier
         var Int fieldModifierStart = -1
         while (index < tokens.count && tokens[index].value != "}") {
             if (isFunctionModifier(tokens[index].value) || tokens[index].value == "visible") {
@@ -83,6 +84,8 @@ class {
                 var Bool visibleProperty
                 var Bool staticProperty
                 var Bool lazyProperty
+                var Bool nativePropertyModifier
+                var Bool nativeArrayProperty
                 while (propertyCursor < tokens.count &&
                     (isFunctionModifier(tokens[propertyCursor].value) ||
                         tokens[propertyCursor].value == "visible" || tokens[propertyCursor].value == "lazy")) {
@@ -92,6 +95,8 @@ class {
                     }
                     if (tokens[propertyCursor].value == "visible") visibleProperty = true
                     if (tokens[propertyCursor].value == "static") staticProperty = true
+                    if (tokens[propertyCursor].value == "native") nativePropertyModifier = true
+                    if (tokens[propertyCursor].value == "native_array") nativeArrayProperty = true
                     propertyCursor++
                 }
                 let typeStart = propertyCursor
@@ -127,7 +132,9 @@ class {
                         }
                         fields.add(PrimitiveFieldSyntax(
                             range(propertyStart, propertyCursor), returnType, propertyName,
-                            true, mutableField: true
+                            true, mutableField: true,
+                            nativeArrayStorage: nativeArrayProperty,
+                            nativeScalarStorage: nativePropertyModifier && !nativeArrayProperty && !returnType.endsWith("[]")
                         ))
                     }
                     propertyCursor++
@@ -153,6 +160,7 @@ class {
                     staticField = false
                     mutableField = false
                     nativeArrayStorage = false
+                    nativeFieldModifier = false
                     fieldModifierStart = -1
                     continue
                 }
@@ -202,11 +210,8 @@ class {
             }
             if (tokens[index].value == "public" && index + 1 < tokens.count &&
                 tokens[index + 1].value == "static") {
-                let end = declarationEnd(index)
-                let parsed = parseMethod(index, end, "static method")
-                if (parsed.count != 1) syntax("Expected one static method", index)
-                methods.add(parsed.first)
-                index = end
+                if (fieldModifierStart < 0) fieldModifierStart = index
+                index++
             } else if (tokens[index].value == "public" || tokens[index].value == "private" ||
                 tokens[index].value == "protected") {
                 index++
@@ -245,6 +250,7 @@ class {
                     (tokens[index].value == "native_array" ||
                      tokens[index].value == "native" || tokens[index].value == "var")) {
                     if (tokens[index].value == "native_array") nativeArrayStorage = true
+                    if (tokens[index].value == "native") nativeFieldModifier = true
                     if (tokens[index].value == "var") {
                         if (mutableField) syntax("Duplicate var field modifier", index)
                         mutableField = true
@@ -259,6 +265,11 @@ class {
             } else if (tokens[index].value == "static") {
                 fieldModifierStart = index
                 staticField = true
+                index++
+            } else if (tokens[index].value == "native" || tokens[index].value == "native_array") {
+                if (fieldModifierStart < 0) fieldModifierStart = index
+                if (tokens[index].value == "native") nativeFieldModifier = true
+                else nativeArrayStorage = true
                 index++
             } else if (tokens[index].value == "constructor" || tokens[index].value == "construct") {
                 let constructor = parseConstructor()
@@ -285,7 +296,9 @@ class {
                     }
                     fields.add(PrimitiveFieldSyntax(
                         range(fieldModifierStart >= 0 ? fieldModifierStart : propertyStart, index),
-                        returnType, propertyName, visibleField, mutableField: true
+                        returnType, propertyName, visibleField, mutableField: true,
+                        nativeArrayStorage: nativeArrayStorage,
+                        nativeScalarStorage: nativeFieldModifier && !nativeArrayStorage && !returnType.endsWith("[]")
                     ))
                 }
                 index++
@@ -351,12 +364,14 @@ class {
                 fields.add(PrimitiveFieldSyntax(
                     range(fieldStart, index), typeName, fieldName,
                     visibleField, initializer, staticField, mutableField,
-                    nativeArrayStorage: nativeArrayStorage
+                    nativeArrayStorage: nativeArrayStorage,
+                    nativeScalarStorage: nativeFieldModifier && !nativeArrayStorage && !typeName.endsWith("[]")
                 ))
                 visibleField = false
                 staticField = false
                 mutableField = false
                 nativeArrayStorage = false
+                nativeFieldModifier = false
                 fieldModifierStart = -1
             } else {
                 let end = declarationEnd(index)
@@ -582,10 +597,12 @@ class {
                 index++
             }
             var Bool nativeArrayStorage
+            var Bool nativeModifier
             while (index < tokens.count &&
                 (tokens[index].value == "native_array" ||
                  tokens[index].value == "native")) {
                 if (tokens[index].value == "native_array") nativeArrayStorage = true
+                else nativeModifier = true
                 index++
             }
             var String typeName = identifier("Expected parameter type")
@@ -619,7 +636,8 @@ class {
             }
             result.add(PrimitiveFunctionParameterSyntax(
                 range(start, index), typeName, name, defaultValue,
-                visibleParameter, privateParameter, nativeArrayStorage
+                visibleParameter, privateParameter, nativeArrayStorage,
+                nativeScalarStorage: nativeModifier && !nativeArrayStorage && !typeName.endsWith("[]")
             ))
             if (index >= tokens.count || tokens[index].value != ",") break
             index++

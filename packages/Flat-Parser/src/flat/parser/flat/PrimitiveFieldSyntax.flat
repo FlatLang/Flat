@@ -12,7 +12,8 @@ data class {
         visible PrimitiveExpressionSyntax initializer = null,
         visible Bool staticField = false,
         visible Bool mutableField = false,
-        visible Bool nativeArrayStorage = false
+        visible Bool nativeArrayStorage = false,
+        visible Bool nativeScalarStorage = false
     ) {
         if (!range || !typeName || typeName.trim().count == 0 ||
             !name || name.trim().count == 0) {

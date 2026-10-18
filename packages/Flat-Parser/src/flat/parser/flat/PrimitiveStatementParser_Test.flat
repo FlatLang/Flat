@@ -3,6 +3,28 @@ package flat/parser/flat
 import flat/compiler/models
 
 testable class {
+    test `retains native scalar local evidence in both modifier orders`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:scalar-native-local"), "one")
+        let first = PrimitiveStatementParser().parse([
+            token("native", Token.Type.IDENTIFIER, 1), token("var", Token.Type.IDENTIFIER, 8),
+            token("Out", Token.Type.IDENTIFIER, 12), token("data", Token.Type.IDENTIFIER, 16)
+        ], snapshot, 30).statements().first
+        let local = (PrimitiveLocalDeclarationSyntax)first
+        expect(local.nativeScalarStorage).toBe(true)
+        expect(local.nativeArrayStorage).toBe(false)
+        expect(local.declaredTypeName).toBe("Out")
+        expect(local.range.startTokenIndex).toBe(30)
+        expect(local.range.endTokenIndex).toBe(34)
+        expect(local.range.start.column).toBe(1)
+        expect(local.range.end.column).toBe(20)
+        let second = PrimitiveStatementParser().parse([
+            token("var", Token.Type.IDENTIFIER, 1), token("native", Token.Type.IDENTIFIER, 5),
+            token("String", Token.Type.IDENTIFIER, 12), token("text", Token.Type.IDENTIFIER, 19)
+        ], snapshot).statements().first
+        expect(((PrimitiveLocalDeclarationSyntax)second).nativeScalarStorage).toBe(true)
+        let ordinary = PrimitiveLocalDeclarationSyntax(local.range, true, "ordinary", null, "String")
+        expect(ordinary.nativeScalarStorage).toBe(false)
+    }
     test `retains native array storage after var native modifiers`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:storage-order"), "one")
         let values = [token("var", Token.Type.IDENTIFIER, 1),
@@ -12,6 +34,7 @@ testable class {
         let parsed = PrimitiveStatementParser().parse(values, snapshot, 30).statements().first
         let local = (PrimitiveLocalDeclarationSyntax)parsed
         expect(local.nativeArrayStorage).toBe(true)
+        expect(local.nativeScalarStorage).toBe(false)
         expect(local.mutable).toBe(true)
         expect(local.declaredTypeName).toBe("Char[]")
         expect(local.range.startTokenIndex).toBe(30)

@@ -1,6 +1,27 @@
 package flat/semantic/types
 
 testable class {
+    test `conditional joins use Bool and implicit nullable conversions`() {
+        let range = TypeSystem_TestFixture().range()
+        let condition = SemanticTypes.boolType()
+        let types = [SemanticTypes.stringType(), SemanticTypes.intType(), ArraySemanticType(SemanticTypes.charType())]
+        for (type in types) {
+            let lifted = NullableSemanticType(type)
+            let forward = TypeOperations.conditional(condition, type, SemanticTypes.nullType(), range)
+            let reverse = TypeOperations.conditional(condition, SemanticTypes.nullType(), type, range)
+            expect(forward.valid).toBe(true)
+            expect(reverse.semanticType.value()).toBe(lifted.value())
+            expect(forward.semanticType.value()).toBe(lifted.value())
+            expect(TypeConversions.classify(type, forward.semanticType).applicable).toBe(true)
+            expect(TypeConversions.classify(SemanticTypes.nullType(), forward.semanticType).applicable).toBe(true)
+            expect(TypeOperations.conditional(condition, type, type, range).semanticType.value()).toBe(type.value())
+            expect(TypeOperations.conditional(condition, lifted, type, range).semanticType.value()).toBe(lifted.value())
+            expect(TypeOperations.conditional(condition, type, lifted, range).semanticType.value()).toBe(lifted.value())
+        }
+        expect(TypeOperations.conditional(condition, SemanticTypes.stringType(), SemanticTypes.intType(), range).valid).toBe(false)
+        expect(TypeOperations.conditional(SemanticTypes.intType(), SemanticTypes.stringType(), SemanticTypes.stringType(), range).valid).toBe(false)
+    }
+
     test `null fallback selects compatible nonnull result`() {
         let range = TypeSystem_TestFixture().range()
         let boolType = SemanticTypes.boolType()

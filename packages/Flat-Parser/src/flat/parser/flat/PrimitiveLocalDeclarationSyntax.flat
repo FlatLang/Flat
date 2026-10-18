@@ -9,7 +9,8 @@ data class extends PrimitiveStatementSyntax {
         visible String name,
         visible PrimitiveExpressionSyntax initializer = null,
         visible String declaredTypeName = null,
-        visible Bool nativeArrayStorage = false
+        visible Bool nativeArrayStorage = false,
+        visible Bool nativeScalarStorage = false
     ) {
         if (!range || !name || (!initializer && !declaredTypeName) || declaredTypeName == "") {
             throw Exception("Primitive local syntax requires name and initializer or explicit type")
