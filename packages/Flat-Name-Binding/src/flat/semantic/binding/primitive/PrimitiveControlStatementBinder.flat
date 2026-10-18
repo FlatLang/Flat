@@ -624,7 +624,7 @@ class {
                     let target = BoundReferenceExpression(
                         value.range, local.semanticType, local.name, local.identity
                     )
-                    let expression = classExpression(
+                    var BoundExpression expression = classExpression(
                         value.value, receiver, fields, scopeLocals, callables
                     )
                     var TypeConversion conversion = TypeConversions.classify(
@@ -632,18 +632,16 @@ class {
                     )
                     let declaredStringAssignment = receiver &&
                         target.semanticType.value() == receiver.semanticType.value() &&
-                        (expression.semanticType.value() == SemanticTypes.stringType().value() ||
-                         expression.semanticType.kind() == "unknown") &&
+                        expression.semanticType.value() == SemanticTypes.stringType().value() &&
                         callables.any((candidate) =>
                             candidate.ownerType &&
                             candidate.ownerType.value() == receiver.semanticType.value() &&
                             candidate.ownerType.declarationIdentity.name == "String"
                         )
                     if (!conversion.applicable && declaredStringAssignment) {
-                        conversion = PrimitiveStringAdapter.unsupported(
-                            expression.semanticType, target.semanticType,
-                            "declared-string-assignment", true, false, true, 0
-                        )
+                        expression = PrimitiveStringAdapter.wrap(expression, target.semanticType,
+                            currentTypeResolver.declarationContext, callables)
+                        conversion = TypeConversions.classify(expression.semanticType, target.semanticType)
                     }
                     if (!conversion.applicable) throw Exception("Assignment value type mismatch")
                     result.add(BoundAssignmentStatement(

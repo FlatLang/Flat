@@ -33,22 +33,25 @@ class {
     /** Ordinary overloads win before any representation-changing candidate. */
     public static call(String name, CallableSignature[] candidates, BoundExpression receiver,
         BoundExpression[] arguments, PrimitiveResolvedDeclarationContext context,
-        CallableSignature[] callables, TypeHierarchyComponent hierarchy) -> BoundCallExpression {
+        CallableSignature[] callables, TypeHierarchyComponent hierarchy,
+        Bool safeAccess = false) -> BoundCallExpression {
         let range = receiver.range
-        let exact = OverloadResolver.resolve(name, candidates, receiver.semanticType,
+        let receiverType = safeAccess && receiver.semanticType.kind() == "nullable" ?
+            ((NullableSemanticType)receiver.semanticType).underlyingType : receiver.semanticType
+        let exact = OverloadResolver.resolve(name, candidates, receiverType,
             arguments.map({ _.semanticType }), range, hierarchy)
         if (exact.resolved) {
-            let checked = CallTypeChecker.check(exact.selected, receiver.semanticType,
+            let checked = CallTypeChecker.check(exact.selected, receiverType,
                 arguments.map({ _.semanticType }), range, hierarchy)
-            return BoundCallExpression(range, checked.semanticType, checked.target, receiver,
-                arguments, checked.argumentConversions())
+            return resolvedCall(checked, receiver, arguments, safeAccess)
         }
         // An existing ambiguity must not be replaced by an adapter-selected call.
         if (exact.applicableCandidates().isNotEmpty) throw Exception(exact.diagnostic.message)
         let checks = CallCheckResult[]
         let calls = BoundCallExpression[]
         for (candidate in candidates) {
-            if (candidate.parameterTypes().count != arguments.count) continue
+            if (arguments.count > candidate.parameterTypes().count ||
+                arguments.count < candidate.parameterTypes().count - candidate.optionalParameterCount) continue
             let adapted = BoundExpression[]
             var Int index
             var Bool rejected
@@ -66,17 +69,24 @@ class {
                 index++
             }
             if (rejected) continue
-            let checked = CallTypeChecker.check(candidate, receiver.semanticType,
+            let checked = CallTypeChecker.check(candidate, receiverType,
                 adapted.map({ _.semanticType }), range, hierarchy)
             if (checked.valid) {
                 checks.add(checked)
-                calls.add(BoundCallExpression(range, checked.semanticType, checked.target,
-                    receiver, adapted, checked.argumentConversions()))
+                calls.add(resolvedCall(checked, receiver, adapted, safeAccess))
             }
         }
         let selected = OverloadResolver.resolveChecked(name, candidates, checks, range)
         if (!selected.resolved) throw Exception(selected.diagnostic.message)
         return calls.firstOrNull({ _.target.identity.value == selected.selected.identity.value })
+    }
+
+    static resolvedCall(CallCheckResult checked, BoundExpression receiver,
+        BoundExpression[] arguments, Bool safeAccess) -> BoundCallExpression {
+        let resultType = safeAccess && checked.semanticType.kind() != "nullable" ?
+            NullableSemanticType(checked.semanticType) : checked.semanticType
+        return BoundCallExpression(receiver.range, resultType, checked.target, receiver,
+            arguments, checked.argumentConversions(), safeAccess: safeAccess)
     }
 
     /** Never publish the old representation-changing no-op conversion markers. */

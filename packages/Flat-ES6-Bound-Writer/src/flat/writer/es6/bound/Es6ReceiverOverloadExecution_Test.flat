@@ -934,7 +934,9 @@ testable class {
 
     async test `declared String conditional branch reconciliation executes under Node`() {
         let stream = Lexer().lex(
-            "class String { Char[] chars; construct() { chars = ['a']; } " +
+            "class String { visible native String data; Char[] chars; " +
+                "construct() { chars = ['a']; data = \"\"; } " +
+                "public construct(native String text) { data = text; } " +
                 "this[Int index] -> Char { get { return chars[index]; } } " +
                 "substring(Int start) -> String { return this; } " +
                 "capitalize() -> String { return true ? " +
@@ -944,11 +946,10 @@ testable class {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:declared-string-conditional-execute"), "revision:one"
         )
-        let type = PrimitiveClassBinder().bind(
-            PrimitiveClassParser().parse(
-                stream.consumeAll<Token>("data"), snapshot
-            ), snapshot
-        ).typeUnit
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        ]).typeUnits().first
         let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
         let className = Es6NameMangler.mangle(type.identity.value)
         let capitalizeName = Es6NameMangler.mangle(
@@ -1126,7 +1127,8 @@ testable class {
 
     async test `chained declared String calls execute under Node`() {
         let stream = Lexer().lex(
-            "class String { " +
+            "class String { visible native String data; construct() { data = \"\"; } " +
+                "public construct(native String text) { data = text; } " +
                 "replace(String search, String replacement) -> String { return this; } " +
                 "sanitize() -> String { return this.replace(\"a\", \"b\")" +
                 ".replace(\"b\", \"c\").replace(\"c\", \"d\"); } }"
@@ -1138,7 +1140,9 @@ testable class {
         let syntax = PrimitiveClassParser().parse(
             stream.consumeAll<Token>("data"), snapshot
         )
-        let type = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let type = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        ]).typeUnits().first
         let className = Es6NameMangler.mangle(type.identity.value)
         let sanitizeName = Es6NameMangler.mangle(
             type.functionUnits().firstOrNull({ _.name == "sanitize" }).identity.value

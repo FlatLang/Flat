@@ -2,11 +2,11 @@ name: Flat-Compiler / Test Flat-Compiler
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
   schedule:
-    - cron: '0 8 * * *'
+    - cron: "0 8 * * *"
 
 env:
   LOGGING_DEFAULT_SHOW_PREFIX: true
@@ -15,7 +15,6 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -50,7 +49,15 @@ jobs:
       - name: Link monorepo packages for Airship
         uses: ./.github/actions/setup-flat-monorepo
         with:
-          prebuild-targets: es6
+          # The package acceptance test needs a separately bootstrapped flatc.
+          # Keep the Java bootstrap until Flat-written self-hosting is proven.
+          prebuild-targets: es6 flatc
+
+      - name: Bootstrap production Airship for package acceptance
+        run: |
+          node airship.js --use-links -f packages/Airship install --flatc-runtime java -t es6
+          test -s packages/Airship/dist/airship.js
+          test -s packages/Flat-Compiler/dist/es6/index.js
 
       - name: Build Flat-Compiler Test
         run: |

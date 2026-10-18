@@ -158,6 +158,47 @@ testable class {
         }
     }
 
+    async test `CLI executable preserves nonempty production String storage across substring conversion`() {
+        let root = File(".flat-compiler-cli-real-string-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let source = File(root, "Main.flat")
+            // Exercise ordinary Flat calls and real String/StringCharArray overlays.
+            // Never append a JS model, generated-name invocation, or replacement runtime.
+            var String references = ""
+            references += '#'
+            references += "{value.count}, "
+            references += '#'
+            references += "{part.count}, "
+            references += '#'
+            references += "{part[0]}, "
+            references += '#'
+            references += "{part[1]}, "
+            references += '#'
+            references += "{equal}"
+            Es6ArtifactCommitter().commit(source,
+                "package app\nclass Main { public static main() {\n" +
+                "let value = \"AbC\";\nlet part = value.substring(1, 3);\n" +
+                "let equal = value.equalsIgnoreCase(\"aBc\");\n" +
+                "external js { console.log(" + references + "); }\n} }")
+            let output = File(root, "dist/es6/index.js")
+            // Full production closure, with the same explicit finite acceptance
+            // budgets as the Airship fixture; exclude tests, never production bodies.
+            expect(CompilerCli.run([
+                "flatc", source.normalizedLocation, "-l", "../Flat-Core/src",
+                "-x", "../Flat-Core/src/**/*_Test*.flat",
+                "-target", "es6", "-main", "app/Main", "-o", output.normalizedLocation,
+                "--max-sources", "128", "--max-types", "512"
+            ])).toBe(0)
+            expect(output.isFile).toBe(true)
+            let response = System.execute(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("3 2 b C true\n")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     async test `CLI invalid main does not replace a previous artifact`() {
         let root = File(".flat-compiler-cli-invalid-main-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)

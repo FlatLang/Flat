@@ -40,19 +40,21 @@ class {
         let count = acceptedOrdinals.count
         var Int ordinal
         var String code = ""
-        while (ordinal < count) {
-            if (!acceptedOrdinals.contains(ordinal)) {
-                cleanup()
-                return Es6AssemblyResult(diagnostic: Es6BackendDiagnostic(
-                    "es6.fragment-order",
-                    "ES6 fragment spool requires contiguous ordinals from zero"
-                ))
+        try {
+            while (ordinal < count) {
+                if (!acceptedOrdinals.contains(ordinal)) {
+                    return Es6AssemblyResult(diagnostic: Es6BackendDiagnostic(
+                        "es6.fragment-order",
+                        "ES6 fragment spool requires contiguous ordinals from zero"
+                    ))
+                }
+                code += Es6ArtifactFiles.read(fragmentFile(ordinal))
+                ordinal++
             }
-            code += Es6ArtifactFiles.read(fragmentFile(ordinal))
-            ordinal++
+            return Es6AssemblyResult(code: code)
+        } finally {
+            cleanup()
         }
-        cleanup()
-        return Es6AssemblyResult(code: code)
     }
 
     public cleanup() {

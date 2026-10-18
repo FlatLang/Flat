@@ -824,14 +824,6 @@ class {
                     "deferred-inferred-return", true, false, true, 1000
                 )
             }
-            if (!conversion.applicable && type.declarationIdentity.name == "String" &&
-                returnType.value() == type.value() &&
-                value.semanticType.value() == SemanticTypes.stringType().value()) {
-                conversion = PrimitiveStringAdapter.unsupported(
-                    value.semanticType, returnType,
-                    "declared-string-return", true, false, true, 0
-                )
-            }
             if (!conversion.applicable && value.semanticType.kind() == "null" &&
                 referenceType(returnType)) {
                 conversion = TypeConversion(
@@ -900,22 +892,10 @@ class {
         for (statement in statements) {
             if (statement.class.isOfType(BoundReturnStatement.class)) {
                 let returned = (BoundReturnStatement)statement
+                let returnedValue = adaptText(returned.value, returnType)
                 var TypeConversion conversion = TypeConversions.classify(
-                    returned.value.semanticType, returnType, hierarchy: typeHierarchy
+                    returnedValue.semanticType, returnType, hierarchy: typeHierarchy
                 )
-                let declaredStringReturn = returnType.kind() == "user-class" &&
-                    returned.value.semanticType.value() == SemanticTypes.stringType().value() &&
-                    constructors.any((candidate) =>
-                        candidate.ownerType &&
-                        candidate.ownerType.value() == returnType.value() &&
-                        candidate.ownerType.declarationIdentity.name == "String"
-                    )
-                if (!conversion.applicable && declaredStringReturn) {
-                    conversion = PrimitiveStringAdapter.unsupported(
-                        returned.value.semanticType, returnType,
-                        "declared-string-return", true, false, true, 0
-                    )
-                }
                 if (!conversion.applicable &&
                     returned.value.semanticType.kind() == "null" &&
                     referenceType(returnType)) {
@@ -932,7 +912,7 @@ class {
                     )
                 }
                 result.add(returned.value ? BoundReturnStatement(
-                    returned.range, returnType, returned.value, conversion
+                    returned.range, returnType, returnedValue, conversion
                 ) : BoundReturnStatement(returned.range, returnType))
             } else if (statement.class.isOfType(BoundIfStatement.class)) {
                 let conditional = (BoundIfStatement)statement
@@ -987,21 +967,8 @@ class {
                     continue
                 }
                 var TypeConversion conversion = TypeConversions.classify(
-                    returned.value.semanticType, returnType, hierarchy: typeHierarchy
+                    adaptText(returned.value, returnType).semanticType, returnType, hierarchy: typeHierarchy
                 )
-                let declaredStringReturn = returnType.kind() == "user-class" &&
-                    returned.value.semanticType.value() == SemanticTypes.stringType().value() &&
-                    constructors.any((candidate) =>
-                        candidate.ownerType &&
-                        candidate.ownerType.value() == returnType.value() &&
-                        candidate.ownerType.declarationIdentity.name == "String"
-                    )
-                if (!conversion.applicable && declaredStringReturn) {
-                    conversion = PrimitiveStringAdapter.unsupported(
-                        returned.value.semanticType, returnType,
-                        "declared-string-return", true, false, true, 0
-                    )
-                }
                 if (!conversion.applicable &&
                     returned.value.semanticType.kind() == "null" &&
                     referenceType(returnType)) {
@@ -1111,18 +1078,10 @@ class {
                     if (!bound.succeeded) throw Exception(bound.diagnostic.message)
                     defaultValue = bound.expression
                 }
+                defaultValue = adaptText(defaultValue, type)
                 var TypeConversion conversion = TypeConversions.classify(
                     defaultValue.semanticType, type, explicit: true
                 )
-                if (!conversion.applicable && receiverType &&
-                    receiverType.declarationIdentity.name == "String" &&
-                    type.value() == receiverType.value() &&
-                    defaultValue.semanticType.value() == SemanticTypes.stringType().value()) {
-                    conversion = PrimitiveStringAdapter.unsupported(
-                        defaultValue.semanticType, type,
-                        "declared-string-default", true, false, true, 0
-                    )
-                }
                 if (!conversion.applicable) throw Exception(
                     "Primitive expression '#{defaultValue.semanticType.value()}' cannot convert to '#{type.value()}'"
                 )
@@ -1211,6 +1170,32 @@ class {
         SemanticType requiredType = null,
         FunctionSemanticType originalCallbackContract = null
     ) -> BoundExpression {
+        let value = expressionValue(syntax, receiver, fields, locals, requiredType, originalCallbackContract)
+        return adaptText(value, requiredType)
+    }
+
+    /** Scalar representation changes publish a real, resolved constructor invocation. */
+    adaptText(BoundExpression value, SemanticType requiredType) -> BoundExpression {
+        if (value && requiredType && requiredType.kind() == "user-class" &&
+            ((UserClassSemanticType)requiredType).declarationIdentity.name == "String" &&
+            value.semanticType.value() == SemanticTypes.stringType().value()) {
+            try {
+                return PrimitiveStringAdapter.wrap(value, requiredType, declarationContext, constructors)
+            } catch (Exception error) {
+                throw Exception("Text representation adapter unavailable: #{error.message}")
+            }
+        }
+        return value
+    }
+
+    expressionValue(
+        PrimitiveExpressionSyntax syntax,
+        BoundReferenceExpression receiver,
+        BoundFieldUnit[] fields,
+        LocalBinding[] locals,
+        SemanticType requiredType = null,
+        FunctionSemanticType originalCallbackContract = null
+    ) -> BoundExpression {
         if (!syntax) throw Exception("Reduced method expression syntax is required")
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class) &&
             ((PrimitiveMemberCallSyntax)syntax).chainNavigation) {
@@ -1260,22 +1245,12 @@ class {
                 throw Exception("Safe call requires positional arguments without explicit type arguments")
             }
             let owner = expression(call.receiver, receiver, fields, locals)
-            let ownerType = owner.semanticType.kind() == "nullable" ?
-                ((NullableSemanticType)owner.semanticType).underlyingType : owner.semanticType
             let arguments = BoundExpression[]
             for (argument in call.argumentValues()) arguments.add(expression(argument, receiver, fields, locals))
             let candidates = constructors.filter((candidate) =>
                 candidate.callableKind.value == "instance-method" && candidate.name == call.memberName)
-            let resolution = OverloadResolver.resolve(call.memberName, candidates, ownerType,
-                arguments.map({ _.semanticType }), call.range)
-            if (!resolution.resolved) throw Exception(resolution.diagnostic.message)
-            let target = resolution.selected
-            let checked = CallTypeChecker.check(target, ownerType, arguments.map({ _.semanticType }), call.range)
-            if (!checked.valid) throw Exception(checked.diagnostic.message)
-            let resultType = checked.semanticType.kind() == "nullable" ? checked.semanticType :
-                NullableSemanticType(checked.semanticType)
-            return BoundCallExpression(call.range, resultType, target, owner, arguments,
-                checked.argumentConversions(), safeAccess: true)
+            return PrimitiveStringAdapter.call(call.memberName, candidates, owner, arguments,
+                declarationContext, constructors, typeHierarchy, safeAccess: true)
         }
         if (requiredType && syntax.class.isOfType(PrimitiveLambdaSyntax.class)) {
             let bound = PrimitiveExpressionBinder().bindCallback(
@@ -1376,6 +1351,10 @@ class {
                     value.namedArgumentValues().all((argument) => candidate.parameterNames().contains(argument.name))
                 )
                 let checks = CallCheckResult[]
+                let calls = BoundCallExpression[]
+                var Int adaptationPass
+                // Prefer every ordinary applicable overload before considering text construction.
+                while (adaptationPass < 2 && checks.isEmpty) {
                 for (candidate in candidates) {
                     let named = candidate.parameterNames()
                     let supplied = BoundExpression[]
@@ -1399,74 +1378,36 @@ class {
                         var BoundExpression argument = expression(
                             argumentSyntax, receiver, fields, locals
                         )
-                        if (candidateReceiverType.kind() == "user-class" &&
-                            ((UserClassSemanticType)candidateReceiverType).declarationIdentity.name == "String" &&
-                            argument.semanticType.value() == SemanticTypes.stringType().value() &&
-                            candidate.parameterTypes()[argumentIndex].value() == candidateReceiverType.value()) {
-                            argument = BoundConversionExpression(
-                                argument.range, candidateReceiverType, argument,
-                                PrimitiveStringAdapter.unsupported(argument.semanticType, candidateReceiverType,
-                                    "declared-string-argument", true, false, true, 0)
-                            )
+                        if (adaptationPass == 1 &&
+                            !TypeConversions.classify(argument.semanticType,
+                                candidate.parameterTypes()[argumentIndex], hierarchy: typeHierarchy).applicable) {
+                            try {
+                                argument = adaptText(argument, candidate.parameterTypes()[argumentIndex])
+                            } catch (Exception error) {
+                                complete = false
+                                break
+                            }
                         }
                         supplied.add(argument)
                         argumentIndex++
                     }
-                    if (complete) checks.add(CallTypeChecker.check(
-                        candidate, candidateReceiverType, supplied.map({ _.semanticType }), value.range
-                    ))
+                    if (complete) {
+                        let checked = CallTypeChecker.check(candidate, candidateReceiverType,
+                            supplied.map({ _.semanticType }), value.range, typeHierarchy)
+                        if (checked.valid) {
+                            checks.add(checked)
+                            calls.add(BoundCallExpression(value.range, checked.semanticType, checked.target,
+                                adaptText(owner, candidateReceiverType), supplied, checked.argumentConversions()))
+                        }
+                    }
+                }
+                adaptationPass++
                 }
                 let resolution = OverloadResolver.resolveChecked(
                     value.memberName, candidates, checks, value.range
                 )
                 if (resolution.diagnostic) throw Exception(resolution.diagnostic.message)
-                let target = resolution.selected
-                let ordered = BoundExpression[]
-                let names = target.parameterNames()
-                var Int argumentIndex
-                while (argumentIndex < names.count) {
-                    var PrimitiveExpressionSyntax argumentSyntax
-                    if (argumentIndex < value.argumentValues().count) {
-                        argumentSyntax = value.argumentValues()[argumentIndex]
-                    } else {
-                        let supplied = value.namedArgumentValues().firstOrNull({
-                            _.name == names[argumentIndex]
-                        })
-                        argumentSyntax = supplied ? supplied.value : namedDefaultSyntax(target, argumentIndex)
-                        if (!argumentSyntax) throw Exception("Missing named member argument '#{names[argumentIndex]}'")
-                    }
-                    var BoundExpression argument = expression(
-                        argumentSyntax, receiver, fields, locals
-                    )
-                    if (candidateReceiverType.kind() == "user-class" &&
-                        ((UserClassSemanticType)candidateReceiverType).declarationIdentity.name == "String" &&
-                        argument.semanticType.value() == SemanticTypes.stringType().value() &&
-                        target.parameterTypes()[argumentIndex].value() == candidateReceiverType.value()) {
-                        argument = BoundConversionExpression(
-                            argument.range, candidateReceiverType, argument,
-                            PrimitiveStringAdapter.unsupported(argument.semanticType, candidateReceiverType,
-                                "declared-string-argument", true, false, true, 0)
-                        )
-                    }
-                    ordered.add(argument)
-                    argumentIndex++
-                }
-                let checked = CallTypeChecker.check(
-                    target, candidateReceiverType, ordered.map({ _.semanticType }), value.range
-                )
-                if (!checked.valid) throw Exception(checked.diagnostic.message)
-                var BoundExpression callOwner = owner
-                if (owner.semanticType.value() != candidateReceiverType.value()) {
-                    callOwner = BoundConversionExpression(
-                        value.receiver.range, candidateReceiverType, owner,
-                        PrimitiveStringAdapter.unsupported(owner.semanticType, candidateReceiverType,
-                            "declared-string-receiver", true, false, true, 0)
-                    )
-                }
-                return BoundCallExpression(
-                    value.range, checked.semanticType, target, callOwner,
-                    ordered, checked.argumentConversions()
-                )
+                return calls.firstOrNull({ _.target.identity.value == resolution.selected.identity.value })
             }
             if (value.receiver.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class) &&
                 value.memberName == "add" && value.argumentValues().count == 1) {
@@ -2041,24 +1982,6 @@ class {
                 var TypeConversion falseConversion = TypeConversions.classify(
                     whenFalse.semanticType, requiredType, explicit: true
                 )
-                if (!trueConversion.applicable && boundType &&
-                    boundType.declarationIdentity.name == "String" &&
-                    requiredType.value() == boundType.value() &&
-                    whenTrue.semanticType.value() == SemanticTypes.stringType().value()) {
-                    trueConversion = PrimitiveStringAdapter.unsupported(
-                        whenTrue.semanticType, requiredType,
-                        "declared-string-conditional", true, false, true, 0
-                    )
-                }
-                if (!falseConversion.applicable && boundType &&
-                    boundType.declarationIdentity.name == "String" &&
-                    requiredType.value() == boundType.value() &&
-                    whenFalse.semanticType.value() == SemanticTypes.stringType().value()) {
-                    falseConversion = PrimitiveStringAdapter.unsupported(
-                        whenFalse.semanticType, requiredType,
-                        "declared-string-conditional", true, false, true, 0
-                    )
-                }
                 if (!falseConversion.applicable &&
                     whenFalse.semanticType.kind() == "null" &&
                     (referenceType(requiredType) ||
@@ -2086,23 +2009,11 @@ class {
                 boundType.declarationIdentity.name == "String") {
                 if (whenTrue.semanticType.value() == SemanticTypes.stringType().value() &&
                     whenFalse.semanticType.value() == boundType.value()) {
-                    whenTrue = BoundConversionExpression(
-                        value.whenTrue.range, boundType, whenTrue,
-                        PrimitiveStringAdapter.unsupported(
-                            whenTrue.semanticType, boundType,
-                            "declared-string-conditional", true, false, true, 0
-                        )
-                    )
+                    whenTrue = adaptText(whenTrue, boundType)
                 } else if (whenFalse.semanticType.value() ==
                     SemanticTypes.stringType().value() &&
                     whenTrue.semanticType.value() == boundType.value()) {
-                    whenFalse = BoundConversionExpression(
-                        value.whenFalse.range, boundType, whenFalse,
-                        PrimitiveStringAdapter.unsupported(
-                            whenFalse.semanticType, boundType,
-                            "declared-string-conditional", true, false, true, 0
-                        )
-                    )
+                    whenFalse = adaptText(whenFalse, boundType)
                 }
             }
             if (condition.semanticType.value() != SemanticTypes.boolType().value() ||

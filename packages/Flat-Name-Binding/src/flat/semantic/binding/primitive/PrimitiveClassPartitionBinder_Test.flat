@@ -200,27 +200,49 @@ testable class {
 
     async test `named String overload selects typed source owned member`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-string-self"), "one")
-        let stream = Lexer().lex("class String { public lastIndexOf(Char search, Int defaultReturnValue = -1) -> Int { return 1; } public lastIndexOf(String search, Int defaultReturnValue = -1) -> Int { return 2; } public read() -> Int { return this.lastIndexOf(\"/\", defaultReturnValue: 0); } }")
+        let stream = Lexer().lex("class String { visible native String data; public construct(native String nativeText) { data = nativeText; } public lastIndexOf(Char search, Int defaultReturnValue = -1) -> Int { return 1; } public lastIndexOf(String search, Int defaultReturnValue = -1) -> Int { return 2; } public read() -> Int { return this.lastIndexOf(\"/\", defaultReturnValue: 0); } }")
         stream.emit("start")
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        let bound = PrimitiveClassPartitionBinder().bind([syntax]).typeUnits().first
-        expect(bound.functionUnits().firstOrNull({ _.name == "read" }).returnType.value())
-            .toBe(SemanticTypes.intType().value())
+        let bound = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        ]).typeUnits().first
+        let read = bound.functionUnits().firstOrNull({ _.name == "read" })
+        expect(read.returnType.value()).toBe(SemanticTypes.intType().value())
+        let readStatements = read.statements()
+        let returnedObject = (Object)readStatements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        expect(call.target.parameterTypes().first.value()).toBe(bound.semanticType.value())
+        expect(call.argumentValues().first.expressionKind()).toBe("call")
     }
 
     async test `named String overload selects source owned method across snapshots`() {
         let ownerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-string-owner"), "one")
         let readerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:named-string-reader"), "one")
-        let ownerStream = Lexer().lex("class String { public lastIndexOf(Char search, Int defaultReturnValue = -1) -> Int { return 1; } public lastIndexOf(String search, Int defaultReturnValue = -1) -> Int { return 2; } }")
+        let ownerStream = Lexer().lex("class String { visible native String data; public construct(native String nativeText) { data = nativeText; } public lastIndexOf(Char search, Int defaultReturnValue = -1) -> Int { return 1; } public lastIndexOf(String search, Int defaultReturnValue = -1) -> Int { return 2; } }")
         ownerStream.emit("start")
         let readerStream = Lexer().lex("class Reader { construct(visible String location) {} read() -> Int { return location.lastIndexOf(\"/\", defaultReturnValue: 0); } }")
         readerStream.emit("start")
         let owner = PrimitiveClassParser().parse(ownerStream.consumeAll<Token>("data"), ownerSnapshot)
         let reader = PrimitiveClassParser().parse(readerStream.consumeAll<Token>("data"), readerSnapshot)
-        let types = PrimitiveClassPartitionBinder().bind([reader, owner]).typeUnits()
-        expect(types.firstOrNull({ _.identity.name == "Reader" }).functionUnits()
-            .firstOrNull({ _.name == "read" }).returnType.value())
-            .toBe(SemanticTypes.intType().value())
+        let types = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", readerSnapshot, [reader]),
+            PrimitiveSourceBindingContext("flat", ownerSnapshot, [owner])
+        ]).typeUnits()
+        let read = types.firstOrNull({ _.identity.name == "Reader" }).functionUnits()
+            .firstOrNull({ _.name == "read" })
+        expect(read.returnType.value()).toBe(SemanticTypes.intType().value())
+        let readStatements = read.statements()
+        let returnedObject = (Object)readStatements.first
+        let returned = (BoundReturnStatement)returnedObject
+        let callObject = (Object)returned.value
+        let call = (BoundCallExpression)callObject
+        let arguments = call.argumentValues()
+        let wrappedObject = (Object)arguments.first
+        let wrapped = (BoundCallExpression)wrappedObject
+        expect(wrapped.target.callableKind.value).toBe("constructor")
+        expect(wrapped.target.ownerType.declarationIdentity.syntaxIdentity.snapshot).toBe(ownerSnapshot)
     }
 
     async test `unrelated inferred member does not delay consumer`() {
@@ -476,7 +498,7 @@ testable class {
         arrayStream.emit("start")
         let charsStream = Lexer().lex("class StringCharArray { visible native_array Char[] data; this[Int index] -> Char { get { return data[index]; } } }")
         charsStream.emit("start")
-        let canonicalStream = Lexer().lex("class String { visible Int count; visible StringCharArray chars; trimStart(var Int: start, Char[] charsToTrim) -> String { while (start <= count - 1 && charsToTrim.contains(chars[start])) { start++; } return start > count - 1 ? \"\" : substring(start, count); } substring(Int start, Int end) -> String { return this; } }")
+        let canonicalStream = Lexer().lex("class String { visible native String data; public construct(native String nativeText) { data = nativeText; } visible Int count; visible StringCharArray chars; trimStart(var Int: start, Char[] charsToTrim) -> String { while (start <= count - 1 && charsToTrim.contains(chars[start])) { start++; } return start > count - 1 ? \"\" : substring(start, count); } substring(Int start, Int end) -> String { return this; } }")
         canonicalStream.emit("start")
         let overlayStream = Lexer().lex("class String { extension() -> Int { return 1; } }")
         overlayStream.emit("start")
@@ -487,10 +509,22 @@ testable class {
             PrimitiveClassParser().parse(charsStream.consumeAll<Token>("data"), charsSnapshot),
             canonical.mergedWith(overlay)
         ]
-        let units = PrimitiveClassPartitionBinder().bind(syntaxes).typeUnits()
+        let contexts = syntaxes.map((syntax) => PrimitiveSourceBindingContext("flat", syntax.range.snapshot, [syntax]))
+        let arrayIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(arraySnapshot, "class", syntaxes.first.range.startTokenIndex), "class", "Array")
+        let units = PrimitiveClassPartitionBinder().bindContexts(contexts, arrayDeclaration: arrayIdentity).typeUnits()
         let string = units.firstOrNull({ _.identity.name == "String" })
-        expect(string.functionUnits().firstOrNull({ _.name == "trimStart" }).returnType.value())
-            .toBe(string.semanticType.value())
+        let trimStart = string.functionUnits().firstOrNull({ _.name == "trimStart" })
+        expect(trimStart.returnType.value()).toBe(string.semanticType.value())
+        let trimStatements = trimStart.statements()
+        let returnedObject = (Object)trimStatements.last
+        let returned = (BoundReturnStatement)returnedObject
+        let wrappedObject = (Object)returned.value
+        let wrapped = (BoundCallExpression)wrappedObject
+        expect(wrapped.expressionKind()).toBe("call")
+        expect(wrapped.target.callableKind.value).toBe("constructor")
+        expect(wrapped.argumentValues().count).toBe(1)
+        expect(wrapped.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
     }
 
     async test `binds indexed generic Array parameter through its declared accessor`() {
@@ -1163,6 +1197,129 @@ testable class {
         }
         let unit = PrimitiveClassPartitionBinder().bindContexts([PrimitiveSourceBindingContext("flat", snapshot, syntaxes)]).typeUnits().last
         expect(unit.functionUnits().firstOrNull({ _.name == "text" }).returnType.value()).toBe(SemanticTypes.stringType().value())
+    }
+
+    async test `text adapters preserve ordinary overloads optional arity and one argument evaluation`() {
+        let calls = ["this.pick(\"x\")", "this.pick(\"x\", marker: 0)",
+            "this.consume(this.make())", "this?.consume(this.make())"]
+        var Int index
+        for (invocation in calls) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:scalar-adapter-#index"), "one")
+            let stream = Lexer().lex("class String { visible native String data; " +
+                "public construct(native String text) { data = text; } " +
+                "pick(String text, Int marker = 0) -> Int { return 1; } " +
+                "pick(Object text, Int marker = 0) -> Int { return 2; } " +
+                "make() => \"value\"\n" +
+                "consume(String text, Int marker = 0) -> Int { return 3; } " +
+                "read() => " + invocation + " }")
+            stream.emit("start")
+            let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+            let unit = PrimitiveClassPartitionBinder().bindContexts([
+                PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+            ]).typeUnits().first
+            let read = unit.functionUnits().firstOrNull({ _.name == "read" })
+            let readStatements = read.statements()
+            let returnedObject = (Object)readStatements.first
+            let returned = (BoundReturnStatement)returnedObject
+            let callObject = (Object)returned.value
+            let call = (BoundCallExpression)callObject
+            if (index < 2) {
+                expect(call.target.parameterTypes().first.value()).toBe(SemanticTypes.objectType().value())
+                expect(call.argumentValues().first.expressionKind()).toBe("literal")
+            } else {
+                let arguments = call.argumentValues()
+                let wrappedObject = (Object)arguments.first
+                let wrapped = (BoundCallExpression)wrappedObject
+                expect(wrapped.target.callableKind.value).toBe("constructor")
+                expect(wrapped.argumentValues().count).toBe(1)
+                let wrappedArguments = wrapped.argumentValues()
+                let originalObject = (Object)wrappedArguments.first
+                let original = (BoundCallExpression)originalObject
+                expect(original.target.name).toBe("make")
+                expect(original.argumentValues().count).toBe(0)
+                expect(call.safeAccess).toBe(index == 3)
+                if (index == 3) expect(call.semanticType.kind()).toBe("nullable")
+            }
+            index++
+        }
+    }
+
+    async test `scalar text adaptation rejects absent and noncanonical constructors`() {
+        let spaces = ["flat", "other"]
+        for (space in spaces) {
+            let constructors = ["", "public construct(native String text) {}"]
+            for (constructor in constructors) {
+                if (space == "flat" && constructor.isNotEmpty) continue
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:scalar-adapter-rejected-#space"), "one")
+                let stream = Lexer().lex("class String { " + constructor +
+                    " consume(String text) -> Int { return 1; } read() -> Int { return this.consume(\"x\"); } }")
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                var Bool rejected
+                try {
+                    PrimitiveClassPartitionBinder().bindContexts([
+                        PrimitiveSourceBindingContext(space, snapshot, [syntax])
+                    ])
+                } catch (Exception error) { rejected = error.message.contains("No overload") }
+                expect(rejected).toBe(true)
+            }
+        }
+    }
+
+    async test `structured String assignment constructs canonical text once`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:string-assignment-adapter"), "one")
+        let stream = Lexer().lex("class String { visible native String data; " +
+            "public construct(native String text) { data = text; } " +
+            "make() => \"value\"\n" +
+            "replace() -> String { var output = this; while (false) { output = this.make(); } return output; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        ]).typeUnits().first
+        let method = unit.functionUnits().firstOrNull({ _.name == "replace" })
+        let statements = method.statements()
+        let loopObject = (Object)statements[1]
+        let loop = (BoundWhileStatement)loopObject
+        let body = loop.bodyValues()
+        expect(body.count).toBe(1)
+        let assignmentObject = (Object)body.first
+        let assignment = (BoundAssignmentStatement)assignmentObject
+        expect(assignment.target.semanticType.value()).toBe(unit.semanticType.value())
+        expect(assignment.conversion.conversionKind).toBe("identity")
+        let wrappedObject = (Object)assignment.value
+        let wrapped = (BoundCallExpression)wrappedObject
+        expect(wrapped.target.callableKind.value).toBe("constructor")
+        expect(wrapped.target.ownerType.value()).toBe(unit.semanticType.value())
+        let arguments = wrapped.argumentValues()
+        expect(arguments.count).toBe(1)
+        expect(arguments.first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+        let originalObject = (Object)arguments.first
+        let original = (BoundCallExpression)originalObject
+        expect(original.target.name).toBe("make")
+        expect(original.argumentValues().count).toBe(0)
+    }
+
+    async test `structured String assignment rejects absent and noncanonical bridges`() {
+        let spaces = ["flat", "other"]
+        for (space in spaces) {
+            let constructors = ["", "public construct(native String text) { data = text; }"]
+            for (constructor in constructors) {
+                if (space == "flat" && constructor.isNotEmpty) continue
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:string-assignment-rejected-#space"), "one")
+                let stream = Lexer().lex("class String { visible native String data; " + constructor +
+                    "replace() -> String { var output = this; while (false) { output = \"value\"; } return output; } }")
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                var Bool rejected
+                try {
+                    PrimitiveClassPartitionBinder().bindContexts([
+                        PrimitiveSourceBindingContext(space, snapshot, [syntax])
+                    ])
+                } catch (Exception error) { rejected = error.message.contains("Text") }
+                expect(rejected).toBe(true)
+            }
+        }
     }
 
     async test `text adapter constructs canonical wrapper for substituted element`() {

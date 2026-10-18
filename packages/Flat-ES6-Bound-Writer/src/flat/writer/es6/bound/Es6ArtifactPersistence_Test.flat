@@ -48,6 +48,33 @@ testable class {
         expect(root.exists).toBe(false)
     }
 
+    test `missing spooled fragment preserves read failure and cleans temporary storage`() {
+        let root = temporaryRoot("missing-fragment")
+        let parts = File(root, "parts")
+        Es6ArtifactFiles.ensureDirectory(parts)
+        let spool = Es6FragmentSpool(parts, 2)
+        try {
+            expect(spool.accept(Es6ArtifactFragment("first", 0, "first\n"))).toBe(null)
+            expect(spool.accept(Es6ArtifactFragment("second", 1, "second\n"))).toBe(null)
+            let missing = File(parts, "fragment-1.es6")
+            expect(missing.exists).toBe(true)
+            Es6ArtifactFiles.remove(missing)
+            expect(missing.exists).toBe(false)
+
+            var String failure = ""
+            try {
+                spool.assembleAndCleanup()
+            } catch (Exception error) {
+                failure = error.message
+            }
+
+            expect(failure).toBe("ES6 artifact read requires an existing file")
+            expect(parts.exists).toBe(false)
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     test `atomic commit replaces destination and leaves no temporary file`() {
         let root = temporaryRoot("commit")
         let output = File(root, "output")

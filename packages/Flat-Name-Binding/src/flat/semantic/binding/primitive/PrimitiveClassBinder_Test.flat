@@ -1114,7 +1114,8 @@ testable class {
 
     async test `preserves declared String identity through chained receiver calls`() {
         let stream = Lexer().lex(
-            "class String { " +
+            "class String { visible native String data; " +
+                "public construct(native String nativeText) { data = nativeText; } " +
                 "replace(String search, String replacement) -> String { return this; } " +
                 "sanitize() -> String { let value = this.replace(\"a\", \"b\")" +
                 ".replace(\"b\", \"c\").replace(\"c\", \"d\"); return value; } }"
@@ -1123,11 +1124,10 @@ testable class {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:string-chained-receiver-calls"), "revision:one"
         )
-        let type = PrimitiveClassBinder().bind(
-            PrimitiveClassParser().parse(
-                stream.consumeAll<Token>("data"), snapshot
-            ), snapshot
-        ).typeUnit
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let type = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax])
+        ]).typeUnits().first
         let sanitize = type.functionUnits().firstOrNull({ _.name == "sanitize" })
         let statements = sanitize.statements()
         let declarationObject = (Object)statements.first
@@ -1143,6 +1143,18 @@ testable class {
         expect(middle.semanticType.value()).toBe(type.semanticType.value())
         expect(outer.semanticType.value()).toBe(type.semanticType.value())
         expect(outer.target.ownerType.value()).toBe(type.semanticType.value())
+        let chainCalls = [inner, middle, outer]
+        for (call in chainCalls) {
+            for (argument in call.argumentValues()) {
+                expect(argument.expressionKind()).toBe("call")
+                let argumentObject = (Object)argument
+                let wrapped = (BoundCallExpression)argumentObject
+                expect(wrapped.target.callableKind.value).toBe("constructor")
+                expect(wrapped.target.ownerType.value()).toBe(type.semanticType.value())
+                expect(wrapped.argumentValues().count).toBe(1)
+                expect(wrapped.argumentValues().first.semanticType.value()).toBe(SemanticTypes.stringType().value())
+            }
+        }
         expect(outer.range.snapshot).toBe(snapshot)
     }
 
