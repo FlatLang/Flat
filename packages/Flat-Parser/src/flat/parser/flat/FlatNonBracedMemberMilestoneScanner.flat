@@ -62,7 +62,7 @@ class {
         }
 
         retain(token, tokenIndex)
-        if (expressionBodyOpen) return SyntaxIsland[]
+        if (expressionBodyOpen || incompleteNestedParentheses()) return SyntaxIsland[]
 
         // A grammar-proven braced header remains pending until its opening
         // brace arrives; it must not be published as a bodyless declaration.
@@ -116,6 +116,24 @@ class {
             index++
         }
         return islands
+    }
+
+    /**
+     * No complete declaration can end inside nested callback parentheses.
+     * Defer speculative grammar probes, not EOF validation or token retention.
+     * Rescanning the capacity-bounded prefix avoids another mutable depth cache
+     * that would have to be rebased when publishFirst releases a member.
+     */
+    incompleteNestedParentheses() -> Bool {
+        var Int depth
+        for (token in retained) {
+            if (isSymbol(token, "(")) depth++
+            else if (isSymbol(token, ")")) {
+                depth--
+                if (depth < 0) return false
+            }
+        }
+        return depth > 1
     }
 
     bodylessGenericReturnFunction(Token[] tokens) -> Bool {

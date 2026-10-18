@@ -5,6 +5,67 @@ import flat/compiler/models
 import flat/lexer/Lexer
 
 testable class {
+    async test `retains nested callback prefix until complete adjacent signatures preserve ranges`() {
+        let source = "public async forEachParallel(async func(Type x, Int i, List<Type> list), " +
+            "Int maxParallel, async onAfterChunk(Int count)) public next()"
+        let tokens = significant(lex(source))
+        let scanner = scanner(64)
+        let islands = SyntaxIsland[]
+        var Int index
+        for (token in tokens) {
+            islands.addAll(scanner.accept(token, index))
+            index++
+        }
+        islands.addAll(scanner.end())
+        expect(islands.count).toBe(2)
+        var NonBracedMemberHeaderSyntaxIsland first
+        first = (NonBracedMemberHeaderSyntaxIsland)islands.first
+        var NonBracedMemberHeaderSyntaxIsland last
+        last = (NonBracedMemberHeaderSyntaxIsland)islands.last
+        expect(first.name).toBe("forEachParallel")
+        expect(first.memberKind).toBe("function")
+        expect(first.range.startTokenIndex).toBe(0)
+        expect(first.range.endTokenIndex).toBe(tokens.count - 4)
+        expect(last.name).toBe("next")
+        expect(last.range.startTokenIndex).toBe(tokens.count - 4)
+        expect(last.range.endTokenIndex).toBe(tokens.count)
+    }
+
+    async test `rejects unclosed nested callback header and releases retained tokens`() {
+        let tokens = significant(lex("public run(func(Type x, Int i"))
+        let scanner = scanner(32)
+        var Int index
+        for (token in tokens) scanner.accept(token, index++)
+        var Bool rejected
+        try { scanner.end() } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+    }
+
+    async test `cancels incomplete nested callback without publishing retained tokens`() {
+        let tokens = significant(lex("public run(func(Type x, Int i"))
+        let scanner = scanner(32)
+        var Int index
+        for (token in tokens) scanner.accept(token, index++)
+        expect(scanner.retainedTokenCount).toBe(tokens.count)
+        scanner.cancel()
+        expect(scanner.retainedTokenCount).toBe(0)
+        expect(scanner.end().count).toBe(0)
+    }
+
+    async test `incomplete nested callback still enforces token capacity`() {
+        let tokens = significant(lex("public run(func(Type x, Int i"))
+        let scanner = scanner(8)
+        var Int index
+        var Bool rejected
+        try {
+            for (token in tokens) scanner.accept(token, index++)
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        expect(scanner.retainedTokenCount).toBe(0)
+        expect(scanner.peakRetainedTokenCount).toBe(8)
+    }
+
     async test `exposes grammar backed pending static member classification`() {
         let functionScanner = scanner(64)
         let functionTokens = significant(lex(

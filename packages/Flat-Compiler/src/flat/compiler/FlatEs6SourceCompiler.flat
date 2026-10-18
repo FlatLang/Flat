@@ -72,7 +72,7 @@ class {
         let partitions = FlatSourceTypePartitioner(
             maxTypeTokens: maxTokens,
             maxTypes: maxTypes
-        ).partition(tokens, snapshot)
+        ).partition(tokens, snapshot, "js")
         let syntaxes = PrimitiveClassSyntax[]
         for (partition in partitions) {
             if (partition.declarationKind != "class") {

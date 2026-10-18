@@ -17,9 +17,51 @@ Each package is tracked from its `master` branch and can be updated with:
 git subtree pull --prefix packages/<PackageName> <repository> master
 ```
 
+## Full dogfooding acceptance
+
+Full dogfooding means ordinary Airship install/test/run workflows build and execute real ES6/Node packages, including Airship and the Flat-written compiler themselves. The implicit production Core must remain unchanged: no trimmed substitutes, global nullable-conversion relaxation, hidden Java fallback, or hand-appended generated entrypoint calls. An explicitly identified Java bootstrap seed is not self-hosting acceptance.
+
+### Required suites and commands
+
+The recovered seven-suite acceptance set is **Airship, Flat-Project-Loading, Flat-Parser, Flat-Name-Binding, Flat-Bound-IR, Flat-ES6-Bound-Writer, and Flat-Compiler**. This names required workloads, not seven verified passes. Historical provenance: canonical session `be12989b-866f-45c8-9ccf-96b55d08e7e2`, event 561.
+
+From the repository root, substitute each package name and serialize builds that share generated outputs:
+
+```sh
+airship --use-links -f packages/<Package> install test -t es6
+airship --use-links -f packages/<Package> run test
+```
+
+For explicit Flat-written compiler acceptance, select the runtime rather than relying on defaults:
+
+```sh
+airship --use-links -f packages/<Package> install test --flatc-runtime flat -t es6
+airship --use-links -f packages/<Package> run test
+```
+
+Use the built production Airship executable for its self-rebuild gate, as in [airship-build.yml](.github/workflows/airship-build.yml). Record source revision/dirty-input hashes, compiler and Airship identities, exact commands, exit status and generated execution assertions. Missing Flat artifacts must fail visibly, not trigger a Java fallback; stale generated files cannot establish a pass.
+
+### Product acceptance matrix
+
+| Gate                             | Required evidence                                                                                                                                                                                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Real packages and unchanged Core | Fresh seven-suite results plus ordinary package install/test/run through the public CLI. Execute normal generated Node artifacts against production Char, nonempty String, collections and runtime dependencies.                                                         |
+| Language closure                 | Valid/invalid syntax and ranges, deterministic declarations/imports, type/overload checks, lowering, ES6 emission and generated execution for required production features; include neighboring-feature interactions. Parsing alone is syntax support.                   |
+| String evaluation order          | Production String concatenation must log exactly `LR`, evaluate each side once and assert exact contents for declared+declared, native+declared and declared+native. The recovered historical requirement was a C regression; ES6 needs its own execution evidence.      |
+| Self-hosting and bootstrap       | Airship and the compiler rebuild with the Flat-written compiler; isolated stages identify seed/tool inputs and compare reproducible artifacts. Ordinary development requires no Java. **Full acceptance unverified.**                                                    |
+| Bounded scaling and determinism  | Concurrency 1 and greater than 1 yield identical diagnostics/artifacts; controlled schedules prove capacity/backpressure, unrelated progress, scoped failure, cancellation and cleanup. Document every barrier/materialization boundary. **Full acceptance unverified.** |
+| Incremental builds               | Source/options/dependency/tool fingerprints drive invalidation; changed, unchanged and removed inputs produce correct results; cold/warm builds agree without stale artifacts. **Full acceptance unverified.**                                                           |
+| CI                               | Clean bootstrap, package execution, self-host rebuild and deterministic/incremental checks run with explicit runtime selection and artifact provenance. Existing Java-seeded workflows are not proof of Java-free acceptance. **Full acceptance unverified.**            |
+
+### Source-backed coverage, not completion claims
+
+[CompilerPackage_Test.flat](packages/Flat-Compiler/src/flat/compiler/CompilerPackage_Test.flat) contains Airship-to-Flat-to-Node, production Char/String, concatenation-order, provider-order and namespace acceptance cases. [CompilerCli_Test.flat](packages/Flat-Compiler/src/flat/compiler/CompilerCli_Test.flat) covers production Char/nonempty String and normal executable entrypoints. Test presence is not a fresh passing result or proof of the entire production closure.
+
+The feature table below distinguishes parser-only scalar-native storage, qualified/nested field types and postfix `$` from reduced semantic/generated-execution slices for native storage clearing and condition guards. Control-flow coverage is likewise scoped, not general language completion. Required closure extends through imports, receivers/properties, generics/nullability, native representation, callbacks/async, control flow/exceptions and target overlays; each needs owning-layer tests and generated execution before promotion to implemented coverage. Consult current sources and validation results rather than treating an individual failing probe as a permanent blocker.
+
 ## Language coverage
 
-Coverage below describes tested slices, not full language-feature or self-hosting completion. Namespace integration and production-core execution still have unresolved regressions.
+Coverage below describes tested slices, not full language-feature or self-hosting completion. Product acceptance requires the separate gates below.
 
 | Feature                                       | Current coverage                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Owning tests                                                                                                                                                                                                                                                                                     |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

@@ -3,20 +3,125 @@ package flat/compiler
 import flat/eventstream
 import flat/future
 
-/** Observable bounded compilation lifecycle independent of CLI presentation. */
+/**
+ * Attach observers before CompilerEngine.start/startPackage. Artifacts are a
+ * single-consumer FIFO work channel, not replay; topics broadcast only to current
+ * subscribers. The engine awaits every publication. Close/unsubscribe an optional
+ * observer to detach it. A slow attached observer intentionally applies backpressure.
+ * Cancellation stops admission/publication; completion waits for owned work cleanup.
+ */
 class {
     visible BoundedTopic<String> diagnostics = BoundedTopic<String>(4)
     visible BoundedTopic<String> progress = BoundedTopic<String>(4)
     visible BoundedChannel<CompilerArtifact> artifacts = BoundedChannel<CompilerArtifact>(4)
-    visible Future.CompletableFuture<CompilationSummary> completion = Future.create<CompilationSummary>()
-    visible var Bool cancelled
+    visible Future<CompilationSummary> completion = Future.create<CompilationSummary>()
+    /**
+     * Bounded, non-replaying saturation telemetry: true on the first artifact send
+     * that waits for capacity, false if the session terminates without blocking.
+     * One scalar/future per session; observation never delays work or accumulates
+     * samples. Cancellation settles it too. Not a delivery acknowledgement.
+     */
+    visible Future<Bool> artifactBackpressure = Future.create<Bool>()
+    visible Bool cancelled => cancellationRequested
+
+    // Only this class casts read-only futures back to completion capabilities.
+    var Bool cancellationRequested
+    var Bool started
+    var Bool running
+    var Int sourceCount
+    var Int artifactCount
+    var Int diagnosticCount
+    var String terminalDiagnostic
+
+    var Future<ExecutorTaskResult> task
+
+    protected begin(Int sources) {
+        if (started || completion.completed) throw Exception("Compiler session can only be started once")
+        if (cancelled) return
+        started = true
+        sourceCount = sources
+    }
+
+    protected enter() { running = true }
+    protected recordArtifact() { artifactCount++ }
+    protected recordFailure(String message) {
+        diagnosticCount++
+        terminalDiagnostic = message
+    }
+
+    protected attach(Future<ExecutorTaskResult> submitted) {
+        task = submitted
+        // A custom executor may invoke cancellation reentrantly during submit,
+        // before returning its queued handle. Do not leave that admission behind.
+        if (cancelled && !running) task.cancel()
+        observeTask()$
+    }
+
+    async observeTask() {
+        try {
+            let result = task.get()
+            running = false
+            if (!completion.completed) {
+                if (result.capacityExceeded || result.failed) {
+                    diagnosticCount++
+                    terminalDiagnostic = result.failed ? result.error.message : "Compiler executor capacity exceeded"
+                }
+                finish()
+            }
+        } catch (Exception error) {
+            running = false
+            if (!completion.completed) {
+                if (!cancelled) {
+                    diagnosticCount++
+                    terminalDiagnostic = error.message
+                }
+                finish()
+            }
+        }
+    }
 
     public cancel() {
         if (cancelled || completion.completed) return
-        cancelled = true
+        cancellationRequested = true
+        closeChannels()
+        // Executor future cancellation only removes queued work. It does not
+        // interrupt an already running action, so never use it as cleanup proof.
+        // running is set before the engine's first load/compile call, and remains
+        // true until the submitted task settles, even if cancellation occurs
+        // reentrantly before submit returns and attach receives the task handle.
+        if (!running) {
+            if (task) task.cancel()
+            finish()
+        }
+    }
+
+    protected finish() {
+        if (completion.completed) return
+        running = false
+        // Normal completion has no pending sends: the engine awaited acceptance.
+        // close drains accepted buffered values; it does not discard them. Cancel
+        // deliberately rejects a still-pending notification, never a sink commit.
+        closeChannels()
+        if (!artifactBackpressure.completed) {
+            let completionSignal = (Future.CompletableFuture<Bool>)artifactBackpressure
+            completionSignal.complete(false)
+        }
+        let terminal = (Future.CompletableFuture<CompilationSummary>)completion
+        terminal.complete(CompilationSummary(
+            sourceCount, artifactCount, diagnosticCount, cancelled, terminalDiagnostic
+        ))
+    }
+
+    protected recordArtifactBackpressure() {
+        if (!artifactBackpressure.completed) {
+            let completionSignal = (Future.CompletableFuture<Bool>)artifactBackpressure
+            completionSignal.complete(true)
+        }
+    }
+
+    closeChannels() {
         diagnostics.close()
         progress.close()
         artifacts.close()
-        completion.complete(CompilationSummary(0, 0, 0, true))
     }
 }

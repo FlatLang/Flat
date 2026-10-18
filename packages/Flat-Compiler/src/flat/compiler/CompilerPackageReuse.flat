@@ -1,0 +1,123 @@
+package flat/compiler
+
+/**
+ * Optional in-process reuse of one successful, exact ES6 package partition.
+ * No filesystem lookup, digest, TTL, persistence, session or event replay.
+ * Callers explicitly supply the complete selected source/dependency closure.
+ * Admission owns a bounded copy; default provider compilation never captures it.
+ *
+ * maxBytes bounds the retained entry and admitted source identity/text/options
+ * payload, conservatively charging four bytes per string unit. Generated output
+ * is compiled normally and is not retained if it exceeds the remaining budget.
+ * Object overhead is additionally bounded by maxSources. One retained entry is
+ * shared; each admitted session owns one candidate. This is not an admission queue or a
+ * cross-thread cache: scheduling/admission remains owned by the engine executor.
+ */
+class {
+    var CompilerPackageSnapshot retained
+    var String retainedCode
+    var Long generation
+
+    public construct(visible Int maxSources = 64, visible Long maxBytes = 1048576) {
+        if (maxSources <= 0 || maxBytes <= 0) throw Exception("Package reuse requires positive bounds")
+    }
+
+    public reset() {
+        generation++
+        retained = null
+        retainedCode = null
+    }
+
+    protected capture(CompilerSource[] sources, String mainClass, FlatEs6PackageLinker linker) -> CompilerPackageSnapshot {
+        if (!sources || sources.isEmpty || sources.count > maxSources || sources.any({ !_ })) {
+            throw Exception("Package reuse requires nonempty bounded supplied snapshots")
+        }
+        // Target is ES6; null mainClass means library. Array declaration is always
+        // the linker's default null, as in the existing engine package API.
+        let options = "es6:default-array:#{linker.maxSources}:#{linker.maxSourceCharacters}:" +
+            "#{linker.maxTokensPerSource}:#{linker.maxTypes}:#{linker.maxFragments}"
+        var Long bytes = options.count
+        bytes *= 4
+        if (mainClass) {
+            Long mainBytes = mainClass.count
+            bytes += mainBytes * 4
+        }
+        let copies = CompilerSource[]
+        for (source in sources) {
+            if (source.identity.trim().count == 0) throw Exception("Package snapshot requires source identity")
+            Long identityBytes = source.identity.count
+            Long textBytes = source.text.count
+            bytes += identityBytes * 4 + textBytes * 4
+            if (bytes > maxBytes) throw Exception("Package snapshot exceeds reuse byte capacity")
+            copies.add(CompilerSource(source.identity, source.text))
+        }
+        let ordered = copies.sort({ _a.identity.compareTo(_b.identity) })
+        var Int index = 1
+        while (index < ordered.count) {
+            if (ordered[index - 1].identity == ordered[index].identity) {
+                throw Exception("Package snapshot requires unique source identities")
+            }
+            index++
+        }
+        generation++
+        return CompilerPackageSnapshot(ordered, mainClass, linker, options, bytes, generation)
+    }
+
+    protected find(CompilerPackageSnapshot input) -> String => null {
+        if (retained && retained.matches(input)) return retainedCode
+    }
+
+    protected remember(CompilerPackageSnapshot input, CompilationSummary summary) {
+        if (input.ticket != generation || summary.cancelled || summary.diagnosticCount != 0 ||
+            summary.artifactCount != 1 || input.code == null) return
+        Long codeBytes = input.code.count
+        codeBytes *= 4
+        if (codeBytes > maxBytes - input.bytes) {
+            // Successful oversize output is usable, but never retained.
+            retained = null
+            retainedCode = null
+            return
+        }
+        retained = input
+        retainedCode = input.code
+    }
+
+}
+
+class CompilerPackageSnapshot extends CompilerSourceProvider {
+        var CompilerSource[] values
+        visible String mainClass
+        visible FlatEs6PackageLinker linker
+        visible String options
+        visible Long bytes
+        visible Long ticket
+        visible String code => compiledCode
+        var String compiledCode
+
+        protected construct(CompilerSource[] values, String mainClass, FlatEs6PackageLinker linker,
+            String options, Long bytes, Long ticket) {
+            this.values = values.copy()
+            this.mainClass = mainClass
+            this.linker = linker
+            this.options = options
+            this.bytes = bytes
+            this.ticket = ticket
+        }
+
+        override public identities() -> String[] => values.map({ _.identity })
+        override public load(String identity) -> CompilerSource => values.firstOrNull({ _.identity == identity })
+
+        protected recordCode(String code) { compiledCode = code }
+
+        protected matches(CompilerPackageSnapshot other) -> Bool {
+            if (mainClass != other.mainClass || linker != other.linker || options != other.options ||
+                values.count != other.values.count) return false
+            var Int index
+            while (index < values.count) {
+                if (values[index].identity != other.values[index].identity ||
+                    values[index].text != other.values[index].text) return false
+                index++
+            }
+            return true
+        }
+}

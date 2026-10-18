@@ -139,6 +139,21 @@ testable class {
         expect(command[2]).toBe("custom/flatc.jar")
     }
 
+    test async `rejects a Java compiler jar with the Flat runtime`() {
+        let runtimes = ["flat", " Flat "]
+        for (runtime in runtimes) {
+            let airship = Airship([
+                "--flatc-runtime", runtime, "--flatc-jar", "custom/flatc.jar",
+                "--use-links", "-t", "es6"
+            ])
+            let source = airship.getSourceForPackage("main").copy(dependencies: Array<Dependency>())
+
+            expectAsync(async { airship.installService.getInstallCommand("main", source, Array<Dependency>()) })
+                .toThrowWithMessage(ExecutionFailureException.class,
+                    "--flatc-jar cannot be used with --flatc-runtime flat; remove --flatc-jar to use the Flat compiler or select --flatc-runtime java")
+        }
+    }
+
     test `fails on invalid -f arg (only arg given, with no value)`() {
         expect({ Airship(["-f"]) }).toThrow(RequiredCliArgumentException.class)
     }

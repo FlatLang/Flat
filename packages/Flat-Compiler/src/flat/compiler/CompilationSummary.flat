@@ -1,9 +1,11 @@
 package flat/compiler
 
-/** Immutable completion counts with at most one retained package failure.
- * Package compilation completes before callers can observe topics; this terminal
- * diagnostic is owned by the result, not an event replay queue. Other compilation
- * paths retain their existing count-only contract.
+/** Immutable terminal counts. sourceCount counts admitted identities, artifactCount
+ * counts successful sink commits (including commits preceding cancellation), and
+ * diagnosticCount counts recorded failures. Completion follows action cleanup.
+ * packageDiagnostic retains at most the last failure, including executor rejection;
+ * it is not an event replay queue. Compatibility adapters consume notifications
+ * while artifacts remain owned by the supplied sink.
  */
 data class {
     public construct(

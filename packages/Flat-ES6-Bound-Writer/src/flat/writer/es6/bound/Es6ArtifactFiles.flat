@@ -8,6 +8,10 @@ class {
         throw Exception("ES6 artifact files require the ES6 runtime")
     }
 
+    public static createCommitDirectory(File destination) -> File {
+        throw Exception("ES6 artifact files require the ES6 runtime")
+    }
+
     public static write(File file, String value) {
         throw Exception("ES6 artifact files require the ES6 runtime")
     }

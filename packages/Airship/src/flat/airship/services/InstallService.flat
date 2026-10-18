@@ -96,6 +96,9 @@ class {
     getOutputDirectory(PackageSource source) => File("#{airship.packageLocation.normalizedLocation}/#{source.outDirectory}")
 
     public async getInstallCommand(String installationTarget, PackageSource source, Dependency[] dependencies) -> String[] {
+        if (cliArgs.flatcJarValueArg.value && cliArgs.flatcRuntimeValueArg.value?.toLowerCase()?.trim() == "flat") {
+            throw ExecutionFailureException("--flatc-jar cannot be used with --flatc-runtime flat; remove --flatc-jar to use the Flat compiler or select --flatc-runtime java")
+        }
         let arguments = getFlatcExecutableArguments(installationTarget, source)
         return getFlatcExecutableCommand(dependencies).plus(arguments)
     }

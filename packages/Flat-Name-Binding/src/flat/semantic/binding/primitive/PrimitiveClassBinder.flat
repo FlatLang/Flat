@@ -1335,13 +1335,42 @@ class {
                     value.namedArgumentValues().all((argument) => candidate.parameterNames().contains(argument.name))
                 )
                 let checks = CallCheckResult[]
-                let calls = BoundCallExpression[]
+                let calls = BoundExpression[]
                 var Int adaptationPass
                 // Prefer every ordinary applicable overload before considering text construction.
                 while (adaptationPass < 2 && checks.isEmpty) {
                 for (candidate in candidates) {
                     let named = candidate.parameterNames()
                     let supplied = BoundExpression[]
+                    let omitted = candidate.parameterNames().skip(value.argumentValues().count)
+                        .any((name) => !value.namedArgumentValues().any({ _.name == name }))
+                    let retainedIdentity = SymbolIdentity(DeclarationIdentity(
+                        SyntaxIslandIdentity(value.range.snapshot, "default-receiver", value.range.startTokenIndex),
+                        "local", "defaultReceiver"), "local")
+                    let retained = BoundReferenceExpression(value.receiver.range, candidateReceiverType,
+                        "defaultReceiver", retainedIdentity)
+                    let parameters = BoundFunctionParameter[]
+                    let inputs = BoundExpression[]
+                    let inputTypes = SemanticType[]
+                    let inputReferences = BoundExpression[]
+                    let statements = BoundStatement[]
+                    if (omitted) {
+                        parameters.add(BoundFunctionParameter("defaultReceiver", retainedIdentity, candidateReceiverType))
+                        inputs.add(adaptText(owner, candidateReceiverType))
+                        inputTypes.add(candidateReceiverType)
+                        let syntaxes = PrimitiveExpressionSyntax[]:addAll(value.argumentValues())
+                        for (namedArgument in value.namedArgumentValues()) syntaxes.add(namedArgument.value)
+                        for (inputSyntax in syntaxes) {
+                            let input = expression(inputSyntax, receiver, fields, locals)
+                            let inputIdentity = SymbolIdentity(retainedIdentity.declaration, "argument", inputs.count)
+                            let inputName = "defaultInput#{inputs.count}"
+                            parameters.add(BoundFunctionParameter(inputName, inputIdentity, input.semanticType))
+                            inputs.add(input)
+                            inputTypes.add(input.semanticType)
+                            inputReferences.add(BoundReferenceExpression(input.range, input.semanticType, inputName, inputIdentity))
+                        }
+                    }
+                    let defaultLocals = LocalBinding[]
                     var Bool complete = true
                     var Int argumentIndex
                     while (argumentIndex < candidate.parameterTypes().count) {
@@ -1359,9 +1388,17 @@ class {
                             complete = false
                             break
                         }
-                        var BoundExpression argument = expression(
-                            argumentSyntax, receiver, fields, locals
-                        )
+                        var Int inputIndex = argumentIndex < value.argumentValues().count ? argumentIndex : -1
+                        if (inputIndex < 0) {
+                            var Int namedIndex
+                            for (namedArgument in value.namedArgumentValues()) {
+                                if (namedArgument.name == named[argumentIndex]) inputIndex = value.argumentValues().count + namedIndex
+                                namedIndex++
+                            }
+                        }
+                        var BoundExpression argument = omitted ? (inputIndex >= 0 ? inputReferences[inputIndex] :
+                            bindNamedDefault(candidate, argumentSyntax, retained, defaultLocals)) :
+                            expression(argumentSyntax, receiver, fields, locals)
                         if (adaptationPass == 1 &&
                             !TypeConversions.classify(argument.semanticType,
                                 candidate.parameterTypes()[argumentIndex], hierarchy: typeHierarchy).applicable) {
@@ -1372,7 +1409,17 @@ class {
                                 break
                             }
                         }
-                        supplied.add(argument)
+                        if (omitted) {
+                            let parameterIdentity = SymbolIdentity(candidate.identity.declaration, "default-parameter", argumentIndex)
+                            let parameterReference = BoundReferenceExpression(argument.range,
+                                candidate.parameterTypes()[argumentIndex], named[argumentIndex], parameterIdentity)
+                            let conversion = TypeConversions.classify(argument.semanticType, parameterReference.semanticType,
+                                hierarchy: typeHierarchy)
+                            if (!conversion.applicable) { complete = false; break }
+                            statements.add(BoundLocalDeclarationStatement(argument.range, parameterReference, argument, conversion))
+                            defaultLocals.add(LocalBinding(named[argumentIndex], parameterIdentity, parameterReference.semanticType))
+                            supplied.add(parameterReference)
+                        } else supplied.add(argument)
                         argumentIndex++
                     }
                     if (complete) {
@@ -1380,8 +1427,16 @@ class {
                             supplied.map({ _.semanticType }), value.range, typeHierarchy)
                         if (checked.valid) {
                             checks.add(checked)
-                            calls.add(BoundCallExpression(value.range, checked.semanticType, checked.target,
-                                adaptText(owner, candidateReceiverType), supplied, checked.argumentConversions()))
+                            let invocation = BoundCallExpression(value.range, checked.semanticType, checked.target,
+                                omitted ? retained : adaptText(owner, candidateReceiverType), supplied, checked.argumentConversions())
+                            if (omitted) {
+                                statements.add(BoundReturnStatement(value.range, checked.semanticType, invocation,
+                                    TypeConversions.classify(checked.semanticType, checked.semanticType)))
+                                let functionType = FunctionSemanticType(inputTypes, checked.semanticType)
+                                let lambda = BoundLambdaExpression(value.range, functionType, parameters,
+                                    BoundReferenceExpression[], invocation, statements)
+                                calls.add(BoundFunctionInvocationExpression(value.range, lambda, functionType, inputs))
+                            } else calls.add(invocation)
                         }
                     }
                 }
@@ -1391,7 +1446,12 @@ class {
                     value.memberName, candidates, checks, value.range
                 )
                 if (resolution.diagnostic) throw Exception(resolution.diagnostic.message)
-                return calls.firstOrNull({ _.target.identity.value == resolution.selected.identity.value })
+                var Int selectedIndex
+                while (selectedIndex < checks.count) {
+                    if (checks[selectedIndex].target.identity.value == resolution.selected.identity.value) return calls[selectedIndex]
+                    selectedIndex++
+                }
+                throw Exception("Resolved named call has no bound invocation")
             }
             if (value.receiver.class.isOfType(PrimitiveEmptyArrayConstructionSyntax.class) &&
                 value.memberName == "add" && value.argumentValues().count == 1) {
@@ -2532,7 +2592,10 @@ class {
                         candidate.callableKind.value == "constructor" &&
                         candidate.ownerType.declarationIdentity.name == "Class"
                     )
-                    if (metadataConstructor.count == 1) return BoundMemberAccessExpression(
+                    // Constructor overloads publish one metadata owner, not competing types.
+                    if (metadataConstructor.isNotEmpty && !metadataConstructor.any((candidate) =>
+                        candidate.ownerType.value() != metadataConstructor.first.ownerType.value()
+                    )) return BoundMemberAccessExpression(
                         access.range, metadataConstructor.first.ownerType, localReceiver,
                         "class", local.identity
                     )
@@ -2740,6 +2803,23 @@ class {
         if (assignmentOperator == "/=") return "/"
         if (assignmentOperator == "%=") return "%"
         throw Exception("Unsupported member assignment value operator '#assignmentOperator'")
+    }
+
+    /** Defaults belong to the selected declaration, never the caller's lexical receiver. */
+    bindNamedDefault(CallableSignature target, PrimitiveExpressionSyntax syntax,
+        BoundReferenceExpression retained, LocalBinding[] parameterLocals) -> BoundExpression {
+        let owner = declarationContext.classFor(target.ownerType.declarationIdentity)
+        let scope = declarationContext.scopeFor(target.ownerType.declarationIdentity)
+        let ownerFields = publishedFields.filter((field) =>
+            field.identity.declaration.value == target.ownerType.declarationIdentity.value)
+        let scopedLocals = LocalBinding[]:addAll(parameterLocals)
+        scopedLocals.add(LocalBinding("this", retained.symbolIdentity, retained.semanticType))
+        let resolver = PrimitiveStructuralTypeResolver(callables: constructors,
+            receiverType: target.ownerType, implementationOwner: owner,
+            declarationContext: scope, lookupRange: syntax.range)
+        return PrimitiveClassBinder().bindScopedExpression(syntax, retained, ownerFields,
+            scopedLocals, constructors, typeResolver: resolver, availableFields: publishedFields,
+            hierarchy: typeHierarchy)
     }
 
     namedDefaultSyntax(CallableSignature target, Int index) -> PrimitiveExpressionSyntax {

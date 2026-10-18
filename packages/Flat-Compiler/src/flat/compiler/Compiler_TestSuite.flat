@@ -9,7 +9,9 @@ import flat/compiler/Compiler
 [TestSuite [
     Compiler_Test,
     CompilerPackage_Test,
-    CompilerCli_Test
+    CompilerPackageReuse_Test,
+    CompilerCli_Test,
+    FlatEs6SourceCompiler_Test
 ]]
 class {
     public static async main(String[] args) {

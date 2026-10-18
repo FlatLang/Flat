@@ -933,38 +933,80 @@ testable class {
     }
 
     async test `declared String conditional branch reconciliation executes under Node`() {
+        // Reduced two-character storage fixture, with Core's declared contracts:
+        // flat/String.flat plus delegates to concat; number/Char.flat toString
+        // constructs String(Char); operators/PlusOperator owns addition.
         let stream = Lexer().lex(
-            "class String { visible native String data; Char[] chars; " +
-                "construct() { chars = ['a']; data = \"\"; } " +
-                "public construct(native String text) { data = text; } " +
+            "class String implements PlusOperator<String, String> { Char[] chars; " +
+                "construct() { chars = [(Char)97, (Char)98]; } " +
+                "public construct(Char c) { chars = [c]; } " +
+                "public construct(Char[] values) { chars = values; } " +
                 "this[Int index] -> Char { get { return chars[index]; } } " +
-                "substring(Int start) -> String { return this; } " +
+                "substring(Int start) -> String { let value = this[start]; return String([value]); } " +
+                "override public plus(String another) => concat(another) " +
+                "public concat(String str) -> String { let first = this[0]; let second = str[0]; " +
+                "return String([first, second]); } " +
                 "capitalize() -> String { return true ? " +
-                "this[0].toUpperCase() + substring(1) : this; } }"
+                "this[0].toUpperCase() + substring(1) : this; } " +
+                "first() -> Char { return capitalize()[0]; } " +
+                "second() -> Char { return capitalize()[1]; } }"
         )
         stream.emit("start")
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:declared-string-conditional-execute"), "revision:one"
         )
         let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
-        let type = PrimitiveClassPartitionBinder().bindContexts([
-            PrimitiveSourceBindingContext("flat", snapshot, [syntax])
-        ]).typeUnits().first
-        let code = Es6UnitOrchestrator().emitType(type, 0).fragment.code
+        let charSnapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:declared-string-char-contract"), "revision:one"
+        )
+        let charStream = Lexer().lex(
+            "class Char implements Integer { public static toString(Char c) => String(c) }"
+        )
+        charStream.emit("start")
+        let charSyntax = PrimitiveClassParser().parse(charStream.consumeAll<Token>("data"), charSnapshot)
+        let integerStream = Lexer().lex("trait Integer {}")
+        integerStream.emit("start")
+        let integer = PrimitiveInterfaceParser().parse(
+            integerStream.consumeAll<Token>("data"), charSnapshot, 100
+        )
+        let operatorSnapshot = SourceSnapshotIdentity(
+            SourceIdentity("memory:declared-string-plus-contract"), "revision:one"
+        )
+        let operatorStream = Lexer().lex(
+            "trait PlusOperator<In, Out> { public plus(In another) -> Out }"
+        )
+        operatorStream.emit("start")
+        let contract = PrimitiveInterfaceParser().parse(
+            operatorStream.consumeAll<Token>("data"), operatorSnapshot
+        )
+        let units = PrimitiveClassPartitionBinder().bindContexts([
+            PrimitiveSourceBindingContext("flat", snapshot, [syntax],
+                importValues: [PrimitiveBindingImport("flat/operators", syntax.range)]),
+            PrimitiveSourceBindingContext("flat/primitive/number", charSnapshot, [charSyntax], [integer],
+                importValues: [PrimitiveBindingImport("flat", charSyntax.range)]),
+            PrimitiveSourceBindingContext("flat/operators", operatorSnapshot, PrimitiveClassSyntax[], [contract])
+        ]).typeUnits()
+        let type = units.firstOrNull({ _.identity.name == "String" })
+        var String code = ""
+        for (unit in units) code += Es6UnitOrchestrator().emitType(unit, 0).fragment.code
         let className = Es6NameMangler.mangle(type.identity.value)
-        let capitalizeName = Es6NameMangler.mangle(
-            type.functionUnits().firstOrNull({ _.name == "capitalize" }).identity.value
+        let firstName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "first" }).identity.value
+        )
+        let secondName = Es6NameMangler.mangle(
+            type.functionUnits().firstOrNull({ _.name == "second" }).identity.value
         )
         let root = File(".flat-es6-declared-string-conditional-test-#{Time.currentTimeMillis}")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "declared-string-conditional.js")
         Es6ArtifactCommitter().commit(destination,
-            code + "console.log(new " + className + "()." + capitalizeName + "());\n")
+            code + "console.log(new " + className + "()." + firstName + "());\n" +
+                "console.log(new " + className + "()." + secondName + "());\n")
         let response = System.execute(
             ["node", destination.normalizedLocation], silent: true, shell: false
         )
         if (response.exitCode != 0) throw Exception(response.stderr.join(""))
-        expect(response.stdout.join("").count > 0).toBe(true)
+        expect(response.stdout.join("")).toBe("65\n98\n")
         Es6ArtifactFiles.remove(root)
     }
 

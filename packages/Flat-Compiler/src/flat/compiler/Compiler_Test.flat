@@ -8,8 +8,287 @@ import flat/compiler/models
 import flat/lexer
 import flat/parser/flat
 import flat/writer/es6/bound
+import flat/eventstream
+import flat/future
 
 testable class {
+    class CancellingSourceCompiler extends FlatEs6SourceCompiler {
+        visible var Bool completedInsideCompile
+        visible var Bool cleaned
+        public construct(visible CompilerSession session, visible Future<Bool> cleanupGate) {}
+
+        override public async compile(CompilerSource source) -> String {
+            session.cancel()
+            // InlineExecutor has entered before submit returns/attach assigns task.
+            completedInsideCompile = session.completion.completed
+            try {
+                cleanupGate.get()
+                return "unused cancelled code"
+            } finally {
+                cleaned = true
+            }
+        }
+    }
+
+    async test `inline reentrant cancellation before task attachment waits for cleanup`() {
+        let session = CompilerSession()
+        let gate = Future.create<Bool>()
+        let compiler = CancellingSourceCompiler(session, gate)
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(sourceCompiler: compiler).start(MemoryCompilerSourceProvider([
+            CompilerSource("one", "value() -> Int { return 1; }")
+        ]), sink, session)
+        expect(session.cancelled).toBe(true)
+        expect(compiler.completedInsideCompile).toBe(false)
+        expect(compiler.cleaned).toBe(false)
+        expect(session.completion.completed).toBe(false)
+        gate.complete(true)
+        let summary = session.completion.get()
+        expect(compiler.cleaned).toBe(true)
+        expect(summary.cancelled).toBe(true)
+        expect(summary.sourceCount).toBe(1)
+        expect(summary.artifactCount).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+    }
+
+    async test `session first start waits for controlled executor and preserves attached consumers`() {
+        let executor = ControlledExecutor(1)
+        let engine = CompilerEngine(executor: executor)
+        let session = CompilerSession()
+        let progress = session.progress.subscribe(1)
+        let sink = MemoryCompilerArtifactSink()
+        let started = engine.start(MemoryCompilerSourceProvider([
+            CompilerSource("one", "value() -> Int { return 1; }")
+        ]), sink, session)
+        expect(Object.referenceEquals(started, session)).toBe(true)
+        expect(session.completion.completed).toBe(false)
+        expect(sink.artifacts().count).toBe(0)
+        executor.runNext()
+        expect(progress.receive().value).toBe("Compiled one")
+        expect(session.artifacts.receive().value.identity).toBe("one.js")
+        expect(session.completion.get().artifactCount).toBe(1)
+    }
+
+    async test `slow artifact consumer receives more than four artifacts without loss`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        let sources = CompilerSource[]
+        for (index in 0..7) {
+            sources.add(CompilerSource("source#index", "value() -> Int { return 1; }"))
+        }
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider(sources), sink, session)
+        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        session.artifactBackpressure.get()
+        expect(session.artifacts.bufferedCount).toBe(4)
+        expect(session.artifacts.pendingSendCount).toBe(1)
+        expect(session.completion.completed).toBe(false)
+        for (index in 0..7) {
+            let received = session.artifacts.receive()
+            expect(received.received).toBe(true)
+            expect(received.value.identity).toBe("source#{index}.js")
+        }
+        expect(running.get().completed).toBe(true)
+        expect(session.artifacts.receive().completed).toBe(true)
+        expect(session.completion.get().artifactCount).toBe(7)
+        expect(sink.artifacts().count).toBe(7)
+        expect(session.artifacts.pendingSendCount).toBe(0)
+    }
+
+    async test `compatibility compile drains artifact delivery beyond channel capacity`() {
+        let sources = CompilerSource[]
+        for (index in 0..7) {
+            sources.add(CompilerSource("source#index", "value() -> Int { return 1; }"))
+        }
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerEngine().compile(MemoryCompilerSourceProvider(sources), sink)
+        expect(session.completion.get().artifactCount).toBe(7)
+        expect(sink.artifacts().count).toBe(7)
+        expect(session.artifacts.pendingSendCount).toBe(0)
+        expect(session.artifacts.receive().completed).toBe(true)
+    }
+
+    async test `cancel before start admits no executor work`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        session.cancel()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider([
+            CompilerSource("one", "value() -> Int { return 1; }")
+        ]), sink, session)
+        expect(executor.queuedCount).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.artifactCount).toBe(0)
+    }
+
+    async test `cancel queued compilation removes executor admission`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider([
+            CompilerSource("one", "value() -> Int { return 1; }")
+        ]), MemoryCompilerArtifactSink(), session)
+        session.cancel()
+        expect(executor.queuedCount).toBe(0)
+        expect(session.completion.get().cancelled).toBe(true)
+        expect(session.completion.get().artifactCount).toBe(0)
+    }
+
+    async test `cancel blocked artifact publication waits for worker cleanup and counts commits`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        let sources = CompilerSource[]
+        for (index in 0..7) {
+            sources.add(CompilerSource("source#index", "value() -> Int { return 1; }"))
+        }
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider(sources), sink, session)
+        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        session.artifactBackpressure.get()
+        expect(sink.artifacts().count).toBe(5)
+        session.cancel()
+        expect(session.completion.completed).toBe(false)
+        expect(running.get().completed).toBe(true)
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.artifactCount).toBe(5)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(session.artifacts.pendingSendCount).toBe(0)
+        expect(sink.artifacts().count).toBe(5)
+    }
+
+    async test `inline executor cancellation preserves buffered notifications until drained`() {
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        let sources = CompilerSource[]
+        for (index in 0..7) {
+            sources.add(CompilerSource("source#index", "value() -> Int { return 1; }"))
+        }
+        CompilerEngine().start(MemoryCompilerSourceProvider(sources), sink, session)
+        expect(session.artifactBackpressure.get()).toBe(true)
+        expect(session.artifacts.pendingSendCount).toBe(1)
+        session.cancel()
+        expect(session.completion.completed).toBe(false)
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.artifactCount).toBe(5)
+        expect(session.artifacts.pendingSendCount).toBe(0)
+        for (index in 0..4) {
+            expect(session.artifacts.receive().value.identity).toBe("source#{index}.js")
+        }
+        expect(session.artifacts.receive().completed).toBe(true)
+        expect(sink.artifacts().count).toBe(5)
+    }
+
+    async test `normal completion retains accepted buffered notifications until drained`() {
+        let session = CompilerSession()
+        CompilerEngine().start(MemoryCompilerSourceProvider([
+            CompilerSource("one", "value() -> Int { return 1; }")
+        ]), MemoryCompilerArtifactSink(), session)
+        expect(session.completion.get().artifactCount).toBe(1)
+        expect(session.artifacts.closed).toBe(true)
+        expect(session.artifacts.receive().value.identity).toBe("one.js")
+        expect(session.artifacts.receive().completed).toBe(true)
+        expect(session.artifactBackpressure.get()).toBe(false)
+    }
+
+    async test `cancel after artifact delivery closes attached progress observer`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        let progress = session.progress.subscribe(0)
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider([
+            CompilerSource("one", "value() -> Int { return 1; }")
+        ]), sink, session)
+        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        // Artifact delivery precedes progress. Receiving it is a controlled gate;
+        // cancellation must also be safe if the progress send has not yet begun.
+        expect(session.artifacts.receive().value.identity).toBe("one.js")
+        session.cancel()
+        running.get()
+        expect(session.completion.get().artifactCount).toBe(1)
+        expect(session.completion.get().cancelled).toBe(true)
+        expect(progress.pendingSendCount).toBe(0)
+        expect(progress.closed).toBe(true)
+    }
+
+    async test `executor rejection closes session with terminal failure without commits`() {
+        let executor = ControlledExecutor(0)
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider([
+            CompilerSource("one", "value() -> Int { return 1; }")
+        ]), sink, session)
+        let summary = session.completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.packageDiagnostic).toBe("Compiler executor capacity exceeded")
+        expect(summary.artifactCount).toBe(0)
+        expect(session.artifacts.closed).toBe(true)
+        expect(session.diagnostics.closed).toBe(true)
+        expect(sink.artifacts().count).toBe(0)
+    }
+
+    async test `attached diagnostic consumer receives failure before completion`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        let diagnostics = session.diagnostics.subscribe(0)
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider([
+            CompilerSource("bad", "not valid Flat")
+        ]), MemoryCompilerArtifactSink(), session)
+        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        let received = diagnostics.receive()
+        expect(received.received).toBe(true)
+        expect(received.value.startsWith("Failed to compile 'bad':")).toBe(true)
+        running.get()
+        expect(session.completion.get().diagnosticCount).toBe(1)
+        expect(diagnostics.receive().completed).toBe(true)
+    }
+
+    async test `closed artifact consumer stops further commits with terminal failure`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        session.artifacts.close()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(executor: executor).start(MemoryCompilerSourceProvider([
+            CompilerSource("a", "value() -> Int { return 1; }"),
+            CompilerSource("b", "value() -> Int { return 2; }")
+        ]), sink, session)
+        executor.runNext()
+        let summary = session.completion.get()
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.diagnosticCount).toBe(1)
+        expect(sink.artifacts().count).toBe(1)
+    }
+
+    async test `cancelled package session never enters linker or executor`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        session.cancel()
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(executor: executor).startPackage(MemoryCompilerSourceProvider([
+            CompilerSource("bad.flat", "not valid Flat")
+        ]), sink, "package.js", session)
+        expect(executor.queuedCount).toBe(0)
+        expect(session.completion.get().cancelled).toBe(true)
+        expect(session.completion.get().diagnosticCount).toBe(0)
+        expect(sink.artifacts().count).toBe(0)
+    }
+
+    async test `start package publishes to preattached consumer`() {
+        let executor = ControlledExecutor(1)
+        let session = CompilerSession()
+        let progress = session.progress.subscribe(0)
+        let sink = MemoryCompilerArtifactSink()
+        CompilerEngine(executor: executor).startPackage(MemoryCompilerSourceProvider([
+            CompilerSource("Box.flat", "class Box {}")
+        ]), sink, "package.js", session)
+        let running = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        expect(session.artifacts.receive().value.identity).toBe("package.js")
+        expect(progress.receive().value).toBe("Compiled package artifact package.js")
+        expect(running.get().completed).toBe(true)
+        expect(session.completion.get().artifactCount).toBe(1)
+    }
     async test `package linker executes while continue through try catch and finally`() {
         let identity = "memory:while-guarded-continue-execution"
         let source = "class GuardedContinue { public static run(Int mode) -> Int {\n" +

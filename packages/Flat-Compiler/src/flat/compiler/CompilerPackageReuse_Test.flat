@@ -1,0 +1,215 @@
+package flat/compiler
+
+import flat/compiler/models
+import flat/lexer
+import flat/parser/flat
+import flat/io
+import flat/system
+import flat/time/Time
+import flat/writer/es6/bound
+
+testable class {
+    class CountingLinker extends FlatEs6PackageLinker {
+        visible var Int calls
+        visible var Bool fail
+
+        public construct() => super(maxSources: 64, maxSourceCharacters: 65536,
+            maxTokensPerSource: 8192, maxTypes: 256, maxFragments: 256)
+
+        override public async linkSources(
+            CompilerSourceProvider provider, String[] identities,
+            DeclarationIdentity arrayDeclaration = null, String mainClass = null
+        ) -> String {
+            calls++
+            if (fail) throw Exception("controlled link failure")
+            let delegate = FlatEs6PackageLinker(maxSources: maxSources,
+                maxSourceCharacters: maxSourceCharacters, maxTokensPerSource: maxTokensPerSource,
+                maxTypes: maxTypes, maxFragments: maxFragments)
+            return delegate.linkSources(provider, identities, arrayDeclaration, mainClass)
+        }
+    }
+
+    class RejectingSink extends CompilerArtifactSink {
+        override public write(CompilerArtifact artifact) { throw Exception("controlled sink failure") }
+        override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]
+    }
+
+    sources(Int value = 11) -> CompilerSource[] {
+        CompilerSource[] values = [
+            CompilerSource("dep/Value.flat", "package dep\nclass Value { public static value() -> Int { return #value; } }"),
+            CompilerSource("app/Main.flat", "package app\nimport dep/Value\nclass Main { public static run() -> Int { return Value.value(); } }")
+        ]
+        return values
+    }
+
+    async test `exact snapshots hit with fresh sessions sinks and executable artifacts`() {
+        let linker = CountingLinker()
+        let reuse = CompilerPackageReuse()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: reuse)
+        let original = sources()
+        let firstSink = MemoryCompilerArtifactSink()
+        let first = engine.compilePackageSnapshots(original, firstSink, "first.js")
+        // The supplied array is not retained; provider order is not semantic.
+        original[0] = CompilerSource("unused.flat", "class Unused {}")
+        let reordered = sources()
+        let reversed = [reordered[1], reordered[0]]
+        let secondSink = MemoryCompilerArtifactSink()
+        let second = engine.compilePackageSnapshots(reversed, secondSink, "second.js")
+        expect(linker.calls).toBe(1)
+        expect(first == second).toBe(false)
+        expect(first.completion.get().diagnosticCount).toBe(0)
+        expect(second.completion.get().artifactCount).toBe(1)
+        expect(second.completion.get().sourceCount).toBe(2)
+        expect(second.artifacts.receive().completed).toBe(true)
+        expect(firstSink.artifacts().first.identity).toBe("first.js")
+        expect(secondSink.artifacts().first.identity).toBe("second.js")
+        expect(firstSink.artifacts().first.code).toBe(secondSink.artifacts().first.code)
+        let source = sources()[1]
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(source.identity), "compiler-input")
+        let stream = Lexer().lex(source.text)
+        stream.emit("start")
+        // One tiny supplied source: derive the observable declaration identities
+        // by the same source/token identities as normal generated execution tests.
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js").first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex, "Main")
+        let owner = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex),
+            "class", "Main")
+        let method = syntax.methodValues().first
+        let entry = DeclarationIdentity(SyntaxIslandIdentity(snapshot, "static-method", method.range.startTokenIndex),
+            "static-method", "run")
+        let root = File(".flat-compiler-reuse-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let artifacts = [firstSink.artifacts().first, secondSink.artifacts().first]
+            for (artifact in artifacts) {
+                let file = File(root, artifact.identity)
+                Es6ArtifactCommitter().commit(file, artifact.code + "\nconsole.log(" +
+                    Es6NameMangler.mangle(owner.value) + "." +
+                    Es6NameMangler.mangle(entry.value) + "());\n")
+                let result = System.execute(["node", file.normalizedLocation], silent: true, shell: false)
+                expect(result.exitCode).toBe(0)
+                expect(result.stdout.join("")).toBe("11\n")
+            }
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `dependency edits main selection linker identity and reset invalidate one entry`() {
+        let linker = CountingLinker()
+        let reuse = CompilerPackageReuse()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: reuse)
+        engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        engine.compilePackageSnapshots(sources(22), MemoryCompilerArtifactSink(), "a.js")
+        expect(linker.calls).toBe(2)
+        // Main selection is part of the key even when it diagnoses a missing main.
+        engine.compilePackageSnapshots(sources(22), MemoryCompilerArtifactSink(), "a.js", "app/Main")
+        expect(linker.calls).toBe(3)
+        engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        expect(linker.calls).toBe(4)
+        reuse.reset()
+        engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        expect(linker.calls).toBe(5)
+        let other = CountingLinker()
+        CompilerEngine(packageLinker: other, packageReuse: reuse).compilePackageSnapshots(
+            sources(), MemoryCompilerArtifactSink(), "a.js")
+        expect(other.calls).toBe(1)
+    }
+
+    async test `failed compilation is never retained`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())
+        linker.fail = true
+        let failed = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        expect(failed.completion.get().diagnosticCount).toBe(1)
+        linker.fail = false
+        let repaired = engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        expect(repaired.completion.get().diagnosticCount).toBe(0)
+        engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        expect(linker.calls).toBe(2)
+    }
+
+    test `selected source set identities and exact bytes all invalidate`() {
+        let reuse = CompilerPackageReuse()
+        let linker = CountingLinker()
+        let original = reuse.capture(sources(), null, linker)
+        original.recordCode("code")
+        reuse.remember(original, CompilationSummary(2, 1, 0, false))
+        let changed = sources(22)
+        expect(reuse.find(reuse.capture(changed, null, linker))).toBe(null)
+        expect(reuse.find(reuse.capture([sources().first], null, linker))).toBe(null)
+        let renamed = sources()
+        renamed[0] = CompilerSource("dep/Renamed.flat", renamed[0].text)
+        expect(reuse.find(reuse.capture(renamed, null, linker))).toBe(null)
+        let added = sources()
+        added.add(CompilerSource("dep/Other.flat", "class Other {}"))
+        expect(reuse.find(reuse.capture(added, null, linker))).toBe(null)
+        expect(reuse.find(reuse.capture(sources(), null, linker))).toBe("code")
+    }
+
+    async test `sink failure does not admit success and configured default path still streams`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())
+        let failed = engine.compilePackageSnapshots(sources(), RejectingSink(), "a.js")
+        expect(failed.completion.get().diagnosticCount).toBe(1)
+        engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        expect(linker.calls).toBe(2)
+        // Configuring reuse alone must not capture/materialize a provider path.
+        engine.compilePackage(MemoryCompilerSourceProvider(sources()), MemoryCompilerArtifactSink(), "a.js")
+        engine.compilePackage(MemoryCompilerSourceProvider(sources()), MemoryCompilerArtifactSink(), "a.js")
+        expect(linker.calls).toBe(4)
+    }
+
+    test `cancelled failed and superseded publication tickets cannot populate reuse`() {
+        let reuse = CompilerPackageReuse()
+        let linker = CountingLinker()
+        let cancelled = reuse.capture(sources(), null, linker)
+        cancelled.recordCode("code")
+        reuse.remember(cancelled, CompilationSummary(2, 1, 0, true))
+        expect(reuse.find(cancelled)).toBe(null)
+        reuse.remember(cancelled, CompilationSummary(2, 1, 1, false))
+        expect(reuse.find(cancelled)).toBe(null)
+        let newer = reuse.capture(sources(22), null, linker)
+        reuse.remember(cancelled, CompilationSummary(2, 1, 0, false))
+        expect(reuse.find(cancelled)).toBe(null)
+        newer.recordCode("new code")
+        reuse.reset()
+        reuse.remember(newer, CompilationSummary(2, 1, 0, false))
+        expect(reuse.find(newer)).toBe(null)
+    }
+
+    test `oversized successful output is not retained and main selection keys exactly`() {
+        let reuse = CompilerPackageReuse(maxBytes: 4096)
+        let linker = CountingLinker()
+        let library = reuse.capture(sources(), null, linker)
+        library.recordCode("code")
+        reuse.remember(library, CompilationSummary(2, 1, 0, false))
+        expect(reuse.find(library)).toBe("code")
+        let executable = reuse.capture(sources(), "app/Main", linker)
+        expect(reuse.find(executable)).toBe(null)
+        executable.recordCode("x".repeat(4096))
+        reuse.remember(executable, CompilationSummary(2, 1, 0, false))
+        expect(reuse.find(executable)).toBe(null)
+        expect(reuse.find(library)).toBe(null)
+    }
+
+    async test `explicit opt in and source byte bounds reject before linking`() {
+        var Bool rejected
+        try {
+            CompilerEngine().compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js")
+        } catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker,
+            packageReuse: CompilerPackageReuse(maxSources: 1, maxBytes: 64))
+        rejected = false
+        try { engine.compilePackageSnapshots(sources(), MemoryCompilerArtifactSink(), "a.js") }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        rejected = false
+        try { engine.compilePackageSnapshots([sources().first], MemoryCompilerArtifactSink(), "a.js") }
+        catch (Exception error) { rejected = true }
+        expect(rejected).toBe(true)
+        expect(linker.calls).toBe(0)
+    }
+}

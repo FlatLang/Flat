@@ -8,14 +8,15 @@ class {
         if (!destination || code == null) {
             throw Exception("ES6 artifact commit requires destination and code")
         }
-        let temporary = File(destination.normalizedLocation + ".flat-tmp")
-        Es6ArtifactFiles.remove(temporary)
+        // Reserve private staging beside the destination: never delete or reuse
+        // a predictable path that may belong to another commit or caller.
+        let staging = Es6ArtifactFiles.createCommitDirectory(destination)
+        let temporary = File(staging, "artifact")
         try {
             Es6ArtifactFiles.write(temporary, code)
             Es6ArtifactFiles.replace(temporary, destination)
-        } catch (Exception error) {
-            Es6ArtifactFiles.remove(temporary)
-            throw error
+        } finally {
+            Es6ArtifactFiles.remove(staging)
         }
     }
 }

@@ -14,6 +14,17 @@ class {
         }
     }
 
+    /** Exclusively reserve same-filesystem staging owned by one commit. */
+    public static createCommitDirectory(File destination) -> File {
+        if (!destination) throw Exception("ES6 artifact commit requires destination")
+        let prefix = destination.normalizedLocation + ".flat-tmp-"
+        native_array native var Char[] data
+        external {
+            #{data} = #{File.FileGlobal.fs}.mkdtempSync(#{prefix.chars.data});
+        }
+        return File(String(data))
+    }
+
     public static write(File file, String value) {
         if (!file || value == null) throw Exception("ES6 artifact write requires file and value")
         external {
@@ -50,11 +61,17 @@ class {
         if (!parent || !parent.exists) {
             throw Exception("ES6 atomic replace destination parent must exist")
         }
+        native_array native var Char[] errorMessage
         external {
-            #{File.FileGlobal.fs}.renameSync(
-                #{temporary.location.chars.data},
-                #{destination.location.chars.data}
-            );
+            try {
+                #{File.FileGlobal.fs}.renameSync(
+                    #{temporary.location.chars.data},
+                    #{destination.location.chars.data}
+                );
+            } catch (error) {
+                #{errorMessage} = error.message;
+            }
         }
+        if (errorMessage) throw Exception(String(errorMessage))
     }
 }

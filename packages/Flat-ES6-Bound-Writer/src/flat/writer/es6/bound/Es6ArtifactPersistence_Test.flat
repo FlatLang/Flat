@@ -89,6 +89,76 @@ testable class {
         Es6ArtifactFiles.remove(root)
     }
 
+    test `atomic commit preserves unrelated stale staging paths`() {
+        let root = temporaryRoot("stale-commit")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "hello.js")
+        let stale = File(destination.normalizedLocation + ".flat-tmp")
+        Es6ArtifactFiles.ensureDirectory(stale)
+        let sentinel = File(stale, "unrelated.txt")
+        try {
+            Es6ArtifactFiles.write(destination, "previous\n")
+            Es6ArtifactFiles.write(sentinel, "preserve\n")
+
+            Es6ArtifactCommitter().commit(destination, "replacement\n")
+
+            expect(Es6ArtifactFiles.read(destination)).toBe("replacement\n")
+            expect(sentinel.exists).toBe(true)
+            expect(Es6ArtifactFiles.read(sentinel)).toBe("preserve\n")
+            expect(root.getChildFiles(includeDirectories: true).count).toBe(2)
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `failed atomic replacement preserves destination and cleans owned staging`() {
+        let root = temporaryRoot("failed-commit")
+        let destination = File(root, "hello.js")
+        Es6ArtifactFiles.ensureDirectory(destination)
+        let sentinel = File(destination, "unrelated.txt")
+        try {
+            Es6ArtifactFiles.write(sentinel, "preserve\n")
+            var Bool rejected = false
+            try {
+                Es6ArtifactCommitter().commit(destination, "replacement\n")
+            } catch (Exception error) {
+                rejected = true
+            }
+
+            expect(rejected).toBe(true)
+            expect(Es6ArtifactFiles.read(sentinel)).toBe("preserve\n")
+            expect(root.getChildFiles(includeDirectories: true).count).toBe(1)
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `overlapping commit staging reservations have independent ownership`() {
+        let root = temporaryRoot("overlapping-commit")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "hello.js")
+        try {
+            let first = Es6ArtifactFiles.createCommitDirectory(destination)
+            let second = Es6ArtifactFiles.createCommitDirectory(destination)
+            expect(first.normalizedLocation == second.normalizedLocation).toBe(false)
+            let firstArtifact = File(first, "artifact")
+            let secondArtifact = File(second, "artifact")
+            Es6ArtifactFiles.write(firstArtifact, "first\n")
+            Es6ArtifactFiles.write(secondArtifact, "second\n")
+
+            Es6ArtifactFiles.replace(secondArtifact, destination)
+            Es6ArtifactFiles.remove(second)
+            expect(Es6ArtifactFiles.read(firstArtifact)).toBe("first\n")
+            expect(Es6ArtifactFiles.read(destination)).toBe("second\n")
+            Es6ArtifactFiles.replace(firstArtifact, destination)
+            Es6ArtifactFiles.remove(first)
+            expect(Es6ArtifactFiles.read(destination)).toBe("first\n")
+            expect(root.getChildFiles(includeDirectories: true).count).toBe(1)
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     temporaryRoot(String name) -> File {
         return File(".flat-es6-bound-writer-test-#name-#{Time.currentTimeMillis}")
     }

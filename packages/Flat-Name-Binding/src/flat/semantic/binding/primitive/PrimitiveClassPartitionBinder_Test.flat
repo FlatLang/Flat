@@ -119,6 +119,53 @@ testable class {
         expect(boundMatch.statements().count > 0).toBe(true)
     }
 
+    async test `catch metadata retains canonical owner across constructor overlay overloads`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:catch-metadata-overlay"), "one")
+        let baseStream = Lexer().lex("class Class<Type> { visible String location; construct(visible String location) {} }")
+        baseStream.emit("start")
+        let overlayStream = Lexer().lex("class Class<Type> { construct(visible String location, visible native Object jsClass = null) {} }")
+        overlayStream.emit("start")
+        let base = PrimitiveClassParser().parse(baseStream.consumeAll<Token>("data"), snapshot)
+        let overlay = PrimitiveClassParser().parse(overlayStream.consumeAll<Token>("data"), snapshot)
+        let metadata = base.mergedWith(overlay)
+        expect(metadata.constructorValues().count).toBe(2)
+        let stream = Lexer().lex("class Exception { construct() {} static matches(Class expected) -> Bool { try { throw Exception(); } catch (Exception e) { if (e.class.location == expected.location) { return true; } } return false; } }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"),
+            SourceSnapshotIdentity(SourceIdentity("memory:catch-metadata-consumer"), "one"))
+        for (order in 0..2) {
+            let inputs = PrimitiveClassSyntax[]
+            if (order == 0) { inputs.add(syntax); inputs.add(metadata) }
+            else { inputs.add(metadata); inputs.add(syntax) }
+            let units = PrimitiveClassPartitionBinder().bind(inputs).typeUnits()
+            let bound = units.firstOrNull({ _.identity.name == "Exception" })
+            expect(bound.functionUnits().firstOrNull({ _.name == "matches" }).returnType.value())
+                .toBe(SemanticTypes.boolType().value())
+        }
+    }
+
+    async test `foreign named default binds arbitrary receiver field in declaration scope`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:foreign-named-default-owner"), "one")
+        let stream = Lexer().lex("class Ledger { visible Int extent; construct() { extent = 9; } locate(Int value, Int start = extent - 1, Int fallback = -1) -> Int { return start; } }")
+        stream.emit("start")
+        let owner = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let callerSnapshot = SourceSnapshotIdentity(SourceIdentity("memory:foreign-named-default-caller"), "one")
+        let callerStream = Lexer().lex("class Reader { visible Int extent; construct() { extent = 100; } open() -> Ledger { return Ledger(); } read() -> Int { return open().locate(1, fallback: 0); } }")
+        callerStream.emit("start")
+        let caller = PrimitiveClassParser().parse(callerStream.consumeAll<Token>("data"), callerSnapshot)
+        for (order in 0..2) {
+            let contexts = [PrimitiveSourceBindingContext("app", snapshot, [owner]),
+                PrimitiveSourceBindingContext("app", callerSnapshot, [caller])]
+            let units = PrimitiveClassPartitionBinder().bindContexts(order == 0 ? contexts : contexts.reverse()).typeUnits()
+            let read = units.firstOrNull({ _.identity.name == "Reader" }).functionUnits()
+                .firstOrNull({ _.name == "read" })
+            let statements = read.statements()
+            let statementObject = (Object)statements.first
+            let returned = (BoundReturnStatement)statementObject
+            expect(returned.value.expressionKind()).toBe("function-invocation")
+        }
+    }
+
     async test `source owned metadata access does not infer a built in Class`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:missing-metadata-contract"), "one")
         let stream = Lexer().lex("class Sample { construct() {} public static read(Sample value) -> String { return value.class.location; } }")

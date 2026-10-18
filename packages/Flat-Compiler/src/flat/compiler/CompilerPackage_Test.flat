@@ -127,6 +127,98 @@ testable class {
         expect(response.stdout.join("")).toBe("true\ntrue\nfalse\naaa\n")
     }
 
+    async test `public package API executes production String concatenation once left to right`() {
+        // Finite fixture closure matching the existing real-Core execution tests.
+        // Keep declarations and ES6 overlays unchanged, including String storage.
+        let identities = [
+            "flat/Object.flat", "flat/Object.js.flat", "flat/Math.flat", "flat/Math.js.flat",
+            "flat/meta/Function.flat", "flat/meta/Class.flat", "flat/meta/Field.flat",
+            "flat/exception/Exception.flat", "flat/exception/StackTrace.flat",
+            "flat/datastruct/list/NoSuchElementException.flat",
+            "flat/String.flat", "flat/String.js.flat", "flat/primitive/Primitive.flat",
+            "flat/primitive/number/Number.flat", "flat/primitive/number/Integer.flat",
+            "flat/primitive/number/Char.flat", "flat/primitive/number/Long.flat",
+            "flat/primitive/number/Long.js.flat", "flat/primitive/number/Int.flat",
+            "flat/primitive/number/Int.js.flat", "flat/primitive/number/Double.flat",
+            "flat/primitive/number/Double.js.flat", "flat/primitive/number/Float.flat",
+            "flat/primitive/number/Float.js.flat", "flat/primitive/number/Byte.flat",
+            "flat/primitive/number/Short.flat", "flat/primitive/number/RealNumber.flat",
+            "flat/primitive/Bool.flat", "flat/datastruct/Comparable.flat",
+            "flat/operators/PlusOperator.flat", "flat/operators/PlusEqualsOperator.flat",
+            "flat/operators/MinusOperator.flat", "flat/operators/MinusEqualsOperator.flat",
+            "flat/operators/MultiplyOperator.flat", "flat/operators/MultiplyEqualsOperator.flat",
+            "flat/datastruct/list/Iterable.flat", "flat/datastruct/list/Iterator.flat",
+            "flat/datastruct/list/List.flat", "flat/datastruct/list/OrderedList.flat",
+            "flat/datastruct/list/Array.flat", "flat/datastruct/list/Array.js.flat",
+            "flat/datastruct/list/ArrayIterator.flat", "flat/datastruct/list/StringCharArray.flat",
+            "flat/datastruct/list/StringCharArray.js.flat", "flat/datastruct/list/IntRange.flat",
+            "flat/datastruct/list/IntRangeIterator.flat", "flat/async/Async.flat", "flat/async/Async.js.flat"
+        ]
+        expect(identities.count + 1 <= 64).toBe(true)
+        let sources = CompilerSource[]
+        File parent = File("../Flat-Core/src")
+        for (identity in identities) {
+            File file = File(parent, identity)
+            String text = Es6ArtifactFiles.read(file)
+            CompilerSource source = CompilerSource(identity, text)
+            sources.add(source)
+        }
+        // Build external references without interpolating them in the test host.
+        // Expression-body native producers infer their native parameter's type;
+        // declared producers explicitly construct the unchanged production String.
+        var String reference = ""
+        reference += '#'
+        let program = "package app\nclass Main {\n" +
+            "public static leftDeclared(native String text) -> String { " +
+                "external js { process.stdout.write('L'); } return String(text); }\n" +
+            "public static rightDeclared(native String text) -> String { " +
+                "external js { process.stdout.write('R'); } return String(text); }\n" +
+            "public static leftNative(native String text) => text { " +
+                "external js { process.stdout.write('L'); } }\n" +
+            "public static rightNative(native String text) => text { " +
+                "external js { process.stdout.write('R'); } }\n" +
+            "public static main() {\n" +
+                "let declaredDeclared = leftDeclared(\"declared-left|\") + rightDeclared(\"declared-right\");\n" +
+                "external js { console.log(); console.log(" + reference + "{declaredDeclared.chars.data}); }\n" +
+                "let nativeDeclared = leftNative(\"native-left|\") + rightDeclared(\"declared-right\");\n" +
+                "external js { console.log(); console.log(" + reference + "{nativeDeclared.chars.data}); }\n" +
+                "let declaredNative = leftDeclared(\"declared-left|\") + rightNative(\"native-right\");\n" +
+                "external js { console.log(); console.log(" + reference + "{declaredNative.chars.data}); }\n" +
+            "} }"
+        sources.add(CompilerSource("app/Main.flat", program))
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(
+            MemoryCompilerSourceProvider(sources), sink, "string-concatenation.js", "app/Main"
+        )
+        let summary = session.completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.sourceCount).toBe(sources.count)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(summary.artifactCount).toBe(1)
+        expect(summary.cancelled).toBe(false)
+        expect(sink.artifacts().count).toBe(1)
+        expect(sink.artifacts().first.identity).toBe("string-concatenation.js")
+        let root = File(".flat-compiler-string-concatenation-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let destination = File(root, "program.js")
+            // Execute only the compiler artifact: external JS above observes/logs,
+            // but every producer call, conversion and '+' is compiled Flat source.
+            Es6ArtifactCommitter().commit(destination, sink.artifacts().first.code)
+            let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            // Extra or reordered evaluations alter LR; wrong conversions alter contents.
+            expect(response.stdout.join("")).toBe(
+                "LR\ndeclared-left|declared-right\n" +
+                "LR\nnative-left|declared-right\n" +
+                "LR\ndeclared-left|native-right\n"
+            )
+            expect(response.stderr.join("")).toBe("")
+        } finally {
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     async test `package artifact is independent of provider order`() {
         let sources = realSources()
         let forward = MemoryCompilerArtifactSink()

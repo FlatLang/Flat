@@ -1,0 +1,50 @@
+package flat/compiler
+
+import flat/compiler/models
+import flat/io/File
+import flat/lexer
+import flat/parser/flat
+import flat/time/Time
+import flat/writer/es6/bound
+
+testable class {
+    async test `source compiler executes js target members and excludes invalid non js member`() {
+        let identity = "memory:source-target-selection"
+        let source = "package sample class Selected { " +
+            "[Target not js] public static run() -> Int { return excludedTargetName; } " +
+            "[Target js] public static run() -> Int { return 42; } " +
+            "[Target not c] public static portable() -> Int { return 7; } }"
+        let snapshot = SourceSnapshotIdentity(SourceIdentity(identity), "compiler-input")
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partition = FlatSourceTypePartitioner().partition(
+            stream.consumeAll<Token>("data"), snapshot, "js"
+        ).first
+        let syntax = PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex
+        )
+        let owner = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "class", syntax.range.startTokenIndex), "class", "Selected"
+        )
+        let run = syntax.methodValues().first
+        let portable = syntax.methodValues().last
+        let runIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", run.range.startTokenIndex), "static-method", "run"
+        )
+        let portableIdentity = DeclarationIdentity(
+            SyntaxIslandIdentity(snapshot, "static-method", portable.range.startTokenIndex), "static-method", "portable"
+        )
+        let code = FlatEs6SourceCompiler().compile(CompilerSource(identity, source))
+        let ownerName = Es6NameMangler.mangle(owner.value)
+        let runCall = ownerName + "." + Es6NameMangler.mangle(runIdentity.value) + "()"
+        let portableCall = ownerName + "." + Es6NameMangler.mangle(portableIdentity.value) + "()"
+        let root = File(".flat-compiler-source-target-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        let destination = File(root, "program.js")
+        Es6ArtifactCommitter().commit(destination, code + "console.log(" + runCall + "," + portableCall + ");\n")
+        let response = System.execute(["node", destination.normalizedLocation], silent: true, shell: false)
+        Es6ArtifactFiles.remove(root)
+        if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+        expect(response.stdout.join("")).toBe("42 7\n")
+    }
+}

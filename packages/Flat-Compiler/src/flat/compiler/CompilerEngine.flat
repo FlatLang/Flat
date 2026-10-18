@@ -1,14 +1,17 @@
 package flat/compiler
 
 import flat/eventstream
+import flat/future
+import flat/compiler/CompilerPackageReuse.CompilerPackageSnapshot
 import flat/semantic/binding/primitive/PrimitiveContextBindingException
 
-/** In-process deterministic compiler execution separated from CLI parsing. */
+/** In-process compiler orchestration; each session currently runs one serial action. */
 class {
     public construct(
         visible Executor executor = InlineExecutor(),
         visible FlatEs6SourceCompiler sourceCompiler = FlatEs6SourceCompiler(),
-        visible FlatEs6PackageLinker packageLinker = FlatEs6PackageLinker()
+        visible FlatEs6PackageLinker packageLinker = FlatEs6PackageLinker(),
+        private CompilerPackageReuse packageReuse = null
     ) {
         if (!executor || !sourceCompiler || !packageLinker) {
             throw Exception("Compiler engine requires executor, source compiler and package linker")
@@ -16,22 +19,55 @@ class {
     }
 
     /**
-     * One finite package partition is the named signature/linking barrier required
-     * by FlatEs6PackageLinker. Source count and each source's characters are bounded;
-     * loading/parsing is source-scoped; only syntax crosses the signature boundary.
-     * No project discovery or compiler semantics are performed here.
-     * Like compile(), this currently returns a completed session, not an active
-     * session-first lifecycle. Concurrent observation/cancellation remains future work.
+     * Consumers must be attached to session before this call. InlineExecutor may
+     * enter work immediately; a controlled executor may leave it queued. Neither
+     * promises source concurrency. The returned session owns one executor action.
      */
-    public async compilePackage(
+    public start(
         CompilerSourceProvider sources,
-        CompilerArtifactSink artifacts,
+        CompilerArtifactSink sink,
+        CompilerSession session
+    ) -> CompilerSession {
+        if (!sources || !sink || !session) throw Exception("Compiler start requires provider, sink and session")
+        if (session.cancelled) return session
+        let identities = sources.identities()
+        if (!identities) throw Exception("Compiler start requires source identities")
+        session.begin(identities.count)
+        try {
+            let submitted = executor.submit({ runSources(sources, identities, sink, session) })$
+            session.attach(submitted)
+        } catch (Exception error) {
+            session.recordFailure(error.message)
+            session.finish()
+        }
+        return session
+    }
+
+    /**
+     * Same lifecycle as start. The linker's finite package signature barrier is
+     * unchanged. Cancellation cannot interrupt linkSources: it waits for return,
+     * suppresses a later commit, then settles completion after cleanup.
+     */
+    public startPackage(
+        CompilerSourceProvider sources,
+        CompilerArtifactSink sink,
         String artifactIdentity,
+        CompilerSession session,
         String mainClass = null
     ) -> CompilerSession {
-        if (!sources || !artifacts) {
-            throw Exception("Package compilation requires source provider and artifact sink")
-        }
+        return startSelectedPackage(sources, sink, artifactIdentity, session, mainClass)
+    }
+
+    startSelectedPackage(
+        CompilerSourceProvider sources,
+        CompilerArtifactSink sink,
+        String artifactIdentity,
+        CompilerSession session,
+        String mainClass,
+        CompilerPackageSnapshot snapshot = null
+    ) -> CompilerSession {
+        if (!sources || !sink || !session) throw Exception("Package start requires provider, sink and session")
+        if (session.cancelled) return session
         validatePackageArtifactIdentity(artifactIdentity)
         let identities = sources.identities()
         if (!identities || identities.count == 0 || identities.count > packageLinker.maxSources ||
@@ -46,39 +82,195 @@ class {
             }
             index++
         }
-        let session = CompilerSession()
-        var Int artifactCount
-        var Int diagnosticCount
-        var String packageDiagnostic
+        session.begin(ordered.count)
         try {
-            let code = packageLinker.linkSources(sources, ordered, mainClass: mainClass)
-            let artifact = CompilerArtifact(artifactIdentity, code)
-            artifacts.write(artifact)
-            session.artifacts.send(artifact)
-            session.progress.publish("Compiled package artifact #artifactIdentity")$
-            artifactCount = 1
+            let submitted = executor.submit({
+                runPackage(sources, ordered, sink, artifactIdentity, mainClass, session, snapshot)
+            })$
+            session.attach(submitted)
         } catch (Exception error) {
-            diagnosticCount = 1
-            var String message = error.message
-            if (error.class.isOfType(PrimitiveContextBindingException.class)) {
-                let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
-                message = "#{diagnostic.code}: #{diagnostic.name} at " +
-                    "#{diagnostic.range.snapshot.source.value}:#{diagnostic.range.start.lineNumber}:" +
-                    "#{diagnostic.range.start.column}"
-                if (diagnostic.candidateValues.count > 0) {
-                    message += " [#{diagnostic.candidateValues.join(", ")}]"
-                }
-            }
-            packageDiagnostic = "Failed to compile package '#artifactIdentity': #message"
-            session.diagnostics.publish(packageDiagnostic)$
+            session.recordFailure(error.message)
+            session.finish()
         }
-        session.diagnostics.close()
-        session.progress.close()
-        session.artifacts.close()
-        session.completion.complete(CompilationSummary(
-            ordered.count, artifactCount, diagnosticCount, session.cancelled, packageDiagnostic
-        ))
         return session
+    }
+
+    /**
+     * Compatibility adapter: consumes ALL single-consumer artifact notifications,
+     * including the formerly observable buffered notifications on the returned
+     * completed session. That returned channel is closed and drained, not replay.
+     * Artifact identities/code remain available from the supplied sink; this
+     * adapter retains no second artifact array. Consumers that previously read
+     * session.artifacts after compile must use the sink, or migrate to start with
+     * a preattached live consumer. Method signature and summary behavior remain.
+     */
+    public async compile(CompilerSourceProvider sources, CompilerArtifactSink sink) -> CompilerSession {
+        let session = CompilerSession()
+        // A detached async call alone is a native promise, not Future<T>.
+        // Wrap explicitly so the adapter owns and awaits its drain cleanup.
+        let Future<Bool> drained = Future.from<Bool>(async { return drainArtifacts(session) })$
+        try {
+            start(sources, sink, session)
+            session.completion.get()
+        } finally {
+            if (!session.completion.completed) session.cancel()
+            drained.get()
+        }
+        return session
+    }
+
+    /** Same closed-and-drained notification compatibility as compile(). */
+    public async compilePackage(
+        CompilerSourceProvider sources,
+        CompilerArtifactSink artifacts,
+        String artifactIdentity,
+        String mainClass = null
+    ) -> CompilerSession {
+        let session = CompilerSession()
+        let Future<Bool> drained = Future.from<Bool>(async { return drainArtifacts(session) })$
+        try {
+            startPackage(sources, artifacts, artifactIdentity, session, mainClass)
+            session.completion.get()
+        } finally {
+            if (!session.completion.completed) session.cancel()
+            drained.get()
+        }
+        return session
+    }
+
+    /**
+     * Opt-in supplied-snapshot adapter. Never reopens a provider or captures the
+     * default streaming path. The complete bounded partition is already supplied
+     * by the caller; capture and linking use exactly the same immutable strings.
+     * Like compilePackage, returns a fresh closed/drained compatibility session.
+     */
+    public async compilePackageSnapshots(
+        CompilerSource[] sources,
+        CompilerArtifactSink sink,
+        String artifactIdentity,
+        String mainClass = null
+    ) -> CompilerSession {
+        if (!packageReuse) throw Exception("Package snapshot reuse requires explicit engine configuration")
+        let snapshot = packageReuse.capture(sources, mainClass, packageLinker)
+        let session = CompilerSession()
+        let Future<Bool> drained = Future.from<Bool>(async { return drainArtifacts(session) })$
+        try {
+            startSelectedPackage(snapshot, sink, artifactIdentity, session, mainClass, snapshot)
+            let summary = session.completion.get()
+            packageReuse.remember(snapshot, summary)
+        } finally {
+            if (!session.completion.completed) session.cancel()
+            drained.get()
+        }
+        return session
+    }
+
+    async drainArtifacts(CompilerSession session) -> Bool {
+        while (true) {
+            let received = session.artifacts.receive()
+            if (received.completed) return true
+            if (!received.received) throw Exception("Compatibility artifact drain failed")
+        }
+        return true
+    }
+
+    async runSources(
+        CompilerSourceProvider sources,
+        String[] identities,
+        CompilerArtifactSink sink,
+        CompilerSession session
+    ) {
+        if (session.cancelled) return
+        session.enter()
+        for (identity in identities) {
+            if (session.cancelled) break
+            var CompilerArtifact artifact
+            try {
+                let source = sources.load(identity)
+                if (session.cancelled) break
+                if (!source) throw Exception("Missing source '#identity'")
+                let code = sourceCompiler.compile(source)
+                if (session.cancelled) break
+                let compiledArtifact = CompilerArtifact(identity + ".js", code)
+                sink.write(compiledArtifact)
+                session.recordArtifact()
+                artifact = compiledArtifact
+            } catch (Exception error) {
+                if (!session.cancelled) publishDiagnostic(session,
+                    "Failed to compile '#identity': #{error.message}")
+            }
+            // Delivery failure terminates this session rather than committing
+            // more artifacts to a channel with no consumer.
+            if (artifact && !session.cancelled) {
+                publishArtifact(session, artifact)
+                if (!session.cancelled) publishProgress(session, "Compiled #identity")
+            }
+        }
+    }
+
+    async runPackage(
+        CompilerSourceProvider sources,
+        String[] ordered,
+        CompilerArtifactSink sink,
+        String artifactIdentity,
+        String mainClass,
+        CompilerSession session,
+        CompilerPackageSnapshot snapshot = null
+    ) {
+        if (session.cancelled) return
+        session.enter()
+        try {
+            let cached = snapshot ? packageReuse.find(snapshot) : null
+            let code = cached != null ? cached : packageLinker.linkSources(sources, ordered, mainClass: mainClass)
+            if (!session.cancelled) {
+                let artifact = CompilerArtifact(artifactIdentity, code)
+                sink.write(artifact)
+                session.recordArtifact()
+                publishArtifact(session, artifact)
+                if (!session.cancelled) publishProgress(session, "Compiled package artifact #artifactIdentity")
+                if (!session.cancelled && snapshot) snapshot.recordCode(code)
+            }
+        } catch (Exception error) {
+            if (!session.cancelled) {
+                var String message = error.message
+                if (error.class.isOfType(PrimitiveContextBindingException.class)) {
+                    let diagnostic = ((PrimitiveContextBindingException)error).diagnostic
+                    message = "#{diagnostic.code}: #{diagnostic.name} at " +
+                        "#{diagnostic.range.snapshot.source.value}:#{diagnostic.range.start.lineNumber}:" +
+                        "#{diagnostic.range.start.column}"
+                    if (diagnostic.candidateValues.count > 0) {
+                        message += " [#{diagnostic.candidateValues.join(", ")}]"
+                    }
+                }
+                publishDiagnostic(session, "Failed to compile package '#artifactIdentity': #message")
+            }
+        }
+    }
+
+    async publishArtifact(CompilerSession session, CompilerArtifact artifact) {
+        let pending = session.artifacts.send(artifact)$
+        if (session.artifacts.pendingSendCount > 0) {
+            session.recordArtifactBackpressure()
+        }
+        let result = pending.get()
+        if (!session.cancelled && !result.accepted) {
+            throw Exception("Compiler artifact consumer closed, failed or exceeded capacity")
+        }
+    }
+
+    async publishProgress(CompilerSession session, String message) {
+        let result = session.progress.publish(message)
+        if (!session.cancelled && (result.failed || result.capacityExceeded)) {
+            throw Exception("Compiler progress publication failed")
+        }
+    }
+
+    async publishDiagnostic(CompilerSession session, String message) {
+        session.recordFailure(message)
+        let result = session.diagnostics.publish(message)
+        if (!session.cancelled && (result.failed || result.capacityExceeded)) {
+            throw Exception("Compiler diagnostic publication failed")
+        }
     }
 
     validatePackageArtifactIdentity(String identity) {
@@ -90,43 +282,5 @@ class {
         if (components.any((component) => component.count == 0 || component == "." || component == "..")) {
             throw Exception("Package artifact requires safe relative path components")
         }
-    }
-
-    public async compile(
-        CompilerSourceProvider sources,
-        CompilerArtifactSink sink
-    ) -> CompilerSession {
-        if (!sources || !sink) throw Exception("Compiler engine requires source provider and artifact sink")
-        let session = CompilerSession()
-        let identities = sources.identities()
-        var Int artifacts
-        var Int diagnostics
-        for (identity in identities) {
-            if (session.cancelled) break
-            let source = sources.load(identity)
-            if (!source) {
-                diagnostics++
-                session.diagnostics.publish("Missing source '#identity'")$
-            } else {
-                try {
-                    let code = sourceCompiler.compile(source)
-                    let artifact = CompilerArtifact(identity + ".js", code)
-                    sink.write(artifact)
-                    session.artifacts.send(artifact)
-                    session.progress.publish("Compiled #identity")$
-                    artifacts++
-                } catch (Exception error) {
-                    diagnostics++
-                    session.diagnostics.publish("Failed to compile '#identity': #{error.message}")$
-                }
-            }
-        }
-        session.diagnostics.close()
-        session.progress.close()
-        session.artifacts.close()
-        session.completion.complete(CompilationSummary(
-            identities.count, artifacts, diagnostics, session.cancelled
-        ))
-        return session
     }
 }
