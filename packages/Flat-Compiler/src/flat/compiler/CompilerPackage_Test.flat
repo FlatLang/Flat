@@ -51,6 +51,34 @@ testable class {
         }
     }
 
+    async test `safe nullable callback skips null receiver arguments and evaluates live receiver once`() {
+        let source = "package app\nclass Item { construct(visible Int code) {} " +
+            "apply(Int marker, func(Item)->Bool predicate) -> Bool { return predicate(this); } } " +
+            "class Owner { construct(visible Item value = null) {} " +
+            "get() => value { external js { process.stdout.write('R'); } } " +
+            "effect() -> Int { external js { process.stdout.write('A'); } return 1; } " +
+            "run(Int wanted) { let result = get()?.apply(effect(), { _.code == wanted }); " +
+            "external js { console.log(" + "#" + "{result} === flat_null ? 'null' : " + "#" + "{result}); } } } " +
+            "class Main { public static main() { let empty = Owner(); empty.run(7); " +
+            "let live = Owner(Item(7)); live.run(7); } }"
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(MemoryCompilerSourceProvider([
+            CompilerSource("app/Main.flat", source)]), sink, "safe-callback.js", mainClass: "app/Main")
+        let summary = session.completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(sink.artifacts().count).toBe(1)
+        let root = File(".flat-compiler-safe-callback-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("Rnull\nRAtrue\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     async test `conditional reference returns evaluate each condition and selected branch once`() {
         let source = "package app\nclass Value { construct() {} } class Main { " +
             "static condition(Bool value) -> Bool { external js { process.stdout.write('C'); } return value; } " +

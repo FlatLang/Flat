@@ -1,6 +1,7 @@
 package flat/meta
 
 import flat/operators
+import flat/exception/NullAccessException
 
 class<Type> {
     visible Bool isInterface
@@ -22,7 +23,12 @@ class<Type> {
     ) {}
 
     public getField(String name, Bool checkAncestors = false) -> Field {
-        return fields.firstWhere({ _.name == name })
+        let metadata = fields
+        if (metadata == null) {
+            throw NullAccessException()
+        }
+        let available = (Array<Field>)metadata
+        return available.firstWhere({ _.name == name })
             ?: (checkAncestors ? extension?.getField(name, true) : null)
             ?: (checkAncestors ? interfaces.mapNotNull({ _.getField(name, true) })?.first : null)
     }

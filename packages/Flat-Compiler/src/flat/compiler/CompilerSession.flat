@@ -41,6 +41,8 @@ class {
     visible Int queuedSourceCount => sourceWindow.count - submittedSources - completedSources
     /** Submitted reservations include executor-queued actions until settlement. */
     visible Int inFlightSourceCount => submittedSources
+    /** Scheduler-owned generated characters only; excludes sinks and artifact delivery buffers. */
+    visible Long retainedSourceCodeCharacters => countRetainedSourceCodeCharacters()
     visible Int retainedSourceCount => sourceWindow.count
     visible Int peakActiveSourceCount => peakActiveSources
     visible Int peakRetainedSourceCount => peakRetainedSources
@@ -53,6 +55,14 @@ class {
     var Int peakRetainedSources
     var SourceWork[] sourceWindow = SourceWork[]
     var Future.CompletableFuture<Bool> sourceChanged = Future.create<Bool>()
+
+    countRetainedSourceCodeCharacters() -> Long {
+        var Long characters
+        for (work in sourceWindow) {
+            if (work.code != null) characters += work.code.count
+        }
+        return characters
+    }
 
     class SourceWork {
         visible String identity
@@ -288,6 +298,8 @@ class {
     public cancel() {
         if (cancelled || completion.completed) return
         cancellationRequested = true
+        // Drop unpublished outcomes immediately; running workers still own cleanup.
+        for (work in sourceWindow) work.code = null
         closeChannels()
         if (sourceScheduling) {
             for (work in sourceWindow) {

@@ -186,6 +186,7 @@ testable class {
         compiler.release(1)
         expect(session.artifacts.receive().value.identity).toBe("b.js")
         expect(sink.artifacts().first.identity).toBe("b.js")
+        expect(session.retainedSourceCodeCharacters).toBe(0)
         expect(session.completion.completed).toBe(false)
         expect(compiler.cleaned).toBe(1)
         compiler.release(0)
@@ -194,6 +195,43 @@ testable class {
         expect(session.peakActiveSourceCount <= 2).toBe(true)
         expect(session.peakRetainedSourceCount <= 3).toBe(true)
         expect(session.retainedSourceCount).toBe(0)
+    }
+
+    async test `source cancellation releases pending payloads before running cleanup finishes`() {
+        let executor = ControlledExecutor(8)
+        let compiler = GatedSourceCompiler()
+        let session = CompilerSession()
+        let sink = MemoryCompilerArtifactSink()
+        let sources = CompilerSource[]
+        sources.add(CompilerSource("a", "ok"))
+        for (index in 0..7) sources.add(CompilerSource("b#index", "ok"))
+        CompilerEngine(executor: executor, sourceCompiler: compiler,
+            maxActiveSources: 8, maxQueuedSources: 1).start(
+            MemoryCompilerSourceProvider(sources), sink, session)
+        let runningA = Future.from<ExecutorTaskResult>(async { return executor.runNext() })$
+        compiler.release(1)
+        for (index in 0..7) executor.runNext()
+        session.artifactBackpressure.get()
+        expect(session.retainedSourceCodeCharacters > 0).toBe(true)
+        session.cancel()
+        expect(session.retainedSourceCodeCharacters).toBe(0)
+        expect(session.completion.completed).toBe(false)
+        expect(compiler.cleaned).toBe(7)
+        compiler.release(0)
+        runningA.get()
+        let summary = session.completion.get()
+        expect(summary.cancelled).toBe(true)
+        expect(summary.artifactCount).toBe(5)
+        expect(compiler.cleaned).toBe(8)
+        expect(session.retainedSourceCount).toBe(0)
+        expect(session.inFlightSourceCount).toBe(0)
+        expect(session.retainedSourceCodeCharacters).toBe(0)
+        for (index in 0..4) {
+            let received = session.artifacts.receive()
+            expect(received.value.identity).toBe("b#{index}.js")
+            expect(received.value.code).toBe("// b#{index}\n")
+        }
+        expect(session.artifacts.receive().completed).toBe(true)
     }
 
     async test `source scheduler queued cancellation waits for active cleanup`() {

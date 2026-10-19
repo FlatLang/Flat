@@ -2,6 +2,8 @@ package flat/writer/es6/bound
 
 import flat/io
 import flat/time/Time
+import flat/writer/es6/bound/Es6ArtifactCommitter.ArtifactCommitReceipt
+import flat/writer/es6/bound/Es6ArtifactCommitter.PublishedArtifactCleanupException
 
 testable class {
     test `spools reversed fragments assembles canonically and cleans temporary storage`() {
@@ -167,15 +169,19 @@ testable class {
         controlledCommitFailure("write")
     }
 
-    test `native cleanup failure is catchable after successful publication`() {
+    test `native cleanup failure returns published receipt and catchable cleanup retry`() {
         controlledCommitFailure("remove")
+    }
+
+    test `legacy ignored return reports already published cleanup failure`() {
+        controlledCommitFailure("remove", facade: true)
     }
 
     test `cleanup failure cannot replace the original write failure`() {
         controlledCommitFailure("write", true)
     }
 
-    controlledCommitFailure(String operation, Bool cleanupFails = false) {
+    controlledCommitFailure(String operation, Bool cleanupFails = false, Bool facade = false) {
         let root = temporaryRoot("native-#operation")
         Es6ArtifactFiles.ensureDirectory(root)
         let destination = File(root, "output.js")
@@ -199,9 +205,27 @@ testable class {
             }
         }
         var String failure = ""
+        var ArtifactCommitReceipt receipt
         try {
             try {
-                Es6ArtifactCommitter().commit(destination, "replacement")
+                if (facade) {
+                    try {
+                        Es6ArtifactCommitter().commit(destination, "replacement")
+                        throw Exception("legacy facade hid cleanup failure")
+                    } catch (PublishedArtifactCleanupException error) {
+                        expect(error.published).toBe(true)
+                        expect(error.message.contains("already published")).toBe(true)
+                        receipt = error.receipt
+                    }
+                } else {
+                    receipt = Es6ArtifactCommitter().publish(destination, "replacement")
+                }
+                if (operation == "remove") {
+                    expect(receipt.published).toBe(true)
+                    expect(receipt.cleanupPending).toBe(true)
+                    expect(receipt.cleanupError.message).toBe("controlled-remove")
+                    receipt.retryCleanup()
+                }
             } catch (Exception error) {
                 failure = error.message
             }
@@ -213,6 +237,13 @@ testable class {
             }
         }
         try {
+            if (receipt) {
+                receipt.retryCleanup()
+                receipt.retryCleanup()
+                expect(receipt.cleanupPending).toBe(false)
+                expect(receipt.cleanupError).toBe(null)
+                expect(receipt.published).toBe(true)
+            }
             expect(failure).toBe("controlled-#operation")
             expect(Es6ArtifactFiles.read(destination))
                 .toBe(operation == "remove" ? "replacement" : "previous")

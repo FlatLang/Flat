@@ -2,31 +2,66 @@ package flat/writer/es6/bound
 
 import flat/io
 
-/** Atomic single-artifact commit with same-directory temporary replacement. */
+/** Atomic publication with an explicit ownership-transfer alternative. */
 class {
+    /** Compatibility facade: ignored return values cannot hide cleanup failure. */
     public commit(File destination, String code) {
+        let receipt = publish(destination, code)
+        if (receipt.cleanupPending) throw PublishedArtifactCleanupException(receipt)
+    }
+
+    /** Throws before publication; after rename caller owns the returned receipt. */
+    public publish(File destination, String code) -> ArtifactCommitReceipt {
         if (!destination || code == null) {
             throw Exception("ES6 artifact commit requires destination and code")
         }
-        // Reserve private staging beside the destination: never delete or reuse
-        // a predictable path that may belong to another commit or caller.
         let staging = Es6ArtifactFiles.createCommitDirectory(destination)
         let temporary = File(staging, "artifact")
-        var Exception failure
         try {
             Es6ArtifactFiles.write(temporary, code)
             Es6ArtifactFiles.replace(temporary, destination)
         } catch (Exception error) {
-            failure = error
-        } finally {
-            try {
-                Es6ArtifactFiles.remove(staging)
-            } catch (Exception cleanupError) {
-                // A failed publication owns the primary failure. If publication
-                // succeeded, cleanup failure is still reported to the caller.
-                if (!failure) failure = cleanupError
-            }
+            try { Es6ArtifactFiles.remove(staging) }
+            catch (Exception cleanupError) {}
+            throw error
         }
-        if (failure) throw failure
+        let receipt = ArtifactCommitReceipt(staging)
+        try { receipt.retryCleanup() }
+        catch (Exception cleanupError) {}
+        return receipt
+    }
+}
+
+/** Publication is irrevocable; retries remove only the privately reserved staging. */
+class ArtifactCommitReceipt {
+    var File staging
+    var Exception failure
+    visible Bool published => true
+    visible Bool cleanupPending => staging != null
+    visible Exception cleanupError => failure
+
+    public construct(File staging) { this.staging = staging }
+
+    public retryCleanup() {
+        if (!staging) return
+        try {
+            Es6ArtifactFiles.remove(staging)
+            staging = null
+            failure = null
+        } catch (Exception error) {
+            failure = error
+            throw error
+        }
+    }
+}
+
+/** A truthful failure outcome for legacy callers: output is already published. */
+class PublishedArtifactCleanupException extends Exception {
+    visible ArtifactCommitReceipt receipt
+    visible Bool published => true
+
+    public construct(ArtifactCommitReceipt receipt) {
+        super("Artifact already published; staging cleanup failed; inspect receipt.cleanupError")
+        this.receipt = receipt
     }
 }

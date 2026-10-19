@@ -105,6 +105,167 @@ testable class {
         }
     }
 
+    test `filesystem cleanup failure does not block unrelated artifact publication`() {
+        let root = File(".flat-filesystem-receipt-test-#{Time.currentTimeMillis}")
+        let files = FilesystemCompilerArtifactSink(File(root, "output"))
+        let destination = File(root, "output/a.js")
+        let prefix = destination.normalizedLocation + ".flat-tmp-"
+        native var Object originalRemove
+        try {
+            external {
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                const remove = #{originalRemove};
+                #{File.FileGlobal.fs}.rmSync = (path, options) => {
+                    if (path.startsWith(#{prefix.chars.data})) throw new Error('destination cleanup');
+                    return remove(path, options);
+                };
+            }
+            try {
+                files.write(CompilerArtifact("a.js", "A"))
+                expect(files.artifacts().count).toBe(1)
+                expect(files.pendingCleanupCount).toBe(1)
+                expect(Es6ArtifactFiles.read(destination)).toBe("A")
+                files.write(CompilerArtifact("b.js", "B"))
+                expect(files.artifacts().count).toBe(2)
+                expect(files.pendingCleanupCount).toBe(1)
+                expect(Es6ArtifactFiles.read(File(root, "output/b.js"))).toBe("B")
+            } finally {
+                external { #{File.FileGlobal.fs}.rmSync = #{originalRemove}; }
+            }
+            files.retryCleanup()
+            files.retryCleanup()
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(files.artifacts().count).toBe(2)
+        } finally {
+            files.retryCleanup()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `filesystem rejects invalid cleanup capacities before creating root`() {
+        let root = File(".flat-cleanup-capacity-test-#{Time.currentTimeMillis}")
+        try {
+            var Int rejected
+            try { FilesystemCompilerArtifactSink(root, -1) } catch (Exception error) { rejected++ }
+            try { FilesystemCompilerArtifactSink(root, 0) } catch (Exception error) { rejected++ }
+            expect(rejected).toBe(2)
+            expect(root.exists).toBe(false)
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    test `cleanup capacity reserves before publication and retry isolates every entry`() {
+        let root = File(".flat-cleanup-reservation-test-#{Time.currentTimeMillis}")
+        let files = FilesystemCompilerArtifactSink(File(root, "output"), 2)
+        let prefix = File(root, "output").normalizedLocation + "/"
+        native var Object originalRemove
+        var Bool failAll = true
+        var Int cleanupAttempts
+        try {
+            external {
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                const remove = #{originalRemove};
+                #{File.FileGlobal.fs}.rmSync = (path, options) => {
+                    if (path.startsWith(#{prefix.chars.data}) && path.includes('.flat-tmp-')) {
+                        #{cleanupAttempts}++;
+                        if (#{failAll} || path.includes('/a.js.flat-tmp-')) throw new Error('controlled cleanup');
+                    }
+                    return remove(path, options);
+                };
+            }
+            try {
+                files.write(CompilerArtifact("a.js", "A"))
+                files.write(CompilerArtifact("b.js", "B"))
+                expect(files.artifacts().count).toBe(2)
+                expect(files.pendingCleanupCount).toBe(2)
+                var Bool rejected = false
+                try { files.write(CompilerArtifact("c.js", "C")) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(File(root, "output/c.js").exists).toBe(false)
+                expect(files.artifacts().count).toBe(2)
+                failAll = false
+                cleanupAttempts = 0
+                rejected = false
+                try { files.retryCleanup() } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(cleanupAttempts).toBe(2)
+                expect(files.pendingCleanupCount).toBe(1)
+                expect(files.cleanupError("a.js").message).toBe("controlled cleanup")
+                expect(files.cleanupError("b.js")).toBe(null)
+                files.write(CompilerArtifact("c.js", "C"))
+                expect(files.artifacts().count).toBe(3)
+                expect(Es6ArtifactFiles.read(File(root, "output/c.js"))).toBe("C")
+            } finally {
+                external { #{File.FileGlobal.fs}.rmSync = #{originalRemove}; }
+            }
+        } finally {
+            files.retryCleanup()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `destination cleanup failure permits unrelated spool promotion and retry never republishes`() {
+        let root = File(".flat-artifact-destination-cleanup-test-#{Time.currentTimeMillis}")
+        let files = FailingPromotionSink(File(root, "output"))
+        files.rejectSecond = false
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 2)
+        native var Object originalRemove
+        native var Object originalRename
+        var Int renames
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            spool.write(CompilerArtifact("b.js", "B"))
+            let destination = File(root, "output/a.js")
+            let prefix = destination.normalizedLocation + ".flat-tmp-"
+            external {
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                #{originalRename} = #{File.FileGlobal.fs}.renameSync;
+                const remove = #{originalRemove};
+                const rename = #{originalRename};
+                #{File.FileGlobal.fs}.rmSync = (path, options) => {
+                    if (path.startsWith(#{prefix.chars.data})) throw new Error('destination cleanup');
+                    return remove(path, options);
+                };
+                #{File.FileGlobal.fs}.renameSync = (from, to) => {
+                    #{renames}++;
+                    return rename(from, to);
+                };
+            }
+            try {
+                var Bool rejected = false
+                try { spool.commitTo(files) } catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+                expect(Es6ArtifactFiles.read(destination)).toBe("A")
+                expect(Es6ArtifactFiles.read(File(root, "output/b.js"))).toBe("B")
+                expect(files.artifacts().count).toBe(2)
+                expect(files.pendingCleanupCount).toBe(1)
+                expect(files.cleanupError("a.js").message).toBe("destination cleanup")
+                expect(spool.artifacts().count).toBe(0)
+                expect(files.writes).toBe(2)
+                expect(renames).toBe(2)
+                // Cleanup-only retry must not enter destination.write or rename.
+                try { spool.commitTo(files) } catch (Exception error) {}
+                expect(files.writes).toBe(2)
+                expect(renames).toBe(2)
+            } finally {
+                external {
+                    #{File.FileGlobal.fs}.rmSync = #{originalRemove};
+                    #{File.FileGlobal.fs}.renameSync = #{originalRename};
+                }
+            }
+            spool.commitTo(files)
+            expect(files.pendingCleanupCount).toBe(0)
+            expect(files.cleanupError("a.js")).toBe(null)
+            expect(files.writes).toBe(2)
+            expect(renames).toBe(2)
+            expect(spool.artifacts().count).toBe(0)
+        } finally {
+            files.retryCleanup()
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
     test `partial spool promotion retries only unpublished artifacts`() {
         let root = File(".flat-artifact-partial-test-#{Time.currentTimeMillis}")
         let files = FailingPromotionSink(File(root, "output"))

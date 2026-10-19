@@ -1385,7 +1385,8 @@ class {
                 field.name, field.identity, safeAccess: true)
         }
         if (syntax.class.isOfType(PrimitiveMemberCallSyntax.class) &&
-            ((PrimitiveMemberCallSyntax)syntax).safeAccess) {
+            ((PrimitiveMemberCallSyntax)syntax).safeAccess &&
+            !((PrimitiveMemberCallSyntax)syntax).argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) })) {
             let call = (PrimitiveMemberCallSyntax)syntax
             if (call.namedArgumentValues().isNotEmpty || call.typeArgumentNames().isNotEmpty) {
                 throw Exception("Safe call requires positional arguments without explicit type arguments")
@@ -1785,14 +1786,18 @@ class {
                 }
             }
             let owner = expression(value.receiver, receiver, fields, locals)
+            let contextOwner = value.safeAccess && owner.semanticType.kind() == "nullable" ?
+                ((NullableSemanticType)owner.semanticType).underlyingType : owner.semanticType
+            if (value.safeAccess && (value.namedArgumentValues().isNotEmpty || value.typeArgumentNames().isNotEmpty))
+                throw Exception("Safe call requires positional arguments without explicit type arguments")
             if (value.argumentValues().any({ _.class.isOfType(PrimitiveLambdaSyntax.class) }) &&
-                (owner.semanticType.kind() == "user-class" || owner.semanticType.kind() == "generic-instance")) {
-                let instance = owner.semanticType.kind() == "generic-instance" ?
-                    (GenericInstanceSemanticType)owner.semanticType : null
+                (contextOwner.kind() == "user-class" || contextOwner.kind() == "generic-instance")) {
+                let instance = contextOwner.kind() == "generic-instance" ?
+                    (GenericInstanceSemanticType)contextOwner : null
                 let candidates = constructors.filter((candidate) =>
                     candidate.callableKind.value == "instance-method" &&
                     candidate.name == value.memberName &&
-                    candidate.ownerType.value() == (instance ? instance.declarationType.value() : owner.semanticType.value()) &&
+                    candidate.ownerType.value() == (instance ? instance.declarationType.value() : contextOwner.value()) &&
                     candidate.parameterTypes().count == value.argumentValues().count
                 ).map({ instance ? _.instantiateReceiver(instance) : _ })
                 let checks = CallCheckResult[]
@@ -1837,12 +1842,16 @@ class {
                             }
                             index++
                         }
-                        let checked = CallTypeChecker.check(candidate, owner.semanticType,
+                        let checked = CallTypeChecker.check(candidate, contextOwner,
                             arguments.map({ _.semanticType }), value.range, typeHierarchy)
                         if (checked.valid) {
                             checks.add(checked)
-                            boundCalls.add(BoundCallExpression(value.range, checked.semanticType, checked.target,
-                                owner, arguments, checked.argumentConversions()))
+                            let resultType = value.safeAccess && checked.semanticType.kind() != "nullable" ?
+                                NullableSemanticType(checked.semanticType) : checked.semanticType
+                            boundCalls.add(BoundCallExpression(value.range, resultType, checked.target,
+                                owner, arguments, checked.argumentConversions(), safeAccess: value.safeAccess,
+                                receiverConversion: TypeConversions.classify(contextOwner,
+                                    checked.target.receiverType(), hierarchy: typeHierarchy)))
                         }
                     } catch (Exception error) {
                         // Contextual failure rejects this candidate, not unrelated overloads.

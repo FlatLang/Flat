@@ -167,6 +167,40 @@ testable class {
         }
     }
 
+    async test `safe nullable callbacks retain receiver and reject invalid contextual bodies`() {
+        let bodies = ["value?.apply({ _.code == wanted })", "value.apply({ _.code == wanted })",
+            "value?.apply({ _.missing == wanted })", "value?.apply({ _.code + wanted })"]
+        for (index in 0..bodies.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:safe-callback:#{index}"), "one")
+            let stream = Lexer().lex("class Item { construct(visible Int code) {} apply(func(Item)->Bool predicate) -> Bool { return predicate(this); } } " +
+                "class Owner { construct(visible Item value = null) {} run(Int wanted) { let result = " + bodies[index] + "; } }")
+            stream.emit("start")
+            let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+            let classes = PrimitiveClassSyntax[]
+            for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex))
+            if (index == 0) {
+                let units = PrimitiveClassPartitionBinder().bind(classes, snapshot).typeUnits()
+                let run = units.last.functionUnits().firstOrNull({ _.name == "run" })
+                let statement = run.statements().first
+                let local = (BoundLocalDeclarationStatement)statement
+                let call = (BoundCallExpression)local.initializer
+                expect(call.safeAccess).toBe(true)
+                expect(call.receiver.semanticType.kind()).toBe("nullable")
+                expect(call.semanticType.kind()).toBe("nullable")
+                let argument = call.argumentValues().first
+                let callback = (BoundLambdaExpression)argument
+                expect(callback.captureValues().first.name).toBe("wanted")
+                expect(callback.parameterValues().first.semanticType.value()).toBe(units.first.semanticType.value())
+            } else {
+                var Bool rejected = false
+                try { PrimitiveClassPartitionBinder().bind(classes, snapshot) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+            }
+        }
+    }
+
     async test `generic nullable conditional result retains expression IR`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-return-shape"), "one")
         let stream = Lexer().lex("class Bag<E> { visible Int count; visible native_array var E[] data; this[Int index] <=> data[index] public E first => count > 0 ? this[0] : null }")

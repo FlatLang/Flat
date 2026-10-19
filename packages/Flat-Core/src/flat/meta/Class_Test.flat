@@ -1,6 +1,37 @@
 package flat/meta
 
+import flat/exception/NullAccessException
+
 testable class {
+    test `field lookup rejects missing required metadata`() {
+        let type = Class("test/MissingMetadata", false, Object.class, Class[])
+        var Bool rejected = false
+        try {
+            type.getField("missing", true)
+        } catch (NullAccessException error) {
+            rejected = true
+        }
+        expect(rejected).toBe(true)
+    }
+
+    test `field lookup preserves local parent and contract precedence`() {
+        let localField = Field(name: "value")
+        let parentField = Field(name: "value")
+        let interfaceField = Field(name: "value")
+        let parent = Class("test/Parent", false, Object.class, Class[], [parentField])
+        let contract = Class("test/Contract", true, Object.class, Class[], [interfaceField])
+        let local = Class("test/Local", false, parent, [contract], [localField])
+        let inherited = Class("test/Inherited", false, parent, [contract], Field[])
+        let emptyParent = Class("test/EmptyParent", false, Object.class, Class[], Field[])
+        let implemented = Class("test/Implemented", false, emptyParent, [contract], Field[])
+
+        expect(Object.referenceEquals(local.getField("value", true), localField)).toBe(true)
+        expect(Object.referenceEquals(inherited.getField("value", true), parentField)).toBe(true)
+        expect(Object.referenceEquals(implemented.getField("value", true), interfaceField)).toBe(true)
+        expect(inherited.getField("value")).toBe(null)
+        expect(local.getField("missing")).toBe(null)
+        expect(implemented.getField("missing", true)).toBe(null)
+    }
     test `can access fields`() {
         expect(TestClass.class.fields).toBe([
             Field(name: "a"),

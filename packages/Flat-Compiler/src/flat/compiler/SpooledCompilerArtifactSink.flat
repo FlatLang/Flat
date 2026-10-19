@@ -21,6 +21,7 @@ class extends CompilerArtifactSink {
         visible File file
         visible Long bytes
         visible var Bool published
+        visible var FilesystemCompilerArtifactSink cleanupDestination
 
         public construct(String identity, File file, Long bytes) {
             this.identity = identity
@@ -85,16 +86,26 @@ class extends CompilerArtifactSink {
         // Count-bounded metadata ordering only; Core Array.sort -> mergeSort
         // returns clone(), so removing from pending cannot skip iteration items.
         // Load one byte-bounded payload at a time.
+        var Exception failure
         for (artifact in pending.sort({ _a.identity.compareTo(_b.identity) })) {
+            // Failed destination publication remains an immediate failure. Only
+            // already-published cleanup failures are isolated from unrelated work.
             if (!artifact.published) {
                 destination.write(CompilerArtifact(artifact.identity.concat(""), Es6ArtifactFiles.read(artifact.file)))
+                artifact.cleanupDestination = destination
                 artifact.published = true
             }
-            Es6ArtifactFiles.remove(artifact.file)
-            pending.remove(artifact)
-            retainedBytes -= artifact.bytes
+            try {
+                if (artifact.cleanupDestination) artifact.cleanupDestination.retryCleanup(artifact.identity)
+                Es6ArtifactFiles.remove(artifact.file)
+                pending.remove(artifact)
+                retainedBytes -= artifact.bytes
+            } catch (Exception cleanupError) {
+                if (!failure) failure = cleanupError
+            }
         }
         cleanupEmptyDirectory()
+        if (failure) throw failure
     }
 
     /** Terminal abort, idempotent and retryable if owned-storage cleanup fails. */
