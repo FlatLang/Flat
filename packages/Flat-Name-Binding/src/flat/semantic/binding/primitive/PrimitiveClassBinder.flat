@@ -4,6 +4,7 @@ import flat/compiler/models
 import flat/parser/flat
 import flat/bound
 import flat/semantic/types
+import flat/semantic/binding/BindingDiagnostic
 
 /** Binds one reduced class with fields, constructor, and instance methods. */
 class {
@@ -343,6 +344,7 @@ class {
                         signatureIndex++
                     }
                 } catch (Exception error) {
+                    if (error.class.isOfType(PrimitiveContextBindingException.class)) throw error
                     throw Exception("Method #{syntax.name}.#{method.name} token #{method.range.startTokenIndex}: #{error.message}")
                 }
                 methodIndex++
@@ -384,7 +386,9 @@ class {
         )
         let parameters = parameters(syntax.parameterValues(), identity)
         var LocalBinding[] locals = localBindings(parameters)
-        locals.addAll(inheritedFieldBindings(inheritedFields))
+        for (field in inheritedFieldBindings(inheritedFields)) {
+            if (!locals.any({ _.name == field.name })) locals.add(field)
+        }
         let allFields = BoundFieldUnit[]
         allFields.addAll(fields)
         allFields.addAll(inheritedFields)
@@ -733,7 +737,9 @@ class {
             syntax.parameterValues(), identity, type, receiver, allFields, syntax
         )
         let locals = localBindings(parameters)
-        locals.addAll(inheritedFieldBindings(inheritedFields))
+        for (field in inheritedFieldBindings(inheritedFields)) {
+            if (!locals.any({ _.name == field.name })) locals.add(field)
+        }
         let publishedSignature = constructors.firstOrNull((candidate) =>
             candidate.identity.declaration.value == identity.value && candidate.ownerType && candidate.ownerType.value() == type.value()
         )
@@ -756,7 +762,8 @@ class {
                 "this", receiver.symbolIdentity, receiver.semanticType
             ))
         }
-        let syntaxStatements = syntax.statements()
+        let syntaxStatements = !syntax.inferredReturnType && returnType.kind() != "nullable" &&
+            referenceType(returnType) ? normalizeReturnConditionals(syntax.statements()) : syntax.statements()
         var Bool structured
         for (statement in syntaxStatements) {
             if (!statement.class.isOfType(PrimitiveExternalStatementSyntax.class) &&
@@ -843,6 +850,66 @@ class {
             abstractFunction: syntax.abstractMethod,
             lazyProperty: syntax.lazyProperty
         )
+    }
+
+    /** Return-context normalization only: leaves retain ordinary return validation.
+     * Materialization is bounded to this method's existing syntax statement lists.
+     */
+    normalizeReturnConditionals(PrimitiveStatementSyntax[] statements) -> PrimitiveStatementSyntax[] {
+        let result = PrimitiveStatementSyntax[]
+        for (statement in statements) {
+            if (statement.class.isOfType(PrimitiveReturnSyntax.class)) {
+                let returned = (PrimitiveReturnSyntax)statement
+                result.add(returned.value ? normalizeConditionalReturn(returned) : returned)
+            } else if (statement.class.isOfType(PrimitiveIfSyntax.class)) {
+                let value = (PrimitiveIfSyntax)statement
+                result.add(PrimitiveIfSyntax(value.range, value.condition,
+                    normalizeReturnConditionals(value.thenValues()), normalizeReturnConditionals(value.elseValues())))
+            } else if (statement.class.isOfType(PrimitiveWhileSyntax.class)) {
+                let value = (PrimitiveWhileSyntax)statement
+                result.add(PrimitiveWhileSyntax(value.range, value.condition, normalizeReturnConditionals(value.bodyValues())))
+            } else if (statement.class.isOfType(PrimitiveForSyntax.class)) {
+                let value = (PrimitiveForSyntax)statement
+                result.add(PrimitiveForSyntax(value.range, value.initializer, value.condition, value.advance,
+                    normalizeReturnConditionals(value.bodyValues())))
+            } else if (statement.class.isOfType(PrimitiveForEachSyntax.class)) {
+                let value = (PrimitiveForEachSyntax)statement
+                result.add(PrimitiveForEachSyntax(value.range, value.indexName, value.rangeStart, value.rangeEnd,
+                    normalizeReturnConditionals(value.bodyValues()), value.collection))
+            } else if (statement.class.isOfType(PrimitiveSwitchSyntax.class)) {
+                let value = (PrimitiveSwitchSyntax)statement
+                let cases = PrimitiveSwitchCaseSyntax[]
+                for (caseValue in value.caseValues()) cases.add(PrimitiveSwitchCaseSyntax(caseValue.range,
+                    caseValue.label, normalizeReturnConditionals(caseValue.statementValues()),
+                    caseValue.defaultCase, caseValue.fallsThrough))
+                result.add(PrimitiveSwitchSyntax(value.range, value.value, cases))
+            } else if (statement.class.isOfType(PrimitiveTrySyntax.class)) {
+                let value = (PrimitiveTrySyntax)statement
+                let catches = PrimitiveCatchSyntax[]
+                for (caught in value.catchValues()) catches.add(PrimitiveCatchSyntax(caught.range,
+                    caught.typeName, caught.name, normalizeReturnConditionals(caught.statements()), caught.acceptsSoftExceptions))
+                result.add(PrimitiveTrySyntax(value.range, normalizeReturnConditionals(value.tryValues()), catches,
+                    normalizeReturnConditionals(value.finallyValues())))
+            } else result.add(statement)
+        }
+        return result
+    }
+
+    conditionalReturnContainsNull(PrimitiveExpressionSyntax value) -> Bool {
+        if (value.class.isOfType(PrimitiveLiteralSyntax.class))
+            return ((PrimitiveLiteralSyntax)value).sourceValue == "null"
+        if (!value.class.isOfType(PrimitiveConditionalSyntax.class)) return false
+        let conditional = (PrimitiveConditionalSyntax)value
+        return conditionalReturnContainsNull(conditional.whenTrue) || conditionalReturnContainsNull(conditional.whenFalse)
+    }
+
+    normalizeConditionalReturn(PrimitiveReturnSyntax returned) -> PrimitiveStatementSyntax {
+        if (!returned.value.class.isOfType(PrimitiveConditionalSyntax.class) ||
+            !conditionalReturnContainsNull(returned.value)) return returned
+        let conditional = (PrimitiveConditionalSyntax)returned.value
+        return PrimitiveIfSyntax(conditional.range, conditional.condition,
+            [normalizeConditionalReturn(PrimitiveReturnSyntax(conditional.whenTrue.range, conditional.whenTrue, returned.arrowFallback))],
+            [normalizeConditionalReturn(PrimitiveReturnSyntax(conditional.whenFalse.range, conditional.whenFalse, returned.arrowFallback))])
     }
 
     firstReturnType(BoundStatement[] statements) -> SemanticType => null {
@@ -1121,6 +1188,8 @@ class {
         declarationLookupRange = syntax.range
         scopedTypeResolver = typeResolver
         let previousBoundType = boundType
+        // Static expressions have a lexical owner even without an instance receiver.
+        if (typeResolver && typeResolver.receiverType) boundType = typeResolver.receiverType
         let previousGenericParameter = genericParameter
         if (typeResolver) genericParameter = typeResolver.genericParameter
         let previousArrayGetter = arrayGetter
@@ -2392,13 +2461,16 @@ class {
             let value = (PrimitiveCallSyntax)syntax
             if (declarationContext && !locals.any({ _.name == value.name }) &&
                 !constructors.any((candidate) => candidate.name == value.name &&
-                    candidate.ownerType && candidate.ownerType.value() == boundType.value() &&
+                    candidate.ownerType && boundType && candidate.ownerType.value() == boundType.value() &&
                     (candidate.callableKind.value == "static-method" || candidate.callableKind.value == "instance-method"))) {
                 let owners = declarationContext.staticDefaultOwners(value.name, value.range)
                 if (owners.isNotEmpty) {
                     let candidates = constructors.filter((candidate) => candidate.name == value.name &&
                         candidate.callableKind.value == "static-method" &&
                         owners.any({ _.value == candidate.ownerType.declarationIdentity.value }))
+                    if (value.namedArgumentValues().isNotEmpty) {
+                        return bindNamedStaticDefault(value, candidates, receiver, fields, locals)
+                    }
                     let checks = CallCheckResult[]
                     let calls = BoundCallExpression[]
                     for (candidate in candidates) {
@@ -2452,7 +2524,15 @@ class {
                         }
                     }
                     let resolution = OverloadResolver.resolveChecked(value.name, candidates, checks, value.range)
-                    if (resolution.diagnostic) throw Exception(resolution.diagnostic.message)
+                    if (resolution.diagnostic) {
+                        let diagnostic = resolution.diagnostic
+                        throw PrimitiveContextBindingException(BindingDiagnostic(
+                            diagnostic.code, diagnostic.message,
+                            SyntaxIslandIdentity(value.range.snapshot, "static-default-call", value.range.startTokenIndex),
+                            diagnostic.range,
+                            candidates.map({ _.identity.value }).sort({ _a.compareTo(_b) })
+                        ))
+                    }
                     return calls.firstOrNull({ _.target.identity.value == resolution.selected.identity.value })
                 }
             }
@@ -2605,7 +2685,7 @@ class {
                 candidate.name == value.name &&
                 candidate.callableKind.value != "instance-method" &&
                 (!declarationContext || candidate.callableKind.value != "static-method" ||
-                    candidate.ownerType.value() == boundType.value()) &&
+                    (boundType && candidate.ownerType.value() == boundType.value())) &&
                 (!resolvedConstructor || candidate.callableKind.value != "constructor" ||
                     candidate.ownerType.declarationIdentity.value == resolvedConstructor.value)
             )
@@ -3005,6 +3085,75 @@ class {
             candidate.range.startTokenIndex == target.identity.declaration.syntaxIdentity.ordinal)
         if (!method || index >= method.parameterValues().count) return null
         return method.parameterValues()[index].defaultValue
+    }
+
+    /** Bind supplied named static arguments in lexical order, then reorder references only. */
+    bindNamedStaticDefault(PrimitiveCallSyntax value, CallableSignature[] candidates,
+        BoundReferenceExpression receiver, BoundFieldUnit[] fields, LocalBinding[] locals) -> BoundExpression {
+        let checks = CallCheckResult[]
+        let calls = BoundExpression[]
+        for (candidate in candidates) {
+            let names = candidate.parameterNames()
+            let positional = value.argumentValues()
+            let named = value.namedArgumentValues()
+            if (names.count != candidate.parameterTypes().count ||
+                positional.count + named.count != names.count ||
+                named.any((argument) => !names.contains(argument.name) ||
+                    named.filter({ _.name == argument.name }).count != 1 ||
+                    names.take(positional.count).contains(argument.name))) continue
+            try {
+            let inputs = BoundExpression[]
+            let parameters = BoundFunctionParameter[]
+            let ordered = BoundExpression[]
+            let syntaxes = PrimitiveExpressionSyntax[]:addAll(positional)
+            for (argument in named) syntaxes.add(argument.value)
+            var Int inputIndex
+            for (argument in syntaxes) {
+                let parameterIndex = inputIndex < positional.count ? inputIndex : names.indexOf(named[inputIndex - positional.count].name)
+                let input = expression(argument, receiver, fields, locals, candidate.parameterTypes()[parameterIndex])
+                let identity = SymbolIdentity(candidate.identity.declaration, "named-static-input", inputIndex)
+                let name = "namedStaticInput#{inputIndex}"
+                inputs.add(input)
+                parameters.add(BoundFunctionParameter(name, identity, input.semanticType))
+                inputIndex++
+            }
+            var Int parameterIndex
+            for (name in names) {
+                var Int selected = parameterIndex
+                if (parameterIndex >= positional.count) {
+                    selected = positional.count
+                    while (named[selected - positional.count].name != name) selected++
+                }
+                let input = inputs[selected]
+                ordered.add(BoundReferenceExpression(input.range, input.semanticType,
+                    parameters[selected].name, parameters[selected].identity))
+                parameterIndex++
+            }
+            let checked = CallTypeChecker.check(candidate, null, ordered.map({ _.semanticType }), value.range, typeHierarchy)
+            if (!checked.valid) continue
+            checks.add(checked)
+            let invocation = BoundCallExpression(value.range, checked.semanticType, checked.target,
+                ordered, checked.argumentConversions())
+            let functionType = FunctionSemanticType(inputs.map({ _.semanticType }), checked.semanticType)
+            let lambda = BoundLambdaExpression(value.range, functionType, parameters, BoundReferenceExpression[], invocation)
+            calls.add(BoundFunctionInvocationExpression(value.range, lambda, functionType, inputs))
+            } catch (Exception error) {
+                // Contextual failure rejects this selected-owner overload only.
+            }
+        }
+        let resolution = OverloadResolver.resolveChecked(value.name, candidates, checks, value.range)
+        if (resolution.diagnostic) {
+            let diagnostic = resolution.diagnostic
+            throw PrimitiveContextBindingException(BindingDiagnostic(diagnostic.code, diagnostic.message,
+                SyntaxIslandIdentity(value.range.snapshot, "static-default-call", value.range.startTokenIndex), diagnostic.range,
+                candidates.map({ _.identity.value }).sort({ _a.compareTo(_b) })))
+        }
+        var Int index
+        while (index < checks.count) {
+            if (checks[index].target.identity.value == resolution.selected.identity.value) return calls[index]
+            index++
+        }
+        throw Exception("Resolved named static call has no bound invocation")
     }
 
     /** Shape narrows contextual typing only; the normal checker still selects the overload. */

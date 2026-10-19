@@ -104,6 +104,9 @@ class {
             throw Exception("Package snapshot reuse does not support configured default imports")
         }
         validatePackageArtifactIdentity(artifactIdentity)
+        // Executor admission must not retain caller-owned mutable String storage.
+        let selectedArtifactIdentity = copySubmissionString(artifactIdentity)
+        let selectedMainClass = mainClass != null ? copySubmissionString(mainClass) : null
         let identities = sources.identities()
         if (!identities || identities.count == 0 || identities.count > packageLinker.maxSources ||
             identities.any((identity) => !identity || identity.trim().count == 0)) {
@@ -120,7 +123,8 @@ class {
         session.begin(ordered.count)
         try {
             let submitted = executor.submit({
-                runPackage(sources, ordered, sink, artifactIdentity, mainClass, session, snapshot, selectedDefaults)
+                runPackage(sources, ordered, sink, selectedArtifactIdentity, selectedMainClass,
+                    session, snapshot, selectedDefaults)
             })$
             session.attach(submitted)
         } catch (Exception error) {
@@ -229,12 +233,13 @@ class {
             let code = cached != null ? cached : packageLinker.linkSources(sources, ordered,
                 mainClass: mainClass, defaultImports: defaultImports)
             if (!session.cancelled) {
+                // Capture private cache bytes before exposing mutable code to the sink or stream.
+                if (snapshot) snapshot.recordCode(code)
                 let artifact = CompilerArtifact(artifactIdentity, code)
                 sink.write(artifact)
                 session.recordArtifact()
                 publishArtifact(session, artifact)
                 if (!session.cancelled) publishProgress(session, "Compiled package artifact #artifactIdentity")
-                if (!session.cancelled && snapshot) snapshot.recordCode(code)
             }
         } catch (Exception error) {
             if (!session.cancelled) {
@@ -278,6 +283,8 @@ class {
             throw Exception("Compiler diagnostic publication failed")
         }
     }
+
+    copySubmissionString(String value) -> String => value.concat("")
 
     validatePackageArtifactIdentity(String identity) {
         if (!identity || identity.startsWith("/") || identity.endsWith("/") ||

@@ -31,6 +31,23 @@ testable class {
         }
     }
 
+    class MutatingSink extends CompilerArtifactSink {
+        var CompilerArtifact[] values = CompilerArtifact[]
+        visible var String pristineCode
+
+        public construct(visible Bool failAfterMutation = false) {}
+
+        override public write(CompilerArtifact artifact) {
+            // Mutation occurs inside publication, not after compile returns.
+            pristineCode = artifact.code.concat("")
+            artifact.code.chars[0] = '#'
+            if (failAfterMutation) throw Exception("controlled mutation then sink failure")
+            values.add(artifact)
+        }
+
+        override public artifacts() -> CompilerArtifact[] => values.copy()
+    }
+
     class RejectingSink extends CompilerArtifactSink {
         override public write(CompilerArtifact artifact) { throw Exception("controlled sink failure") }
         override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]
@@ -95,6 +112,50 @@ testable class {
                 expect(result.stdout.join("")).toBe("11\n")
             }
         } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `sink mutation during publication cannot become cached compiler output`() {
+        let linker = CountingLinker()
+        let reuse = CompilerPackageReuse()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: reuse)
+        let coldSink = MutatingSink()
+        let cold = engine.compilePackageSnapshots(sources(), coldSink, "cold.js")
+        expect(cold.completion.get().diagnosticCount).toBe(0)
+        expect(cold.completion.get().artifactCount).toBe(1)
+        expect(coldSink.artifacts().first.code == coldSink.pristineCode).toBe(false)
+        let hitSink = MemoryCompilerArtifactSink()
+        let hit = engine.compilePackageSnapshots(sources(), hitSink, "hit.js")
+        expect(hit.completion.get().diagnosticCount).toBe(0)
+        expect(hit.completion.get().artifactCount).toBe(1)
+        expect(linker.calls).toBe(1)
+        expect(hitSink.artifacts().first.code).toBe(coldSink.pristineCode)
+        // A later hit is also untrusted publication, not a new compiler result.
+        let mutatingHit = MutatingSink()
+        engine.compilePackageSnapshots(sources(), mutatingHit, "mutated-hit.js")
+        let again = MemoryCompilerArtifactSink()
+        engine.compilePackageSnapshots(sources(), again, "again.js")
+        expect(linker.calls).toBe(1)
+        expect(again.artifacts().first.code).toBe(coldSink.pristineCode)
+    }
+
+    async test `sink mutation followed by failure never admits captured code`() {
+        let linker = CountingLinker()
+        let engine = CompilerEngine(packageLinker: linker, packageReuse: CompilerPackageReuse())
+        let failing = MutatingSink(failAfterMutation: true)
+        let failed = engine.compilePackageSnapshots(sources(), failing, "failed.js")
+        let summary = failed.completion.get()
+        expect(summary.diagnosticCount).toBe(1)
+        expect(summary.artifactCount).toBe(0)
+        expect(failing.artifacts().count).toBe(0)
+        let repairedSink = MemoryCompilerArtifactSink()
+        let repaired = engine.compilePackageSnapshots(sources(), repairedSink, "repaired.js")
+        expect(repaired.completion.get().diagnosticCount).toBe(0)
+        expect(linker.calls).toBe(2)
+        expect(repairedSink.artifacts().first.code).toBe(failing.pristineCode)
+        let hitSink = MemoryCompilerArtifactSink()
+        engine.compilePackageSnapshots(sources(), hitSink, "hit.js")
+        expect(linker.calls).toBe(2)
+        expect(hitSink.artifacts().first.code).toBe(failing.pristineCode)
     }
 
     async test `same length source text mutation misses and emitted code cannot poison hits`() {

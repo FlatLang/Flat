@@ -1,6 +1,20 @@
 name: Flat-Compiler / Test Flat-Compiler
 
 on:
+  workflow_dispatch:
+    inputs:
+      seed_manifest:
+        description: "Absolute seed manifest path supplied by approved runner-image delivery; not provisioned by this workflow"
+        required: true
+        type: string
+      review_receipt:
+        description: "Absolute independently reviewed provenance receipt path"
+        required: true
+        type: string
+      review_sha256:
+        description: "Independent SHA-256 of the review receipt"
+        required: true
+        type: string
   push:
     branches: ["master"]
   pull_request:
@@ -14,6 +28,32 @@ env:
   LOGGING_DEFAULT_SHOW_FORMATTING: true
 
 jobs:
+  # Manual acceptance only until immutable seed delivery is approved/provisioned.
+  # Inputs identify delivered files; they do not fetch or manufacture a trust root.
+  # Normal CI runs harness unit tests, NOT full self-host acceptance. Hosted runner
+  # inputs unavailable on disk fail immediately, never skip a dispatched gate.
+  stage-acceptance:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - name: Execute reviewed offline stage0/1/2 acceptance
+        shell: bash
+        env:
+          SEEDS: ${{ inputs.seed_manifest }}
+          REVIEW: ${{ inputs.review_receipt }}
+          REVIEW_SHA256: ${{ inputs.review_sha256 }}
+        run: |
+          set -euo pipefail
+          test -n "$SEEDS" && test -f "$SEEDS" || { echo 'Missing reviewed seed provisioning (no approved delivery source configured)' >&2; exit 1; }
+          test -n "$REVIEW" && test -f "$REVIEW" || { echo 'Missing seed provenance review receipt' >&2; exit 1; }
+          test -n "$REVIEW_SHA256" || { echo 'Missing independently approved review digest' >&2; exit 1; }
+          python3 -B packages/Airship/test/stage_bootstrap.py \
+            --repo "$GITHUB_WORKSPACE" \
+            --output "$RUNNER_TEMP/flat-stages-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --seeds "$SEEDS" --review "$REVIEW" --review-sha256 "$REVIEW_SHA256"
+
   build:
     runs-on: ubuntu-latest
 

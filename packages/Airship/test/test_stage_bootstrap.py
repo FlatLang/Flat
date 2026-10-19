@@ -20,6 +20,151 @@ SPEC.loader.exec_module(bootstrap)
 
 
 class BootstrapTests(unittest.TestCase):
+    def test_snapshot_byte_capacity_and_aggregate_limits(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'input.flat').write_bytes(b'12345')
+            with self.assertRaisesRegex(ValueError, 'snapshot byte'):
+                bootstrap.inventory(root, max_bytes=4)
+            budget = bootstrap.RunBudget(root, seconds=10, max_bytes=4)
+            with self.assertRaisesRegex(ValueError, 'storage'):
+                budget.check()
+            with mock.patch.object(bootstrap.time, 'monotonic', return_value=100):
+                budget = bootstrap.RunBudget(root, seconds=1, max_bytes=100)
+            with mock.patch.object(bootstrap.time, 'monotonic', return_value=102):
+                with self.assertRaisesRegex(ValueError, 'deadline'):
+                    budget.check()
+
+    def test_review_requires_independent_manifest_digest_and_provenance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            seeds = root / 'seeds.json'
+            seeds.write_text('{}')
+            review = root / 'review.json'
+            review.write_text(json.dumps({'schema': 1, 'seeds_sha256': bootstrap.digest(seeds),
+                                         'reviewer': 'designated reviewer', 'provenance': 'offline rebuild receipt',
+                                         'source_revision': 'a' * 40}))
+            accepted = bootstrap.reviewed_seeds(seeds, review, bootstrap.digest(review))
+            self.assertEqual(accepted['reviewer'], 'designated reviewer')
+            seeds.write_text('{"changed":true}')
+            with self.assertRaises(ValueError):
+                bootstrap.reviewed_seeds(seeds, review, bootstrap.digest(review))
+            with self.assertRaises(ValueError):
+                bootstrap.reviewed_seeds(seeds, review, '0' * 64)
+
+    def test_revision_records_dirty_source_identity(self):
+        completed = subprocess.CompletedProcess([], 0, stdout='a' * 40 + '\n')
+        with mock.patch.object(bootstrap.subprocess, 'run', return_value=completed) as run:
+            self.assertEqual(bootstrap.source_revision(Path('/repo'), Path('/pinned/git')), 'a' * 40)
+            self.assertEqual(run.call_args.kwargs['timeout'], 10)
+
+    def test_expired_budget_does_not_launch_a_command(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with mock.patch.object(bootstrap.time, 'monotonic', return_value=0):
+                budget = bootstrap.RunBudget(root, seconds=1)
+            with mock.patch.object(bootstrap.time, 'monotonic', return_value=2), \
+                    mock.patch.object(bootstrap.subprocess, 'Popen') as start:
+                with self.assertRaisesRegex(ValueError, 'deadline'):
+                    bootstrap.run_command(['not-launched'], root, {}, root / 'log',
+                                          root / 'journal', budget=budget)
+                start.assert_not_called()
+
+    def test_budget_failure_terminates_running_process_group(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            process = mock.Mock(pid=12345)
+            process.poll.return_value = None
+            budget = mock.Mock(deadline=bootstrap.time.monotonic() + 100)
+            budget.check.side_effect = [None, ValueError('Aggregate run storage capacity exceeded')]
+            with mock.patch.object(bootstrap.subprocess, 'Popen', return_value=process), \
+                    mock.patch.object(bootstrap.os, 'killpg') as kill:
+                with self.assertRaisesRegex(ValueError, 'storage'):
+                    bootstrap.run_command(['not-executed'], root, {}, root / 'log',
+                                          root / 'journal', budget=budget)
+                kill.assert_any_call(12345, bootstrap.signal.SIGTERM)
+                kill.assert_any_call(12345, bootstrap.signal.SIGKILL)
+                process.wait.assert_called()
+
+    def test_seed_entry_rejects_unknown_keys_and_non_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            seed = Path(directory) / 'seed'
+            seed.write_text('seed')
+            for entry in ({'path': str(seed), 'sha256': bootstrap.digest(seed), 'reviewed': True},
+                          {'path': str(seed), 'sha256': 'not-a-digest'}):
+                with self.assertRaises(ValueError):
+                    bootstrap.verified_seed(entry)
+
+    def test_ci_has_required_non_skippable_stage_invocation(self):
+        workflow = (HERE.parents[2] / '.github/workflows/flat-compiler-test.yml').read_text()
+        self.assertIn('stage-acceptance:', workflow)
+        self.assertIn('inputs.review_sha256', workflow)
+        self.assertIn('--review-sha256 "$REVIEW_SHA256"', workflow)
+        stage_job = workflow.split('  stage-acceptance:', 1)[1].split('\n  build:', 1)[0]
+        self.assertIn('runs-on: ubuntu-latest', stage_job)
+        self.assertNotIn('self-hosted', stage_job)
+        self.assertNotIn('environment:', stage_job)
+        self.assertIn('timeout-minutes: 65', stage_job)
+        self.assertNotIn('continue-on-error', stage_job)
+        self.assertIn("if: github.event_name == 'workflow_dispatch'", stage_job)
+        self.assertIn('workflow_dispatch:', workflow)
+        self.assertIn('inputs.seed_manifest', stage_job)
+        self.assertIn('inputs.review_receipt', stage_job)
+        self.assertIn('inputs.review_sha256', stage_job)
+        self.assertIn('test -n "$SEEDS" && test -f "$SEEDS"', stage_job)
+        self.assertIn('stage_bootstrap.py', stage_job)
+
+    def test_source_provenance_records_baseline_and_dirty_manifest(self):
+        revision = subprocess.CompletedProcess([], 0, stdout='a' * 40 + '\n')
+        dirty = subprocess.CompletedProcess([], 0, stdout=' M packages/Airship/src/Input.flat\0')
+        with mock.patch.object(bootstrap.subprocess, 'run', side_effect=[revision, dirty]):
+            value = bootstrap.source_provenance(Path('/repo'), Path('/pinned/git'))
+        self.assertEqual(value['baseline_revision'], 'a' * 40)
+        self.assertTrue(value['dirty'])
+        self.assertEqual(value['status_porcelain_v1_z'], dirty.stdout)
+        self.assertEqual(value['status_sha256'], hashlib.sha256(dirty.stdout.encode()).hexdigest())
+
+    def test_explicit_experiment_budgets_are_capped(self):
+        self.assertEqual(bootstrap.execution_limits(10800, 3000), (10800, 3000))
+        for total, command in ((10801, 3000), (10800, 3601), (100, 101), (0, 1)):
+            with self.assertRaises(ValueError):
+                bootstrap.execution_limits(total, command)
+
+    def test_snapshot_origin_real_git_lookup_without_primary_git_pointer(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            origin = 'git@github.com:FlatLang/Flat.git'
+            metadata = bootstrap.install_snapshot_origin(root, origin)
+            package = root / 'packages/Flat-Compiler'
+            package.mkdir(parents=True)
+            result = subprocess.run([shutil.which('git'), 'config', '--get', 'remote.origin.url'],
+                                    cwd=package, capture_output=True, text=True, timeout=10,
+                                    env={**os.environ, 'GIT_CONFIG_NOSYSTEM': '1',
+                                         'GIT_CONFIG_GLOBAL': os.devnull})
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, origin + '\n')
+            self.assertTrue((root / '.git').is_dir())
+            self.assertFalse((root / '.git').is_symlink())
+            self.assertEqual(metadata['.git/config'], bootstrap.digest(root / '.git/config'))
+            self.assertNotIn('include', (root / '.git/config').read_text())
+
+    def test_origin_capture_missing_or_hostile_fails_closed(self):
+        valid = subprocess.CompletedProcess([], 0, stdout='https://github.com/FlatLang/Flat.git\n')
+        with mock.patch.object(bootstrap.subprocess, 'run', return_value=valid) as run:
+            self.assertEqual(bootstrap.capture_origin(Path('/repo'), Path('/git')),
+                             'https://github.com/FlatLang/Flat.git')
+            self.assertIn('--local', run.call_args.args[0])
+        for origin in ('', 'https://example.invalid/Flat.git', 'git@github.com:FlatLang/Flat.git\n[include]',
+                       'https://user:secret@github.com/FlatLang/Flat.git', 'file:///tmp/Flat',
+                       'git@github.com:FlatLang/Flat.git"', 'https://github.com/FlatLang/../Flat.git'):
+            with self.subTest(origin=origin), tempfile.TemporaryDirectory() as directory:
+                with self.assertRaises(ValueError):
+                    bootstrap.install_snapshot_origin(Path(directory), origin)
+        with mock.patch.object(bootstrap.subprocess, 'run',
+                               side_effect=subprocess.CalledProcessError(1, ['git'])):
+            with self.assertRaisesRegex(ValueError, 'origin'):
+                bootstrap.capture_origin(Path('/repo'), Path('/git'))
+
     def test_seed_digest_is_required_and_verified(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "seed"
@@ -95,7 +240,8 @@ class BootstrapTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory).resolve()
             repo = root / "repo"
-            for name in ("Flat-Compiler", "Airship"):
+            for name in ('Airship', 'Flat-Project-Loading', 'Flat-Parser', 'Flat-Name-Binding',
+                         'Flat-Bound-IR', 'Flat-ES6-Bound-Writer', 'Flat-Compiler'):
                 package = repo / "packages" / name
                 package.mkdir(parents=True)
                 (package / "flat.json").write_text('{}')
@@ -108,7 +254,7 @@ class BootstrapTests(unittest.TestCase):
             output.mkdir()
             calls = []
 
-            def fake_command(command, cwd, env, log, journal):
+            def fake_command(command, cwd, env, log, journal, **kwargs):
                 policy = json.loads(Path(env['FLAT_BOOTSTRAP_POLICY']).read_text())
                 workspace = Path(policy['root'])
                 self.assertNotEqual(workspace, repo)
@@ -122,6 +268,7 @@ class BootstrapTests(unittest.TestCase):
                     self.assertNotEqual(Path(policy['seed']), workspace / bootstrap.PRODUCTS[0])
                     self.assertNotIn('--flatc-jar', command)
                 if '--debug' in command:
+                    self.assertIs(policy.get('debugOnly'), True)
                     self.assertTrue(Path(policy['compiler']).is_symlink())
                     self.assertEqual(Path(policy['compiler']).resolve(), Path(policy['seed']))
                     log.write_text('node ' + policy['compiler'] + ' -target es6\n')
@@ -159,11 +306,20 @@ class BootstrapTests(unittest.TestCase):
             with mock.patch.object(bootstrap, 'run_command', side_effect=fake_command):
                 previous = None
                 for number in range(3):
-                    previous = bootstrap.stage(number, repo, output, sources, seeds, previous)
+                    previous = bootstrap.stage(number, repo, output, sources, seeds, previous,
+                                               origin='git@github.com:FlatLang/Flat.git')
                     manifest = json.loads((output / f'stage{number}/manifest.json').read_text())
                     self.assertEqual(manifest['status'], 'passed')
-                    self.assertEqual(len(manifest['commands']), 6)
-            self.assertEqual([number for number, _ in calls], [0] * 6 + [1] * 6 + [2] * 6)
+                    self.assertEqual(manifest['source_origin'], 'git@github.com:FlatLang/Flat.git')
+                    self.assertEqual(set(manifest['source_origin_metadata']), {'.git/HEAD', '.git/config'})
+                    self.assertEqual(len(manifest['commands']), 16)
+                    installed = [Path(item['argv'][item['argv'].index('-f') + 1]).name
+                                 for item in manifest['commands']
+                                 if 'install' in item['argv'] and 'test' in item['argv']]
+                    self.assertEqual(installed, ['Airship', 'Flat-Project-Loading', 'Flat-Parser',
+                                                'Flat-Name-Binding', 'Flat-Bound-IR',
+                                                'Flat-ES6-Bound-Writer', 'Flat-Compiler'])
+            self.assertEqual([number for number, _ in calls], [0] * 16 + [1] * 16 + [2] * 16)
             self.assertFalse((repo / bootstrap.PRODUCTS[0]).exists())
             # A zero-exit no-op producer cannot green the stage, even if supplied
             # with an old compiler seed at Airship's existence-check location.
@@ -171,7 +327,8 @@ class BootstrapTests(unittest.TestCase):
             failed.mkdir()
             with mock.patch.object(bootstrap, 'run_command'):
                 with self.assertRaises(ValueError):
-                    bootstrap.stage(1, repo, failed, sources, seeds, previous)
+                    bootstrap.stage(1, repo, failed, sources, seeds, previous,
+                                    origin='git@github.com:FlatLang/Flat.git')
             receipt = json.loads((failed / 'stage1/manifest.json').read_text())
             self.assertEqual(receipt['status'], 'failed')
 
@@ -238,6 +395,77 @@ class GuardTests(unittest.TestCase):
                                 json.dumps(str(self.compiler)) + "], {stdio:'inherit'});")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("immutable seed", result.stdout)
+
+    def test_guard_records_exact_real_git_origin_lookup(self):
+        origin = 'git@github.com:FlatLang/Flat.git'
+        bootstrap.install_snapshot_origin(self.root / 'work', origin)
+        result = self.run_probe("const r=require('child_process').spawnSync('git', "
+                                "['config','--get','remote.origin.url'], {cwd:" +
+                                json.dumps(str(self.root / 'work')) +
+                                ",encoding:'utf8'}); process.stdout.write(r.stdout); process.exit(r.status);")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, origin + '\n')
+        records = [json.loads(line) for line in self.journal.read_text().splitlines()]
+        self.assertEqual(records[0]['decision'], 'allow')
+        self.assertEqual(records[0]['args'], ['config', '--get', 'remote.origin.url'])
+
+    def test_entrypoint_runtime_shapes_are_explicit_and_confined(self):
+        package = self.root / 'work/packages/Flat-ES6-Bound-Writer'
+        runner = package / 'dist/es6/test.js'
+        runner.parent.mkdir(parents=True)
+        imported = package / '.flat-es6-entrypoint-123/main.js'
+        imported.parent.mkdir(); imported.write_text("if(require.main===module) process.exit(9);")
+        failed = package / '.flat-es6-entrypoint-failure-123/main.js'
+        failed.parent.mkdir(); failed.write_text("console.error('entrypoint failed'); process.exit(1);")
+        def probe(args):
+            runner.write_text("const r=require('child_process').spawnSync('node', " + json.dumps(args) +
+                              ", {env:{}, encoding:'utf8'}); console.log(r.status); ")
+            return subprocess.run([str(self.node), str(runner)], cwd=package, env=self.env,
+                                  capture_output=True, text=True, timeout=10)
+        for args, status in [(['-e', "require('./.flat-es6-entrypoint-123/main.js')"], '0'),
+                             (['--unhandled-rejections=strict', '.flat-es6-entrypoint-failure-123/main.js'], '1')]:
+            result = probe(args)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout.strip(), status)
+            self.assertFalse(any(json.loads(line)['decision'] == 'reject'
+                                 for line in self.journal.read_text().splitlines()))
+        failed.write_text('process.exit(0)')
+        self.journal.unlink()
+        result = probe(['--unhandled-rejections=strict', '.flat-es6-entrypoint-failure-123/main.js'])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(any(json.loads(line)['decision'] == 'reject'
+                            for line in self.journal.read_text().splitlines()))
+        for args in (['-e', "require('./.flat-es6-entrypoint-123/main.js');process.exit(0)"],
+                     ['-e', "require('/tmp/other.js')"],
+                     ['--unhandled-rejections=strict', '.flat-es6-entrypoint-123/main.js'],
+                     ['--no-warnings', '.flat-es6-entrypoint-123/main.js']):
+            result = probe(args)
+            self.assertNotEqual(result.returncode, 0)
+        # Symlink substitution is forbidden even if the lexical fixture name fits.
+        imported.unlink(); imported.symlink_to(self.seed)
+        self.assertNotEqual(probe(['-e', "require('./.flat-es6-entrypoint-123/main.js')"]).returncode, 0)
+
+    def test_entrypoint_probe_keeps_recursive_guard(self):
+        package = self.root / 'work/packages/Flat-ES6-Bound-Writer'
+        runner = package / 'dist/es6/test.js'; runner.parent.mkdir(parents=True)
+        fixture = package / '.flat-es6-entrypoint-456/main.js'; fixture.parent.mkdir()
+        fixture.write_text("require('child_process').spawnSync('java',['-version']);")
+        runner.write_text("try { require('child_process').spawnSync('node', " +
+                          json.dumps(['-e', "require('./.flat-es6-entrypoint-456/main.js')"]) +
+                          ", {env:{}}); } catch(e) {}")
+        subprocess.run([str(self.node), str(runner)], cwd=package, env=self.env,
+                       capture_output=True, timeout=10, check=True)
+        self.assertIn('reject', self.journal.read_text())
+
+    def test_debug_only_policy_rejects_compiler_execution(self):
+        policy = json.loads(self.policy.read_text())
+        policy['debugOnly'] = True
+        self.policy.write_text(json.dumps(policy))
+        result = self.run_probe("require('child_process').spawnSync('node', [" +
+                                json.dumps(str(self.compiler)) + "], {stdio:'inherit'});")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn('immutable seed', result.stdout)
+        self.assertIn('debug-only', self.journal.read_text())
 
     def test_unmapped_compiler_is_rejected_not_substituted(self):
         self.compiler.unlink()

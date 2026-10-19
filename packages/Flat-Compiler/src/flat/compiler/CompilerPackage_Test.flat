@@ -51,18 +51,37 @@ testable class {
         }
     }
 
+    async test `conditional reference returns evaluate each condition and selected branch once`() {
+        let source = "package app\nclass Value { construct() {} } class Main { " +
+            "static condition(Bool value) -> Bool { external js { process.stdout.write('C'); } return value; } " +
+            "static selected(Value value) -> Value { external js { process.stdout.write('V'); } return value; } " +
+            "static choose(Bool flag, Value value) -> Value { return condition(flag) ? null : selected(value); } " +
+            "static reversed(Bool flag, Value value) -> Value { return condition(flag) ? selected(value) : null; } " +
+            "static nested(Bool flag, Value value) -> Value { return condition(flag) ? (condition(false) ? null : selected(value)) : null; } " +
+            "public static main() { let value = Value(); let a = choose(true, value); let b = choose(false, value); " +
+            "let c = reversed(true, value); let d = reversed(false, value); let e = nested(true, value); " +
+            "external js { console.log(); console.log(" + "#" + "{a} === flat_null, " + "#" + "{b} === " + "#" + "{value}, " +
+            "#" + "{c} === " + "#" + "{value}, " + "#" + "{d} === flat_null, " + "#" + "{e} === " + "#" + "{value}); } } }"
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(MemoryCompilerSourceProvider([
+            CompilerSource("app/Main.flat", source)]), sink, "conditional-returns.js", mainClass: "app/Main")
+        let summary = session.completion.get()
+        if (summary.packageDiagnostic) throw Exception(summary.packageDiagnostic)
+        expect(summary.diagnosticCount).toBe(0)
+        expect(sink.artifacts().count).toBe(1)
+        let root = File(".flat-compiler-conditional-return-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "index.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("CCVCVCCCV\ntrue true true true true\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
     realSources() -> CompilerSource[] {
-        CompilerSource[] values = [
-        CompilerSource("flat/primitive/number/Char.flat", Es6ArtifactFiles.read(
-            File("../Flat-Core/src/flat/primitive/number/Char.flat"))),
-        CompilerSource("flat/primitive/number/Number.flat", Es6ArtifactFiles.read(
-            File("../Flat-Core/src/flat/primitive/number/Number.flat"))),
-        CompilerSource("flat/primitive/number/Integer.flat", Es6ArtifactFiles.read(
-            File("../Flat-Core/src/flat/primitive/number/Integer.flat"))),
-        CompilerSource("flat/primitive/Primitive.flat", Es6ArtifactFiles.read(
-            File("../Flat-Core/src/flat/primitive/Primitive.flat")))
-        ]
-        return Compiler_Test.admitCoreDependencies(values)
+        return Compiler_Test.realCoreExecutionSources()
     }
 
     async test `public package API executes unchanged production Char behavior`() {
@@ -358,6 +377,63 @@ testable class {
             expect(response.stdout.join("")).toBe("23\n")
         } finally {
             Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    async test `configured static named arguments execute once in lexical order and retain parameter order`() {
+        var String reference = ""
+        reference += '#'
+        reference += "{result}"
+        CompilerSource[] sources = [
+            CompilerSource("library/Tools.flat", "package library\nclass Tools { " +
+                "public static combine(Int left, Int right) -> Int { return left * 10 + right; } }"),
+            CompilerSource("app/Main.flat", "package app\nclass Main { " +
+                "public static left() -> Int { external js { process.stdout.write('L'); } return 1; } " +
+                "public static right() -> Int { external js { process.stdout.write('R'); } return 2; } " +
+                "public static main() { let result = combine(right: right(), left: left()); " +
+                "external js { console.log(); console.log(" + reference + "); } } }")
+        ]
+        let sink = MemoryCompilerArtifactSink()
+        let session = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), sink,
+            "named.js", "app/Main", defaultImports: [PrimitiveDefaultImport("library/Tools", true)])
+        expect(session.completion.get().diagnosticCount).toBe(0)
+        expect(sink.artifacts().count).toBe(1)
+        let root = File(".flat-compiler-static-named-test-#{Time.currentTimeMillis}")
+        Es6ArtifactFiles.ensureDirectory(root)
+        try {
+            let output = File(root, "named.js")
+            Es6ArtifactCommitter().commit(output, sink.artifacts().first.code)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            if (response.exitCode != 0) throw Exception(response.stderr.join(""))
+            expect(response.stdout.join("")).toBe("RL\n12\n")
+        } finally { Es6ArtifactFiles.remove(root) }
+    }
+
+    async test `configured static overload diagnostics retain consumer location without artifact publication`() {
+        String[] arguments = ["true", "1"]
+        var Int index
+        for (argument in arguments) {
+            CompilerSource[] sources = [
+                CompilerSource("library/First.flat", "package library\nclass First { public static choose(Int value) -> Int { return value; } }"),
+                CompilerSource("library/Second.flat", "package library\nclass Second { public static choose(Int value) -> Int { return value; } }"),
+                CompilerSource("app/Consumer.flat", "package app\nclass Consumer { static run() -> Int { return choose(" + argument + "); } }")
+            ]
+            let defaults = [PrimitiveDefaultImport("library/First", true), PrimitiveDefaultImport("library/Second", true)]
+            let forward = MemoryCompilerArtifactSink()
+            let backward = MemoryCompilerArtifactSink()
+            let first = Compiler().compilePackage(MemoryCompilerSourceProvider(sources), forward,
+                "defaults.js", defaultImports: defaults)
+            let second = Compiler().compilePackage(MemoryCompilerSourceProvider(sources.reverse()), backward,
+                "defaults.js", defaultImports: defaults.reverse())
+            let summary = first.completion.get()
+            expect(summary.diagnosticCount).toBe(1)
+            expect(summary.artifactCount).toBe(0)
+            expect(summary.packageDiagnostic.contains(index == 0 ? "type.call-no-match" : "type.call-ambiguous")).toBe(true)
+            expect(summary.packageDiagnostic.contains("app/Consumer.flat:2:")).toBe(true)
+            expect(second.completion.get().packageDiagnostic).toBe(summary.packageDiagnostic)
+            expect(forward.artifacts().count).toBe(0)
+            expect(backward.artifacts().count).toBe(0)
+            index++
         }
     }
 

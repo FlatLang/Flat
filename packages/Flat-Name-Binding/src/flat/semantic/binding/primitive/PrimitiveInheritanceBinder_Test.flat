@@ -3,8 +3,44 @@ package flat/semantic/binding/primitive
 import flat/compiler/models
 import flat/parser/flat
 import flat/lexer/Lexer
+import flat/bound
 
 testable class {
+    async test `inherited fields do not shadow constructor or method parameters`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:inherited-parameter-shadow"), "one")
+        let source = "class Parent { visible Int value; construct(Int value) { this.value = value; } } " +
+            "class Child extends Parent { construct(Int value) => super(value) " +
+            "public parameter(Int value) -> Int { return value; } " +
+            "public inherited() -> Int { return value; } " +
+            "public explicit(Int value) -> Int { return this.value; } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        let parent = PrimitiveClassParser().parse(partitions.first.tokenValues(), snapshot, partitions.first.startTokenIndex)
+        let child = PrimitiveClassParser().parse(partitions.last.tokenValues(), snapshot, partitions.last.startTokenIndex)
+        let result = PrimitiveInheritanceBinder().bind(parent, child, snapshot)
+        let constructor = result.childType.functionUnits().firstOrNull({ _.constructorFunction })
+        let parentArgumentValue = constructor.parentConstructorCall.argumentValues().first
+        let parentArgument = (BoundReferenceExpression)parentArgumentValue
+        expect(parentArgument.symbolIdentity.value).toBe(constructor.parameterValues().first.identity.value)
+        let method = result.childType.functionUnits().firstOrNull({ _.name == "parameter" })
+        let returnStatement = method.statements().first
+        let returned = (BoundReturnStatement)returnStatement
+        let reference = (BoundReferenceExpression)returned.value
+        expect(reference.symbolIdentity.value).toBe(method.parameterValues().first.identity.value)
+        let inherited = result.childType.functionUnits().firstOrNull({ _.name == "inherited" })
+        let inheritedStatement = inherited.statements().first
+        let inheritedReturn = (BoundReturnStatement)inheritedStatement
+        let field = result.parentType.fieldUnits().first
+        let inheritedReference = (BoundReferenceExpression)inheritedReturn.value
+        expect(inheritedReference.symbolIdentity.value).toBe(field.identity.value)
+        let explicit = result.childType.functionUnits().firstOrNull({ _.name == "explicit" })
+        let explicitStatement = explicit.statements().first
+        let explicitReturn = (BoundReturnStatement)explicitStatement
+        let access = (BoundMemberAccessExpression)explicitReturn.value
+        expect(access.memberIdentity.value).toBe(field.identity.value)
+    }
+
     test `binds sealed parent child component and shared virtual slot`() {
         let snapshot = SourceSnapshotIdentity(
             SourceIdentity("memory:inheritance-bind"), "revision:one"

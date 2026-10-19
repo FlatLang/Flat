@@ -342,7 +342,7 @@ class {
         if (!sourceLocations.contains(selectedLocation)) sourceLocations.add(selectedLocation)
         let excludeSources = source.excludedSources.map({ airship.packageLocation.normalizedLocation + "/" + _.location })
         let testSource = airship.package.testSource?.source
-        let excludeSource = installationTarget != "test" && testSource?.contains("*")
+        let excludeSource = installationTarget != "test" && testSource
             ? airship.packageLocation.normalizedLocation + "/" + testSource : null
 
         args.addAll(sourceLocations)
@@ -378,7 +378,7 @@ class {
                 args.addAll(["-x", selectedPackage.packageLocation.normalizedLocation + "/" + exclusion.location])
             }
             let dependencyTests = selectedPackage.package.testSource?.source
-            if (dependencyTests?.contains("*")) {
+            if (dependencyTests) {
                 args.addAll(["-x", selectedPackage.packageLocation.normalizedLocation + "/" + dependencyTests])
             }
         }

@@ -175,7 +175,7 @@ class {
             if (cancelled) break
             if (sourceWindow.isEmpty) continue
             if (next < identities.count && sourceWindow.count < maxActive + maxQueued) continue
-            if (sourceWindow.any({ !_.submitted && !_.settled }) && submittedSources < maxActive) continue
+            if (sourceWindow.any((work) => !work.submitted && !work.settled) && submittedSources < maxActive) continue
             let changed = sourceChanged
             changed.get()
             sourceChanged = Future.create<Bool>()
@@ -192,6 +192,9 @@ class {
             let source = provider.load(work.identity)
             if (cancelled) return
             if (!source) throw Exception("Missing source '#{work.identity}'")
+            if (source.identity != work.identity) {
+                throw Exception("Loaded source identity does not match '#{work.identity}'")
+            }
             let code = compiler.compile(source)
             if (!cancelled) work.code = code
         } catch (Exception error) {

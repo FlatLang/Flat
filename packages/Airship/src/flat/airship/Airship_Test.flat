@@ -414,6 +414,45 @@ testable class {
         }
     }
 
+    test async `Flat production compilation excludes explicit root and dependency test paths`() {
+        let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
+        let dependency = LocalDependency(airship.getWorkspacePackagesDirectory().normalizedLocation + "/CoLorIzer")
+        let child = airship.dependencyService.getCompilationDependencyPackage(dependency)
+        let rootTests = airship.package.testSource
+        let main = child.package.mainSource
+        let tests = child.package.testSource
+        let testPaths = ["src/Explicit_Test.flat", "src/tests"]
+        child.package.mainSource = main.copy(dependencies: Array<Dependency>(), defaultExports: Array<DefaultExport>())
+        try {
+            for (testPath in testPaths) {
+                airship.package.testSource = rootTests.copy(source: testPath)
+                child.package.testSource = tests.copy(source: testPath)
+                let source = airship.getSourceForPackage("main").copy(
+                    dependencies: [dependency], defaultExports: Array<DefaultExport>()
+                )
+                let args = airship.installService.getFlatcInstallArguments("main", source)
+                let rootExclusion = airship.packageLocation.normalizedLocation + "/" + testPath
+                let dependencyExclusion = child.packageLocation.normalizedLocation + "/" + testPath
+                expect(args.contains(rootExclusion)).toBe(true)
+                expect(args[args.indexOf(rootExclusion) - 1]).toBe("-x")
+                expect(args.contains(dependencyExclusion)).toBe(true)
+                expect(args[args.indexOf(dependencyExclusion) - 1]).toBe("-x")
+
+                let testSource = airship.getSourceForPackage("test").copy(
+                    dependencies: [dependency], defaultExports: Array<DefaultExport>()
+                )
+                let testArgs = airship.installService.getFlatcInstallArguments("test", testSource)
+                // Selected root tests are inputs; dependency tests remain excluded.
+                expect(testArgs[testArgs.indexOf(rootExclusion) - 1] == "-x").toBe(false)
+                expect(testArgs[testArgs.indexOf(dependencyExclusion) - 1]).toBe("-x")
+            }
+        } finally {
+            airship.package.testSource = rootTests
+            child.package.mainSource = main
+            child.package.testSource = tests
+        }
+    }
+
     test async `Flat dependency default imports are selected from production not tests`() {
         let airship = Airship(["--flatc-runtime", "flat", "--use-links", "-t", "es6"])
         let packages = airship.getWorkspacePackagesDirectory()

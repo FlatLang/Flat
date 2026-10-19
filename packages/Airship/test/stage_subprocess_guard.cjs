@@ -33,6 +33,8 @@ function unquote(value) {
 }
 function admit(command, args = [], options = {}) {
   const original = command;
+  let expectedExit = 0;
+  let nodeProbe = false;
   try {
     command = unquote(command);
     args = args.map(unquote);
@@ -44,10 +46,34 @@ function admit(command, args = [], options = {}) {
       command = words[0]; args = words.slice(1);
     }
     const name = path.basename(command);
+    if (policy.debugOnly && name !== 'git') throw Error('debug-only policy prohibits executable launches');
     if (options.cwd && !path.resolve(options.cwd).startsWith(policy.root + path.sep) &&
         path.resolve(options.cwd) !== policy.root) throw Error('Subprocess cwd outside stage');
     if (name === 'node' || command === policy.node) {
       if (command !== 'node' && command !== policy.node) throw Error('Unpinned Node executable');
+      if (args.length && args[0].startsWith('-')) {
+        const owner = path.join(policy.root, 'packages/Flat-ES6-Bound-Writer');
+        const runner = path.join(owner, 'dist/es6/test.js');
+        if (!process.argv[1] || fs.realpathSync(process.argv[1]) !== runner ||
+            path.resolve(options.cwd || process.cwd()) !== owner || args.length !== 2 || options.shell) {
+          throw Error('Node flags/eval require the exact Bound-Writer test runtime');
+        }
+        let fixture;
+        if (args[0] === '-e') {
+          const match = /^require\('\.\/(\.flat-es6-entrypoint-[0-9]{1,16}\/main\.js)'\)$/.exec(args[1]);
+          if (!match) throw Error('Only exact entrypoint import probe is admitted');
+          fixture = match[1];
+        } else if (args[0] === '--unhandled-rejections=strict' &&
+                   /^\.flat-es6-entrypoint-failure-[0-9]{1,16}\/main\.js$/.test(args[1])) {
+          fixture = args[1];
+          expectedExit = 1; // This named test asserts exactly one, never any failure.
+        } else throw Error('Unsupported Node test runtime flags');
+        const selected = path.join(owner, fixture);
+        if (fs.realpathSync(selected) !== selected || !fs.statSync(selected).isFile() ||
+            fs.statSync(selected).size > 1024 * 1024) throw Error('Probe fixture must be a bounded regular workspace file');
+        nodeProbe = true;
+      }
+      if (!nodeProbe) {
       if (!args.length || args[0].startsWith('-')) throw Error('Node requires a script, not flags/eval');
       let script = path.resolve(options.cwd || process.cwd(), args[0]);
       const lookup = path.join(fs.realpathSync(path.dirname(script)), path.basename(script));
@@ -66,8 +92,10 @@ function admit(command, args = [], options = {}) {
         }
         script = real;
       }
+      args[0] = script;
+      }
       if (policy.nodeSha256) verify(policy.node, policy.nodeSha256);
-      command = policy.node; args[0] = script;
+      command = policy.node;
     } else if (policy.stage === 0 && name === 'java') {
       if (command !== 'java' && command !== policy.java) throw Error('Unpinned Java executable');
       if (args[0] !== '-jar' || path.resolve(args[1] || '') !== policy.javaJar) {
@@ -96,7 +124,7 @@ function admit(command, args = [], options = {}) {
     NODE_OPTIONS: '--require=' + __filename,
     FLAT_HOME: process.env.FLAT_HOME, HOME: process.env.HOME,
     PATH: process.env.PATH,
-  }}];
+  }}, expectedExit];
 }
 for (const method of ['spawn', 'spawnSync', 'execFile', 'execFileSync']) {
   const original = cp[method];
@@ -107,6 +135,7 @@ for (const method of ['spawn', 'spawnSync', 'execFile', 'execFileSync']) {
     }
     if (typeof options === 'function') { callback = options; options = {}; }
     const admitted = admit(command, args, options || {});
+    const expectedExit = admitted.pop();
     let result;
     try {
       result = original.call(cp, ...admitted, ...(callback ? [callback] : []));
@@ -117,13 +146,13 @@ for (const method of ['spawn', 'spawnSync', 'execFile', 'execFileSync']) {
     const compilerOrNode = admitted[0] === policy.node || admitted[0] === policy.java;
     if (compilerOrNode) {
       if (method.endsWith('Sync')) {
-        if (result && typeof result === 'object' && (result.error || result.status !== 0)) {
+        if (result && typeof result === 'object' && (result.error || result.signal || result.status !== expectedExit)) {
           record('reject', admitted[0], admitted[1], 'Child failed or was signaled');
         }
       } else if (result && typeof result.on === 'function') {
         result.on('error', () => record('reject', admitted[0], admitted[1], 'Child could not start'));
         result.on('close', (code, signal) => {
-          if (code !== 0 || signal) record('reject', admitted[0], admitted[1], 'Child failed or was signaled');
+          if (code !== expectedExit || signal) record('reject', admitted[0], admitted[1], 'Child failed or was signaled');
         });
       }
     }

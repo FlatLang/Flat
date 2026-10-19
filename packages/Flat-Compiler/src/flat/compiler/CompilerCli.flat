@@ -163,6 +163,10 @@ class CompilerCli {
         String canonicalPath = file.getCanonicalPath()
         String excludedPath = excluded.getCanonicalPath()
         if (canonicalPath == excludedPath) return true
+        if (excluded.isDirectory) {
+            let descendantPrefix = excludedPath.endsWith("/") ? excludedPath : excludedPath + "/"
+            if (canonicalPath.startsWith(descendantPrefix)) return true
+        }
         return canonicalPath.matches(Pattern(exclusion))
     }
 }

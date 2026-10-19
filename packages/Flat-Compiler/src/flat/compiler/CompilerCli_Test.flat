@@ -13,15 +13,13 @@ testable class {
     realArguments(File output) -> String[] {
         String[] values = [
             "flatc", "../Flat-Core/src/flat/primitive/number/Char.flat",
-            "-l", "../Flat-Core/src/flat/primitive/number/Number.flat",
-            "-l", "../Flat-Core/src/flat/primitive/number/Integer.flat",
-            "-l", "../Flat-Core/src/flat/primitive/Primitive.flat",
             "-target", "es6", "-library", "-o", output.normalizedLocation
         ]
-        let dependencies = Compiler_Test.coreDependencyIdentities()
-        for (identity in dependencies) {
+        // Reuse the finite, unchanged real-Core execution closure, not all Core tests.
+        let sources = Compiler_Test.realCoreExecutionSources()
+        for (source in sources) {
             File parent = File("../Flat-Core/src")
-            File file = File(parent, identity)
+            File file = File(parent, source.identity)
             String path = file.normalizedLocation
             if (!values.contains(path)) {
                 values.add("-l")
@@ -292,6 +290,34 @@ testable class {
         expect(CompilerCli.matchesExclusion(sourceRoot.normalizedLocation + "/**/*_Test*.flat", file)).toBe(true)
         expect(CompilerCli.matchesExclusion(sourceRoot.normalizedLocation + "/**/*_Test*.flat",
             File("../Flat-Core/src/flat/primitive/number/Char.flat").getCanonicalFileSync())).toBe(false)
+    }
+
+    async test `CLI directory exclusion includes descendants but not similarly prefixed siblings`() {
+        let root = File(".flat-compiler-cli-directory-exclusion-test-#{Time.currentTimeMillis}")
+        let excluded = File(root, "src/private")
+        let nested = File(excluded, "nested/deeper")
+        let sibling = File(root, "src/privateSibling")
+        Es6ArtifactFiles.ensureDirectory(nested)
+        Es6ArtifactFiles.ensureDirectory(sibling)
+        try {
+            let invalid = File(nested, "Broken.flat")
+            let valid = File(sibling, "Kept.flat")
+            Es6ArtifactCommitter().commit(invalid, "not valid Flat syntax")
+            Es6ArtifactCommitter().commit(valid, "class Kept {}")
+            expect(CompilerCli.matchesExclusion(excluded.normalizedLocation, excluded)).toBe(true)
+            expect(CompilerCli.matchesExclusion(excluded.normalizedLocation, invalid)).toBe(true)
+            expect(CompilerCli.matchesExclusion(excluded.normalizedLocation, valid)).toBe(false)
+            expect(CompilerCli.matchesExclusion(excluded.normalizedLocation + "/../private/", invalid)).toBe(true)
+            expect(CompilerCli.matchesExclusion(valid.normalizedLocation, invalid)).toBe(false)
+            let output = File(root, "library.js")
+            expect(CompilerCli.run([
+                "flatc", File(root, "src").normalizedLocation, "-target", "es6", "-library",
+                "-x", excluded.normalizedLocation, "--max-sources", "1", "-o", output.normalizedLocation
+            ])).toBe(0)
+            expect(output.isFile).toBe(true)
+            let response = System.executeExact(["node", output.normalizedLocation], silent: true, shell: false)
+            expect(response.exitCode).toBe(0)
+        } finally { Es6ArtifactFiles.remove(root) }
     }
 
     async test `CLI selects only base and ES6 compatible target overlays`() {

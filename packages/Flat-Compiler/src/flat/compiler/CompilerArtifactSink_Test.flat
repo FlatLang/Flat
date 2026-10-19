@@ -18,7 +18,7 @@ testable class {
             Es6ArtifactFiles.write(sentinel, "preserve")
             Es6ArtifactFiles.write(spoolSentinel, "preserve-spool")
             let absolute = sentinel.getParent().normalizedLocation + "/" + sentinel.name
-            let invalid = ["../outside.js", "nested/../../outside.js", absolute,
+            String[] invalid = ["../outside.js", "nested/../../outside.js", absolute,
                 "/outside.js", "C:/outside.js", "C:outside.js", "\\outside.js",
                 "nested\\outside.js", "", "nested//outside.js", "nested/",
                 "./outside.js", "nested/./outside.js", "nested/../outside.js"]
@@ -43,6 +43,320 @@ testable class {
             spool.commitTo(files)
             expect(Es6ArtifactFiles.read(File(output, "safe.js"))).toBe("safe")
         } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `failed spool write is not admitted or published and retry retains capacity`() {
+        let root = File(".flat-artifact-write-failure-test-#{Time.currentTimeMillis}")
+        let output = File(root, "output")
+        let storage = File(root, "spool")
+        let files = FilesystemCompilerArtifactSink(output)
+        let spool = SpooledCompilerArtifactSink(storage, 1)
+        try {
+            Es6ArtifactFiles.ensureDirectory(File(output, "sources"))
+            let destination = File(output, "sources/Main.js")
+            Es6ArtifactFiles.write(destination, "previous")
+            var Bool rejected = false
+            native var Object originalWrite
+            external {
+                #{originalWrite} = #{File.FileGlobal.fs}.writeFileSync;
+                #{File.FileGlobal.fs}.writeFileSync = () => { throw new Error('controlled stage write'); };
+            }
+            try {
+                try { spool.write(CompilerArtifact("sources/Main.js", "replacement")) }
+                catch (Exception error) { rejected = true }
+            } finally {
+                external { #{File.FileGlobal.fs}.writeFileSync = #{originalWrite}; }
+            }
+            expect(rejected).toBe(true)
+            expect(spool.artifacts().count).toBe(0)
+            spool.commitTo(files)
+            expect(files.artifacts().count).toBe(0)
+            expect(Es6ArtifactFiles.read(destination)).toBe("previous")
+            expect(storage.getChildFiles(includeDirectories: true).count).toBe(0)
+
+            Es6ArtifactFiles.ensureDirectory(File(storage, "sources"))
+            spool.write(CompilerArtifact("sources/Main.js", "replacement"))
+            expect(spool.artifacts().count).toBe(1)
+            spool.commitTo(files)
+            expect(Es6ArtifactFiles.read(destination)).toBe("replacement")
+            expect(spool.artifacts().count).toBe(0)
+            expect(File(storage, "sources/Main.js.spool").exists).toBe(false)
+        } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    class FailingPromotionSink extends FilesystemCompilerArtifactSink {
+        visible var Bool rejectSecond = true
+        visible var Int writes
+
+        public construct(File root) => super(root)
+
+        override public write(CompilerArtifact artifact) {
+            if (rejectSecond && artifact.identity == "b.js") {
+                throw Exception("controlled second promotion failure")
+            }
+            super.write(artifact)
+            writes++
+        }
+    }
+
+    test `partial spool promotion retries only unpublished artifacts`() {
+        let root = File(".flat-artifact-partial-test-#{Time.currentTimeMillis}")
+        let files = FailingPromotionSink(File(root, "output"))
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 2)
+        try {
+            spool.write(CompilerArtifact("b.js", "B"))
+            spool.write(CompilerArtifact("a.js", "A"))
+            var Bool rejected = false
+            try { spool.commitTo(files) } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(files.writes).toBe(1)
+            expect(spool.artifacts().count).toBe(1)
+            expect(spool.artifacts().first.identity).toBe("b.js")
+            files.rejectSecond = false
+            spool.commitTo(files)
+            expect(files.writes).toBe(2)
+            expect(spool.artifacts().count).toBe(0)
+            expect(Es6ArtifactFiles.read(File(root, "output/a.js"))).toBe("A")
+            expect(Es6ArtifactFiles.read(File(root, "output/b.js"))).toBe("B")
+        } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `spool instances own private staging and disposal preserves unrelated files`() {
+        let root = File(".flat-artifact-private-test-#{Time.currentTimeMillis}")
+        let storage = File(root, "spool")
+        let first = SpooledCompilerArtifactSink(storage, 1)
+        let second = SpooledCompilerArtifactSink(storage, 1)
+        let files = FilesystemCompilerArtifactSink(File(root, "output"))
+        let sentinel = File(storage, "a.js.spool")
+        try {
+            Es6ArtifactFiles.write(sentinel, "unrelated")
+            first.write(CompilerArtifact("a.js", "first"))
+            second.write(CompilerArtifact("a.js", "second"))
+            expect(storage.getChildFiles(includeDirectories: true).count).toBe(3)
+            first.dispose()
+            first.dispose()
+            expect(Es6ArtifactFiles.read(sentinel)).toBe("unrelated")
+            second.commitTo(files)
+            expect(Es6ArtifactFiles.read(File(root, "output/a.js"))).toBe("second")
+            second.dispose()
+            expect(storage.getChildFiles(includeDirectories: true).count).toBe(1)
+            var Int rejected
+            try { first.write(CompilerArtifact("b.js", "B")) } catch (Exception error) { rejected++ }
+            try { first.commitTo(files) } catch (Exception error) { rejected++ }
+            expect(rejected).toBe(2)
+        } finally {
+            first.dispose()
+            second.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `spool admission detaches caller and returned identity and payload storage`() {
+        let root = File(".flat-artifact-snapshot-test-#{Time.currentTimeMillis}")
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1)
+        let files = FilesystemCompilerArtifactSink(File(root, "output"))
+        try {
+            let identity = "a.js".concat("")
+            let code = "A".concat("")
+            spool.write(CompilerArtifact(identity, code))
+            identity.chars[0] = 'z'
+            code.chars[0] = 'Z'
+            let observed = spool.artifacts().first
+            observed.identity.chars[0] = 'q'
+            observed.code.chars[0] = 'Q'
+            expect(spool.artifacts().first.identity).toBe("a.js")
+            expect(spool.artifacts().first.code).toBe("A")
+            spool.commitTo(files)
+            expect(Es6ArtifactFiles.read(File(root, "output/a.js"))).toBe("A")
+        } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `spool byte capacity includes identity payload and releases after cleanup`() {
+        let root = File(".flat-artifact-byte-test-#{Time.currentTimeMillis}")
+        let storage = File(root, "spool")
+        let spool = SpooledCompilerArtifactSink(storage, 2, maxBytes: 20)
+        let files = FilesystemCompilerArtifactSink(File(root, "output"))
+        try {
+            var Bool rejected = false
+            try { spool.write(CompilerArtifact("a.js", "AA")) } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(storage.getChildFiles(includeDirectories: true).count).toBe(0)
+            spool.write(CompilerArtifact("a.js", "A"))
+            rejected = false
+            try { spool.write(CompilerArtifact("b.js", "B")) } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            spool.commitTo(files)
+            spool.write(CompilerArtifact("b.js", "B"))
+            spool.dispose()
+            expect(File(root, "output/b.js").exists).toBe(false)
+            expect(storage.getChildFiles(includeDirectories: true).count).toBe(0)
+        } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `published artifact cleanup failure retries cleanup without republication`() {
+        let root = File(".flat-artifact-cleanup-test-#{Time.currentTimeMillis}")
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1)
+        let files = FailingPromotionSink(File(root, "output"))
+        native var Object originalRemove
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            external {
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                const original = #{originalRemove};
+                #{File.FileGlobal.fs}.rmSync = (path, options) => {
+                    if (path.endsWith('.spool')) throw new Error('controlled spool cleanup failure');
+                    return original(path, options);
+                };
+            }
+            var Bool rejected = false
+            try {
+                try { spool.commitTo(files) } catch (Exception error) { rejected = true }
+            } finally {
+                external { #{File.FileGlobal.fs}.rmSync = #{originalRemove}; }
+            }
+            expect(rejected).toBe(true)
+            expect(files.writes).toBe(1)
+            expect(spool.artifacts().count).toBe(0)
+            spool.commitTo(files)
+            expect(files.writes).toBe(1)
+            spool.write(CompilerArtifact("c.js", "C"))
+        } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `spool disposal failure remains terminal and cleanup can be retried`() {
+        let root = File(".flat-artifact-dispose-test-#{Time.currentTimeMillis}")
+        let storage = File(root, "spool")
+        let spool = SpooledCompilerArtifactSink(storage, 1)
+        let files = FilesystemCompilerArtifactSink(File(root, "output"))
+        native var Object originalRemove
+        try {
+            spool.write(CompilerArtifact("a.js", "A"))
+            external {
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                #{File.FileGlobal.fs}.rmSync = () => { throw new Error('controlled dispose failure'); };
+            }
+            var Bool rejected = false
+            try {
+                try { spool.dispose() } catch (Exception error) { rejected = true }
+            } finally {
+                external { #{File.FileGlobal.fs}.rmSync = #{originalRemove}; }
+            }
+            expect(rejected).toBe(true)
+            rejected = false
+            try { spool.commitTo(files) } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+            expect(files.artifacts().count).toBe(0)
+            spool.dispose()
+            spool.dispose()
+            expect(storage.getChildFiles(includeDirectories: true).count).toBe(0)
+        } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `partial native write and cleanup failure cannot become publishable`() {
+        let root = File(".flat-artifact-partial-write-test-#{Time.currentTimeMillis}")
+        let spool = SpooledCompilerArtifactSink(File(root, "spool"), 1)
+        let files = FilesystemCompilerArtifactSink(File(root, "output"))
+        native var Object originalWrite
+        native var Object originalRemove
+        try {
+            external {
+                #{originalWrite} = #{File.FileGlobal.fs}.writeFileSync;
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                const original = #{originalWrite};
+                #{File.FileGlobal.fs}.writeFileSync = (path, data) => {
+                    original(path, 'partial');
+                    throw new Error('controlled partial write');
+                };
+                #{File.FileGlobal.fs}.rmSync = () => { throw new Error('controlled failed cleanup'); };
+            }
+            var String failure = ""
+            try {
+                try { spool.write(CompilerArtifact("a.js", "A")) }
+                catch (Exception error) { failure = error.message }
+            } finally {
+                external {
+                    #{File.FileGlobal.fs}.writeFileSync = #{originalWrite};
+                    #{File.FileGlobal.fs}.rmSync = #{originalRemove};
+                }
+            }
+            expect(failure).toBe("controlled partial write")
+            expect(spool.artifacts().count).toBe(0)
+            spool.commitTo(files)
+            expect(files.artifacts().count).toBe(0)
+            expect(File(root, "output/a.js").exists).toBe(false)
+            spool.write(CompilerArtifact("a.js", "A"))
+            spool.commitTo(files)
+            expect(Es6ArtifactFiles.read(File(root, "output/a.js"))).toBe("A")
+        } finally {
+            spool.dispose()
+            Es6ArtifactFiles.remove(root)
+        }
+    }
+
+    test `repeated failed writes retain bounded cleanup charges until drained`() {
+        let root = File(".flat-artifact-failed-cap-test-#{Time.currentTimeMillis}")
+        let storage = File(root, "spool")
+        let spool = SpooledCompilerArtifactSink(storage, 2, maxBytes: 40)
+        let files = FilesystemCompilerArtifactSink(File(root, "output"))
+        native var Object originalWrite
+        native var Object originalRemove
+        var Int nativeWrites
+        try {
+            external {
+                #{originalWrite} = #{File.FileGlobal.fs}.writeFileSync;
+                #{originalRemove} = #{File.FileGlobal.fs}.rmSync;
+                const original = #{originalWrite};
+                #{File.FileGlobal.fs}.writeFileSync = (path, data) => {
+                    #{nativeWrites}++;
+                    original(path, 'partial');
+                    throw new Error('controlled partial write');
+                };
+                #{File.FileGlobal.fs}.rmSync = () => { throw new Error('controlled cleanup'); };
+            }
+            try {
+                var Int rejected
+                String[] identities = ["a.js", "b.js", "c.js"]
+                for (identity in identities) {
+                    try { spool.write(CompilerArtifact(identity, "A")) }
+                    catch (Exception error) { rejected++ }
+                }
+                expect(rejected).toBe(3)
+                expect(nativeWrites).toBe(2)
+                expect(spool.artifacts().count).toBe(0)
+            } finally {
+                external {
+                    #{File.FileGlobal.fs}.writeFileSync = #{originalWrite};
+                    #{File.FileGlobal.fs}.rmSync = #{originalRemove};
+                }
+            }
+            spool.commitTo(files)
+            expect(files.artifacts().count).toBe(0)
+            spool.write(CompilerArtifact("c.js", "C"))
+            spool.commitTo(files)
+            expect(Es6ArtifactFiles.read(File(root, "output/c.js"))).toBe("C")
+        } finally {
+            spool.dispose()
             Es6ArtifactFiles.remove(root)
         }
     }
@@ -62,6 +376,7 @@ testable class {
             expect(File(storage, "sources/Main.flat.js.spool").exists).toBe(false)
             expect(files.artifacts().first.identity).toBe("sources/Main.flat.js")
         } finally {
+            spool.dispose()
             Es6ArtifactFiles.remove(root)
         }
     }

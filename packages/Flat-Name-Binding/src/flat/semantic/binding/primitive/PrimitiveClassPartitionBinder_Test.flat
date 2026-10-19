@@ -5,6 +5,7 @@ import flat/parser/flat
 import flat/bound
 import flat/lexer/Lexer
 import flat/semantic/types
+import flat/semantic/binding/BindingDiagnostic
 import flat/io/File
 import flat/io/FileReader
 
@@ -166,6 +167,117 @@ testable class {
         }
     }
 
+    async test `generic nullable conditional result retains expression IR`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:nullable-return-shape"), "one")
+        let stream = Lexer().lex("class Bag<E> { visible Int count; visible native_array var E[] data; this[Int index] <=> data[index] public E first => count > 0 ? this[0] : null }")
+        stream.emit("start")
+        let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+        let unit = PrimitiveClassPartitionBinder().bind([syntax], snapshot).typeUnits().first
+        let first = unit.functionUnits().firstOrNull({ _.name == "first" })
+        let statement = first.statements().first
+        expect(statement.unitKind()).toBe("return")
+        let returned = (BoundReturnStatement)statement
+        expect(returned.value.expressionKind()).toBe("conditional")
+        expect(returned.value.semanticType.value()).toBe(first.returnType.value())
+    }
+
+    async test `reference conditional returns normalize reversed and nested leaves with source ranges`() {
+        let expressions = ["flag ? null : value", "flag ? value : null",
+            "flag ? (other ? null : value) : value"]
+        for (index in 0..expressions.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-return:#{index}"), "one")
+            let stream = Lexer().lex("class Value {} class Owner { choose(Bool flag, Bool other, Value value) -> Value { return " + expressions[index] + "; } }")
+            stream.emit("start")
+            let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+            let classes = PrimitiveClassSyntax[]
+            for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex))
+            let method = classes.last.methodValues().first
+            let syntaxStatement = method.statements().first
+            let returnedSyntax = (PrimitiveReturnSyntax)syntaxStatement
+            let conditional = (PrimitiveConditionalSyntax)returnedSyntax.value
+            let units = PrimitiveClassPartitionBinder().bind(classes, snapshot).typeUnits()
+            let choose = units.last.functionUnits().firstOrNull({ _.name == "choose" })
+            let statement = choose.statements().first
+            let bound = (BoundIfStatement)statement
+            expect(bound.range.startTokenIndex).toBe(conditional.range.startTokenIndex)
+            expect(bound.condition.range.startTokenIndex).toBe(conditional.condition.range.startTokenIndex)
+            expect(bound.thenValues().count).toBe(1)
+            expect(bound.elseValues().count).toBe(1)
+            let leaf = bound.elseValues().first
+            let returned = (BoundReturnStatement)leaf
+            expect(returned.range.startTokenIndex).toBe(conditional.whenFalse.range.startTokenIndex)
+            expect(returned.requiredType.value()).toBe(choose.returnType.value())
+            expect(returned.conversion.applicable).toBe(true)
+            if (index == 2) expect(bound.thenValues().first.unitKind()).toBe("if")
+        }
+    }
+
+    async test `conditional reference return permission does not widen scalar local or call conversions`() {
+        let methods = [
+            "choose(Bool flag) -> Int { return flag ? null : 1; }",
+            "choose(Bool flag, Other other, Value value) -> Value { return flag ? other : value; }",
+            "choose(Bool flag, Value value) -> Value { let Value local = flag ? null : value; return local; }",
+            "take(Value value) -> Value { return value; } choose(Bool flag, Value value) -> Value { return take(flag ? null : value); }",
+            "choose(Value value = null) -> Value { return value; }"
+        ]
+        for (index in 0..methods.count) {
+            let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:conditional-return-invalid:#{index}"), "one")
+            let stream = Lexer().lex("class Value {} class Other {} class Owner { " + methods[index] + " }")
+            stream.emit("start")
+            let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+            let classes = PrimitiveClassSyntax[]
+            for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+                partition.tokenValues(), snapshot, partition.startTokenIndex))
+            var Bool rejected = false
+            try { PrimitiveClassPartitionBinder().bind(classes, snapshot) }
+            catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `published generic array callbacks retain element members captures and overload checks`() {
+        for (index in 0..4) {
+            let contexts = PrimitiveSourceBindingContext[]
+            let bodies = ["_.code == requested", "_.missing == requested", "_.code + requested", "_.code == requested"]
+            let sources = [
+                "class Entry { construct(visible Int code) {} }",
+                "class Array<E> { public select(func(E)->Bool predicate) -> E { return null; } " +
+                    (index == 3 ? "public select(func(E)->Int predicate) -> E { return null; } " : "") + "}",
+                "class Catalog { find(Entry[] entries, Int requested) -> Entry { return entries.select({ " + bodies[index] + " }); } }"
+            ]
+            for (sourceIndex in 0..sources.count) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:structural-callback:#{index}:#{sourceIndex}"), "one")
+                let stream = Lexer().lex(sources[sourceIndex])
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                contexts.add(PrimitiveSourceBindingContext(sourceIndex == 1 ? "flat/datastruct/list" : "app",
+                    snapshot, [syntax]))
+            }
+            if (index == 1 || index == 2) {
+                var Bool rejected = false
+                try { PrimitiveClassPartitionBinder().bindContexts(contexts) }
+                catch (Exception error) { rejected = true }
+                expect(rejected).toBe(true)
+            } else {
+                let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+                let find = units.firstOrNull({ _.identity.name == "Catalog" }).functionUnits().firstOrNull({ _.name == "find" })
+                let statement = find.statements().first
+                let returned = (BoundReturnStatement)statement
+                let call = (BoundCallExpression)returned.value
+                expect(call.target.name).toBe("select")
+                expect(call.receiver.semanticType.value()).toBe(find.parameterValues().first.semanticType.value())
+                expect(call.target.returnType.value()).toBe(find.returnType.value())
+                let argument = call.argumentValues().first
+                let callback = (BoundLambdaExpression)argument
+                expect(callback.parameterValues().first.semanticType.value()).toBe(find.returnType.value())
+                expect(callback.captureValues().count).toBe(1)
+                expect(callback.captureValues().first.name).toBe("requested")
+                expect(callback.body.semanticType.value()).toBe(SemanticTypes.boolType().value())
+            }
+        }
+    }
+
     async test `contextual collection callback binds arbitrary element member and outer capture`() {
         let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:callback-member-contract"), "one")
         let sources = [
@@ -222,6 +334,151 @@ testable class {
         let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
         expect(units.firstOrNull({ _.identity.name == "Consumer" }).functionUnits().firstOrNull({ _.name == "run" }).returnType.value())
             .toBe(SemanticTypes.intType().value())
+    }
+
+    async test `static scoped local initializers retain their lexical method owner`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-scoped-owner"), "one")
+        let source = "class Main { static helper(Int value) -> Int { return value; } " +
+            "public static main() { let result = helper(1); } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        let classes = PrimitiveClassSyntax[]
+        for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex))
+        let context = PrimitiveSourceBindingContext("app", snapshot, classes)
+        let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
+        let main = units.first.functionUnits().firstOrNull({ _.name == "main" })
+        let statement = main.statements().first
+        let local = (BoundLocalDeclarationStatement)statement
+        let call = (BoundCallExpression)local.initializer
+        expect(call.target.name).toBe("helper")
+        expect(call.target.callableKind.value).toBe("static-method")
+        expect(call.target.ownerType.declarationIdentity.value).toBe(units.first.identity.value)
+    }
+
+    async test `static scoped local initializers construct admitted types without an instance owner`() {
+        let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-scoped-constructor"), "one")
+        let source = "class Item { construct() {} } " +
+            "class Main { public static main() { let item = Item(); if (true) { let second = Item(); } } }"
+        let stream = Lexer().lex(source)
+        stream.emit("start")
+        let partitions = FlatSourceTypePartitioner().partition(stream.consumeAll<Token>("data"), snapshot)
+        let classes = PrimitiveClassSyntax[]
+        for (partition in partitions) classes.add(PrimitiveClassParser().parse(
+            partition.tokenValues(), snapshot, partition.startTokenIndex))
+        let context = PrimitiveSourceBindingContext("app", snapshot, classes)
+        let units = PrimitiveClassPartitionBinder().bindContexts([context]).typeUnits()
+        let main = units.firstOrNull({ _.identity.name == "Main" }).functionUnits().firstOrNull({ _.name == "main" })
+        let statement = main.statements().first
+        let local = (BoundLocalDeclarationStatement)statement
+        let call = (BoundCallExpression)local.initializer
+        expect(call.target.callableKind.value).toBe("constructor")
+        expect(call.target.ownerType.declarationIdentity.value)
+            .toBe(units.firstOrNull({ _.identity.name == "Item" }).identity.value)
+    }
+
+    async test `configured static calls map supplied named arguments before checking overloads`() {
+        String[] calls = ["combine(right: 2, left: 1)", "combine(1, right: 2)"]
+        for (call in calls) {
+            let contexts = PrimitiveSourceBindingContext[]
+            String[] sources = [
+                "class Tools { public static combine(Int left, Int right) -> Int { return left * 10 + right; } }",
+                "class Consumer { static run() -> Int { return " + call + "; } }"
+            ]
+            var Int index
+            for (source in sources) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-named:#{index}"), "one")
+                let stream = Lexer().lex(source)
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                let defaults = PrimitiveDefaultImport[]
+                if (index == 1) defaults.add(PrimitiveDefaultImport("library/Tools", true))
+                contexts.add(PrimitiveSourceBindingContext(index == 1 ? "app" : "library", snapshot, [syntax],
+                    defaultImports: defaults))
+                index++
+            }
+            let units = PrimitiveClassPartitionBinder().bindContexts(contexts).typeUnits()
+            expect(units.firstOrNull({ _.identity.name == "Consumer" }).functionUnits().firstOrNull({ _.name == "run" }).returnType.value())
+                .toBe(SemanticTypes.intType().value())
+        }
+    }
+
+    async test `configured static calls reject unknown duplicate and positionally repeated names`() {
+        String[] calls = ["combine(unknown: 1, right: 2)", "combine(left: 1, left: 2)", "combine(1, left: 2)"]
+        for (call in calls) {
+            let contexts = PrimitiveSourceBindingContext[]
+            String[] sources = [
+                "class Tools { public static combine(Int left, Int right) -> Int { return left + right; } }",
+                "class Consumer { static run() -> Int { return " + call + "; } }"
+            ]
+            var Int index
+            var Bool rejected
+            try {
+                for (source in sources) {
+                    let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-named-invalid:#{index}"), "one")
+                    let stream = Lexer().lex(source)
+                    stream.emit("start")
+                    let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                    let defaults = PrimitiveDefaultImport[]
+                    if (index == 1) defaults.add(PrimitiveDefaultImport("library/Tools", true))
+                    contexts.add(PrimitiveSourceBindingContext(index == 1 ? "app" : "library", snapshot, [syntax],
+                        defaultImports: defaults))
+                    index++
+                }
+                PrimitiveClassPartitionBinder().bindContexts(contexts)
+            } catch (Exception error) { rejected = true }
+            expect(rejected).toBe(true)
+        }
+    }
+
+    async test `configured static overload failures preserve typed consumer diagnostics and candidate order`() {
+        String[] arguments = ["true", "1"]
+        var Int caseIndex
+        for (argument in arguments) {
+            let contexts = PrimitiveSourceBindingContext[]
+            String[] sources = [
+                "class First { public static choose(Int value) -> Int { return value; } }",
+                "class Second { public static choose(Int value) -> Int { return value; } }",
+                "class Consumer { static run() -> Int { return choose(" + argument + "); } }"
+            ]
+            var Int index
+            for (source in sources) {
+                let snapshot = SourceSnapshotIdentity(SourceIdentity("memory:static-diagnostic:#{index}"), "one")
+                let stream = Lexer().lex(source)
+                stream.emit("start")
+                let syntax = PrimitiveClassParser().parse(stream.consumeAll<Token>("data"), snapshot)
+                let defaults = PrimitiveDefaultImport[]
+                if (index == 2) {
+                    defaults.add(PrimitiveDefaultImport("library/First", true))
+                    defaults.add(PrimitiveDefaultImport("library/Second", true))
+                }
+                contexts.add(PrimitiveSourceBindingContext(index == 2 ? "app" : "library", snapshot, [syntax],
+                    defaultImports: defaults))
+                index++
+            }
+            let consumer = contexts.last.classValues().first
+            let statement = consumer.methodValues().first.statements().first
+            let returned = (PrimitiveReturnSyntax)statement
+            let expectedRange = returned.value.range
+            var BindingDiagnostic firstDiagnostic
+            var BindingDiagnostic secondDiagnostic
+            try { PrimitiveClassPartitionBinder().bindContexts(contexts) }
+            catch (PrimitiveContextBindingException error) { firstDiagnostic = error.diagnostic }
+            try { PrimitiveClassPartitionBinder().bindContexts(contexts.reverse()) }
+            catch (PrimitiveContextBindingException error) { secondDiagnostic = error.diagnostic }
+            expect(firstDiagnostic != null).toBe(true)
+            expect(secondDiagnostic != null).toBe(true)
+            if (!firstDiagnostic || !secondDiagnostic) throw Exception("Static overload failure lost typed consumer diagnostic")
+            expect(firstDiagnostic.code).toBe(caseIndex == 0 ? "type.call-no-match" : "type.call-ambiguous")
+            expect(firstDiagnostic.range).toBe(expectedRange)
+            expect(firstDiagnostic.candidateValues.count).toBe(2)
+            expect(firstDiagnostic.candidateValues).toBe(secondDiagnostic.candidateValues)
+            expect(firstDiagnostic.candidateValues[0].compareTo(firstDiagnostic.candidateValues[1]) < 0).toBe(true)
+            expect(secondDiagnostic.code).toBe(firstDiagnostic.code)
+            expect(secondDiagnostic.range).toBe(expectedRange)
+            caseIndex++
+        }
     }
 
     async test `configured type precedence and ambiguity retain canonical consumer diagnostics`() {

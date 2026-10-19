@@ -31,8 +31,10 @@ class extends CompilerArtifactSink {
             throw Exception("Artifact requires normalized root-relative identity")
         }
         let components = identity.split("/")
-        if (components.any({ _.count == 0 || _ == "." || _ == ".." })) {
-            throw Exception("Artifact requires normalized root-relative identity components")
+        for (component in components) {
+            if (component.count == 0 || component == "." || component == "..") {
+                throw Exception("Artifact requires normalized root-relative identity components")
+            }
         }
     }
     override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(values)

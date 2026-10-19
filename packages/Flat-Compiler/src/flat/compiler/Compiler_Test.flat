@@ -17,6 +17,9 @@ testable class {
         visible var String observedLocation
         visible var Bool observedStatic
         visible var Int observedCount
+        public construct() => super(maxSources: 64, maxSourceCharacters: 65536,
+            maxTokensPerSource: 8192, maxTypes: 256, maxFragments: 256)
+
         override public async linkSources(
             CompilerSourceProvider provider, String[] identities,
             DeclarationIdentity arrayDeclaration = null, String mainClass = null,
@@ -55,6 +58,9 @@ testable class {
     class CapturedMainLinker extends FlatEs6PackageLinker {
         visible var Int calls
         visible var String observedMain
+        public construct() => super(maxSources: 64, maxSourceCharacters: 65536,
+            maxTokensPerSource: 8192, maxTypes: 256, maxFragments: 256)
+
         override public async linkSources(
             CompilerSourceProvider provider, String[] identities,
             DeclarationIdentity arrayDeclaration = null, String mainClass = null,
@@ -63,6 +69,59 @@ testable class {
             calls++
             observedMain = mainClass.concat("")
             return "// captured main #mainClass\n"
+        }
+    }
+
+    async test `queued regular package owns entrypoint and artifact identity storage`() {
+        let executor = ControlledExecutor(1)
+        let linker = CapturedMainLinker()
+        let engine = CompilerEngine(executor: executor, packageLinker: linker)
+        let main = "app/Main".concat("")
+        let destination = "main.js".concat("")
+        let sink = MemoryCompilerArtifactSink()
+        let session = CompilerSession()
+        engine.startPackage(MemoryCompilerSourceProvider([
+            CompilerSource("app/Main.flat", "class Main {}")
+        ]), sink, destination, session, main)
+        expect(executor.queuedCount).toBe(1)
+        main.chars[0] = 'x'
+        destination.chars[0] = 'x'
+        executor.runNext()
+        expect(session.completion.get().diagnosticCount).toBe(0)
+        expect(linker.observedMain).toBe("app/Main")
+        expect(sink.artifacts().first.identity).toBe("main.js")
+        expect(session.artifacts.receive().value.identity).toBe("main.js")
+        expect(session.artifacts.receive().completed).toBe(true)
+    }
+
+    class MismatchedSourceProvider extends CompilerSourceProvider {
+        override public identities() -> String[] {
+            let values = String[]
+            values.add("a")
+            values.add("b")
+            return values
+        }
+        override public load(String identity) -> CompilerSource {
+            return CompilerSource(identity == "a" ? "wrong" : "b",
+                "value() -> Int { return 1; }")
+        }
+    }
+
+    async test `mismatched loaded source identity fails locally at one and two active sources`() {
+        for (parallel in 1..3) {
+            let sink = MemoryCompilerArtifactSink()
+            let session = CompilerEngine(maxActiveSources: parallel).compile(MismatchedSourceProvider(), sink)
+            let summary = session.completion.get()
+            expect(summary.artifactCount).toBe(1)
+            expect(summary.diagnosticCount).toBe(1)
+            expect(summary.cancelled).toBe(false)
+            expect(summary.packageDiagnostic).toBe(
+                "Failed to compile 'a': Loaded source identity does not match 'a'")
+            expect(sink.artifacts().count).toBe(1)
+            expect(sink.artifacts().first.identity).toBe("b.js")
+            expect(session.activeSourceCount).toBe(0)
+            expect(session.inFlightSourceCount).toBe(0)
+            expect(session.retainedSourceCount).toBe(0)
         }
     }
 
@@ -111,7 +170,7 @@ testable class {
             } finally { cleaned++ }
         }
         public release(Int index) {
-            let gate = (Future.CompletableFuture<Bool>)gates[index]
+            Future.CompletableFuture<Bool> gate = (Future.CompletableFuture<Bool>)gates[index]
             gate.complete(true)
         }
     }
@@ -218,7 +277,7 @@ testable class {
             if (parallel == 1) expect(session.artifacts.receive().value.identity).toBe("b.js")
             expect(session.completion.get().artifactCount).toBe(2)
             let artifacts = sink.artifacts()
-            let actual = artifacts.map({ _.identity + ":" + _.code }).join("|")
+            let actual = artifacts.map((artifact) => artifact.identity + ":" + artifact.code).join("|")
             if (expected != null) expect(actual).toBe(expected)
             expected = actual
             expect(session.peakActiveSourceCount <= parallel).toBe(true)
@@ -312,7 +371,8 @@ testable class {
         expect(compiler.completedInsideCompile).toBe(false)
         expect(compiler.cleaned).toBe(false)
         expect(session.completion.completed).toBe(false)
-        gate.complete(true)
+        let cleanupCompletion = (Future.CompletableFuture<Bool>)gate
+        cleanupCompletion.complete(true)
         let summary = session.completion.get()
         expect(compiler.cleaned).toBe(true)
         expect(summary.cancelled).toBe(true)
@@ -1192,7 +1252,7 @@ testable class {
      * require Long's fields, and wrapper bodies reference the other numeric classes.
      * Their ES6 overlays and the declared String/Array storage graph remain intact.
      */
-    realCoreExecutionSources(CompilerSource[] supplied = CompilerSource[]) -> CompilerSource[] {
+    public static realCoreExecutionSources(CompilerSource[] supplied = CompilerSource[]) -> CompilerSource[] {
         let identities = [
             "flat/Object.flat",
             "flat/Object.js.flat",
@@ -1995,7 +2055,7 @@ testable class {
         let overlayIdentity = "flat/primitive/number/Double.js.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.flat"))
         let overlay = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Double.js.flat"))
-        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
+        let code = FlatEs6PackageLinker().link(realCoreExecutionSources([
             CompilerSource(identity, source),
             CompilerSource(overlayIdentity, overlay),
             CompilerSource(
@@ -2073,7 +2133,7 @@ testable class {
         let overlayIdentity = "flat/primitive/number/Float.js.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Float.flat"))
         let overlay = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Float.js.flat"))
-        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
+        let code = FlatEs6PackageLinker().link(realCoreExecutionSources([
             CompilerSource(identity, source),
             CompilerSource(overlayIdentity, overlay),
             CompilerSource(
@@ -2157,7 +2217,7 @@ testable class {
     async test `package linker compiles unchanged Byte numeric source`() {
         var String message
         try {
-            FlatEs6PackageLinker().link(admitCoreDependencies([
+            FlatEs6PackageLinker().link(realCoreExecutionSources([
                 CompilerSource(
                     "flat/primitive/number/Byte.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Byte.flat"))
@@ -2182,7 +2242,7 @@ testable class {
     async test `package linker compiles unchanged Short numeric source`() {
         var String message
         try {
-            FlatEs6PackageLinker().link(admitCoreDependencies([
+            FlatEs6PackageLinker().link(realCoreExecutionSources([
                 CompilerSource(
                     "flat/primitive/number/Short.flat",
                     Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Short.flat"))
@@ -2207,7 +2267,7 @@ testable class {
     async test `package linker compiles and executes unchanged Char switch and repeat`() {
         let identity = "flat/primitive/number/Char.flat"
         let source = Es6ArtifactFiles.read(File("../Flat-Core/src/flat/primitive/number/Char.flat"))
-        let code = FlatEs6PackageLinker().link(admitCoreDependencies([
+        let code = FlatEs6PackageLinker().link(realCoreExecutionSources([
                 CompilerSource(identity, source),
                 CompilerSource(
                     "flat/primitive/number/Number.flat",

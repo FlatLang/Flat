@@ -1,35 +1,126 @@
 package flat/compiler
 
 import flat/io
-import flat/time/Time
 import flat/writer/es6/bound
 
 /**
- * Bounded disk spool that atomically promotes individual artifacts to a sink.
- * Uses the filesystem sink's lexical identity policy, not symlink containment;
- * root and its directory tree must be caller-trusted.
+ * Single-owner bounded spool. Root is caller-trusted, not a symlink sandbox.
+ * Admission owns detached identity metadata and disk payload, never caller storage.
+ * commitTo is canonical per-artifact publication, not a multi-artifact transaction.
+ * A successful destination.write is never repeated; cleanup failures are retryable.
+ * The owner must call dispose in finally on success, failure and cancellation.
+ * maxBytes charges four bytes per UTF-16 identity/payload code unit: conservative
+ * for Node UTF-8 storage, not an exact encoded-byte count or filesystem quota.
+ * Cleanup-only failures retain their count/byte charges until removed. The 1 MiB
+ * default is a finite safety limit, not a compiler workload sizing assertion;
+ * callers must explicitly size it for their actual selected artifact workload.
  */
 class extends CompilerArtifactSink {
-    var CompilerArtifact[] pending = CompilerArtifact[]
-    public construct(visible File root, visible Int capacity) {
-        if (!root || capacity <= 0) throw Exception("Spooled sink requires root and capacity")
+    class StagedArtifact {
+        visible String identity
+        visible File file
+        visible Long bytes
+        visible var Bool published
+
+        public construct(String identity, File file, Long bytes) {
+            this.identity = identity
+            this.file = file
+            this.bytes = bytes
+        }
+    }
+
+    var StagedArtifact[] pending = StagedArtifact[]
+    var File staging
+    var Long retainedBytes
+    var Long nextOrdinal
+    var Bool disposed
+
+    public construct(visible File root, visible Int capacity, visible Long maxBytes = 1048576) {
+        if (!root || capacity <= 0 || maxBytes <= 0) {
+            throw Exception("Spooled sink requires root and positive count and byte capacities")
+        }
         Es6ArtifactFiles.ensureDirectory(root)
     }
+
     override public write(CompilerArtifact artifact) {
+        if (disposed) throw Exception("Spooled sink is disposed")
         if (!artifact || pending.count >= capacity || pending.any({ _.identity == artifact.identity })) {
             throw Exception("Spooled artifact sink capacity or identity violation")
         }
         FilesystemCompilerArtifactSink.validateIdentity(artifact.identity)
-        pending.add(artifact)
-        Es6ArtifactFiles.write(File(root, artifact.identity + ".spool"), artifact.code)
-    }
-    public commitTo(FilesystemCompilerArtifactSink destination) {
-        if (!destination) throw Exception("Spooled sink requires destination")
-        for (artifact in pending.sort({ _a.identity.compareTo(_b.identity) })) {
-            destination.write(artifact)
-            Es6ArtifactFiles.remove(File(root, artifact.identity + ".spool"))
+        Long bytes = artifact.identity.count
+        bytes += artifact.code.count
+        bytes *= 4
+        if (bytes > maxBytes - retainedBytes) throw Exception("Spooled artifact sink byte capacity exceeded")
+        // concat allocates independent Core String/StringCharArray wrappers.
+        let identity = artifact.identity.concat("")
+        if (!staging) staging = Es6ArtifactFiles.createCommitDirectory(File(root, "spool"))
+        let file = File(staging, "artifact-#{nextOrdinal++}.spool")
+        // Private monotonically named files need no replacement: a failed
+        // write remains cleanup-only and is never admitted for publication.
+        let staged = StagedArtifact(identity, file, bytes)
+        try {
+            Es6ArtifactFiles.write(file, artifact.code)
+        } catch (Exception error) {
+            // A partial write may leave bytes. Never publish failed admission;
+            // retain bounded cleanup-only metadata if removing it also fails.
+            // Preserve the first error.
+            staged.published = true
+            pending.add(staged)
+            retainedBytes += bytes
+            try {
+                Es6ArtifactFiles.remove(file)
+                pending.remove(staged)
+                retainedBytes -= bytes
+            } catch (Exception cleanupError) {}
+            throw error
         }
-        pending.clear()
+        pending.add(staged)
+        retainedBytes += bytes
     }
-    override public artifacts() -> CompilerArtifact[] => CompilerArtifact[]:addAll(pending)
+
+    public commitTo(FilesystemCompilerArtifactSink destination) {
+        if (disposed) throw Exception("Spooled sink is disposed")
+        if (!destination) throw Exception("Spooled sink requires destination")
+        // Count-bounded metadata ordering only; Core Array.sort -> mergeSort
+        // returns clone(), so removing from pending cannot skip iteration items.
+        // Load one byte-bounded payload at a time.
+        for (artifact in pending.sort({ _a.identity.compareTo(_b.identity) })) {
+            if (!artifact.published) {
+                destination.write(CompilerArtifact(artifact.identity.concat(""), Es6ArtifactFiles.read(artifact.file)))
+                artifact.published = true
+            }
+            Es6ArtifactFiles.remove(artifact.file)
+            pending.remove(artifact)
+            retainedBytes -= artifact.bytes
+        }
+        cleanupEmptyDirectory()
+    }
+
+    /** Terminal abort, idempotent and retryable if owned-storage cleanup fails. */
+    public dispose() {
+        disposed = true
+        if (staging) Es6ArtifactFiles.remove(staging)
+        staging = null
+        pending.clear()
+        retainedBytes = 0
+    }
+
+    cleanupEmptyDirectory() {
+        if (pending.isEmpty && staging) {
+            Es6ArtifactFiles.remove(staging)
+            staging = null
+        }
+    }
+
+    /** Explicit bounded inspection materialization; returned strings are detached. */
+    override public artifacts() -> CompilerArtifact[] {
+        let values = CompilerArtifact[]
+        for (artifact in pending.sort({ _a.identity.compareTo(_b.identity) })) {
+            if (!artifact.published) {
+                values.add(CompilerArtifact(artifact.identity.concat(""), Es6ArtifactFiles.read(artifact.file)))
+            }
+        }
+        return values
+    }
 }
